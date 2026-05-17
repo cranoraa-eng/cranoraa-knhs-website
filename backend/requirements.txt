@@ -7,4 +7,4 @@ django-axes==6.1.1
 django-password-validators
 daphne
 setuptools
-
+wheel
