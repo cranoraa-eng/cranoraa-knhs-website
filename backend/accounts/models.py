@@ -1,0 +1,839 @@
+from django.contrib.auth.models import AbstractUser
+from django.db import models
+
+
+class User(AbstractUser):
+    ROLE_CHOICES = [
+        ('admin', 'Admin'),
+        ('teacher', 'Teacher'),
+        ('student', 'Student'),
+    ]
+    
+    email = models.EmailField(unique=True)
+    role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='student')
+    is_verified = models.BooleanField(default=False)
+    is_approved = models.BooleanField(default=False)
+    last_activity = models.DateTimeField(null=True, blank=True)
+    
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['username', 'role']
+    
+    def __str__(self):
+        return f"{self.email} ({self.role})"
+
+    @property
+    def is_online(self):
+        if not self.last_activity:
+            return False
+        from django.utils import timezone
+        import datetime
+        now = timezone.now()
+        return self.last_activity > now - datetime.timedelta(minutes=5)
+
+
+class OTP(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='otps')
+    code = models.CharField(max_length=6)
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_used = models.BooleanField(default=False)
+    
+    def is_expired(self):
+        from django.utils import timezone
+        import datetime
+        return timezone.now() > self.created_at + datetime.timedelta(minutes=15)
+    
+    def __str__(self):
+        return f"OTP for {self.user.email}: {self.code}"
+
+
+class Profile(models.Model):
+    TITLE_CHOICES = [
+        ('Mr.', 'Mr.'),
+        ('Ms.', 'Ms.'),
+        ('Mrs.', 'Mrs.'),
+        ('Dr.', 'Dr.'),
+        ('Prof.', 'Prof.'),
+    ]
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    title = models.CharField(max_length=10, choices=TITLE_CHOICES, blank=True, null=True, help_text="Honorific title for teachers")
+    grade_level = models.CharField(max_length=20, blank=True, null=True, help_text="For students")
+    employee_id = models.CharField(max_length=20, blank=True, null=True, help_text="For teachers")
+    phone_number = models.CharField(max_length=20, blank=True, null=True)
+    address = models.TextField(blank=True, null=True)
+    date_of_birth = models.DateField(blank=True, null=True)
+    registration_number = models.CharField(max_length=20, blank=True, null=True, unique=True, help_text="Auto-generated unique registration number for students")
+    
+    # Additional student information
+    sex = models.CharField(max_length=10, choices=[('male', 'Male'), ('female', 'Female'), ('other', 'Other')], blank=True, null=True)
+    state = models.CharField(max_length=100, blank=True, null=True)
+    nationality = models.CharField(max_length=100, blank=True, null=True)
+    middle_name = models.CharField(max_length=100, blank=True, null=True)
+    father_name = models.CharField(max_length=100, blank=True, null=True)
+    mother_name = models.CharField(max_length=100, blank=True, null=True)
+    contact_information = models.TextField(blank=True, null=True, help_text="Additional contact details")
+    
+    def __str__(self):
+        return f"{self.user.username}'s Profile"
+    
+    def save(self, *args, **kwargs):
+        if self.user.role == 'student' and not self.registration_number:
+            self.registration_number = self.generate_registration_number()
+        super().save(*args, **kwargs)
+    
+    def generate_registration_number(self):
+        import random
+        year = str(self.user.date_joined.year if self.user.date_joined else 2026)
+        random_num = ''.join([str(random.randint(0, 9)) for _ in range(6)])
+        return f"KNHS{year}{random_num}"
+
+
+class Classroom(models.Model):
+    name = models.CharField(max_length=100)
+    teacher = models.ForeignKey(User, on_delete=models.CASCADE, related_name='classrooms')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"{self.name} - {self.teacher.username}"
+    
+    def get_average_gpa(self):
+        enrollments = self.enrollments.all()
+        if enrollments:
+            total_gpa = sum(e.gpa for e in enrollments if e.gpa is not None)
+            count = sum(1 for e in enrollments if e.gpa is not None)
+            return total_gpa / count if count > 0 else None
+        return None
+
+
+class ChatRoom(models.Model):
+    name = models.CharField(max_length=255, blank=True, null=True)
+    is_group = models.BooleanField(default=False)
+    participants = models.ManyToManyField(User, related_name='chat_rooms')
+    pinned_by = models.ManyToManyField(User, related_name='pinned_rooms', blank=True)
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='created_rooms')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        if self.is_group:
+            return self.name or f"Group {self.id}"
+        return f"Private Chat {self.id}"
+
+
+class ChatMessage(models.Model):
+    room = models.ForeignKey(ChatRoom, on_delete=models.CASCADE, related_name='messages')
+    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_messages')
+    content = models.TextField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+    is_delivered = models.BooleanField(default=False)
+    is_read = models.BooleanField(default=False)
+    is_pinned = models.BooleanField(default=False)
+    is_edited = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ['timestamp']
+
+    def __str__(self):
+        return f"{self.sender.username}: {self.content[:20]}..."
+
+
+class Friendship(models.Model):
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('accepted', 'Accepted'),
+        ('rejected', 'Rejected'),
+    ]
+    
+    from_user = models.ForeignKey(User, related_name='friendship_requests_sent', on_delete=models.CASCADE)
+    to_user = models.ForeignKey(User, related_name='friendship_requests_received', on_delete=models.CASCADE)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    is_pinned_by_from = models.BooleanField(default=False)
+    is_pinned_by_to = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('from_user', 'to_user')
+
+    def __str__(self):
+        return f"{self.from_user.username} -> {self.to_user.username} ({self.status})"
+
+
+class Subject(models.Model):
+    name = models.CharField(max_length=100)
+    code = models.CharField(max_length=20, unique=True)
+    description = models.TextField(blank=True, null=True)
+    grade_level = models.CharField(max_length=20, help_text="Grade level this subject is for")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['grade_level', 'name']
+    
+    def __str__(self):
+        return f"{self.code} - {self.name}"
+
+
+class ClassroomSubject(models.Model):
+    """
+    Junction table to connect Subjects to Classrooms
+    This implements the ERD relationship: Classroom contains Subject
+    """
+    classroom = models.ForeignKey(Classroom, on_delete=models.CASCADE, related_name='classroom_subjects')
+    subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name='classroom_subjects')
+    teacher = models.ForeignKey(User, on_delete=models.CASCADE, related_name='assigned_classroom_subjects', limit_choices_to={'role': 'teacher'})
+    assigned_at = models.DateTimeField(auto_now_add=True)
+
+    # Grade component weights (must sum to 100)
+    ww_weight = models.DecimalField(max_digits=5, decimal_places=2, default=30.00,
+        help_text="Written Work weight (%)")
+    pt_weight = models.DecimalField(max_digits=5, decimal_places=2, default=50.00,
+        help_text="Performance Task weight (%)")
+    qa_weight = models.DecimalField(max_digits=5, decimal_places=2, default=20.00,
+        help_text="Quarterly Assessment weight (%)")
+
+    class Meta:
+        unique_together = ['classroom', 'subject']
+        ordering = ['classroom__name', 'subject__name']
+
+    def __str__(self):
+        return f"{self.classroom.name} - {self.subject.code} ({self.teacher.username})"
+
+
+class StudentClassEnrollment(models.Model):
+    student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='enrollments')
+    classroom = models.ForeignKey(Classroom, on_delete=models.CASCADE, related_name='enrollments')
+    q1 = models.IntegerField(null=True, blank=True)
+    q2 = models.IntegerField(null=True, blank=True)
+    q3 = models.IntegerField(null=True, blank=True)
+    q4 = models.IntegerField(null=True, blank=True)
+    gpa = models.DecimalField(max_digits=3, decimal_places=2, null=True, blank=True)
+    enrolled_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        unique_together = ['student', 'classroom']
+        ordering = ['student__username']
+    
+    def __str__(self):
+        return f"{self.student.username} in {self.classroom.name}"
+    
+    @staticmethod
+    def transmute_score(raw_score):
+        """
+        DepEd Transmutation Table (K to 12)
+        Converts raw scores to transmuted grades (60-100 scale)
+        """
+        if raw_score is None:
+            return None
+        
+        # DepEd Transmutation Table
+        transmutation_table = [
+            (100, 100), (99, 99), (98, 98), (97, 97), (96, 96),
+            (95, 95), (94, 95), (93, 94), (92, 94), (91, 93),
+            (90, 93), (89, 92), (88, 92), (87, 91), (86, 91),
+            (85, 90), (84, 90), (83, 89), (82, 89), (81, 88),
+            (80, 88), (79, 87), (78, 87), (77, 86), (76, 86),
+            (75, 85), (74, 85), (73, 84), (72, 84), (71, 83),
+            (70, 83), (69, 82), (68, 82), (67, 81), (66, 81),
+            (65, 80), (64, 80), (63, 79), (62, 79), (61, 78),
+            (60, 78), (59, 77), (58, 77), (57, 76), (56, 76),
+            (55, 75), (54, 75), (53, 74), (52, 74), (51, 73),
+            (50, 73), (49, 72), (48, 72), (47, 71), (46, 71),
+            (45, 70), (44, 70), (43, 69), (42, 69), (41, 68),
+            (40, 68), (39, 67), (38, 67), (37, 66), (36, 66),
+            (35, 65), (34, 65), (33, 64), (32, 64), (31, 63),
+            (30, 63), (29, 62), (28, 62), (27, 61), (26, 61),
+            (25, 60), (24, 60), (23, 60), (22, 60), (21, 60),
+            (20, 60), (19, 60), (18, 60), (17, 60), (16, 60),
+            (15, 60), (14, 60), (13, 60), (12, 60), (11, 60),
+            (10, 60), (9, 60), (8, 60), (7, 60), (6, 60),
+            (5, 60), (4, 60), (3, 60), (2, 60), (1, 60),
+            (0, 60)
+        ]
+        
+        raw_score = max(0, min(100, raw_score))
+        for raw, transmuted in transmutation_table:
+            if raw_score >= raw:
+                return transmuted
+        return 60
+    
+    def get_transmuted_quarters(self):
+        """Return transmuted values for all quarters"""
+        return {
+            'q1': self.transmute_score(self.q1),
+            'q2': self.transmute_score(self.q2),
+            'q3': self.transmute_score(self.q3),
+            'q4': self.transmute_score(self.q4),
+        }
+    
+    def calculate_general_average(self):
+        quarters = [self.q1, self.q2, self.q3, self.q4]
+        valid_quarters = [q for q in quarters if q is not None]
+        if valid_quarters:
+            return round(sum(valid_quarters) / len(valid_quarters))
+        return None
+    
+    def calculate_transmuted_average(self):
+        """Calculate average of transmuted quarterly grades"""
+        transmuted = self.get_transmuted_quarters()
+        transmuted_values = [v for v in transmuted.values() if v is not None]
+        if transmuted_values:
+            return round(sum(transmuted_values) / len(transmuted_values))
+        return None
+    
+    def get_descriptive_equivalent(self):
+        avg = self.calculate_transmuted_average()
+        if avg is None:
+            return "No Grades"
+        if avg >= 90:
+            return "Outstanding"
+        if avg >= 85:
+            return "Very Satisfactory"
+        if avg >= 80:
+            return "Satisfactory"
+        if avg >= 75:
+            return "Fairly Satisfactory"
+        return "Did Not Meet Expectations"
+
+
+class Announcement(models.Model):
+    CATEGORY_CHOICES = [
+        ('general', 'General'),
+        ('system_update', 'System Update'),
+        ('emergency', 'Emergency'),
+        ('academic', 'Academic'),
+        ('events', 'Events'),
+        ('holiday', 'Holiday'),
+    ]
+    
+    PRIORITY_CHOICES = [
+        ('info', 'Info'),
+        ('critical', 'Critical'),
+    ]
+    
+    STATUS_CHOICES = [
+        ('draft', 'Draft'),
+        ('live', 'Live'),
+        ('expired', 'Expired'),
+    ]
+    
+    TARGET_AUDIENCE_CHOICES = [
+        ('all', 'All Users'),
+        ('admins', 'Admins'),
+        ('students', 'Students'),
+        ('teachers', 'Teachers'),
+    ]
+    
+    title = models.CharField(max_length=200)
+    content = models.TextField()
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default='general')
+    priority = models.CharField(max_length=10, choices=PRIORITY_CHOICES, default='info')
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='draft')
+    target_audience = models.CharField(max_length=20, choices=TARGET_AUDIENCE_CHOICES, default='all')
+    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='account_announcements')
+    is_pinned = models.BooleanField(default=False)
+    is_public = models.BooleanField(default=False)
+    expiration_date = models.DateTimeField(null=True, blank=True)
+    attachment = models.FileField(upload_to='announcements/attachments/', null=True, blank=True)
+    read_by = models.ManyToManyField(User, related_name='read_announcements', blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['-is_pinned', '-created_at']
+    
+    def __str__(self):
+        return f"{self.title} - {self.author.username}"
+    
+    @property
+    def is_expired(self):
+        from django.utils import timezone
+        if self.expiration_date:
+            return timezone.now() > self.expiration_date
+        return False
+
+
+class AnnouncementAttachment(models.Model):
+    announcement = models.ForeignKey(
+        Announcement, on_delete=models.CASCADE, related_name='attachments'
+    )
+    file = models.FileField(upload_to='announcements/attachments/')
+    filename = models.CharField(max_length=255, blank=True)
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        if not self.filename and self.file:
+            self.filename = self.file.name.split('/')[-1]
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.announcement.title} - {self.filename}"
+
+    @property
+    def is_image(self):
+        return self.filename.lower().split('.')[-1] in ['jpg', 'jpeg', 'png', 'gif', 'webp']
+
+    @property
+    def url(self):
+        return self.file.url if self.file else ''
+
+
+class Attendance(models.Model):
+    STATUS_CHOICES = [
+        ('present', 'Present'),
+        ('absent', 'Absent'),
+        ('late', 'Late'),
+        ('excused', 'Excused'),
+    ]
+    
+    student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='attendances')
+    classroom = models.ForeignKey(Classroom, on_delete=models.CASCADE, related_name='attendances')
+    date = models.DateField()
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='present')
+    remarks = models.TextField(blank=True, null=True)
+    marked_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='marked_attendances')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        unique_together = ['student', 'classroom', 'date']
+        ordering = ['-date', 'student__username']
+    
+    def __str__(self):
+        return f"{self.student.username} - {self.date} - {self.status}"
+
+
+class LearningMaterial(models.Model):
+    MATERIAL_TYPE_CHOICES = [
+        ('dlp', 'Daily Lesson Plan (DLP)'),
+        ('dll', 'Daily Lesson Log (DLL)'),
+        ('module', 'Learning Module'),
+        ('activity', 'Learning Activity Sheet'),
+        ('assessment', 'Assessment Material'),
+        ('other', 'Other'),
+    ]
+    
+    title = models.CharField(max_length=200)
+    description = models.TextField(blank=True, null=True)
+    material_type = models.CharField(max_length=20, choices=MATERIAL_TYPE_CHOICES, default='dlp')
+    classroom = models.ForeignKey(Classroom, on_delete=models.CASCADE, related_name='materials', null=True, blank=True)
+    uploaded_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='uploaded_materials')
+    file = models.FileField(upload_to='materials/', null=True, blank=True)
+    quarter = models.IntegerField(null=True, blank=True, help_text="Quarter (1-4)")
+    week = models.IntegerField(null=True, blank=True, help_text="Week number")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"{self.title} - {self.get_material_type_display()}"
+
+
+class ScratchCard(models.Model):
+    serial_number = models.CharField(max_length=12, unique=True)
+    student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='scratch_cards')
+    is_used = models.BooleanField(default=False)
+    used_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"{self.serial_number} - {self.student.username}"
+    
+    def save(self, *args, **kwargs):
+        if not self.serial_number:
+            self.serial_number = self.generate_serial()
+        super().save(*args, **kwargs)
+    
+    def generate_serial(self):
+        import random
+        import string
+        return ''.join(random.choices(string.digits, k=12))
+
+
+class Fee(models.Model):
+    FEE_TYPE_CHOICES = [
+        ('tuition', 'Tuition Fee'),
+        ('miscellaneous', 'Miscellaneous Fee'),
+        ('books', 'Books/Materials'),
+        ('uniform', 'Uniform'),
+        ('other', 'Other'),
+    ]
+    
+    STATUS_CHOICES = [
+        ('unpaid', 'Unpaid'),
+        ('partial', 'Partially Paid'),
+        ('paid', 'Paid'),
+    ]
+    
+    student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='fees')
+    fee_type = models.CharField(max_length=20, choices=FEE_TYPE_CHOICES)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    amount_paid = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='unpaid')
+    due_date = models.DateField()
+    paid_date = models.DateField(null=True, blank=True)
+    description = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['-due_date', '-created_at']
+    
+    def __str__(self):
+        return f"{self.student.username} - {self.get_fee_type_display()} - {self.amount}"
+    
+    def balance(self):
+        return self.amount - self.amount_paid
+    
+    def save(self, *args, **kwargs):
+        if self.amount_paid >= self.amount:
+            self.status = 'paid'
+        elif self.amount_paid > 0:
+            self.status = 'partial'
+        else:
+            self.status = 'unpaid'
+        super().save(*args, **kwargs)
+
+
+class Notification(models.Model):
+    NOTIFICATION_TYPES = [
+        ('announcement', 'Announcement'),
+        ('grade', 'Grade Update'),
+        ('attendance', 'Attendance'),
+        ('fee', 'Fee Reminder'),
+        ('system', 'System'),
+    ]
+    
+    recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
+    notification_type = models.CharField(max_length=20, choices=NOTIFICATION_TYPES, default='system')
+    title = models.CharField(max_length=200)
+    message = models.TextField()
+    is_read = models.BooleanField(default=False)
+    link = models.URLField(blank=True, null=True, help_text="Optional link to redirect user when clicked")
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"{self.recipient.username} - {self.title}"
+
+
+class EnrollmentApplication(models.Model):
+    GRADE_LEVEL_CHOICES = [
+        ('7', 'Grade 7'),
+        ('8', 'Grade 8'),
+        ('9', 'Grade 9'),
+        ('10', 'Grade 10'),
+        ('11', 'Grade 11'),
+        ('12', 'Grade 12'),
+    ]
+    
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('under_review', 'Under Review'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+    ]
+    
+    SEX_CHOICES = [
+        ('male', 'Male'),
+        ('female', 'Female'),
+        ('other', 'Other'),
+    ]
+    
+    first_name = models.CharField(max_length=100)
+    last_name = models.CharField(max_length=100)
+    middle_name = models.CharField(max_length=100, blank=True, null=True)
+    sex = models.CharField(max_length=10, choices=SEX_CHOICES)
+    date_of_birth = models.DateField()
+    place_of_birth = models.CharField(max_length=200, blank=True, null=True)
+    nationality = models.CharField(max_length=50, default='Filipino')
+    religion = models.CharField(max_length=50, blank=True, null=True)
+    
+    # Address Information
+    street_address = models.CharField(max_length=200)
+    barangay = models.CharField(max_length=100)
+    city_municipality = models.CharField(max_length=100)
+    province = models.CharField(max_length=100)
+    zip_code = models.CharField(max_length=10, blank=True, null=True)
+    
+    # Parent/Guardian Information
+    father_name = models.CharField(max_length=200)
+    father_occupation = models.CharField(max_length=100, blank=True, null=True)
+    father_contact = models.CharField(max_length=20, blank=True, null=True)
+    mother_name = models.CharField(max_length=200)
+    mother_occupation = models.CharField(max_length=100, blank=True, null=True)
+    mother_contact = models.CharField(max_length=20, blank=True, null=True)
+    guardian_name = models.CharField(max_length=200, blank=True, null=True)
+    guardian_relationship = models.CharField(max_length=50, blank=True, null=True)
+    guardian_contact = models.CharField(max_length=20, blank=True, null=True)
+    
+    # Academic Information
+    grade_level = models.CharField(max_length=2, choices=GRADE_LEVEL_CHOICES)
+    previous_school = models.CharField(max_length=200, blank=True, null=True)
+    previous_school_address = models.TextField(blank=True, null=True)
+    lrn = models.CharField(max_length=12, blank=True, null=True, help_text="Learner Reference Number")
+    is_als = models.BooleanField(default=False, help_text="Alternative Learning System applicant")
+    
+    # Document Uploads
+    birth_certificate = models.FileField(upload_to='enrollment_documents/birth_certificates/', blank=True, null=True)
+    report_card = models.FileField(upload_to='enrollment_documents/report_cards/', blank=True, null=True)
+    form_138 = models.FileField(upload_to='enrollment_documents/form_138/', blank=True, null=True, help_text="Grade 6 Candidate for Graduation Certificate")
+    certificate_of_completion = models.FileField(upload_to='enrollment_documents/completion_certificates/', blank=True, null=True, help_text="Grade 10 Candidate for Completion Certificate")
+    good_moral_certificate = models.FileField(upload_to='enrollment_documents/good_moral/', blank=True, null=True)
+    last_school_attended_cert = models.FileField(upload_to='enrollment_documents/last_school/', blank=True, null=True, help_text="For ALS applicants")
+    
+    # Contact Information
+    email = models.EmailField()
+    phone_number = models.CharField(max_length=20)
+    
+    # Emergency Contact
+    emergency_contact_name = models.CharField(max_length=200)
+    emergency_contact_relationship = models.CharField(max_length=50)
+    emergency_contact_phone = models.CharField(max_length=20)
+    
+    # Status
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    remarks = models.TextField(blank=True, null=True)
+    
+    # Timestamps
+    submitted_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['-submitted_at']
+    
+    def __str__(self):
+        return f"{self.last_name}, {self.first_name} - Grade {self.grade_level} ({self.status})"
+
+
+class WebsiteContent(models.Model):
+    SECTION_CHOICES = [
+        ('home_hero_title', 'Home Hero Title'),
+        ('home_hero_subtitle', 'Home Hero Subtitle'),
+        ('home_announcement_1_title', 'Home Announcement 1 Title'),
+        ('home_announcement_1_content', 'Home Announcement 1 Content'),
+        ('home_announcement_1_date', 'Home Announcement 1 Date'),
+        ('home_announcement_2_title', 'Home Announcement 2 Title'),
+        ('home_announcement_2_content', 'Home Announcement 2 Content'),
+        ('home_announcement_2_date', 'Home Announcement 2 Date'),
+        ('home_announcement_3_title', 'Home Announcement 3 Title'),
+        ('home_announcement_3_content', 'Home Announcement 3 Content'),
+        ('home_announcement_3_date', 'Home Announcement 3 Date'),
+        ('about_title', 'About Title'),
+        ('about_content', 'About Content'),
+        ('contact_title', 'Contact Title'),
+        ('contact_content', 'Contact Content'),
+        ('programs_title', 'Programs Title'),
+        ('programs_subtitle', 'Programs Subtitle'),
+        ('programs_academic_title', 'Academic Programs Title'),
+        ('programs_academic_content', 'Academic Programs Content'),
+        ('programs_tech_title', 'Technical Programs Title'),
+        ('programs_tech_content', 'Technical Programs Content'),
+        ('programs_sports_title', 'Sports Programs Title'),
+        ('programs_sports_content', 'Sports Programs Content'),
+        ('programs_arts_title', 'Arts Programs Title'),
+        ('programs_arts_content', 'Arts Programs Content'),
+    ]
+    
+    section = models.CharField(max_length=100, choices=SECTION_CHOICES, unique=True, null=True, blank=True)
+    content = models.TextField()
+    updated_at = models.DateTimeField(auto_now=True)
+    updated_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    
+    class Meta:
+        ordering = ['section']
+    
+    def __str__(self):
+        return self.section
+
+
+class Grade(models.Model):
+    """
+    Comprehensive Grade Management System
+    Stores individual subject grades for students with detailed tracking
+    """
+    GRADE_TYPE_CHOICES = [
+        ('written_work', 'Written Work'),
+        ('performance_task', 'Performance Task'),
+        ('quarterly_assessment', 'Quarterly Assessment'),
+        ('final_grade', 'Final Grade'),
+    ]
+    
+    QUARTER_CHOICES = [
+        (1, 'First Quarter'),
+        (2, 'Second Quarter'),
+        (3, 'Third Quarter'),
+        (4, 'Fourth Quarter'),
+    ]
+    
+    student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='subject_grades')
+    subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name='subject_grades')
+    classroom = models.ForeignKey(Classroom, on_delete=models.CASCADE, related_name='subject_grades', null=True, blank=True)
+    teacher = models.ForeignKey(User, on_delete=models.CASCADE, related_name='assigned_subject_grades')
+    
+    # Grade components
+    grade_type = models.CharField(max_length=30, choices=GRADE_TYPE_CHOICES, default='written_work')
+    quarter = models.IntegerField(choices=QUARTER_CHOICES)
+    
+    # Score information
+    raw_score = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    total_score = models.DecimalField(max_digits=5, decimal_places=2, default=100)
+    transmuted_score = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    
+    # Final grade for the subject (calculated)
+    final_grade = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    
+    # Remarks and feedback
+    remarks = models.TextField(blank=True, null=True)
+    computed_remarks = models.CharField(max_length=50, blank=True, null=True)
+    
+    # Metadata
+    academic_year = models.CharField(max_length=20, default='2025-2026')
+    submitted_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    is_locked = models.BooleanField(default=False, help_text="Prevents further edits after submission")
+    
+    class Meta:
+        unique_together = ['student', 'subject', 'grade_type', 'quarter', 'academic_year']
+        ordering = ['-academic_year', '-quarter', 'subject__name', 'grade_type']
+    
+    def __str__(self):
+        return f"{self.student.username} - {self.subject.code} - Q{self.quarter} ({self.academic_year})"
+    
+    def save(self, *args, **kwargs):
+        # No transmutation — raw_score IS the final grade (0-100)
+        if self.raw_score is not None:
+            self.transmuted_score = self.raw_score
+            self.compute_remarks()
+        super().save(*args, **kwargs)
+    
+    @staticmethod
+    def transmute_score(raw_score):
+        """
+        DepEd Transmutation Table (K to 12)
+        Converts raw scores to transmuted grades (60-100 scale)
+        """
+        if raw_score is None:
+            return None
+        
+        # DepEd Transmutation Table
+        transmutation_table = [
+            (100, 100), (99, 99), (98, 98), (97, 97), (96, 96),
+            (95, 95), (94, 95), (93, 94), (92, 94), (91, 93),
+            (90, 93), (89, 92), (88, 92), (87, 91), (86, 91),
+            (85, 90), (84, 90), (83, 89), (82, 89), (81, 88),
+            (80, 88), (79, 87), (78, 87), (77, 86), (76, 86),
+            (75, 85), (74, 85), (73, 84), (72, 84), (71, 83),
+            (70, 83), (69, 82), (68, 82), (67, 81), (66, 81),
+            (65, 80), (64, 80), (63, 79), (62, 79), (61, 78),
+            (60, 78), (59, 77), (58, 77), (57, 76), (56, 76),
+            (55, 75), (54, 75), (53, 74), (52, 74), (51, 73),
+            (50, 73), (49, 72), (48, 72), (47, 71), (46, 71),
+            (45, 70), (44, 70), (43, 69), (42, 69), (41, 68),
+            (40, 68), (39, 67), (38, 67), (37, 66), (36, 66),
+            (35, 65), (34, 65), (33, 64), (32, 64), (31, 63),
+            (30, 63), (29, 62), (28, 62), (27, 61), (26, 61),
+            (25, 60), (24, 60), (23, 60), (22, 60), (21, 60),
+            (20, 60), (19, 60), (18, 60), (17, 60), (16, 60),
+            (15, 60), (14, 60), (13, 60), (12, 60), (11, 60),
+            (10, 60), (9, 60), (8, 60), (7, 60), (6, 60),
+            (5, 60), (4, 60), (3, 60), (2, 60), (1, 60),
+            (0, 60)
+        ]
+        
+        raw_score = max(0, min(100, float(raw_score)))
+        for raw, transmuted in transmutation_table:
+            if raw_score >= raw:
+                return transmuted
+        return 60
+    
+    def compute_remarks(self):
+        """Compute automatic remarks based on transmuted score"""
+        if self.transmuted_score is None:
+            self.computed_remarks = "No Grade"
+        elif self.transmuted_score >= 90:
+            self.computed_remarks = "Outstanding"
+        elif self.transmuted_score >= 85:
+            self.computed_remarks = "Very Satisfactory"
+        elif self.transmuted_score >= 80:
+            self.computed_remarks = "Satisfactory"
+        elif self.transmuted_score >= 75:
+            self.computed_remarks = "Fairly Satisfactory"
+        else:
+            self.computed_remarks = "Did Not Meet Expectations"
+        
+        return self.computed_remarks
+    
+    def get_percentage(self):
+        """Calculate percentage score"""
+        if self.raw_score is not None and self.total_score > 0:
+            return round((self.raw_score / self.total_score) * 100, 2)
+        return None
+
+
+class GradeReport(models.Model):
+    """
+    Generated grade reports for students
+    Stores computed final grades and summaries
+    """
+    student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='student_grade_reports')
+    classroom = models.ForeignKey(Classroom, on_delete=models.CASCADE, related_name='classroom_grade_reports')
+    quarter = models.IntegerField(choices=[(1, 'Q1'), (2, 'Q2'), (3, 'Q3'), (4, 'Q4')])
+    school_year = models.CharField(max_length=20, default='2025-2026')
+    
+    # Computed averages
+    general_average = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    total_subjects = models.IntegerField(default=0)
+    passed_subjects = models.IntegerField(default=0)
+    failed_subjects = models.IntegerField(default=0)
+    
+    # Overall remarks
+    overall_remarks = models.TextField(blank=True, null=True)
+    class_rank = models.IntegerField(null=True, blank=True)
+    
+    # Report metadata
+    generated_at = models.DateTimeField(auto_now_add=True)
+    generated_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='generated_reports')
+    is_final = models.BooleanField(default=False, help_text="Final report for the school year")
+    
+    class Meta:
+        unique_together = ['student', 'classroom', 'quarter', 'school_year']
+        ordering = ['-school_year', '-quarter', 'student__username']
+    
+    def __str__(self):
+        return f"{self.student.username} - Q{self.quarter} - {self.school_year}"
+    
+    def calculate_averages(self):
+        """Calculate general average and statistics"""
+        grades = Grade.objects.filter(
+            student=self.student,
+            classroom=self.classroom,
+            quarter=self.quarter,
+            grade_type='final_grade'
+        )
+        
+        if grades.exists():
+            total = sum(g.transmuted_score for g in grades if g.transmuted_score)
+            count = grades.count()
+            self.general_average = round(total / count, 2) if count > 0 else None
+            self.total_subjects = count
+            self.passed_subjects = sum(1 for g in grades if g.transmuted_score and g.transmuted_score >= 75)
+            self.failed_subjects = count - self.passed_subjects
+        else:
+            self.general_average = None
+            self.total_subjects = 0
+            self.passed_subjects = 0
+            self.failed_subjects = 0
+        
+        self.save()

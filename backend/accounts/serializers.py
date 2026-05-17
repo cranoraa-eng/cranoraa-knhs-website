@@ -1,0 +1,424 @@
+from rest_framework import serializers
+from django.contrib.auth import get_user_model
+from .models import (Profile, Classroom, StudentClassEnrollment, Announcement,
+    AnnouncementAttachment, Attendance, LearningMaterial,
+    Subject, ClassroomSubject, ScratchCard, Fee,
+    Notification, EnrollmentApplication, WebsiteContent, Grade, GradeReport,
+    ChatRoom, ChatMessage, Friendship)
+
+User = get_user_model()
+
+
+def full_name(user):
+    """Return 'Title First Last' if available, otherwise 'First Last' or username."""
+    if not user:
+        return ''
+    
+    title = ""
+    try:
+        if hasattr(user, 'profile') and user.profile.title:
+            title = user.profile.title + " "
+    except:
+        pass
+
+    if user.first_name and user.last_name:
+        return f"{title}{user.first_name} {user.last_name}".strip()
+    if user.first_name:
+        return f"{title}{user.first_name}".strip()
+    return user.username
+
+
+class ProfileSerializer(serializers.ModelSerializer):
+    classroom_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Profile
+        fields = ['id', 'title', 'grade_level', 'classroom_name', 'employee_id', 'phone_number', 'address',
+                  'date_of_birth', 'registration_number', 'sex', 'state',
+                  'nationality', 'middle_name', 'father_name', 'mother_name', 'contact_information']
+
+    def get_classroom_name(self, obj):
+        enrollment = StudentClassEnrollment.objects.filter(student=obj.user).select_related('classroom').first()
+        return enrollment.classroom.name if enrollment else None
+
+
+class UserSerializer(serializers.ModelSerializer):
+    profile = ProfileSerializer(required=False)
+    full_name = serializers.SerializerMethodField()
+    is_online = serializers.BooleanField(read_only=True)
+
+    class Meta:
+        model = User
+        fields = ['id', 'email', 'username', 'first_name', 'last_name', 'full_name',
+                  'role', 'is_verified', 'is_approved', 'is_online', 'profile']
+
+    def get_full_name(self, obj):
+        return full_name(obj)
+
+    def update(self, instance, validated_data):
+        profile_data = validated_data.pop('profile', None)
+        
+        # Update user fields
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+
+        # Update profile fields
+        if profile_data:
+            profile, created = Profile.objects.get_or_create(user=instance)
+            for attr, value in profile_data.items():
+                setattr(profile, attr, value)
+            profile.save()
+
+        return instance
+
+
+class LoginSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    password = serializers.CharField(write_only=True)
+
+
+class ClassroomSerializer(serializers.ModelSerializer):
+    teacher_name = serializers.SerializerMethodField()
+    student_count = serializers.SerializerMethodField()
+    average_gpa = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Classroom
+        fields = ['id', 'name', 'teacher', 'teacher_name', 'student_count',
+                  'average_gpa', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+    def get_teacher_name(self, obj): return full_name(obj.teacher)
+    def get_student_count(self, obj): return obj.enrollments.count()
+    def get_average_gpa(self, obj): return obj.get_average_gpa()
+
+
+class StudentClassEnrollmentSerializer(serializers.ModelSerializer):
+    student_name = serializers.SerializerMethodField()
+    student_email = serializers.CharField(source='student.email', read_only=True)
+    classroom_name = serializers.CharField(source='classroom.name', read_only=True)
+    general_average = serializers.SerializerMethodField()
+    transmuted_average = serializers.SerializerMethodField()
+    descriptive_equivalent = serializers.SerializerMethodField()
+    transmuted_quarters = serializers.SerializerMethodField()
+
+    class Meta:
+        model = StudentClassEnrollment
+        fields = ['id', 'student', 'student_name', 'student_email', 'classroom',
+                  'classroom_name', 'q1', 'q2', 'q3', 'q4', 'gpa',
+                  'general_average', 'transmuted_average', 'transmuted_quarters',
+                  'descriptive_equivalent', 'enrolled_at', 'updated_at']
+        read_only_fields = ['student', 'classroom', 'classroom_name',
+                            'general_average', 'transmuted_average',
+                            'transmuted_quarters', 'descriptive_equivalent']
+
+    def get_student_name(self, obj): return full_name(obj.student)
+    def get_general_average(self, obj): return obj.calculate_general_average()
+    def get_transmuted_average(self, obj): return obj.calculate_transmuted_average()
+    def get_transmuted_quarters(self, obj): return obj.get_transmuted_quarters()
+    def get_descriptive_equivalent(self, obj): return obj.get_descriptive_equivalent()
+
+
+class AnnouncementAttachmentSerializer(serializers.ModelSerializer):
+    url = serializers.SerializerMethodField()
+    is_image = serializers.SerializerMethodField()
+
+    class Meta:
+        model = AnnouncementAttachment
+        fields = ['id', 'filename', 'url', 'is_image', 'uploaded_at']
+
+    def get_url(self, obj):
+        request = self.context.get('request')
+        if obj.file:
+            if request:
+                return request.build_absolute_uri(obj.file.url)
+            return f"http://127.0.0.1:8000{obj.file.url}"
+        return None
+
+    def get_is_image(self, obj):
+        return obj.is_image
+
+
+class AnnouncementSerializer(serializers.ModelSerializer):
+    author_name = serializers.SerializerMethodField()
+    author_email = serializers.CharField(source='author.email', read_only=True)
+    attachment_url = serializers.SerializerMethodField()
+    read_count = serializers.SerializerMethodField()
+    is_expired = serializers.BooleanField(read_only=True)
+    attachments = AnnouncementAttachmentSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Announcement
+        fields = [
+            'id', 'title', 'content', 'category', 'priority', 'status',
+            'target_audience', 'author', 'author_name', 'author_email',
+            'is_pinned', 'is_public', 'expiration_date', 'attachment',
+            'attachment_url', 'attachments', 'read_by', 'read_count', 'is_expired',
+            'created_at', 'updated_at'
+        ]
+        read_only_fields = ['author', 'read_count', 'is_expired', 'attachments']
+
+    def get_author_name(self, obj): return full_name(obj.author)
+    def get_attachment_url(self, obj):
+        if obj.attachment:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.attachment.url)
+            return f"http://127.0.0.1:8000{obj.attachment.url}"
+        return None
+    def get_read_count(self, obj): return obj.read_by.count()
+
+
+class AttendanceSerializer(serializers.ModelSerializer):
+    student_name = serializers.SerializerMethodField()
+    student_email = serializers.CharField(source='student.email', read_only=True)
+    classroom_name = serializers.CharField(source='classroom.name', read_only=True)
+    marked_by_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Attendance
+        fields = ['id', 'student', 'student_name', 'student_email', 'classroom',
+                  'classroom_name', 'date', 'status', 'remarks', 'marked_by',
+                  'marked_by_name', 'created_at', 'updated_at']
+        read_only_fields = ['marked_by']
+
+    def get_student_name(self, obj): return full_name(obj.student)
+    def get_marked_by_name(self, obj): return full_name(obj.marked_by) if obj.marked_by else ''
+
+
+class LearningMaterialSerializer(serializers.ModelSerializer):
+    uploaded_by_name = serializers.SerializerMethodField()
+    classroom_name = serializers.CharField(source='classroom.name', read_only=True)
+
+    class Meta:
+        model = LearningMaterial
+        fields = ['id', 'title', 'description', 'material_type', 'classroom',
+                  'classroom_name', 'uploaded_by', 'uploaded_by_name', 'file',
+                  'quarter', 'week', 'created_at', 'updated_at']
+        read_only_fields = ['uploaded_by']
+
+    def get_uploaded_by_name(self, obj): return full_name(obj.uploaded_by)
+
+
+class SubjectSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Subject
+        fields = ['id', 'name', 'code', 'description', 'grade_level',
+                  'created_at', 'updated_at']
+
+
+class ClassroomSubjectSerializer(serializers.ModelSerializer):
+    classroom_name = serializers.CharField(source='classroom.name', read_only=True)
+    subject_name = serializers.CharField(source='subject.name', read_only=True)
+    subject_code = serializers.CharField(source='subject.code', read_only=True)
+    teacher_name = serializers.SerializerMethodField()
+    teacher_email = serializers.CharField(source='teacher.email', read_only=True)
+
+    class Meta:
+        model = ClassroomSubject
+        fields = ['id', 'classroom', 'classroom_name', 'subject', 'subject_name',
+                  'subject_code', 'teacher', 'teacher_name', 'teacher_email',
+                  'ww_weight', 'pt_weight', 'qa_weight', 'assigned_at']
+        read_only_fields = ['assigned_at']
+
+    def get_teacher_name(self, obj): return full_name(obj.teacher)
+
+    def validate(self, data):
+        ww = data.get('ww_weight', self.instance.ww_weight if self.instance else 30)
+        pt = data.get('pt_weight', self.instance.pt_weight if self.instance else 50)
+        qa = data.get('qa_weight', self.instance.qa_weight if self.instance else 20)
+        total = float(ww) + float(pt) + float(qa)
+        if abs(total - 100) > 0.01:
+            raise serializers.ValidationError(
+                f"Weights must sum to 100. Current total: {total}")
+        return data
+
+
+class ScratchCardSerializer(serializers.ModelSerializer):
+    student_name = serializers.SerializerMethodField()
+    student_email = serializers.CharField(source='student.email', read_only=True)
+
+    class Meta:
+        model = ScratchCard
+        fields = ['id', 'serial_number', 'student', 'student_name',
+                  'student_email', 'is_used', 'used_at', 'created_at']
+
+    def get_student_name(self, obj): return full_name(obj.student)
+
+
+class FeeSerializer(serializers.ModelSerializer):
+    student_name = serializers.SerializerMethodField()
+    student_email = serializers.CharField(source='student.email', read_only=True)
+    balance = serializers.ReadOnlyField()
+
+    class Meta:
+        model = Fee
+        fields = ['id', 'student', 'student_name', 'student_email', 'fee_type',
+                  'amount', 'amount_paid', 'status', 'balance', 'due_date',
+                  'paid_date', 'description', 'created_at', 'updated_at']
+
+    def get_student_name(self, obj): return full_name(obj.student)
+
+
+class NotificationSerializer(serializers.ModelSerializer):
+    recipient_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Notification
+        fields = ['id', 'recipient', 'recipient_name', 'notification_type',
+                  'title', 'message', 'is_read', 'link', 'created_at']
+        read_only_fields = ['recipient', 'created_at']
+
+    def get_recipient_name(self, obj): return full_name(obj.recipient)
+
+
+class EnrollmentApplicationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EnrollmentApplication
+        fields = [
+            'id', 'first_name', 'last_name', 'middle_name', 'sex', 'date_of_birth',
+            'place_of_birth', 'nationality', 'religion', 'street_address', 'barangay',
+            'city_municipality', 'province', 'zip_code', 'father_name',
+            'father_occupation', 'father_contact', 'mother_name', 'mother_occupation',
+            'mother_contact', 'guardian_name', 'guardian_relationship',
+            'guardian_contact', 'grade_level', 'previous_school',
+            'previous_school_address', 'lrn', 'is_als', 'birth_certificate',
+            'report_card', 'form_138', 'certificate_of_completion',
+            'good_moral_certificate', 'last_school_attended_cert',
+            'email', 'phone_number', 'emergency_contact_name',
+            'emergency_contact_relationship', 'emergency_contact_phone',
+            'status', 'remarks', 'submitted_at', 'updated_at'
+        ]
+        read_only_fields = ['status', 'submitted_at', 'updated_at']
+
+
+class WebsiteContentSerializer(serializers.ModelSerializer):
+    section_display = serializers.CharField(source='get_section_display', read_only=True)
+    updated_by_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = WebsiteContent
+        fields = ['id', 'section', 'section_display', 'content', 'updated_at',
+                  'updated_by', 'updated_by_name']
+        read_only_fields = ['section', 'updated_at', 'updated_by']
+
+    def get_updated_by_name(self, obj):
+        return full_name(obj.updated_by) if obj.updated_by else ''
+
+
+class GradeSerializer(serializers.ModelSerializer):
+    student_name = serializers.SerializerMethodField()
+    student_email = serializers.CharField(source='student.email', read_only=True)
+    subject_name = serializers.CharField(source='subject.name', read_only=True)
+    subject_code = serializers.CharField(source='subject.code', read_only=True)
+    classroom_name = serializers.CharField(source='classroom.name', read_only=True)
+    teacher_name = serializers.SerializerMethodField()
+    grade_type_display = serializers.CharField(source='get_grade_type_display', read_only=True)
+    quarter_display = serializers.CharField(source='get_quarter_display', read_only=True)
+    percentage = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Grade
+        fields = [
+            'id', 'student', 'student_name', 'student_email', 'subject',
+            'subject_name', 'subject_code', 'classroom', 'classroom_name',
+            'teacher', 'teacher_name', 'grade_type', 'grade_type_display',
+            'quarter', 'quarter_display', 'academic_year', 'raw_score', 'total_score',
+            'transmuted_score', 'final_grade', 'remarks', 'computed_remarks',
+            'percentage', 'submitted_at', 'updated_at', 'is_locked'
+        ]
+        read_only_fields = ['transmuted_score', 'computed_remarks', 'teacher']
+
+    def get_student_name(self, obj): return full_name(obj.student)
+    def get_teacher_name(self, obj): return full_name(obj.teacher)
+    def get_percentage(self, obj): return obj.get_percentage()
+
+
+class GradeReportSerializer(serializers.ModelSerializer):
+    student_name = serializers.SerializerMethodField()
+    student_email = serializers.CharField(source='student.email', read_only=True)
+    classroom_name = serializers.CharField(source='classroom.name', read_only=True)
+    quarter_display = serializers.CharField(source='get_quarter_display', read_only=True)
+    generated_by_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = GradeReport
+        fields = [
+            'id', 'student', 'student_name', 'student_email', 'classroom',
+            'classroom_name', 'quarter', 'quarter_display', 'school_year',
+            'general_average', 'total_subjects', 'passed_subjects',
+            'failed_subjects', 'overall_remarks', 'class_rank', 'generated_at',
+            'generated_by', 'generated_by_name', 'is_final'
+        ]
+        read_only_fields = ['general_average', 'total_subjects',
+                            'passed_subjects', 'failed_subjects']
+
+    def get_student_name(self, obj): return full_name(obj.student)
+    def get_generated_by_name(self, obj):
+        return full_name(obj.generated_by) if obj.generated_by else ''
+
+
+class ChatMessageSerializer(serializers.ModelSerializer):
+    sender_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ChatMessage
+        fields = ['id', 'room', 'sender', 'sender_name', 'content', 'timestamp', 'is_read', 'is_delivered', 'is_pinned', 'is_edited']
+
+    def get_sender_name(self, obj):
+        return full_name(obj.sender)
+
+
+class ChatRoomSerializer(serializers.ModelSerializer):
+    last_message = serializers.SerializerMethodField()
+    participants_details = serializers.SerializerMethodField()
+    is_pinned = serializers.SerializerMethodField()
+    unread_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ChatRoom
+        fields = ['id', 'name', 'is_group', 'participants', 'participants_details', 'last_message', 'is_pinned', 'updated_at', 'created_by', 'unread_count']
+
+    def get_last_message(self, obj):
+        msg = obj.messages.last()
+        if msg:
+            return ChatMessageSerializer(msg).data
+        return None
+
+    def get_participants_details(self, obj):
+        return UserSerializer(obj.participants.all(), many=True).data
+
+    def get_is_pinned(self, obj):
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            return obj.pinned_by.filter(id=request.user.id).exists()
+        return False
+
+    def get_unread_count(self, obj):
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            return obj.messages.filter(
+                is_read=False
+            ).exclude(sender=request.user).count()
+        return 0
+
+
+class FriendshipSerializer(serializers.ModelSerializer):
+    from_user_details = UserSerializer(source='from_user', read_only=True)
+    to_user_details = UserSerializer(source='to_user', read_only=True)
+    is_pinned = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Friendship
+        fields = ['id', 'from_user', 'to_user', 'from_user_details', 'to_user_details', 'status', 'is_pinned', 'created_at']
+        read_only_fields = ['from_user', 'status']
+
+    def get_is_pinned(self, obj):
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            if obj.from_user == request.user:
+                return obj.is_pinned_by_from
+            if obj.to_user == request.user:
+                return obj.is_pinned_by_to
+        return False
