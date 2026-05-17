@@ -1,5 +1,6 @@
 setuptools
 wheel
+gunicorn
 
 Django==4.2.7
 djangorestframework==3.14.0
