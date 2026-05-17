@@ -188,6 +188,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:5174",
     "http://localhost:46115",
     "http://127.0.0.1:46115",
+    "https://cranoraa-eng-cranoraa-knhs-website.vercel.app",
 ]
 
 CORS_ALLOW_CREDENTIALS = True
