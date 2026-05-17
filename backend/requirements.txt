@@ -9,3 +9,4 @@ psycopg2-binary==2.9.9
 django-axes==6.1.1
 django-password-validators
 daphne
+channels==4.1.0
