@@ -8,7 +8,7 @@ djangorestframework-simplejwt>=5.3.1
 django-cors-headers==4.3.1
 psycopg2-binary==2.9.9
 django-axes==6.1.1
-django-password-validators==1.7.3
+django-password-validators
 daphne
-dj-database-url
 channels==4.1.0
+dj-database-url
