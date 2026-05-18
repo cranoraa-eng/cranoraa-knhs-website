@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { loginRequest } from '../utils/auth';
 import toast from 'react-hot-toast';
@@ -213,9 +213,9 @@ const Login = () => {
 
         <p className="text-center text-gray-500 text-sm mt-6">
           Don't have an account?{' '}
-          <a href="/signup" className="text-purple-600 hover:text-purple-700 font-semibold">
+          <Link to="/signup" className="text-purple-600 hover:text-purple-700 font-semibold">
             Sign up here
-          </a>
+          </Link>
         </p>
         <p className="text-center text-gray-400 text-xs mt-3">
           © 2026 School Portal. All rights reserved.

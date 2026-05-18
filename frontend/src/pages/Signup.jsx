@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { isAuthenticated, getUser } from '../utils/auth';
+import { useAuth } from '../context/AuthContext';
 import api from '../utils/api';
 import toast from 'react-hot-toast';
 import * as yup from 'yup';
@@ -39,6 +39,7 @@ const signupSchema = yup.object().shape({
 });
 
 const Signup = () => {
+  const { user } = useAuth();
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -52,12 +53,10 @@ const Signup = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (isAuthenticated()) {
-      const user = getUser();
-      const redirectPath = user?.role === 'admin' ? '/dashboard' : '/dashboard';
-      navigate(redirectPath);
+    if (user) {
+      navigate('/dashboard', { replace: true });
     }
-  }, [navigate]);
+  }, [user, navigate]);
 
   // Student-specific fields
   const [firstName, setFirstName] = useState('');
