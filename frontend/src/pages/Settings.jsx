@@ -72,8 +72,10 @@ const Settings = () => {
     try {
       await api.patch('/system/settings/', dataToSave);
       if (!updatedSettings) toast.success('System settings saved');
-    } catch {
-      toast.error('Failed to save system settings');
+    } catch (err) {
+      console.error('System settings save error:', err);
+      const msg = err.response?.data?.error || err.response?.data?.message || 'Failed to save system settings';
+      toast.error(msg);
       // Revert local state on failure
       if (updatedSettings) fetchSystemSettings();
     } finally {

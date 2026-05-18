@@ -221,9 +221,6 @@ class SystemSetting(models.Model):
         settings, created = cls.objects.get_or_create(id=1)
         return settings
 
-    def __str__(self):
-        return f"{self.classroom.name} - {self.subject.code} ({self.teacher.username})"
-
 
 class StudentClassEnrollment(models.Model):
     student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='enrollments')
