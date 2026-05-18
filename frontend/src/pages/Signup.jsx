@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { isAuthenticated } from '../utils/auth';
+import { isAuthenticated, getUser } from '../utils/auth';
 import api from '../utils/api';
 import toast from 'react-hot-toast';
 import * as yup from 'yup';
