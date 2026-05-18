@@ -38,7 +38,7 @@ const About = () => {
       <section className="relative py-32 overflow-hidden bg-slate-900">
         <div className="absolute inset-0 opacity-30">
           <img 
-            src={content.about_hero_bg?.image || "https://images.unsplash.com/photo-1577896851231-70ef18881754?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80"}
+            src="https://images.unsplash.com/photo-1577896851231-70ef18881754?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80"
             alt="School Campus"
             className="w-full h-full object-cover"
           />
@@ -91,7 +91,7 @@ const About = () => {
               <div className="sticky top-32 space-y-8">
                 <div className="aspect-[4/5] rounded-[3rem] overflow-hidden shadow-2xl">
                   <img 
-                    src={content.about_side_img?.image || "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80"} 
+                    src="https://images.unsplash.com/photo-1523050854058-8df90110c9f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80" 
                     className="w-full h-full object-cover" 
                     alt="Students"
                   />

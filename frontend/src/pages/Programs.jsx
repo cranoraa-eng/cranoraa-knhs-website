@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import api from '../utils/api';
+import Swal from 'sweetalert2';
 
 const Programs = () => {
   const [content, setContent] = useState({});
   const [loading, setLoading] = useState(true);
+  const [selectedProgram, setSelectedProgram] = useState(null);
 
   useEffect(() => {
     fetchContent();
@@ -24,6 +26,34 @@ const Programs = () => {
     }
   };
 
+  const handleViewDetails = (program) => {
+    const detailKey = `programs_${program.key}_details`;
+    const details = content[detailKey]?.content || 'Details for this program are coming soon. Please check back later or contact the school office for more information.';
+    
+    Swal.fire({
+      title: `<span class="text-2xl font-black text-slate-900">${program.title}</span>`,
+      html: `
+        <div class="text-left p-2">
+          <div class="w-full h-48 rounded-2xl overflow-hidden mb-6">
+            <img src="${program.image}" class="w-full h-full object-cover" />
+          </div>
+          <div class="prose prose-slate max-w-none">
+            <p class="text-slate-600 leading-relaxed whitespace-pre-line font-medium">${details}</p>
+          </div>
+        </div>
+      `,
+      showCloseButton: true,
+      showConfirmButton: false,
+      width: '600px',
+      padding: '2rem',
+      background: '#ffffff',
+      customClass: {
+        container: 'rounded-[3rem]',
+        popup: 'rounded-[2.5rem] border-none shadow-2xl',
+      }
+    });
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
@@ -34,32 +64,36 @@ const Programs = () => {
 
   const programList = [
     {
+      key: 'academic',
       title: content.programs_academic_title?.content || 'Academic Programs',
       content: content.programs_academic_content?.content || 'Our academic programs provide a strong foundation in core subjects including Mathematics, Science, English, Filipino, and Social Studies.',
       icon: 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253',
       color: 'violet',
-      image: content.programs_academic_img?.image || 'https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80'
+      image: 'https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80'
     },
     {
+      key: 'tech',
       title: content.programs_tech_title?.content || 'Technical-Vocational Programs',
       content: content.programs_tech_content?.content || 'We offer technical-vocational education and training (TVET) programs that equip students with practical skills in various fields.',
       icon: 'M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z',
       color: 'blue',
-      image: content.programs_tech_img?.image || 'https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80'
+      image: 'https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80'
     },
     {
+      key: 'sports',
       title: content.programs_sports_title?.content || 'Sports Development',
       content: content.programs_sports_content?.content || 'Our sports program focuses on developing athletic skills, teamwork, and discipline through various sporting activities.',
       icon: 'M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z M21 12a9 9 0 11-18 0 9 9 0 0118 0z',
       color: 'indigo',
-      image: content.programs_sports_img?.image || 'https://images.unsplash.com/photo-1546519638-68e109498ffc?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80'
+      image: 'https://images.unsplash.com/photo-1546519638-68e109498ffc?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80'
     },
     {
+      key: 'arts',
       title: content.programs_arts_title?.content || 'Arts and Culture',
       content: content.programs_arts_content?.content || 'Nurture your creative talents through our arts program, offering visual arts, music, dance, and theater classes.',
       icon: 'M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01',
       color: 'pink',
-      image: content.programs_arts_img?.image || 'https://images.unsplash.com/photo-1460661419201-fd4ce18a802f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80'
+      image: 'https://images.unsplash.com/photo-1460661419201-fd4ce18a802f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80'
     }
   ];
 
@@ -79,7 +113,6 @@ const Programs = () => {
           </p>
         </div>
       </section>
-
 
       {/* Programs Grid */}
       <section className="py-24 bg-slate-50">
@@ -113,7 +146,10 @@ const Programs = () => {
                     <span className={`text-sm font-black uppercase tracking-widest text-${program.color}-600`}>
                       Core Curriculum
                     </span>
-                    <button className="flex items-center space-x-2 text-slate-900 font-bold hover:text-violet-600 transition-colors">
+                    <button 
+                      onClick={() => handleViewDetails(program)}
+                      className="flex items-center space-x-2 text-slate-900 font-bold hover:text-violet-600 transition-colors"
+                    >
                       <span>View Details</span>
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4 4H3" />

@@ -94,7 +94,7 @@ const Home = () => {
             <div className="relative animate-fadeIn delay-200 hidden lg:block">
               <div className="relative rounded-[3rem] overflow-hidden shadow-2xl rotate-3 hover:rotate-0 transition-transform duration-500 border-8 border-white">
                 <img 
-                  src={content.home_hero_bg?.image || "https://images.unsplash.com/photo-1580582932707-520aed937b7b?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80"}
+                  src="https://images.unsplash.com/photo-1580582932707-520aed937b7b?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80"
                   alt="School Campus"
                   className="w-full aspect-[4/5] object-cover"
                 />

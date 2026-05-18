@@ -26,7 +26,6 @@ class Command(BaseCommand):
             # Home Page
             ('home', 'home_hero_title', 'Kiwalan National High School'),
             ('home', 'home_hero_subtitle', 'Empowering Minds, Shaping Futures'),
-            ('home', 'home_hero_bg', 'Hero Background Image'),
             ('home', 'home_feature_1_title', 'Quality Education'),
             ('home', 'home_feature_1_content', 'Comprehensive curriculum designed to prepare students for success in higher education and beyond.'),
             ('home', 'home_feature_2_title', 'Dedicated Faculty'),
@@ -37,8 +36,6 @@ class Command(BaseCommand):
             # About Page
             ('about', 'about_title', 'About Our School'),
             ('about', 'about_subtitle', 'Dedicated to excellence in education since our founding.'),
-            ('about', 'about_hero_bg', 'About Hero Background'),
-            ('about', 'about_side_img', 'About Side Image'),
             ('about', 'about_mission_title', 'Our Mission'),
             ('about', 'about_mission_content', 'To provide quality education that develops students academic excellence, moral character, and practical skills, preparing them to become responsible and productive citizens who contribute positively to society.'),
             ('about', 'about_vision_title', 'Our Vision'),
@@ -49,7 +46,6 @@ class Command(BaseCommand):
             # Contact Page
             ('contact', 'contact_title', 'Contact Us'),
             ('contact', 'contact_subtitle', 'We are here to help and answer any questions you might have.'),
-            ('contact', 'contact_hero_bg', 'Contact Hero Background'),
             ('contact', 'contact_address', 'Kiwalan, Philippines'),
             ('contact', 'contact_email', 'info@kiwalan-nhs.edu.ph'),
             ('contact', 'contact_phone', '(123) 456-7890'),
@@ -58,19 +54,18 @@ class Command(BaseCommand):
             # Programs Page
             ('programs', 'programs_title', 'Our Programs'),
             ('programs', 'programs_subtitle', 'Discover the diverse educational opportunities we offer at Kiwalan National High School'),
-            ('programs', 'programs_hero_bg', 'Programs Hero Background'),
             ('programs', 'programs_academic_title', 'Academic Programs'),
-            ('programs', 'programs_academic_img', 'Academic Program Image'),
             ('programs', 'programs_academic_content', 'Our academic programs provide a strong foundation in core subjects including Mathematics, Science, English, Filipino, and Social Studies. We offer advanced placement courses and specialized tracks for students preparing for higher education.'),
+            ('programs', 'programs_academic_details', 'Our Academic Program is designed for students aiming for higher education. We focus on:\n\n• Advanced Mathematics and Science\n• Critical Thinking and Research\n• Language Proficiency in English and Filipino\n• Social Sciences and Humanities\n\nStudents in this track are prepared for various college entrance exams and university life.'),
             ('programs', 'programs_tech_title', 'Technical-Vocational Programs'),
-            ('programs', 'programs_tech_img', 'Technical Program Image'),
             ('programs', 'programs_tech_content', 'We offer technical-vocational education and training (TVET) programs that equip students with practical skills in various fields including ICT, Electronics, and Automotive. These programs prepare students for immediate employment or further technical education.'),
+            ('programs', 'programs_tech_details', 'Our TVET Program provides hands-on training and industry-standard skills. Specializations include:\n\n• Information and Communications Technology (ICT)\n• Electronics Product Assembly and Servicing\n• Automotive Servicing\n• Food and Beverage Services\n\nGraduates receive National Certificates (NC) which are recognized for immediate employment.'),
             ('programs', 'programs_sports_title', 'Sports Development'),
-            ('programs', 'programs_sports_img', 'Sports Program Image'),
             ('programs', 'programs_sports_content', 'Our sports program focuses on developing athletic skills, teamwork, and discipline. We offer training in basketball, volleyball, football, athletics, and other sports. Students participate in inter-school competitions and regional tournaments.'),
+            ('programs', 'programs_sports_details', 'The Sports Program aims to nurture world-class athletes. We offer:\n\n• Intensive Training in Major Sports\n• Nutrition and Physical Wellness Guidance\n• Participation in Regional and National Meets\n• Leadership and Teamwork Workshops\n\nWe believe in developing discipline and character through athletic excellence.'),
             ('programs', 'programs_arts_title', 'Arts and Culture'),
-            ('programs', 'programs_arts_img', 'Arts Program Image'),
             ('programs', 'programs_arts_content', 'Nurture your creative talents through our arts program. We offer visual arts, music, dance, and theater classes. Students showcase their talents in school programs, competitions, and community events.'),
+            ('programs', 'programs_arts_details', 'The Arts and Culture Program is a haven for creative minds. Our offerings include:\n\n• Visual Arts and Design\n• Music Theory and Performance\n• Contemporary and Traditional Dance\n• Theater Arts and Creative Writing\n\nStudents are encouraged to express their unique perspectives and contribute to the rich cultural heritage of our community.'),
         ]
 
         # Create or update content items
