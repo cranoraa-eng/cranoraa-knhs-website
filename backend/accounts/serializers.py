@@ -397,12 +397,6 @@ class ChatRoomSerializer(serializers.ModelSerializer):
             return obj.pinned_by.filter(id=request.user.id).exists()
         return False
 
-
-class SystemSettingSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = SystemSetting
-        fields = '__all__'
-
     def get_unread_count(self, obj):
         request = self.context.get('request')
         if request and request.user.is_authenticated:
@@ -410,6 +404,12 @@ class SystemSettingSerializer(serializers.ModelSerializer):
                 is_read=False
             ).exclude(sender=request.user).count()
         return 0
+
+
+class SystemSettingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SystemSetting
+        fields = '__all__'
 
 
 class FriendshipSerializer(serializers.ModelSerializer):
