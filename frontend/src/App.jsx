@@ -41,8 +41,46 @@ import StudentGradeView from './pages/StudentGradeView';
 import GradeReports from './pages/GradeReports';
 
 import Messages from './pages/Messages';
+import Maintenance from './pages/Maintenance';
+import { useState, useEffect } from 'react';
+import api from './utils/api';
+import { getStoredUser } from './utils/auth';
 
 function App() {
+  const [maintenanceMode, setMaintenanceMode] = useState(false);
+  const [maintenanceMessage, setMaintenanceMessage] = useState('');
+  const user = getStoredUser();
+
+  useEffect(() => {
+    checkMaintenance();
+    const interval = setInterval(checkMaintenance, 60000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const checkMaintenance = async () => {
+    try {
+      const r = await api.get('/system/maintenance-status/');
+      if (r.data.maintenance_mode && user?.role !== 'admin') {
+        setMaintenanceMode(true);
+        setMaintenanceMessage(r.data.maintenance_message);
+      } else {
+        setMaintenanceMode(false);
+      }
+    } catch {
+      // Silently fail
+    }
+  };
+
+  if (maintenanceMode) {
+    return (
+      <BrowserRouter>
+        <Routes>
+          <Route path="*" element={<Maintenance message={maintenanceMessage} />} />
+        </Routes>
+      </BrowserRouter>
+    );
+  }
+
   return (
     <AuthProvider>
     <BrowserRouter>

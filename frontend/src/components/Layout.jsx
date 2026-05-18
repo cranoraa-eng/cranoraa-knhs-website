@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import api from '../utils/api';
 import Swal from 'sweetalert2';
 import toast from 'react-hot-toast';
+import Maintenance from '../pages/Maintenance';
 
 const NavItem = ({ to, label, isActive, icon }) => (
   <Link to={to} className={`flex items-center px-3 py-2.5 rounded-lg transition-all duration-150 mb-0.5 text-sm ${isActive(to) ? 'bg-[#9F7AEA] text-white font-semibold shadow-sm' : 'text-gray-300 hover:bg-white/10 hover:text-white'}`}>
@@ -30,52 +31,6 @@ const Layout = () => {
   const [unreadCount, setUnreadCount] = useState(0);
   const [showNotifications, setShowNotifications] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [maintenanceMode, setMaintenanceMode] = useState(false);
-  const [maintenanceMessage, setMaintenanceMessage] = useState('');
-
-  useEffect(() => {
-    checkMaintenance();
-    const interval = setInterval(checkMaintenance, 60000); // Check every minute
-    return () => clearInterval(interval);
-  }, []);
-
-  const checkMaintenance = async () => {
-    try {
-      const r = await api.get('/system/maintenance-status/');
-      if (r.data.maintenance_mode && user?.role !== 'admin') {
-        setMaintenanceMode(true);
-        setMaintenanceMessage(r.data.maintenance_message);
-      } else {
-        setMaintenanceMode(false);
-      }
-    } catch {
-      // Silently fail
-    }
-  };
-
-  if (maintenanceMode) {
-    return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
-        <div className="max-w-md w-full bg-white rounded-[2.5rem] shadow-2xl p-10 text-center space-y-6 border border-rose-100">
-          <div className="w-20 h-20 bg-rose-50 rounded-3xl flex items-center justify-center mx-auto text-4xl shadow-inner animate-pulse">
-            🚧
-          </div>
-          <div className="space-y-2">
-            <h1 className="text-2xl font-black text-slate-900 tracking-tight">Under Maintenance</h1>
-            <p className="text-slate-500 font-medium leading-relaxed">
-              {maintenanceMessage || 'The portal is currently undergoing scheduled maintenance. Please check back later.'}
-            </p>
-          </div>
-          <button
-            onClick={() => { signOut(); navigate('/login'); }}
-            className="w-full py-4 bg-slate-900 text-white font-black rounded-2xl hover:bg-black transition-all"
-          >
-            Logout
-          </button>
-        </div>
-      </div>
-    );
-  }
 
   // Close notification dropdown when clicking outside
   useEffect(() => {
@@ -117,9 +72,7 @@ const Layout = () => {
 
   useEffect(() => {
     fetchNotifications();
-    fetchUnreadCount();
-    // Auto-refresh every 30 seconds
-    const interval = setInterval(() => { fetchNotifications(); fetchUnreadCount(); }, 30000);
+    const interval = setInterval(fetchNotifications, 30000);
     return () => clearInterval(interval);
   }, []);
 
