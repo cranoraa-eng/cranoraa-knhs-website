@@ -218,7 +218,7 @@ const Layout = () => {
               </button>
 
               {/* Title & Breadcrumbs */}
-              <div className="hidden sm:block">
+              <div className="hidden md:block">
                 <nav className="flex items-center text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">
                   <Link to="/dashboard" className="hover:text-violet-500 transition-colors">Portal</Link>
                   <svg className="w-3 h-3 mx-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" /></svg>
@@ -228,7 +228,9 @@ const Layout = () => {
               </div>
 
               {/* Mobile Title */}
-              <h1 className="text-lg font-bold text-slate-800 sm:hidden">{pageTitle}</h1>
+              <div className="md:hidden">
+                <h1 className="text-lg font-bold text-slate-800 truncate max-w-[150px]">{pageTitle}</h1>
+              </div>
             </div>
 
             {/* Middle Section: Search Bar (Desktop) */}

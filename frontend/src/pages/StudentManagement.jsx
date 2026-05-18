@@ -217,41 +217,42 @@ const StudentManagement = () => {
                       <table className="w-full text-left">
                         <thead>
                           <tr className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] border-b border-gray-50">
-                            <th className="px-6 py-4 w-16">#</th>
-                            <th className="px-6 py-4">Full Name</th>
-                            <th className="px-6 py-4">Email</th>
-                            <th className="px-6 py-4">LRN</th>
-                            <th className="px-6 py-4 text-center">Actions</th>
+                            <th className="px-4 md:px-6 py-4 w-16">#</th>
+                            <th className="px-4 md:px-6 py-4">Full Name</th>
+                            <th className="px-4 md:px-6 py-4 hidden sm:table-cell">Email</th>
+                            <th className="px-4 md:px-6 py-4">LRN</th>
+                            <th className="px-4 md:px-6 py-4 text-center">Actions</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-50">
                           {cls.students.map((student, idx) => (
                             <tr key={student.id} className="group hover:bg-gray-50/80 transition-colors">
-                              <td className="px-6 py-4 text-xs font-bold text-gray-300">{idx + 1}</td>
-                              <td className="px-6 py-4">
-                                <div className="flex items-center gap-3">
-                                  <div className="relative">
+                              <td className="px-4 md:px-6 py-4 text-xs font-bold text-gray-300">{idx + 1}</td>
+                              <td className="px-4 md:px-6 py-4">
+                                <div className="flex items-center gap-2 md:gap-3">
+                                  <div className="relative flex-shrink-0">
                                     <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600 font-black text-xs">
                                       {student.first_name?.charAt(0)}{student.last_name?.charAt(0)}
                                     </div>
                                     <div className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-white shadow-sm ${student.is_online ? 'bg-green-500' : 'bg-gray-300'}`} title={student.is_online ? 'Online' : 'Offline'}></div>
                                   </div>
-                                  <div className="flex flex-col">
-                                    <span className="text-sm font-bold text-gray-700">{student.first_name} {student.last_name}</span>
+                                  <div className="flex flex-col min-w-0">
+                                    <span className="text-sm font-bold text-gray-700 truncate">{student.first_name} {student.last_name}</span>
                                     <span className={`text-[9px] font-black uppercase tracking-widest ${student.is_online ? 'text-green-500' : 'text-gray-400'}`}>
                                       {student.is_online ? 'Online' : 'Offline'}
                                     </span>
+                                    <span className="text-[10px] text-gray-400 sm:hidden truncate">{student.email}</span>
                                   </div>
                                 </div>
                               </td>
-                              <td className="px-6 py-4 text-sm font-medium text-gray-500">{student.email}</td>
-                              <td className="px-6 py-4">
+                              <td className="px-4 md:px-6 py-4 text-sm font-medium text-gray-500 hidden sm:table-cell">{student.email}</td>
+                              <td className="px-4 md:px-6 py-4">
                                 <span className="text-xs font-black text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">
                                   {student.profile?.registration_number || '—'}
                                 </span>
                               </td>
-                              <td className="px-6 py-4">
-                                <div className="flex items-center justify-center gap-2">
+                              <td className="px-4 md:px-6 py-4">
+                                <div className="flex items-center justify-center gap-1 md:gap-2">
                                   <button
                                     onClick={() => handleStartChat(student.id)}
                                     className="p-2 text-violet-500 hover:bg-violet-50 rounded-lg transition-all"

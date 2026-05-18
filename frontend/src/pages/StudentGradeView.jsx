@@ -377,69 +377,84 @@ const StudentGradeView = () => {
   );
 
   return (
-    <div className="animate-in fade-in duration-700 p-4 md:p-6">
+    <div className="animate-in fade-in duration-700 p-2 md:p-6 max-w-6xl mx-auto">
 
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-6">
-        <div className="flex items-center gap-3">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 bg-gradient-to-r from-[#2D1B4D] to-[#4B2D7F] p-5 md:p-8 rounded-2xl md:rounded-3xl text-white shadow-xl relative overflow-hidden group">
+        <div className="absolute top-0 right-0 -mt-4 -mr-4 w-32 h-32 bg-white/10 rounded-full blur-2xl group-hover:bg-white/20 transition-all duration-700" />
+        
+        <div className="relative flex items-center gap-3 md:gap-6">
           {isViewingOther && (
             <button onClick={() => navigate(-1)}
-              className="p-2.5 rounded-xl bg-white border border-gray-200 text-gray-500 hover:text-purple-600 transition-all shadow-sm active:scale-95">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              className="p-2 md:p-2.5 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-white/20 transition-all active:scale-95">
+              <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
               </svg>
             </button>
           )}
-          <div className="text-center md:text-left">
-            <h1 className="text-2xl md:text-3xl font-black text-gray-800 tracking-tight">
-              {isViewingOther ? `${displayName}'s Grades` : 'My Grades'}
-            </h1>
-            <p className="text-gray-500 text-sm md:text-base mt-1 font-medium">
-              {isViewingOther
-                ? `Final grades for ${displayName}`
-                : 'Your final grades by subject and quarter'}
-            </p>
+          <div className="flex items-center gap-3 md:gap-6">
+            <div className="hidden sm:flex w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-white/20 backdrop-blur-md items-center justify-center text-3xl md:text-4xl font-black shadow-inner border border-white/20">
+              {displayName?.charAt(0).toUpperCase()}
+            </div>
+            <div className="text-left">
+              <h1 className="text-xl md:text-3xl font-black !text-white tracking-tight">
+                {isViewingOther ? `${displayName}'s Grades` : 'My Grades'}
+              </h1>
+              <div className="flex items-center gap-2 mt-1">
+                <span className="bg-white/10 px-2 py-0.5 rounded-full text-[10px] font-bold border border-white/10 uppercase tracking-widest">AY {filterYear}</span>
+                {overallAvg && (
+                  <span className="bg-green-500/20 px-2 py-0.5 rounded-full text-[10px] font-black border border-green-500/30 text-green-300 uppercase tracking-widest">GPA: {overallAvg}</span>
+                )}
+              </div>
+            </div>
           </div>
         </div>
+        
         {grades.length > 0 && (
           <button onClick={downloadPDF}
-            className="flex items-center justify-center gap-2 bg-[#2D1B4D] hover:bg-[#3D2B5D] text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-md active:scale-95 w-full md:w-auto">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            className="relative z-10 flex items-center justify-center gap-2 bg-white text-purple-900 font-black py-2.5 md:py-3 px-6 rounded-xl transition-all shadow-lg hover:bg-purple-50 active:scale-95 w-full md:w-auto text-xs md:text-sm uppercase tracking-widest">
+            <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
-            Download PDF
+            Export PDF
           </button>
         )}
       </div>
 
       {/* Filters */}
       {grades.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6 bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
-          <select value={filterQuarter} onChange={e => setFilterQuarter(e.target.value)}
-            className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm font-medium transition-all hover:border-purple-300 shadow-sm cursor-pointer">
-            <option value="">All Quarters</option>
-            <option value="1">Q1 — First Quarter</option>
-            <option value="2">Q2 — Second Quarter</option>
-            <option value="3">Q3 — Third Quarter</option>
-            <option value="4">Q4 — Fourth Quarter</option>
-          </select>
-          <select value={filterSubject} onChange={e => setFilterSubject(e.target.value)}
-            className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm font-medium transition-all hover:border-purple-300 shadow-sm cursor-pointer">
-            <option value="">All Subjects</option>
-            {uniqueSubjects.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-          </select>
-          <div className="flex items-center border border-gray-200 rounded-xl overflow-hidden bg-white shadow-sm transition-all focus-within:ring-2 focus-within:ring-purple-500">
-            <button onClick={() => handleYearChange('prev')} className="px-4 py-2.5 hover:bg-gray-50 text-gray-500 border-r border-gray-100 transition-colors active:bg-gray-100">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
-              </svg>
+        <div className="bg-white border border-gray-200 rounded-xl p-3 md:p-4 shadow-sm mb-6 flex flex-col sm:flex-row items-center gap-3 md:gap-4">
+          <div className="flex items-center bg-gray-50 rounded-lg p-1 w-full sm:w-auto">
+            <button onClick={() => handleYearChange('prev')} className="p-2 hover:bg-white hover:shadow-sm rounded-md transition-all">
+              <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
             </button>
-            <div className="flex-1 text-center text-sm font-bold text-gray-700 select-none min-w-[80px]">{filterYear}</div>
-            <button onClick={() => handleYearChange('next')} className="px-4 py-2.5 hover:bg-gray-50 text-gray-500 border-l border-gray-100 transition-colors active:bg-gray-100">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
-              </svg>
+            <span className="px-4 text-xs md:text-sm font-black text-gray-700 min-w-[100px] text-center">{filterYear}</span>
+            <button onClick={() => handleYearChange('next')} className="p-2 hover:bg-white hover:shadow-sm rounded-md transition-all">
+              <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
             </button>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2 w-full sm:flex sm:flex-1 sm:items-center">
+            <select
+              value={filterQuarter}
+              onChange={(e) => setFilterQuarter(e.target.value)}
+              className="bg-gray-50 border-none text-[11px] md:text-xs font-black text-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500 py-2.5 px-4 w-full"
+            >
+              <option value="">All Quarters</option>
+              <option value="1">1st Quarter</option>
+              <option value="2">2nd Quarter</option>
+              <option value="3">3rd Quarter</option>
+              <option value="4">4th Quarter</option>
+            </select>
+
+            <select
+              value={filterSubject}
+              onChange={(e) => setFilterSubject(e.target.value)}
+              className="bg-gray-50 border-none text-[11px] md:text-xs font-black text-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500 py-2.5 px-4 w-full"
+            >
+              <option value="">All Subjects</option>
+              {uniqueSubjects.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+            </select>
           </div>
         </div>
       )}

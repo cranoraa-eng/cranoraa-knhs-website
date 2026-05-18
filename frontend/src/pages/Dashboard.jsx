@@ -23,18 +23,18 @@ const StatCard = ({ label, value, sub, icon, color = 'purple', onClick, badge })
   return (
     <div
       onClick={onClick}
-      className={`bg-white border border-gray-200 rounded-xl p-5 shadow-sm flex items-center gap-4 ${onClick ? 'cursor-pointer hover:border-purple-300 hover:shadow-md transition-all' : ''}`}
+      className={`bg-white border border-gray-200 rounded-xl p-4 md:p-5 shadow-sm flex items-center gap-3 md:gap-4 ${onClick ? 'cursor-pointer hover:border-purple-300 hover:shadow-md transition-all active:scale-[0.98]' : ''}`}
     >
-      <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${colors[color]}`}>
+      <div className={`w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${colors[color]}`}>
         {icon}
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">{label}</p>
-        <p className="text-2xl font-bold text-gray-800 mt-0.5">{value ?? '—'}</p>
-        {sub && <p className="text-xs text-gray-500 mt-0.5">{sub}</p>}
+        <p className="text-[10px] md:text-xs font-semibold text-gray-400 uppercase tracking-wider truncate">{label}</p>
+        <p className="text-xl md:text-2xl font-bold text-gray-800 mt-0.5">{value ?? '—'}</p>
+        {sub && <p className="text-[10px] md:text-xs text-gray-500 mt-0.5 truncate">{sub}</p>}
       </div>
       {badge > 0 && (
-        <span className="flex-shrink-0 w-6 h-6 rounded-full bg-red-500 text-white text-xs font-bold flex items-center justify-center">
+        <span className="flex-shrink-0 w-5 h-5 md:w-6 md:h-6 rounded-full bg-red-500 text-white text-[10px] md:text-xs font-bold flex items-center justify-center animate-pulse">
           {badge}
         </span>
       )}
@@ -74,35 +74,36 @@ const AdminView = () => {
     <div className="space-y-6">
 
       {/* Welcome banner */}
-      <div className="bg-gradient-to-r from-[#2D1B4D] to-[#4B2D7F] rounded-2xl p-6 text-white shadow-lg relative overflow-hidden group">
+      <div className="bg-gradient-to-r from-[#2D1B4D] to-[#4B2D7F] rounded-2xl p-5 md:p-8 text-white shadow-lg relative overflow-hidden group">
         <div className="absolute top-0 right-0 -mt-4 -mr-4 w-32 h-32 bg-white/10 rounded-full blur-2xl group-hover:bg-white/20 transition-all duration-700" />
         <div className="absolute bottom-0 left-0 -mb-4 -ml-4 w-24 h-24 bg-purple-400/10 rounded-full blur-xl group-hover:bg-purple-400/20 transition-all duration-700" />
         
         <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="text-center md:text-left">
-            <h1 className="text-2xl md:text-3xl font-black !text-white leading-tight">
+            <h1 className="text-xl md:text-3xl font-black !text-white leading-tight">
               Good {new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 17 ? 'afternoon' : 'evening'},{' '}
               <span className="!text-white">{user?.first_name || 'Admin'}</span> 👋
             </h1>
-            <p className="text-purple-200 text-sm md:text-base mt-2 font-medium opacity-90">{today}</p>
+            <p className="text-purple-200 text-xs md:text-sm mt-1.5 md:mt-2 font-medium opacity-90">{today}</p>
           </div>
-          <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+          <div className="grid grid-cols-2 md:flex md:flex-row gap-2.5 w-full md:w-auto">
             {data?.pending_approvals > 0 && (
               <button
                 onClick={() => navigate('/account-approvals')}
-                className="flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-600 text-white text-sm font-bold px-6 py-2.5 rounded-xl transition-all shadow-md active:scale-95"
+                className="flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-600 text-white text-[11px] md:text-sm font-bold px-3 md:px-6 py-2.5 rounded-xl transition-all shadow-md active:scale-95"
               >
-                <span className="w-5 h-5 rounded-full bg-white text-amber-600 text-[10px] font-black flex items-center justify-center">
+                <span className="hidden sm:inline-flex w-5 h-5 rounded-full bg-white text-amber-600 text-[10px] font-black items-center justify-center">
                   {data?.pending_approvals ?? 0}
                 </span>
-                Pending Approvals
+                <span className="sm:hidden">{data?.pending_approvals}</span>
+                Approvals
               </button>
             )}
             <button
               onClick={() => navigate('/announcements')}
-              className="bg-white/20 hover:bg-white/30 text-white text-sm font-bold px-6 py-2.5 rounded-xl transition-all backdrop-blur-sm active:scale-95 border border-white/10"
+              className="bg-white/20 hover:bg-white/30 text-white text-[11px] md:text-sm font-bold px-3 md:px-6 py-2.5 rounded-xl transition-all backdrop-blur-sm active:scale-95 border border-white/10"
             >
-              + Announcement
+              + Post News
             </button>
           </div>
         </div>

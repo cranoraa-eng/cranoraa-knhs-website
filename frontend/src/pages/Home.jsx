@@ -33,7 +33,7 @@ const Home = () => {
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
-      <div className="relative overflow-hidden py-32">
+      <div className="relative overflow-hidden py-20 md:py-32">
         {/* Background Image with Overlay */}
         <div className="absolute inset-0 z-0">
           <img 
@@ -45,19 +45,19 @@ const Home = () => {
           <div className="absolute inset-0 bg-gradient-to-r from-purple-900/95 to-purple-600/80"></div>
         </div>
 
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-5xl md:text-6xl font-bold mb-6 text-white">{content.home_hero_title || 'Kiwalan National High School'}</h1>
-          <p className="text-2xl text-purple-100 mb-8 max-w-2xl">{content.home_hero_subtitle || 'Empowering Minds, Shaping Futures'}</p>
-          <div className="flex justify-center space-x-4 mt-8">
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center md:text-left">
+          <h1 className="text-4xl md:text-6xl font-bold mb-6 text-white leading-tight">{content.home_hero_title || 'Kiwalan National High School'}</h1>
+          <p className="text-xl md:text-2xl text-purple-100 mb-8 max-w-2xl mx-auto md:mx-0">{content.home_hero_subtitle || 'Empowering Minds, Shaping Futures'}</p>
+          <div className="flex flex-col sm:flex-row justify-center md:justify-start gap-4 mt-8">
             <Link
               to="/enroll"
-              className="bg-white text-purple-800 font-bold py-4 px-10 rounded-lg hover:bg-purple-100 transition-all transform hover:scale-105 shadow-lg"
+              className="bg-white text-purple-800 font-bold py-4 px-10 rounded-lg hover:bg-purple-100 transition-all transform hover:scale-105 shadow-lg w-full sm:w-auto"
             >
               Enroll Now
             </Link>
             <Link
               to="/login"
-              className="bg-white/20 backdrop-blur-sm border-2 border-white text-white font-bold py-4 px-10 rounded-lg hover:bg-white/30 transition-all transform hover:scale-105"
+              className="bg-white/20 backdrop-blur-sm border-2 border-white text-white font-bold py-4 px-10 rounded-lg hover:bg-white/30 transition-all transform hover:scale-105 w-full sm:w-auto"
             >
               Login to Portal
             </Link>
