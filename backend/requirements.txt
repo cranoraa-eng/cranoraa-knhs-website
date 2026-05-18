@@ -1,3 +1,16 @@
-No global/local python version has been set yet. Please set the global/local version by typing:
-pyenv global 3.7.4
-pyenv local 3.7.4
+Django>=4.2.0
+dj-database-url>=2.1.0
+django-cors-headers>=4.3.0
+djangorestframework>=3.14.0
+djangorestframework-simplejwt>=5.3.0
+django-axes>=6.1.0
+channels>=4.0.0
+daphne>=4.0.0
+channels-redis>=4.1.0
+whitenoise[brotli]>=6.5.0
+gunicorn>=21.2.0
+psycopg2-binary>=2.9.9
+python-dotenv>=1.0.0
+asgiref>=3.7.0
+sqlparse>=0.4.4
+tzdata>=2023.3
