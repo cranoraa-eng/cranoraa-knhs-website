@@ -26,6 +26,9 @@ api.interceptors.response.use(
   async (error) => {
     const original = error.config;
 
+    // If there is no config (e.g. network error before request), just reject
+    if (!original) return Promise.reject(error);
+
     // Never retry the refresh endpoint itself
     if (original.url?.includes('/token/refresh/')) {
       clearSession();

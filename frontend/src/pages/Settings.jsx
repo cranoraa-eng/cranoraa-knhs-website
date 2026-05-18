@@ -343,7 +343,7 @@ const Settings = () => {
 
                     <div className="pt-4">
                       <button
-                        onClick={handleSystemSave}
+                        onClick={() => handleSystemSave()}
                         disabled={loading}
                         className="w-full md:w-auto px-10 py-4 bg-violet-600 text-white font-black text-sm rounded-2xl hover:bg-violet-700 shadow-xl shadow-violet-100 transition-all active:scale-95"
                       >
