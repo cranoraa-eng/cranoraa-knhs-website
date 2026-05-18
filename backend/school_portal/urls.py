@@ -12,21 +12,24 @@ from django.db.utils import OperationalError
 
 def home(request):
     db_status = "Not checked"
-    db_engine = "Unknown"
+    db_error = None
     try:
-        db_engine = connection.settings_dict.get('ENGINE', 'Unknown')
+        from django.db import connection
         connection.ensure_connection()
         db_status = "Connected"
     except Exception as e:
-        db_status = f"Error: {str(e)}"
+        db_status = "Error"
+        db_error = str(e)
     
     return JsonResponse({
         "status": "backend is running",
         "database": {
             "status": db_status,
-            "engine": db_engine
+            "error": db_error
         },
-        "environment": "production" if not settings.DEBUG else "development"
+        "environment": "production" if not settings.DEBUG else "development",
+        "debug_mode": settings.DEBUG,
+        "allowed_hosts": settings.ALLOWED_HOSTS
     })
 
 urlpatterns = [
