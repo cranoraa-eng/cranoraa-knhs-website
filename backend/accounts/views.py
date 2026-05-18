@@ -84,16 +84,25 @@ def login_view(request):
                 status=status.HTTP_401_UNAUTHORIZED
             )
         
+        # PROD DEBUG: Force verify any login for now if needed, 
+        # but let's check why the flow might be skipping email send
         if not user.is_verified:
-            # Resend OTP if not verified
+            logger.info(f"User {email} is not verified. Generating OTP...")
             from .models import OTP
             otp_code = generate_otp()
             OTP.objects.create(user=user, code=otp_code)
-            send_otp_email(user, otp_code)
-            return Response(
-                {'error': 'Email not verified. A new OTP has been sent to your email.', 'code': 'not_verified'},
-                status=status.HTTP_403_FORBIDDEN
-            )
+            
+            email_sent = send_otp_email(user, otp_code)
+            if email_sent:
+                return Response(
+                    {'error': 'Email not verified. A new OTP has been sent to your email.', 'code': 'not_verified'},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+            else:
+                return Response(
+                    {'error': 'Email not verified, and we failed to send a new code. Please contact support.', 'code': 'not_verified_send_failed'},
+                    status=status.HTTP_403_FORBIDDEN
+                )
             
         if not user.is_approved:
             return Response(
