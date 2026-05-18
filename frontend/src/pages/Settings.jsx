@@ -66,16 +66,27 @@ const Settings = () => {
     }
   };
 
-  const handleSystemSave = async () => {
+  const handleSystemSave = async (updatedSettings = null) => {
+    const dataToSave = updatedSettings || systemSettings;
     setLoading(true);
     try {
-      await api.patch('/system/settings/', systemSettings);
-      toast.success('System settings saved');
+      await api.patch('/system/settings/', dataToSave);
+      if (!updatedSettings) toast.success('System settings saved');
     } catch {
       toast.error('Failed to save system settings');
+      // Revert local state on failure
+      if (updatedSettings) fetchSystemSettings();
     } finally {
       setLoading(false);
     }
+  };
+
+  const toggleMaintenance = async (val) => {
+    const updated = { ...systemSettings, maintenance_mode: val };
+    setSystemSettings(updated);
+    // Auto-save toggle immediately
+    await handleSystemSave(updated);
+    toast.success(`Maintenance mode ${val ? 'enabled' : 'disabled'}`);
   };
 
   const handlePasswordChange = async (e) => {
@@ -292,14 +303,25 @@ const Settings = () => {
                         </label>
                       </div>
 
-                      <div className="space-y-4 p-5 bg-rose-50 rounded-2xl border border-rose-100">
+                      <div className="space-y-4 p-5 bg-rose-50 rounded-2xl border border-rose-100 relative overflow-hidden">
+                        {loading && (
+                          <div className="absolute inset-0 bg-white/40 backdrop-blur-[1px] z-10 flex items-center justify-center">
+                            <div className="w-5 h-5 border-2 border-rose-500 border-t-transparent rounded-full animate-spin" />
+                          </div>
+                        )}
                         <div className="flex items-center justify-between">
                           <div>
                             <h4 className="text-sm font-bold text-rose-900">Maintenance Mode</h4>
                             <p className="text-xs text-rose-700 font-medium">Temporarily disable portal access for users</p>
                           </div>
                           <label className="relative inline-flex items-center cursor-pointer">
-                            <input type="checkbox" checked={systemSettings.maintenance_mode} onChange={e => setSystemSettings({...systemSettings, maintenance_mode: e.target.checked})} className="sr-only peer" />
+                            <input
+                              type="checkbox"
+                              checked={systemSettings.maintenance_mode}
+                              onChange={e => toggleMaintenance(e.target.checked)}
+                              className="sr-only peer"
+                              disabled={loading}
+                            />
                             <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-rose-600"></div>
                           </label>
                         </div>
