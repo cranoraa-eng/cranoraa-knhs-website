@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import api from '../utils/api';
+import api, { ROOT_URL } from '../utils/api';
 import Swal from 'sweetalert2';
 
 const EnrollmentManagement = () => {
@@ -128,7 +128,8 @@ const EnrollmentManagement = () => {
 
   const downloadFile = (url, filename) => {
     const link = document.createElement('a');
-    link.href = url;
+    const fullUrl = url?.startsWith('http') ? url : `${ROOT_URL}${url}`;
+    link.href = fullUrl;
     link.download = filename;
     document.body.appendChild(link);
     link.click();

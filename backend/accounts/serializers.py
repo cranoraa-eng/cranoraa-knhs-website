@@ -133,7 +133,7 @@ class AnnouncementAttachmentSerializer(serializers.ModelSerializer):
         if obj.file:
             if request:
                 return request.build_absolute_uri(obj.file.url)
-            return f"http://127.0.0.1:8000{obj.file.url}"
+            return obj.file.url
         return None
 
     def get_is_image(self, obj):
@@ -165,7 +165,7 @@ class AnnouncementSerializer(serializers.ModelSerializer):
             request = self.context.get('request')
             if request:
                 return request.build_absolute_uri(obj.attachment.url)
-            return f"http://127.0.0.1:8000{obj.attachment.url}"
+            return obj.attachment.url
         return None
     def get_read_count(self, obj): return obj.read_by.count()
 

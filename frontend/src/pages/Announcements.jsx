@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import api from '../utils/api';
+import api, { ROOT_URL } from '../utils/api';
 import { getUser } from '../utils/auth';
 import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
@@ -152,7 +152,7 @@ const Announcements = () => {
   };
 
   const isImage = (url) => url && /\.(jpg|jpeg|png|gif|webp)$/i.test(url);
-  const attachUrl = (url) => url?.startsWith('http') ? url : `http://127.0.0.1:8000${url}`;
+  const attachUrl = (url) => url?.startsWith('http') ? url : `${ROOT_URL}${url}`;
 
   const pinned = announcements.filter(a => a.is_pinned);
   const regular = announcements.filter(a => !a.is_pinned);

@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import api from '../utils/api';
+import api, { ROOT_URL } from '../utils/api';
 import { getUser } from '../utils/auth';
 import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
@@ -142,7 +142,7 @@ const Materials = () => {
 
   const getFileUrl = (path) => {
     if (!path) return '#';
-    return path.startsWith('http') ? path : `http://127.0.0.1:8000${path}`;
+    return path.startsWith('http') ? path : `${ROOT_URL}${path}`;
   };
 
   return (
