@@ -36,7 +36,7 @@ export const hasToken = () => !!localStorage.getItem('access_token');
 // ---------------------------------------------------------------------------
 
 export const loginRequest = async (email, password) => {
-  const { data } = await api.post('/token/', { email, password });
+  const { data } = await api.post('/login/', { email, password });
   saveSession(data.access, data.refresh, data.user || { email });
   return data.user || { email };
 };
