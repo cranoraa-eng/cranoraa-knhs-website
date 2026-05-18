@@ -151,12 +151,20 @@ const Messages = () => {
 
   // ── WebSocket ─────────────────────────────────────────────────────────────
   const connectWebSocket = (roomId) => {
-    socketRef.current?.close();
+    if (socketRef.current) {
+      socketRef.current.onclose = null; // Remove old onclose handler to prevent loops
+      socketRef.current.close();
+    }
+
     const token    = localStorage.getItem('access_token');
     const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
     const host     = window.location.host === 'localhost:5173' ? 'localhost:8000' : window.location.host;
     const ws       = new WebSocket(`${protocol}://${host}/ws/chat/${roomId}/?token=${token}`);
     socketRef.current = ws;
+
+    ws.onopen = () => {
+      console.log('WS connected to room', roomId);
+    };
 
     ws.onmessage = (e) => {
       const data = JSON.parse(e.data);
@@ -232,7 +240,6 @@ const Messages = () => {
         setRooms(prev => prev.map(r => r.id === updated.id ? updated : r));
         // Update the active chat header if this is the open room
         setSelectedRoom(prev => prev?.id === updated.id ? updated : prev);
-        // Also refresh the settings panel data
       }
 
       // Group was deleted by creator — kick everyone out
@@ -249,13 +256,34 @@ const Messages = () => {
         });
       }
     };
-    ws.onclose = () => console.log('WS disconnected');
+
+    ws.onclose = (e) => {
+      console.log(`WS disconnected from room ${roomId}. Code: ${e.code}`);
+      // Auto-reconnect after 3 seconds if the room is still selected
+      if (selectedRoomRef.current?.id === roomId) {
+        console.log('Attempting to reconnect...');
+        setTimeout(() => connectWebSocket(roomId), 3000);
+      }
+    };
+
+    ws.onerror = (err) => {
+      console.error('WS Error:', err);
+      ws.close();
+    };
   };
 
   // ── Message actions ───────────────────────────────────────────────────────
   const handleSendMessage = (e) => {
     e.preventDefault();
-    if (!newMessage.trim() || !socketRef.current) return;
+    if (!newMessage.trim()) return;
+    
+    // Check if socket is actually open
+    if (!socketRef.current || socketRef.current.readyState !== WebSocket.OPEN) {
+      toast.error('Connection lost. Reconnecting...');
+      if (selectedRoom) connectWebSocket(selectedRoom.id);
+      return;
+    }
+
     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
     if (isTyping) {
       socketRef.current.send(JSON.stringify({ type: 'typing', is_typing: false }));
