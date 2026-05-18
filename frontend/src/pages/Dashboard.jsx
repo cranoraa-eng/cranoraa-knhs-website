@@ -23,14 +23,23 @@ const WelcomeBanner = ({ user, today, actions }) => {
   };
 
   return (
-    <div className="bg-white rounded-2xl p-8 border border-slate-200 shadow-sm">
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+    <div className="bg-white rounded-2xl p-8 border border-slate-200 shadow-sm relative overflow-hidden">
+      {/* Very subtle background accent */}
+      <div className="absolute top-0 right-0 w-64 h-64 bg-violet-50 rounded-full blur-3xl -mr-32 -mt-32 opacity-60" />
+      
+      <div className="relative flex flex-col lg:flex-row lg:items-center justify-between gap-6">
         <div className="space-y-2">
-          <p className="text-sm font-semibold text-violet-600 uppercase tracking-wider">{getGreeting()}</p>
-          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">
-            Welcome back, {user?.first_name || 'User'}
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-emerald-500" />
+            <p className="text-xs font-bold text-violet-600 uppercase tracking-widest">{getGreeting()}</p>
+          </div>
+          <h1 className="text-3xl font-black text-slate-900 tracking-tight">
+            Welcome back, <span className="text-violet-600">{user?.first_name || 'User'}</span>
           </h1>
-          <p className="text-slate-500 font-medium">{today}</p>
+          <p className="text-slate-500 font-medium flex items-center gap-2">
+            <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+            {today}
+          </p>
         </div>
         <div className="flex flex-wrap gap-3">
           {actions}
@@ -42,36 +51,37 @@ const WelcomeBanner = ({ user, today, actions }) => {
 
 const StatCard = ({ label, value, sub, icon, color = 'violet', onClick, badge }) => {
   const themes = {
-    violet: 'text-violet-600 bg-violet-50 border-violet-100',
-    blue:   'text-blue-600 bg-blue-50 border-blue-100',
-    emerald:'text-emerald-600 bg-emerald-50 border-emerald-100',
-    rose:   'text-rose-600 bg-rose-50 border-rose-100',
-    amber:  'text-amber-600 bg-amber-50 border-amber-100',
-    indigo: 'text-indigo-600 bg-indigo-50 border-indigo-100',
+    violet: 'text-violet-600 bg-violet-50 border-violet-100 group-hover:bg-violet-600 group-hover:text-white',
+    blue:   'text-blue-600 bg-blue-50 border-blue-100 group-hover:bg-blue-600 group-hover:text-white',
+    emerald:'text-emerald-600 bg-emerald-50 border-emerald-100 group-hover:bg-emerald-600 group-hover:text-white',
+    rose:   'text-rose-600 bg-rose-50 border-rose-100 group-hover:bg-rose-600 group-hover:text-white',
+    amber:  'text-amber-600 bg-amber-50 border-amber-100 group-hover:bg-amber-600 group-hover:text-white',
+    indigo: 'text-indigo-600 bg-indigo-50 border-indigo-100 group-hover:bg-indigo-600 group-hover:text-white',
   };
 
   return (
     <div
       onClick={onClick}
-      className={`group bg-white border border-slate-200 rounded-2xl p-6 transition-all duration-200 hover:border-violet-300 hover:shadow-md ${onClick ? 'cursor-pointer' : ''}`}
+      className={`group bg-white border border-slate-200 rounded-2xl p-6 transition-all duration-300 hover:border-transparent hover:shadow-xl hover:shadow-slate-200/50 ${onClick ? 'cursor-pointer' : ''}`}
     >
       <div className="flex items-start justify-between">
-        <div className="space-y-4">
-          <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${themes[color]}`}>
+        <div className="space-y-4 w-full">
+          <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-300 ${themes[color]}`}>
             {icon}
           </div>
           <div>
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">{label}</p>
-            <h3 className="text-2xl font-bold text-slate-900">{value ?? '—'}</h3>
-            {sub && <p className="text-xs font-medium text-slate-400 mt-1">{sub}</p>}
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.15em] mb-1">{label}</p>
+            <div className="flex items-baseline gap-2">
+              <h3 className="text-3xl font-black text-slate-900 tracking-tight group-hover:text-violet-600 transition-colors">{value ?? '—'}</h3>
+              {badge > 0 && (
+                <span className="px-1.5 py-0.5 rounded-md bg-rose-100 text-rose-600 text-[10px] font-black">
+                  {badge} New
+                </span>
+              )}
+            </div>
+            {sub && <p className="text-xs font-bold text-slate-400 mt-1">{sub}</p>}
           </div>
         </div>
-        {badge > 0 && (
-          <span className="px-2 py-1 rounded-lg bg-rose-500 text-white text-[10px] font-bold">
-            {badge}
-          }
-          </span>
-        )}
       </div>
     </div>
   );
