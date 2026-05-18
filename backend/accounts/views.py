@@ -1660,10 +1660,9 @@ class WebsiteContentViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'], permission_classes=[AllowAny])
     def public(self, request):
         """Public endpoint to fetch all website content"""
-        content = {}
-        for item in WebsiteContent.objects.all():
-            content[item.section] = item.content
-        return Response(content)
+        queryset = WebsiteContent.objects.all()
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
 
 
 @api_view(['GET'])
