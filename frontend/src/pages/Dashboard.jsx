@@ -13,28 +13,28 @@ const Spinner = () => (
 
 const StatCard = ({ label, value, sub, icon, color = 'purple', onClick, badge }) => {
   const colors = {
-    purple: 'bg-purple-100 text-purple-600',
-    blue:   'bg-blue-100 text-blue-600',
-    green:  'bg-green-100 text-green-600',
-    amber:  'bg-amber-100 text-amber-600',
-    red:    'bg-red-100 text-red-600',
-    indigo: 'bg-indigo-100 text-indigo-600',
+    purple: 'bg-violet-50 text-violet-600 border-violet-100 shadow-violet-100/50',
+    blue:   'bg-blue-50 text-blue-600 border-blue-100 shadow-blue-100/50',
+    green:  'bg-emerald-50 text-emerald-600 border-emerald-100 shadow-emerald-100/50',
+    amber:  'bg-amber-50 text-amber-600 border-amber-100 shadow-amber-100/50',
+    red:    'bg-rose-50 text-red-600 border-rose-100 shadow-rose-100/50',
+    indigo: 'bg-indigo-50 text-indigo-600 border-indigo-100 shadow-indigo-100/50',
   };
   return (
     <div
       onClick={onClick}
-      className={`bg-white border border-gray-200 rounded-xl p-5 shadow-sm flex items-center gap-4 ${onClick ? 'cursor-pointer hover:border-purple-300 hover:shadow-md transition-all' : ''}`}
+      className={`group bg-white border border-slate-200 rounded-[2rem] p-6 shadow-sm flex items-center gap-5 transition-all duration-300 ${onClick ? 'cursor-pointer hover:border-violet-300 hover:shadow-xl hover:shadow-violet-500/5 hover:-translate-y-1' : ''}`}
     >
-      <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${colors[color]}`}>
-        {icon}
+      <div className={`w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-110 group-hover:rotate-3 ${colors[color]}`}>
+        <div className="w-6 h-6">{icon}</div>
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">{label}</p>
-        <p className="text-2xl font-bold text-gray-800 mt-0.5">{value ?? '—'}</p>
-        {sub && <p className="text-xs text-gray-500 mt-0.5">{sub}</p>}
+        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{label}</p>
+        <p className="text-3xl font-black text-slate-900 mt-1 tabular-nums tracking-tight">{value ?? '—'}</p>
+        {sub && <p className="text-xs text-slate-500 mt-1 font-medium truncate">{sub}</p>}
       </div>
       {badge > 0 && (
-        <span className="flex-shrink-0 w-6 h-6 rounded-full bg-red-500 text-white text-xs font-bold flex items-center justify-center">
+        <span className="flex-shrink-0 w-7 h-7 rounded-xl bg-rose-500 text-white text-xs font-black flex items-center justify-center shadow-lg shadow-rose-500/20">
           {badge}
         </span>
       )}
@@ -71,134 +71,152 @@ const AdminView = () => {
   const today = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-10 pb-12">
 
       {/* Welcome banner */}
-      <div className="bg-gradient-to-r from-[#2D1B4D] to-[#4B2D7F] rounded-2xl p-6 text-white shadow-lg relative overflow-hidden group">
-        <div className="absolute top-0 right-0 -mt-4 -mr-4 w-32 h-32 bg-white/10 rounded-full blur-2xl group-hover:bg-white/20 transition-all duration-700" />
-        <div className="absolute bottom-0 left-0 -mb-4 -ml-4 w-24 h-24 bg-purple-400/10 rounded-full blur-xl group-hover:bg-purple-400/20 transition-all duration-700" />
+      <div className="bg-slate-900 rounded-[3rem] p-8 md:p-12 text-white shadow-2xl relative overflow-hidden group">
+        <div className="absolute top-0 right-0 -mt-20 -mr-20 w-80 h-80 bg-violet-600/20 rounded-full blur-[100px] group-hover:bg-violet-600/30 transition-all duration-1000" />
+        <div className="absolute bottom-0 left-0 -mb-20 -ml-20 w-64 h-64 bg-indigo-600/20 rounded-full blur-[80px] group-hover:bg-indigo-600/30 transition-all duration-1000" />
         
-        <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="text-center md:text-left">
-            <h1 className="text-2xl md:text-3xl font-black !text-white leading-tight">
-              Good {new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 17 ? 'afternoon' : 'evening'},{' '}
-              <span className="!text-white">{user?.first_name || 'Admin'}</span> 👋
+        <div className="relative flex flex-col lg:flex-row lg:items-center justify-between gap-8">
+          <div className="max-w-2xl">
+            <h1 className="text-4xl md:text-5xl font-black leading-[1.1] tracking-tight">
+              Good {new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 17 ? 'afternoon' : 'evening'},<br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-indigo-400">
+                {user?.first_name || 'Admin'}
+              </span> 👋
             </h1>
-            <p className="text-purple-200 text-sm md:text-base mt-2 font-medium opacity-90">{today}</p>
+            <p className="text-slate-400 text-lg mt-6 font-medium max-w-md leading-relaxed">
+              Welcome back to the portal. Here's a quick look at what's happening in Kiwalan NHS today.
+            </p>
+            <div className="flex items-center gap-2 mt-8 py-2 px-4 bg-white/5 border border-white/10 rounded-2xl w-fit backdrop-blur-md">
+              <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse shadow-[0_0_10px_rgba(52,211,153,0.5)]" />
+              <p className="text-xs font-black text-slate-300 uppercase tracking-widest">{today}</p>
+            </div>
           </div>
-          <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+
+          <div className="flex flex-col sm:flex-row gap-4 shrink-0">
             {data?.pending_approvals > 0 && (
               <button
                 onClick={() => navigate('/account-approvals')}
-                className="flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-600 text-white text-sm font-bold px-6 py-2.5 rounded-xl transition-all shadow-md active:scale-95"
+                className="flex items-center justify-center gap-3 bg-amber-500 hover:bg-amber-600 text-white text-sm font-black px-8 py-4 rounded-2xl transition-all shadow-xl shadow-amber-500/20 active:scale-95"
               >
-                <span className="w-5 h-5 rounded-full bg-white text-amber-600 text-[10px] font-black flex items-center justify-center">
+                <span className="w-6 h-6 rounded-lg bg-white/20 text-white text-xs font-black flex items-center justify-center backdrop-blur-md">
                   {data?.pending_approvals ?? 0}
                 </span>
-                Pending Approvals
+                Review Approvals
               </button>
             )}
             <button
               onClick={() => navigate('/announcements')}
-              className="bg-white/20 hover:bg-white/30 text-white text-sm font-bold px-6 py-2.5 rounded-xl transition-all backdrop-blur-sm active:scale-95 border border-white/10"
+              className="bg-white text-slate-900 hover:bg-slate-100 text-sm font-black px-8 py-4 rounded-2xl transition-all shadow-xl active:scale-95 flex items-center justify-center gap-2"
             >
-              + Announcement
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" /></svg>
+              New Post
             </button>
           </div>
         </div>
       </div>
 
       {/* Core stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
-          label="Students" value={data?.total_students} sub="Manage all accounts"
+          label="Total Students" value={data?.total_students} sub="Active enrollments"
           color="blue" onClick={() => navigate('/student-management')}
-          icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>}
+          icon={<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>}
         />
         <StatCard
-          label="Teachers" value={data?.total_teachers} sub="Active faculty"
+          label="Active Faculty" value={data?.total_teachers} sub="Assigned teachers"
           color="green" onClick={() => navigate('/teachers')}
-          icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" /></svg>}
+          icon={<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" /></svg>}
         />
         <StatCard
-          label="Classrooms" value={data?.total_classes} sub="Active classes"
+          label="Classrooms" value={data?.total_classes} sub="Current sections"
           color="purple" onClick={() => navigate('/class-management')}
-          icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>}
+          icon={<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>}
         />
         <StatCard
-          label="Subjects" value={data?.total_subjects} sub="In curriculum"
+          label="Subjects" value={data?.total_subjects} sub="Academic courses"
           color="indigo" onClick={() => navigate('/subjects')}
-          icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>}
+          icon={<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>}
         />
       </div>
 
       {/* Action alerts */}
       {(data?.pending_approvals > 0 || data?.pending_enrollments > 0) && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {data?.pending_approvals > 0 && (
-            <button onClick={() => navigate('/account-approvals')} className="flex items-center gap-3 bg-amber-50 border border-amber-200 rounded-xl p-4 text-left hover:bg-amber-100 transition-colors">
-              <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
-                <svg className="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+            <button onClick={() => navigate('/account-approvals')} className="flex items-center gap-5 bg-amber-50 border-2 border-amber-100 rounded-[2rem] p-6 text-left hover:bg-amber-100 transition-all group active:scale-[0.98]">
+              <div className="w-14 h-14 rounded-2xl bg-amber-500 flex items-center justify-center flex-shrink-0 shadow-lg shadow-amber-500/20 group-hover:rotate-6 transition-transform">
+                <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
               </div>
               <div>
-                <p className="font-semibold text-amber-800 text-sm">{data?.pending_approvals ?? 0} Account{(data?.pending_approvals ?? 0) !== 1 ? 's' : ''} Pending Approval</p>
-                <p className="text-xs text-amber-600">Click to review and approve</p>
+                <p className="font-black text-amber-900 text-lg leading-tight">{data?.pending_approvals ?? 0} Accounts Pending</p>
+                <p className="text-amber-700 font-medium mt-1">New user registration requests need review</p>
               </div>
             </button>
           )}
           {data?.pending_enrollments > 0 && (
-            <button onClick={() => navigate('/enrollment-management')} className="flex items-center gap-3 bg-blue-50 border border-blue-200 rounded-xl p-4 text-left hover:bg-blue-100 transition-colors">
-              <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
-                <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
+            <button onClick={() => navigate('/enrollment-management')} className="flex items-center gap-5 bg-blue-50 border-2 border-blue-100 rounded-[2rem] p-6 text-left hover:bg-blue-100 transition-all group active:scale-[0.98]">
+              <div className="w-14 h-14 rounded-2xl bg-blue-600 flex items-center justify-center flex-shrink-0 shadow-lg shadow-blue-600/20 group-hover:rotate-6 transition-transform">
+                <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
               </div>
               <div>
-                <p className="font-semibold text-blue-800 text-sm">{data?.pending_enrollments ?? 0} Enrollment Application{(data?.pending_enrollments ?? 0) !== 1 ? 's' : ''}</p>
-                <p className="text-xs text-blue-600">Click to review</p>
+                <p className="font-black text-blue-900 text-lg leading-tight">{data?.pending_enrollments ?? 0} Enrollments</p>
+                <p className="text-blue-700 font-medium mt-1">New student applications waiting for processing</p>
               </div>
             </button>
           )}
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Attendance today */}
-        <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-5">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold text-gray-800">Today's Attendance</h3>
-            <Link to="/attendance" className="text-xs text-purple-600 hover:text-purple-700 font-medium">Mark →</Link>
+        <div className="bg-white border border-slate-200 rounded-[2.5rem] shadow-sm p-8 transition-all hover:shadow-xl hover:shadow-slate-200/50">
+          <div className="flex items-center justify-between mb-8">
+            <h3 className="text-lg font-black text-slate-900 tracking-tight">Today's Attendance</h3>
+            <Link to="/attendance" className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-violet-600 hover:bg-violet-600 hover:text-white transition-all">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
+            </Link>
           </div>
           {data?.today_total === 0 ? (
-            <div className="text-center py-6 text-gray-400 text-sm">No attendance marked today yet.</div>
+            <div className="text-center py-12">
+              <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="w-10 h-10 text-slate-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 8l2 2 4-4" /></svg>
+              </div>
+              <p className="text-slate-400 font-bold">No records yet</p>
+            </div>
           ) : (
             <>
-              <div className="flex items-center justify-center mb-4">
-                <div className="relative w-28 h-28">
-                  <svg className="w-28 h-28 -rotate-90" viewBox="0 0 36 36">
-                    <circle cx="18" cy="18" r="15.9" fill="none" stroke="#f3f4f6" strokeWidth="3" />
+              <div className="flex items-center justify-center mb-8">
+                <div className="relative w-40 h-40">
+                  <svg className="w-40 h-40 -rotate-90" viewBox="0 0 36 36">
+                    <circle cx="18" cy="18" r="15.9" fill="none" stroke="#f1f5f9" strokeWidth="3" />
                     <circle
                       cx="18" cy="18" r="15.9" fill="none"
-                      stroke={(data?.today_rate ?? 0) >= 75 ? '#16a34a' : '#ef4444'}
+                      stroke={(data?.today_rate ?? 0) >= 75 ? '#10b981' : '#f43f5e'}
                       strokeWidth="3"
                       strokeDasharray={`${data?.today_rate ?? 0} ${100 - (data?.today_rate ?? 0)}`}
                       strokeLinecap="round"
+                      className="transition-all duration-1000 ease-out"
                     />
                   </svg>
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className={`text-2xl font-bold ${(data?.today_rate ?? 0) >= 75 ? 'text-green-600' : 'text-red-600'}`}>
+                    <span className={`text-4xl font-black ${(data?.today_rate ?? 0) >= 75 ? 'text-emerald-600' : 'text-rose-600'}`}>
                       {data?.today_rate ?? 0}%
                     </span>
-                    <span className="text-xs text-gray-400">rate</span>
+                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Presence</span>
                   </div>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-2 text-center text-sm">
-                <div className="bg-green-50 rounded-lg p-2">
-                  <div className="font-bold text-green-700">{data?.today_present ?? 0}</div>
-                  <div className="text-xs text-green-600">Present</div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-emerald-50 rounded-2xl p-4 border border-emerald-100/50">
+                  <div className="text-2xl font-black text-emerald-700">{data?.today_present ?? 0}</div>
+                  <div className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mt-1">Present</div>
                 </div>
-                <div className="bg-red-50 rounded-lg p-2">
-                  <div className="font-bold text-red-700">{data?.today_absent ?? 0}</div>
-                  <div className="text-xs text-red-600">Absent</div>
+                <div className="bg-rose-50 rounded-2xl p-4 border border-rose-100/50">
+                  <div className="text-2xl font-black text-rose-700">{data?.today_absent ?? 0}</div>
+                  <div className="text-[10px] font-black text-rose-600 uppercase tracking-widest mt-1">Absent</div>
                 </div>
               </div>
             </>
@@ -206,157 +224,98 @@ const AdminView = () => {
         </div>
 
         {/* Grade distribution */}
-        <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-5 transition-all hover:shadow-md">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold text-gray-800">Grade Distribution</h3>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => navigate('/grade-distribution')}
-                className="text-[10px] text-purple-600 hover:text-purple-700 font-bold uppercase tracking-wider flex items-center gap-1"
-              >
-                Stats <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" /></svg>
-              </button>
-              <div className="flex bg-gray-100 p-0.5 rounded-lg ml-2">
+        <div className="lg:col-span-2 bg-white border border-slate-200 rounded-[2.5rem] shadow-sm p-8 transition-all hover:shadow-xl hover:shadow-slate-200/50">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+            <h3 className="text-lg font-black text-slate-900 tracking-tight">Academic Performance</h3>
+            <div className="flex items-center gap-3">
+              <div className="flex bg-slate-100 p-1 rounded-xl">
                 <button
                   onClick={(e) => { e.stopPropagation(); setDistView('general_average'); }}
-                  className={`px-2 py-1 text-[10px] font-bold rounded-md transition-all ${distView === 'general_average' ? 'bg-white text-purple-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+                  className={`px-4 py-1.5 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${distView === 'general_average' ? 'bg-white text-violet-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
                 >
-                  GA
+                  Gen. Avg
                 </button>
                 <button
                   onClick={(e) => { e.stopPropagation(); setDistView('all_subjects'); }}
-                  className={`px-2 py-1 text-[10px] font-bold rounded-md transition-all ${distView === 'all_subjects' ? 'bg-white text-purple-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+                  className={`px-4 py-1.5 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${distView === 'all_subjects' ? 'bg-white text-violet-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
                 >
-                  ALL
+                  All Subjects
                 </button>
               </div>
+              <button
+                onClick={() => navigate('/grade-distribution')}
+                className="p-2.5 rounded-xl bg-slate-50 text-slate-400 hover:bg-violet-50 hover:text-violet-600 transition-all"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+              </button>
             </div>
           </div>
+          
           {data?.total_grades === 0 ? (
-            <div className="text-center py-6 text-gray-400 text-sm">No grades recorded yet.</div>
+            <div className="text-center py-20">
+              <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="w-10 h-10 text-slate-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+              </div>
+              <p className="text-slate-400 font-bold">No grades recorded yet</p>
+            </div>
           ) : (
-            <div className="space-y-4">
-              {/* Average grade with visual indicator */}
-              <div className="flex items-center justify-between p-4 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl border border-purple-100">
-                <div>
-                  <p className="text-xs font-semibold text-purple-400 uppercase tracking-wider">
-                    {distView === 'general_average' ? 'School Average (GA)' : 'Subject Average'}
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
+              {/* Left Side: Large Stats */}
+              <div className="md:col-span-5 space-y-6">
+                <div className="p-8 bg-gradient-to-br from-violet-600 to-indigo-700 rounded-[2rem] text-white shadow-xl shadow-violet-200">
+                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-violet-200 opacity-80">
+                    {distView === 'general_average' ? 'School Average' : 'Subject Average'}
                   </p>
-                  <p className="text-3xl font-bold text-gray-800 mt-1">{data?.average_grade ?? '—'}</p>
+                  <div className="flex items-end gap-3 mt-4">
+                    <span className="text-6xl font-black leading-none">{data?.average_grade ?? '—'}</span>
+                    <div className={`mb-1 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-white/20 backdrop-blur-md`}>
+                      {(data?.average_grade ?? 0) >= 90 ? 'Outstanding' : (data?.average_grade ?? 0) >= 75 ? 'Passing' : 'Critical'}
+                    </div>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <div className={`px-3 py-1 rounded-full text-xs font-bold ${
-                    (data?.average_grade ?? 0) >= 90 ? 'bg-green-100 text-green-700' :
-                    (data?.average_grade ?? 0) >= 75 ? 'bg-blue-100 text-blue-700' :
-                    'bg-red-100 text-red-700'
-                  }`}>
-                    {(data?.average_grade ?? 0) >= 90 ? 'Excellent' :
-                     (data?.average_grade ?? 0) >= 75 ? 'Good' : 'Needs Improvement'}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Recorded</p>
+                    <p className="text-2xl font-black text-slate-900 mt-1">{data?.total_grades}</p>
+                  </div>
+                  <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Evaluated</p>
+                    <p className="text-2xl font-black text-slate-900 mt-1">{data?.total_students}</p>
                   </div>
                 </div>
               </div>
 
-              {/* Grade breakdown bars */}
-              <div className="space-y-3">
-                {[
-                  { label: 'Outstanding', range: '90–100', pct: dist?.outstanding_pct, color: 'bg-green-500', bgLight: 'bg-green-50', text: 'text-green-700', min: 90, max: 100 },
-                  { label: 'Very Satisfactory', range: '85–89', pct: dist?.very_satisfactory_pct || 0, color: 'bg-blue-500', bgLight: 'bg-blue-50', text: 'text-blue-700', min: 85, max: 89 },
-                  { label: 'Satisfactory', range: '80–84', pct: dist?.satisfactory_pct || 0, color: 'bg-cyan-500', bgLight: 'bg-cyan-50', text: 'text-cyan-700', min: 80, max: 84 },
-                  { label: 'Fairly Satisfactory', range: '75–79', pct: dist?.fairly_satisfactory_pct || 0, color: 'bg-amber-500', bgLight: 'bg-amber-50', text: 'text-amber-700', min: 75, max: 79 },
-                  { label: 'Did Not Meet', range: 'Below 75', pct: dist?.below_75_pct, color: 'bg-red-500', bgLight: 'bg-red-50', text: 'text-red-700', min: 0, max: 74 },
-                ].map(row => (
-                  <button
-                    key={row.label}
-                    onClick={() => navigate(`/grade-management?minGrade=${row.min}&maxGrade=${row.max}`)}
-                    className="w-full text-left transition-transform hover:scale-[1.02]"
-                  >
-                    <div className="flex justify-between items-center mb-1">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-medium text-gray-600">{row.label}</span>
-                        <span className="text-xs text-gray-400">{row.range}</span>
+              {/* Right Side: Distribution Bars */}
+              <div className="md:col-span-7 space-y-4">
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Grade Distribution</p>
+                {dist && Object.entries(dist).reverse().map(([range, count]) => {
+                  const percentage = data.total_grades > 0 ? (count / data.total_grades) * 100 : 0;
+                  const rangeColors = {
+                    '90-100': 'bg-emerald-500 shadow-emerald-100',
+                    '85-89':  'bg-blue-500 shadow-blue-100',
+                    '80-84':  'bg-violet-500 shadow-violet-100',
+                    '75-79':  'bg-amber-500 shadow-amber-100',
+                    'Below 75': 'bg-rose-500 shadow-rose-100'
+                  };
+                  return (
+                    <div key={range} className="space-y-2">
+                      <div className="flex justify-between text-xs font-black text-slate-600 uppercase tracking-tighter">
+                        <span>{range}</span>
+                        <span className="text-slate-400">{count} students ({Math.round(percentage)}%)</span>
                       </div>
-                      <span className={`text-xs font-bold ${row.text}`}>{row.pct}%</span>
-                    </div>
-                    <div className="relative">
-                      <div className="w-full bg-gray-100 rounded-full h-2">
-                        <div className={`h-2 rounded-full transition-all duration-500 ${row.color}`} style={{ width: `${Math.min(row.pct, 100)}%` }} />
+                      <div className="h-3 bg-slate-50 rounded-full overflow-hidden border border-slate-100">
+                        <div
+                          className={`h-full transition-all duration-1000 rounded-full ${rangeColors[range] || 'bg-slate-300'}`}
+                          style={{ width: `${percentage}%` }}
+                        />
                       </div>
                     </div>
-                  </button>
-                ))}
-              </div>
-
-              {/* Total count */}
-              <div className="pt-2 border-t border-gray-100">
-                <p className="text-xs text-gray-400 text-center">
-                  <span className="font-semibold text-gray-600">{dist?.total_count ?? 0}</span> {distView === 'general_average' ? 'students graded' : 'total grade entries'}
-                </p>
+                  );
+                })}
               </div>
             </div>
           )}
         </div>
-
-        {/* Quick actions */}
-        <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-5">
-          <h3 className="font-semibold text-gray-800 mb-4">Quick Actions</h3>
-          <div className="grid grid-cols-2 gap-2">
-            {[
-              { label: 'Grade Input',       path: '/grade-input',          icon: '✏️' },
-              { label: 'Attendance',        path: '/attendance',           icon: '📋' },
-              { label: 'Announcements',     path: '/announcements',        icon: '📢' },
-              { label: 'Approvals',         path: '/account-approvals',    icon: '✅', badge: data?.pending_approvals ?? 0 },
-              { label: 'Enrollment Mgmt',   path: '/enrollment-management',icon: '📝', badge: data?.pending_enrollments ?? 0 },
-              { label: 'Class Management',  path: '/class-management',     icon: '🏫' },
-              { label: 'Grade Reports',     path: '/grade-reports',        icon: '📊' },
-              { label: 'Audit Logs',        path: '/audit-logs',           icon: '🔍' },
-            ].map(a => (
-              <button
-                key={a.path}
-                onClick={() => navigate(a.path)}
-                className="relative flex flex-col items-center gap-1 p-3 bg-gray-50 hover:bg-purple-50 border border-gray-200 hover:border-purple-300 rounded-xl transition-all text-center"
-              >
-                <span className="text-xl">{a.icon}</span>
-                <span className="text-xs font-medium text-gray-700 leading-tight">{a.label}</span>
-                {a.badge > 0 && (
-                  <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-500 text-white text-xs font-bold flex items-center justify-center">
-                    {a.badge}
-                  </span>
-                )}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Recent announcements */}
-      <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-5">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="font-semibold text-gray-800">Recent Announcements</h3>
-          <Link to="/announcements" className="text-xs text-purple-600 hover:text-purple-700 font-medium">View all →</Link>
-        </div>
-        {!data?.recent_announcements?.length ? (
-          <div className="text-center py-8 text-gray-400 text-sm">No announcements yet.</div>
-        ) : (
-          <div className="space-y-3">
-            {(data?.recent_announcements || []).slice(0, 3).map(a => (
-              <div key={a.id} className={`flex gap-3 p-3 rounded-lg border-l-4 bg-gray-50 ${a.priority === 'critical' ? 'border-red-500' : 'border-purple-400'}`}>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    {a.is_pinned && <span className="text-purple-500 text-xs">📌</span>}
-                    <span className="font-semibold text-gray-800 text-sm">{a.title}</span>
-                    {a.priority === 'critical' && (
-                      <span className="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full font-semibold">Critical</span>
-                    )}
-                  </div>
-                  <p className="text-xs text-gray-500 mt-1 line-clamp-1">{a.content}</p>
-                  <p className="text-xs text-gray-400 mt-1">
-                    {a.author_name} · {new Date(a.created_at).toLocaleDateString()}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
       </div>
     </div>
   );
