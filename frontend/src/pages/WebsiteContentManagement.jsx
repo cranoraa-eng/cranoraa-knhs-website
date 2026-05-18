@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import api from '../utils/api';
 import Swal from 'sweetalert2';
 
@@ -7,13 +7,18 @@ const WebsiteContentManagement = () => {
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState(null);
   const [editValue, setEditValue] = useState('');
+  const [editImage, setEditImage] = useState(null);
+  const [imagePreview, setEditImagePreview] = useState(null);
   const [activeCategory, setActiveCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
+  const fileInputRef = useRef(null);
+
   const [newSection, setNewSection] = useState({
     category: 'home',
     section: '',
-    content: ''
+    content: '',
+    image: null
   });
 
   const categories = [
@@ -26,10 +31,10 @@ const WebsiteContentManagement = () => {
   ];
 
   const sectionSuggestions = {
-    home: ['home_hero_title', 'home_hero_subtitle', 'home_feature_1_title', 'home_feature_1_content'],
-    about: ['about_title', 'about_subtitle', 'about_mission_title', 'about_mission_content'],
-    contact: ['contact_title', 'contact_subtitle', 'contact_address', 'contact_email'],
-    programs: ['programs_title', 'programs_subtitle', 'programs_academic_title'],
+    home: ['home_hero_title', 'home_hero_subtitle', 'home_feature_1_title', 'home_feature_1_content', 'home_hero_bg'],
+    about: ['about_title', 'about_subtitle', 'about_mission_title', 'about_mission_content', 'about_hero_bg', 'about_side_img'],
+    contact: ['contact_title', 'contact_subtitle', 'contact_address', 'contact_email', 'contact_hero_bg'],
+    programs: ['programs_title', 'programs_subtitle', 'programs_hero_bg'],
     other: []
   };
 
@@ -50,17 +55,42 @@ const WebsiteContentManagement = () => {
 
   const handleEdit = (item) => {
     setEditingId(item.id);
-    setEditValue(item.content);
+    setEditValue(item.content || '');
+    setEditImage(null);
+    setEditImagePreview(item.image);
   };
 
   const handleCancel = () => {
     setEditingId(null);
     setEditValue('');
+    setEditImage(null);
+    setEditImagePreview(null);
+  };
+
+  const handleImageChange = (e, isNew = false) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (isNew) {
+        setNewSection({ ...newSection, image: file });
+      } else {
+        setEditImage(file);
+        setEditImagePreview(URL.createObjectURL(file));
+      }
+    }
   };
 
   const handleSave = async (id) => {
     try {
-      await api.put(`/website-content/${id}/`, { content: editValue });
+      const formData = new FormData();
+      formData.append('content', editValue);
+      if (editImage) {
+        formData.append('image', editImage);
+      }
+
+      await api.put(`/website-content/${id}/`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+
       Swal.fire({
         icon: 'success',
         title: 'Updated!',
@@ -68,15 +98,10 @@ const WebsiteContentManagement = () => {
         timer: 1500,
         showConfirmButton: false,
       });
-      setEditingId(null);
-      setEditValue('');
+      handleCancel();
       fetchContent();
     } catch (error) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: 'Failed to update content.',
-      });
+      Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to update content.' });
     }
   };
 
@@ -104,13 +129,24 @@ const WebsiteContentManagement = () => {
 
   const handleAddSection = async (e) => {
     e.preventDefault();
-    if (!newSection.section || !newSection.content) {
-      Swal.fire('Error', 'Please fill in all fields', 'error');
+    if (!newSection.section) {
+      Swal.fire('Error', 'Please enter a section key', 'error');
       return;
     }
 
     try {
-      await api.post('/website-content/', newSection);
+      const formData = new FormData();
+      formData.append('category', newSection.category);
+      formData.append('section', newSection.section);
+      formData.append('content', newSection.content);
+      if (newSection.image) {
+        formData.append('image', newSection.image);
+      }
+
+      await api.post('/website-content/', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+
       Swal.fire({
         icon: 'success',
         title: 'Added!',
@@ -119,7 +155,7 @@ const WebsiteContentManagement = () => {
         showConfirmButton: false,
       });
       setShowAddModal(false);
-      setNewSection({ category: 'home', section: '', content: '' });
+      setNewSection({ category: 'home', section: '', content: '', image: null });
       fetchContent();
     } catch (error) {
       const errorMsg = error.response?.data?.section ? 'This section name already exists.' : 'Failed to add section.';
@@ -129,8 +165,8 @@ const WebsiteContentManagement = () => {
 
   const filteredContent = content.filter(item => {
     const matchesCategory = activeCategory === 'all' || item.category === activeCategory;
-    const matchesSearch = item.section.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          item.content.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = (item.section || '').toLowerCase().includes(searchQuery.toLowerCase()) || 
+                          (item.content || '').toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
   });
 
@@ -155,7 +191,7 @@ const WebsiteContentManagement = () => {
       <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-8 gap-6">
         <div>
           <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Mini Website Editor</h1>
-          <p className="text-gray-500 mt-1">Customize your public portal's content in real-time</p>
+          <p className="text-gray-500 mt-1">Customize your public portal's content and images</p>
         </div>
         
         <div className="flex flex-wrap gap-3">
@@ -193,10 +229,10 @@ const WebsiteContentManagement = () => {
           </span>
           <input
             type="text"
-            placeholder="Search by section name or content..."
+            placeholder="Search sections..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="block w-full pl-10 pr-3 py-2.5 border border-gray-200 rounded-xl leading-5 bg-gray-50 placeholder-gray-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all sm:text-sm"
+            className="block w-full pl-10 pr-3 py-2.5 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:ring-2 focus:ring-purple-500 transition-all"
           />
         </div>
         <div className="flex overflow-x-auto gap-2 no-scrollbar">
@@ -205,9 +241,7 @@ const WebsiteContentManagement = () => {
               key={cat.id}
               onClick={() => setActiveCategory(cat.id)}
               className={`flex items-center whitespace-nowrap px-4 py-2 rounded-xl font-bold transition-all ${
-                activeCategory === cat.id
-                  ? 'bg-purple-100 text-purple-700 ring-1 ring-purple-300'
-                  : 'bg-white text-gray-500 hover:bg-gray-50'
+                activeCategory === cat.id ? 'bg-purple-100 text-purple-700 ring-1 ring-purple-300' : 'bg-white text-gray-500 hover:bg-gray-50'
               }`}
             >
               {cat.label}
@@ -223,76 +257,90 @@ const WebsiteContentManagement = () => {
             <div key={categoryName} className="animate-fadeIn">
               <div className="flex items-center mb-6">
                 <div className="h-px bg-gray-200 flex-grow"></div>
-                <h2 className="px-4 text-sm font-black text-gray-400 uppercase tracking-widest">
-                  {categoryName}
-                </h2>
+                <h2 className="px-4 text-sm font-black text-gray-400 uppercase tracking-widest">{categoryName}</h2>
                 <div className="h-px bg-gray-200 flex-grow"></div>
               </div>
               
               <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
                 {items.map((item) => (
-                  <div key={item.id} className="group bg-white rounded-3xl shadow-sm border border-gray-100 hover:shadow-xl hover:border-purple-100 transition-all duration-300 overflow-hidden">
+                  <div key={item.id} className="group bg-white rounded-3xl shadow-sm border border-gray-100 hover:shadow-xl hover:border-purple-100 transition-all duration-300 overflow-hidden flex flex-col">
                     <div className="px-6 py-4 bg-gray-50/50 border-b border-gray-100 flex justify-between items-center group-hover:bg-purple-50/30 transition-colors">
                       <div className="flex items-center">
-                        <div className="w-8 h-8 rounded-lg bg-white shadow-sm flex items-center justify-center mr-3">
-                          <svg className="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                          </svg>
-                        </div>
-                        <h3 className="font-bold text-gray-800 text-sm">
-                          {item.section_display || item.section}
-                        </h3>
+                        <h3 className="font-bold text-gray-800 text-sm">{item.section_display || item.section}</h3>
                       </div>
                       <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                         {editingId === item.id ? (
                           <>
                             <button onClick={() => handleSave(item.id)} className="p-2 text-green-600 hover:bg-green-100 rounded-xl transition-colors">
-                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                              </svg>
+                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
                             </button>
                             <button onClick={handleCancel} className="p-2 text-gray-400 hover:bg-gray-100 rounded-xl transition-colors">
-                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                              </svg>
+                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                             </button>
                           </>
                         ) : (
                           <>
                             <button onClick={() => handleEdit(item)} className="p-2 text-purple-600 hover:bg-purple-100 rounded-xl transition-colors">
-                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                              </svg>
+                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
                             </button>
                             <button onClick={() => handleDelete(item.id, item.section)} className="p-2 text-red-400 hover:bg-red-50 rounded-xl transition-colors">
-                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                              </svg>
+                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                             </button>
                           </>
                         )}
                       </div>
                     </div>
-                    <div className="p-6">
-                      {editingId === item.id ? (
-                        <textarea
-                          value={editValue}
-                          onChange={(e) => setEditValue(e.target.value)}
-                          className="w-full px-4 py-3 border-2 border-purple-100 rounded-2xl focus:outline-none focus:border-purple-500 transition-colors bg-purple-50/20"
-                          rows={item.content.length > 100 ? 8 : 4}
-                          autoFocus
-                        />
-                      ) : (
-                        <p className="text-gray-600 whitespace-pre-wrap leading-relaxed min-h-[4rem]">
-                          {item.content || <span className="text-gray-300 italic">Empty section</span>}
-                        </p>
-                      )}
-                      <div className="mt-6 pt-4 border-t border-gray-50 flex items-center text-[11px] font-bold text-gray-400 uppercase tracking-tighter">
-                        <span className="mr-auto">{item.section}</span>
-                        {item.updated_by_name && (
-                          <span className="bg-gray-100 px-2 py-0.5 rounded-md">{item.updated_by_name}</span>
+                    
+                    <div className="p-6 flex-grow grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-4">
+                        <label className="block text-xs font-black text-gray-400 uppercase tracking-widest">Text Content</label>
+                        {editingId === item.id ? (
+                          <textarea
+                            value={editValue}
+                            onChange={(e) => setEditValue(e.target.value)}
+                            className="w-full px-4 py-3 border-2 border-purple-100 rounded-2xl focus:ring-2 focus:ring-purple-500 outline-none bg-purple-50/20"
+                            rows={6}
+                          />
+                        ) : (
+                          <p className="text-gray-600 text-sm whitespace-pre-wrap leading-relaxed">{item.content || <span className="text-gray-300 italic">No text</span>}</p>
                         )}
                       </div>
+                      
+                      <div className="space-y-4">
+                        <label className="block text-xs font-black text-gray-400 uppercase tracking-widest">Image</label>
+                        {editingId === item.id ? (
+                          <div className="space-y-3">
+                            <div 
+                              onClick={() => fileInputRef.current?.click()}
+                              className="aspect-video rounded-2xl border-2 border-dashed border-purple-200 bg-purple-50/50 flex items-center justify-center cursor-pointer hover:border-purple-400 transition-colors overflow-hidden"
+                            >
+                              {imagePreview ? (
+                                <img src={imagePreview} className="w-full h-full object-cover" alt="Preview" />
+                              ) : (
+                                <div className="text-center">
+                                  <svg className="w-8 h-8 text-purple-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                                  <p className="text-xs font-bold text-purple-600">Click to upload</p>
+                                </div>
+                              )}
+                            </div>
+                            <input ref={fileInputRef} type="file" className="hidden" accept="image/*" onChange={handleImageChange} />
+                          </div>
+                        ) : (
+                          <div className="aspect-video rounded-2xl bg-gray-100 overflow-hidden border border-gray-100">
+                            {item.image ? (
+                              <img src={item.image} className="w-full h-full object-cover" alt={item.section} />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center text-gray-300">
+                                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <div className="px-6 py-3 bg-gray-50/30 border-t border-gray-50 flex items-center text-[10px] font-bold text-gray-400 uppercase">
+                      <span className="mr-auto">{item.section}</span>
+                      {item.updated_by_name && <span>{item.updated_by_name}</span>}
                     </div>
                   </div>
                 ))}
@@ -301,13 +349,7 @@ const WebsiteContentManagement = () => {
           ))
         ) : (
           <div className="text-center py-20 bg-white rounded-3xl border-2 border-dashed border-gray-100">
-            <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="w-10 h-10 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </div>
             <h3 className="text-xl font-bold text-gray-800">No content found</h3>
-            <p className="text-gray-500">Try adjusting your search or category filters</p>
           </div>
         )}
       </div>
@@ -315,17 +357,10 @@ const WebsiteContentManagement = () => {
       {/* Add Section Modal */}
       {showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-xl overflow-hidden animate-slideUp">
+          <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-2xl overflow-hidden animate-slideUp">
             <div className="p-8 border-b border-gray-100 flex justify-between items-center bg-purple-50/30">
-              <div>
-                <h2 className="text-2xl font-black text-gray-900">Add New Section</h2>
-                <p className="text-sm text-purple-600 font-bold">Expand your website's content</p>
-              </div>
-              <button onClick={() => setShowAddModal(false)} className="p-2 hover:bg-white rounded-full transition-colors shadow-sm">
-                <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
+              <h2 className="text-2xl font-black text-gray-900">Add New Section</h2>
+              <button onClick={() => setShowAddModal(false)} className="p-2 hover:bg-white rounded-full transition-colors"><svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg></button>
             </div>
             
             <form onSubmit={handleAddSection} className="p-8 space-y-6">
@@ -335,55 +370,56 @@ const WebsiteContentManagement = () => {
                   <select
                     value={newSection.category}
                     onChange={(e) => setNewSection({ ...newSection, category: e.target.value })}
-                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none font-bold text-gray-700"
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl font-bold text-gray-700 outline-none focus:ring-2 focus:ring-purple-500"
                   >
-                    {categories.filter(c => c.id !== 'all').map(cat => (
-                      <option key={cat.id} value={cat.id}>{cat.label}</option>
-                    ))}
+                    {categories.filter(c => c.id !== 'all').map(cat => (<option key={cat.id} value={cat.id}>{cat.label}</option>))}
                   </select>
                 </div>
                 <div>
                   <label className="block text-xs font-black text-gray-400 uppercase mb-2 tracking-widest">Section Key</label>
                   <input
                     list="section-suggestions"
-                    placeholder="e.g. about_history"
+                    placeholder="e.g. home_hero_bg"
                     value={newSection.section}
                     onChange={(e) => setNewSection({ ...newSection, section: e.target.value })}
-                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none font-bold text-gray-700"
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl font-bold text-gray-700 outline-none focus:ring-2 focus:ring-purple-500"
                   />
                   <datalist id="section-suggestions">
-                    {sectionSuggestions[newSection.category]?.map(s => (
-                      <option key={s} value={s} />
-                    ))}
+                    {sectionSuggestions[newSection.category]?.map(s => (<option key={s} value={s} />))}
                   </datalist>
                 </div>
               </div>
 
-              <div>
-                <label className="block text-xs font-black text-gray-400 uppercase mb-2 tracking-widest">Content Text</label>
-                <textarea
-                  placeholder="Enter the text that will appear on the website..."
-                  value={newSection.content}
-                  onChange={(e) => setNewSection({ ...newSection, content: e.target.value })}
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none font-bold text-gray-700"
-                  rows={6}
-                />
+              <div className="grid grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-xs font-black text-gray-400 uppercase mb-2 tracking-widest">Text Content</label>
+                  <textarea
+                    placeholder="Optional text..."
+                    value={newSection.content}
+                    onChange={(e) => setNewSection({ ...newSection, content: e.target.value })}
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl font-bold text-gray-700 outline-none focus:ring-2 focus:ring-purple-500"
+                    rows={5}
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-black text-gray-400 uppercase mb-2 tracking-widest">Image Content</label>
+                  <div 
+                    onClick={() => fileInputRef.current?.click()}
+                    className="h-[125px] rounded-xl border-2 border-dashed border-purple-200 bg-purple-50/50 flex items-center justify-center cursor-pointer hover:border-purple-400 overflow-hidden"
+                  >
+                    {newSection.image ? (
+                      <img src={URL.createObjectURL(newSection.image)} className="w-full h-full object-cover" alt="New Preview" />
+                    ) : (
+                      <span className="text-xs font-bold text-purple-600">Click to upload image</span>
+                    )}
+                  </div>
+                  <input ref={fileInputRef} type="file" className="hidden" accept="image/*" onChange={(e) => handleImageChange(e, true)} />
+                </div>
               </div>
 
               <div className="flex gap-3 pt-4">
-                <button
-                  type="button"
-                  onClick={() => setShowAddModal(false)}
-                  className="flex-grow py-3.5 bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold rounded-2xl transition-all"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="flex-grow py-3.5 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-2xl shadow-lg shadow-purple-200 transition-all active:scale-95"
-                >
-                  Create Section
-                </button>
+                <button type="button" onClick={() => setShowAddModal(false)} className="flex-grow py-3.5 bg-gray-100 text-gray-600 font-bold rounded-2xl">Cancel</button>
+                <button type="submit" className="flex-grow py-3.5 bg-purple-600 text-white font-bold rounded-2xl shadow-lg active:scale-95">Create Section</button>
               </div>
             </form>
           </div>

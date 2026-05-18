@@ -297,11 +297,12 @@ class WebsiteContentSerializer(serializers.ModelSerializer):
     section_display = serializers.CharField(source='get_section_display', read_only=True)
     category_display = serializers.CharField(source='get_category_display', read_only=True)
     updated_by_name = serializers.SerializerMethodField()
+    image = serializers.ImageField(required=False, allow_null=True)
 
     class Meta:
         model = WebsiteContent
         fields = ['id', 'section', 'section_display', 'category', 'category_display', 
-                  'content', 'updated_at', 'updated_by', 'updated_by_name']
+                  'content', 'image', 'updated_at', 'updated_by', 'updated_by_name']
         read_only_fields = ['section', 'category', 'updated_at', 'updated_by']
 
     def get_updated_by_name(self, obj):

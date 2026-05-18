@@ -12,7 +12,11 @@ const Programs = () => {
   const fetchContent = async () => {
     try {
       const response = await api.get('/website-content/public/');
-      setContent(response.data);
+      const contentMap = {};
+      response.data.forEach(item => {
+        contentMap[item.section] = item;
+      });
+      setContent(contentMap);
       setLoading(false);
     } catch (error) {
       console.error('Error fetching website content:', error);
@@ -30,32 +34,32 @@ const Programs = () => {
 
   const programList = [
     {
-      title: content.programs_academic_title || 'Academic Programs',
-      content: content.programs_academic_content || 'Our academic programs provide a strong foundation in core subjects including Mathematics, Science, English, Filipino, and Social Studies.',
+      title: content.programs_academic_title?.content || 'Academic Programs',
+      content: content.programs_academic_content?.content || 'Our academic programs provide a strong foundation in core subjects including Mathematics, Science, English, Filipino, and Social Studies.',
       icon: 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253',
       color: 'violet',
-      image: 'https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80'
+      image: content.programs_academic_img?.image || 'https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80'
     },
     {
-      title: content.programs_tech_title || 'Technical-Vocational Programs',
-      content: content.programs_tech_content || 'We offer technical-vocational education and training (TVET) programs that equip students with practical skills in various fields.',
+      title: content.programs_tech_title?.content || 'Technical-Vocational Programs',
+      content: content.programs_tech_content?.content || 'We offer technical-vocational education and training (TVET) programs that equip students with practical skills in various fields.',
       icon: 'M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z',
       color: 'blue',
-      image: 'https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80'
+      image: content.programs_tech_img?.image || 'https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80'
     },
     {
-      title: content.programs_sports_title || 'Sports Development',
-      content: content.programs_sports_content || 'Our sports program focuses on developing athletic skills, teamwork, and discipline through various sporting activities.',
+      title: content.programs_sports_title?.content || 'Sports Development',
+      content: content.programs_sports_content?.content || 'Our sports program focuses on developing athletic skills, teamwork, and discipline through various sporting activities.',
       icon: 'M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z M21 12a9 9 0 11-18 0 9 9 0 0118 0z',
       color: 'indigo',
-      image: 'https://images.unsplash.com/photo-1546519638-68e109498ffc?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80'
+      image: content.programs_sports_img?.image || 'https://images.unsplash.com/photo-1546519638-68e109498ffc?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80'
     },
     {
-      title: content.programs_arts_title || 'Arts and Culture',
-      content: content.programs_arts_content || 'Nurture your creative talents through our arts program, offering visual arts, music, dance, and theater classes.',
+      title: content.programs_arts_title?.content || 'Arts and Culture',
+      content: content.programs_arts_content?.content || 'Nurture your creative talents through our arts program, offering visual arts, music, dance, and theater classes.',
       icon: 'M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01',
       color: 'pink',
-      image: 'https://images.unsplash.com/photo-1460661419201-fd4ce18a802f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80'
+      image: content.programs_arts_img?.image || 'https://images.unsplash.com/photo-1460661419201-fd4ce18a802f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80'
     }
   ];
 
@@ -68,13 +72,14 @@ const Programs = () => {
         
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-5xl md:text-7xl font-black text-slate-900 mb-8 tracking-tight">
-            {content.programs_title || 'Our Programs'}
+            {content.programs_title?.content || 'Our Programs'}
           </h1>
           <p className="text-xl text-slate-500 font-medium max-w-3xl mx-auto leading-relaxed">
-            {content.programs_subtitle || 'Discover the diverse educational opportunities we offer at Kiwalan National High School, designed to prepare students for a bright future.'}
+            {content.programs_subtitle?.content || 'Discover the diverse educational opportunities we offer at Kiwalan National High School, designed to prepare students for a bright future.'}
           </p>
         </div>
       </section>
+
 
       {/* Programs Grid */}
       <section className="py-24 bg-slate-50">

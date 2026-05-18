@@ -670,7 +670,8 @@ class WebsiteContent(models.Model):
     
     section = models.CharField(max_length=100, unique=True, null=True, blank=True)
     category = models.CharField(max_length=50, choices=CATEGORY_CHOICES, default='other')
-    content = models.TextField()
+    content = models.TextField(blank=True, null=True)
+    image = models.ImageField(upload_to='website_content/', null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True)
     updated_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     
