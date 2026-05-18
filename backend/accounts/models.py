@@ -668,7 +668,7 @@ class WebsiteContent(models.Model):
         ('other', 'Other'),
     ]
     
-    section = models.CharField(max_length=100, choices=SECTION_CHOICES, unique=True, null=True, blank=True)
+    section = models.CharField(max_length=100, unique=True, null=True, blank=True)
     category = models.CharField(max_length=50, choices=CATEGORY_CHOICES, default='other')
     content = models.TextField()
     updated_at = models.DateTimeField(auto_now=True)
