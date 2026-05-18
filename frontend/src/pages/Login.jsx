@@ -50,16 +50,7 @@ const Login = () => {
       const code = err.response?.data?.code;
       const message = err.response?.data?.error;
 
-      if (status === 403 && code === 'not_verified') {
-        Swal.fire({
-          icon: 'warning',
-          title: 'Email Not Verified',
-          text: 'Your email is not verified. A new verification code has been sent to your email.',
-          confirmButtonText: 'Verify Now',
-          confirmButtonColor: '#9333ea',
-        }).then(() => navigate('/verify-otp', { state: { email } }));
-
-      } else if (status === 403 && code === 'not_approved') {
+      if (status === 403 && code === 'not_approved') {
         Swal.fire({
           icon: 'info',
           title: 'Pending Approval',

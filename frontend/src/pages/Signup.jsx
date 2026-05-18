@@ -80,11 +80,11 @@ const Signup = () => {
       Swal.fire({
         icon: 'success',
         title: 'Account Created!',
-        text: 'Your account has been created successfully. Please check your email for the OTP verification code.',
-        confirmButtonText: 'Verify Email',
+        text: 'Your account has been created successfully. Please wait for an administrator to approve your account before you can log in.',
+        confirmButtonText: 'Back to Login',
         confirmButtonColor: '#9333ea',
       }).then(() => {
-        navigate('/verify-otp', { state: { email } });
+        navigate('/login');
       });
     } catch (err) {
       setLoading(false);

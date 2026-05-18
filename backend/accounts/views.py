@@ -73,17 +73,6 @@ def login_view(request):
                 {'error': 'Invalid credentials'},
                 status=status.HTTP_401_UNAUTHORIZED
             )
-        
-        if not user.is_verified:
-            # Resend OTP if not verified
-            from .models import OTP
-            otp_code = generate_otp()
-            OTP.objects.create(user=user, code=otp_code)
-            send_otp_email(user, otp_code)
-            return Response(
-                {'error': 'Email not verified. A new OTP has been sent to your email.', 'code': 'not_verified'},
-                status=status.HTTP_403_FORBIDDEN
-            )
             
         if not user.is_approved:
             return Response(
@@ -160,11 +149,11 @@ def register_view(request):
             user.is_approved = True
         else:
             user.is_approved = False
-        user.is_verified = False
+        user.is_verified = True # Auto-verify email
         user.save()
         
         # Create profile with additional student data
-        from .models import Profile, OTP
+        from .models import Profile
         profile = Profile.objects.create(user=user)
         
         if role == 'student' and profile_data:
@@ -179,11 +168,6 @@ def register_view(request):
             profile.contact_information = profile_data.get('contact_information')
             profile.save()
             
-        # Send OTP
-        otp_code = generate_otp()
-        OTP.objects.create(user=user, code=otp_code)
-        send_otp_email(user, otp_code)
-            
     except Exception as e:
         return Response(
             {'error': str(e)},
@@ -191,7 +175,7 @@ def register_view(request):
         )
     
     return Response({
-        'message': 'Account created! Please check your email for the OTP verification code.',
+        'message': 'Account created! Please wait for an administrator to approve your account before logging in.',
         'email': email
     }, status=status.HTTP_201_CREATED)
 
