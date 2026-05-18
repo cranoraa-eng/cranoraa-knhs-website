@@ -22,6 +22,10 @@ DEBUG = os.environ.get('DEBUG', 'False').lower() in ('true', '1', 't')
 # Allowed hosts for the Django application. In production, this should be your Render URL.
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
+RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
+if RENDER_EXTERNAL_HOSTNAME:
+    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
+
 
 # Application definition
 
@@ -220,6 +224,7 @@ AXES_VERBOSE = DEBUG
 AXES_LOCKOUT_PARAMETERS = ['username']
 
 # Security Headers
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 SECURE_SSL_REDIRECT = not DEBUG
 SECURE_HSTS_SECONDS = 31536000 if not DEBUG else 0
 SECURE_HSTS_INCLUDE_SUBDOMAINS = not DEBUG

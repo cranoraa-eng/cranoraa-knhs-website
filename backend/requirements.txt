@@ -1,14 +1,3 @@
-setuptools
-wheel
-gunicorn
-
-Django==4.2.7
-djangorestframework==3.14.0
-djangorestframework-simplejwt>=5.3.1
-django-cors-headers==4.3.1
-psycopg2-binary==2.9.9
-django-axes==6.1.1
-django-password-validators
-daphne
-channels==4.1.0
-dj-database-url
+No global/local python version has been set yet. Please set the global/local version by typing:
+pyenv global 3.7.4
+pyenv local 3.7.4
