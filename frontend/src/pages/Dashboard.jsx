@@ -23,27 +23,27 @@ const WelcomeBanner = ({ user, today, actions }) => {
   };
 
   return (
-    <div className="relative overflow-hidden rounded-[2.5rem] bg-white p-8 md:p-12 shadow-2xl shadow-slate-200/40 border border-slate-100">
-      {/* Subtle Mesh Gradient Background for White Theme */}
-      <div className="absolute inset-0 opacity-[0.08]">
-        <div className="absolute -top-24 -left-24 w-96 h-96 bg-violet-500 rounded-full blur-[100px]" />
-        <div className="absolute top-1/2 -right-24 w-80 h-80 bg-indigo-500 rounded-full blur-[80px]" />
-        <div className="absolute -bottom-24 left-1/4 w-72 h-72 bg-fuchsia-500 rounded-full blur-[90px]" />
+    <div className="relative overflow-hidden rounded-[2.5rem] bg-slate-900 p-8 md:p-12 shadow-2xl shadow-slate-200/50">
+      {/* Mesh Gradient Background */}
+      <div className="absolute inset-0 opacity-40">
+        <div className="absolute -top-24 -left-24 w-96 h-96 bg-violet-600 rounded-full blur-[100px]" />
+        <div className="absolute top-1/2 -right-24 w-80 h-80 bg-indigo-600 rounded-full blur-[80px]" />
+        <div className="absolute -bottom-24 left-1/4 w-72 h-72 bg-fuchsia-600 rounded-full blur-[90px]" />
       </div>
 
       <div className="relative flex flex-col lg:flex-row lg:items-center justify-between gap-8">
         <div className="space-y-4">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-100 border border-slate-200/50 text-violet-600 text-xs font-black uppercase tracking-widest">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/10 text-violet-200 text-xs font-black uppercase tracking-widest">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
             System Online
           </div>
-          <h1 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tight leading-none">
+          <h1 className="text-4xl md:text-5xl font-black text-white tracking-tight leading-none">
             {getGreeting()}, <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-indigo-600">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-200 to-indigo-200">
               {user?.first_name || 'User'}
             </span> 👋
           </h1>
-          <p className="text-slate-500 font-bold text-lg">{today}</p>
+          <p className="text-slate-400 font-bold text-lg">{today}</p>
         </div>
         <div className="flex flex-wrap gap-4">
           {actions}
