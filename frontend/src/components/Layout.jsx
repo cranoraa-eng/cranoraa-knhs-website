@@ -30,6 +30,52 @@ const Layout = () => {
   const [unreadCount, setUnreadCount] = useState(0);
   const [showNotifications, setShowNotifications] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [maintenanceMode, setMaintenanceMode] = useState(false);
+  const [maintenanceMessage, setMaintenanceMessage] = useState('');
+
+  useEffect(() => {
+    checkMaintenance();
+    const interval = setInterval(checkMaintenance, 60000); // Check every minute
+    return () => clearInterval(interval);
+  }, []);
+
+  const checkMaintenance = async () => {
+    try {
+      const r = await api.get('/system/maintenance-status/');
+      if (r.data.maintenance_mode && user?.role !== 'admin') {
+        setMaintenanceMode(true);
+        setMaintenanceMessage(r.data.maintenance_message);
+      } else {
+        setMaintenanceMode(false);
+      }
+    } catch {
+      // Silently fail
+    }
+  };
+
+  if (maintenanceMode) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
+        <div className="max-w-md w-full bg-white rounded-[2.5rem] shadow-2xl p-10 text-center space-y-6 border border-rose-100">
+          <div className="w-20 h-20 bg-rose-50 rounded-3xl flex items-center justify-center mx-auto text-4xl shadow-inner animate-pulse">
+            🚧
+          </div>
+          <div className="space-y-2">
+            <h1 className="text-2xl font-black text-slate-900 tracking-tight">Under Maintenance</h1>
+            <p className="text-slate-500 font-medium leading-relaxed">
+              {maintenanceMessage || 'The portal is currently undergoing scheduled maintenance. Please check back later.'}
+            </p>
+          </div>
+          <button
+            onClick={() => { signOut(); navigate('/login'); }}
+            className="w-full py-4 bg-slate-900 text-white font-black rounded-2xl hover:bg-black transition-all"
+          >
+            Logout
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   // Close notification dropdown when clicking outside
   useEffect(() => {

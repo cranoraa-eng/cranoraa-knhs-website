@@ -199,6 +199,28 @@ class ClassroomSubject(models.Model):
         unique_together = ['classroom', 'subject']
         ordering = ['classroom__name', 'subject__name']
 
+
+class SystemSetting(models.Model):
+    """
+    Global configuration settings for the portal.
+    Only one instance should exist.
+    """
+    site_name = models.CharField(max_length=255, default='School Portal')
+    maintenance_mode = models.BooleanField(default=False)
+    maintenance_message = models.TextField(default='The portal is currently undergoing maintenance. Please check back later.')
+    current_quarter = models.CharField(max_length=1, default='1', choices=[('1', '1st'), ('2', '2nd'), ('3', '3rd'), ('4', '4th')])
+    academic_year = models.CharField(max_length=9, default='2025-2026')
+    enrollment_open = models.BooleanField(default=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return "Global System Settings"
+
+    @classmethod
+    def get_settings(cls):
+        settings, created = cls.objects.get_or_create(id=1)
+        return settings
+
     def __str__(self):
         return f"{self.classroom.name} - {self.subject.code} ({self.teacher.username})"
 

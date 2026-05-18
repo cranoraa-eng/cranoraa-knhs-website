@@ -4,7 +4,7 @@ from .models import (Profile, Classroom, StudentClassEnrollment, Announcement,
     AnnouncementAttachment, Attendance, LearningMaterial,
     Subject, ClassroomSubject, ScratchCard, Fee,
     Notification, EnrollmentApplication, WebsiteContent, Grade, GradeReport,
-    ChatRoom, ChatMessage, Friendship)
+    ChatRoom, ChatMessage, Friendship, SystemSetting)
 
 User = get_user_model()
 
@@ -396,6 +396,12 @@ class ChatRoomSerializer(serializers.ModelSerializer):
         if request and request.user.is_authenticated:
             return obj.pinned_by.filter(id=request.user.id).exists()
         return False
+
+
+class SystemSettingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SystemSetting
+        fields = '__all__'
 
     def get_unread_count(self, obj):
         request = self.context.get('request')

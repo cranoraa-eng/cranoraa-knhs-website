@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import api from '../utils/api';
 import { getUser } from '../utils/auth';
 import toast from 'react-hot-toast';
@@ -8,6 +8,7 @@ const Settings = () => {
   const user = getUser();
   const [activeTab, setActiveTab] = useState('profile');
   const [loading, setLoading] = useState(false);
+  const [loadingSystem, setLoadingSystem] = useState(true);
 
   // Profile State
   const [profileData, setProfileData] = useState({
@@ -25,11 +26,29 @@ const Settings = () => {
 
   // Admin System State
   const [systemSettings, setSystemSettings] = useState({
-    currentQuarter: '1',
-    academicYear: '2025-2026',
-    enrollmentOpen: true,
-    maintenanceMode: false,
+    current_quarter: '1',
+    academic_year: '2025-2026',
+    enrollment_open: true,
+    maintenance_mode: false,
+    maintenance_message: 'The portal is currently undergoing maintenance. Please check back later.'
   });
+
+  useEffect(() => {
+    if (user?.role === 'admin') {
+      fetchSystemSettings();
+    }
+  }, [user]);
+
+  const fetchSystemSettings = async () => {
+    try {
+      const r = await api.get('/system/settings/');
+      setSystemSettings(r.data);
+    } catch {
+      toast.error('Failed to load system settings');
+    } finally {
+      setLoadingSystem(false);
+    }
+  };
 
   const handleProfileSave = async (e) => {
     e.preventDefault();
@@ -42,6 +61,18 @@ const Settings = () => {
       toast.success('Profile updated successfully');
     } catch (err) {
       toast.error('Failed to update profile');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSystemSave = async () => {
+    setLoading(true);
+    try {
+      await api.patch('/system/settings/', systemSettings);
+      toast.success('System settings saved');
+    } catch {
+      toast.error('Failed to save system settings');
     } finally {
       setLoading(false);
     }
@@ -220,63 +251,83 @@ const Settings = () => {
 
             {activeTab === 'system' && user?.role === 'admin' && (
               <div className="space-y-8">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Current Quarter</label>
-                    <select
-                      value={systemSettings.currentQuarter}
-                      onChange={e => setSystemSettings({...systemSettings, currentQuarter: e.target.value})}
-                      className="w-full px-5 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none font-bold text-slate-700"
-                    >
-                      <option value="1">1st Quarter</option>
-                      <option value="2">2nd Quarter</option>
-                      <option value="3">3rd Quarter</option>
-                      <option value="4">4th Quarter</option>
-                    </select>
-                  </div>
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Academic Year</label>
-                    <input
-                      type="text"
-                      value={systemSettings.academicYear}
-                      onChange={e => setSystemSettings({...systemSettings, academicYear: e.target.value})}
-                      className="w-full px-5 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none font-bold text-slate-700"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between p-5 bg-slate-50 rounded-2xl border border-slate-100">
-                    <div>
-                      <h4 className="text-sm font-bold text-slate-800">Online Enrollment</h4>
-                      <p className="text-xs text-slate-500 font-medium">Allow students to register for subjects</p>
+                {loadingSystem ? (
+                  <div className="flex justify-center py-12"><div className="w-8 h-8 border-4 border-violet-500 border-t-transparent rounded-full animate-spin" /></div>
+                ) : (
+                  <>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Current Quarter</label>
+                        <select
+                          value={systemSettings.current_quarter}
+                          onChange={e => setSystemSettings({...systemSettings, current_quarter: e.target.value})}
+                          className="w-full px-5 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none font-bold text-slate-700"
+                        >
+                          <option value="1">1st Quarter</option>
+                          <option value="2">2nd Quarter</option>
+                          <option value="3">3rd Quarter</option>
+                          <option value="4">4th Quarter</option>
+                        </select>
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Academic Year</label>
+                        <input
+                          type="text"
+                          value={systemSettings.academic_year}
+                          onChange={e => setSystemSettings({...systemSettings, academic_year: e.target.value})}
+                          className="w-full px-5 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none font-bold text-slate-700"
+                        />
+                      </div>
                     </div>
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input type="checkbox" checked={systemSettings.enrollmentOpen} onChange={e => setSystemSettings({...systemSettings, enrollmentOpen: e.target.checked})} className="sr-only peer" />
-                      <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-violet-600"></div>
-                    </label>
-                  </div>
 
-                  <div className="flex items-center justify-between p-5 bg-rose-50 rounded-2xl border border-rose-100">
-                    <div>
-                      <h4 className="text-sm font-bold text-rose-900">Maintenance Mode</h4>
-                      <p className="text-xs text-rose-700 font-medium">Temporarily disable portal access for users</p>
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between p-5 bg-slate-50 rounded-2xl border border-slate-100">
+                        <div>
+                          <h4 className="text-sm font-bold text-slate-800">Online Enrollment</h4>
+                          <p className="text-xs text-slate-500 font-medium">Allow students to register for subjects</p>
+                        </div>
+                        <label className="relative inline-flex items-center cursor-pointer">
+                          <input type="checkbox" checked={systemSettings.enrollment_open} onChange={e => setSystemSettings({...systemSettings, enrollment_open: e.target.checked})} className="sr-only peer" />
+                          <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-violet-600"></div>
+                        </label>
+                      </div>
+
+                      <div className="space-y-4 p-5 bg-rose-50 rounded-2xl border border-rose-100">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h4 className="text-sm font-bold text-rose-900">Maintenance Mode</h4>
+                            <p className="text-xs text-rose-700 font-medium">Temporarily disable portal access for users</p>
+                          </div>
+                          <label className="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" checked={systemSettings.maintenance_mode} onChange={e => setSystemSettings({...systemSettings, maintenance_mode: e.target.checked})} className="sr-only peer" />
+                            <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-rose-600"></div>
+                          </label>
+                        </div>
+                        {systemSettings.maintenance_mode && (
+                          <div className="space-y-1.5 animate-in slide-in-from-top-2 duration-300">
+                            <label className="text-[10px] font-black text-rose-400 uppercase tracking-widest ml-1">Maintenance Message</label>
+                            <textarea
+                              value={systemSettings.maintenance_message}
+                              onChange={e => setSystemSettings({...systemSettings, maintenance_message: e.target.value})}
+                              rows={2}
+                              className="w-full px-4 py-2 bg-white/50 border border-rose-200 rounded-xl outline-none text-sm font-medium text-rose-900"
+                            />
+                          </div>
+                        )}
+                      </div>
                     </div>
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input type="checkbox" checked={systemSettings.maintenanceMode} onChange={e => setSystemSettings({...systemSettings, maintenanceMode: e.target.checked})} className="sr-only peer" />
-                      <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-rose-600"></div>
-                    </label>
-                  </div>
-                </div>
 
-                <div className="pt-4">
-                  <button
-                    onClick={() => toast.success('System settings saved')}
-                    className="w-full md:w-auto px-10 py-4 bg-violet-600 text-white font-black text-sm rounded-2xl hover:bg-violet-700 shadow-xl shadow-violet-100 transition-all active:scale-95"
-                  >
-                    Save System Config
-                  </button>
-                </div>
+                    <div className="pt-4">
+                      <button
+                        onClick={handleSystemSave}
+                        disabled={loading}
+                        className="w-full md:w-auto px-10 py-4 bg-violet-600 text-white font-black text-sm rounded-2xl hover:bg-violet-700 shadow-xl shadow-violet-100 transition-all active:scale-95"
+                      >
+                        {loading ? 'Saving...' : 'Save System Config'}
+                      </button>
+                    </div>
+                  </>
+                )}
               </div>
             )}
 

@@ -11,8 +11,9 @@ from .serializers import (UserSerializer, ClassroomSerializer, StudentClassEnrol
     AnnouncementSerializer, AttendanceSerializer, LearningMaterialSerializer,
     SubjectSerializer, ClassroomSubjectSerializer, ScratchCardSerializer, FeeSerializer,
     NotificationSerializer, EnrollmentApplicationSerializer, WebsiteContentSerializer,
-    GradeSerializer, GradeReportSerializer, ChatRoomSerializer, ChatMessageSerializer, FriendshipSerializer)
-from .models import User, Classroom, StudentClassEnrollment, Announcement, AnnouncementAttachment, Attendance, LearningMaterial, Subject, ClassroomSubject, ScratchCard, Fee, Notification, EnrollmentApplication, WebsiteContent, Grade, GradeReport, ChatRoom, ChatMessage, Friendship
+    GradeSerializer, GradeReportSerializer, ChatRoomSerializer, ChatMessageSerializer, FriendshipSerializer,
+    SystemSettingSerializer)
+from .models import User, Classroom, StudentClassEnrollment, Announcement, AnnouncementAttachment, Attendance, LearningMaterial, Subject, ClassroomSubject, ScratchCard, Fee, Notification, EnrollmentApplication, WebsiteContent, Grade, GradeReport, ChatRoom, ChatMessage, Friendship, SystemSetting
 from portal.views import log_audit_action
 import logging
 
@@ -1100,6 +1101,38 @@ class FeeViewSet(viewsets.ModelViewSet):
         return queryset
 
 
+@api_view(['GET', 'POST', 'PATCH'])
+@permission_classes([IsAuthenticated])
+def system_settings_view(request):
+    """View to get or update global system settings (Admin only for updates)"""
+    settings = SystemSetting.get_settings()
+    
+    if request.method in ['POST', 'PATCH']:
+        if request.user.role != 'admin':
+            return Response({'error': 'Only administrators can update system settings'}, status=status.HTTP_403_FORBIDDEN)
+        
+        serializer = SystemSettingSerializer(settings, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    # GET
+    serializer = SystemSettingSerializer(settings)
+    return Response(serializer.data)
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def maintenance_status_view(request):
+    """Public endpoint to check if the portal is in maintenance mode"""
+    settings = SystemSetting.get_settings()
+    return Response({
+        'maintenance_mode': settings.maintenance_mode,
+        'maintenance_message': settings.maintenance_message
+    })
+
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def admin_dashboard_stats(request):
@@ -1192,6 +1225,7 @@ def admin_dashboard_stats(request):
              'below_75_pct': round(ga_below_75 / total_students_graded * 100) if total_students_graded else 0,
              'total_count': total_students_graded
          },
+        'system_settings': SystemSettingSerializer(SystemSetting.get_settings()).data,
 
         'recent_grades_count': Grade.objects.filter(submitted_at__date__gte=this_week_start).count(),
         'total_announcements': Announcement.objects.filter(status='live').count(),

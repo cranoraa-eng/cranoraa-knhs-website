@@ -1,7 +1,8 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-from .views import login_view, register_view, verify_otp_view, resend_otp_view, get_dev_otp, user_profile, student_profile, teacher_dashboard_stats, ClassroomViewSet, StudentClassEnrollmentViewSet, UserViewSet, AnnouncementViewSet, AttendanceViewSet, LearningMaterialViewSet, SubjectViewSet, ClassroomSubjectViewSet, ScratchCardViewSet, FeeViewSet, NotificationViewSet, EnrollmentApplicationViewSet, WebsiteContentViewSet, GradeViewSet, GradeReportViewSet, ChatRoomViewSet, ChatMessageViewSet, FriendshipViewSet, admin_dashboard_stats, grade_distribution_stats, check_result, public_announcements_view, system_metrics_view, maintenance_feed_view, maintenance_mode_view, force_sync_view, run_backup_view, clear_cache_view
+from .views import login_view, register_view, verify_otp_view, resend_otp_view, get_dev_otp, user_profile, student_profile, teacher_dashboard_stats, ClassroomViewSet, StudentClassEnrollmentViewSet, UserViewSet, AnnouncementViewSet, AttendanceViewSet, LearningMaterialViewSet, SubjectViewSet, ClassroomSubjectViewSet, ScratchCardViewSet, FeeViewSet, NotificationViewSet, EnrollmentApplicationViewSet, WebsiteContentViewSet, GradeViewSet, GradeReportViewSet, ChatRoomViewSet, ChatMessageViewSet, FriendshipViewSet, admin_dashboard_stats, grade_distribution_stats, check_result, public_announcements_view, system_metrics_view, maintenance_feed_view, maintenance_mode_view, force_sync_view, run_backup_view, clear_cache_view,
+    system_settings_view, maintenance_status_view)
 
 router = DefaultRouter()
 router.register(r'classrooms', ClassroomViewSet, basename='classroom')
@@ -44,5 +45,7 @@ urlpatterns = [
     path('admin/force-sync/', force_sync_view, name='force_sync'),
     path('admin/run-backup/', run_backup_view, name='run_backup'),
     path('admin/clear-cache/', clear_cache_view, name='clear_cache'),
+    path('system/settings/', system_settings_view, name='system_settings'),
+    path('system/maintenance-status/', maintenance_status_view, name='maintenance_status'),
     path('', include(router.urls)),
 ]
