@@ -545,6 +545,7 @@ const Messages = () => {
   );
 
   // ── JSX ───────────────────────────────────────────────────────────────────
+  return (
     <div className="flex h-[calc(100vh-8.5rem)] md:h-[calc(100vh-8rem)] bg-white rounded-2xl md:rounded-3xl shadow-xl overflow-hidden border border-slate-200">
 
       {/* ── Sidebar ── */}
