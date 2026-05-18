@@ -2,6 +2,10 @@ import axios from 'axios';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 
+// Derive the WebSocket root URL from the API_BASE_URL
+// If API_BASE_URL is https://example.onrender.com/api, WS_ROOT will be wss://example.onrender.com
+export const WS_ROOT = API_BASE_URL.replace('/api', '').replace('http', 'ws');
+
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: { 'Content-Type': 'application/json' },

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
-import api from '../utils/api';
+import api, { WS_ROOT } from '../utils/api';
 import { getUser } from '../utils/auth';
 import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
@@ -163,9 +163,7 @@ const Messages = () => {
     }
 
     const token    = localStorage.getItem('access_token');
-    const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
-    const host     = window.location.host === 'localhost:5173' ? 'localhost:8000' : window.location.host;
-    const ws       = new WebSocket(`${protocol}://${host}/ws/chat/${roomId}/?token=${token}`);
+    const ws       = new WebSocket(`${WS_ROOT}/ws/chat/${roomId}/?token=${token}`);
     socketRef.current = ws;
 
     ws.onopen = () => {
