@@ -24,17 +24,26 @@ def create_superuser():
         return
 
     try:
-        if not User.objects.filter(email=email).exists():
+        user = User.objects.filter(email=email).first()
+        if not user:
             print(f"Creating superuser for {email}...")
             User.objects.create_superuser(
                 email=email,
                 username=username,
                 password=password,
-                role=role
+                role=role,
+                is_verified=True,
+                is_approved=True
             )
             print("Superuser created successfully.")
         else:
-            print(f"Superuser with email {email} already exists.")
+            print(f"Superuser with email {email} already exists. Ensuring it is verified and approved...")
+            user.is_verified = True
+            user.is_approved = True
+            user.is_staff = True
+            user.is_superuser = True
+            user.save()
+            print("Superuser status updated.")
     except Exception as e:
         print(f"Could not create superuser: {e}")
 
