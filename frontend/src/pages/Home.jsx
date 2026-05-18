@@ -16,7 +16,12 @@ const Home = () => {
       const response = await api.get('/website-content/public/');
       // Map the array of content objects to a key-value object for easier access
       const contentMap = {};
-      response.data.forEach(item => {
+      
+      // Safety check: Ensure response.data is an array before calling forEach
+      const data = Array.isArray(response.data) ? response.data : 
+                   (response.data && Array.isArray(response.data.results)) ? response.data.results : [];
+      
+      data.forEach(item => {
         contentMap[item.section] = item;
       });
       setContent(contentMap);

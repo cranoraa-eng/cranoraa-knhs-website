@@ -13,7 +13,12 @@ const About = () => {
     try {
       const response = await api.get('/website-content/public/');
       const contentMap = {};
-      response.data.forEach(item => {
+      
+      // Safety check: Ensure response.data is an array before calling forEach
+      const data = Array.isArray(response.data) ? response.data : 
+                   (response.data && Array.isArray(response.data.results)) ? response.data.results : [];
+      
+      data.forEach(item => {
         contentMap[item.section] = item;
       });
       setContent(contentMap);
