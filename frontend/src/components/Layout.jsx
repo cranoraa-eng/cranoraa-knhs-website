@@ -3,6 +3,8 @@ import { getStoredUser } from '../utils/auth';
 import { useAuth } from '../context/AuthContext';
 import { useState, useEffect } from 'react';
 import api from '../utils/api';
+import Swal from 'sweetalert2';
+import toast from 'react-hot-toast';
 
 const NavItem = ({ to, label, isActive, icon }) => (
   <Link to={to} className={`flex items-center px-3 py-2.5 rounded-lg transition-all duration-150 mb-0.5 text-sm ${isActive(to) ? 'bg-[#9F7AEA] text-white font-semibold shadow-sm' : 'text-gray-300 hover:bg-white/10 hover:text-white'}`}>
@@ -40,7 +42,31 @@ const Layout = () => {
     return () => document.removeEventListener('mousedown', handler);
   }, [showNotifications]);
 
-  const handleLogout = () => { signOut(); navigate('/login', { replace: true }); };
+  const handleLogout = () => {
+    Swal.fire({
+      title: 'Are you sure?',
+      text: "You will be logged out of your session.",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#9333ea',
+      cancelButtonColor: '#64748b',
+      confirmButtonText: 'Yes, sign me out!',
+      cancelButtonText: 'Stay logged in',
+      background: '#ffffff',
+      borderRadius: '2rem',
+      customClass: {
+        popup: 'rounded-[2rem]',
+        confirmButton: 'rounded-xl px-6 py-3 font-bold',
+        cancelButton: 'rounded-xl px-6 py-3 font-bold'
+      }
+    }).then((result) => {
+      if (result.isConfirmed) {
+        signOut();
+        navigate('/login', { replace: true });
+        toast.success('Logged out successfully');
+      }
+    });
+  };
   const isActive = (path) => location.pathname === path;
 
   useEffect(() => {
