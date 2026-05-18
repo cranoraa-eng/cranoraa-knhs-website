@@ -115,10 +115,12 @@ const Signup = () => {
       
       <div className="relative w-full max-w-xl rounded-[2.5rem] border border-white/10 bg-white/95 p-8 md:p-12 shadow-2xl backdrop-blur-xl">
         <div className="text-center mb-10">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-purple-100 rounded-3xl mb-6 shadow-inner">
-            <svg className="w-10 h-10 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-            </svg>
+          <div className="inline-flex items-center justify-center w-20 h-20 bg-white rounded-3xl mb-6 shadow-inner border border-slate-100 overflow-hidden">
+            <img 
+              src="https://plain-apac-prod-public.komododecks.com/202605/18/u3t1lOolacFscP6v1Bq8/image.png" 
+              alt="KNHS Logo" 
+              className="w-14 h-14 object-contain"
+            />
           </div>
           <h1 className="text-4xl font-black text-slate-900 mb-2 tracking-tight">Create Account</h1>
           <p className="text-slate-500 font-medium">Join the Kiwalan NHS School Portal</p>

@@ -132,8 +132,23 @@ const Layout = () => {
         {/* ── Sidebar ── */}
         <aside className={`fixed inset-y-0 left-0 z-50 flex h-screen w-64 transform flex-col overflow-hidden border-r border-white/10 bg-gradient-to-b from-[#25143f] via-[#2d1b4d] to-[#392062] text-white shadow-2xl transition-transform duration-300 ease-in-out lg:sticky lg:top-0 lg:h-screen ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
 
+          {/* Logo Section */}
+          <div className="flex items-center gap-3 px-6 py-8">
+            <div className="h-12 w-12 rounded-2xl bg-white/10 backdrop-blur-md p-2 flex items-center justify-center border border-white/10 shadow-xl shadow-black/20">
+              <img 
+                src="https://plain-apac-prod-public.komododecks.com/202605/18/u3t1lOolacFscP6v1Bq8/image.png" 
+                alt="KNHS Logo" 
+                className="h-full w-full object-contain"
+              />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-lg font-black tracking-tighter leading-none">KIWALAN</span>
+              <span className="text-[10px] font-bold text-violet-300 uppercase tracking-[0.2em] mt-1">High School</span>
+            </div>
+          </div>
+
           {/* Profile */}
-          <div className="flex-shrink-0 border-b border-white/10 p-6">
+          <div className="flex-shrink-0 border-b border-white/10 p-6 pt-2">
             <div className="flex flex-col items-center text-center">
               <div className="mb-3 flex h-20 w-20 items-center justify-center rounded-full border-4 border-white/20 bg-white/15">
                 <svg className="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -21,8 +21,12 @@ const Maintenance = ({ message }) => {
         <div className="absolute -top-24 -right-24 w-48 h-48 bg-rose-50 rounded-full blur-3xl opacity-50" />
         
         <div className="relative">
-          <div className="w-24 h-24 bg-rose-50 rounded-[2rem] flex items-center justify-center mx-auto text-5xl shadow-inner animate-bounce">
-            🚧
+          <div className="w-24 h-24 bg-white rounded-[2rem] flex items-center justify-center mx-auto shadow-xl border border-slate-100 overflow-hidden group">
+            <img 
+              src="https://plain-apac-prod-public.komododecks.com/202605/18/u3t1lOolacFscP6v1Bq8/image.png" 
+              alt="KNHS Logo" 
+              className="w-16 h-16 object-contain group-hover:scale-110 transition-transform duration-500"
+            />
           </div>
           
           <div className="mt-8 space-y-3">
