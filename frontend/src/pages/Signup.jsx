@@ -20,6 +20,7 @@ const signupSchema = yup.object().shape({
     .required('Password is required'),
   confirmPassword: yup.string().oneOf([yup.ref('password'), null], 'Passwords must match').required('Please confirm your password'),
   role: yup.string().required('Please select an account type'),
+  agreedToTerms: yup.boolean().oneOf([true], 'You must agree to the Terms and Privacy Policy').required(),
 });
 
 const Signup = () => {
@@ -31,9 +32,11 @@ const Signup = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [role, setRole] = useState('student');
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [fieldErrors, setFieldErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [modalContent, setModalContent] = useState(null);
   
   const navigate = useNavigate();
 
@@ -49,7 +52,7 @@ const Signup = () => {
 
     try {
       await signupSchema.validate(
-        { username, email, firstName, lastName, password, confirmPassword, role },
+        { username, email, firstName, lastName, password, confirmPassword, role, agreedToTerms },
         { abortEarly: false }
       );
     } catch (validationError) {
@@ -244,6 +247,33 @@ const Signup = () => {
             </div>
           </div>
 
+          {/* Terms and Conditions */}
+          <div className="flex flex-col gap-2">
+            <label className="flex items-start gap-3 cursor-pointer group">
+              <div className="relative mt-1">
+                <input
+                  type="checkbox"
+                  checked={agreedToTerms}
+                  onChange={(e) => setAgreedToTerms(e.target.checked)}
+                  className="peer sr-only"
+                />
+                <div className={`w-6 h-6 border-2 rounded-lg transition-all ${
+                  fieldErrors.agreedToTerms ? 'border-red-500 bg-red-50' : 'border-slate-200 bg-slate-50 peer-checked:bg-purple-600 peer-checked:border-purple-600'
+                }`} />
+                <svg className="absolute inset-0 w-6 h-6 text-white scale-0 peer-checked:scale-100 transition-transform p-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <span className="text-sm font-medium text-slate-600 leading-tight">
+                I agree to the{' '}
+                <button type="button" onClick={() => setModalContent('terms')} className="text-purple-600 hover:underline font-bold">Terms of Service</button>
+                {' '}and{' '}
+                <button type="button" onClick={() => setModalContent('privacy')} className="text-purple-600 hover:underline font-bold">Privacy Policy</button>
+              </span>
+            </label>
+            {fieldErrors.agreedToTerms && <p className="text-red-500 text-xs ml-9 font-bold">{fieldErrors.agreedToTerms}</p>}
+          </div>
+
           <button
             type="submit"
             disabled={loading}
@@ -266,7 +296,66 @@ const Signup = () => {
         </p>
       </div>
 
+      {/* Terms/Privacy Modal */}
+      {modalContent && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="bg-white w-full max-w-2xl rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
+            <div className="p-8 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+              <h2 className="text-2xl font-black text-slate-900 tracking-tight">
+                {modalContent === 'terms' ? 'Terms of Service' : 'Privacy Policy'}
+              </h2>
+              <button onClick={() => setModalContent(null)} className="p-2 hover:bg-slate-200 rounded-xl transition-colors">
+                <svg className="w-6 h-6 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="p-8 max-h-[60vh] overflow-y-auto custom-scrollbar text-slate-600 space-y-4 font-medium leading-relaxed">
+              {modalContent === 'terms' ? (
+                <>
+                  <p className="font-bold text-slate-900 underline underline-offset-4 decoration-purple-200 decoration-4">Last Updated: May 19, 2026</p>
+                  <p>Welcome to Kiwalan NHS School Portal. By creating an account, you agree to the following terms:</p>
+                  <h3 className="font-black text-slate-900 text-lg pt-2">1. Use of Service</h3>
+                  <p>The portal is intended for official school use by students, parents, and faculty. Any unauthorized use or disruption of services is prohibited.</p>
+                  <h3 className="font-black text-slate-900 text-lg pt-2">2. Account Responsibility</h3>
+                  <p>You are responsible for maintaining the confidentiality of your login credentials and for all activities that occur under your account.</p>
+                  <h3 className="font-black text-slate-900 text-lg pt-2">3. Prohibited Content</h3>
+                  <p>Users must not upload or share content that is offensive, discriminatory, or violates the school's code of conduct.</p>
+                  <h3 className="font-black text-slate-900 text-lg pt-2">4. Termination</h3>
+                  <p>The school administration reserves the right to suspend or terminate accounts that violate these terms or engage in misuse of the portal.</p>
+                </>
+              ) : (
+                <>
+                  <p className="font-bold text-slate-900 underline underline-offset-4 decoration-purple-200 decoration-4">Last Updated: May 19, 2026</p>
+                  <p>Your privacy is important to us. This policy explains how we handle your data:</p>
+                  <h3 className="font-black text-slate-900 text-lg pt-2">1. Information Collection</h3>
+                  <p>We collect basic information such as your name, email, and school-related data necessary for the portal's functionality.</p>
+                  <h3 className="font-black text-slate-900 text-lg pt-2">2. Use of Information</h3>
+                  <p>Data is used exclusively for academic management, student tracking, and school communication. We do not sell your data to third parties.</p>
+                  <h3 className="font-black text-slate-900 text-lg pt-2">3. Data Security</h3>
+                  <p>We implement industry-standard security measures to protect your personal information from unauthorized access.</p>
+                  <h3 className="font-black text-slate-900 text-lg pt-2">4. User Rights</h3>
+                  <p>Users have the right to view and update their personal information through their profile settings or by contacting the school administrator.</p>
+                </>
+              )}
+            </div>
+            <div className="p-8 border-t border-slate-100 bg-slate-50">
+              <button
+                onClick={() => setModalContent(null)}
+                className="w-full py-4 bg-purple-600 hover:bg-purple-700 text-white font-black rounded-2xl transition-all shadow-lg shadow-purple-100"
+              >
+                Close and Return
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <style>{`
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
         @keyframes blob {
           0% { transform: translate(0, 0) scale(1); }
           33% { transform: translate(30px, -50px) scale(1.1); }
