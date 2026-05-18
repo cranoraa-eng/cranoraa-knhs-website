@@ -23,12 +23,12 @@ const WelcomeBanner = ({ user, today, actions }) => {
   };
 
   return (
-    <div className="relative overflow-hidden rounded-[2.5rem] bg-slate-900 p-8 md:p-12 shadow-2xl shadow-slate-200/50">
-      {/* Mesh Gradient Background */}
+    <div className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-violet-500 to-indigo-600 p-8 md:p-12 shadow-2xl shadow-violet-200/50">
+      {/* Enhanced Mesh Gradient Background */}
       <div className="absolute inset-0 opacity-40">
-        <div className="absolute -top-24 -left-24 w-96 h-96 bg-violet-600 rounded-full blur-[100px]" />
-        <div className="absolute top-1/2 -right-24 w-80 h-80 bg-indigo-600 rounded-full blur-[80px]" />
-        <div className="absolute -bottom-24 left-1/4 w-72 h-72 bg-fuchsia-600 rounded-full blur-[90px]" />
+        <div className="absolute -top-24 -left-24 w-96 h-96 bg-white/20 rounded-full blur-[100px]" />
+        <div className="absolute top-1/2 -right-24 w-80 h-80 bg-fuchsia-400/30 rounded-full blur-[80px]" />
+        <div className="absolute -bottom-24 left-1/4 w-72 h-72 bg-indigo-400/20 rounded-full blur-[90px]" />
       </div>
 
       <div className="relative flex flex-col lg:flex-row lg:items-center justify-between gap-8">
