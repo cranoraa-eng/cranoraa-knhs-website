@@ -1,151 +1,318 @@
 import { useState } from 'react';
 import api from '../utils/api';
+import { getUser } from '../utils/auth';
+import toast from 'react-hot-toast';
+import Swal from 'sweetalert2';
 
 const Settings = () => {
-  const [settings, setSettings] = useState({
-    siteName: 'School Portal',
-    maintenanceMessage: 'System is under maintenance. Please check back later.',
-    emailNotifications: true,
-    smsNotifications: false,
-    sessionTimeout: 30,
-    maxFileSize: 10,
-  });
+  const user = getUser();
+  const [activeTab, setActiveTab] = useState('profile');
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState('');
 
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setSettings(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value
-    }));
-  };
+  // Profile State
+  const [profileData, setProfileData] = useState({
+    firstName: user?.first_name || '',
+    lastName: user?.last_name || '',
+    email: user?.email || '',
+  });
 
-  const handleSave = async () => {
+  // Security State
+  const [securityData, setSecurityData] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: '',
+  });
+
+  // Admin System State
+  const [systemSettings, setSystemSettings] = useState({
+    currentQuarter: '1',
+    academicYear: '2025-2026',
+    enrollmentOpen: true,
+    maintenanceMode: false,
+  });
+
+  const handleProfileSave = async (e) => {
+    e.preventDefault();
     setLoading(true);
-    setMessage('');
     try {
-      await api.post('/admin/settings/', settings);
-      setMessage('Settings saved successfully');
+      await api.patch('/users/me/', {
+        first_name: profileData.firstName,
+        last_name: profileData.lastName,
+      });
+      toast.success('Profile updated successfully');
     } catch (err) {
-      console.error('Failed to save settings:', err);
-      setMessage('Failed to save settings');
+      toast.error('Failed to update profile');
     } finally {
       setLoading(false);
     }
   };
 
+  const handlePasswordChange = async (e) => {
+    e.preventDefault();
+    if (securityData.newPassword !== securityData.confirmPassword) {
+      return toast.error('Passwords do not match');
+    }
+    setLoading(true);
+    try {
+      await api.post('/users/change_password/', {
+        current_password: securityData.currentPassword,
+        new_password: securityData.newPassword,
+      });
+      setSecurityData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+      toast.success('Password changed successfully');
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed to change password');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const tabs = [
+    { id: 'profile', label: 'Profile Information', icon: '👤' },
+    { id: 'security', label: 'Security & Password', icon: '🔒' },
+    ...(user?.role === 'admin' ? [{ id: 'system', label: 'Academic System', icon: '🏫' }] : []),
+    { id: 'notifications', label: 'Notifications', icon: '🔔' },
+  ];
+
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">System Settings</h1>
-      
-      {message && (
-        <div className={`mb-4 p-4 rounded-lg ${message.includes('success') ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-          {message}
-        </div>
-      )}
-
-      <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6 space-y-6">
-        {/* General Settings */}
+    <div className="max-w-5xl mx-auto space-y-6 pb-12">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">General Settings</h2>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Site Name</label>
-              <input
-                type="text"
-                name="siteName"
-                value={settings.siteName}
-                onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Maintenance Message</label>
-              <textarea
-                name="maintenanceMessage"
-                value={settings.maintenanceMessage}
-                onChange={handleChange}
-                rows={3}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              />
-            </div>
-          </div>
+          <h1 className="text-3xl font-black text-slate-900 tracking-tight">Account Settings</h1>
+          <p className="text-slate-500 font-medium">Manage your profile, security, and portal preferences.</p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        {/* Navigation Sidebar */}
+        <div className="lg:col-span-4 space-y-2">
+          {tabs.map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`w-full flex items-center gap-3 px-6 py-4 rounded-2xl font-bold text-sm transition-all ${
+                activeTab === tab.id
+                  ? 'bg-violet-600 text-white shadow-lg shadow-violet-200'
+                  : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-100'
+              }`}
+            >
+              <span className="text-xl">{tab.icon}</span>
+              {tab.label}
+            </button>
+          ))}
         </div>
 
-        {/* Notification Settings */}
-        <div>
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Notification Settings</h2>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <label className="text-sm font-medium text-gray-700">Email Notifications</label>
-                <p className="text-xs text-gray-500">Receive notifications via email</p>
+        {/* Content Area */}
+        <div className="lg:col-span-8 bg-white border border-slate-200 rounded-[2rem] shadow-sm overflow-hidden">
+          <div className="p-8">
+            {activeTab === 'profile' && (
+              <form onSubmit={handleProfileSave} className="space-y-6">
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="w-20 h-20 rounded-3xl bg-violet-100 flex items-center justify-center text-violet-600 text-3xl font-black">
+                    {user?.first_name?.[0]}
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-slate-900">{user?.full_name}</h3>
+                    <p className="text-xs font-black text-slate-400 uppercase tracking-widest">{user?.role} Account</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">First Name</label>
+                    <input
+                      type="text"
+                      value={profileData.firstName}
+                      onChange={e => setProfileData({...profileData, firstName: e.target.value})}
+                      className="w-full px-5 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-violet-500/5 outline-none font-medium"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Last Name</label>
+                    <input
+                      type="text"
+                      value={profileData.lastName}
+                      onChange={e => setProfileData({...profileData, lastName: e.target.value})}
+                      className="w-full px-5 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-violet-500/5 outline-none font-medium"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Email Address</label>
+                  <input
+                    type="email"
+                    disabled
+                    value={profileData.email}
+                    className="w-full px-5 py-3 bg-slate-100 border border-slate-200 rounded-xl text-slate-500 cursor-not-allowed font-medium"
+                  />
+                  <p className="text-[10px] text-slate-400 font-bold italic mt-1">Contact administration to change your email.</p>
+                </div>
+
+                <div className="pt-4">
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full md:w-auto px-10 py-4 bg-violet-600 text-white font-black text-sm rounded-2xl hover:bg-violet-700 shadow-xl shadow-violet-100 transition-all active:scale-95 disabled:opacity-50"
+                  >
+                    {loading ? 'Saving Changes...' : 'Save Profile Updates'}
+                  </button>
+                </div>
+              </form>
+            )}
+
+            {activeTab === 'security' && (
+              <form onSubmit={handlePasswordChange} className="space-y-6">
+                <div className="p-6 bg-amber-50 border border-amber-100 rounded-2xl mb-6">
+                  <div className="flex gap-3">
+                    <span className="text-xl">🛡️</span>
+                    <div>
+                      <h4 className="text-sm font-bold text-amber-900">Security Recommendation</h4>
+                      <p className="text-xs text-amber-700 font-medium mt-1">Use a unique password with at least 8 characters including numbers and symbols to keep your school records safe.</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Current Password</label>
+                    <input
+                      type="password"
+                      required
+                      value={securityData.currentPassword}
+                      onChange={e => setSecurityData({...securityData, currentPassword: e.target.value})}
+                      className="w-full px-5 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-violet-500/5 outline-none font-medium"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">New Password</label>
+                    <input
+                      type="password"
+                      required
+                      value={securityData.newPassword}
+                      onChange={e => setSecurityData({...securityData, newPassword: e.target.value})}
+                      className="w-full px-5 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-violet-500/5 outline-none font-medium"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Confirm New Password</label>
+                    <input
+                      type="password"
+                      required
+                      value={securityData.confirmPassword}
+                      onChange={e => setSecurityData({...securityData, confirmPassword: e.target.value})}
+                      className="w-full px-5 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-violet-500/5 outline-none font-medium"
+                    />
+                  </div>
+                </div>
+
+                <div className="pt-4">
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full md:w-auto px-10 py-4 bg-slate-900 text-white font-black text-sm rounded-2xl hover:bg-black shadow-xl shadow-slate-200 transition-all active:scale-95 disabled:opacity-50"
+                  >
+                    {loading ? 'Updating...' : 'Update Password'}
+                  </button>
+                </div>
+              </form>
+            )}
+
+            {activeTab === 'system' && user?.role === 'admin' && (
+              <div className="space-y-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Current Quarter</label>
+                    <select
+                      value={systemSettings.currentQuarter}
+                      onChange={e => setSystemSettings({...systemSettings, currentQuarter: e.target.value})}
+                      className="w-full px-5 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none font-bold text-slate-700"
+                    >
+                      <option value="1">1st Quarter</option>
+                      <option value="2">2nd Quarter</option>
+                      <option value="3">3rd Quarter</option>
+                      <option value="4">4th Quarter</option>
+                    </select>
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Academic Year</label>
+                    <input
+                      type="text"
+                      value={systemSettings.academicYear}
+                      onChange={e => setSystemSettings({...systemSettings, academicYear: e.target.value})}
+                      className="w-full px-5 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none font-bold text-slate-700"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-5 bg-slate-50 rounded-2xl border border-slate-100">
+                    <div>
+                      <h4 className="text-sm font-bold text-slate-800">Online Enrollment</h4>
+                      <p className="text-xs text-slate-500 font-medium">Allow students to register for subjects</p>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input type="checkbox" checked={systemSettings.enrollmentOpen} onChange={e => setSystemSettings({...systemSettings, enrollmentOpen: e.target.checked})} className="sr-only peer" />
+                      <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-violet-600"></div>
+                    </label>
+                  </div>
+
+                  <div className="flex items-center justify-between p-5 bg-rose-50 rounded-2xl border border-rose-100">
+                    <div>
+                      <h4 className="text-sm font-bold text-rose-900">Maintenance Mode</h4>
+                      <p className="text-xs text-rose-700 font-medium">Temporarily disable portal access for users</p>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input type="checkbox" checked={systemSettings.maintenanceMode} onChange={e => setSystemSettings({...systemSettings, maintenanceMode: e.target.checked})} className="sr-only peer" />
+                      <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-rose-600"></div>
+                    </label>
+                  </div>
+                </div>
+
+                <div className="pt-4">
+                  <button
+                    onClick={() => toast.success('System settings saved')}
+                    className="w-full md:w-auto px-10 py-4 bg-violet-600 text-white font-black text-sm rounded-2xl hover:bg-violet-700 shadow-xl shadow-violet-100 transition-all active:scale-95"
+                  >
+                    Save System Config
+                  </button>
+                </div>
               </div>
-              <input
-                type="checkbox"
-                name="emailNotifications"
-                checked={settings.emailNotifications}
-                onChange={handleChange}
-                className="w-5 h-5 text-purple-600 rounded focus:ring-purple-500"
-              />
-            </div>
-            <div className="flex items-center justify-between">
-              <div>
-                <label className="text-sm font-medium text-gray-700">SMS Notifications</label>
-                <p className="text-xs text-gray-500">Receive notifications via SMS</p>
+            )}
+
+            {activeTab === 'notifications' && (
+              <div className="space-y-6">
+                <div className="p-6 bg-blue-50 border border-blue-100 rounded-2xl mb-6">
+                  <div className="flex gap-3">
+                    <span className="text-xl">📢</span>
+                    <div>
+                      <h4 className="text-sm font-bold text-blue-900">Notification Channels</h4>
+                      <p className="text-xs text-blue-700 font-medium mt-1">Choose how you want to be alerted about new grades, announcements, and messages.</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  {[
+                    { id: 'n1', label: 'Email Alerts', desc: 'New grades and official announcements' },
+                    { id: 'n2', label: 'In-Portal Messages', desc: 'Chat notifications and friend requests' },
+                    { id: 'n3', label: 'Browser Notifications', desc: 'Real-time alerts when the portal is open' },
+                  ].map(n => (
+                    <div key={n.id} className="flex items-center justify-between p-5 bg-slate-50 rounded-2xl border border-slate-100 hover:bg-white hover:border-violet-100 transition-all">
+                      <div>
+                        <h4 className="text-sm font-bold text-slate-800">{n.label}</h4>
+                        <p className="text-xs text-slate-500 font-medium">{n.desc}</p>
+                      </div>
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" defaultChecked className="sr-only peer" />
+                        <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-violet-600"></div>
+                      </label>
+                    </div>
+                  ))}
+                </div>
               </div>
-              <input
-                type="checkbox"
-                name="smsNotifications"
-                checked={settings.smsNotifications}
-                onChange={handleChange}
-                className="w-5 h-5 text-purple-600 rounded focus:ring-purple-500"
-              />
-            </div>
+            )}
           </div>
-        </div>
-
-        {/* Security Settings */}
-        <div>
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Security Settings</h2>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Session Timeout (minutes)</label>
-              <input
-                type="number"
-                name="sessionTimeout"
-                value={settings.sessionTimeout}
-                onChange={handleChange}
-                min={5}
-                max={120}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Max File Size (MB)</label>
-              <input
-                type="number"
-                name="maxFileSize"
-                value={settings.maxFileSize}
-                onChange={handleChange}
-                min={1}
-                max={100}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Save Button */}
-        <div className="flex justify-end pt-4 border-t border-gray-200">
-          <button
-            onClick={handleSave}
-            disabled={loading}
-            className="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {loading ? 'Saving...' : 'Save Settings'}
-          </button>
         </div>
       </div>
     </div>
