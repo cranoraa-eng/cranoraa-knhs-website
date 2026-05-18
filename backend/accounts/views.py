@@ -45,20 +45,10 @@ If you did not request this code, you can safely ignore this email.
     recipient_list = [user.email]
     
     try:
-        logger.info(f"Attempting to send OTP email to {user.email} using {email_from}")
-        send_mail(
-            subject, 
-            message, 
-            email_from, 
-            recipient_list,
-            fail_silently=False
-        )
-        logger.info(f"OTP email successfully sent to {user.email}")
+        send_mail(subject, message, email_from, recipient_list)
         return True
     except Exception as e:
-        logger.error(f"FAILED to send OTP email to {user.email}: {str(e)}")
-        # Log settings for debugging (don't log password)
-        logger.error(f"Email Settings: HOST={settings.EMAIL_HOST}, PORT={settings.EMAIL_PORT}, TLS={settings.EMAIL_USE_TLS}, SSL={settings.EMAIL_USE_SSL}, USER={settings.EMAIL_HOST_USER}")
+        logger.error(f"Error sending OTP email: {str(e)}")
         return False
 
 @api_view(['POST'])
@@ -84,14 +74,17 @@ def login_view(request):
                 status=status.HTTP_401_UNAUTHORIZED
             )
         
-        # PRODUCTION BYPASS: Render free tier blocks SMTP (Errno 101).
-        # We will auto-verify users to allow the application to function,
-        # but we will still require manual admin approval if that is enabled.
         if not user.is_verified:
-            logger.info(f"Auto-verifying user {email} due to SMTP network restrictions.")
-            user.is_verified = True
-            user.save()
-        
+            # Resend OTP if not verified
+            from .models import OTP
+            otp_code = generate_otp()
+            OTP.objects.create(user=user, code=otp_code)
+            send_otp_email(user, otp_code)
+            return Response(
+                {'error': 'Email not verified. A new OTP has been sent to your email.', 'code': 'not_verified'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+            
         if not user.is_approved:
             return Response(
                 {'error': 'Your account is pending admin approval. Please wait for an administrator to approve your account.', 'code': 'not_approved'},
@@ -167,11 +160,11 @@ def register_view(request):
             user.is_approved = True
         else:
             user.is_approved = False
-        user.is_verified = True # Auto-verify to skip broken email service
+        user.is_verified = False
         user.save()
         
         # Create profile with additional student data
-        from .models import Profile
+        from .models import Profile, OTP
         profile = Profile.objects.create(user=user)
         
         if role == 'student' and profile_data:
@@ -186,6 +179,11 @@ def register_view(request):
             profile.contact_information = profile_data.get('contact_information')
             profile.save()
             
+        # Send OTP
+        otp_code = generate_otp()
+        OTP.objects.create(user=user, code=otp_code)
+        send_otp_email(user, otp_code)
+            
     except Exception as e:
         return Response(
             {'error': str(e)},
@@ -193,7 +191,7 @@ def register_view(request):
         )
     
     return Response({
-        'message': 'Account created successfully! Your account is now pending admin approval.',
+        'message': 'Account created! Please check your email for the OTP verification code.',
         'email': email
     }, status=status.HTTP_201_CREATED)
 

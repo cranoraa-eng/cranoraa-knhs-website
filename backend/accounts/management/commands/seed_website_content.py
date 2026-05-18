@@ -21,152 +21,62 @@ class Command(BaseCommand):
                 last_name='User'
             )
 
-        # Home page content
-        home_content = [
-            {
-                'section': 'home_hero_title',
-                'content': 'Kiwalan National High School'
-            },
-            {
-                'section': 'home_hero_subtitle',
-                'content': 'Empowering Minds, Shaping Futures'
-            },
-            {
-                'section': 'home_announcement_1_category',
-                'content': 'Academic'
-            },
-            {
-                'section': 'home_announcement_1_date',
-                'content': 'December 15, 2025'
-            },
-            {
-                'section': 'home_announcement_1_title',
-                'content': 'Enrollment for SY 2026-2027 Now Open'
-            },
-            {
-                'section': 'home_announcement_1_content',
-                'content': 'Registration for the upcoming school year is now accepting applications. Visit our campus or apply online.'
-            },
-            {
-                'section': 'home_announcement_1_link_text',
-                'content': 'Learn more →'
-            },
-            {
-                'section': 'home_announcement_2_category',
-                'content': 'Events'
-            },
-            {
-                'section': 'home_announcement_2_date',
-                'content': 'December 10, 2025'
-            },
-            {
-                'section': 'home_announcement_2_title',
-                'content': 'Annual School Foundation Day'
-            },
-            {
-                'section': 'home_announcement_2_content',
-                'content': 'Join us in celebrating our school foundation day with various activities and programs.'
-            },
-            {
-                'section': 'home_announcement_2_link_text',
-                'content': 'Learn more →'
-            },
+        # Content with categories
+        content_data = [
+            # Home Page
+            ('home', 'home_hero_title', 'Kiwalan National High School'),
+            ('home', 'home_hero_subtitle', 'Empowering Minds, Shaping Futures'),
+            ('home', 'home_feature_1_title', 'Quality Education'),
+            ('home', 'home_feature_1_content', 'Comprehensive curriculum designed to prepare students for success in higher education and beyond.'),
+            ('home', 'home_feature_2_title', 'Dedicated Faculty'),
+            ('home', 'home_feature_2_content', 'Experienced and passionate teachers committed to student development and academic excellence.'),
+            ('home', 'home_feature_3_title', 'Modern Facilities'),
+            ('home', 'home_feature_3_content', 'State-of-the-art classrooms, laboratories, and facilities to support holistic learning experiences.'),
+            
+            # About Page
+            ('about', 'about_title', 'About Our School'),
+            ('about', 'about_subtitle', 'Dedicated to excellence in education since our founding.'),
+            ('about', 'about_mission_title', 'Our Mission'),
+            ('about', 'about_mission_content', 'To provide quality education that develops students academic excellence, moral character, and practical skills, preparing them to become responsible and productive citizens who contribute positively to society.'),
+            ('about', 'about_vision_title', 'Our Vision'),
+            ('about', 'about_vision_content', 'To be a leading educational institution recognized for academic excellence, innovative teaching methods, and graduates who are globally competitive and morally upright individuals.'),
+            ('about', 'about_history_title', 'Our History'),
+            ('about', 'about_history_content', 'Kiwalan National High School was established with the vision of providing accessible and quality education to the youth of Kiwalan and its neighboring communities. Over the years, we have grown from a small learning institution to a comprehensive high school serving hundreds of students.'),
+            
+            # Contact Page
+            ('contact', 'contact_title', 'Contact Us'),
+            ('contact', 'contact_subtitle', 'We are here to help and answer any questions you might have.'),
+            ('contact', 'contact_address', 'Kiwalan, Philippines'),
+            ('contact', 'contact_email', 'info@kiwalan-nhs.edu.ph'),
+            ('contact', 'contact_phone', '(123) 456-7890'),
+            ('contact', 'contact_map_url', 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3947.518!2d124.234!3d8.234!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zOMKwMTQnMDIuNCJOIDEyNMKwMTQnMDIuNCJF!5e0!3m2!1sen!2sph!4v1234567890'),
+            
+            # Programs Page
+            ('programs', 'programs_title', 'Our Programs'),
+            ('programs', 'programs_subtitle', 'Discover the diverse educational opportunities we offer at Kiwalan National High School'),
+            ('programs', 'programs_academic_title', 'Academic Programs'),
+            ('programs', 'programs_academic_content', 'Our academic programs provide a strong foundation in core subjects including Mathematics, Science, English, Filipino, and Social Studies. We offer advanced placement courses and specialized tracks for students preparing for higher education.'),
+            ('programs', 'programs_tech_title', 'Technical-Vocational Programs'),
+            ('programs', 'programs_tech_content', 'We offer technical-vocational education and training (TVET) programs that equip students with practical skills in various fields including ICT, Electronics, and Automotive. These programs prepare students for immediate employment or further technical education.'),
+            ('programs', 'programs_sports_title', 'Sports Development'),
+            ('programs', 'programs_sports_content', 'Our sports program focuses on developing athletic skills, teamwork, and discipline. We offer training in basketball, volleyball, football, athletics, and other sports. Students participate in inter-school competitions and regional tournaments.'),
+            ('programs', 'programs_arts_title', 'Arts and Culture'),
+            ('programs', 'programs_arts_content', 'Nurture your creative talents through our arts program. We offer visual arts, music, dance, and theater classes. Students showcase their talents in school programs, competitions, and community events.'),
         ]
-
-        # About page content
-        about_content = [
-            {
-                'section': 'about_mission',
-                'content': 'To provide quality education that develops students academic excellence, moral character, and practical skills, preparing them to become responsible and productive citizens who contribute positively to society.'
-            },
-            {
-                'section': 'about_vision',
-                'content': 'To be a leading educational institution recognized for academic excellence, innovative teaching methods, and graduates who are globally competitive and morally upright individuals.'
-            },
-            {
-                'section': 'about_history',
-                'content': 'Kiwalan National High School was established with the vision of providing accessible and quality education to the youth of Kiwalan and its neighboring communities. Over the years, we have grown from a small learning institution to a comprehensive high school serving hundreds of students.'
-            },
-        ]
-
-        # Programs page content
-        programs_content = [
-            {
-                'section': 'programs_title',
-                'content': 'Our Programs'
-            },
-            {
-                'section': 'programs_subtitle',
-                'content': 'Discover the diverse educational opportunities we offer at Kiwalan National High School'
-            },
-            {
-                'section': 'programs_academic_title',
-                'content': 'Academic Programs'
-            },
-            {
-                'section': 'programs_academic_content',
-                'content': 'Our academic programs provide a strong foundation in core subjects including Mathematics, Science, English, Filipino, and Social Studies. We offer advanced placement courses and specialized tracks for students preparing for higher education.'
-            },
-            {
-                'section': 'programs_tech_title',
-                'content': 'Technical-Vocational Programs'
-            },
-            {
-                'section': 'programs_tech_content',
-                'content': 'We offer technical-vocational education and training (TVET) programs that equip students with practical skills in various fields including ICT, Electronics, and Automotive. These programs prepare students for immediate employment or further technical education.'
-            },
-            {
-                'section': 'programs_sports_title',
-                'content': 'Sports Development'
-            },
-            {
-                'section': 'programs_sports_content',
-                'content': 'Our sports program focuses on developing athletic skills, teamwork, and discipline. We offer training in basketball, volleyball, football, athletics, and other sports. Students participate in inter-school competitions and regional tournaments.'
-            },
-            {
-                'section': 'programs_arts_title',
-                'content': 'Arts and Culture'
-            },
-            {
-                'section': 'programs_arts_content',
-                'content': 'Nurture your creative talents through our arts program. We offer visual arts, music, dance, and theater classes. Students showcase their talents in school programs, competitions, and community events.'
-            },
-        ]
-
-        # Contact page content
-        contact_content = [
-            {
-                'section': 'contact_address',
-                'content': 'Kiwalan, Philippines'
-            },
-            {
-                'section': 'contact_email',
-                'content': 'info@kiwalan-nhs.edu.ph'
-            },
-            {
-                'section': 'contact_phone',
-                'content': '(123) 456-7890'
-            },
-            {
-                'section': 'contact_office_hours',
-                'content': 'Monday - Friday: 7:00 AM - 5:00 PM\nSaturday: 8:00 AM - 12:00 PM'
-            },
-        ]
-
-        # Combine all content
-        all_content = home_content + about_content + programs_content + contact_content
 
         # Create or update content items
         created_count = 0
         updated_count = 0
 
-        for item_data in all_content:
-            section = item_data['section']
-            content = item_data['content']
-            
-            obj, created = WebsiteContent.objects.get_or_create(
+        # Remove old sections that are no longer in choices
+        valid_sections = [item[1] for item in content_data]
+        WebsiteContent.objects.exclude(section__in=valid_sections).delete()
+
+        for category, section, content in content_data:
+            obj, created = WebsiteContent.objects.update_or_create(
                 section=section,
                 defaults={
+                    'category': category,
                     'content': content,
                     'updated_by': admin_user
                 }
@@ -176,9 +86,6 @@ class Command(BaseCommand):
                 created_count += 1
                 self.stdout.write(f'Created: {section}')
             else:
-                obj.content = content
-                obj.updated_by = admin_user
-                obj.save()
                 updated_count += 1
                 self.stdout.write(f'Updated: {section}')
 

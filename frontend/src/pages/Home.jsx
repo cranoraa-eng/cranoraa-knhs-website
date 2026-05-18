@@ -33,7 +33,7 @@ const Home = () => {
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
-      <div className="relative overflow-hidden py-20 md:py-32">
+      <div className="relative overflow-hidden py-32">
         {/* Background Image with Overlay */}
         <div className="absolute inset-0 z-0">
           <img 
@@ -45,19 +45,19 @@ const Home = () => {
           <div className="absolute inset-0 bg-gradient-to-r from-purple-900/95 to-purple-600/80"></div>
         </div>
 
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center md:text-left">
-          <h1 className="text-4xl md:text-6xl font-bold mb-6 text-white leading-tight">{content.home_hero_title || 'Kiwalan National High School'}</h1>
-          <p className="text-xl md:text-2xl text-purple-100 mb-8 max-w-2xl mx-auto md:mx-0">{content.home_hero_subtitle || 'Empowering Minds, Shaping Futures'}</p>
-          <div className="flex flex-col sm:flex-row justify-center md:justify-start gap-4 mt-8">
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h1 className="text-5xl md:text-6xl font-bold mb-6 text-white">{content.home_hero_title || 'Kiwalan National High School'}</h1>
+          <p className="text-2xl text-purple-100 mb-8 max-w-2xl">{content.home_hero_subtitle || 'Empowering Minds, Shaping Futures'}</p>
+          <div className="flex justify-center space-x-4 mt-8">
             <Link
               to="/enroll"
-              className="bg-white text-purple-800 font-bold py-4 px-10 rounded-lg hover:bg-purple-100 transition-all transform hover:scale-105 shadow-lg w-full sm:w-auto"
+              className="bg-white text-purple-800 font-bold py-4 px-10 rounded-lg hover:bg-purple-100 transition-all transform hover:scale-105 shadow-lg"
             >
               Enroll Now
             </Link>
             <Link
               to="/login"
-              className="bg-white/20 backdrop-blur-sm border-2 border-white text-white font-bold py-4 px-10 rounded-lg hover:bg-white/30 transition-all transform hover:scale-105 w-full sm:w-auto"
+              className="bg-white/20 backdrop-blur-sm border-2 border-white text-white font-bold py-4 px-10 rounded-lg hover:bg-white/30 transition-all transform hover:scale-105"
             >
               Login to Portal
             </Link>
@@ -76,8 +76,8 @@ const Home = () => {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                 </svg>
               </div>
-              <h3 className="text-2xl font-bold text-gray-800 mb-3">Quality Education</h3>
-              <p className="text-gray-600">Comprehensive curriculum designed to prepare students for success in higher education and beyond.</p>
+              <h3 className="text-2xl font-bold text-gray-800 mb-3">{content.home_feature_1_title || 'Quality Education'}</h3>
+              <p className="text-gray-600">{content.home_feature_1_content || 'Comprehensive curriculum designed to prepare students for success in higher education and beyond.'}</p>
             </div>
             <div className="bg-white p-8 rounded-lg shadow-md text-center hover:shadow-2xl hover:-translate-y-2 transition-all duration-300">
               <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-700 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
@@ -85,8 +85,8 @@ const Home = () => {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
               </div>
-              <h3 className="text-2xl font-bold text-gray-800 mb-3">Dedicated Faculty</h3>
-              <p className="text-gray-600">Experienced and passionate teachers committed to student development and academic excellence.</p>
+              <h3 className="text-2xl font-bold text-gray-800 mb-3">{content.home_feature_2_title || 'Dedicated Faculty'}</h3>
+              <p className="text-gray-600">{content.home_feature_2_content || 'Experienced and passionate teachers committed to student development and academic excellence.'}</p>
             </div>
             <div className="bg-white p-8 rounded-lg shadow-md text-center hover:shadow-2xl hover:-translate-y-2 transition-all duration-300">
               <div className="w-20 h-20 bg-gradient-to-br from-green-500 to-green-700 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
@@ -94,8 +94,8 @@ const Home = () => {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                 </svg>
               </div>
-              <h3 className="text-2xl font-bold text-gray-800 mb-3">Modern Facilities</h3>
-              <p className="text-gray-600">State-of-the-art classrooms, laboratories, and facilities to support holistic learning experiences.</p>
+              <h3 className="text-2xl font-bold text-gray-800 mb-3">{content.home_feature_3_title || 'Modern Facilities'}</h3>
+              <p className="text-gray-600">{content.home_feature_3_content || 'State-of-the-art classrooms, laboratories, and facilities to support holistic learning experiences.'}</p>
             </div>
           </div>
         </div>

@@ -153,12 +153,9 @@ const Messages = () => {
   const connectWebSocket = (roomId) => {
     socketRef.current?.close();
     const token    = localStorage.getItem('access_token');
-    
-    // Derive WebSocket URL from API_BASE_URL
-    const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
-    const wsUrl = apiBase.replace('http', 'ws').replace('/api', '');
-    
-    const ws       = new WebSocket(`${wsUrl}/ws/chat/${roomId}/?token=${token}`);
+    const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+    const host     = window.location.host === 'localhost:5173' ? 'localhost:8000' : window.location.host;
+    const ws       = new WebSocket(`${protocol}://${host}/ws/chat/${roomId}/?token=${token}`);
     socketRef.current = ws;
 
     ws.onmessage = (e) => {
@@ -546,10 +543,10 @@ const Messages = () => {
 
   // ── JSX ───────────────────────────────────────────────────────────────────
   return (
-    <div className="flex h-[calc(100vh-8.5rem)] md:h-[calc(100vh-8rem)] bg-white rounded-2xl md:rounded-3xl shadow-xl overflow-hidden border border-slate-200">
+    <div className="flex h-[calc(100vh-8rem)] bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-200">
 
       {/* ── Sidebar ── */}
-      <div className={`${selectedRoom ? 'hidden md:flex' : 'flex'} w-full md:w-80 border-r border-slate-100 flex flex-col bg-slate-50/30`}>
+      <div className="w-80 border-r border-slate-100 flex flex-col bg-slate-50/30">
 
         {/* Header */}
         <div className="p-6 border-b border-slate-100 bg-white">
@@ -791,21 +788,13 @@ const Messages = () => {
       </div>
 
       {/* ── Main Chat Area ── */}
-      <div className={`${selectedRoom ? 'flex' : 'hidden md:flex'} flex-1 flex-col bg-white`}>
+      <div className="flex-1 flex flex-col bg-white">
         {selectedRoom ? (
           <>
             {/* Chat Header */}
             <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-white/80 backdrop-blur-md sticky top-0 z-10">
-              <div className="flex items-center gap-2 md:gap-3">
-                {/* Back button for mobile */}
-                <button 
-                  onClick={() => setSelectedRoom(null)}
-                  className="md:hidden p-2 -ml-1 text-slate-500 hover:text-violet-600 transition-colors"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" /></svg>
-                </button>
-
-                <div className={`h-10 w-10 rounded-xl flex items-center justify-center text-white font-bold text-xs shadow-md flex-shrink-0 ${selectedRoom.is_group ? 'bg-gradient-to-br from-indigo-500 to-violet-600' : 'bg-gradient-to-br from-violet-500 to-fuchsia-500'}`}>
+              <div className="flex items-center gap-3">
+                <div className={`h-10 w-10 rounded-xl flex items-center justify-center text-white font-bold text-xs shadow-md ${selectedRoom.is_group ? 'bg-gradient-to-br from-indigo-500 to-violet-600' : 'bg-gradient-to-br from-violet-500 to-fuchsia-500'}`}>
                   {selectedRoom.is_group ? (
                     <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />

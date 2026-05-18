@@ -228,8 +228,8 @@ const Teachers = () => {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredTeachers.map((teacher) => (
-              <div key={teacher.id} className="bg-white border border-gray-200 rounded-2xl p-4 md:p-6 hover:shadow-xl transition-all duration-300 group relative border-t-4 border-t-purple-500 overflow-hidden">
-                <div className="absolute top-0 right-0 p-2 md:p-4 flex gap-2 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity bg-white/80 md:bg-transparent backdrop-blur-sm md:backdrop-blur-none rounded-bl-xl border-b border-l border-gray-100 md:border-0 z-10">
+              <div key={teacher.id} className="bg-white border border-gray-200 rounded-2xl p-6 hover:shadow-xl transition-all duration-300 group relative border-t-4 border-t-purple-500 overflow-hidden">
+                <div className="absolute top-0 right-0 p-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                    <button
                     onClick={() => {
                       setEditingTeacher({
@@ -241,29 +241,29 @@ const Teachers = () => {
                       });
                       setShowEditModal(true);
                     }}
-                    className="p-1.5 md:p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-600 hover:text-white transition-all shadow-sm"
+                    className="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-600 hover:text-white transition-all shadow-sm"
                     title="Edit Details"
                   >
-                    <svg className="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
                   </button>
                   <button
                     onClick={() => handleResetPassword(teacher.id)}
-                    className="p-1.5 md:p-2 bg-amber-50 text-amber-600 rounded-lg hover:bg-amber-600 hover:text-white transition-all shadow-sm"
+                    className="p-2 bg-amber-50 text-amber-600 rounded-lg hover:bg-amber-600 hover:text-white transition-all shadow-sm"
                     title="Reset Password"
                   >
-                    <svg className="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" /></svg>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" /></svg>
                   </button>
                   <button
                     onClick={() => handleDelete(teacher.id)}
-                    className="p-1.5 md:p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-600 hover:text-white transition-all shadow-sm"
+                    className="p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-600 hover:text-white transition-all shadow-sm"
                     title="Delete Account"
                   >
-                    <svg className="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                   </button>
                 </div>
 
-                <div className="flex flex-col sm:flex-row items-center sm:items-start justify-between mb-6 gap-4">
-                  <div className="flex flex-col sm:flex-row items-center gap-4 text-center sm:text-left">
+                <div className="flex items-start justify-between mb-6">
+                  <div className="flex items-center gap-4">
                     <div className="relative">
                       <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-2xl flex items-center justify-center text-white font-black text-2xl shadow-lg transition-transform group-hover:scale-105">
                         {teacher.first_name?.charAt(0).toUpperCase()}{teacher.last_name?.charAt(0).toUpperCase()}
@@ -277,7 +277,7 @@ const Teachers = () => {
                       <h3 className="text-xl font-black text-gray-800 leading-tight">
                         {teacher.profile?.title} {teacher.first_name} {teacher.last_name}
                       </h3>
-                      <div className="flex items-center justify-center sm:justify-start gap-2 mt-1">
+                      <div className="flex items-center gap-2 mt-1">
                         <p className="text-xs font-bold text-purple-500 uppercase tracking-widest">Faculty Member</p>
                         <span className="text-[10px] text-gray-300">•</span>
                         <span className={`text-[10px] font-bold uppercase tracking-widest ${teacher.is_online ? 'text-green-500' : 'text-gray-400'}`}>
@@ -290,7 +290,7 @@ const Teachers = () => {
                   {user?.id !== teacher.id && (
                     <button 
                       onClick={() => handleStartChat(teacher.id)}
-                      className="p-2.5 bg-violet-50 text-violet-600 rounded-xl hover:bg-violet-600 hover:text-white transition-all shadow-sm active:scale-95 group/msg sm:self-start"
+                      className="p-2.5 bg-violet-50 text-violet-600 rounded-xl hover:bg-violet-600 hover:text-white transition-all shadow-sm active:scale-95 group/msg"
                       title="Send Message"
                     >
                       <svg className="w-5 h-5 group-hover/msg:animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" /></svg>

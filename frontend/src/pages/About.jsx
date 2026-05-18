@@ -34,8 +34,8 @@ const About = () => {
       {/* Hero Section */}
       <div className="relative bg-cover bg-center py-32" style={{ backgroundImage: 'linear-gradient(to right, rgba(88, 28, 135, 0.9), rgba(147, 51, 234, 0.7)), url("https://images.unsplash.com/photo-1577896851231-70ef18881754?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80")' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-5xl md:text-6xl font-bold mb-6 text-white">About Kiwalan National High School</h1>
-          <p className="text-2xl text-purple-100 max-w-2xl">Learn about our history, mission, and values</p>
+          <h1 className="text-5xl md:text-6xl font-bold mb-6 text-white">{content.about_title || 'About Kiwalan National High School'}</h1>
+          <p className="text-2xl text-purple-100 max-w-2xl">{content.about_subtitle || 'Learn about our history, mission, and values'}</p>
         </div>
       </div>
 
@@ -44,34 +44,31 @@ const About = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Mission */}
           <div className="mb-20">
-            <h2 className="text-4xl font-bold text-gray-800 mb-8">Our Mission</h2>
+            <h2 className="text-4xl font-bold text-gray-800 mb-8">{content.about_mission_title || 'Our Mission'}</h2>
             <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-10 rounded-xl shadow-md hover:shadow-lg transition-shadow">
-              <p className="text-xl text-gray-700 leading-relaxed">
-                {content.about_mission || 'To provide quality education that develops students academic excellence, moral character, and practical skills, preparing them to become responsible and productive citizens who contribute positively to society.'}
+              <p className="text-xl text-gray-700 leading-relaxed whitespace-pre-line">
+                {content.about_mission_content || 'To provide quality education that develops students academic excellence, moral character, and practical skills, preparing them to become responsible and productive citizens who contribute positively to society.'}
               </p>
             </div>
           </div>
 
           {/* Vision */}
           <div className="mb-20">
-            <h2 className="text-4xl font-bold text-gray-800 mb-8">Our Vision</h2>
+            <h2 className="text-4xl font-bold text-gray-800 mb-8">{content.about_vision_title || 'Our Vision'}</h2>
             <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-10 rounded-xl shadow-md hover:shadow-lg transition-shadow">
-              <p className="text-xl text-gray-700 leading-relaxed">
-                {content.about_vision || 'To be a leading educational institution recognized for academic excellence, innovative teaching methods, and graduates who are globally competitive and morally upright individuals.'}
+              <p className="text-xl text-gray-700 leading-relaxed whitespace-pre-line">
+                {content.about_vision_content || 'To be a leading educational institution recognized for academic excellence, innovative teaching methods, and graduates who are globally competitive and morally upright individuals.'}
               </p>
             </div>
           </div>
 
           {/* History */}
           <div className="mb-20">
-            <h2 className="text-4xl font-bold text-gray-800 mb-8">Our History</h2>
+            <h2 className="text-4xl font-bold text-gray-800 mb-8">{content.about_history_title || 'Our History'}</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
               <div>
-                <p className="text-lg text-gray-700 leading-relaxed mb-6">
-                  {content.about_history || 'Kiwalan National High School was established with the vision of providing accessible and quality education to the youth of Kiwalan and its neighboring communities. Over the years, we have grown from a small learning institution to a comprehensive high school serving hundreds of students.'}
-                </p>
-                <p className="text-lg text-gray-700 leading-relaxed">
-                  Our commitment to academic excellence and character development has made us a trusted partner in education for families in the region. We continue to evolve and adapt to the changing educational landscape while maintaining our core values.
+                <p className="text-lg text-gray-700 leading-relaxed mb-6 whitespace-pre-line">
+                  {content.about_history_content || 'Kiwalan National High School was established with the vision of providing accessible and quality education to the youth of Kiwalan and its neighboring communities. Over the years, we have grown from a small learning institution to a comprehensive high school serving hundreds of students.'}
                 </p>
               </div>
               <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-8 rounded-xl shadow-md">

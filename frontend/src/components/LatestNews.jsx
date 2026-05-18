@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import api, { ROOT_URL } from '../utils/api';
+import api from '../utils/api';
 
 const LatestNews = () => {
   const [announcements, setAnnouncements] = useState([]);
@@ -53,8 +53,6 @@ const LatestNews = () => {
     setShowModal(false);
     setSelectedAnnouncement(null);
   };
-
-  const attachUrl = (url) => url?.startsWith('http') ? url : `${ROOT_URL}${url}`;
 
   if (loading) {
     return (
@@ -145,7 +143,7 @@ const LatestNews = () => {
               {selectedAnnouncement.attachment_url && (
                 <div className="mb-6">
                   <img
-                    src={attachUrl(selectedAnnouncement.attachment_url)}
+                    src={selectedAnnouncement.attachment_url}
                     alt="Announcement attachment"
                     className="w-full h-auto rounded-lg"
                     onError={(e) => {

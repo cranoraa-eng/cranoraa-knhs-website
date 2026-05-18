@@ -34,8 +34,8 @@ const Contact = () => {
       {/* Hero Section */}
       <div className="relative bg-cover bg-center py-32" style={{ backgroundImage: 'linear-gradient(to right, rgba(88, 28, 135, 0.9), rgba(147, 51, 234, 0.7)), url("https://images.unsplash.com/photo-1524178232363-1fb2b075b655?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80")' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-5xl md:text-6xl font-bold mb-6 text-white">Contact Us</h1>
-          <p className="text-2xl text-purple-100 max-w-2xl">Get in touch with Kiwalan National High School</p>
+          <h1 className="text-5xl md:text-6xl font-bold mb-6 text-white">{content.contact_title || 'Contact Us'}</h1>
+          <p className="text-2xl text-purple-100 max-w-2xl">{content.contact_subtitle || 'Get in touch with Kiwalan National High School'}</p>
         </div>
       </div>
 
@@ -99,13 +99,26 @@ const Contact = () => {
               </div>
 
               {/* Map Placeholder */}
-              <div className="mt-10 bg-gradient-to-br from-gray-100 to-gray-200 h-80 rounded-xl flex items-center justify-center shadow-md">
-                <div className="text-center text-gray-500">
-                  <svg className="w-16 h-16 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
-                  </svg>
-                  <p className="text-lg">Map will be displayed here</p>
-                </div>
+              <div className="mt-10 bg-gradient-to-br from-gray-100 to-gray-200 h-80 rounded-xl overflow-hidden shadow-md">
+                {content.contact_map_url ? (
+                  <iframe 
+                    src={content.contact_map_url}
+                    width="100%" 
+                    height="100%" 
+                    style={{ border: 0 }} 
+                    allowFullScreen="" 
+                    loading="lazy"
+                  ></iframe>
+                ) : (
+                  <div className="flex items-center justify-center h-full">
+                    <div className="text-center text-gray-500">
+                      <svg className="w-16 h-16 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                      </svg>
+                      <p className="text-lg">Map will be displayed here</p>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 

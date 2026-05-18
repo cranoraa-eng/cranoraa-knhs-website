@@ -619,21 +619,35 @@ class EnrollmentApplication(models.Model):
 
 class WebsiteContent(models.Model):
     SECTION_CHOICES = [
+        # Home Page
         ('home_hero_title', 'Home Hero Title'),
         ('home_hero_subtitle', 'Home Hero Subtitle'),
-        ('home_announcement_1_title', 'Home Announcement 1 Title'),
-        ('home_announcement_1_content', 'Home Announcement 1 Content'),
-        ('home_announcement_1_date', 'Home Announcement 1 Date'),
-        ('home_announcement_2_title', 'Home Announcement 2 Title'),
-        ('home_announcement_2_content', 'Home Announcement 2 Content'),
-        ('home_announcement_2_date', 'Home Announcement 2 Date'),
-        ('home_announcement_3_title', 'Home Announcement 3 Title'),
-        ('home_announcement_3_content', 'Home Announcement 3 Content'),
-        ('home_announcement_3_date', 'Home Announcement 3 Date'),
+        ('home_feature_1_title', 'Home Feature 1 Title'),
+        ('home_feature_1_content', 'Home Feature 1 Content'),
+        ('home_feature_2_title', 'Home Feature 2 Title'),
+        ('home_feature_2_content', 'Home Feature 2 Content'),
+        ('home_feature_3_title', 'Home Feature 3 Title'),
+        ('home_feature_3_content', 'Home Feature 3 Content'),
+        
+        # About Page
         ('about_title', 'About Title'),
-        ('about_content', 'About Content'),
+        ('about_subtitle', 'About Subtitle'),
+        ('about_mission_title', 'About Mission Title'),
+        ('about_mission_content', 'About Mission Content'),
+        ('about_vision_title', 'About Vision Title'),
+        ('about_vision_content', 'About Vision Content'),
+        ('about_history_title', 'About History Title'),
+        ('about_history_content', 'About History Content'),
+        
+        # Contact Page
         ('contact_title', 'Contact Title'),
-        ('contact_content', 'Contact Content'),
+        ('contact_subtitle', 'Contact Subtitle'),
+        ('contact_address', 'Contact Address'),
+        ('contact_email', 'Contact Email'),
+        ('contact_phone', 'Contact Phone'),
+        ('contact_map_url', 'Contact Map URL'),
+        
+        # Programs Page
         ('programs_title', 'Programs Title'),
         ('programs_subtitle', 'Programs Subtitle'),
         ('programs_academic_title', 'Academic Programs Title'),
@@ -645,17 +659,28 @@ class WebsiteContent(models.Model):
         ('programs_arts_title', 'Arts Programs Title'),
         ('programs_arts_content', 'Arts Programs Content'),
     ]
+
+    CATEGORY_CHOICES = [
+        ('home', 'Home Page'),
+        ('about', 'About Page'),
+        ('contact', 'Contact Page'),
+        ('programs', 'Programs Page'),
+        ('other', 'Other'),
+    ]
     
     section = models.CharField(max_length=100, choices=SECTION_CHOICES, unique=True, null=True, blank=True)
+    category = models.CharField(max_length=50, choices=CATEGORY_CHOICES, default='other')
     content = models.TextField()
     updated_at = models.DateTimeField(auto_now=True)
     updated_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     
     class Meta:
-        ordering = ['section']
+        ordering = ['category', 'section']
+        verbose_name = 'Website Content'
+        verbose_name_plural = 'Website Contents'
     
     def __str__(self):
-        return self.section
+        return f"[{self.get_category_display()}] {self.get_section_display()}"
 
 
 class Grade(models.Model):

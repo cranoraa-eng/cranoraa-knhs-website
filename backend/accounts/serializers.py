@@ -133,7 +133,7 @@ class AnnouncementAttachmentSerializer(serializers.ModelSerializer):
         if obj.file:
             if request:
                 return request.build_absolute_uri(obj.file.url)
-            return obj.file.url
+            return f"http://127.0.0.1:8000{obj.file.url}"
         return None
 
     def get_is_image(self, obj):
@@ -165,7 +165,7 @@ class AnnouncementSerializer(serializers.ModelSerializer):
             request = self.context.get('request')
             if request:
                 return request.build_absolute_uri(obj.attachment.url)
-            return obj.attachment.url
+            return f"http://127.0.0.1:8000{obj.attachment.url}"
         return None
     def get_read_count(self, obj): return obj.read_by.count()
 
@@ -295,13 +295,14 @@ class EnrollmentApplicationSerializer(serializers.ModelSerializer):
 
 class WebsiteContentSerializer(serializers.ModelSerializer):
     section_display = serializers.CharField(source='get_section_display', read_only=True)
+    category_display = serializers.CharField(source='get_category_display', read_only=True)
     updated_by_name = serializers.SerializerMethodField()
 
     class Meta:
         model = WebsiteContent
-        fields = ['id', 'section', 'section_display', 'content', 'updated_at',
-                  'updated_by', 'updated_by_name']
-        read_only_fields = ['section', 'updated_at', 'updated_by']
+        fields = ['id', 'section', 'section_display', 'category', 'category_display', 
+                  'content', 'updated_at', 'updated_by', 'updated_by_name']
+        read_only_fields = ['section', 'category', 'updated_at', 'updated_by']
 
     def get_updated_by_name(self, obj):
         return full_name(obj.updated_by) if obj.updated_by else ''

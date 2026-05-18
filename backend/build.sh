@@ -2,15 +2,12 @@
 # exit on error
 set -o errexit
 
-# Install dependencies
-pip install --upgrade pip
 pip install -r requirements.txt
 
-# Collect static files
 python manage.py collectstatic --no-input
 
 # Run migrations
 python manage.py migrate
 
-# Run superuser and manual verification script
-python create_superuser.py || true
+# Seed website content (optional, but good for first deploy)
+python manage.py seed_website_content

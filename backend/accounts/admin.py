@@ -33,16 +33,20 @@ admin.site.register(Profile)
 
 @admin.register(WebsiteContent)
 class WebsiteContentAdmin(admin.ModelAdmin):
-    list_display = ('section', 'content_preview', 'updated_at', 'updated_by')
-    list_filter = ('section', 'updated_at')
+    list_display = ('section_display', 'category', 'content_preview', 'updated_at', 'updated_by')
+    list_filter = ('category', 'updated_at')
     search_fields = ('section', 'content')
     readonly_fields = ('updated_at', 'updated_by')
+    list_per_page = 25
     
+    def section_display(self, obj):
+        return obj.get_section_display()
+    section_display.short_description = 'Section'
+
     def content_preview(self, obj):
         return obj.content[:100] + '...' if len(obj.content) > 100 else obj.content
     content_preview.short_description = 'Content Preview'
     
     def save_model(self, request, obj, form, change):
-        if not change:  # If creating a new object
-            obj.updated_by = request.user
+        obj.updated_by = request.user
         super().save_model(request, obj, form, change)
