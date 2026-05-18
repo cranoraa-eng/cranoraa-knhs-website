@@ -38,7 +38,7 @@ if not DEBUG:
 #     'django.contrib.auth.hashers.BCryptSHA256PasswordHasher',
 # ]
 
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1,cranoraa-knhs-website-1.onrender.com').split(',')
 
 
 # Application definition
