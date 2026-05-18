@@ -45,10 +45,20 @@ If you did not request this code, you can safely ignore this email.
     recipient_list = [user.email]
     
     try:
-        send_mail(subject, message, email_from, recipient_list)
+        logger.info(f"Attempting to send OTP email to {user.email} using {email_from}")
+        send_mail(
+            subject, 
+            message, 
+            email_from, 
+            recipient_list,
+            fail_silently=False
+        )
+        logger.info(f"OTP email successfully sent to {user.email}")
         return True
     except Exception as e:
-        logger.error(f"Error sending OTP email: {str(e)}")
+        logger.error(f"FAILED to send OTP email to {user.email}: {str(e)}")
+        # Log settings for debugging (don't log password)
+        logger.error(f"Email Settings: HOST={settings.EMAIL_HOST}, PORT={settings.EMAIL_PORT}, TLS={settings.EMAIL_USE_TLS}, SSL={settings.EMAIL_USE_SSL}, USER={settings.EMAIL_HOST_USER}")
         return False
 
 @api_view(['POST'])
