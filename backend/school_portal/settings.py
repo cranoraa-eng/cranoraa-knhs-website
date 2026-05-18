@@ -80,22 +80,23 @@ WSGI_APPLICATION = 'school_portal.wsgi.application'
 ASGI_APPLICATION = 'school_portal.asgi.application'
 
 # Channels Layer for WebSockets
-# Production: Use Redis if REDIS_URL is available.
-# Fallback: Use InMemoryChannelLayer if Redis is missing to prevent 500 errors during boot.
-CHANNEL_LAYERS = {
-    'default': {
-        'BACKEND': 'channels.layers.InMemoryChannelLayer',
-    },
-}
-
-if not DEBUG and os.environ.get('REDIS_URL'):
-    CHANNEL_LAYERS['default'] = {
-        'BACKEND': 'channels_redis.core.RedisChannelLayer',
-        'CONFIG': {
-            "hosts": [os.environ.get('REDIS_URL')],
+# Use Redis if REDIS_URL is provided in environment variables.
+# Fallback to InMemoryChannelLayer if Redis is unavailable to prevent boot errors.
+if os.environ.get('REDIS_URL'):
+    CHANNEL_LAYERS = {
+        'default': {
+            'BACKEND': 'channels_redis.core.RedisChannelLayer',
+            'CONFIG': {
+                "hosts": [os.environ.get('REDIS_URL')],
+            },
         },
     }
-
+else:
+    CHANNEL_LAYERS = {
+        'default': {
+            'BACKEND': 'channels.layers.InMemoryChannelLayer',
+        },
+    }
 
 # Database
 DATABASES = {
