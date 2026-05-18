@@ -504,7 +504,7 @@ class UserViewSet(viewsets.ModelViewSet):
         """Return all users pending approval (admin only)"""
         if request.user.role != 'admin':
             return Response({'error': 'Unauthorized'}, status=status.HTTP_403_FORBIDDEN)
-        users = User.objects.filter(is_verified=True, is_approved=False).order_by('date_joined')
+        users = User.objects.filter(is_approved=False).order_by('date_joined')
         serializer = self.get_serializer(users, many=True)
         return Response(serializer.data)
 
@@ -1115,7 +1115,7 @@ def admin_dashboard_stats(request):
     total_teachers = User.objects.filter(role='teacher', is_approved=True).count()
     total_classes  = Classroom.objects.count()
     total_subjects = Subject.objects.count()
-    pending_approvals = User.objects.filter(is_verified=True, is_approved=False).count()
+    pending_approvals = User.objects.filter(is_approved=False).count()
 
     # Attendance today
     today_attendance = Attendance.objects.filter(date=today)
