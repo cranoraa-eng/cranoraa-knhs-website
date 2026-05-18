@@ -20,11 +20,7 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', os.environ.get('SECRET_KEY', 'd
 DEBUG = os.environ.get('DEBUG', 'False').lower() in ('true', '1', 't')
 
 # Allowed hosts for the Django application.
-ALLOWED_HOSTS = [h.strip() for h in os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',') if h.strip()]
-
-RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
-if RENDER_EXTERNAL_HOSTNAME and RENDER_EXTERNAL_HOSTNAME not in ALLOWED_HOSTS:
-    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
+ALLOWED_HOSTS = ['*'] # Permissive for debugging 502 issues
 
 
 # Application definition
@@ -42,15 +38,15 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
     'corsheaders',
-    'axes',
+    # 'axes', # Temporarily disabled to rule out DB write crashes
     'channels',
     'accounts',
     'portal',
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware', # First
     'django.middleware.security.SecurityMiddleware',
-    'corsheaders.middleware.CorsMiddleware', # Move higher
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -58,7 +54,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'axes.middleware.AxesMiddleware',
+    # 'axes.middleware.AxesMiddleware', # Temporarily disabled
     'portal.middleware.APIRequestLoggingMiddleware',
 ]
 
@@ -151,7 +147,7 @@ STORAGES = {
         "BACKEND": "django.core.files.storage.FileSystemStorage",
     },
     "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage", # Removed Manifest to avoid missing file errors
     },
 }
 
@@ -163,7 +159,7 @@ AUTH_USER_MODEL = 'accounts.User'
 
 # Authentication Backends (including Axes for rate limiting)
 AUTHENTICATION_BACKENDS = [
-    'axes.backends.AxesStandaloneBackend',
+    # 'axes.backends.AxesStandaloneBackend',
     'django.contrib.auth.backends.ModelBackend',
 ]
 
@@ -191,12 +187,7 @@ SIMPLE_JWT = {
 }
 
 # CORS Configuration
-CORS_ALLOWED_ORIGINS = [
-    o.strip() for o in os.environ.get(
-        'CORS_ALLOWED_ORIGINS',
-        'http://localhost:5173,http://127.0.0.1:5173'
-    ).split(',') if o.strip()
-]
+CORS_ALLOW_ALL_ORIGINS = True # Permissive for debugging
 
 CORS_ALLOW_CREDENTIALS = True
 
