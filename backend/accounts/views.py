@@ -85,16 +85,18 @@ def login_view(request):
             )
         
         # PRODUCTION BYPASS: Render free tier blocks SMTP (Errno 101).
-        # We will auto-verify users to allow the application to function.
+        # We will auto-verify users to allow the application to function,
+        # but we will still require manual admin approval if that is enabled.
         if not user.is_verified:
             logger.info(f"Auto-verifying user {email} due to SMTP network restrictions.")
             user.is_verified = True
-            user.is_approved = True # Also auto-approve for now
             user.save()
         
         if not user.is_approved:
-            user.is_approved = True # Force approve if verification was bypassed
-            user.save()
+            return Response(
+                {'error': 'Your account is pending admin approval. Please wait for an administrator to approve your account.', 'code': 'not_approved'},
+                status=status.HTTP_403_FORBIDDEN
+            )
         
         refresh = RefreshToken.for_user(user)
         
@@ -165,12 +167,11 @@ def register_view(request):
             user.is_approved = True
         else:
             user.is_approved = False
-        user.is_verified = True
-        user.is_approved = True
+        user.is_verified = True # Auto-verify to skip broken email service
         user.save()
         
         # Create profile with additional student data
-        from .models import Profile, OTP
+        from .models import Profile
         profile = Profile.objects.create(user=user)
         
         if role == 'student' and profile_data:
@@ -192,7 +193,7 @@ def register_view(request):
         )
     
     return Response({
-        'message': 'Account created! You can now log in immediately.',
+        'message': 'Account created successfully! Your account is now pending admin approval.',
         'email': email
     }, status=status.HTTP_201_CREATED)
 
