@@ -1,3 +1,4 @@
+// Contact page for Kiwalan National High School
 import { useState, useEffect } from 'react';
 import api from '../utils/api';
 
