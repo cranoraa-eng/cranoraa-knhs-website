@@ -4,19 +4,23 @@ import sys
 
 # Set up Django environment
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'school_portal.settings')
-django.setup()
+try:
+    django.setup()
+except Exception as e:
+    print(f"Error setting up Django: {e}")
+    sys.exit(1)
 
 from accounts.models import User
 from django.db.utils import IntegrityError
 
 def create_superuser():
-    email = os.environ.get('DJANGO_SUPERUSER_EMAIL', 'admin@example.com')
+    email = os.environ.get('DJANGO_SUPERUSER_EMAIL')
     username = os.environ.get('DJANGO_SUPERUSER_USERNAME', 'admin')
-    password = os.environ.get('DJANGO_SUPERUSER_PASSWORD', 'adminpassword123')
-    role = 'admin' # Default role for superuser in this project
+    password = os.environ.get('DJANGO_SUPERUSER_PASSWORD')
+    role = 'admin' 
 
     if not email or not password:
-        print("Error: DJANGO_SUPERUSER_EMAIL and DJANGO_SUPERUSER_PASSWORD must be set.")
+        print("Skipping superuser creation: DJANGO_SUPERUSER_EMAIL or DJANGO_SUPERUSER_PASSWORD not set.")
         return
 
     try:
@@ -31,10 +35,8 @@ def create_superuser():
             print("Superuser created successfully.")
         else:
             print(f"Superuser with email {email} already exists.")
-    except IntegrityError as e:
-        print(f"Error creating superuser: {e}")
     except Exception as e:
-        print(f"An unexpected error occurred: {e}")
+        print(f"Could not create superuser: {e}")
 
 if __name__ == "__main__":
     create_superuser()
