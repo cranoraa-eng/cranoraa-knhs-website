@@ -153,9 +153,12 @@ const Messages = () => {
   const connectWebSocket = (roomId) => {
     socketRef.current?.close();
     const token    = localStorage.getItem('access_token');
-    const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
-    const host     = window.location.host === 'localhost:5173' ? 'localhost:8000' : window.location.host;
-    const ws       = new WebSocket(`${protocol}://${host}/ws/chat/${roomId}/?token=${token}`);
+    
+    // Derive WebSocket URL from API_BASE_URL
+    const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+    const wsUrl = apiBase.replace('http', 'ws').replace('/api', '');
+    
+    const ws       = new WebSocket(`${wsUrl}/ws/chat/${roomId}/?token=${token}`);
     socketRef.current = ws;
 
     ws.onmessage = (e) => {
