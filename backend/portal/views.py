@@ -23,16 +23,20 @@ def log_audit_action(user, action, model_name, object_id=None, object_repr='', d
         ip_address = get_client_ip(request)
         user_agent = request.META.get('HTTP_USER_AGENT', '')[:500]  # Limit to 500 chars
     
-    AuditLog.objects.create(
-        user=user,
-        action=action,
-        model_name=model_name,
-        object_id=object_id,
-        object_repr=object_repr[:255],  # Limit to 255 chars
-        description=description[:1000],  # Limit to 1000 chars
-        ip_address=ip_address,
-        user_agent=user_agent
-    )
+    try:
+        AuditLog.objects.create(
+            user=user,
+            action=action,
+            model_name=model_name,
+            object_id=object_id,
+            object_repr=object_repr[:255],  # Limit to 255 chars
+            description=description[:1000],  # Limit to 1000 chars
+            ip_address=ip_address,
+            user_agent=user_agent
+        )
+    except Exception as e:
+        # Don't crash the whole request if audit logging fails
+        logger.error(f"Audit log failed: {str(e)}")
 
 def get_client_ip(request):
     """Helper function to get client IP address"""
