@@ -3,7 +3,8 @@ services:
     name: knhs-backend
     env: python
     buildCommand: ./build.sh
-    startCommand: gunicorn school_portal.wsgi:application
+    startCommand: daphne -b 0.0.0.0 -p $PORT school_portal.asgi:application
+    healthCheckPath: /
     envVars:
       - key: SECRET_KEY
         generateValue: true
@@ -21,3 +22,5 @@ services:
         generateValue: true
       - key: PYTHON_VERSION
         value: 3.11.0
+      - key: DJANGO_SETTINGS_MODULE
+        value: school_portal.settings
