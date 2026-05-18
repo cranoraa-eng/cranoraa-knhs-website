@@ -63,6 +63,14 @@ const Messages = () => {
   // ── Helpers ───────────────────────────────────────────────────────────────
   const scrollToBottom = () => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
 
+  const safeSend = (data) => {
+    if (socketRef.current?.readyState === WebSocket.OPEN) {
+      socketRef.current.send(JSON.stringify(data));
+      return true;
+    }
+    return false;
+  };
+
   // ── Effects ───────────────────────────────────────────────────────────────
   useEffect(() => { scrollToBottom(); }, [messages, peerTyping]);
 
@@ -127,9 +135,7 @@ const Messages = () => {
       const lastMsg = r.data[r.data.length - 1];
       if (lastMsg && lastMsg.sender !== user.id) {
         setTimeout(() => {
-          if (socketRef.current?.readyState === WebSocket.OPEN) {
-            socketRef.current.send(JSON.stringify({ type: 'read', message_id: lastMsg.id }));
-          }
+          safeSend({ type: 'read', message_id: lastMsg.id });
         }, 200);
       }
 
@@ -196,8 +202,8 @@ const Messages = () => {
           is_read: data.is_read || false,
         };
         setMessages(prev => [...prev, msg]);
-        if (data.sender_id !== user.id && ws.readyState === WebSocket.OPEN) {
-          ws.send(JSON.stringify({ type: 'read', message_id: data.message_id }));
+        if (data.sender_id !== user.id) {
+          safeSend({ type: 'read', message_id: data.message_id });
         }
         // Update last_message preview in sidebar
         setRooms(prev => prev.map(r =>
@@ -277,34 +283,33 @@ const Messages = () => {
     e.preventDefault();
     if (!newMessage.trim()) return;
     
-    // Check if socket is actually open
-    if (!socketRef.current || socketRef.current.readyState !== WebSocket.OPEN) {
-      toast.error('Connection lost. Reconnecting...');
-      if (selectedRoom) connectWebSocket(selectedRoom.id);
-      return;
-    }
-
     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+    
     if (isTyping) {
-      socketRef.current.send(JSON.stringify({ type: 'typing', is_typing: false }));
+      safeSend({ type: 'typing', is_typing: false });
       setIsTyping(false);
     }
-    socketRef.current.send(JSON.stringify({ message: newMessage }));
-    setNewMessage('');
+
+    const sent = safeSend({ message: newMessage });
+    
+    if (sent) {
+      setNewMessage('');
+    } else {
+      toast.error('Connection lost. Reconnecting...');
+      if (selectedRoom) connectWebSocket(selectedRoom.id);
+    }
   };
 
   const handleTyping = (e) => {
     setNewMessage(e.target.value);
-    if (!socketRef.current) return;
     if (!isTyping) {
       setIsTyping(true);
-      socketRef.current.send(JSON.stringify({ type: 'typing', is_typing: true }));
+      safeSend({ type: 'typing', is_typing: true });
     }
     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
     typingTimeoutRef.current = setTimeout(() => {
       setIsTyping(false);
-      if (socketRef.current?.readyState === WebSocket.OPEN)
-        socketRef.current.send(JSON.stringify({ type: 'typing', is_typing: false }));
+      safeSend({ type: 'typing', is_typing: false });
     }, 2000);
   };
 
