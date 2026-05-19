@@ -161,23 +161,23 @@ const AuditLogs = () => {
   }
 
   return (
-    <div className="p-2 md:p-8 space-y-3 md:space-y-6 max-w-full overflow-x-hidden">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-4">
-        <div>
-          <h1 className="text-lg md:text-3xl font-black text-gray-800 tracking-tight">Audit Logs</h1>
-          <p className="text-gray-500 text-[10px] md:text-sm font-medium mt-0.5">Track all administrative and system actions</p>
+    <div className="p-2 md:p-8 space-y-3 md:space-y-6 max-w-full overflow-x-hidden min-h-full">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-4 min-w-0">
+        <div className="min-w-0">
+          <h1 className="text-lg md:text-3xl font-black text-gray-800 tracking-tight truncate">Audit Logs</h1>
+          <p className="text-gray-500 text-[10px] md:text-sm font-medium mt-0.5 truncate">Track all administrative and system actions</p>
           
-          <div className="mt-2 flex items-center gap-3 md:gap-4">
-            <div className="flex flex-col">
-              <div className="flex items-center gap-1.5 mb-1">
-                <span className="text-[8px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest">Storage</span>
-                <span className={`text-[8px] md:text-[10px] font-bold px-1 py-0.5 rounded ${
+          <div className="mt-2 flex items-center gap-3 md:gap-4 min-w-0">
+            <div className="flex flex-col min-w-0">
+              <div className="flex items-center gap-1.5 mb-1 min-w-0">
+                <span className="text-[8px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest shrink-0">Storage</span>
+                <span className={`text-[8px] md:text-[10px] font-bold px-1 py-0.5 rounded shrink-0 ${
                   (stats.size_mb / stats.max_mb) > 0.8 ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600'
                 }`}>
                   {stats.size_mb}MB / {stats.max_mb}MB
                 </span>
               </div>
-              <div className="w-32 md:w-48 h-1 md:h-1.5 bg-gray-100 rounded-full overflow-hidden border border-gray-200">
+              <div className="w-32 md:w-48 h-1 md:h-1.5 bg-gray-100 rounded-full overflow-hidden border border-gray-200 shrink-0">
                 <div 
                   className={`h-full transition-all duration-500 ${
                     (stats.size_mb / stats.max_mb) > 0.8 ? 'bg-red-500' : 'bg-blue-500'
@@ -187,14 +187,14 @@ const AuditLogs = () => {
               </div>
             </div>
             {stats.size_mb > (stats.max_mb * 0.8) && (
-              <p className="text-[8px] md:text-[10px] font-bold text-red-500 animate-pulse truncate max-w-[100px] md:max-w-none">
+              <p className="text-[8px] md:text-[10px] font-bold text-red-500 animate-pulse truncate max-w-[100px] md:max-w-none shrink-0">
                 Storage Full!
               </p>
             )}
           </div>
         </div>
         
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5 shrink-0">
           {selectedIds.length > 0 && (
             <button
               onClick={handleBulkDelete}
@@ -221,9 +221,9 @@ const AuditLogs = () => {
         </div>
       </div>
 
-      <div className="bg-white border border-gray-200 rounded-xl md:rounded-2xl shadow-sm overflow-hidden">
-        <div className="p-2 md:p-4 border-b border-gray-100 bg-gray-50/50">
-          <div className="relative group max-w-md">
+      <div className="bg-white border border-gray-200 rounded-xl md:rounded-2xl shadow-sm overflow-hidden min-w-0">
+        <div className="p-2 md:p-4 border-b border-gray-100 bg-gray-50/50 min-w-0">
+          <div className="relative group max-w-md min-w-0">
             <svg className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 group-focus-within:text-purple-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
@@ -246,9 +246,9 @@ const AuditLogs = () => {
             <p className="text-sm font-medium">Try adjusting your search or filters</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-[10px] md:text-sm text-left">
-              <thead className="bg-gray-50 text-gray-500 uppercase text-[8px] md:text-[10px] font-black tracking-widest border-b border-gray-200">
+          <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent">
+            <table className="w-full min-w-[600px] md:min-w-full text-[10px] md:text-sm text-left">
+              <thead className="bg-gray-50 text-gray-500 uppercase text-[8px] md:text-[10px] font-black tracking-widest border-b border-gray-200 sticky top-0">
                 <tr>
                   <th className="px-3 py-2 md:px-6 md:py-4 w-8 md:w-10">
                     <input
