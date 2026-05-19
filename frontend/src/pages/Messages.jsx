@@ -82,19 +82,27 @@ const Messages = () => {
     fetchFriends();
     fetchFriendships();
 
-    // Poll room list every 15s to keep unread counts fresh across all rooms
-    const interval = setInterval(fetchRooms, 15000);
+    // Fallback polling (less frequent now that we have real-time)
+    const interval = setInterval(() => {
+      fetchRooms();
+      fetchFriendships();
+    }, 60000);
     return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
-    if (!selectedRoom) return;
-    fetchMessages(selectedRoom.id);
-    connectWebSocket(selectedRoom.id);
-    // Clear unread badge immediately when room is opened
-    setRooms(prev => prev.map(r => r.id === selectedRoom.id ? { ...r, unread_count: 0 } : r));
+    // Always connect to WS, use '0' if no room selected to get personal notifications
+    const roomId = selectedRoom?.id || '0';
+    connectWebSocket(roomId);
+    
+    if (selectedRoom) {
+      fetchMessages(selectedRoom.id);
+      // Clear unread badge immediately when room is opened
+      setRooms(prev => prev.map(r => r.id === selectedRoom.id ? { ...r, unread_count: 0 } : r));
+    }
+    
     return () => { socketRef.current?.close(); };
-  }, [selectedRoom]);
+  }, [selectedRoom?.id]);
 
   useEffect(() => {
     if (activeTab !== 'search') return;
@@ -155,6 +163,43 @@ const Messages = () => {
     finally { setIsSearching(false); }
   };
 
+  // ── Derived state ──────────────────────────────────────────────────────────
+  const filteredRooms = useMemo(() => {
+    let list = [...rooms];
+    if (searchQuery.trim()) {
+      list = list.filter(r => {
+        const name = r.is_group ? r.name : r.participants_details.find(p => p.id !== user.id)?.full_name;
+        return name?.toLowerCase().includes(searchQuery.toLowerCase());
+      });
+    }
+    // Sort: Pinned first, then by last message timestamp (updated_at)
+    return list.sort((a, b) => {
+      if (a.is_pinned && !b.is_pinned) return -1;
+      if (!a.is_pinned && b.is_pinned) return 1;
+      return new Date(b.updated_at) - new Date(a.updated_at);
+    });
+  }, [rooms, searchQuery, user.id]);
+
+  const organizedSearchResults = useMemo(() => {
+    const results = {
+      admins: [],
+      teachers: [],
+      studentGroups: {}
+    };
+
+    searchResults.forEach(u => {
+      if (u.role === 'admin') results.admins.push(u);
+      else if (u.role === 'teacher') results.teachers.push(u);
+      else if (u.role === 'student') {
+        const groupName = u.profile?.grade_level || 'Other Students';
+        if (!results.studentGroups[groupName]) results.studentGroups[groupName] = [];
+        results.studentGroups[groupName].push(u);
+      }
+    });
+
+    return results;
+  }, [searchResults]);
+
   // ── WebSocket ─────────────────────────────────────────────────────────────
   const connectWebSocket = (roomId) => {
     if (socketRef.current) {
@@ -203,13 +248,13 @@ const Messages = () => {
         if (data.sender_id !== user.id) {
           safeSend({ type: 'read', message_id: data.message_id });
         }
-        // Update last_message preview in sidebar
+        // Update room state live (for sorting and preview)
         setRooms(prev => prev.map(r =>
           r.id === data.room_id
             ? {
                 ...r,
-                last_message: { content: data.message, timestamp: data.timestamp, sender_name: data.sender_name },
-                // Increment unread count only if this room is NOT currently open and message is from someone else
+                last_message: { id: data.message_id, content: data.message, timestamp: data.timestamp, sender_name: data.sender_name },
+                updated_at: data.timestamp, // Move to top live
                 unread_count: (data.sender_id !== user.id && selectedRoomRef.current?.id !== data.room_id)
                   ? (r.unread_count || 0) + 1
                   : r.unread_count,
@@ -222,7 +267,15 @@ const Messages = () => {
         setMessages(prev => prev.filter(m => m.id !== data.message_id));
       }
 
-      // New message notify — from personal channel, for rooms NOT currently open
+      if (data.type === 'message_edited') {
+        setMessages(prev => prev.map(m => m.id === data.message_id ? { ...m, content: data.content, is_edited: true } : m));
+      }
+
+      if (data.type === 'message_pinned') {
+        setMessages(prev => prev.map(m => m.id === data.message_id ? { ...m, is_pinned: data.is_pinned } : m));
+      }
+
+      // Live Room/Event updates
       if (data.type === 'new_message_notify') {
         const currentRoomId = selectedRoomRef.current?.id;
         setRooms(prev => prev.map(r => {
@@ -230,7 +283,7 @@ const Messages = () => {
           return {
             ...r,
             last_message: { content: data.content, timestamp: data.timestamp, sender_name: data.sender_name },
-            // Only increment unread if this room is NOT currently open
+            updated_at: data.timestamp, // Move to top live
             unread_count: currentRoomId === data.room_id
               ? 0
               : (r.unread_count || 0) + 1,
@@ -238,15 +291,48 @@ const Messages = () => {
         }));
         return;
       }
-      if (data.type === 'room_updated') {
+      if (data.type === 'room_update') {
         const updated = data.room;
-        // Update the room in the sidebar list
-        setRooms(prev => prev.map(r => r.id === updated.id ? updated : r));
-        // Update the active chat header if this is the open room
-        setSelectedRoom(prev => prev?.id === updated.id ? updated : prev);
+        if (data.event === 'new_room') {
+           setRooms(prev => {
+             if (prev.some(r => r.id === updated.id)) return prev;
+             toast(`New chat: ${updated.is_group ? updated.name : updated.participants_details.find(p => p.id !== user.id)?.full_name}`, { icon: '💬' });
+             return [updated, ...prev];
+           });
+        } else {
+           setRooms(prev => prev.map(r => r.id === updated.id ? { ...updated, unread_count: r.unread_count } : r));
+           setSelectedRoom(prev => prev?.id === updated.id ? updated : prev);
+        }
       }
 
-      // Group was deleted by creator — kick everyone out
+      if (data.type === 'friendship_update') {
+        // Refresh friends and requests list live
+        fetchFriends();
+        fetchFriendships();
+        if (data.event === 'request_received') {
+          toast(`New friend request!`, { icon: '🤝' });
+        } else if (data.event === 'request_accepted') {
+          toast(`Friend request accepted!`, { icon: '✨' });
+        }
+      }
+
+      if (data.type === 'user_online' || data.type === 'peer_presence') {
+        const isOnline = data.type === 'user_online' ? true : data.is_online;
+        const updateOnlineStatus = (list) => list.map(u => u.id === data.user_id ? { ...u, is_online: isOnline } : u);
+        
+        setFriends(updateOnlineStatus);
+        setRooms(prev => prev.map(r => ({
+          ...r,
+          participants_details: updateOnlineStatus(r.participants_details || [])
+        })));
+        if (selectedRoom) {
+          setSelectedRoom(prev => prev ? {
+            ...prev,
+            participants_details: updateOnlineStatus(prev.participants_details || [])
+          } : null);
+        }
+      }
+
       if (data.type === 'group_deleted') {
         setRooms(prev => prev.filter(r => r.id !== data.room_id));
         setSelectedRoom(prev => {
@@ -260,283 +346,6 @@ const Messages = () => {
         });
       }
     };
-
-    ws.onclose = (e) => {
-      console.log(`WS disconnected from room ${roomId}. Code: ${e.code}`);
-      // Auto-reconnect after 3 seconds if the room is still selected
-      if (selectedRoomRef.current?.id === roomId) {
-        console.log('Attempting to reconnect...');
-        setTimeout(() => connectWebSocket(roomId), 3000);
-      }
-    };
-
-    ws.onerror = (err) => {
-      console.error('WS Error:', err);
-      ws.close();
-    };
-  };
-
-  // ── Message actions ───────────────────────────────────────────────────────
-  const handleSendMessage = (e) => {
-    e.preventDefault();
-    if (!newMessage.trim()) return;
-    
-    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
-    
-    if (isTyping) {
-      safeSend({ type: 'typing', is_typing: false });
-      setIsTyping(false);
-    }
-
-    const sent = safeSend({ message: newMessage });
-    
-    if (sent) {
-      setNewMessage('');
-    } else {
-      toast.error('Connection lost. Reconnecting...');
-      if (selectedRoom) connectWebSocket(selectedRoom.id);
-    }
-  };
-
-  const handleTyping = (e) => {
-    setNewMessage(e.target.value);
-    if (!isTyping) {
-      setIsTyping(true);
-      safeSend({ type: 'typing', is_typing: true });
-    }
-    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
-    typingTimeoutRef.current = setTimeout(() => {
-      setIsTyping(false);
-      safeSend({ type: 'typing', is_typing: false });
-    }, 2000);
-  };
-
-  const handleDeleteMessage = async (msgId) => {
-    const result = await Swal.fire({
-      title: 'Delete message?', icon: 'warning',
-      showCancelButton: true, confirmButtonColor: '#ef4444',
-      confirmButtonText: 'Delete',
-    });
-    if (!result.isConfirmed) return;
-    try {
-      await api.delete(`/chat/messages/${msgId}/`);
-      setMessages(prev => prev.filter(m => m.id !== msgId));
-      toast.success('Message deleted');
-    } catch { toast.error('Failed to delete message'); }
-  };
-
-  const handleEditMessage = async (msgId) => {
-    if (!editContent.trim()) return;
-    try {
-      const res = await api.patch(`/chat/messages/${msgId}/edit/`, { content: editContent });
-      setMessages(prev => prev.map(m => m.id === msgId ? { ...m, content: res.data.content } : m));
-      setEditingMessage(null);
-      setEditContent('');
-    } catch { toast.error('Failed to edit message'); }
-  };
-
-  const handleDeleteConversation = async (roomId) => {
-    const result = await Swal.fire({
-      title: 'Delete Conversation?',
-      text: 'All messages will be permanently deleted.',
-      icon: 'warning', showCancelButton: true,
-      confirmButtonColor: '#ef4444', cancelButtonColor: '#6b7280',
-      confirmButtonText: 'Delete',
-    });
-    if (!result.isConfirmed) return;
-    try {
-      await api.delete(`/chat/rooms/${roomId}/delete_conversation/`);
-      setSelectedRoom(null);
-      setMessages([]);
-      fetchRooms();
-      toast.success('Conversation deleted');
-    } catch { toast.error('Failed to delete conversation'); }
-  };
-
-  // ── Pin room ──────────────────────────────────────────────────────────────
-  const handlePinRoom = async (room) => {
-    try {
-      const endpoint = room.is_pinned ? 'unpin' : 'pin';
-      await api.post(`/chat/rooms/${room.id}/${endpoint}/`);
-      const updated = { ...room, is_pinned: !room.is_pinned };
-      setRooms(prev => prev.map(r => r.id === room.id ? updated : r));
-      setSelectedRoom(prev => prev?.id === room.id ? updated : prev);
-      toast.success(room.is_pinned ? 'Conversation unpinned' : 'Conversation pinned');
-    } catch { toast.error('Failed to update pin'); }
-  };
-
-  // ── Pin message ───────────────────────────────────────────────────────────
-  const handlePinMessage = async (msg) => {
-    try {
-      const endpoint = msg.is_pinned ? 'unpin' : 'pin';
-      await api.post(`/chat/messages/${msg.id}/${endpoint}/`);
-      setMessages(prev => prev.map(m => m.id === msg.id ? { ...m, is_pinned: !m.is_pinned } : m));
-      toast.success(msg.is_pinned ? 'Message unpinned' : 'Message pinned');
-    } catch { toast.error('Failed to update pin'); }
-  };
-
-  // ── Group settings ────────────────────────────────────────────────────────
-  const openGroupSettings = () => {
-    setNewGroupName(selectedRoom?.name || '');
-    setGroupSettingsTab('members');
-    setAddMemberSearch('');
-    setAddMemberResults([]);
-    setShowGroupSettings(true);
-  };
-
-  const handleRenameGroup = async () => {
-    if (!newGroupName.trim() || newGroupName === selectedRoom.name) return;
-    setSavingGroupName(true);
-    try {
-      const r = await api.patch(`/chat/rooms/${selectedRoom.id}/rename/`, { name: newGroupName });
-      setSelectedRoom(r.data);
-      setRooms(prev => prev.map(rm => rm.id === r.data.id ? r.data : rm));
-      toast.success('Group renamed');
-    } catch { toast.error('Failed to rename group'); }
-    finally { setSavingGroupName(false); }
-  };
-
-  const handleRemoveMember = async (memberId) => {
-    const result = await Swal.fire({
-      title: 'Remove member?', icon: 'warning',
-      showCancelButton: true, confirmButtonColor: '#ef4444',
-      confirmButtonText: 'Remove',
-    });
-    if (!result.isConfirmed) return;
-    try {
-      const r = await api.post(`/chat/rooms/${selectedRoom.id}/remove_participant/`, { user_id: memberId });
-      setSelectedRoom(r.data);
-      setRooms(prev => prev.map(rm => rm.id === r.data.id ? r.data : rm));
-      toast.success('Member removed');
-    } catch (err) {
-      toast.error(err.response?.data?.error || 'Failed to remove member');
-    }
-  };
-
-  const handleSearchAddMembers = async (q) => {
-    setAddMemberSearch(q);
-    if (!q.trim()) { setAddMemberResults([]); return; }
-    try {
-      setIsSearchingMembers(true);
-      const r = await api.get(`/users/search/?q=${q.trim()}`);
-      // Filter out people already in the room
-      const existingIds = new Set(selectedRoom.participants_details.map(p => p.id));
-      setAddMemberResults(r.data.filter(u => !existingIds.has(u.id)));
-    } catch { console.error('Search failed'); }
-    finally { setIsSearchingMembers(false); }
-  };
-
-  const handleAddMember = async (userId) => {
-    try {
-      const r = await api.post(`/chat/rooms/${selectedRoom.id}/add_participants/`, { user_ids: [userId] });
-      setSelectedRoom(r.data);
-      setRooms(prev => prev.map(rm => rm.id === r.data.id ? r.data : rm));
-      // Remove from search results
-      setAddMemberResults(prev => prev.filter(u => u.id !== userId));
-      toast.success('Member added');
-    } catch { toast.error('Failed to add member'); }
-  };
-
-  const handleDeleteGroup = async () => {
-    const result = await Swal.fire({
-      title: 'Delete Group?',
-      text: 'This will permanently delete the group and all messages.',
-      icon: 'warning', showCancelButton: true,
-      confirmButtonColor: '#ef4444', cancelButtonColor: '#6b7280',
-      confirmButtonText: 'Delete Group',
-    });
-    if (!result.isConfirmed) return;
-    try {
-      await api.delete(`/chat/rooms/${selectedRoom.id}/delete_group/`);
-      setSelectedRoom(null);
-      setMessages([]);
-      setShowGroupSettings(false);
-      fetchRooms();
-      toast.success('Group deleted');
-    } catch { toast.error('Failed to delete group'); }
-  };
-
-  // ── Group / chat creation ─────────────────────────────────────────────────
-  const handleCreateGroup = async (e) => {
-    e.preventDefault();
-    if (!groupName.trim() || selectedFriends.length === 0) return;
-    try {
-      const r = await api.post('/chat/rooms/', {
-        name: groupName, is_group: true,
-        participants: [...selectedFriends, user.id],
-      });
-      toast.success('Group created');
-      setShowGroupModal(false);
-      setGroupName('');
-      setSelectedFriends([]);
-      fetchRooms();
-      setSelectedRoom(r.data);
-      setActiveTab('chats');
-    } catch { toast.error('Failed to create group'); }
-  };
-
-  const startPrivateChat = async (friendId) => {
-    try {
-      const r = await api.post('/chat/rooms/get_or_create_private_chat/', { user_id: friendId });
-      fetchRooms();
-      setSelectedRoom(r.data);
-      setActiveTab('chats');
-    } catch { toast.error('Failed to start chat'); }
-  };
-
-  // ── Friendship helpers ────────────────────────────────────────────────────
-  const sendFriendRequest = async (targetUserId) => {
-    try {
-      await api.post('/friendships/', { to_user: targetUserId });
-      toast.success('Friend request sent');
-      fetchFriendships();
-    } catch { toast.error('Failed to send request'); }
-  };
-
-  const handleAcceptRequest = async (requestId) => {
-    try {
-      await api.post(`/friendships/${requestId}/accept/`);
-      toast.success('Request accepted');
-      fetchFriendships();
-      fetchFriends();
-    } catch { toast.error('Action failed'); }
-  };
-
-  const getFriendshipStatus = (userId) => {
-    const f = allFriendships.find(f =>
-      (f.from_user === user.id && f.to_user === userId) ||
-      (f.to_user === user.id && f.from_user === userId)
-    );
-    if (!f) return 'none';
-    if (f.status === 'accepted') return 'friends';
-    if (f.status === 'pending') return f.from_user === user.id ? 'sent' : 'received';
-    return 'none';
-  };
-
-  // ── Memos ─────────────────────────────────────────────────────────────────
-  const organizedSearchResults = useMemo(() => {
-    const admins   = searchResults.filter(u => u.role === 'admin');
-    const teachers = searchResults.filter(u => u.role === 'teacher');
-    const students = searchResults.filter(u => u.role === 'student');
-    const studentGroups = {};
-    students.forEach(s => {
-      const key = s.profile?.classroom_name || s.profile?.grade_level || 'Other Students';
-      if (!studentGroups[key]) studentGroups[key] = [];
-      studentGroups[key].push(s);
-    });
-    return { admins, teachers, studentGroups };
-  }, [searchResults]);
-
-  const filteredRooms = useMemo(() =>
-    rooms.filter(room => {
-      const name = room.is_group
-        ? room.name
-        : room.participants_details.find(p => p.id !== user.id)?.full_name;
-      return name?.toLowerCase().includes(searchQuery.toLowerCase());
-    }),
-  [rooms, searchQuery, user.id]);
-
-  // ── Sub-components ────────────────────────────────────────────────────────
   const FriendActionButton = ({ targetUser }) => {
     const status = getFriendshipStatus(targetUser.id);
     if (status === 'friends') return (

@@ -2230,6 +2230,36 @@ def _broadcast_room_update(room_id, room_data, event_type='room_updated'):
         }
     )
 
+def _notify_user_of_new_room(user_id, room_data):
+    """Notify a specific user via their personal channel about a new room they joined."""
+    from channels.layers import get_channel_layer
+    from asgiref.sync import async_to_sync
+    channel_layer = get_channel_layer()
+    async_to_sync(channel_layer.group_send)(
+        f'user_{user_id}',
+        {
+            'type': 'room_update',
+            'event': 'new_room',
+            'room': room_data,
+            'room_id': room_data['id'],
+        }
+    )
+
+
+def _notify_user_of_friendship_update(user_id, friendship_data, event_type='friendship_update'):
+    """Notify a specific user via their personal channel about a friendship update."""
+    from channels.layers import get_channel_layer
+    from asgiref.sync import async_to_sync
+    channel_layer = get_channel_layer()
+    async_to_sync(channel_layer.group_send)(
+        f'user_{user_id}',
+        {
+            'type': 'friendship_update',
+            'event': event_type,
+            'friendship': friendship_data,
+        }
+    )
+
 
 class ChatRoomViewSet(viewsets.ModelViewSet):
     serializer_class = ChatRoomSerializer
@@ -2241,6 +2271,24 @@ class ChatRoomViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         room = serializer.save(created_by=self.request.user)
         room.participants.add(self.request.user)
+        
+        # If participants were provided in the request, add them and notify them
+        participant_ids = self.request.data.get('participants', [])
+        if participant_ids:
+            # Filter out the creator if they were included
+            participant_ids = [pid for pid in participant_ids if int(pid) != self.request.user.id]
+            if participant_ids:
+                users = User.objects.filter(id__in=participant_ids)
+                room.participants.add(*users)
+                
+                serialized = ChatRoomSerializer(room, context={'request': self.request}).data
+                # Notify ALL participants about the new room
+                for participant in room.participants.all():
+                    _notify_user_of_new_room(participant.id, serialized)
+        else:
+            # Just notify the creator (to sync across tabs)
+            serialized = ChatRoomSerializer(room, context={'request': self.request}).data
+            _notify_user_of_new_room(self.request.user.id, serialized)
 
     @action(detail=False, methods=['post'])
     def get_or_create_private_chat(self, request):
@@ -2259,6 +2307,9 @@ class ChatRoomViewSet(viewsets.ModelViewSet):
         if not room:
             room = ChatRoom.objects.create(is_group=False)
             room.participants.add(request.user, other_user)
+            # Notify the other user about this new chat room live
+            serialized = ChatRoomSerializer(room, context={'request': request}).data
+            _notify_user_of_new_room(other_user.id, serialized)
 
         return Response(ChatRoomSerializer(room, context={'request': request}).data)
 
@@ -2274,20 +2325,30 @@ class ChatRoomViewSet(viewsets.ModelViewSet):
 
         users = User.objects.filter(id__in=user_ids)
         room.participants.add(*users)
+        
         serialized = ChatRoomSerializer(room, context={'request': request}).data
+        # Notify existing members of update
         _broadcast_room_update(room.id, serialized)
+        # Notify NEW members about the new room live
+        for user in users:
+            _notify_user_of_new_room(user.id, serialized)
+            
         return Response(serialized)
 
     @action(detail=True, methods=['post'])
     def pin(self, request, pk=None):
         room = self.get_object()
         room.pinned_by.add(request.user)
+        # Broadcast pin state change to self (sync across tabs)
+        _notify_user_of_new_room(request.user.id, ChatRoomSerializer(room, context={'request': request}).data)
         return Response({'status': 'pinned'})
 
     @action(detail=True, methods=['post'])
     def unpin(self, request, pk=None):
         room = self.get_object()
         room.pinned_by.remove(request.user)
+        # Broadcast pin state change to self (sync across tabs)
+        _notify_user_of_new_room(request.user.id, ChatRoomSerializer(room, context={'request': request}).data)
         return Response({'status': 'unpinned'})
 
     @action(detail=True, methods=['patch'])
@@ -2406,6 +2467,20 @@ class ChatMessageViewSet(viewsets.ModelViewSet):
         message.content = content
         message.is_edited = True
         message.save()
+
+        # Broadcast edit to all room participants
+        from channels.layers import get_channel_layer
+        from asgiref.sync import async_to_sync
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            f'chat_{message.room_id}',
+            {
+                'type': 'message_edited',
+                'message_id': message.id,
+                'content': content,
+            }
+        )
+
         serializer = self.get_serializer(message)
         return Response(serializer.data)
 
@@ -2414,6 +2489,19 @@ class ChatMessageViewSet(viewsets.ModelViewSet):
         message = self.get_object()
         message.is_pinned = True
         message.save()
+
+        # Broadcast pin to all room participants
+        from channels.layers import get_channel_layer
+        from asgiref.sync import async_to_sync
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            f'chat_{message.room_id}',
+            {
+                'type': 'message_pinned',
+                'message_id': message.id,
+                'is_pinned': True,
+            }
+        )
         return Response({'status': 'pinned'})
 
     @action(detail=True, methods=['post'])
@@ -2421,6 +2509,19 @@ class ChatMessageViewSet(viewsets.ModelViewSet):
         message = self.get_object()
         message.is_pinned = False
         message.save()
+
+        # Broadcast unpin to all room participants
+        from channels.layers import get_channel_layer
+        from asgiref.sync import async_to_sync
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            f'chat_{message.room_id}',
+            {
+                'type': 'message_pinned',
+                'message_id': message.id,
+                'is_pinned': False,
+            }
+        )
         return Response({'status': 'unpinned'})
 
 class FriendshipViewSet(viewsets.ModelViewSet):
@@ -2432,7 +2533,10 @@ class FriendshipViewSet(viewsets.ModelViewSet):
         return Friendship.objects.filter(Q(from_user=user) | Q(to_user=user))
 
     def perform_create(self, serializer):
-        serializer.save(from_user=self.request.user, status='pending')
+        friendship = serializer.save(from_user=self.request.user, status='pending')
+        # Notify the target user of the new request
+        serialized = FriendshipSerializer(friendship, context={'request': self.request}).data
+        _notify_user_of_friendship_update(friendship.to_user.id, serialized, 'request_received')
 
     @action(detail=True, methods=['post'])
     def accept(self, request, pk=None):
@@ -2442,7 +2546,14 @@ class FriendshipViewSet(viewsets.ModelViewSet):
         
         friendship.status = 'accepted'
         friendship.save()
-        return Response(FriendshipSerializer(friendship, context={'request': request}).data)
+        
+        serialized = FriendshipSerializer(friendship, context={'request': request}).data
+        # Notify the requester that it was accepted
+        _notify_user_of_friendship_update(friendship.from_user.id, serialized, 'request_accepted')
+        # Notify self to sync tabs
+        _notify_user_of_friendship_update(request.user.id, serialized, 'request_accepted')
+        
+        return Response(serialized)
 
     @action(detail=True, methods=['post'])
     def reject(self, request, pk=None):
@@ -2452,7 +2563,14 @@ class FriendshipViewSet(viewsets.ModelViewSet):
         
         friendship.status = 'rejected'
         friendship.save()
-        return Response(FriendshipSerializer(friendship, context={'request': request}).data)
+        
+        serialized = FriendshipSerializer(friendship, context={'request': request}).data
+        # Notify the requester
+        _notify_user_of_friendship_update(friendship.from_user.id, serialized, 'request_rejected')
+        # Notify self to sync tabs
+        _notify_user_of_friendship_update(request.user.id, serialized, 'request_rejected')
+        
+        return Response(serialized)
 
     @action(detail=True, methods=['post'])
     def pin(self, request, pk=None):

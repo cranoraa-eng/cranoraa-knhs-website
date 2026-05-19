@@ -14,30 +14,77 @@ class ChatConsumer(AsyncWebsocketConsumer):
         self.user = self.scope['user']
 
         if self.user.is_authenticated:
-            await self.channel_layer.group_add(self.room_group_name, self.channel_name)
-            # Also join a personal channel so we receive cross-room events
+            if self.room_id != '0':
+                await self.channel_layer.group_add(self.room_group_name, self.channel_name)
+                # Mark all unread messages as delivered when user connects
+                await self.mark_messages_delivered(self.room_id, self.user.id)
+                # Notify others in the room
+                await self.channel_layer.group_send(self.room_group_name, {
+                    'type': 'user_online',
+                    'user_id': self.user.id,
+                })
+
+            # Always join a personal channel so we receive cross-room events
             await self.channel_layer.group_add(f'user_{self.user.id}', self.channel_name)
             await self.accept()
-            # Mark all unread messages as delivered when user connects
-            await self.mark_messages_delivered(self.room_id, self.user.id)
-            # Notify others that this user is now online in the room
-            await self.channel_layer.group_send(self.room_group_name, {
-                'type': 'user_online',
-                'user_id': self.user.id,
-            })
+
+            # Broadcast online status to all friends
+            await self.broadcast_presence(True)
         else:
             await self.close()
 
     async def disconnect(self, close_code):
-        # Send typing stopped
-        await self.channel_layer.group_send(self.room_group_name, {
-            'type': 'typing_indicator',
-            'sender_id': self.user.id,
-            'sender_name': self.user.first_name or self.user.username,
-            'is_typing': False,
-        })
-        await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
-        await self.channel_layer.group_discard(f'user_{self.user.id}', self.channel_name)
+        if self.user.is_authenticated:
+            if self.room_id != '0':
+                # Send typing stopped
+                await self.channel_layer.group_send(self.room_group_name, {
+                    'type': 'typing_indicator',
+                    'sender_id': self.user.id,
+                    'sender_name': self.user.first_name or self.user.username,
+                    'is_typing': False,
+                })
+                await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
+            
+            await self.channel_layer.group_discard(f'user_{self.user.id}', self.channel_name)
+            
+            # Broadcast offline status to all friends
+            await self.broadcast_presence(False)
+
+    async def broadcast_presence(self, is_online):
+        """Notify all friends of the user's online/offline status."""
+        from .models import Friendship
+        from django.db.models import Q
+        from channels.db import database_sync_to_async
+
+        @database_sync_to_async
+        def get_friend_ids():
+            friendships = Friendship.objects.filter(
+                (Q(from_user=self.user) | Q(to_user=self.user)),
+                status='accepted'
+            )
+            ids = []
+            for f in friendships:
+                ids.append(f.to_user_id if f.from_user_id == self.user.id else f.from_user_id)
+            return ids
+
+        friend_ids = await get_friend_ids()
+        for friend_id in friend_ids:
+            await self.channel_layer.group_send(
+                f'user_{friend_id}',
+                {
+                    'type': 'peer_presence',
+                    'user_id': self.user.id,
+                    'is_online': is_online,
+                }
+            )
+
+    async def peer_presence(self, event):
+        """Receive presence update from a friend."""
+        await self.send(text_data=json.dumps({
+            'type': 'peer_presence',
+            'user_id': event['user_id'],
+            'is_online': event['is_online'],
+        }))
 
     async def receive(self, text_data):
         data = json.loads(text_data)
@@ -156,6 +203,20 @@ class ChatConsumer(AsyncWebsocketConsumer):
             'type': 'message_deleted',
             'message_id': event['message_id'],
             'deleted_by': event['deleted_by'],
+        }))
+
+    async def message_edited(self, event):
+        await self.send(text_data=json.dumps({
+            'type': 'message_edited',
+            'message_id': event['message_id'],
+            'content': event['content'],
+        }))
+
+    async def message_pinned(self, event):
+        await self.send(text_data=json.dumps({
+            'type': 'message_pinned',
+            'message_id': event['message_id'],
+            'is_pinned': event['is_pinned'],
         }))
 
     async def room_update(self, event):
