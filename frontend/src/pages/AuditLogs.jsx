@@ -161,23 +161,23 @@ const AuditLogs = () => {
   }
 
   return (
-    <div className="p-4 md:p-8 space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="p-2 md:p-8 space-y-3 md:space-y-6 max-w-full overflow-x-hidden">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-black text-gray-800 tracking-tight">Audit Logs</h1>
-          <p className="text-gray-500 text-sm font-medium mt-1">Track all administrative and system actions</p>
+          <h1 className="text-lg md:text-3xl font-black text-gray-800 tracking-tight">Audit Logs</h1>
+          <p className="text-gray-500 text-[10px] md:text-sm font-medium mt-0.5">Track all administrative and system actions</p>
           
-          <div className="mt-3 flex items-center gap-4">
+          <div className="mt-2 flex items-center gap-3 md:gap-4">
             <div className="flex flex-col">
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Storage Usage</span>
-                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+              <div className="flex items-center gap-1.5 mb-1">
+                <span className="text-[8px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest">Storage</span>
+                <span className={`text-[8px] md:text-[10px] font-bold px-1 py-0.5 rounded ${
                   (stats.size_mb / stats.max_mb) > 0.8 ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600'
                 }`}>
-                  {stats.size_mb} MB / {stats.max_mb} MB
+                  {stats.size_mb}MB / {stats.max_mb}MB
                 </span>
               </div>
-              <div className="w-48 h-1.5 bg-gray-100 rounded-full overflow-hidden border border-gray-200">
+              <div className="w-32 md:w-48 h-1 md:h-1.5 bg-gray-100 rounded-full overflow-hidden border border-gray-200">
                 <div 
                   className={`h-full transition-all duration-500 ${
                     (stats.size_mb / stats.max_mb) > 0.8 ? 'bg-red-500' : 'bg-blue-500'
@@ -187,33 +187,33 @@ const AuditLogs = () => {
               </div>
             </div>
             {stats.size_mb > (stats.max_mb * 0.8) && (
-              <p className="text-[10px] font-bold text-red-500 animate-pulse">
-                Storage almost full. Consider clearing logs.
+              <p className="text-[8px] md:text-[10px] font-bold text-red-500 animate-pulse truncate max-w-[100px] md:max-w-none">
+                Storage Full!
               </p>
             )}
           </div>
         </div>
         
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           {selectedIds.length > 0 && (
             <button
               onClick={handleBulkDelete}
               disabled={deleting}
-              className="flex items-center gap-2 bg-red-50 text-red-600 hover:bg-red-100 font-bold py-2.5 px-5 rounded-xl transition-all border border-red-100 active:scale-95"
+              className="flex-1 md:flex-none flex items-center justify-center gap-1.5 bg-red-50 text-red-600 hover:bg-red-100 font-bold py-1.5 md:py-2.5 px-3 md:px-5 rounded-lg md:rounded-xl transition-all border border-red-100 active:scale-95 text-[10px] md:text-base whitespace-nowrap"
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
               </svg>
-              Delete Selected ({selectedIds.length})
+              Delete ({selectedIds.length})
             </button>
           )}
           
           <button
             onClick={handleClearAll}
             disabled={deleting || logs.length === 0}
-            className="flex items-center gap-2 bg-white text-gray-700 hover:bg-gray-50 font-bold py-2.5 px-5 rounded-xl transition-all border border-gray-200 shadow-sm active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 md:flex-none flex items-center justify-center gap-1.5 bg-white text-gray-700 hover:bg-gray-50 font-bold py-1.5 md:py-2.5 px-3 md:px-5 rounded-lg md:rounded-xl transition-all border border-gray-200 shadow-sm active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed text-[10px] md:text-base whitespace-nowrap"
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
             </svg>
             Clear All
@@ -221,18 +221,18 @@ const AuditLogs = () => {
         </div>
       </div>
 
-      <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
-        <div className="p-4 border-b border-gray-100 bg-gray-50/50">
+      <div className="bg-white border border-gray-200 rounded-xl md:rounded-2xl shadow-sm overflow-hidden">
+        <div className="p-2 md:p-4 border-b border-gray-100 bg-gray-50/50">
           <div className="relative group max-w-md">
-            <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-purple-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 group-focus-within:text-purple-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
             <input
               type="text"
-              placeholder="Search by user, action, or description..."
+              placeholder="Search logs..."
               value={filter}
               onChange={(e) => setFilter(e.target.value)}
-              className="w-full pl-11 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm font-bold transition-all shadow-inner"
+              className="w-full pl-9 md:pl-11 pr-3 md:pr-4 py-1.5 md:py-2.5 bg-white border border-gray-200 rounded-lg md:rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-[10px] md:text-sm font-bold transition-all shadow-inner"
             />
           </div>
         </div>
@@ -247,77 +247,77 @@ const AuditLogs = () => {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-sm text-left">
-              <thead className="bg-gray-50 text-gray-500 uppercase text-[10px] font-black tracking-widest border-b border-gray-200">
+            <table className="w-full text-[10px] md:text-sm text-left">
+              <thead className="bg-gray-50 text-gray-500 uppercase text-[8px] md:text-[10px] font-black tracking-widest border-b border-gray-200">
                 <tr>
-                  <th className="px-6 py-4 w-10">
+                  <th className="px-3 py-2 md:px-6 md:py-4 w-8 md:w-10">
                     <input
                       type="checkbox"
                       checked={selectedIds.length === filteredLogs.length && filteredLogs.length > 0}
                       onChange={handleSelectAll}
-                      className="rounded border-gray-300 text-purple-600 focus:ring-purple-500 w-4 h-4 cursor-pointer"
+                      className="rounded border-gray-300 text-purple-600 focus:ring-purple-500 w-3 h-3 md:w-4 md:h-4 cursor-pointer"
                     />
                   </th>
-                  <th className="px-6 py-4">Timestamp</th>
-                  <th className="px-6 py-4">User</th>
-                  <th className="px-6 py-4">Action</th>
-                  <th className="px-6 py-4">Description</th>
-                  <th className="px-6 py-4">Model</th>
-                  <th className="px-6 py-4">IP Address</th>
-                  <th className="px-6 py-4 text-center">Actions</th>
+                  <th className="px-3 py-2 md:px-6 md:py-4">Time</th>
+                  <th className="px-3 py-2 md:px-6 md:py-4">User</th>
+                  <th className="px-3 py-2 md:px-6 md:py-4">Action</th>
+                  <th className="px-3 py-2 md:px-6 md:py-4">Details</th>
+                  <th className="px-3 py-2 md:px-6 md:py-4">Model</th>
+                  <th className="px-3 py-2 md:px-6 md:py-4">IP</th>
+                  <th className="px-3 py-2 md:px-6 md:py-4 text-center">Opt</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {filteredLogs.map((log) => (
                   <tr key={log.id} className={`group hover:bg-purple-50/50 transition-colors ${selectedIds.includes(log.id) ? 'bg-purple-50/30' : ''}`}>
-                    <td className="px-6 py-4">
+                    <td className="px-3 py-2 md:px-6 md:py-4">
                       <input
                         type="checkbox"
                         checked={selectedIds.includes(log.id)}
                         onChange={() => handleSelectLog(log.id)}
-                        className="rounded border-gray-300 text-purple-600 focus:ring-purple-500 w-4 h-4 cursor-pointer"
+                        className="rounded border-gray-300 text-purple-600 focus:ring-purple-500 w-3 h-3 md:w-4 md:h-4 cursor-pointer"
                       />
                     </td>
-                    <td className="px-6 py-4 font-medium text-gray-500 whitespace-nowrap">
+                    <td className="px-3 py-2 md:px-6 md:py-4 font-medium text-gray-500 whitespace-nowrap">
                       <div className="flex flex-col">
                         <span>{new Date(log.timestamp).toLocaleDateString()}</span>
-                        <span className="text-[10px] font-bold text-gray-400">{new Date(log.timestamp).toLocaleTimeString()}</span>
+                        <span className="text-[8px] md:text-[10px] font-bold text-gray-400">{new Date(log.timestamp).toLocaleTimeString()}</span>
                       </div>
                     </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 rounded-full bg-purple-100 flex items-center justify-center text-purple-700 font-bold text-[10px] flex-shrink-0">
+                    <td className="px-3 py-2 md:px-6 md:py-4">
+                      <div className="flex items-center gap-1.5 md:gap-2">
+                        <div className="w-5 h-5 md:w-7 md:h-7 rounded-full bg-purple-100 flex items-center justify-center text-purple-700 font-bold text-[8px] md:text-[10px] flex-shrink-0">
                           {log.user_name?.charAt(0).toUpperCase() || 'S'}
                         </div>
                         <div className="flex flex-col min-w-0">
-                          <span className="font-bold text-gray-800 truncate">{log.user_name}</span>
-                          <span className="text-[10px] text-gray-400 truncate">{log.user_email}</span>
+                          <span className="font-bold text-gray-800 truncate text-[9px] md:text-sm">{log.user_name}</span>
+                          <span className="text-[8px] md:text-[10px] text-gray-400 truncate">{log.user_email}</span>
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4">
-                      <span className={`px-2.5 py-1 rounded-lg border text-[10px] font-black uppercase tracking-wider ${getActionColor(log.action_type || log.action)}`}>
+                    <td className="px-3 py-2 md:px-6 md:py-4">
+                      <span className={`px-1.5 py-0.5 md:px-2.5 md:py-1 rounded-md md:rounded-lg border text-[7px] md:text-[10px] font-black uppercase tracking-wider ${getActionColor(log.action_type || log.action)}`}>
                         {log.action}
                       </span>
                     </td>
-                    <td className="px-6 py-4 font-medium text-gray-600 max-w-xs truncate" title={log.description}>
+                    <td className="px-3 py-2 md:px-6 md:py-4 font-medium text-gray-600 max-w-[80px] md:max-w-xs truncate text-[9px] md:text-sm" title={log.description}>
                       {log.description}
                     </td>
-                    <td className="px-6 py-4">
-                      <span className="text-[10px] font-black text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full uppercase tracking-widest">
-                        {log.model_name || 'System'}
+                    <td className="px-3 py-2 md:px-6 md:py-4">
+                      <span className="text-[7px] md:text-[10px] font-black text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded-full uppercase tracking-widest">
+                        {log.model_name || 'Sys'}
                       </span>
                     </td>
-                    <td className="px-6 py-4 font-mono text-xs text-gray-400">
+                    <td className="px-3 py-2 md:px-6 md:py-4 font-mono text-[8px] md:text-xs text-gray-400">
                       {log.ip_address || '—'}
                     </td>
-                    <td className="px-6 py-4 text-center">
+                    <td className="px-3 py-2 md:px-6 md:py-4 text-center">
                       <button
                         onClick={() => handleDelete(log.id)}
-                        className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all opacity-0 group-hover:opacity-100"
+                        className="p-1 md:p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all md:opacity-0 md:group-hover:opacity-100"
                         title="Delete log entry"
                       >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                         </svg>
                       </button>
