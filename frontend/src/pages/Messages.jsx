@@ -163,6 +163,243 @@ const Messages = () => {
     finally { setIsSearching(false); }
   };
 
+  // ── Handlers ──────────────────────────────────────────────────────────────
+  const handleSendMessage = async (e) => {
+    e?.preventDefault();
+    if (!newMessage.trim() || !selectedRoom) return;
+    const content = newMessage.trim();
+    setNewMessage('');
+    setIsTyping(false);
+    safeSend({ type: 'typing', is_typing: false });
+
+    try {
+      const r = await api.post('/chat/messages/', { room_id: selectedRoom.id, content });
+      // WS will broadcast the message back to us
+    } catch {
+      toast.error('Failed to send message');
+      setNewMessage(content); // restore on error
+    }
+  };
+
+  const handleTyping = (e) => {
+    setNewMessage(e.target.value);
+    if (!isTyping && selectedRoom) {
+      setIsTyping(true);
+      safeSend({ type: 'typing', is_typing: true });
+    }
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+    typingTimeoutRef.current = setTimeout(() => {
+      setIsTyping(false);
+      safeSend({ type: 'typing', is_typing: false });
+    }, 2000);
+  };
+
+  const handleCreateGroup = async (e) => {
+    e.preventDefault();
+    if (!groupName.trim() || selectedFriends.length === 0) return;
+    try {
+      const r = await api.post('/chat/rooms/', {
+        name: groupName,
+        is_group: true,
+        participants: selectedFriends
+      });
+      setShowGroupModal(false);
+      setGroupName('');
+      setSelectedFriends([]);
+      setSelectedRoom(r.data);
+      fetchRooms();
+      toast.success('Group chat created!');
+    } catch { toast.error('Failed to create group'); }
+  };
+
+  const handlePinRoom = async (room) => {
+    const isPinned = room.is_pinned;
+    try {
+      if (isPinned) await api.post(`/chat/rooms/${room.id}/unpin/`);
+      else await api.post(`/chat/rooms/${room.id}/pin/`);
+      
+      setRooms(prev => prev.map(r => r.id === room.id ? { ...r, is_pinned: !isPinned } : r));
+      if (selectedRoom?.id === room.id) {
+        setSelectedRoom(prev => ({ ...prev, is_pinned: !isPinned }));
+      }
+      toast.success(isPinned ? 'Unpinned' : 'Pinned to top');
+    } catch { toast.error('Action failed'); }
+  };
+
+  const handleEditMessage = async (msgId) => {
+    if (!editContent.trim()) return;
+    try {
+      await api.patch(`/chat/messages/${msgId}/edit/`, { content: editContent });
+      setEditingMessage(null);
+      setEditContent('');
+    } catch { toast.error('Failed to edit message'); }
+  };
+
+  const handleDeleteMessage = async (msgId) => {
+    const result = await Swal.fire({
+      title: 'Delete message?',
+      text: 'This cannot be undone',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#64748b',
+      confirmButtonText: 'Yes, delete it',
+      customClass: { popup: 'rounded-[2rem]' }
+    });
+    if (!result.isConfirmed) return;
+
+    try {
+      await api.delete(`/chat/messages/${msgId}/`);
+    } catch { toast.error('Failed to delete message'); }
+  };
+
+  const handlePinMessage = async (msg) => {
+    try {
+      if (msg.is_pinned) await api.post(`/chat/messages/${msg.id}/unpin/`);
+      else await api.post(`/chat/messages/${msg.id}/pin/`);
+      // Update locally immediately, WS will sync others
+      setMessages(prev => prev.map(m => m.id === msg.id ? { ...m, is_pinned: !msg.is_pinned } : m));
+    } catch { toast.error('Failed to toggle pin'); }
+  };
+
+  const handleDeleteConversation = async (roomId) => {
+    const result = await Swal.fire({
+      title: 'Delete conversation?',
+      text: 'All messages will be removed for you',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#64748b',
+      confirmButtonText: 'Yes, delete everything',
+      customClass: { popup: 'rounded-[2rem]' }
+    });
+    if (!result.isConfirmed) return;
+
+    try {
+      await api.delete(`/chat/rooms/${roomId}/delete_conversation/`);
+      setRooms(prev => prev.filter(r => r.id !== roomId));
+      if (selectedRoom?.id === roomId) setSelectedRoom(null);
+      toast.success('Conversation deleted');
+    } catch { toast.error('Failed to delete'); }
+  };
+
+  const handleAcceptRequest = async (reqId) => {
+    try {
+      await api.post(`/friendships/${reqId}/accept/`);
+      toast.success('Friend request accepted!');
+      fetchFriendships();
+      fetchFriends();
+    } catch { toast.error('Failed to accept request'); }
+  };
+
+  const sendFriendRequest = async (targetUserId) => {
+    try {
+      await api.post('/friendships/', { to_user: targetUserId });
+      toast.success('Friend request sent!');
+      fetchFriendships();
+    } catch { toast.error('Failed to send request'); }
+  };
+
+  const startPrivateChat = async (targetUserId) => {
+    try {
+      const r = await api.post('/chat/rooms/get_or_create_private_chat/', { user_id: targetUserId });
+      const room = r.data;
+      setRooms(prev => prev.some(rm => rm.id === room.id) ? prev : [room, ...prev]);
+      setSelectedRoom(room);
+      setActiveTab('chats');
+    } catch { toast.error('Failed to start chat'); }
+  };
+
+  const handleSearchAddMembers = async (q) => {
+    setAddMemberSearch(q);
+    if (!q.trim()) { setAddMemberResults([]); return; }
+    try {
+      setIsSearchingMembers(true);
+      const r = await api.get(`/users/search/?q=${q.trim()}`);
+      // Filter out existing participants
+      const existingIds = selectedRoom.participants_details.map(p => p.id);
+      setAddMemberResults(r.data.filter(u => !existingIds.includes(u.id)));
+    } catch { console.error('Search failed'); }
+    finally { setIsSearchingMembers(false); }
+  };
+
+  const handleAddMember = async (targetUserId) => {
+    try {
+      const r = await api.post(`/chat/rooms/${selectedRoom.id}/add_participants/`, { user_ids: [targetUserId] });
+      setSelectedRoom(r.data);
+      setAddMemberResults(prev => prev.filter(u => u.id !== targetUserId));
+      toast.success('Member added');
+    } catch { toast.error('Failed to add member'); }
+  };
+
+  const handleRemoveMember = async (targetUserId) => {
+    const result = await Swal.fire({
+      title: 'Remove member?',
+      text: 'They will no longer see this group',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#64748b',
+      confirmButtonText: 'Yes, remove them',
+      customClass: { popup: 'rounded-[2rem]' }
+    });
+    if (!result.isConfirmed) return;
+
+    try {
+      const r = await api.post(`/chat/rooms/${selectedRoom.id}/remove_participant/`, { user_id: targetUserId });
+      setSelectedRoom(r.data);
+      toast.success('Member removed');
+    } catch { toast.error('Failed to remove member'); }
+  };
+
+  const handleRenameGroup = async () => {
+    if (!newGroupName.trim() || newGroupName === selectedRoom.name) return;
+    try {
+      setSavingGroupName(true);
+      const r = await api.patch(`/chat/rooms/${selectedRoom.id}/rename/`, { name: newGroupName });
+      setSelectedRoom(r.data);
+      toast.success('Group renamed');
+    } catch { toast.error('Failed to rename group'); }
+    finally { setSavingGroupName(false); }
+  };
+
+  const handleDeleteGroup = async () => {
+    const result = await Swal.fire({
+      title: 'Delete group permanently?',
+      text: 'This will remove the group and all messages for EVERYONE. This action is irreversible.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#64748b',
+      confirmButtonText: 'Yes, delete permanently',
+      customClass: { popup: 'rounded-[2rem]' }
+    });
+    if (!result.isConfirmed) return;
+
+    try {
+      await api.delete(`/chat/rooms/${selectedRoom.id}/delete_group/`);
+      setRooms(prev => prev.filter(r => r.id !== selectedRoom.id));
+      setSelectedRoom(null);
+      setShowGroupSettings(false);
+      toast.success('Group deleted permanently');
+    } catch { toast.error('Failed to delete group'); }
+  };
+
+  const openGroupSettings = () => {
+    setNewGroupName(selectedRoom.name);
+    setGroupSettingsTab('members');
+    setShowGroupSettings(true);
+  };
+
+  const getFriendshipStatus = (userId) => {
+    const f = allFriendships.find(fr => fr.from_user === userId || fr.to_user === userId);
+    if (!f) return null;
+    if (f.status === 'accepted') return 'friends';
+    if (f.from_user === user.id) return 'sent';
+    if (f.to_user === user.id) return 'received';
+    return null;
+  };
+
   // ── Derived state ──────────────────────────────────────────────────────────
   const filteredRooms = useMemo(() => {
     let list = [...rooms];
@@ -457,9 +694,17 @@ const Messages = () => {
                             {initials}
                           </div>
                         )}
+                        {/* Pin indicator */}
+                        {room.is_pinned && (
+                          <div className="absolute -top-1.5 -right-1.5 bg-amber-500 text-white rounded-full p-1 border-2 border-white shadow-sm z-10">
+                            <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20">
+                              <path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 18V4z" />
+                            </svg>
+                          </div>
+                        )}
                         {/* Online dot for private chats */}
                         {!room.is_group && otherUser?.is_online && (
-                          <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-white" />
+                          <span className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-white ${room.is_pinned ? 'mr-0' : ''}`} />
                         )}
                         {/* Member count badge for groups */}
                         {room.is_group && (
@@ -694,10 +939,16 @@ const Messages = () => {
                 <button
                   onClick={() => handlePinRoom(selectedRoom)}
                   className={`p-2 rounded-xl transition-all ${selectedRoom.is_pinned ? 'text-violet-600 bg-violet-50' : 'text-slate-400 hover:text-violet-500 hover:bg-violet-50'}`}
-                  title={selectedRoom.is_pinned ? 'Unpin conversation' : 'Pin conversation'}>
+                  title={selectedRoom.is_pinned ? (selectedRoom.is_group ? 'Unpin Group' : 'Unpin Account') : (selectedRoom.is_group ? 'Pin Group' : 'Pin Account')}>
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    {selectedRoom.is_group ? (
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    ) : (
+                      <>
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 14v4m0 0l-2-2m2 2l2-2" className={selectedRoom.is_pinned ? 'opacity-100' : 'opacity-0'} />
+                      </>
+                    )}
                   </svg>
                 </button>
 
@@ -930,7 +1181,7 @@ const Messages = () => {
       {showMembersPanel && selectedRoom?.is_group && (
         <div className="fixed inset-0 z-[90] flex justify-end">
           <div className="absolute inset-0 bg-black/20" onClick={() => setShowMembersPanel(false)} />
-          <div className="relative w-80 bg-white h-full shadow-2xl flex flex-col overflow-hidden">
+          <div className="relative w-full md:w-80 bg-white h-full shadow-2xl flex flex-col overflow-hidden">
             <div className="p-5 bg-gradient-to-r from-indigo-500 to-violet-600 text-white flex items-center justify-between">
               <div>
                 <h3 className="text-base font-black tracking-tight">Group Members</h3>
@@ -977,7 +1228,7 @@ const Messages = () => {
       {showPinnedPanel && selectedRoom && (
         <div className="fixed inset-0 z-[90] flex justify-end">
           <div className="absolute inset-0 bg-black/20" onClick={() => setShowPinnedPanel(false)} />
-          <div className="relative w-80 bg-white h-full shadow-2xl flex flex-col overflow-hidden">
+          <div className="relative w-full md:w-80 bg-white h-full shadow-2xl flex flex-col overflow-hidden">
             <div className="p-5 bg-gradient-to-r from-amber-500 to-orange-500 text-white flex items-center justify-between">
               <div>
                 <h3 className="text-base font-black tracking-tight">📌 Pinned Messages</h3>
@@ -1025,7 +1276,7 @@ const Messages = () => {
           <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={() => setShowGroupSettings(false)} />
 
           {/* Panel */}
-          <div className="relative w-96 bg-white h-full shadow-2xl flex flex-col overflow-hidden">
+          <div className="relative w-full md:w-96 bg-white h-full shadow-2xl flex flex-col overflow-hidden">
             {/* Header */}
             <div className="p-5 bg-gradient-to-r from-violet-600 to-indigo-700 text-white flex items-center justify-between">
               <div>
