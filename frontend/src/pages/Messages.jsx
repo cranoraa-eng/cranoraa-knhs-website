@@ -977,9 +977,79 @@ const Messages = () => {
       </div>
 
       {/* ── Main Chat Area ── */}
-      <div className={`${selectedRoom ? 'flex' : 'hidden md:flex'} flex-1 flex-col bg-white min-w-0 relative z-0`}>
+      <div className={`${selectedRoom ? 'flex' : 'hidden md:flex'} flex-1 flex-col bg-white min-w-0 relative overflow-hidden z-0`}>
         {selectedRoom ? (
           <>
+            {/* Global Overlays for Reactions and More Menu */}
+            {showReactionPicker && (
+              <div className="absolute inset-0 z-[100] flex items-center justify-center p-4 pointer-events-none">
+                <div className="absolute inset-0 bg-black/5 backdrop-blur-[1px] pointer-events-auto" onClick={() => setShowReactionPicker(null)} />
+                <div className="relative bg-white border border-slate-200 rounded-full shadow-2xl p-1 md:p-1.5 flex flex-row flex-nowrap items-center gap-0.5 md:gap-1 animate-in fade-in zoom-in-95 duration-200 pointer-events-auto">
+                  {COMMON_EMOJIS.map(emoji => (
+                    <button key={emoji} onClick={() => handleReactToMessage(showReactionPicker, emoji)}
+                      className="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center hover:bg-slate-50 rounded-full transition-all text-lg md:text-2xl active:scale-150 shrink-0">
+                      {emoji}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {activeMoreMenu && (
+              <div className="absolute inset-0 z-[100] flex items-center justify-center p-4 pointer-events-none">
+                <div className="absolute inset-0 bg-black/5 backdrop-blur-[1px] pointer-events-auto" onClick={() => setActiveMoreMenu(null)} />
+                <div className="relative bg-white border border-slate-200 rounded-full shadow-2xl p-1 md:p-1.5 flex flex-row items-center gap-1 animate-in fade-in zoom-in-95 duration-200 pointer-events-auto">
+                  {/* Edit — own messages only */}
+                  {messages.find(m => m.id === activeMoreMenu)?.sender === user.id && (
+                    <button
+                      onClick={() => { 
+                        const msg = messages.find(m => m.id === activeMoreMenu);
+                        setEditingMessage(msg); 
+                        setEditContent(msg.content); 
+                        setActiveMoreMenu(null); 
+                        setMobileActiveMessage(null); 
+                      }}
+                      className="p-2 md:p-2.5 text-slate-500 hover:bg-violet-50 hover:text-violet-600 rounded-full transition-all"
+                      title="Edit Message">
+                      <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      </svg>
+                    </button>
+                  )}
+
+                  {/* Pin button — everyone */}
+                  <button
+                    onClick={() => { 
+                      const msg = messages.find(m => m.id === activeMoreMenu);
+                      handlePinMessage(msg); 
+                      setActiveMoreMenu(null); 
+                      setMobileActiveMessage(null); 
+                    }}
+                    className={`p-2 md:p-2.5 rounded-full transition-all ${messages.find(m => m.id === activeMoreMenu)?.is_pinned ? 'text-amber-500 bg-amber-50' : 'text-slate-500 hover:bg-amber-50 hover:text-amber-600'}`}
+                    title={messages.find(m => m.id === activeMoreMenu)?.is_pinned ? 'Unpin' : 'Pin'}>
+                    <svg className="w-4 h-4 md:w-5 md:h-5" fill={messages.find(m => m.id === activeMoreMenu)?.is_pinned ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 18V4z" />
+                    </svg>
+                  </button>
+
+                  {/* Unsend — own messages only */}
+                  {messages.find(m => m.id === activeMoreMenu)?.sender === user.id && (
+                    <button
+                      onClick={() => { 
+                        handleDeleteMessage(activeMoreMenu); 
+                        setActiveMoreMenu(null); 
+                        setMobileActiveMessage(null); 
+                      }}
+                      className="p-2 md:p-2.5 text-slate-500 hover:bg-red-50 hover:text-red-500 rounded-full transition-all"
+                      title="Unsend Message">
+                      <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
             {/* Chat Header */}
             <div className="p-2 md:p-4 border-b border-slate-100 flex items-center justify-between bg-white/80 backdrop-blur-md sticky top-0 z-10 gap-1 md:gap-2 min-w-0 overflow-hidden h-12 md:h-20">
               <div className="flex items-center gap-1.5 md:gap-3 min-w-0">
@@ -1170,17 +1240,7 @@ const Messages = () => {
                                   </svg>
                                 </button>
                                 {showReactionPicker === msg.id && (
-                                  <div className="absolute inset-0 z-[100] flex items-center justify-center p-2 pointer-events-none">
-                                    <div className="absolute inset-0 bg-black/5 backdrop-blur-[1px] pointer-events-auto" onClick={() => setShowReactionPicker(null)} />
-                                    <div className="relative bg-white border border-slate-200 rounded-full shadow-2xl p-1 md:p-1.5 flex flex-row flex-nowrap items-center gap-0.5 md:gap-1 animate-in fade-in zoom-in-95 duration-200 pointer-events-auto">
-                                      {COMMON_EMOJIS.map(emoji => (
-                                        <button key={emoji} onClick={() => handleReactToMessage(msg.id, emoji)}
-                                          className="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center hover:bg-slate-50 rounded-full transition-all text-lg md:text-2xl active:scale-150 shrink-0">
-                                          {emoji}
-                                        </button>
-                                      ))}
-                                    </div>
-                                  </div>
+                                  <div className="invisible h-0 w-0" />
                                 )}
                               </div>
 
@@ -1206,45 +1266,9 @@ const Messages = () => {
                                 </button>
 
                                 {activeMoreMenu === msg.id && (
-                                  <div className="absolute inset-0 z-[100] flex items-center justify-center p-2 pointer-events-none">
-                                    <div className="absolute inset-0 bg-black/5 backdrop-blur-[1px] pointer-events-auto" onClick={() => setActiveMoreMenu(null)} />
-                                    <div className="relative bg-white border border-slate-200 rounded-full shadow-2xl p-1 md:p-1.5 flex flex-row items-center gap-1 animate-in fade-in zoom-in-95 duration-200 pointer-events-auto">
-                                      {/* Edit — own messages only */}
-                                      {isMine && (
-                                        <button
-                                          onClick={() => { setEditingMessage(msg); setEditContent(msg.content); setActiveMoreMenu(null); setMobileActiveMessage(null); }}
-                                          className="p-2 md:p-2.5 text-slate-500 hover:bg-violet-50 hover:text-violet-600 rounded-full transition-all"
-                                          title="Edit Message">
-                                          <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                          </svg>
-                                        </button>
-                                      )}
-
-                                      {/* Pin button — everyone */}
-                                      <button
-                                        onClick={() => { handlePinMessage(msg); setActiveMoreMenu(null); setMobileActiveMessage(null); }}
-                                        className={`p-2 md:p-2.5 rounded-full transition-all ${msg.is_pinned ? 'text-amber-500 bg-amber-50' : 'text-slate-500 hover:bg-amber-50 hover:text-amber-600'}`}
-                                        title={msg.is_pinned ? 'Unpin' : 'Pin'}>
-                                        <svg className="w-4 h-4 md:w-5 md:h-5" fill={msg.is_pinned ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
-                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 18V4z" />
-                                        </svg>
-                                      </button>
-
-                                      {/* Unsend — own messages only */}
-                                      {isMine && (
-                                        <button
-                                          onClick={() => { handleDeleteMessage(msg.id); setActiveMoreMenu(null); setMobileActiveMessage(null); }}
-                                          className="p-2 md:p-2.5 text-slate-500 hover:bg-red-50 hover:text-red-500 rounded-full transition-all"
-                                          title="Unsend Message">
-                                          <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                          </svg>
-                                        </button>
-                                      )}
-                                    </div>
-                                  </div>
+                                  <div className="invisible h-0 w-0" />
                                 )}
+                              </div>
                               </div>
                             </div>
 
