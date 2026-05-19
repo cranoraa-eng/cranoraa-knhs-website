@@ -50,6 +50,8 @@ const Messages = () => {
   const [groupSettingsTab, setGroupSettingsTab] = useState('members');
   const [replyingTo, setReplyingTo] = useState(null);
   const [showReactionPicker, setShowReactionPicker] = useState(null);
+  const [activeMoreMenu, setActiveMoreMenu] = useState(null);
+  const [mobileActiveMessage, setMobileActiveMessage] = useState(null);
 
   const COMMON_EMOJIS = ['👍', '❤️', '😂', '😮', '😢', '😡', '🔥', '✨'];
   const [addMemberSearch, setAddMemberSearch]     = useState('');
@@ -243,20 +245,20 @@ const Messages = () => {
 
   const handleDeleteMessage = async (msgId) => {
     const result = await Swal.fire({
-      title: 'Delete message?',
-      text: 'This cannot be undone',
+      title: 'Unsend message?',
+      text: 'This will remove the message for everyone',
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#ef4444',
       cancelButtonColor: '#64748b',
-      confirmButtonText: 'Yes, delete it',
+      confirmButtonText: 'Yes, unsend',
       customClass: { popup: 'rounded-[2rem]' }
     });
     if (!result.isConfirmed) return;
 
     try {
       await api.delete(`/chat/messages/${msgId}/`);
-    } catch { toast.error('Failed to delete message'); }
+    } catch { toast.error('Failed to unsend message'); }
   };
 
   const handleReactToMessage = (messageId, emoji) => {
@@ -266,6 +268,7 @@ const Messages = () => {
       emoji: emoji
     });
     setShowReactionPicker(null);
+    setMobileActiveMessage(null);
   };
 
   const handlePinMessage = async (msg) => {
@@ -1083,8 +1086,8 @@ const Messages = () => {
                               </button>
                             )}
 
-                            {/* Hover actions — Messenger style */}
-                            <div className={`absolute top-1/2 -translate-y-1/2 hidden md:group-hover:flex items-center gap-1 ${isMine ? '-left-32' : '-right-32'}`}>
+                            {/* Hover/Tap actions — Messenger style */}
+                            <div className={`absolute top-1/2 -translate-y-1/2 flex items-center gap-1 ${isMine ? '-left-28' : '-right-28'} transition-all z-20 ${mobileActiveMessage === msg.id ? 'opacity-100 visible' : 'opacity-0 invisible md:group-hover:opacity-100 md:group-hover:visible'}`}>
                               {/* React Button */}
                               <div className="relative">
                                 <button
@@ -1109,7 +1112,7 @@ const Messages = () => {
 
                               {/* Reply Button */}
                               <button
-                                onClick={() => setReplyingTo(msg)}
+                                onClick={() => { setReplyingTo(msg); setMobileActiveMessage(null); }}
                                 className="p-1.5 bg-white border border-slate-200 rounded-lg text-slate-400 hover:text-blue-500 hover:border-blue-300 shadow-sm transition-all"
                                 title="Reply">
                                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1117,45 +1120,72 @@ const Messages = () => {
                                 </svg>
                               </button>
 
-                              {/* Pin button — everyone */}
-                              <button
-                                onClick={() => handlePinMessage(msg)}
-                                className={`p-1.5 bg-white border rounded-lg shadow-sm transition-all ${msg.is_pinned ? 'text-amber-500 border-amber-300 hover:bg-amber-50' : 'text-slate-400 border-slate-200 hover:text-amber-500 hover:border-amber-300'}`}
-                                title={msg.is_pinned ? 'Unpin' : 'Pin'}>
-                                <svg className="w-3.5 h-3.5" fill={msg.is_pinned ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 18V4z" />
-                                </svg>
-                              </button>
-                              
-                              {/* Edit + Delete — own messages only */}
-                              {isMine && (
-                                <>
-                                  <button
-                                    onClick={() => { setEditingMessage(msg); setEditContent(msg.content); }}
-                                    className="p-1.5 bg-white border border-slate-200 rounded-lg text-slate-400 hover:text-violet-600 hover:border-violet-300 shadow-sm transition-all"
-                                    title="Edit">
-                                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                    </svg>
-                                  </button>
-                                  <button
-                                    onClick={() => handleDeleteMessage(msg.id)}
-                                    className="p-1.5 bg-white border border-slate-200 rounded-lg text-slate-400 hover:text-red-500 hover:border-red-300 shadow-sm transition-all"
-                                    title="Delete">
-                                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                    </svg>
-                                  </button>
-                                </>
-                              )}
+                              {/* More Button */}
+                              <div className="relative">
+                                <button
+                                  onClick={() => setActiveMoreMenu(activeMoreMenu === msg.id ? null : msg.id)}
+                                  className={`p-1.5 bg-white border rounded-lg shadow-sm transition-all ${activeMoreMenu === msg.id ? 'text-violet-600 border-violet-300 bg-violet-50' : 'text-slate-400 border-slate-200 hover:text-violet-600 hover:border-violet-300'}`}
+                                  title="More">
+                                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z" />
+                                  </svg>
+                                </button>
+
+                                {activeMoreMenu === msg.id && (
+                                  <div className={`absolute bottom-full ${isMine ? 'right-0' : 'left-0'} mb-2 w-32 bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden z-[100] animate-in fade-in slide-in-from-bottom-2`}>
+                                    <div className="py-1">
+                                      {/* Edit — own messages only */}
+                                      {isMine && (
+                                        <button
+                                          onClick={() => { setEditingMessage(msg); setEditContent(msg.content); setActiveMoreMenu(null); setMobileActiveMessage(null); }}
+                                          className="w-full px-3 py-2 text-left text-xs font-bold text-slate-600 hover:bg-slate-50 flex items-center gap-2 transition-all">
+                                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                          </svg>
+                                          Edit
+                                        </button>
+                                      )}
+
+                                      {/* Pin button — everyone */}
+                                      <button
+                                        onClick={() => { handlePinMessage(msg); setActiveMoreMenu(null); setMobileActiveMessage(null); }}
+                                        className={`w-full px-3 py-2 text-left text-xs font-bold flex items-center gap-2 transition-all ${msg.is_pinned ? 'text-amber-600 hover:bg-amber-50' : 'text-slate-600 hover:bg-slate-50'}`}>
+                                        <svg className="w-3.5 h-3.5" fill={msg.is_pinned ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 18V4z" />
+                                        </svg>
+                                        {msg.is_pinned ? 'Unpin' : 'Pin'}
+                                      </button>
+
+                                      {/* Unsend — own messages only */}
+                                      {isMine && (
+                                        <button
+                                          onClick={() => { handleDeleteMessage(msg.id); setActiveMoreMenu(null); setMobileActiveMessage(null); }}
+                                          className="w-full px-3 py-2 text-left text-xs font-bold text-red-500 hover:bg-red-50 flex items-center gap-2 transition-all">
+                                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                          </svg>
+                                          Unsend
+                                        </button>
+                                      )}
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
                             </div>
 
                             {/* Bubble */}
-                            <div id={`msg-${msg.id}`} className={`px-4 py-2.5 rounded-2xl text-sm font-medium shadow-sm relative transition-all duration-500 break-all md:break-words whitespace-pre-wrap max-w-full ${
-                              isMine
-                                ? 'bg-violet-600 text-white rounded-br-none'
-                                : 'bg-white text-slate-700 border border-slate-100 rounded-bl-none'
-                            } ${msg.is_pinned ? 'ring-2 ring-amber-400 ring-offset-1' : ''}`}>
+                            <div
+                              id={`msg-${msg.id}`}
+                              onClick={() => {
+                                if (window.innerWidth < 768) {
+                                  setMobileActiveMessage(mobileActiveMessage === msg.id ? null : msg.id);
+                                }
+                              }}
+                              className={`px-4 py-2.5 rounded-2xl text-sm font-medium shadow-sm relative transition-all duration-500 break-all md:break-words whitespace-pre-wrap max-w-full cursor-pointer md:cursor-default ${
+                                isMine
+                                  ? 'bg-violet-600 text-white rounded-br-none'
+                                  : 'bg-white text-slate-700 border border-slate-100 rounded-bl-none'
+                              } ${msg.is_pinned ? 'ring-2 ring-amber-400 ring-offset-1' : ''}`}>
                               {msg.is_pinned && (
                                 <span className="block text-[9px] font-black uppercase tracking-widest mb-1 opacity-60">📌 Pinned</span>
                               )}
