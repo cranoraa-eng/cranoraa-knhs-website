@@ -1101,10 +1101,10 @@ const Messages = () => {
                                 {showReactionPicker === msg.id && (
                                   <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
                                     <div className="absolute inset-0 bg-black/20 backdrop-blur-[1px]" onClick={() => setShowReactionPicker(null)} />
-                                    <div className="relative bg-white border border-slate-200 rounded-2xl shadow-2xl p-2 md:p-3 flex flex-row flex-wrap justify-center items-center gap-1 md:gap-2 animate-in fade-in zoom-in-95 duration-200 w-fit max-w-[90vw] md:max-w-md">
+                                    <div className="relative bg-white border border-slate-200 rounded-2xl shadow-2xl p-1.5 md:p-2 flex flex-row flex-wrap justify-center items-center gap-1 md:gap-1.5 animate-in fade-in zoom-in-95 duration-200 w-fit max-w-[90vw] md:max-w-xs">
                                       {COMMON_EMOJIS.map(emoji => (
                                         <button key={emoji} onClick={() => handleReactToMessage(msg.id, emoji)}
-                                          className="w-9 h-9 md:w-12 md:h-12 flex items-center justify-center hover:bg-slate-50 rounded-xl transition-all text-xl md:text-3xl active:scale-150 shrink-0">
+                                          className="w-9 h-9 md:w-10 md:h-10 flex items-center justify-center hover:bg-slate-50 rounded-xl transition-all text-xl md:text-2xl active:scale-150 shrink-0">
                                           {emoji}
                                         </button>
                                       ))}
