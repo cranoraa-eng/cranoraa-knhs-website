@@ -31,6 +31,7 @@ const Attendance = () => {
   const [selectedDate, setSelectedDate]         = useState(new Date().toISOString().split('T')[0]);
   const [students, setStudents]                 = useState([]);
   const [savedAttendance, setSavedAttendance]   = useState({}); // { studentId: { id, status } }
+  const [savedRemarks, setSavedRemarks]         = useState({}); // { studentId: remarks }
   const [draftAttendance, setDraftAttendance]   = useState({}); // local unsaved status
   const [draftRemarks, setDraftRemarks]         = useState({}); // local unsaved remarks
   const [submitting, setSubmitting]             = useState(false);
@@ -69,6 +70,7 @@ const Attendance = () => {
         remarks[r.student] = r.remarks || '';
       });
       setSavedAttendance(map);
+      setSavedRemarks(remarks);
       setDraftAttendance(map);
       setDraftRemarks(remarks);
     } catch { toast.error('Failed to load attendance data'); }
@@ -134,7 +136,9 @@ const Attendance = () => {
     }));
 
     setSavedAttendance(newSaved);
+    setSavedRemarks(draftRemarks);
     setDraftAttendance(newSaved);
+    setDraftRemarks(draftRemarks);
     setSubmitting(false);
 
     if (ok > 0) toast.success(`Attendance saved for ${ok} student${ok !== 1 ? 's' : ''}`);
@@ -169,7 +173,8 @@ const Attendance = () => {
     ? Math.round(((stats.present + stats.late) / students.length) * 100) : null;
 
   const hasChanges = students.some(s =>
-    draftAttendance[s.student]?.status !== savedAttendance[s.student]?.status
+    draftAttendance[s.student]?.status !== savedAttendance[s.student]?.status ||
+    (draftRemarks[s.student] || '') !== (savedRemarks[s.student] || '')
   );
 
   // Student filter
@@ -468,23 +473,23 @@ const Attendance = () => {
       {view === 'history' && (
         <>
           {!selectedClassroom ? (
-            <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-8 md:p-16 text-center text-gray-400 font-bold text-[9px] md:text-sm uppercase tracking-widest">Select a classroom to view history.</div>
+            <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-4 md:p-16 text-center text-gray-400 font-bold text-[8px] md:text-sm uppercase tracking-widest">Select a classroom to view history.</div>
           ) : loadingHistory ? (
-            <div className="flex items-center justify-center h-32 md:h-48"><div className="animate-spin rounded-full h-6 w-6 md:h-10 md:w-10 border-b-2 border-purple-600" /></div>
+            <div className="flex items-center justify-center h-24 md:h-48"><div className="animate-spin rounded-full h-5 w-5 md:h-10 md:w-10 border-b-2 border-purple-600" /></div>
           ) : history.length === 0 ? (
-            <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-8 md:p-16 text-center text-gray-400 font-bold text-[9px] md:text-sm uppercase tracking-widest">No records found.</div>
+            <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-4 md:p-16 text-center text-gray-400 font-bold text-[8px] md:text-sm uppercase tracking-widest">No records found.</div>
           ) : (
             <div className="bg-white border border-gray-200 rounded-lg md:rounded-xl shadow-sm overflow-hidden min-w-0">
               <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 max-w-full">
-                <table className="w-full text-[8px] md:text-sm text-left min-w-[500px] md:min-w-full">
+                <table className="w-full text-[7px] md:text-sm text-left min-w-[350px] md:min-w-full">
                   <thead>
                     <tr className="bg-[#2D1B4D] text-white">
-                      <th className="px-2 py-1 md:px-6 md:py-3 text-[7px] md:text-[10px] font-black uppercase tracking-widest">Date</th>
-                      <th className="px-2 py-1 md:px-6 md:py-3 text-[7px] md:text-[10px] font-black uppercase tracking-widest">Student</th>
-                      <th className="text-center px-2 py-1 md:px-6 md:py-3 text-[7px] md:text-[10px] font-black uppercase tracking-widest">Status</th>
-                      <th className="px-2 py-1 md:px-6 md:py-3 text-[7px] md:text-[10px] font-black uppercase tracking-widest">By</th>
+                      <th className="px-1.5 py-1 md:px-6 md:py-3 text-[6px] md:text-[10px] font-black uppercase tracking-widest">Date</th>
+                      <th className="px-1.5 py-1 md:px-6 md:py-3 text-[6px] md:text-[10px] font-black uppercase tracking-widest">Student</th>
+                      <th className="text-center px-1.5 py-1 md:px-6 md:py-3 text-[6px] md:text-[10px] font-black uppercase tracking-widest">Status</th>
+                      <th className="hidden md:table-cell px-2 py-1 md:px-6 md:py-3 text-[7px] md:text-[10px] font-black uppercase tracking-widest">By</th>
                       <th className="hidden md:table-cell px-2 py-1 md:px-6 md:py-3 text-[7px] md:text-[10px] font-black uppercase tracking-widest">Remarks</th>
-                      <th className="text-center px-2 py-1 md:px-6 md:py-3 text-[7px] md:text-[10px] font-black uppercase tracking-widest">Opt</th>
+                      <th className="text-center px-1.5 py-1 md:px-6 md:py-3 text-[6px] md:text-[10px] font-black uppercase tracking-widest">Opt</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
@@ -492,8 +497,8 @@ const Attendance = () => {
                       const cfg = STATUS_CONFIG[r.status];
                       return (
                         <tr key={r.id} className={`hover:bg-purple-50 transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'} group`}>
-                          <td className="px-2 py-1.5 md:px-6 md:py-3 font-bold text-gray-700 whitespace-nowrap">{new Date(r.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</td>
-                          <td className="px-2 py-1.5 md:px-6 md:py-3">
+                          <td className="px-1.5 py-1 md:px-6 md:py-3 font-bold text-gray-700 whitespace-nowrap">{new Date(r.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</td>
+                          <td className="px-1.5 py-1 md:px-6 md:py-3">
                             <div className="min-w-0">
                               <button 
                                 onClick={() => navigate(`/profile?student_id=${r.student}`)}
@@ -502,20 +507,20 @@ const Attendance = () => {
                               >
                                 {r.student_name}
                               </button>
-                              <div className="text-[6px] md:text-xs text-gray-400 font-bold truncate">{r.student_email}</div>
+                              <div className="text-[5px] md:text-xs text-gray-400 font-bold truncate">{r.student_email}</div>
                             </div>
                           </td>
-                          <td className="px-2 py-1.5 md:px-6 md:py-3 text-center">
-                            <span className={`inline-flex items-center gap-1 px-1 py-0 rounded-full text-[6px] md:text-xs font-black uppercase tracking-widest border ${cfg?.active || 'bg-gray-100 text-gray-600 border-gray-200'}`}>
-                              {cfg?.label || r.status}
+                          <td className="px-1.5 py-1 md:px-6 md:py-3 text-center">
+                            <span className={`inline-flex items-center gap-1 px-1 py-0 rounded-full text-[5px] md:text-xs font-black uppercase tracking-widest border ${cfg?.active || 'bg-gray-100 text-gray-600 border-gray-200'}`}>
+                              {cfg?.short || r.status}
                             </span>
                           </td>
-                          <td className="px-2 py-1.5 md:px-6 md:py-3 font-bold text-gray-400 uppercase text-[7px] md:text-sm truncate max-w-[50px] md:max-w-none">{r.marked_by_name || '—'}</td>
+                          <td className="hidden md:table-cell px-2 py-1.5 md:px-6 md:py-3 font-bold text-gray-400 uppercase text-[7px] md:text-sm truncate max-w-[50px] md:max-w-none">{r.marked_by_name || '—'}</td>
                           <td className="hidden md:table-cell px-2 py-1.5 md:px-6 md:py-3 font-medium text-gray-500 truncate max-w-[60px] md:max-w-none">{r.remarks || '—'}</td>
-                          <td className="px-2 py-1.5 md:px-6 md:py-3 text-center">
+                          <td className="px-1.5 py-1 md:px-6 md:py-3 text-center">
                             <button onClick={() => deleteAttendance(r)}
                               className="p-0.5 md:p-2 text-red-600 bg-red-50 hover:bg-red-100 rounded transition-all md:opacity-0 md:group-hover:opacity-100">
-                              <svg className="w-2.5 h-2.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <svg className="w-2 h-2 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                               </svg>
                             </button>
@@ -526,11 +531,11 @@ const Attendance = () => {
                   </tbody>
                 </table>
               </div>
-              <div className="px-2 py-1 md:px-6 md:py-2.5 bg-gray-50 border-t border-gray-100 text-[6px] md:text-xs font-black text-gray-400 uppercase tracking-widest">
+              <div className="px-1.5 py-0.5 md:px-6 md:py-2.5 bg-gray-50 border-t border-gray-100 text-[5px] md:text-xs font-black text-gray-400 uppercase tracking-widest">
                 {history.length} records found
               </div>
             </div>
-          )}
+          ) }
         </>
       )}
     </div>
