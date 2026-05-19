@@ -32,6 +32,7 @@ const Attendance = () => {
   const [students, setStudents]                 = useState([]);
   const [savedAttendance, setSavedAttendance]   = useState({}); // { studentId: { id, status } }
   const [draftAttendance, setDraftAttendance]   = useState({}); // local unsaved status
+  const [draftRemarks, setDraftRemarks]         = useState({}); // local unsaved remarks
   const [submitting, setSubmitting]             = useState(false);
   const [loadingStudents, setLoadingStudents]   = useState(false);
 
