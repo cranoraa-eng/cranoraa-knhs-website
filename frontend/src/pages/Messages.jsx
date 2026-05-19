@@ -1100,11 +1100,11 @@ const Messages = () => {
                                 </button>
                                 {showReactionPicker === msg.id && (
                                   <>
-                                    <div className="fixed inset-0 z-[90] bg-black/5 sm:bg-transparent" onClick={() => setShowReactionPicker(null)} />
-                                    <div className={`fixed sm:absolute left-1/2 sm:left-auto -translate-x-1/2 sm:translate-x-0 ${isMine ? 'sm:right-0' : 'sm:left-0'} bottom-[45%] sm:bottom-full mb-2 bg-white border border-slate-200 rounded-2xl shadow-2xl sm:shadow-xl p-1.5 md:p-1.5 flex flex-row flex-nowrap items-center gap-1 md:gap-1 z-[100] animate-in fade-in slide-in-from-bottom-4 sm:slide-in-from-bottom-2 w-max max-w-[95vw] sm:max-w-none`}>
+                                    <div className="fixed inset-0 z-[90] bg-black/10 backdrop-blur-[1px]" onClick={() => setShowReactionPicker(null)} />
+                                    <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-white border border-slate-200 rounded-2xl shadow-2xl p-2 md:p-3 flex flex-row flex-nowrap items-center gap-1 md:gap-2 z-[100] animate-in fade-in zoom-in-95 duration-200 w-max max-w-[95vw]">
                                       {COMMON_EMOJIS.map(emoji => (
                                         <button key={emoji} onClick={() => handleReactToMessage(msg.id, emoji)}
-                                          className="w-9 h-9 md:w-9 md:h-9 flex items-center justify-center hover:bg-slate-50 rounded-lg transition-all text-2xl md:text-lg active:scale-150 shrink-0">
+                                          className="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center hover:bg-slate-50 rounded-xl transition-all text-2xl md:text-3xl active:scale-150 shrink-0">
                                           {emoji}
                                         </button>
                                       ))}
@@ -1136,40 +1136,43 @@ const Messages = () => {
 
                                 {activeMoreMenu === msg.id && (
                                   <>
-                                    <div className="fixed inset-0 z-[90] bg-black/5 sm:bg-transparent" onClick={() => setActiveMoreMenu(null)} />
-                                    <div className={`fixed sm:absolute left-1/2 sm:left-auto -translate-x-1/2 sm:translate-x-0 ${isMine ? 'sm:right-0' : 'sm:left-0'} bottom-[45%] sm:bottom-full mb-2 w-32 bg-white border border-slate-200 rounded-xl shadow-2xl sm:shadow-xl overflow-hidden z-[100] animate-in fade-in slide-in-from-bottom-4 sm:slide-in-from-bottom-2`}>
-                                      <div className="py-1">
+                                    <div className="fixed inset-0 z-[90] bg-black/10 backdrop-blur-[1px]" onClick={() => setActiveMoreMenu(null)} />
+                                    <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-48 bg-white border border-slate-200 rounded-2xl shadow-2xl overflow-hidden z-[100] animate-in fade-in zoom-in-95 duration-200">
+                                      <div className="py-2">
+                                        <div className="px-4 py-2 border-b border-slate-50 mb-1">
+                                          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Message Options</p>
+                                        </div>
                                         {/* Edit — own messages only */}
                                         {isMine && (
                                           <button
                                             onClick={() => { setEditingMessage(msg); setEditContent(msg.content); setActiveMoreMenu(null); setMobileActiveMessage(null); }}
-                                            className="w-full px-3 py-2 text-left text-xs font-bold text-slate-600 hover:bg-slate-50 flex items-center gap-2 transition-all">
-                                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            className="w-full px-4 py-3 text-left text-sm font-bold text-slate-600 hover:bg-slate-50 flex items-center gap-3 transition-all">
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                             </svg>
-                                            Edit
+                                            Edit Message
                                           </button>
                                         )}
 
                                         {/* Pin button — everyone */}
                                         <button
                                           onClick={() => { handlePinMessage(msg); setActiveMoreMenu(null); setMobileActiveMessage(null); }}
-                                          className={`w-full px-3 py-2 text-left text-xs font-bold flex items-center gap-2 transition-all ${msg.is_pinned ? 'text-amber-600 hover:bg-amber-50' : 'text-slate-600 hover:bg-slate-50'}`}>
-                                          <svg className="w-3.5 h-3.5" fill={msg.is_pinned ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
+                                          className={`w-full px-4 py-3 text-left text-sm font-bold flex items-center gap-3 transition-all ${msg.is_pinned ? 'text-amber-600 hover:bg-amber-50' : 'text-slate-600 hover:bg-slate-50'}`}>
+                                          <svg className="w-4 h-4" fill={msg.is_pinned ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 18V4z" />
                                           </svg>
-                                          {msg.is_pinned ? 'Unpin' : 'Pin'}
+                                          {msg.is_pinned ? 'Unpin from Chat' : 'Pin to Chat'}
                                         </button>
 
                                         {/* Unsend — own messages only */}
                                         {isMine && (
                                           <button
                                             onClick={() => { handleDeleteMessage(msg.id); setActiveMoreMenu(null); setMobileActiveMessage(null); }}
-                                            className="w-full px-3 py-2 text-left text-xs font-bold text-red-500 hover:bg-red-50 flex items-center gap-2 transition-all">
-                                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            className="w-full px-4 py-3 text-left text-sm font-bold text-red-500 hover:bg-red-50 flex items-center gap-3 transition-all">
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                             </svg>
-                                            Unsend
+                                            Unsend Message
                                           </button>
                                         )}
                                       </div>
