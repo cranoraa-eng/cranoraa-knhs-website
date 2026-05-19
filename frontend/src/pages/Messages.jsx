@@ -659,23 +659,23 @@ const Messages = () => {
       <div className={`${selectedRoom ? 'hidden md:flex' : 'flex'} w-full md:w-80 border-r border-slate-100 flex-col bg-slate-50/30 min-w-0 overflow-hidden`}>
 
         {/* Header */}
-        <div className="p-4 md:p-6 border-b border-slate-100 bg-white shrink-0">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-black text-slate-800 tracking-tight">Messages</h2>
+        <div className="p-3 md:p-6 border-b border-slate-100 bg-white shrink-0">
+          <div className="flex items-center justify-between mb-3 md:mb-4">
+            <h2 className="text-lg md:text-xl font-black text-slate-800 tracking-tight">Messages</h2>
             <button onClick={() => setShowGroupModal(true)}
-              className="p-2 bg-violet-50 text-violet-600 rounded-xl hover:bg-violet-600 hover:text-white transition-all shadow-sm active:scale-95" title="New Group Chat">
+              className="p-1.5 md:p-2 bg-violet-50 text-violet-600 rounded-xl hover:bg-violet-600 hover:text-white transition-all shadow-sm active:scale-95" title="New Group Chat">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
             </button>
           </div>
 
           {/* Tabs */}
-          <div className="flex gap-2 mb-4 overflow-x-auto pb-1 scrollbar-none -mx-1 px-1">
+          <div className="flex gap-2 mb-3 md:mb-4 overflow-x-auto pb-1 scrollbar-none -mx-1 px-1">
             {['chats', 'friends', 'requests', 'search'].map(tab => (
               <button key={tab} onClick={() => setActiveTab(tab)}
-                className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-all ${activeTab === tab ? 'bg-violet-600 text-white shadow-md shadow-violet-200' : 'bg-slate-100 text-slate-400 hover:bg-slate-200'}`}>
+                className={`px-2.5 py-1.5 rounded-lg text-[9px] md:text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-all ${activeTab === tab ? 'bg-violet-600 text-white shadow-md shadow-violet-200' : 'bg-slate-100 text-slate-400 hover:bg-slate-200'}`}>
                 {tab}
                 {tab === 'requests' && requests.length > 0 && (
-                  <span className="ml-1.5 bg-red-500 text-white rounded-full w-4 h-4 inline-flex items-center justify-center text-[8px] animate-pulse">{requests.length}</span>
+                  <span className="ml-1 bg-red-500 text-white rounded-full w-3.5 h-3.5 inline-flex items-center justify-center text-[7px] animate-pulse">{requests.length}</span>
                 )}
               </button>
             ))}
@@ -687,8 +687,8 @@ const Messages = () => {
               placeholder={activeTab === 'search' ? 'Search users...' : 'Search...'}
               value={activeTab === 'search' ? userSearchQuery : searchQuery}
               onChange={e => activeTab === 'search' ? setUserSearchQuery(e.target.value) : setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-slate-100 border-transparent rounded-xl text-sm focus:bg-white focus:ring-4 focus:ring-violet-500/5 transition-all outline-none" />
-            <svg className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              className="w-full pl-9 pr-4 py-1.5 md:py-2 bg-slate-100 border-transparent rounded-xl text-xs md:text-sm focus:bg-white focus:ring-4 focus:ring-violet-500/5 transition-all outline-none" />
+            <svg className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
           </div>
@@ -710,38 +710,38 @@ const Messages = () => {
 
                   return (
                     <button key={room.id} onClick={() => setSelectedRoom(room)}
-                      className={`w-full p-3 md:p-4 flex items-center gap-3 transition-all border-b border-slate-50 min-w-0 overflow-hidden ${isSelected ? 'bg-violet-50/80 border-l-4 border-l-violet-500' : 'hover:bg-white'}`}>
+                      className={`w-full p-2.5 md:p-4 flex items-center gap-2.5 md:gap-3 transition-all border-b border-slate-50 min-w-0 overflow-hidden ${isSelected ? 'bg-violet-50/80 border-l-4 border-l-violet-500' : 'hover:bg-white'}`}>
 
                       {/* Avatar */}
                       <div className="relative shrink-0">
                         {room.is_group ? (
                           /* Group — stacked people icon on indigo */
-                          <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-lg">
-                            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <div className="h-10 w-10 md:h-12 md:w-12 rounded-xl md:rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-lg">
+                            <svg className="w-5 h-5 md:w-6 md:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                             </svg>
                           </div>
                         ) : (
                           /* Private — initials on violet-fuchsia */
-                          <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center text-white font-bold shadow-lg">
+                          <div className="h-10 w-10 md:h-12 md:w-12 rounded-xl md:rounded-2xl bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center text-white font-bold text-xs md:text-base shadow-lg">
                             {initials}
                           </div>
                         )}
                         {/* Pin indicator */}
                         {room.is_pinned && (
-                          <div className="absolute -top-1.5 -right-1.5 bg-amber-500 text-white rounded-full p-1 border-2 border-white shadow-sm z-10">
-                            <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20">
+                          <div className="absolute -top-1 -right-1 bg-amber-500 text-white rounded-full p-0.5 border-2 border-white shadow-sm z-10">
+                            <svg className="w-2 h-2" fill="currentColor" viewBox="0 0 20 20">
                               <path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 18V4z" />
                             </svg>
                           </div>
                         )}
                         {/* Online dot for private chats */}
                         {!room.is_group && otherUser?.is_online && (
-                          <span className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-white ${room.is_pinned ? 'mr-0' : ''}`} />
+                          <span className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-white ${room.is_pinned ? 'mr-0' : ''}`} />
                         )}
                         {/* Member count badge for groups */}
                         {room.is_group && (
-                          <span className="absolute -bottom-1 -right-1 bg-indigo-600 text-white text-[8px] font-black rounded-full px-1.5 py-0.5 border-2 border-white leading-none">
+                          <span className="absolute -bottom-1 -right-1 bg-indigo-600 text-white text-[7px] md:text-[8px] font-black rounded-full px-1 py-0.5 border border-white leading-none">
                             {memberCount}
                           </span>
                         )}
@@ -750,27 +750,27 @@ const Messages = () => {
                       {/* Text */}
                       <div className="flex-1 text-left min-w-0">
                         <div className="flex justify-between items-center mb-0.5">
-                          <div className="flex items-center gap-1.5 min-w-0">
-                            <h4 className={`text-sm truncate uppercase tracking-tight ${room.unread_count > 0 ? 'font-black text-slate-900' : 'font-black text-slate-800'}`}>{displayName}</h4>
+                          <div className="flex items-center gap-1 min-w-0">
+                            <h4 className={`text-xs md:text-sm truncate uppercase tracking-tight ${room.unread_count > 0 ? 'font-black text-slate-900' : 'font-black text-slate-800'}`}>{displayName}</h4>
                             {room.is_group && (
-                              <span className="shrink-0 text-[8px] font-black bg-indigo-100 text-indigo-600 px-1.5 py-0.5 rounded-full uppercase tracking-widest">Group</span>
+                              <span className="shrink-0 text-[7px] font-black bg-indigo-100 text-indigo-600 px-1 py-0.5 rounded-full uppercase tracking-widest">Grp</span>
                             )}
                           </div>
-                          <div className="flex items-center gap-1.5 shrink-0 ml-1">
+                          <div className="flex items-center gap-1 shrink-0 ml-1">
                             {room.last_message && (
-                              <span className={`text-[10px] font-bold ${room.unread_count > 0 ? 'text-violet-500' : 'text-slate-400'}`}>
+                              <span className={`text-[9px] font-bold ${room.unread_count > 0 ? 'text-violet-500' : 'text-slate-400'}`}>
                                 {new Date(room.last_message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                               </span>
                             )}
                             {/* Unread badge */}
                             {room.unread_count > 0 && (
-                              <span className="bg-violet-600 text-white text-[9px] font-black rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 leading-none shadow-sm shadow-violet-300">
+                              <span className="bg-violet-600 text-white text-[8px] md:text-[9px] font-black rounded-full min-w-[16px] h-[16px] flex items-center justify-center px-1 leading-none shadow-sm shadow-violet-300">
                                 {room.unread_count > 99 ? '99+' : `+${room.unread_count}`}
                               </span>
                             )}
                           </div>
                         </div>
-                        <p className={`text-xs truncate font-medium max-w-[140px] xs:max-w-[180px] sm:max-w-[220px] md:max-w-full ${room.unread_count > 0 ? 'text-slate-700 font-semibold' : 'text-slate-500'}`}>
+                        <p className={`text-[11px] md:text-xs truncate font-medium max-w-[140px] xs:max-w-[180px] sm:max-w-[220px] md:max-w-full ${room.unread_count > 0 ? 'text-slate-700 font-semibold' : 'text-slate-500'}`}>
                           {room.last_message
                             ? (room.is_group
                                 ? `${room.last_message.sender_name?.split(' ')[0] || 'Someone'}: ${room.last_message.content}`
@@ -910,21 +910,21 @@ const Messages = () => {
         {selectedRoom ? (
           <>
             {/* Chat Header */}
-            <div className="p-2 md:p-4 border-b border-slate-100 flex items-center justify-between bg-white/80 backdrop-blur-md sticky top-0 z-10 gap-1 md:gap-2 min-w-0 overflow-hidden">
-              <div className="flex items-center gap-2 md:gap-3 min-w-0">
+            <div className="p-2 md:p-4 border-b border-slate-100 flex items-center justify-between bg-white/80 backdrop-blur-md sticky top-0 z-10 gap-1 md:gap-2 min-w-0 overflow-hidden h-12 md:h-20">
+              <div className="flex items-center gap-1.5 md:gap-3 min-w-0">
                 {/* Back button for mobile */}
                 <button
                   onClick={() => setSelectedRoom(null)}
-                  className="md:hidden p-1.5 -ml-1 text-slate-400 hover:text-violet-600 transition-all shrink-0"
+                  className="md:hidden p-1 -ml-1 text-slate-400 hover:text-violet-600 transition-all shrink-0"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
                   </svg>
                 </button>
 
-                <div className={`h-10 w-10 rounded-xl flex items-center justify-center text-white font-bold text-xs shadow-md shrink-0 ${selectedRoom.is_group ? 'bg-gradient-to-br from-indigo-500 to-violet-600' : 'bg-gradient-to-br from-violet-500 to-fuchsia-500'}`}>
+                <div className={`h-7 w-7 md:h-10 md:w-10 rounded-lg md:rounded-xl flex items-center justify-center text-white font-bold text-[9px] md:text-xs shadow-md shrink-0 ${selectedRoom.is_group ? 'bg-gradient-to-br from-indigo-500 to-violet-600' : 'bg-gradient-to-br from-violet-500 to-fuchsia-500'}`}>
                   {selectedRoom.is_group ? (
-                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4 md:w-5 md:h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
                   ) : (
@@ -933,8 +933,8 @@ const Messages = () => {
                   )}
                 </div>
                 <div className="min-w-0">
-                  <div className="flex items-center gap-1.5 min-w-0">
-                    <h3 className="text-sm font-black text-slate-800 uppercase tracking-tight truncate">
+                  <div className="flex items-center gap-1 min-w-0">
+                    <h3 className="text-[11px] md:text-sm font-black text-slate-800 uppercase tracking-tight truncate">
                       {selectedRoom.is_group
                         ? selectedRoom.name
                         : selectedRoom.participants_details.find(p => p.id !== user.id)?.full_name}
@@ -943,15 +943,15 @@ const Messages = () => {
                       <span className="hidden sm:inline-block text-[8px] font-black bg-indigo-100 text-indigo-600 px-1.5 py-0.5 rounded-full uppercase tracking-widest shrink-0">Group</span>
                     )}
                   </div>
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-1 md:gap-1.5">
                     {selectedRoom.is_group ? (
-                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest truncate">
+                      <span className="text-[8px] md:text-[10px] font-bold text-slate-400 uppercase tracking-widest truncate">
                         {selectedRoom.participants_details?.length || 0} members
                       </span>
                     ) : (
                       <>
-                        <span className={`w-1.5 h-1.5 rounded-full ${selectedRoom.participants_details?.find(p => p.id !== user.id)?.is_online ? 'bg-green-500' : 'bg-slate-300'}`} />
-                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                        <span className={`w-1 md:w-1.5 h-1 md:h-1.5 rounded-full ${selectedRoom.participants_details?.find(p => p.id !== user.id)?.is_online ? 'bg-green-500' : 'bg-slate-300'}`} />
+                        <span className="text-[8px] md:text-[10px] font-bold text-slate-400 uppercase tracking-widest">
                           {selectedRoom.participants_details?.find(p => p.id !== user.id)?.is_online ? 'Active now' : 'Offline'}
                         </span>
                       </>
@@ -963,9 +963,9 @@ const Messages = () => {
                 {/* Pinned messages button */}
                 <button
                   onClick={() => setShowPinnedPanel(v => !v)}
-                  className={`p-1.5 md:p-2 rounded-xl transition-all ${showPinnedPanel ? 'text-amber-600 bg-amber-50' : 'text-slate-400 hover:text-amber-500 hover:bg-amber-50'}`}
+                  className={`p-1 md:p-2 rounded-lg md:rounded-xl transition-all ${showPinnedPanel ? 'text-amber-600 bg-amber-50' : 'text-slate-400 hover:text-amber-500 hover:bg-amber-50'}`}
                   title="Pinned messages">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 18V4z" />
                   </svg>
                 </button>
@@ -973,9 +973,9 @@ const Messages = () => {
                 {/* Pin / unpin this conversation */}
                 <button
                   onClick={() => handlePinRoom(selectedRoom)}
-                  className={`p-1.5 md:p-2 rounded-xl transition-all ${selectedRoom.is_pinned ? 'text-violet-600 bg-violet-50' : 'text-slate-400 hover:text-violet-500 hover:bg-violet-50'}`}
+                  className={`p-1 md:p-2 rounded-lg md:rounded-xl transition-all ${selectedRoom.is_pinned ? 'text-violet-600 bg-violet-50' : 'text-slate-400 hover:text-violet-500 hover:bg-violet-50'}`}
                   title={selectedRoom.is_pinned ? (selectedRoom.is_group ? 'Unpin Group' : 'Unpin Account') : (selectedRoom.is_group ? 'Pin Group' : 'Pin Account')}>
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     {selectedRoom.is_group ? (
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                     ) : (
@@ -991,9 +991,9 @@ const Messages = () => {
                 {selectedRoom.is_group && (
                   <button
                     onClick={() => setShowMembersPanel(v => !v)}
-                    className={`p-1.5 md:p-2 rounded-xl transition-all ${showMembersPanel ? 'text-indigo-600 bg-indigo-50' : 'text-slate-400 hover:text-indigo-500 hover:bg-indigo-50'}`}
+                    className={`p-1 md:p-2 rounded-lg md:rounded-xl transition-all ${showMembersPanel ? 'text-indigo-600 bg-indigo-50' : 'text-slate-400 hover:text-indigo-500 hover:bg-indigo-50'}`}
                     title="View members">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
                   </button>
@@ -1003,9 +1003,9 @@ const Messages = () => {
                 {selectedRoom.is_group && selectedRoom.created_by === user.id && (
                   <button
                     onClick={openGroupSettings}
-                    className="p-1.5 md:p-2 text-slate-400 hover:text-violet-600 hover:bg-violet-50 rounded-xl transition-all"
+                    className="p-1 md:p-2 text-slate-400 hover:text-violet-600 hover:bg-violet-50 rounded-lg md:rounded-xl transition-all"
                     title="Group settings">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                     </svg>
@@ -1013,9 +1013,9 @@ const Messages = () => {
                 )}
                 <button
                   onClick={() => handleDeleteConversation(selectedRoom.id)}
-                  className="p-1.5 md:p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
+                  className="p-1 md:p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg md:rounded-xl transition-all"
                   title="Delete conversation">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                   </svg>
                 </button>
@@ -1023,7 +1023,7 @@ const Messages = () => {
             </div>
 
             {/* Messages List */}
-            <div className="flex-1 overflow-y-auto p-4 md:p-6 pt-12 md:pt-16 space-y-1 scrollbar-thin scrollbar-thumb-slate-100 bg-slate-50/30">
+            <div className="flex-1 overflow-y-auto p-2 md:p-6 pt-4 md:pt-16 space-y-1 scrollbar-thin scrollbar-thumb-slate-100 bg-slate-50/30">
               {loadingMessages ? (
                 <div className="flex items-center justify-center h-full">
                   <div className="w-8 h-8 border-2 border-violet-500 border-t-transparent rounded-full animate-spin" />
@@ -1035,18 +1035,18 @@ const Messages = () => {
                   const isEditing  = editingMessage?.id === msg.id;
 
                   return (
-                    <div key={msg.id} className={`flex ${isMine ? 'justify-end' : 'justify-start'} items-end gap-2 group overflow-visible`}>
+                    <div key={msg.id} className={`flex ${isMine ? 'justify-end' : 'justify-start'} items-end gap-1.5 md:gap-2 group overflow-visible`}>
                       {/* Avatar for other person */}
                       {!isMine && (
-                        <div className={`w-8 h-8 rounded-lg shrink-0 flex items-center justify-center text-[10px] font-bold text-white shadow-sm ${showAvatar ? 'bg-gradient-to-br from-slate-400 to-slate-600' : 'opacity-0'}`}>
+                        <div className={`w-6 h-6 md:w-8 md:h-8 rounded-lg shrink-0 flex items-center justify-center text-[9px] md:text-[10px] font-bold text-white shadow-sm ${showAvatar ? 'bg-gradient-to-br from-slate-400 to-slate-600' : 'opacity-0'}`}>
                           {msg.sender_name?.charAt(0).toUpperCase()}
                         </div>
                       )}
 
-                      <div className="max-w-[75%] md:max-w-[70%] flex flex-col min-w-0">
+                      <div className="max-w-[80%] md:max-w-[70%] flex flex-col min-w-0">
                         {/* Sender name for group chats */}
                         {!isMine && showAvatar && selectedRoom.is_group && (
-                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1 mb-0.5">{msg.sender_name}</span>
+                          <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-1 mb-0.5">{msg.sender_name}</span>
                         )}
 
                         {/* Edit mode */}
@@ -1060,15 +1060,15 @@ const Messages = () => {
                                 if (e.key === 'Enter') handleEditMessage(msg.id);
                                 if (e.key === 'Escape') { setEditingMessage(null); setEditContent(''); }
                               }}
-                              className="px-3 py-2 rounded-xl border border-violet-300 text-sm outline-none focus:ring-2 focus:ring-violet-400 bg-white"
+                              className="px-3 py-1.5 md:py-2 rounded-xl border border-violet-300 text-xs md:text-sm outline-none focus:ring-2 focus:ring-violet-400 bg-white"
                             />
                             <div className="flex gap-2 justify-end">
                               <button onClick={() => { setEditingMessage(null); setEditContent(''); }}
-                                className="px-3 py-1 text-xs font-bold text-slate-500 bg-slate-100 rounded-lg hover:bg-slate-200 transition-all">
+                                className="px-2.5 py-1 text-[10px] md:text-xs font-bold text-slate-500 bg-slate-100 rounded-lg hover:bg-slate-200 transition-all">
                                 Cancel
                               </button>
                               <button onClick={() => handleEditMessage(msg.id)}
-                                className="px-3 py-1 text-xs font-bold text-white bg-violet-600 rounded-lg hover:bg-violet-700 transition-all">
+                                className="px-2.5 py-1 text-[10px] md:text-xs font-bold text-white bg-violet-600 rounded-lg hover:bg-violet-700 transition-all">
                                 Save
                               </button>
                             </div>
@@ -1080,31 +1080,31 @@ const Messages = () => {
                               <button 
                                 onClick={() => scrollToMessage(msg.parent_message_details.id)}
                                 className={`mb-1 flex flex-col group/reply transition-all active:scale-95 ${isMine ? 'items-end' : 'items-start'}`}>
-                                <div className="px-3 py-1 bg-slate-100 rounded-t-xl text-[10px] text-slate-500 border-l-2 border-slate-300 max-w-full truncate group-hover/reply:bg-slate-200">
+                                <div className="px-2.5 py-1 bg-slate-100 rounded-t-xl text-[9px] md:text-[10px] text-slate-500 border-l-2 border-slate-300 max-w-full truncate group-hover/reply:bg-slate-200">
                                   <span className="font-bold">Replying to {msg.parent_message_details.sender_name}:</span> {msg.parent_message_details.content}
                                 </div>
                               </button>
                             )}
 
                             {/* Hover/Tap actions — Messenger style */}
-                            <div className={`absolute top-1/2 -translate-y-1/2 flex items-center gap-1 ${isMine ? '-left-24' : '-right-24'} transition-all z-20 ${mobileActiveMessage === msg.id ? 'opacity-100 visible' : 'opacity-0 invisible md:group-hover:opacity-100 md:group-hover:visible'}`}>
+                            <div className={`absolute top-1/2 -translate-y-1/2 flex items-center gap-1 ${isMine ? '-left-20' : '-right-20'} transition-all z-20 ${mobileActiveMessage === msg.id ? 'opacity-100 visible' : 'opacity-0 invisible md:group-hover:opacity-100 md:group-hover:visible'}`}>
                               {/* React Button */}
                               <div className="relative">
                                 <button
                                   onClick={() => setShowReactionPicker(showReactionPicker === msg.id ? null : msg.id)}
-                                  className="p-1.5 bg-white border border-slate-200 rounded-lg text-slate-400 hover:text-amber-500 hover:border-amber-300 shadow-sm transition-all"
+                                  className="p-1 md:p-1.5 bg-white border border-slate-200 rounded-lg text-slate-400 hover:text-amber-500 hover:border-amber-300 shadow-sm transition-all"
                                   title="React">
-                                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <svg className="w-3 md:w-3.5 h-3 md:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                   </svg>
                                 </button>
                                 {showReactionPicker === msg.id && (
                                   <>
                                     <div className="fixed inset-0 z-[90] bg-black/10 backdrop-blur-[1px]" onClick={() => setShowReactionPicker(null)} />
-                                    <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-white border border-slate-200 rounded-2xl shadow-2xl p-2 md:p-3 flex flex-row flex-nowrap items-center gap-1 md:gap-2 z-[100] animate-in fade-in zoom-in-95 duration-200 w-max max-w-[95vw]">
+                                    <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-white border border-slate-200 rounded-2xl shadow-2xl p-1.5 md:p-3 flex flex-row flex-nowrap items-center gap-1 md:gap-2 z-[100] animate-in fade-in zoom-in-95 duration-200 w-max max-w-[95vw]">
                                       {COMMON_EMOJIS.map(emoji => (
                                         <button key={emoji} onClick={() => handleReactToMessage(msg.id, emoji)}
-                                          className="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center hover:bg-slate-50 rounded-xl transition-all text-2xl md:text-3xl active:scale-150 shrink-0">
+                                          className="w-8 h-8 md:w-12 md:h-12 flex items-center justify-center hover:bg-slate-50 rounded-xl transition-all text-xl md:text-3xl active:scale-150 shrink-0">
                                           {emoji}
                                         </button>
                                       ))}
@@ -1116,9 +1116,9 @@ const Messages = () => {
                               {/* Reply Button */}
                               <button
                                 onClick={() => { setReplyingTo(msg); setMobileActiveMessage(null); }}
-                                className="p-1.5 bg-white border border-slate-200 rounded-lg text-slate-400 hover:text-blue-500 hover:border-blue-300 shadow-sm transition-all"
+                                className="p-1 md:p-1.5 bg-white border border-slate-200 rounded-lg text-slate-400 hover:text-blue-500 hover:border-blue-300 shadow-sm transition-all"
                                 title="Reply">
-                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="w-3 md:w-3.5 h-3 md:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
                                 </svg>
                               </button>
@@ -1127,9 +1127,9 @@ const Messages = () => {
                               <div className="relative">
                                 <button
                                   onClick={() => setActiveMoreMenu(activeMoreMenu === msg.id ? null : msg.id)}
-                                  className={`p-1.5 bg-white border rounded-lg shadow-sm transition-all ${activeMoreMenu === msg.id ? 'text-violet-600 border-violet-300 bg-violet-50' : 'text-slate-400 border-slate-200 hover:text-violet-600 hover:border-violet-300'}`}
+                                  className={`p-1 md:p-1.5 bg-white border rounded-lg shadow-sm transition-all ${activeMoreMenu === msg.id ? 'text-violet-600 border-violet-300 bg-violet-50' : 'text-slate-400 border-slate-200 hover:text-violet-600 hover:border-violet-300'}`}
                                   title="More">
-                                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <svg className="w-3 md:w-3.5 h-3 md:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z" />
                                   </svg>
                                 </button>
@@ -1190,25 +1190,25 @@ const Messages = () => {
                                   setMobileActiveMessage(mobileActiveMessage === msg.id ? null : msg.id);
                                 }
                               }}
-                              className={`px-4 py-2.5 rounded-2xl text-sm font-medium shadow-sm relative transition-all duration-500 break-all md:break-words whitespace-pre-wrap max-w-full cursor-pointer md:cursor-default ${
+                              className={`px-2.5 py-1.5 md:px-4 md:py-2.5 rounded-2xl text-[11px] md:text-sm font-medium shadow-sm relative transition-all duration-500 break-all md:break-words whitespace-pre-wrap max-w-full cursor-pointer md:cursor-default ${
                                 isMine
                                   ? 'bg-violet-600 text-white rounded-br-none'
                                   : 'bg-white text-slate-700 border border-slate-100 rounded-bl-none'
                               } ${msg.is_pinned ? 'ring-2 ring-amber-400 ring-offset-1' : ''}`}>
                               {msg.is_pinned && (
-                                <span className="block text-[9px] font-black uppercase tracking-widest mb-1 opacity-60">📌 Pinned</span>
+                                <span className="block text-[8px] md:text-[9px] font-black uppercase tracking-widest mb-1 opacity-60">📌 Pinned</span>
                               )}
                               {msg.content}
                               {msg.is_edited && (
-                                <span className="ml-1.5 text-[10px] opacity-60 italic">edited</span>
+                                <span className="ml-1.5 text-[9px] md:text-[10px] opacity-60 italic">edited</span>
                               )}
 
                               {/* Reactions display */}
                               {msg.reactions && Object.keys(msg.reactions).length > 0 && (
-                                <div className={`absolute -bottom-2 ${isMine ? 'right-0' : 'left-0'} flex items-center gap-0.5 bg-white border border-slate-100 rounded-full px-1.5 py-0.5 shadow-sm z-10`}>
+                                <div className={`absolute -bottom-2 ${isMine ? 'right-0' : 'left-0'} flex items-center gap-0.5 bg-white border border-slate-100 rounded-full px-1 py-0.5 shadow-sm z-10`}>
                                   {Object.entries(msg.reactions).map(([emoji, users]) => (
-                                    <span key={emoji} className="text-[10px] cursor-default flex items-center gap-0.5" title={users.map(u => u.user_name).join(', ')}>
-                                      {emoji} <span className="text-[8px] font-black text-slate-400">{users.length}</span>
+                                    <span key={emoji} className="text-[9px] md:text-[10px] cursor-default flex items-center gap-0.5" title={users.map(u => u.user_name).join(', ')}>
+                                      {emoji} <span className="text-[7px] md:text-[8px] font-black text-slate-400">{users.length}</span>
                                     </span>
                                   ))}
                                 </div>
@@ -1220,23 +1220,23 @@ const Messages = () => {
                         {/* Timestamp + receipt */}
                         {!isEditing && (
                           <div className={`flex items-center gap-1 mt-0.5 ${isMine ? 'justify-end' : 'justify-start'}`}>
-                            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">
+                            <span className="text-[8px] md:text-[9px] font-bold text-slate-400 uppercase tracking-tighter">
                               {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                             </span>
                             {isMine && (
                               <span title={msg.is_read ? 'Read' : msg.is_delivered ? 'Delivered' : 'Sent'}>
                                 {msg.is_read ? (
-                                  <svg className="w-3.5 h-3.5 text-blue-400" viewBox="0 0 16 11" fill="currentColor">
+                                  <svg className="w-3 md:w-3.5 h-3 md:h-3.5 text-blue-400" viewBox="0 0 16 11" fill="currentColor">
                                     <path d="M11.071.653a.75.75 0 0 1 .025 1.06l-6.5 7a.75.75 0 0 1-1.085 0l-3-3.5a.75.75 0 1 1 1.138-.976L4.5 7.06l5.965-6.382a.75.75 0 0 1 1.06-.025z"/>
                                     <path d="M14.571.653a.75.75 0 0 1 .025 1.06l-6.5 7a.75.75 0 0 1-1.085 0l-.5-.583a.75.75 0 1 1 1.138-.976l.007.008 5.855-6.484a.75.75 0 0 1 1.06-.025z"/>
                                   </svg>
                                 ) : msg.is_delivered ? (
-                                  <svg className="w-3.5 h-3.5 text-slate-400" viewBox="0 0 16 11" fill="currentColor">
+                                  <svg className="w-3 md:w-3.5 h-3 md:h-3.5 text-slate-400" viewBox="0 0 16 11" fill="currentColor">
                                     <path d="M11.071.653a.75.75 0 0 1 .025 1.06l-6.5 7a.75.75 0 0 1-1.085 0l-3-3.5a.75.75 0 1 1 1.138-.976L4.5 7.06l5.965-6.382a.75.75 0 0 1 1.06-.025z"/>
                                     <path d="M14.571.653a.75.75 0 0 1 .025 1.06l-6.5 7a.75.75 0 0 1-1.085 0l-.5-.583a.75.75 0 1 1 1.138-.976l.007.008 5.855-6.484a.75.75 0 0 1 1.06-.025z"/>
                                   </svg>
                                 ) : (
-                                  <svg className="w-3 h-3 text-slate-400" viewBox="0 0 12 11" fill="currentColor">
+                                  <svg className="w-2.5 md:w-3 h-2.5 md:h-3 text-slate-400" viewBox="0 0 12 11" fill="currentColor">
                                     <path d="M11.071.653a.75.75 0 0 1 .025 1.06l-6.5 7a.75.75 0 0 1-1.085 0l-3-3.5a.75.75 0 1 1 1.138-.976L4.5 7.06l5.965-6.382a.75.75 0 0 1 1.06-.025z"/>
                                   </svg>
                                 )}
@@ -1254,47 +1254,47 @@ const Messages = () => {
 
             {/* Typing indicator */}
             {peerTyping && (
-              <div className="px-6 pb-1 flex items-center gap-2">
-                <div className="flex items-center gap-1.5 bg-white border border-slate-100 rounded-2xl rounded-bl-none px-4 py-2 shadow-sm">
-                  <span className="text-xs text-slate-500 font-medium">{peerTypingName || 'Someone'} is typing</span>
+              <div className="px-4 md:px-6 pb-1 flex items-center gap-2">
+                <div className="flex items-center gap-1 bg-white border border-slate-100 rounded-xl rounded-bl-none px-3 py-1.5 md:px-4 md:py-2 shadow-sm">
+                  <span className="text-[10px] md:text-xs text-slate-500 font-medium">{peerTypingName || 'Someone'} is typing</span>
                   <span className="flex gap-0.5 items-end ml-1">
-                    <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                    <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                    <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                    <span className="w-1 md:w-1.5 h-1 md:h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                    <span className="w-1 md:w-1.5 h-1 md:h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                    <span className="w-1 md:w-1.5 h-1 md:h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
                   </span>
                 </div>
               </div>
             )}
 
             {/* Message Input */}
-            <div className="p-2 md:p-4 bg-white border-t border-slate-100 overflow-hidden">
+            <div className="p-1.5 md:p-4 bg-white border-t border-slate-100 overflow-hidden shrink-0">
               {/* Reply Preview */}
               {replyingTo && (
-                <div className="mb-2 flex items-center justify-between bg-slate-50 border-l-4 border-violet-500 p-2 rounded-r-xl animate-in slide-in-from-bottom-2">
+                <div className="mb-1.5 flex items-center justify-between bg-slate-50 border-l-4 border-violet-500 p-1.5 md:p-2 rounded-r-xl animate-in slide-in-from-bottom-2">
                   <div className="min-w-0">
-                    <p className="text-[10px] font-black text-violet-600 uppercase tracking-widest">Replying to {replyingTo.sender_name}</p>
-                    <p className="text-xs text-slate-500 truncate">{replyingTo.content}</p>
+                    <p className="text-[8px] md:text-[10px] font-black text-violet-600 uppercase tracking-widest">Replying to {replyingTo.sender_name}</p>
+                    <p className="text-[10px] md:text-xs text-slate-500 truncate">{replyingTo.content}</p>
                   </div>
                   <button onClick={() => setReplyingTo(null)} className="p-1 text-slate-400 hover:text-red-500">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                     </svg>
                   </button>
                 </div>
               )}
-              <form onSubmit={handleSendMessage} className="flex items-center gap-3">
+              <form onSubmit={handleSendMessage} className="flex items-center gap-1.5 md:gap-3">
                 <input
                   type="text"
                   placeholder="Type a message..."
                   value={newMessage}
                   onChange={handleTyping}
-                  className="flex-1 px-4 py-2.5 bg-slate-100 border-transparent rounded-2xl text-sm focus:bg-white focus:ring-4 focus:ring-violet-500/5 transition-all outline-none"
+                  className="flex-1 px-3 py-1.5 md:px-4 md:py-2.5 bg-slate-100 border-transparent rounded-xl md:rounded-2xl text-[11px] md:text-sm focus:bg-white focus:ring-4 focus:ring-violet-500/5 transition-all outline-none"
                 />
                 <button
                   type="submit"
                   disabled={!newMessage.trim()}
-                  className="p-2.5 bg-violet-600 text-white rounded-xl hover:bg-violet-700 shadow-lg shadow-violet-200 transition-all active:scale-95 disabled:opacity-50 disabled:shadow-none">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  className="p-1.5 md:p-2.5 bg-violet-600 text-white rounded-lg md:rounded-xl hover:bg-violet-700 shadow-lg shadow-violet-200 transition-all active:scale-95 disabled:opacity-50 disabled:shadow-none">
+                  <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
                   </svg>
                 </button>
