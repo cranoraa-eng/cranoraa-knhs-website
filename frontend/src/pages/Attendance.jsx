@@ -32,7 +32,6 @@ const Attendance = () => {
   const [students, setStudents]                 = useState([]);
   const [savedAttendance, setSavedAttendance]   = useState({}); // { studentId: { id, status } }
   const [draftAttendance, setDraftAttendance]   = useState({}); // local unsaved status
-  const [draftRemarks, setDraftRemarks]         = useState({}); // local unsaved remarks
   const [submitting, setSubmitting]             = useState(false);
   const [loadingStudents, setLoadingStudents]   = useState(false);
 
@@ -234,7 +233,7 @@ const Attendance = () => {
                     <th className="px-3 py-2 md:px-6 md:py-3 font-bold uppercase tracking-widest text-[8px] md:text-xs">Day</th>
                     <th className="px-3 py-2 md:px-6 md:py-3 font-bold uppercase tracking-widest text-[8px] md:text-xs">Classroom</th>
                     <th className="text-center px-3 py-2 md:px-6 md:py-3 font-bold uppercase tracking-widest text-[8px] md:text-xs">Status</th>
-                    <th className="px-3 py-2 md:px-6 md:py-3 font-bold uppercase tracking-widest text-[8px] md:text-xs">Remarks</th>
+                    <th className="hidden md:table-cell px-3 py-2 md:px-6 md:py-3 font-bold uppercase tracking-widest text-[8px] md:text-xs">Remarks</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
@@ -251,7 +250,7 @@ const Attendance = () => {
                             {cfg?.label || r.status}
                           </span>
                         </td>
-                        <td className="px-3 py-2 md:px-6 md:py-3 font-medium text-gray-400 truncate max-w-[100px] md:max-w-none">{r.remarks || '—'}</td>
+                        <td className="hidden md:table-cell px-3 py-2 md:px-6 md:py-3 font-medium text-gray-400 truncate max-w-[100px] md:max-w-none">{r.remarks || '—'}</td>
                       </tr>
                     );
                   })}
@@ -372,7 +371,7 @@ const Attendance = () => {
                         <th className="px-2 py-1 md:px-5 md:py-3 text-[7px] md:text-[10px] font-black uppercase tracking-widest w-6 md:w-10">#</th>
                         <th className="px-2 py-1 md:px-5 md:py-3 text-[7px] md:text-[10px] font-black uppercase tracking-widest min-w-[100px]">Student</th>
                         <th className="text-center px-2 py-1 md:px-5 md:py-3 text-[7px] md:text-[10px] font-black uppercase tracking-widest min-w-[140px] md:min-w-[200px]">Status</th>
-                        <th className="px-2 py-1 md:px-5 md:py-3 text-[7px] md:text-[10px] font-black uppercase tracking-widest min-w-[100px] md:min-w-[150px]">Note</th>
+                        <th className="hidden md:table-cell px-2 py-1 md:px-5 md:py-3 text-[7px] md:text-[10px] font-black uppercase tracking-widest min-w-[100px] md:min-w-[150px]">Note</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100">
@@ -418,7 +417,7 @@ const Attendance = () => {
                                 ))}
                               </div>
                             </td>
-                            <td className="px-2 py-1.5 md:px-5 md:py-3.5">
+                            <td className="hidden md:table-cell px-2 py-1.5 md:px-5 md:py-3.5">
                               <input type="text" placeholder="..."
                                 value={draftRemarks[s.student] || ''}
                                 onChange={e => setDraftRemarks(prev => ({ ...prev, [s.student]: e.target.value }))}
@@ -483,7 +482,7 @@ const Attendance = () => {
                       <th className="px-2 py-1 md:px-6 md:py-3 text-[7px] md:text-[10px] font-black uppercase tracking-widest">Student</th>
                       <th className="text-center px-2 py-1 md:px-6 md:py-3 text-[7px] md:text-[10px] font-black uppercase tracking-widest">Status</th>
                       <th className="px-2 py-1 md:px-6 md:py-3 text-[7px] md:text-[10px] font-black uppercase tracking-widest">By</th>
-                      <th className="px-2 py-1 md:px-6 md:py-3 text-[7px] md:text-[10px] font-black uppercase tracking-widest">Remarks</th>
+                      <th className="hidden md:table-cell px-2 py-1 md:px-6 md:py-3 text-[7px] md:text-[10px] font-black uppercase tracking-widest">Remarks</th>
                       <th className="text-center px-2 py-1 md:px-6 md:py-3 text-[7px] md:text-[10px] font-black uppercase tracking-widest">Opt</th>
                     </tr>
                   </thead>
@@ -511,7 +510,7 @@ const Attendance = () => {
                             </span>
                           </td>
                           <td className="px-2 py-1.5 md:px-6 md:py-3 font-bold text-gray-400 uppercase text-[7px] md:text-sm truncate max-w-[50px] md:max-w-none">{r.marked_by_name || '—'}</td>
-                          <td className="px-2 py-1.5 md:px-6 md:py-3 font-medium text-gray-500 truncate max-w-[60px] md:max-w-none">{r.remarks || '—'}</td>
+                          <td className="hidden md:table-cell px-2 py-1.5 md:px-6 md:py-3 font-medium text-gray-500 truncate max-w-[60px] md:max-w-none">{r.remarks || '—'}</td>
                           <td className="px-2 py-1.5 md:px-6 md:py-3 text-center">
                             <button onClick={() => deleteAttendance(r)}
                               className="p-0.5 md:p-2 text-red-600 bg-red-50 hover:bg-red-100 rounded transition-all md:opacity-0 md:group-hover:opacity-100">
