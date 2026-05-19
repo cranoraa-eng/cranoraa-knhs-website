@@ -78,7 +78,13 @@ const Messages = () => {
   };
 
   // ── Effects ───────────────────────────────────────────────────────────────
-  useEffect(() => { scrollToBottom(); }, [messages, peerTyping]);
+  useEffect(() => { 
+    // Only scroll if the last message is new or if we're at the bottom
+    const lastMsg = messages[messages.length - 1];
+    if (lastMsg) {
+      scrollToBottom();
+    }
+  }, [messages.length, peerTyping]);
 
   // Keep selectedRoomRef in sync so WS closures always see current room
   useEffect(() => { selectedRoomRef.current = selectedRoom; }, [selectedRoom]);
