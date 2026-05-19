@@ -656,7 +656,7 @@ const Messages = () => {
     <div className="flex h-[calc(100vh-8rem)] bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-200 relative">
 
       {/* ── Sidebar (Room List) ── */}
-      <div className={`${selectedRoom ? 'hidden md:flex' : 'flex'} w-full md:w-80 border-r border-slate-100 flex-col bg-slate-50/30 min-w-0`}>
+      <div className={`${selectedRoom ? 'hidden md:flex' : 'flex'} w-full md:w-80 border-r border-slate-100 flex-col bg-slate-50/30 min-w-0 overflow-hidden`}>
 
         {/* Header */}
         <div className="p-4 md:p-6 border-b border-slate-100 bg-white shrink-0">
@@ -710,7 +710,7 @@ const Messages = () => {
 
                   return (
                     <button key={room.id} onClick={() => setSelectedRoom(room)}
-                      className={`w-full p-3 md:p-4 flex items-center gap-3 transition-all border-b border-slate-50 ${isSelected ? 'bg-violet-50/80 border-l-4 border-l-violet-500' : 'hover:bg-white'}`}>
+                      className={`w-full p-3 md:p-4 flex items-center gap-3 transition-all border-b border-slate-50 min-w-0 overflow-hidden ${isSelected ? 'bg-violet-50/80 border-l-4 border-l-violet-500' : 'hover:bg-white'}`}>
 
                       {/* Avatar */}
                       <div className="relative shrink-0">
@@ -788,7 +788,7 @@ const Messages = () => {
             friends.length === 0
               ? <div className="p-8 text-center"><p className="text-sm text-slate-400 font-medium">No friends yet</p></div>
               : friends.map(friend => (
-                  <div key={friend.id} className="p-3 md:p-4 flex items-center gap-3 md:gap-4 border-b border-slate-50 hover:bg-white transition-all group min-w-0">
+                  <div key={friend.id} className="p-3 md:p-4 flex items-center gap-3 md:gap-4 border-b border-slate-50 hover:bg-white transition-all group min-w-0 overflow-hidden">
                     <div className="relative shrink-0">
                       <div className="h-10 w-10 rounded-xl bg-slate-200 flex items-center justify-center text-slate-600 font-bold shadow-sm">
                         {friend.first_name?.[0]}{friend.last_name?.[0]}
@@ -845,8 +845,8 @@ const Messages = () => {
                           <h5 className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Administrators</h5>
                         </div>
                         {organizedSearchResults.admins.map(u => (
-                          <div key={u.id} className="p-4 flex items-center gap-4 hover:bg-white transition-all">
-                            <div className="relative">
+                          <div key={u.id} className="p-4 flex items-center gap-4 hover:bg-white transition-all min-w-0 overflow-hidden">
+                            <div className="relative shrink-0">
                               <div className="h-10 w-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-600 font-bold">{u.first_name?.[0]}{u.last_name?.[0]}</div>
                               <div className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-white ${u.is_online ? 'bg-green-500' : 'bg-gray-300'}`} />
                             </div>
@@ -865,14 +865,14 @@ const Messages = () => {
                           <h5 className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Faculty Members</h5>
                         </div>
                         {organizedSearchResults.teachers.map(u => (
-                          <div key={u.id} className="p-4 flex items-center gap-4 hover:bg-white transition-all">
-                            <div className="relative">
+                          <div key={u.id} className="p-4 flex items-center gap-4 hover:bg-white transition-all min-w-0 overflow-hidden">
+                            <div className="relative shrink-0">
                               <div className="h-10 w-10 rounded-xl bg-violet-100 flex items-center justify-center text-violet-600 font-bold">{u.first_name?.[0]}{u.last_name?.[0]}</div>
                               <div className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-white ${u.is_online ? 'bg-green-500' : 'bg-gray-300'}`} />
                             </div>
                             <div className="flex-1 min-w-0">
                               <h4 className="text-sm font-bold text-slate-800 truncate">{u.full_name}</h4>
-                              <p className="text-[9px] text-slate-400 uppercase tracking-widest font-black">{u.is_online ? 'Online' : 'Offline'}</p>
+                              <p className="text-[9px] text-slate-400 uppercase tracking-widest font-black truncate">{u.is_online ? 'Online' : 'Offline'}</p>
                             </div>
                             <FriendActionButton targetUser={u} />
                           </div>
@@ -885,14 +885,14 @@ const Messages = () => {
                           <h5 className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{grpName}</h5>
                         </div>
                         {students.map(u => (
-                          <div key={u.id} className="p-4 flex items-center gap-4 hover:bg-white transition-all">
-                            <div className="relative">
+                          <div key={u.id} className="p-4 flex items-center gap-4 hover:bg-white transition-all min-w-0 overflow-hidden">
+                            <div className="relative shrink-0">
                               <div className="h-10 w-10 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 font-bold">{u.first_name?.[0]}{u.last_name?.[0]}</div>
                               <div className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-white ${u.is_online ? 'bg-green-500' : 'bg-gray-300'}`} />
                             </div>
                             <div className="flex-1 min-w-0">
                               <h4 className="text-sm font-bold text-slate-800 truncate">{u.full_name}</h4>
-                              <p className="text-[9px] text-slate-400 uppercase tracking-widest font-black">{u.is_online ? 'Online' : 'Offline'}</p>
+                              <p className="text-[9px] text-slate-400 uppercase tracking-widest font-black truncate">{u.is_online ? 'Online' : 'Offline'}</p>
                             </div>
                             <FriendActionButton targetUser={u} />
                           </div>
