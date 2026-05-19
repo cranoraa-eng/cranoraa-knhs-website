@@ -625,10 +625,10 @@ const Messages = () => {
     <div className="flex h-[calc(100vh-8rem)] bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-200 relative">
 
       {/* ── Sidebar (Room List) ── */}
-      <div className={`${selectedRoom ? 'hidden md:flex' : 'flex'} w-full md:w-80 border-r border-slate-100 flex-col bg-slate-50/30`}>
+      <div className={`${selectedRoom ? 'hidden md:flex' : 'flex'} w-full md:w-80 border-r border-slate-100 flex-col bg-slate-50/30 min-w-0`}>
 
         {/* Header */}
-        <div className="p-6 border-b border-slate-100 bg-white">
+        <div className="p-4 md:p-6 border-b border-slate-100 bg-white shrink-0">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-black text-slate-800 tracking-tight">Messages</h2>
             <button onClick={() => setShowGroupModal(true)}
@@ -638,7 +638,7 @@ const Messages = () => {
           </div>
 
           {/* Tabs */}
-          <div className="flex gap-2 mb-4 overflow-x-auto pb-1 scrollbar-none">
+          <div className="flex gap-2 mb-4 overflow-x-auto pb-1 scrollbar-none -mx-1 px-1">
             {['chats', 'friends', 'requests', 'search'].map(tab => (
               <button key={tab} onClick={() => setActiveTab(tab)}
                 className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-all ${activeTab === tab ? 'bg-violet-600 text-white shadow-md shadow-violet-200' : 'bg-slate-100 text-slate-400 hover:bg-slate-200'}`}>
@@ -679,7 +679,7 @@ const Messages = () => {
 
                   return (
                     <button key={room.id} onClick={() => setSelectedRoom(room)}
-                      className={`w-full p-4 flex items-center gap-3 transition-all border-b border-slate-50 ${isSelected ? 'bg-violet-50/80 border-l-4 border-l-violet-500' : 'hover:bg-white'}`}>
+                      className={`w-full p-3 md:p-4 flex items-center gap-3 transition-all border-b border-slate-50 ${isSelected ? 'bg-violet-50/80 border-l-4 border-l-violet-500' : 'hover:bg-white'}`}>
 
                       {/* Avatar */}
                       <div className="relative shrink-0">
@@ -757,19 +757,19 @@ const Messages = () => {
             friends.length === 0
               ? <div className="p-8 text-center"><p className="text-sm text-slate-400 font-medium">No friends yet</p></div>
               : friends.map(friend => (
-                  <div key={friend.id} className="p-4 flex items-center gap-4 border-b border-slate-50 hover:bg-white transition-all group">
-                    <div className="relative">
+                  <div key={friend.id} className="p-3 md:p-4 flex items-center gap-3 md:gap-4 border-b border-slate-50 hover:bg-white transition-all group min-w-0">
+                    <div className="relative shrink-0">
                       <div className="h-10 w-10 rounded-xl bg-slate-200 flex items-center justify-center text-slate-600 font-bold shadow-sm">
                         {friend.first_name?.[0]}{friend.last_name?.[0]}
                       </div>
                       <div className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-white shadow-sm ${friend.is_online ? 'bg-green-500' : 'bg-gray-300'}`} />
                     </div>
-                    <div className="flex-1">
-                      <h4 className="text-sm font-bold text-slate-800">{friend.full_name}</h4>
-                      <p className="text-[10px] text-slate-400 uppercase tracking-widest font-black">{friend.role} • {friend.is_online ? 'Online' : 'Offline'}</p>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="text-sm font-bold text-slate-800 truncate">{friend.full_name}</h4>
+                      <p className="text-[10px] text-slate-400 uppercase tracking-widest font-black truncate">{friend.role} • {friend.is_online ? 'Online' : 'Offline'}</p>
                     </div>
                     <button onClick={() => startPrivateChat(friend.id)}
-                      className="p-2 text-violet-600 bg-violet-50 rounded-lg hover:bg-violet-600 hover:text-white transition-all opacity-0 group-hover:opacity-100 active:scale-95">
+                      className="p-2 text-violet-600 bg-violet-50 rounded-lg hover:bg-violet-600 hover:text-white transition-all opacity-0 md:group-hover:opacity-100 md:opacity-0 active:scale-95 shrink-0">
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.001 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
                     </button>
                   </div>
@@ -781,14 +781,14 @@ const Messages = () => {
             requests.length === 0
               ? <div className="p-8 text-center"><p className="text-sm text-slate-400 font-medium">No pending requests</p></div>
               : requests.map(req => (
-                  <div key={req.id} className="p-4 border-b border-slate-50 bg-violet-50/30">
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className="h-10 w-10 rounded-xl bg-violet-200 flex items-center justify-center text-violet-700 font-bold shadow-sm">
+                  <div key={req.id} className="p-3 md:p-4 border-b border-slate-50 bg-violet-50/30 min-w-0">
+                    <div className="flex items-center gap-3 mb-3 min-w-0">
+                      <div className="h-10 w-10 rounded-xl bg-violet-200 flex items-center justify-center text-violet-700 font-bold shadow-sm shrink-0">
                         {req.from_user_details.first_name?.[0]}{req.from_user_details.last_name?.[0]}
                       </div>
                       <div className="flex-1 min-w-0">
                         <h4 className="text-sm font-bold text-slate-800 truncate">{req.from_user_details.full_name}</h4>
-                        <p className="text-[9px] text-slate-400 uppercase tracking-widest font-black">{req.from_user_details.role}</p>
+                        <p className="text-[9px] text-slate-400 uppercase tracking-widest font-black truncate">{req.from_user_details.role}</p>
                       </div>
                     </div>
                     <div className="flex gap-2">
@@ -879,14 +879,14 @@ const Messages = () => {
         {selectedRoom ? (
           <>
             {/* Chat Header */}
-            <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-white/80 backdrop-blur-md sticky top-0 z-10">
-              <div className="flex items-center gap-3 min-w-0">
+            <div className="p-3 md:p-4 border-b border-slate-100 flex items-center justify-between bg-white/80 backdrop-blur-md sticky top-0 z-10 gap-2 min-w-0">
+              <div className="flex items-center gap-2 md:gap-3 min-w-0">
                 {/* Back button for mobile */}
                 <button
                   onClick={() => setSelectedRoom(null)}
-                  className="md:hidden p-2 -ml-2 text-slate-400 hover:text-violet-600 transition-all"
+                  className="md:hidden p-1.5 -ml-1 text-slate-400 hover:text-violet-600 transition-all shrink-0"
                 >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
                   </svg>
                 </button>
@@ -901,36 +901,38 @@ const Messages = () => {
                       ?.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2)
                   )}
                 </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h3 className="text-sm font-black text-slate-800 uppercase tracking-tight">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <h3 className="text-sm font-black text-slate-800 uppercase tracking-tight truncate">
                       {selectedRoom.is_group
                         ? selectedRoom.name
                         : selectedRoom.participants_details.find(p => p.id !== user.id)?.full_name}
                     </h3>
                     {selectedRoom.is_group && (
-                      <span className="text-[8px] font-black bg-indigo-100 text-indigo-600 px-1.5 py-0.5 rounded-full uppercase tracking-widest">Group</span>
+                      <span className="hidden sm:inline-block text-[8px] font-black bg-indigo-100 text-indigo-600 px-1.5 py-0.5 rounded-full uppercase tracking-widest shrink-0">Group</span>
                     )}
                   </div>
                   <div className="flex items-center gap-1.5">
                     {selectedRoom.is_group ? (
-                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest truncate">
                         {selectedRoom.participants_details?.length || 0} members
                       </span>
                     ) : (
                       <>
-                        <span className="w-1.5 h-1.5 bg-green-500 rounded-full" />
-                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Active now</span>
+                        <span className={`w-1.5 h-1.5 rounded-full ${selectedRoom.participants_details?.find(p => p.id !== user.id)?.is_online ? 'bg-green-500' : 'bg-slate-300'}`} />
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                          {selectedRoom.participants_details?.find(p => p.id !== user.id)?.is_online ? 'Active now' : 'Offline'}
+                        </span>
                       </>
                     )}
                   </div>
                 </div>
               </div>
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-0.5 md:gap-1 shrink-0">
                 {/* Pinned messages button */}
                 <button
                   onClick={() => setShowPinnedPanel(v => !v)}
-                  className={`p-2 rounded-xl transition-all ${showPinnedPanel ? 'text-amber-600 bg-amber-50' : 'text-slate-400 hover:text-amber-500 hover:bg-amber-50'}`}
+                  className={`p-1.5 md:p-2 rounded-xl transition-all ${showPinnedPanel ? 'text-amber-600 bg-amber-50' : 'text-slate-400 hover:text-amber-500 hover:bg-amber-50'}`}
                   title="Pinned messages">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 18V4z" />
@@ -940,7 +942,7 @@ const Messages = () => {
                 {/* Pin / unpin this conversation */}
                 <button
                   onClick={() => handlePinRoom(selectedRoom)}
-                  className={`p-2 rounded-xl transition-all ${selectedRoom.is_pinned ? 'text-violet-600 bg-violet-50' : 'text-slate-400 hover:text-violet-500 hover:bg-violet-50'}`}
+                  className={`p-1.5 md:p-2 rounded-xl transition-all ${selectedRoom.is_pinned ? 'text-violet-600 bg-violet-50' : 'text-slate-400 hover:text-violet-500 hover:bg-violet-50'}`}
                   title={selectedRoom.is_pinned ? (selectedRoom.is_group ? 'Unpin Group' : 'Unpin Account') : (selectedRoom.is_group ? 'Pin Group' : 'Pin Account')}>
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     {selectedRoom.is_group ? (
@@ -958,7 +960,7 @@ const Messages = () => {
                 {selectedRoom.is_group && (
                   <button
                     onClick={() => setShowMembersPanel(v => !v)}
-                    className={`p-2 rounded-xl transition-all ${showMembersPanel ? 'text-indigo-600 bg-indigo-50' : 'text-slate-400 hover:text-indigo-500 hover:bg-indigo-50'}`}
+                    className={`p-1.5 md:p-2 rounded-xl transition-all ${showMembersPanel ? 'text-indigo-600 bg-indigo-50' : 'text-slate-400 hover:text-indigo-500 hover:bg-indigo-50'}`}
                     title="View members">
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -970,7 +972,7 @@ const Messages = () => {
                 {selectedRoom.is_group && selectedRoom.created_by === user.id && (
                   <button
                     onClick={openGroupSettings}
-                    className="p-2 text-slate-400 hover:text-violet-600 hover:bg-violet-50 rounded-xl transition-all"
+                    className="p-1.5 md:p-2 text-slate-400 hover:text-violet-600 hover:bg-violet-50 rounded-xl transition-all"
                     title="Group settings">
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
@@ -980,7 +982,7 @@ const Messages = () => {
                 )}
                 <button
                   onClick={() => handleDeleteConversation(selectedRoom.id)}
-                  className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
+                  className="p-1.5 md:p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
                   title="Delete conversation">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -990,7 +992,7 @@ const Messages = () => {
             </div>
 
             {/* Messages List */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-1 scrollbar-thin scrollbar-thumb-slate-100 bg-slate-50/30">
+            <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-1 scrollbar-thin scrollbar-thumb-slate-100 bg-slate-50/30">
               {loadingMessages ? (
                 <div className="flex items-center justify-center h-full">
                   <div className="w-8 h-8 border-2 border-violet-500 border-t-transparent rounded-full animate-spin" />
@@ -1043,7 +1045,7 @@ const Messages = () => {
                         ) : (
                           <div className="relative">
                             {/* Hover actions — pin for everyone, edit/delete for own */}
-                            <div className={`absolute top-1/2 -translate-y-1/2 hidden group-hover:flex items-center gap-1 ${isMine ? '-left-20' : '-right-20'}`}>
+                            <div className={`absolute top-1/2 -translate-y-1/2 hidden md:group-hover:flex items-center gap-1 ${isMine ? '-left-20' : '-right-20'}`}>
                               {/* Pin button — everyone */}
                               <button
                                 onClick={() => handlePinMessage(msg)}
@@ -1143,7 +1145,7 @@ const Messages = () => {
             )}
 
             {/* Message Input */}
-            <div className="p-4 bg-white border-t border-slate-100">
+            <div className="p-3 md:p-4 bg-white border-t border-slate-100">
               <form onSubmit={handleSendMessage} className="flex items-center gap-3">
                 <input
                   type="text"
@@ -1451,21 +1453,21 @@ const Messages = () => {
                     ? <p className="text-xs text-slate-400 py-4 text-center">Add friends first to create groups</p>
                     : friends.map(friend => (
                         <label key={friend.id}
-                          className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${selectedFriends.includes(friend.id) ? 'bg-violet-50 border-violet-200 shadow-sm' : 'border-slate-100 hover:bg-slate-50'}`}>
+                          className={`flex items-center gap-2 md:gap-3 p-2 md:p-3 rounded-xl border cursor-pointer transition-all min-w-0 ${selectedFriends.includes(friend.id) ? 'bg-violet-50 border-violet-200 shadow-sm' : 'border-slate-100 hover:bg-slate-50'}`}>
                           <input type="checkbox" className="hidden"
                             checked={selectedFriends.includes(friend.id)}
                             onChange={() => setSelectedFriends(prev =>
                               prev.includes(friend.id) ? prev.filter(id => id !== friend.id) : [...prev, friend.id]
                             )} />
-                          <div className={`h-8 w-8 rounded-lg flex items-center justify-center text-xs font-bold ${selectedFriends.includes(friend.id) ? 'bg-violet-600 text-white' : 'bg-slate-200 text-slate-500'}`}>
+                          <div className={`h-8 w-8 rounded-lg flex items-center justify-center text-xs font-bold shrink-0 ${selectedFriends.includes(friend.id) ? 'bg-violet-600 text-white' : 'bg-slate-200 text-slate-500'}`}>
                             {friend.first_name?.[0]}{friend.last_name?.[0]}
                           </div>
-                          <div className="flex-1">
-                            <p className="text-sm font-bold text-slate-700">{friend.full_name}</p>
-                            <p className="text-[9px] text-slate-400 font-black uppercase tracking-widest">{friend.role}</p>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-bold text-slate-700 truncate">{friend.full_name}</p>
+                            <p className="text-[9px] text-slate-400 font-black uppercase tracking-widest truncate">{friend.role}</p>
                           </div>
                           {selectedFriends.includes(friend.id) && (
-                            <svg className="w-5 h-5 text-violet-600" fill="currentColor" viewBox="0 0 20 20">
+                            <svg className="w-5 h-5 text-violet-600 shrink-0" fill="currentColor" viewBox="0 0 20 20">
                               <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                             </svg>
                           )}
