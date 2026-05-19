@@ -116,6 +116,11 @@ class ChatRoom(models.Model):
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='created_rooms')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    
+    # Last action tracking
+    last_action_type = models.CharField(max_length=20, default='message') # 'message', 'reaction', 'unsend', 'edit'
+    last_action_sender = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='last_actions')
+    last_action_content = models.TextField(blank=True, null=True) # emoji for reaction, content for message/edit
 
     def __str__(self):
         if self.is_group:

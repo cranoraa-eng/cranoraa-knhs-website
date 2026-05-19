@@ -521,6 +521,10 @@ const Messages = () => {
             ? {
                 ...r,
                 last_message: msg,
+                last_action_type: 'message',
+                last_action_sender: msg.sender,
+                last_action_sender_name: msg.sender_name,
+                last_action_content: msg.content,
                 updated_at: msg.timestamp,
                 unread_count: (msg.sender !== user.id && selectedRoomRef.current?.id !== data.room_id)
                   ? (r.unread_count || 0) + 1
@@ -534,15 +538,59 @@ const Messages = () => {
         setMessages(prev => prev.map(m => 
           m.id === data.message_id ? { ...m, reactions: data.reactions } : m
         ));
+        
+        // Update room preview for reaction
+        const roomId = selectedRoomRef.current?.id;
+        if (data.reactions) {
+          // Find who just reacted (this is a bit simplified, but works for live updates)
+          setRooms(prev => prev.map(r => {
+            if (r.id === roomId || r.id === data.room_id) {
+              return {
+                ...r,
+                last_action_type: 'reaction',
+                last_action_sender: data.user_id, // We might need to send user_id in WS event
+                last_action_sender_name: data.user_name,
+                last_action_content: data.emoji,
+                updated_at: new Date().toISOString(),
+              };
+            }
+            return r;
+          }));
+        }
         return;
       }
 
       if (data.type === 'message_deleted') {
         setMessages(prev => prev.filter(m => m.id !== data.message_id));
+        setRooms(prev => prev.map(r => {
+          if (r.id === selectedRoomRef.current?.id || r.id === data.room_id) {
+            return {
+              ...r,
+              last_action_type: 'unsend',
+              last_action_sender: data.deleted_by,
+              last_action_sender_name: data.deleted_by_name,
+              updated_at: new Date().toISOString(),
+            };
+          }
+          return r;
+        }));
       }
 
       if (data.type === 'message_edited') {
         setMessages(prev => prev.map(m => m.id === data.message_id ? { ...m, content: data.content, is_edited: true } : m));
+        setRooms(prev => prev.map(r => {
+          if (r.id === selectedRoomRef.current?.id || r.id === data.room_id) {
+            return {
+              ...r,
+              last_action_type: 'edit',
+              last_action_sender: data.edited_by,
+              last_action_sender_name: data.edited_by_name,
+              last_action_content: data.content,
+              updated_at: new Date().toISOString(),
+            };
+          }
+          return r;
+        }));
       }
 
       if (data.type === 'message_pinned') {
@@ -777,11 +825,28 @@ const Messages = () => {
                           </div>
                         </div>
                         <p className={`text-[11px] md:text-xs truncate font-medium max-w-[140px] xs:max-w-[180px] sm:max-w-[220px] md:max-w-full ${room.unread_count > 0 ? 'text-slate-700 font-semibold' : 'text-slate-500'}`}>
-                          {room.last_message
-                            ? (room.is_group
+                          {(() => {
+                            const sender = room.last_action_sender === user.id ? 'You' : (room.last_action_sender_name?.split(' ')[0] || 'Someone');
+                            
+                            if (room.last_action_type === 'reaction') {
+                              return `${sender} reacted ${room.last_action_content} to a message`;
+                            }
+                            if (room.last_action_type === 'unsend') {
+                              return `${sender} unsent a message`;
+                            }
+                            if (room.last_action_type === 'edit') {
+                              return `${sender} edited a message: ${room.last_action_content}`;
+                            }
+                            
+                            // Default message display
+                            if (room.last_message) {
+                              return room.is_group 
                                 ? `${room.last_message.sender_name?.split(' ')[0] || 'Someone'}: ${room.last_message.content}`
-                                : room.last_message.content)
-                            : (room.is_group ? `${memberCount} members` : 'No messages yet')}
+                                : room.last_message.content;
+                            }
+                            
+                            return room.is_group ? `${memberCount} members` : 'No messages yet';
+                          })()}
                         </p>
                       </div>
                     </button>

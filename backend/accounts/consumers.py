@@ -156,11 +156,23 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         reaction_data = await self.toggle_reaction(message_id, self.user.id, emoji)
         
-        await self.channel_layer.group_send(self.room_group_name, {
+        # Broadcast to current room participants
+        broadcast_data = {
             'type': 'message_reaction',
             'message_id': message_id,
-            'reactions': reaction_data
-        })
+            'reactions': reaction_data,
+            'user_id': self.user.id,
+            'user_name': self.user.first_name or self.user.username,
+            'emoji': emoji,
+            'room_id': int(self.room_id)
+        }
+        await self.channel_layer.group_send(self.room_group_name, broadcast_data)
+
+        # Also notify personal channels of other participants for chat list updates
+        participant_ids = await self.get_room_participant_ids(self.room_id)
+        for pid in participant_ids:
+            if pid != self.user.id:
+                await self.channel_layer.group_send(f'user_{pid}', broadcast_data)
 
     # ── Handlers ──────────────────────────────────────────────────
 
@@ -185,7 +197,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
         await self.send(text_data=json.dumps({
             'type': 'message_reaction',
             'message_id': event['message_id'],
-            'reactions': event['reactions']
+            'reactions': event['reactions'],
+            'user_id': event.get('user_id'),
+            'user_name': event.get('user_name'),
+            'emoji': event.get('emoji'),
+            'room_id': event.get('room_id'),
         }))
 
     async def typing_indicator(self, event):
@@ -270,6 +286,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 parent = ChatMessage.objects.get(id=parent_id)
             except ChatMessage.DoesNotExist:
                 pass
+        
+        # Update last action
+        room.last_action_type = 'message'
+        room.last_action_sender = sender
+        room.last_action_content = message
+        room.save()
+        
         return ChatMessage.objects.create(room=room, sender=sender, content=message, parent_message=parent)
 
     @database_sync_to_async
@@ -288,12 +311,21 @@ class ChatConsumer(AsyncWebsocketConsumer):
             # If it's the SAME emoji, we just leave it deleted (toggle off).
             if old_emoji != emoji:
                 MessageReaction.objects.create(message=message, user=user, emoji=emoji)
+                # Update last action only on NEW reaction
+                room = message.room
+                room.last_action_type = 'reaction'
+                room.last_action_sender = user
+                room.last_action_content = emoji
+                room.save()
         else:
             # No existing reaction, just create it
             MessageReaction.objects.create(message=message, user=user, emoji=emoji)
-        
-        # Return updated reactions for this message
-        all_reactions = message.reactions.all()
+            # Update last action
+            room = message.room
+            room.last_action_type = 'reaction'
+            room.last_action_sender = user
+            room.last_action_content = emoji
+            room.save()
         result = {}
         for r in all_reactions:
             if r.emoji not in result:

@@ -2446,20 +2446,36 @@ class ChatMessageViewSet(viewsets.ModelViewSet):
 
         room_id = instance.room_id
         message_id = instance.id
+        
+        # Update room last action before deleting
+        room = instance.room
+        room.last_action_type = 'unsend'
+        room.last_action_sender = self.request.user
+        room.save()
+        
         instance.delete()
 
         # Broadcast deletion to all room participants via WebSocket
         from channels.layers import get_channel_layer
         from asgiref.sync import async_to_sync
         channel_layer = get_channel_layer()
-        async_to_sync(channel_layer.group_send)(
-            f'chat_{room_id}',
-            {
-                'type': 'message_deleted',
-                'message_id': message_id,
-                'deleted_by': self.request.user.id,
-            }
-        )
+        
+        broadcast_data = {
+            'type': 'message_deleted',
+            'message_id': message_id,
+            'deleted_by': self.request.user.id,
+            'deleted_by_name': self.request.user.first_name or self.request.user.username,
+            'room_id': room_id,
+        }
+        
+        # Room broadcast
+        async_to_sync(channel_layer.group_send)(f'chat_{room_id}', broadcast_data)
+        
+        # Personal channel broadcasts for room list updates
+        participants = room.participants.all()
+        for p in participants:
+            if p.id != self.request.user.id:
+                async_to_sync(channel_layer.group_send)(f'user_{p.id}', broadcast_data)
 
     @action(detail=True, methods=['patch'])
     def edit(self, request, pk=None):
@@ -2474,18 +2490,35 @@ class ChatMessageViewSet(viewsets.ModelViewSet):
         message.is_edited = True
         message.save()
 
+        # Update room last action
+        room = message.room
+        room.last_action_type = 'edit'
+        room.last_action_sender = request.user
+        room.last_action_content = content
+        room.save()
+
         # Broadcast edit to all room participants
         from channels.layers import get_channel_layer
         from asgiref.sync import async_to_sync
         channel_layer = get_channel_layer()
-        async_to_sync(channel_layer.group_send)(
-            f'chat_{message.room_id}',
-            {
-                'type': 'message_edited',
-                'message_id': message.id,
-                'content': content,
-            }
-        )
+        
+        broadcast_data = {
+            'type': 'message_edited',
+            'message_id': message.id,
+            'content': content,
+            'edited_by': request.user.id,
+            'edited_by_name': request.user.first_name or request.user.username,
+            'room_id': message.room_id,
+        }
+        
+        # Room broadcast
+        async_to_sync(channel_layer.group_send)(f'chat_{message.room_id}', broadcast_data)
+        
+        # Personal channel broadcasts
+        participants = message.room.participants.all()
+        for p in participants:
+            if p.id != request.user.id:
+                async_to_sync(channel_layer.group_send)(f'user_{p.id}', broadcast_data)
 
         serializer = self.get_serializer(message)
         return Response(serializer.data)
