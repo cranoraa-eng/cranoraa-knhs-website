@@ -4,7 +4,7 @@ from .models import (Profile, Classroom, StudentClassEnrollment, Announcement,
     AnnouncementAttachment, Attendance, LearningMaterial,
     Subject, ClassroomSubject, ScratchCard, Fee,
     Notification, EnrollmentApplication, WebsiteContent, Grade, GradeReport,
-    ChatRoom, ChatMessage, Friendship, SystemSetting)
+    ChatRoom, ChatMessage, MessageReaction, Friendship, SystemSetting)
 
 User = get_user_model()
 
