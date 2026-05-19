@@ -906,7 +906,7 @@ const Messages = () => {
       </div>
 
       {/* ── Main Chat Area ── */}
-      <div className={`${selectedRoom ? 'flex' : 'hidden md:flex'} flex-1 flex-col bg-white min-w-0 overflow-x-hidden`}>
+      <div className={`${selectedRoom ? 'flex' : 'hidden md:flex'} flex-1 flex-col bg-white min-w-0`}>
         {selectedRoom ? (
           <>
             {/* Chat Header */}
@@ -1099,14 +1099,17 @@ const Messages = () => {
                                   </svg>
                                 </button>
                                 {showReactionPicker === msg.id && (
-                                  <div className={`absolute bottom-full ${isMine ? 'right-0' : 'left-0'} mb-2 bg-white border border-slate-200 rounded-2xl shadow-xl p-1 md:p-1.5 flex gap-0.5 md:gap-1 z-[100] animate-in fade-in slide-in-from-bottom-2 max-w-[90vw] overflow-x-auto`}>
-                                    {COMMON_EMOJIS.map(emoji => (
-                                      <button key={emoji} onClick={() => handleReactToMessage(msg.id, emoji)}
-                                        className="w-7 h-7 md:w-8 md:h-8 flex items-center justify-center hover:bg-slate-50 rounded-lg transition-all text-base md:text-lg active:scale-125 shrink-0">
-                                        {emoji}
-                                      </button>
-                                    ))}
-                                  </div>
+                                  <>
+                                    <div className="fixed inset-0 z-[90]" onClick={() => setShowReactionPicker(null)} />
+                                    <div className={`absolute bottom-full ${isMine ? 'left-0' : 'right-0'} mb-2 bg-white border border-slate-200 rounded-2xl shadow-xl p-1 md:p-1.5 flex gap-0.5 md:gap-1 z-[100] animate-in fade-in slide-in-from-bottom-2 max-w-[80vw] sm:max-w-none`}>
+                                      {COMMON_EMOJIS.map(emoji => (
+                                        <button key={emoji} onClick={() => handleReactToMessage(msg.id, emoji)}
+                                          className="w-8 h-8 md:w-9 md:h-9 flex items-center justify-center hover:bg-slate-50 rounded-lg transition-all text-xl active:scale-125 shrink-0">
+                                          {emoji}
+                                        </button>
+                                      ))}
+                                    </div>
+                                  </>
                                 )}
                               </div>
 
@@ -1132,43 +1135,46 @@ const Messages = () => {
                                 </button>
 
                                 {activeMoreMenu === msg.id && (
-                                  <div className={`absolute bottom-full ${isMine ? 'right-0' : 'left-0'} mb-2 w-32 bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden z-[100] animate-in fade-in slide-in-from-bottom-2`}>
-                                    <div className="py-1">
-                                      {/* Edit — own messages only */}
-                                      {isMine && (
-                                        <button
-                                          onClick={() => { setEditingMessage(msg); setEditContent(msg.content); setActiveMoreMenu(null); setMobileActiveMessage(null); }}
-                                          className="w-full px-3 py-2 text-left text-xs font-bold text-slate-600 hover:bg-slate-50 flex items-center gap-2 transition-all">
-                                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                          </svg>
-                                          Edit
-                                        </button>
-                                      )}
+                                  <>
+                                    <div className="fixed inset-0 z-[90]" onClick={() => setActiveMoreMenu(null)} />
+                                    <div className={`absolute bottom-full ${isMine ? 'left-0' : 'right-0'} mb-2 w-32 bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden z-[100] animate-in fade-in slide-in-from-bottom-2`}>
+                                      <div className="py-1">
+                                        {/* Edit — own messages only */}
+                                        {isMine && (
+                                          <button
+                                            onClick={() => { setEditingMessage(msg); setEditContent(msg.content); setActiveMoreMenu(null); setMobileActiveMessage(null); }}
+                                            className="w-full px-3 py-2 text-left text-xs font-bold text-slate-600 hover:bg-slate-50 flex items-center gap-2 transition-all">
+                                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                            </svg>
+                                            Edit
+                                          </button>
+                                        )}
 
-                                      {/* Pin button — everyone */}
-                                      <button
-                                        onClick={() => { handlePinMessage(msg); setActiveMoreMenu(null); setMobileActiveMessage(null); }}
-                                        className={`w-full px-3 py-2 text-left text-xs font-bold flex items-center gap-2 transition-all ${msg.is_pinned ? 'text-amber-600 hover:bg-amber-50' : 'text-slate-600 hover:bg-slate-50'}`}>
-                                        <svg className="w-3.5 h-3.5" fill={msg.is_pinned ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
-                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 18V4z" />
-                                        </svg>
-                                        {msg.is_pinned ? 'Unpin' : 'Pin'}
-                                      </button>
-
-                                      {/* Unsend — own messages only */}
-                                      {isMine && (
+                                        {/* Pin button — everyone */}
                                         <button
-                                          onClick={() => { handleDeleteMessage(msg.id); setActiveMoreMenu(null); setMobileActiveMessage(null); }}
-                                          className="w-full px-3 py-2 text-left text-xs font-bold text-red-500 hover:bg-red-50 flex items-center gap-2 transition-all">
-                                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                          onClick={() => { handlePinMessage(msg); setActiveMoreMenu(null); setMobileActiveMessage(null); }}
+                                          className={`w-full px-3 py-2 text-left text-xs font-bold flex items-center gap-2 transition-all ${msg.is_pinned ? 'text-amber-600 hover:bg-amber-50' : 'text-slate-600 hover:bg-slate-50'}`}>
+                                          <svg className="w-3.5 h-3.5" fill={msg.is_pinned ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 18V4z" />
                                           </svg>
-                                          Unsend
+                                          {msg.is_pinned ? 'Unpin' : 'Pin'}
                                         </button>
-                                      )}
+
+                                        {/* Unsend — own messages only */}
+                                        {isMine && (
+                                          <button
+                                            onClick={() => { handleDeleteMessage(msg.id); setActiveMoreMenu(null); setMobileActiveMessage(null); }}
+                                            className="w-full px-3 py-2 text-left text-xs font-bold text-red-500 hover:bg-red-50 flex items-center gap-2 transition-all">
+                                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                            </svg>
+                                            Unsend
+                                          </button>
+                                        )}
+                                      </div>
                                     </div>
-                                  </div>
+                                  </>
                                 )}
                               </div>
                             </div>
