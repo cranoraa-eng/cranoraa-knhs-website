@@ -770,7 +770,7 @@ const Messages = () => {
                             )}
                           </div>
                         </div>
-                        <p className={`text-xs truncate font-medium max-w-full ${room.unread_count > 0 ? 'text-slate-700 font-semibold' : 'text-slate-500'}`}>
+                        <p className={`text-xs truncate font-medium max-w-[140px] xs:max-w-[180px] sm:max-w-[220px] md:max-w-full ${room.unread_count > 0 ? 'text-slate-700 font-semibold' : 'text-slate-500'}`}>
                           {room.last_message
                             ? (room.is_group
                                 ? `${room.last_message.sender_name?.split(' ')[0] || 'Someone'}: ${room.last_message.content}`
@@ -1043,7 +1043,7 @@ const Messages = () => {
                         </div>
                       )}
 
-                      <div className="max-w-[85%] md:max-w-[70%] flex flex-col min-w-0">
+                      <div className="max-w-[75%] md:max-w-[70%] flex flex-col min-w-0">
                         {/* Sender name for group chats */}
                         {!isMine && showAvatar && selectedRoom.is_group && (
                           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1 mb-0.5">{msg.sender_name}</span>
@@ -1087,7 +1087,7 @@ const Messages = () => {
                             )}
 
                             {/* Hover/Tap actions — Messenger style */}
-                            <div className={`absolute top-1/2 -translate-y-1/2 flex items-center gap-1 ${isMine ? '-left-28' : '-right-28'} transition-all z-20 ${mobileActiveMessage === msg.id ? 'opacity-100 visible' : 'opacity-0 invisible md:group-hover:opacity-100 md:group-hover:visible'}`}>
+                            <div className={`absolute top-1/2 -translate-y-1/2 flex items-center gap-1 ${isMine ? '-left-24' : '-right-24'} transition-all z-20 ${mobileActiveMessage === msg.id ? 'opacity-100 visible' : 'opacity-0 invisible md:group-hover:opacity-100 md:group-hover:visible'}`}>
                               {/* React Button */}
                               <div className="relative">
                                 <button
