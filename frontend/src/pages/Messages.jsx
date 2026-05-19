@@ -1101,7 +1101,7 @@ const Messages = () => {
                                 {showReactionPicker === msg.id && (
                                   <>
                                     <div className="fixed inset-0 z-[90]" onClick={() => setShowReactionPicker(null)} />
-                                    <div className={`absolute bottom-full ${isMine ? 'left-0' : 'right-0'} mb-2 bg-white border border-slate-200 rounded-2xl shadow-xl p-1 md:p-1.5 flex gap-0.5 md:gap-1 z-[100] animate-in fade-in slide-in-from-bottom-2 max-w-[80vw] sm:max-w-none`}>
+                                    <div className={`absolute bottom-full ${isMine ? 'right-0' : 'left-0'} mb-2 bg-white border border-slate-200 rounded-2xl shadow-xl p-1 md:p-1.5 flex gap-0.5 md:gap-1 z-[100] animate-in fade-in slide-in-from-bottom-2 max-w-[80vw] sm:max-w-none`}>
                                       {COMMON_EMOJIS.map(emoji => (
                                         <button key={emoji} onClick={() => handleReactToMessage(msg.id, emoji)}
                                           className="w-8 h-8 md:w-9 md:h-9 flex items-center justify-center hover:bg-slate-50 rounded-lg transition-all text-xl active:scale-125 shrink-0">
@@ -1137,7 +1137,7 @@ const Messages = () => {
                                 {activeMoreMenu === msg.id && (
                                   <>
                                     <div className="fixed inset-0 z-[90]" onClick={() => setActiveMoreMenu(null)} />
-                                    <div className={`absolute bottom-full ${isMine ? 'left-0' : 'right-0'} mb-2 w-32 bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden z-[100] animate-in fade-in slide-in-from-bottom-2`}>
+                                    <div className={`absolute bottom-full ${isMine ? 'right-0' : 'left-0'} mb-2 w-32 bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden z-[100] animate-in fade-in slide-in-from-bottom-2`}>
                                       <div className="py-1">
                                         {/* Edit — own messages only */}
                                         {isMine && (
