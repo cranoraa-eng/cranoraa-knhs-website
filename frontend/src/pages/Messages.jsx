@@ -767,7 +767,7 @@ const Messages = () => {
                             )}
                           </div>
                         </div>
-                        <p className={`text-xs truncate font-medium ${room.unread_count > 0 ? 'text-slate-700 font-semibold' : 'text-slate-500'}`}>
+                        <p className={`text-xs truncate font-medium max-w-full ${room.unread_count > 0 ? 'text-slate-700 font-semibold' : 'text-slate-500'}`}>
                           {room.last_message
                             ? (room.is_group
                                 ? `${room.last_message.sender_name?.split(' ')[0] || 'Someone'}: ${room.last_message.content}`
@@ -1020,7 +1020,7 @@ const Messages = () => {
             </div>
 
             {/* Messages List */}
-            <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-1 scrollbar-thin scrollbar-thumb-slate-100 bg-slate-50/30">
+            <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-6 space-y-1 scrollbar-thin scrollbar-thumb-slate-100 bg-slate-50/30">
               {loadingMessages ? (
                 <div className="flex items-center justify-center h-full">
                   <div className="w-8 h-8 border-2 border-violet-500 border-t-transparent rounded-full animate-spin" />
@@ -1040,7 +1040,7 @@ const Messages = () => {
                         </div>
                       )}
 
-                      <div className="max-w-[70%] flex flex-col">
+                      <div className="max-w-[85%] md:max-w-[70%] flex flex-col">
                         {/* Sender name for group chats */}
                         {!isMine && showAvatar && selectedRoom.is_group && (
                           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1 mb-0.5">{msg.sender_name}</span>
@@ -1077,7 +1077,7 @@ const Messages = () => {
                               <button 
                                 onClick={() => scrollToMessage(msg.parent_message_details.id)}
                                 className={`mb-1 flex flex-col group/reply transition-all active:scale-95 ${isMine ? 'items-end' : 'items-start'}`}>
-                                <div className="px-3 py-1 bg-slate-100 rounded-t-xl text-[10px] text-slate-500 border-l-2 border-slate-300 max-w-xs truncate group-hover/reply:bg-slate-200">
+                                <div className="px-3 py-1 bg-slate-100 rounded-t-xl text-[10px] text-slate-500 border-l-2 border-slate-300 max-w-full truncate group-hover/reply:bg-slate-200">
                                   <span className="font-bold">Replying to {msg.parent_message_details.sender_name}:</span> {msg.parent_message_details.content}
                                 </div>
                               </button>
@@ -1151,7 +1151,7 @@ const Messages = () => {
                             </div>
 
                             {/* Bubble */}
-                            <div id={`msg-${msg.id}`} className={`px-4 py-2.5 rounded-2xl text-sm font-medium shadow-sm relative transition-all duration-500 ${
+                            <div id={`msg-${msg.id}`} className={`px-4 py-2.5 rounded-2xl text-sm font-medium shadow-sm relative transition-all duration-500 break-words whitespace-pre-wrap ${
                               isMine
                                 ? 'bg-violet-600 text-white rounded-br-none'
                                 : 'bg-white text-slate-700 border border-slate-100 rounded-bl-none'
