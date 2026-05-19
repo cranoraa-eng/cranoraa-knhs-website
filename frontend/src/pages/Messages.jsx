@@ -1172,7 +1172,7 @@ const Messages = () => {
                                 {showReactionPicker === msg.id && (
                                   <div className="absolute inset-0 z-[100] flex items-center justify-center p-2 pointer-events-none">
                                     <div className="absolute inset-0 bg-black/5 backdrop-blur-[1px] pointer-events-auto" onClick={() => setShowReactionPicker(null)} />
-                                    <div className="relative bg-white border border-slate-200 rounded-full shadow-2xl p-1 md:p-1.5 flex flex-row flex-nowrap items-center gap-0.5 md:gap-1 animate-in fade-in zoom-in-95 duration-200 pointer-events-auto overflow-hidden">
+                                    <div className="relative bg-white border border-slate-200 rounded-full shadow-2xl p-1 md:p-1.5 flex flex-row flex-nowrap items-center gap-0.5 md:gap-1 animate-in fade-in zoom-in-95 duration-200 pointer-events-auto">
                                       {COMMON_EMOJIS.map(emoji => (
                                         <button key={emoji} onClick={() => handleReactToMessage(msg.id, emoji)}
                                           className="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center hover:bg-slate-50 rounded-full transition-all text-lg md:text-2xl active:scale-150 shrink-0">
@@ -1271,10 +1271,13 @@ const Messages = () => {
 
                               {/* Reactions display */}
                               {msg.reactions && Object.keys(msg.reactions).length > 0 && (
-                                <div className={`absolute -bottom-2 ${isMine ? 'right-0' : 'left-0'} flex items-center gap-0.5 bg-white border border-slate-100 rounded-full px-1 py-0.5 shadow-sm z-10`}>
+                                <div className={`absolute -bottom-2.5 ${isMine ? '-right-1' : '-left-1'} flex items-center gap-0.5 bg-white border border-slate-100 rounded-full px-1.5 py-0.5 shadow-sm z-10 animate-in zoom-in duration-200`}>
                                   {Object.entries(msg.reactions).map(([emoji, users]) => (
-                                    <span key={emoji} className="text-[9px] md:text-[10px] cursor-default flex items-center gap-0.5" title={users.map(u => u.user_name).join(', ')}>
-                                      {emoji} <span className="text-[7px] md:text-[8px] font-black text-slate-400">{users.length}</span>
+                                    <span key={emoji} className="text-[10px] md:text-xs cursor-default flex items-center gap-0.5" title={users.map(u => u.user_name).join(', ')}>
+                                      {emoji} 
+                                      {users.length > 1 && (
+                                        <span className="text-[8px] md:text-[9px] font-black text-slate-400">{users.length}</span>
+                                      )}
                                     </span>
                                   ))}
                                 </div>
