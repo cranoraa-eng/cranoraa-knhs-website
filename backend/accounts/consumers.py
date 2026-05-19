@@ -168,11 +168,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
         }
         await self.channel_layer.group_send(self.room_group_name, broadcast_data)
 
-        # Also notify personal channels of other participants for chat list updates
+        # Also notify personal channels of ALL participants for chat list updates (including sender)
         participant_ids = await self.get_room_participant_ids(self.room_id)
         for pid in participant_ids:
-            if pid != self.user.id:
-                await self.channel_layer.group_send(f'user_{pid}', broadcast_data)
+            await self.channel_layer.group_send(f'user_{pid}', broadcast_data)
 
     # ── Handlers ──────────────────────────────────────────────────
 
@@ -240,6 +239,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
             'type': 'message_deleted',
             'message_id': event['message_id'],
             'deleted_by': event['deleted_by'],
+            'deleted_by_name': event.get('deleted_by_name'),
+            'room_id': event.get('room_id'),
         }))
 
     async def message_edited(self, event):
@@ -247,6 +248,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
             'type': 'message_edited',
             'message_id': event['message_id'],
             'content': event['content'],
+            'edited_by': event.get('edited_by'),
+            'edited_by_name': event.get('edited_by_name'),
+            'room_id': event.get('room_id'),
         }))
 
     async def message_pinned(self, event):
@@ -326,6 +330,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
             room.last_action_sender = user
             room.last_action_content = emoji
             room.save()
+            
+        all_reactions = message.reactions.all()
         result = {}
         for r in all_reactions:
             if r.emoji not in result:

@@ -540,30 +540,25 @@ const Messages = () => {
         ));
         
         // Update room preview for reaction
-        const roomId = selectedRoomRef.current?.id;
-        if (data.reactions) {
-          // Find who just reacted (this is a bit simplified, but works for live updates)
-          setRooms(prev => prev.map(r => {
-            if (r.id === roomId || r.id === data.room_id) {
-              return {
-                ...r,
-                last_action_type: 'reaction',
-                last_action_sender: data.user_id, // We might need to send user_id in WS event
-                last_action_sender_name: data.user_name,
-                last_action_content: data.emoji,
-                updated_at: new Date().toISOString(),
-              };
-            }
-            return r;
-          }));
-        }
-        return;
+        setRooms(prev => prev.map(r => {
+          if (r.id === data.room_id) {
+            return {
+              ...r,
+              last_action_type: 'reaction',
+              last_action_sender: data.user_id,
+              last_action_sender_name: data.user_name,
+              last_action_content: data.emoji,
+              updated_at: new Date().toISOString(),
+            };
+          }
+          return r;
+        }));
       }
 
       if (data.type === 'message_deleted') {
         setMessages(prev => prev.filter(m => m.id !== data.message_id));
         setRooms(prev => prev.map(r => {
-          if (r.id === selectedRoomRef.current?.id || r.id === data.room_id) {
+          if (r.id === data.room_id) {
             return {
               ...r,
               last_action_type: 'unsend',
@@ -579,7 +574,7 @@ const Messages = () => {
       if (data.type === 'message_edited') {
         setMessages(prev => prev.map(m => m.id === data.message_id ? { ...m, content: data.content, is_edited: true } : m));
         setRooms(prev => prev.map(r => {
-          if (r.id === selectedRoomRef.current?.id || r.id === data.room_id) {
+          if (r.id === data.room_id) {
             return {
               ...r,
               last_action_type: 'edit',
@@ -605,6 +600,10 @@ const Messages = () => {
           return {
             ...r,
             last_message: { content: data.content, timestamp: data.timestamp, sender_name: data.sender_name },
+            last_action_type: 'message',
+            last_action_sender: data.sender_id,
+            last_action_sender_name: data.sender_name,
+            last_action_content: data.content,
             updated_at: data.timestamp, // Move to top live
             unread_count: currentRoomId === data.room_id
               ? 0

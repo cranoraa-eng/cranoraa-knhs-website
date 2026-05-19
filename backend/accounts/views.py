@@ -2471,11 +2471,10 @@ class ChatMessageViewSet(viewsets.ModelViewSet):
         # Room broadcast
         async_to_sync(channel_layer.group_send)(f'chat_{room_id}', broadcast_data)
         
-        # Personal channel broadcasts for room list updates
+        # Personal channel broadcasts for room list updates (including sender)
         participants = room.participants.all()
         for p in participants:
-            if p.id != self.request.user.id:
-                async_to_sync(channel_layer.group_send)(f'user_{p.id}', broadcast_data)
+            async_to_sync(channel_layer.group_send)(f'user_{p.id}', broadcast_data)
 
     @action(detail=True, methods=['patch'])
     def edit(self, request, pk=None):
@@ -2514,11 +2513,10 @@ class ChatMessageViewSet(viewsets.ModelViewSet):
         # Room broadcast
         async_to_sync(channel_layer.group_send)(f'chat_{message.room_id}', broadcast_data)
         
-        # Personal channel broadcasts
+        # Personal channel broadcasts (including sender)
         participants = message.room.participants.all()
         for p in participants:
-            if p.id != request.user.id:
-                async_to_sync(channel_layer.group_send)(f'user_{p.id}', broadcast_data)
+            async_to_sync(channel_layer.group_send)(f'user_{p.id}', broadcast_data)
 
         serializer = self.get_serializer(message)
         return Response(serializer.data)
