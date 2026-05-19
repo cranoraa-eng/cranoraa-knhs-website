@@ -1023,7 +1023,7 @@ const Messages = () => {
             </div>
 
             {/* Messages List */}
-            <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-6 space-y-1 scrollbar-thin scrollbar-thumb-slate-100 bg-slate-50/30">
+            <div className="flex-1 overflow-y-auto p-4 md:p-6 pt-12 md:pt-16 space-y-1 scrollbar-thin scrollbar-thumb-slate-100 bg-slate-50/30">
               {loadingMessages ? (
                 <div className="flex items-center justify-center h-full">
                   <div className="w-8 h-8 border-2 border-violet-500 border-t-transparent rounded-full animate-spin" />
@@ -1035,7 +1035,7 @@ const Messages = () => {
                   const isEditing  = editingMessage?.id === msg.id;
 
                   return (
-                    <div key={msg.id} className={`flex ${isMine ? 'justify-end' : 'justify-start'} items-end gap-2 group overflow-hidden md:overflow-visible`}>
+                    <div key={msg.id} className={`flex ${isMine ? 'justify-end' : 'justify-start'} items-end gap-2 group overflow-visible`}>
                       {/* Avatar for other person */}
                       {!isMine && (
                         <div className={`w-8 h-8 rounded-lg shrink-0 flex items-center justify-center text-[10px] font-bold text-white shadow-sm ${showAvatar ? 'bg-gradient-to-br from-slate-400 to-slate-600' : 'opacity-0'}`}>
@@ -1099,10 +1099,10 @@ const Messages = () => {
                                   </svg>
                                 </button>
                                 {showReactionPicker === msg.id && (
-                                  <div className="absolute bottom-full left-0 mb-2 bg-white border border-slate-200 rounded-2xl shadow-xl p-1.5 flex gap-1 z-[100] animate-in fade-in slide-in-from-bottom-2">
+                                  <div className={`absolute bottom-full ${isMine ? 'right-0' : 'left-0'} mb-2 bg-white border border-slate-200 rounded-2xl shadow-xl p-1 md:p-1.5 flex gap-0.5 md:gap-1 z-[100] animate-in fade-in slide-in-from-bottom-2 max-w-[90vw] overflow-x-auto`}>
                                     {COMMON_EMOJIS.map(emoji => (
                                       <button key={emoji} onClick={() => handleReactToMessage(msg.id, emoji)}
-                                        className="w-8 h-8 flex items-center justify-center hover:bg-slate-50 rounded-lg transition-all text-lg active:scale-125">
+                                        className="w-7 h-7 md:w-8 md:h-8 flex items-center justify-center hover:bg-slate-50 rounded-lg transition-all text-base md:text-lg active:scale-125 shrink-0">
                                         {emoji}
                                       </button>
                                     ))}
