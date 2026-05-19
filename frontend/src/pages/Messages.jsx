@@ -1100,11 +1100,11 @@ const Messages = () => {
                                 </button>
                                 {showReactionPicker === msg.id && (
                                   <>
-                                    <div className="fixed inset-0 z-[90]" onClick={() => setShowReactionPicker(null)} />
-                                    <div className={`absolute bottom-full ${isMine ? 'right-0' : 'left-0'} mb-2 bg-white border border-slate-200 rounded-2xl shadow-xl p-1 md:p-1.5 flex flex-row flex-nowrap items-center gap-0.5 md:gap-1 z-[100] animate-in fade-in slide-in-from-bottom-2 w-max max-w-[280px] md:max-w-none`}>
+                                    <div className="fixed inset-0 z-[90] bg-black/5 sm:bg-transparent" onClick={() => setShowReactionPicker(null)} />
+                                    <div className={`fixed sm:absolute left-1/2 sm:left-auto -translate-x-1/2 sm:translate-x-0 ${isMine ? 'sm:right-0' : 'sm:left-0'} bottom-[45%] sm:bottom-full mb-2 bg-white border border-slate-200 rounded-2xl shadow-2xl sm:shadow-xl p-1.5 md:p-1.5 flex flex-row flex-nowrap items-center gap-1 md:gap-1 z-[100] animate-in fade-in slide-in-from-bottom-4 sm:slide-in-from-bottom-2 w-max max-w-[95vw] sm:max-w-none`}>
                                       {COMMON_EMOJIS.map(emoji => (
                                         <button key={emoji} onClick={() => handleReactToMessage(msg.id, emoji)}
-                                          className="w-8 h-8 md:w-9 md:h-9 flex items-center justify-center hover:bg-slate-50 rounded-lg transition-all text-xl active:scale-125 shrink-0">
+                                          className="w-9 h-9 md:w-9 md:h-9 flex items-center justify-center hover:bg-slate-50 rounded-lg transition-all text-2xl md:text-lg active:scale-150 shrink-0">
                                           {emoji}
                                         </button>
                                       ))}
@@ -1136,8 +1136,8 @@ const Messages = () => {
 
                                 {activeMoreMenu === msg.id && (
                                   <>
-                                    <div className="fixed inset-0 z-[90]" onClick={() => setActiveMoreMenu(null)} />
-                                    <div className={`absolute bottom-full ${isMine ? 'right-0' : 'left-0'} mb-2 w-32 bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden z-[100] animate-in fade-in slide-in-from-bottom-2`}>
+                                    <div className="fixed inset-0 z-[90] bg-black/5 sm:bg-transparent" onClick={() => setActiveMoreMenu(null)} />
+                                    <div className={`fixed sm:absolute left-1/2 sm:left-auto -translate-x-1/2 sm:translate-x-0 ${isMine ? 'sm:right-0' : 'sm:left-0'} bottom-[45%] sm:bottom-full mb-2 w-32 bg-white border border-slate-200 rounded-xl shadow-2xl sm:shadow-xl overflow-hidden z-[100] animate-in fade-in slide-in-from-bottom-4 sm:slide-in-from-bottom-2`}>
                                       <div className="py-1">
                                         {/* Edit — own messages only */}
                                         {isMine && (
