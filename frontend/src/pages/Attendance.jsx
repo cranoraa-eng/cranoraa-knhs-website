@@ -192,49 +192,49 @@ const Attendance = () => {
     const total = filteredMyAttendance.length;
     const attRate = total > 0 ? Math.round(((myStats.present || 0) + (myStats.late || 0)) / total * 100) : null;
     return (
-      <div className="overflow-y-auto h-[calc(100vh-4rem)] p-6">
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-800">My Attendance</h1>
-          <p className="text-gray-500 mt-1">Your attendance record by month</p>
+      <div className="overflow-y-auto h-[calc(100vh-4rem)] p-2 md:p-6 max-w-full overflow-x-hidden">
+        <div className="mb-3 md:mb-6">
+          <h1 className="text-xl md:text-3xl font-black text-gray-800 tracking-tight uppercase">My Attendance</h1>
+          <p className="text-gray-500 text-[9px] md:text-sm font-medium mt-0.5 uppercase tracking-widest">Attendance record by month</p>
         </div>
-        <div className="flex items-center gap-3 mb-5">
-          <label className="text-sm font-semibold text-gray-600">Month</label>
+        <div className="flex items-center gap-2 mb-4">
+          <label className="text-[10px] md:text-sm font-bold text-gray-400 uppercase tracking-widest">Month</label>
           <input type="month" value={filterMonth} onChange={e => setFilterMonth(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm" />
+            className="px-2 py-1 md:px-3 md:py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-[10px] md:text-sm font-bold shadow-sm" />
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 md:gap-3 mb-4">
           {STAT_CONFIG.filter(s => s.key !== 'unmarked').map(s => (
-            <div key={s.key} className={`border rounded-xl p-4 text-center ${s.bg}`}>
-              <div className={`text-3xl font-bold ${s.color}`}>{myStats[s.key] || 0}</div>
-              <div className={`text-sm font-medium mt-1 ${s.color} opacity-80`}>{s.label}</div>
+            <div key={s.key} className={`border rounded-xl p-2 md:p-4 text-center ${s.bg} shadow-sm`}>
+              <div className={`text-xl md:text-3xl font-black ${s.color}`}>{myStats[s.key] || 0}</div>
+              <div className={`text-[8px] md:text-sm font-bold mt-0.5 md:mt-1 ${s.color} opacity-80 uppercase tracking-tighter md:tracking-normal`}>{s.label}</div>
             </div>
           ))}
         </div>
         {attRate !== null && (
-          <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-4 mb-5">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-semibold text-gray-700">Monthly Attendance Rate</span>
-              <span className={`text-sm font-bold ${attRate >= 75 ? 'text-green-600' : 'text-red-600'}`}>{attRate}%</span>
+          <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-3 md:p-4 mb-4">
+            <div className="flex items-center justify-between mb-1.5 md:mb-2">
+              <span className="text-[10px] md:text-sm font-bold text-gray-600 uppercase tracking-widest">Monthly Rate</span>
+              <span className={`text-[10px] md:text-sm font-black ${attRate >= 75 ? 'text-green-600' : 'text-red-600'}`}>{attRate}%</span>
             </div>
-            <div className="w-full bg-gray-100 rounded-full h-3">
-              <div className={`h-3 rounded-full transition-all ${attRate >= 75 ? 'bg-green-500' : 'bg-red-500'}`} style={{ width: `${attRate}%` }} />
+            <div className="w-full bg-gray-100 rounded-full h-1.5 md:h-3">
+              <div className={`h-1.5 md:h-3 rounded-full transition-all ${attRate >= 75 ? 'bg-green-500' : 'bg-red-500'}`} style={{ width: `${attRate}%` }} />
             </div>
-            {attRate < 75 && <p className="text-xs text-red-500 mt-2 font-medium">⚠️ Attendance below 75% — please attend regularly.</p>}
+            {attRate < 75 && <p className="text-[8px] md:text-xs text-red-500 mt-1.5 md:mt-2 font-black uppercase tracking-widest">⚠️ Attendance below 75%</p>}
           </div>
         )}
-        <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+        <div className="bg-white border border-gray-200 rounded-lg md:rounded-xl shadow-sm overflow-hidden min-w-0">
           {filteredMyAttendance.length === 0 ? (
-            <div className="text-center py-12 text-gray-400">No attendance records for this month.</div>
+            <div className="text-center py-10 md:py-12 text-gray-400 font-bold text-[10px] md:text-sm uppercase tracking-widest">No records found.</div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gradient-to-r from-[#2D1B4D] to-[#4B2D7F] text-white">
+            <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-200 max-w-full">
+              <table className="w-full text-[9px] md:text-sm text-left min-w-[450px] md:min-w-full">
+                <thead className="bg-[#2D1B4D] text-white">
                   <tr>
-                    <th className="text-left px-6 py-3 text-xs font-semibold uppercase tracking-wider">Date</th>
-                    <th className="text-left px-6 py-3 text-xs font-semibold uppercase tracking-wider">Day</th>
-                    <th className="text-left px-6 py-3 text-xs font-semibold uppercase tracking-wider">Classroom</th>
-                    <th className="text-center px-6 py-3 text-xs font-semibold uppercase tracking-wider">Status</th>
-                    <th className="text-left px-6 py-3 text-xs font-semibold uppercase tracking-wider">Remarks</th>
+                    <th className="px-3 py-2 md:px-6 md:py-3 font-bold uppercase tracking-widest text-[8px] md:text-xs">Date</th>
+                    <th className="px-3 py-2 md:px-6 md:py-3 font-bold uppercase tracking-widest text-[8px] md:text-xs">Day</th>
+                    <th className="px-3 py-2 md:px-6 md:py-3 font-bold uppercase tracking-widest text-[8px] md:text-xs">Classroom</th>
+                    <th className="text-center px-3 py-2 md:px-6 md:py-3 font-bold uppercase tracking-widest text-[8px] md:text-xs">Status</th>
+                    <th className="px-3 py-2 md:px-6 md:py-3 font-bold uppercase tracking-widest text-[8px] md:text-xs">Remarks</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
@@ -243,16 +243,15 @@ const Attendance = () => {
                     const date = new Date(r.date + 'T00:00:00');
                     return (
                       <tr key={r.id} className={`hover:bg-purple-50 transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}`}>
-                        <td className="px-6 py-3 text-sm font-medium text-gray-800">{date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</td>
-                        <td className="px-6 py-3 text-sm text-gray-500">{date.toLocaleDateString('en-US', { weekday: 'long' })}</td>
-                        <td className="px-6 py-3 text-sm text-gray-600">{r.classroom_name}</td>
-                        <td className="px-6 py-3 text-center">
-                          <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${cfg?.active || 'bg-gray-100 text-gray-600 border-gray-200'}`}>
-                            <span className="w-1.5 h-1.5 rounded-full bg-current opacity-70" />
+                        <td className="px-3 py-2 md:px-6 md:py-3 font-bold text-gray-700">{date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</td>
+                        <td className="px-3 py-2 md:px-6 md:py-3 font-medium text-gray-400 uppercase text-[8px] md:text-xs tracking-tighter">{date.toLocaleDateString('en-US', { weekday: 'long' })}</td>
+                        <td className="px-3 py-2 md:px-6 md:py-3 font-bold text-gray-600 truncate max-w-[80px] md:max-w-none">{r.classroom_name}</td>
+                        <td className="px-3 py-2 md:px-6 md:py-3 text-center">
+                          <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[7px] md:text-xs font-black uppercase tracking-widest border ${cfg?.active || 'bg-gray-100 text-gray-600 border-gray-200'}`}>
                             {cfg?.label || r.status}
                           </span>
                         </td>
-                        <td className="px-6 py-3 text-sm text-gray-500">{r.remarks || <span className="text-gray-300">—</span>}</td>
+                        <td className="px-3 py-2 md:px-6 md:py-3 font-medium text-gray-400 truncate max-w-[100px] md:max-w-none">{r.remarks || '—'}</td>
                       </tr>
                     );
                   })}
@@ -261,27 +260,27 @@ const Attendance = () => {
             </div>
           )}
         </div>
-        {total > 0 && <p className="text-sm text-gray-400 mt-3">{total} record{total !== 1 ? 's' : ''} in {new Date(filterMonth + '-01').toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</p>}
+        {total > 0 && <p className="text-[8px] md:text-sm text-gray-400 mt-2 font-bold uppercase tracking-widest">{total} records in {new Date(filterMonth + '-01').toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</p>}
       </div>
     );
   }
 
   // ── TEACHER / ADMIN VIEW ──────────────────────────────────────
   return (
-    <div className="overflow-y-auto h-[calc(100vh-4rem)] p-4 md:p-6 scrollbar-thin scrollbar-thumb-gray-300">
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
-        <div className="text-center lg:text-left">
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-800">Attendance Tracker</h1>
-          <p className="text-sm text-gray-500 mt-1">
+    <div className="overflow-y-auto h-[calc(100vh-4rem)] p-2 md:p-6 scrollbar-thin scrollbar-thumb-gray-300 max-w-full overflow-x-hidden">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 mb-4">
+        <div className="text-center lg:text-left min-w-0">
+          <h1 className="text-xl md:text-3xl font-black text-gray-800 tracking-tight uppercase truncate">Attendance Tracker</h1>
+          <p className="text-[9px] md:text-sm text-gray-500 font-medium mt-0.5 uppercase tracking-widest truncate">
             {view === 'mark'
-              ? `Marking for ${new Date(selectedDate + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}`
-              : 'Browse attendance history'}
+              ? `Marking: ${new Date(selectedDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
+              : 'Attendance History'}
           </p>
         </div>
-        <div className="flex rounded-xl border border-gray-300 overflow-hidden text-sm shadow-sm w-full lg:w-auto">
-          {[{ key: 'mark', label: '✏️ Mark Attendance' }, { key: 'history', label: '📋 History' }].map(v => (
+        <div className="flex rounded-lg md:rounded-xl border border-gray-300 overflow-hidden text-[10px] md:text-sm shadow-sm w-full lg:w-auto shrink-0">
+          {[{ key: 'mark', label: '✏️ MARK' }, { key: 'history', label: '📋 HISTORY' }].map(v => (
             <button key={v.key} onClick={() => setView(v.key)}
-              className={`flex-1 lg:px-6 py-2.5 font-bold transition-all ${view === v.key ? 'bg-[#2D1B4D] text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}>
+              className={`flex-1 lg:px-6 py-2 md:py-2.5 font-black transition-all uppercase tracking-widest ${view === v.key ? 'bg-[#2D1B4D] text-white shadow-inner' : 'bg-white text-gray-600 hover:bg-gray-50'}`}>
               {v.label}
             </button>
           ))}
@@ -289,38 +288,38 @@ const Attendance = () => {
       </div>
 
       {/* Controls */}
-      <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-4 md:p-5 mb-5">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Classroom</label>
+      <div className="bg-white border border-gray-200 rounded-lg md:rounded-xl shadow-sm p-2 md:p-5 mb-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-4">
+          <div className="min-w-0">
+            <label className="block text-[8px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Classroom</label>
             <select value={selectedClassroom} onChange={e => setSelectedClassroom(e.target.value)}
-              className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm shadow-sm transition-all hover:border-purple-300">
+              className="w-full px-2 py-1.5 md:px-3 md:py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-[10px] md:text-sm font-bold shadow-sm transition-all hover:border-purple-300 truncate">
               <option value="">Select classroom</option>
               {sortedClassrooms.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
           </div>
-          <div>
-            <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Date</label>
-            <div className="flex gap-2">
+          <div className="min-w-0">
+            <label className="block text-[8px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Date</label>
+            <div className="flex gap-1.5">
               <input type="date"
                 value={view === 'mark' ? selectedDate : historyDate}
                 onChange={e => view === 'mark' ? setSelectedDate(e.target.value) : setHistoryDate(e.target.value)}
                 max={new Date().toISOString().split('T')[0]}
-                className="flex-1 px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm shadow-sm transition-all hover:border-purple-300" />
+                className="flex-1 px-2 py-1.5 md:px-3 md:py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-[10px] md:text-sm font-bold shadow-sm transition-all hover:border-purple-300" />
               {view === 'history' && historyDate && (
                 <button onClick={() => setHistoryDate('')}
-                  className="px-4 py-2.5 border border-gray-300 rounded-lg text-gray-500 hover:text-purple-600 font-bold text-xs transition-all hover:bg-purple-50">All</button>
+                  className="px-2 md:px-4 py-1.5 md:py-2.5 border border-gray-300 rounded-lg text-gray-500 hover:text-purple-600 font-black text-[10px] transition-all hover:bg-purple-50 uppercase tracking-tighter">All</button>
               )}
             </div>
           </div>
           {view === 'mark' && selectedClassroom && students.length > 0 && (
-            <div>
-              <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Quick Actions</label>
-              <div className="flex gap-2">
+            <div className="min-w-0">
+              <label className="block text-[8px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Quick Actions</label>
+              <div className="flex gap-1.5">
                 <button onClick={() => markAllDraft('present')}
-                  className="flex-1 px-3 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold uppercase tracking-wider rounded-lg transition-all shadow-sm active:scale-95">✓ Present</button>
+                  className="flex-1 px-2 py-1.5 md:px-3 md:py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-[9px] md:text-[10px] font-black uppercase tracking-widest rounded-lg transition-all shadow-sm active:scale-95 whitespace-nowrap">✓ PRESENT</button>
                 <button onClick={() => markAllDraft('absent')}
-                  className="flex-1 px-3 py-2.5 bg-red-100 hover:bg-red-200 text-red-700 text-[10px] font-bold uppercase tracking-wider rounded-lg transition-all shadow-sm active:scale-95">✗ Absent</button>
+                  className="flex-1 px-2 py-1.5 md:px-3 md:py-2.5 bg-red-100 hover:bg-red-200 text-red-700 text-[9px] md:text-[10px] font-black uppercase tracking-widest rounded-lg transition-all shadow-sm active:scale-95 whitespace-nowrap">✗ ABSENT</button>
               </div>
             </div>
           )}
@@ -331,49 +330,49 @@ const Attendance = () => {
       {view === 'mark' && (
         <>
           {!selectedClassroom ? (
-            <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-16 text-center text-gray-400">Select a classroom to start marking attendance.</div>
+            <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-10 md:p-16 text-center text-gray-400 font-bold text-[10px] md:text-sm uppercase tracking-widest">Select a classroom to start marking.</div>
           ) : loadingStudents ? (
-            <div className="flex items-center justify-center h-48"><div className="animate-spin rounded-full h-10 w-10 border-b-2 border-purple-600" /></div>
+            <div className="flex items-center justify-center h-48"><div className="animate-spin rounded-full h-8 w-8 md:h-10 md:w-10 border-b-2 border-purple-600" /></div>
           ) : students.length === 0 ? (
-            <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-16 text-center text-gray-400">No students enrolled.</div>
+            <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-10 md:p-16 text-center text-gray-400 font-bold text-[10px] md:text-sm uppercase tracking-widest">No students enrolled.</div>
           ) : (
             <>
               {/* Stats */}
-              <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-5">
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 md:gap-3 mb-4">
                 {STAT_CONFIG.map(s => (
-                  <div key={s.key} className={`border rounded-xl p-3 text-center ${s.bg}`}>
-                    <div className={`text-2xl font-bold ${s.color}`}>{stats[s.key] || 0}</div>
-                    <div className={`text-xs font-medium mt-0.5 ${s.color} opacity-80`}>{s.label}</div>
+                  <div key={s.key} className={`border rounded-lg md:rounded-xl p-1.5 md:p-3 text-center ${s.bg} shadow-sm`}>
+                    <div className={`text-xl md:text-2xl font-black ${s.color}`}>{stats[s.key] || 0}</div>
+                    <div className={`text-[8px] md:text-xs font-bold mt-0.5 ${s.color} opacity-80 uppercase tracking-tighter`}>{s.label}</div>
                   </div>
                 ))}
               </div>
 
               {/* Rate bar */}
               {attendanceRate !== null && (
-                <div className="mb-5 bg-white border border-gray-200 rounded-xl shadow-sm p-4 flex items-center gap-4">
+                <div className="mb-4 bg-white border border-gray-200 rounded-lg md:rounded-xl shadow-sm p-2.5 md:p-4 flex items-center gap-3 md:gap-4">
                   <div className="flex-1">
-                    <div className="flex justify-between mb-1 text-xs">
-                      <span className="font-semibold text-gray-600">Attendance Rate</span>
-                      <span className={`font-bold ${attendanceRate >= 75 ? 'text-green-600' : 'text-red-600'}`}>{attendanceRate}%</span>
+                    <div className="flex justify-between mb-1 text-[9px] md:text-xs">
+                      <span className="font-black text-gray-600 uppercase tracking-widest">Attendance Rate</span>
+                      <span className={`font-black ${attendanceRate >= 75 ? 'text-green-600' : 'text-red-600'}`}>{attendanceRate}%</span>
                     </div>
-                    <div className="w-full bg-gray-100 rounded-full h-2">
-                      <div className={`h-2 rounded-full transition-all ${attendanceRate >= 75 ? 'bg-green-500' : 'bg-red-500'}`} style={{ width: `${attendanceRate}%` }} />
+                    <div className="w-full bg-gray-100 rounded-full h-1 md:h-2">
+                      <div className={`h-1 md:h-2 rounded-full transition-all ${attendanceRate >= 75 ? 'bg-green-500' : 'bg-red-500'}`} style={{ width: `${attendanceRate}%` }} />
                     </div>
                   </div>
-                  <span className="text-xs text-gray-500 flex-shrink-0">{stats.present + stats.late} / {students.length} present</span>
+                  <span className="text-[8px] md:text-xs font-bold text-gray-400 flex-shrink-0 uppercase tracking-tighter">{stats.present + stats.late} / {students.length} ENROLLED</span>
                 </div>
               )}
 
               {/* Student table */}
-              <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
-                <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300">
-                  <table className="w-full">
+              <div className="bg-white border border-gray-200 rounded-lg md:rounded-xl shadow-sm overflow-hidden min-w-0">
+                <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 max-w-full">
+                  <table className="w-full text-[9px] md:text-sm text-left min-w-[500px] md:min-w-full">
                     <thead>
                       <tr className="bg-[#2D1B4D] text-white">
-                        <th className="text-left px-5 py-3 text-[10px] font-bold uppercase tracking-widest w-10">#</th>
-                        <th className="text-left px-5 py-3 text-[10px] font-bold uppercase tracking-widest">Student</th>
-                        <th className="text-center px-5 py-3 text-[10px] font-bold uppercase tracking-widest min-w-[200px]">Status</th>
-                        <th className="text-left px-5 py-3 text-[10px] font-bold uppercase tracking-widest min-w-[150px]">Note</th>
+                        <th className="px-3 py-2 md:px-5 md:py-3 text-[8px] md:text-[10px] font-black uppercase tracking-widest w-8 md:w-10">#</th>
+                        <th className="px-3 py-2 md:px-5 md:py-3 text-[8px] md:text-[10px] font-black uppercase tracking-widest min-w-[120px]">Student</th>
+                        <th className="text-center px-3 py-2 md:px-5 md:py-3 text-[8px] md:text-[10px] font-black uppercase tracking-widest min-w-[160px] md:min-w-[200px]">Status</th>
+                        <th className="px-3 py-2 md:px-5 md:py-3 text-[8px] md:text-[10px] font-black uppercase tracking-widest min-w-[120px] md:min-w-[150px]">Note</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100">
@@ -387,43 +386,43 @@ const Attendance = () => {
                           : status === 'present' ? 'bg-green-50/20'
                           : i % 2 === 0 ? 'bg-white' : 'bg-gray-50/30';
                         return (
-                          <tr key={s.student} className={`transition-colors ${rowBg}`}>
-                            <td className="px-5 py-3.5 text-xs font-bold text-gray-400">{i + 1}</td>
-                            <td className="px-5 py-3.5">
-                              <div className="flex items-center gap-3">
-                                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white font-black text-xs flex-shrink-0 shadow-sm transition-transform hover:scale-110">
+                          <tr key={s.student} className={`transition-colors ${rowBg} group`}>
+                            <td className="px-3 py-2 md:px-5 md:py-3.5 text-[8px] md:text-xs font-black text-gray-400">{i + 1}</td>
+                            <td className="px-3 py-2 md:px-5 md:py-3.5">
+                              <div className="flex items-center gap-2 md:gap-3">
+                                <div className="w-6 h-6 md:w-9 md:h-9 rounded-lg bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white font-black text-[9px] md:text-xs flex-shrink-0 shadow-sm transition-transform group-hover:scale-110">
                                   {s.student_name?.charAt(0).toUpperCase()}
                                 </div>
-                                <div className="min-w-[140px]">
-                                  <div className="font-bold text-gray-800 text-sm flex items-center gap-1.5 leading-tight">
+                                <div className="min-w-0">
+                                  <div className="font-black text-gray-800 text-[9px] md:text-sm flex items-center gap-1 leading-tight truncate uppercase tracking-tighter">
                                     <button 
                                       onClick={() => navigate(`/profile?student_id=${s.student}`)}
-                                      className="hover:text-purple-600 transition-colors"
+                                      className="hover:text-purple-600 transition-colors truncate"
                                       title="View Profile"
                                     >
                                       {s.student_name}
                                     </button>
-                                    {changed && <span className="w-1.5 h-1.5 rounded-full bg-amber-500 inline-block shadow-sm" title="Unsaved change" />}
+                                    {changed && <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0 shadow-sm animate-pulse" title="Unsaved change" />}
                                   </div>
-                                  <div className="text-[10px] text-gray-400 font-medium">{s.student_email}</div>
+                                  <div className="text-[7px] md:text-[10px] text-gray-400 font-bold truncate tracking-tight">{s.student_email}</div>
                                 </div>
                               </div>
                             </td>
-                            <td className="px-5 py-3.5">
-                              <div className="flex items-center justify-center gap-2">
+                            <td className="px-3 py-2 md:px-5 md:py-3.5">
+                              <div className="flex items-center justify-center gap-1 md:gap-2">
                                 {Object.entries(STATUS_CONFIG).map(([key, cfg]) => (
                                   <button key={key} onClick={() => markDraft(s.student, key)} title={cfg.label}
-                                    className={`w-10 h-10 md:w-9 md:h-9 rounded-xl border-2 font-black text-[10px] transition-all active:scale-90 shadow-sm ${status === key ? cfg.active : cfg.inactive}`}>
+                                    className={`w-7 h-7 md:w-9 md:h-9 rounded-lg md:rounded-xl border-2 font-black text-[8px] md:text-[10px] transition-all active:scale-90 shadow-sm ${status === key ? cfg.active : cfg.inactive}`}>
                                     {cfg.short}
                                   </button>
                                 ))}
                               </div>
                             </td>
-                            <td className="px-5 py-3.5">
-                              <input type="text" placeholder="Add note..."
+                            <td className="px-3 py-2 md:px-5 md:py-3.5">
+                              <input type="text" placeholder="Note..."
                                 value={draftRemarks[s.student] || ''}
                                 onChange={e => setDraftRemarks(prev => ({ ...prev, [s.student]: e.target.value }))}
-                                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-[11px] font-medium focus:outline-none focus:ring-2 focus:ring-purple-400 bg-white/50 focus:bg-white transition-all shadow-sm" />
+                                className="w-full px-2 py-1 md:px-3 md:py-2 border border-gray-200 rounded-lg text-[8px] md:text-[11px] font-bold focus:outline-none focus:ring-2 focus:ring-purple-400 bg-white/50 focus:bg-white transition-all shadow-inner uppercase tracking-tighter" />
                             </td>
                           </tr>
                         );
@@ -433,29 +432,29 @@ const Attendance = () => {
                 </div>
 
                 {/* Save bar */}
-                <div className="px-5 py-4 bg-gray-50 border-t border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                  <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex flex-wrap gap-x-4 gap-y-1">
-                    <span>P: Present</span>
-                    <span>A: Absent</span>
-                    <span>L: Late</span>
-                    <span>E: Excused</span>
-                    {hasChanges && <span className="text-amber-600 animate-pulse">● Unsaved changes</span>}
+                <div className="px-3 py-3 md:px-5 md:py-4 bg-gray-50 border-t border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-3">
+                  <div className="text-[7px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest flex flex-wrap gap-x-3 gap-y-1">
+                    <span>P: PRESENT</span>
+                    <span>A: ABSENT</span>
+                    <span>L: LATE</span>
+                    <span>E: EXCUSED</span>
+                    {hasChanges && <span className="text-amber-600 animate-pulse">● UNSAVED CHANGES</span>}
                   </div>
                   <button onClick={saveAttendance} disabled={submitting || !hasChanges}
-                    className={`flex items-center justify-center gap-2 px-8 py-2.5 rounded-xl text-sm font-bold transition-all shadow-md active:scale-95 w-full md:w-auto ${
+                    className={`flex items-center justify-center gap-1.5 px-6 py-2 md:px-8 md:py-2.5 rounded-lg md:rounded-xl text-[10px] md:text-sm font-black transition-all shadow-md active:scale-95 w-full md:w-auto uppercase tracking-widest ${
                       hasChanges
                         ? 'bg-purple-600 hover:bg-purple-700 text-white'
                         : 'bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200'
                     } disabled:opacity-60`}>
                     {submitting ? (
-                      <><svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                      <><svg className="animate-spin h-3 w-3 md:h-4 md:w-4" fill="none" viewBox="0 0 24 24">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
-                      </svg>Saving...</>
+                      </svg>SAVING...</>
                     ) : (
-                      <><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <><svg className="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7"/>
-                      </svg>{hasChanges ? 'Save Attendance' : 'All Changes Saved'}</>
+                      </svg>{hasChanges ? 'SAVE ATTENDANCE' : 'ALL SAVED'}</>
                     )}
                   </button>
                 </div>
@@ -469,53 +468,56 @@ const Attendance = () => {
       {view === 'history' && (
         <>
           {!selectedClassroom ? (
-            <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-16 text-center text-gray-400">Select a classroom to view history.</div>
+            <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-10 md:p-16 text-center text-gray-400 font-bold text-[10px] md:text-sm uppercase tracking-widest">Select a classroom to view history.</div>
           ) : loadingHistory ? (
-            <div className="flex items-center justify-center h-48"><div className="animate-spin rounded-full h-10 w-10 border-b-2 border-purple-600" /></div>
+            <div className="flex items-center justify-center h-48"><div className="animate-spin rounded-full h-8 w-8 md:h-10 md:w-10 border-b-2 border-purple-600" /></div>
           ) : history.length === 0 ? (
-            <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-16 text-center text-gray-400">No attendance records found.</div>
+            <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-10 md:p-16 text-center text-gray-400 font-bold text-[10px] md:text-sm uppercase tracking-widest">No records found.</div>
           ) : (
-            <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full">
+            <div className="bg-white border border-gray-200 rounded-lg md:rounded-xl shadow-sm overflow-hidden min-w-0">
+              <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-200 max-w-full">
+                <table className="w-full text-[9px] md:text-sm text-left min-w-[600px] md:min-w-full">
                   <thead>
-                    <tr className="bg-gradient-to-r from-[#2D1B4D] to-[#4B2D7F] text-white">
-                      <th className="text-left px-6 py-3 text-xs font-semibold uppercase tracking-wider">Date</th>
-                      <th className="text-left px-6 py-3 text-xs font-semibold uppercase tracking-wider">Student</th>
-                      <th className="text-center px-6 py-3 text-xs font-semibold uppercase tracking-wider">Status</th>
-                      <th className="text-left px-6 py-3 text-xs font-semibold uppercase tracking-wider">Marked By</th>
-                      <th className="text-left px-6 py-3 text-xs font-semibold uppercase tracking-wider">Remarks</th>
-                      <th className="text-center px-6 py-3 text-xs font-semibold uppercase tracking-wider">Actions</th>
+                    <tr className="bg-[#2D1B4D] text-white">
+                      <th className="px-3 py-2 md:px-6 md:py-3 text-[8px] md:text-[10px] font-black uppercase tracking-widest">Date</th>
+                      <th className="px-3 py-2 md:px-6 md:py-3 text-[8px] md:text-[10px] font-black uppercase tracking-widest">Student</th>
+                      <th className="text-center px-3 py-2 md:px-6 md:py-3 text-[8px] md:text-[10px] font-black uppercase tracking-widest">Status</th>
+                      <th className="px-3 py-2 md:px-6 md:py-3 text-[8px] md:text-[10px] font-black uppercase tracking-widest">By</th>
+                      <th className="px-3 py-2 md:px-6 md:py-3 text-[8px] md:text-[10px] font-black uppercase tracking-widest">Remarks</th>
+                      <th className="text-center px-3 py-2 md:px-6 md:py-3 text-[8px] md:text-[10px] font-black uppercase tracking-widest">Opt</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
                     {history.map((r, idx) => {
                       const cfg = STATUS_CONFIG[r.status];
                       return (
-                        <tr key={r.id} className={`hover:bg-purple-50 transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}`}>
-                          <td className="px-6 py-3 text-sm font-medium text-gray-800">{new Date(r.date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}</td>
-                          <td className="px-6 py-3">
-                            <button 
-                              onClick={() => navigate(`/profile?student_id=${r.student}`)}
-                              className="text-sm font-semibold text-gray-800 hover:text-purple-600 transition-colors text-left"
-                              title="View Profile"
-                            >
-                              {r.student_name}
-                            </button>
-                            <div className="text-xs text-gray-400">{r.student_email}</div>
+                        <tr key={r.id} className={`hover:bg-purple-50 transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'} group`}>
+                          <td className="px-3 py-2 md:px-6 md:py-3 font-bold text-gray-700 whitespace-nowrap">{new Date(r.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</td>
+                          <td className="px-3 py-2 md:px-6 md:py-3">
+                            <div className="min-w-0">
+                              <button 
+                                onClick={() => navigate(`/profile?student_id=${r.student}`)}
+                                className="font-black text-gray-800 hover:text-purple-600 transition-colors text-left truncate uppercase tracking-tighter"
+                                title="View Profile"
+                              >
+                                {r.student_name}
+                              </button>
+                              <div className="text-[7px] md:text-xs text-gray-400 font-bold truncate">{r.student_email}</div>
+                            </div>
                           </td>
-                          <td className="px-6 py-3 text-center">
-                            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${cfg?.active || 'bg-gray-100 text-gray-600 border-gray-200'}`}>
-                              <span className="w-1.5 h-1.5 rounded-full bg-current opacity-70" />
+                          <td className="px-3 py-2 md:px-6 md:py-3 text-center">
+                            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[7px] md:text-xs font-black uppercase tracking-widest border ${cfg?.active || 'bg-gray-100 text-gray-600 border-gray-200'}`}>
                               {cfg?.label || r.status}
                             </span>
                           </td>
-                          <td className="px-6 py-3 text-sm text-gray-500">{r.marked_by_name || '—'}</td>
-                          <td className="px-6 py-3 text-sm text-gray-500">{r.remarks || '—'}</td>
-                          <td className="px-6 py-3 text-center">
+                          <td className="px-3 py-2 md:px-6 md:py-3 font-bold text-gray-400 uppercase text-[8px] md:text-sm truncate max-w-[60px] md:max-w-none">{r.marked_by_name || '—'}</td>
+                          <td className="px-3 py-2 md:px-6 md:py-3 font-medium text-gray-500 truncate max-w-[80px] md:max-w-none">{r.remarks || '—'}</td>
+                          <td className="px-3 py-2 md:px-6 md:py-3 text-center">
                             <button onClick={() => deleteAttendance(r)}
-                              className="px-2.5 py-1.5 text-xs font-medium text-red-700 bg-red-100 hover:bg-red-200 rounded-lg transition-colors">
-                              Delete
+                              className="p-1 md:p-2 text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-all md:opacity-0 md:group-hover:opacity-100">
+                              <svg className="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                              </svg>
                             </button>
                           </td>
                         </tr>
@@ -524,8 +526,8 @@ const Attendance = () => {
                   </tbody>
                 </table>
               </div>
-              <div className="px-6 py-2.5 bg-gray-50 border-t border-gray-100 text-xs text-gray-400">
-                {history.length} record{history.length !== 1 ? 's' : ''} found
+              <div className="px-3 py-2 md:px-6 md:py-2.5 bg-gray-50 border-t border-gray-100 text-[7px] md:text-xs font-black text-gray-400 uppercase tracking-widest">
+                {history.length} records found
               </div>
             </div>
           )}
