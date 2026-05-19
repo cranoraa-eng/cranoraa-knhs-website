@@ -216,7 +216,7 @@ const StudentManagement = () => {
                     <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-200 max-w-full">
                       <table className="w-full text-left min-w-[400px] md:min-w-full">
                         <thead>
-                          <tr className="text-[7px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-50 bg-[#2D1B4D] text-white">
+                          <tr className="text-[7px] md:text-[10px] font-black text-white uppercase tracking-widest border-b border-gray-50 bg-[#2D1B4D]">
                             <th className="px-3 py-1.5 md:px-6 md:py-4 w-10 md:w-16">#</th>
                             <th className="px-3 py-1.5 md:px-6 md:py-4">Student</th>
                             <th className="hidden md:table-cell px-6 py-4">Email</th>
