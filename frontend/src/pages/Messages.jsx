@@ -47,7 +47,11 @@ const Messages = () => {
 
   // Group settings panel state
   const [showGroupSettings, setShowGroupSettings] = useState(false);
-  const [groupSettingsTab, setGroupSettingsTab]   = useState('members');
+  const [groupSettingsTab, setGroupSettingsTab] = useState('members');
+  const [replyingTo, setReplyingTo] = useState(null);
+  const [showReactionPicker, setShowReactionPicker] = useState(null);
+
+  const COMMON_EMOJIS = ['👍', '❤️', '😂', '😮', '😢', '😡', '🔥', '✨'];
   const [addMemberSearch, setAddMemberSearch]     = useState('');
   const [addMemberResults, setAddMemberResults]   = useState([]);
   const [isSearchingMembers, setIsSearchingMembers] = useState(false);
@@ -164,21 +168,23 @@ const Messages = () => {
   };
 
   // ── Handlers ──────────────────────────────────────────────────────────────
-  const handleSendMessage = async (e) => {
+  const handleSendMessage = (e) => {
     e?.preventDefault();
     if (!newMessage.trim() || !selectedRoom) return;
     const content = newMessage.trim();
     setNewMessage('');
     setIsTyping(false);
-    safeSend({ type: 'typing', is_typing: false });
-
-    try {
-      const r = await api.post('/chat/messages/', { room_id: selectedRoom.id, content });
-      // WS will broadcast the message back to us
-    } catch {
-      toast.error('Failed to send message');
-      setNewMessage(content); // restore on error
+    
+    const msgPayload = {
+      type: 'message',
+      message: content,
+    };
+    if (replyingTo) {
+      msgPayload.parent_id = replyingTo.id;
     }
+
+    safeSend(msgPayload);
+    setReplyingTo(null);
   };
 
   const handleTyping = (e) => {
@@ -251,6 +257,15 @@ const Messages = () => {
     try {
       await api.delete(`/chat/messages/${msgId}/`);
     } catch { toast.error('Failed to delete message'); }
+  };
+
+  const handleReactToMessage = (messageId, emoji) => {
+    safeSend({
+      type: 'reaction',
+      message_id: messageId,
+      emoji: emoji
+    });
+    setShowReactionPicker(null);
   };
 
   const handlePinMessage = async (msg) => {
@@ -385,6 +400,15 @@ const Messages = () => {
     } catch { toast.error('Failed to delete group'); }
   };
 
+  const scrollToMessage = (msgId) => {
+    const el = document.getElementById(`msg-${msgId}`);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      el.classList.add('ring-4', 'ring-violet-400/50', 'ring-offset-2');
+      setTimeout(() => el.classList.remove('ring-4', 'ring-violet-400/50', 'ring-offset-2'), 2000);
+    }
+  };
+
   const openGroupSettings = () => {
     setNewGroupName(selectedRoom.name);
     setGroupSettingsTab('members');
@@ -474,30 +498,34 @@ const Messages = () => {
         return;
       }
       if (data.type === 'message') {
-        const msg = {
-          id: data.message_id, content: data.message,
-          sender: data.sender_id, sender_name: data.sender_name,
-          timestamp: data.timestamp,
-          is_delivered: data.is_delivered || false,
-          is_read: data.is_read || false,
-        };
-        setMessages(prev => [...prev, msg]);
-        if (data.sender_id !== user.id) {
-          safeSend({ type: 'read', message_id: data.message_id });
+        const msg = data; // the whole serialized message
+        setMessages(prev => {
+          if (prev.find(m => m.id === msg.id)) return prev;
+          return [...prev, msg];
+        });
+        if (msg.sender !== user.id) {
+          safeSend({ type: 'read', message_id: msg.id });
         }
         // Update room state live (for sorting and preview)
         setRooms(prev => prev.map(r =>
           r.id === data.room_id
             ? {
                 ...r,
-                last_message: { id: data.message_id, content: data.message, timestamp: data.timestamp, sender_name: data.sender_name },
-                updated_at: data.timestamp, // Move to top live
-                unread_count: (data.sender_id !== user.id && selectedRoomRef.current?.id !== data.room_id)
+                last_message: msg,
+                updated_at: msg.timestamp,
+                unread_count: (msg.sender !== user.id && selectedRoomRef.current?.id !== data.room_id)
                   ? (r.unread_count || 0) + 1
                   : r.unread_count,
               }
             : r
         ));
+      }
+
+      if (data.type === 'message_reaction') {
+        setMessages(prev => prev.map(m => 
+          m.id === data.message_id ? { ...m, reactions: data.reactions } : m
+        ));
+        return;
       }
 
       if (data.type === 'message_deleted') {
@@ -1044,8 +1072,51 @@ const Messages = () => {
                           </div>
                         ) : (
                           <div className="relative">
-                            {/* Hover actions — pin for everyone, edit/delete for own */}
-                            <div className={`absolute top-1/2 -translate-y-1/2 hidden md:group-hover:flex items-center gap-1 ${isMine ? '-left-20' : '-right-20'}`}>
+                            {/* Reply info if this message is a reply */}
+                            {msg.parent_message_details && (
+                              <button 
+                                onClick={() => scrollToMessage(msg.parent_message_details.id)}
+                                className={`mb-1 flex flex-col group/reply transition-all active:scale-95 ${isMine ? 'items-end' : 'items-start'}`}>
+                                <div className="px-3 py-1 bg-slate-100 rounded-t-xl text-[10px] text-slate-500 border-l-2 border-slate-300 max-w-xs truncate group-hover/reply:bg-slate-200">
+                                  <span className="font-bold">Replying to {msg.parent_message_details.sender_name}:</span> {msg.parent_message_details.content}
+                                </div>
+                              </button>
+                            )}
+
+                            {/* Hover actions — Messenger style */}
+                            <div className={`absolute top-1/2 -translate-y-1/2 hidden md:group-hover:flex items-center gap-1 ${isMine ? '-left-32' : '-right-32'}`}>
+                              {/* React Button */}
+                              <div className="relative">
+                                <button
+                                  onClick={() => setShowReactionPicker(showReactionPicker === msg.id ? null : msg.id)}
+                                  className="p-1.5 bg-white border border-slate-200 rounded-lg text-slate-400 hover:text-amber-500 hover:border-amber-300 shadow-sm transition-all"
+                                  title="React">
+                                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                  </svg>
+                                </button>
+                                {showReactionPicker === msg.id && (
+                                  <div className="absolute bottom-full left-0 mb-2 bg-white border border-slate-200 rounded-2xl shadow-xl p-1.5 flex gap-1 z-[100] animate-in fade-in slide-in-from-bottom-2">
+                                    {COMMON_EMOJIS.map(emoji => (
+                                      <button key={emoji} onClick={() => handleReactToMessage(msg.id, emoji)}
+                                        className="w-8 h-8 flex items-center justify-center hover:bg-slate-50 rounded-lg transition-all text-lg active:scale-125">
+                                        {emoji}
+                                      </button>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+
+                              {/* Reply Button */}
+                              <button
+                                onClick={() => setReplyingTo(msg)}
+                                className="p-1.5 bg-white border border-slate-200 rounded-lg text-slate-400 hover:text-blue-500 hover:border-blue-300 shadow-sm transition-all"
+                                title="Reply">
+                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+                                </svg>
+                              </button>
+
                               {/* Pin button — everyone */}
                               <button
                                 onClick={() => handlePinMessage(msg)}
@@ -1055,6 +1126,7 @@ const Messages = () => {
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 18V4z" />
                                 </svg>
                               </button>
+                              
                               {/* Edit + Delete — own messages only */}
                               {isMine && (
                                 <>
@@ -1079,7 +1151,7 @@ const Messages = () => {
                             </div>
 
                             {/* Bubble */}
-                            <div className={`px-4 py-2.5 rounded-2xl text-sm font-medium shadow-sm ${
+                            <div id={`msg-${msg.id}`} className={`px-4 py-2.5 rounded-2xl text-sm font-medium shadow-sm relative transition-all duration-500 ${
                               isMine
                                 ? 'bg-violet-600 text-white rounded-br-none'
                                 : 'bg-white text-slate-700 border border-slate-100 rounded-bl-none'
@@ -1090,6 +1162,17 @@ const Messages = () => {
                               {msg.content}
                               {msg.is_edited && (
                                 <span className="ml-1.5 text-[10px] opacity-60 italic">edited</span>
+                              )}
+
+                              {/* Reactions display */}
+                              {msg.reactions && Object.keys(msg.reactions).length > 0 && (
+                                <div className={`absolute -bottom-2 ${isMine ? 'right-0' : 'left-0'} flex items-center gap-0.5 bg-white border border-slate-100 rounded-full px-1.5 py-0.5 shadow-sm z-10`}>
+                                  {Object.entries(msg.reactions).map(([emoji, users]) => (
+                                    <span key={emoji} className="text-[10px] cursor-default flex items-center gap-0.5" title={users.map(u => u.user_name).join(', ')}>
+                                      {emoji} <span className="text-[8px] font-black text-slate-400">{users.length}</span>
+                                    </span>
+                                  ))}
+                                </div>
                               )}
                             </div>
                           </div>
@@ -1146,6 +1229,20 @@ const Messages = () => {
 
             {/* Message Input */}
             <div className="p-3 md:p-4 bg-white border-t border-slate-100">
+              {/* Reply Preview */}
+              {replyingTo && (
+                <div className="mb-2 flex items-center justify-between bg-slate-50 border-l-4 border-violet-500 p-2 rounded-r-xl animate-in slide-in-from-bottom-2">
+                  <div className="min-w-0">
+                    <p className="text-[10px] font-black text-violet-600 uppercase tracking-widest">Replying to {replyingTo.sender_name}</p>
+                    <p className="text-xs text-slate-500 truncate">{replyingTo.content}</p>
+                  </div>
+                  <button onClick={() => setReplyingTo(null)} className="p-1 text-slate-400 hover:text-red-500">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+              )}
               <form onSubmit={handleSendMessage} className="flex items-center gap-3">
                 <input
                   type="text"

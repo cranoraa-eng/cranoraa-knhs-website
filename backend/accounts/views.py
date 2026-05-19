@@ -2419,18 +2419,24 @@ class ChatMessageViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
+        base_qs = ChatMessage.objects.select_related(
+            'sender', 'parent_message', 'parent_message__sender'
+        ).prefetch_related(
+            'reactions', 'reactions__user'
+        )
+
         # For detail actions (retrieve, update, destroy, custom actions),
         # return all messages in rooms the user belongs to so get_object() works.
         if self.action in ('retrieve', 'update', 'partial_update', 'destroy', 'edit', 'pin', 'unpin'):
-            return ChatMessage.objects.filter(room__participants=user)
+            return base_qs.filter(room__participants=user)
 
         # For list action, require room_id param
         room_id = self.request.query_params.get('room_id')
         if not room_id:
-            return ChatMessage.objects.none()
+            return base_qs.none()
         if not user.chat_rooms.filter(id=room_id).exists():
-            return ChatMessage.objects.none()
-        return ChatMessage.objects.filter(room_id=room_id).order_by('timestamp')
+            return base_qs.none()
+        return base_qs.filter(room_id=room_id).order_by('timestamp')
 
     def perform_destroy(self, instance):
         # Only sender can delete their own message

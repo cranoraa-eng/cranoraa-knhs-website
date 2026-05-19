@@ -361,15 +361,56 @@ class GradeReportSerializer(serializers.ModelSerializer):
         return full_name(obj.generated_by) if obj.generated_by else ''
 
 
+class MessageReactionSerializer(serializers.ModelSerializer):
+    user_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = MessageReaction
+        fields = ['id', 'user', 'user_name', 'emoji', 'created_at']
+
+    def get_user_name(self, obj):
+        return full_name(obj.user)
+
+
 class ChatMessageSerializer(serializers.ModelSerializer):
     sender_name = serializers.SerializerMethodField()
+    reactions = serializers.SerializerMethodField()
+    parent_message_details = serializers.SerializerMethodField()
 
     class Meta:
         model = ChatMessage
-        fields = ['id', 'room', 'sender', 'sender_name', 'content', 'timestamp', 'is_read', 'is_delivered', 'is_pinned', 'is_edited']
+        fields = [
+            'id', 'room', 'sender', 'sender_name', 'content', 'timestamp', 
+            'is_read', 'is_delivered', 'is_pinned', 'is_edited', 
+            'parent_message', 'parent_message_details', 'reactions'
+        ]
 
     def get_sender_name(self, obj):
         return full_name(obj.sender)
+
+    def get_reactions(self, obj):
+        # Group reactions by emoji
+        reactions = obj.reactions.all()
+        result = {}
+        for r in reactions:
+            if r.emoji not in result:
+                result[r.emoji] = []
+            result[r.emoji].append({
+                'id': r.id,
+                'user_id': r.user.id,
+                'user_name': full_name(r.user)
+            })
+        return result
+
+    def get_parent_message_details(self, obj):
+        if obj.parent_message:
+            return {
+                'id': obj.parent_message.id,
+                'content': obj.parent_message.content,
+                'sender_name': full_name(obj.parent_message.sender),
+                'sender_id': obj.parent_message.sender.id
+            }
+        return None
 
 
 class ChatRoomSerializer(serializers.ModelSerializer):

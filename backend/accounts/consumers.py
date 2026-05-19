@@ -2,7 +2,8 @@ import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
 from django.contrib.auth import get_user_model
-from .models import ChatRoom, ChatMessage
+from .models import ChatRoom, ChatMessage, MessageReaction
+from .serializers import ChatMessageSerializer
 
 User = get_user_model()
 
@@ -112,25 +113,28 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 })
             return
 
-        # Regular chat message
+        # Reaction
+        if msg_type == 'reaction':
+            await self.handle_reaction(data)
+            return
+
+        # Regular chat message (possibly a reply)
         message = data.get('message', '').strip()
         if not message:
             return
 
-        saved_msg = await self.save_message(self.room_id, self.user.id, message)
+        parent_id = data.get('parent_id')
+        saved_msg = await self.save_message(self.room_id, self.user.id, message, parent_id)
+        
+        # Serialize the message to include parent_message_details
+        serialized_msg = await self.serialize_message(saved_msg)
 
         await self.channel_layer.group_send(self.room_group_name, {
             'type': 'chat_message',
-            'message': message,
-            'sender_id': self.user.id,
-            'sender_name': self.user.first_name or self.user.username,
-            'timestamp': saved_msg.timestamp.isoformat(),
-            'message_id': saved_msg.id,
-            'is_delivered': False,
-            'is_read': False,
+            'message_data': serialized_msg
         })
 
-        # Notify every participant's personal channel (for unread badge updates)
+        # Notify every participant's personal channel
         participant_ids = await self.get_room_participant_ids(self.room_id)
         for pid in participant_ids:
             if pid != self.user.id:
@@ -143,28 +147,45 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     'timestamp': saved_msg.timestamp.isoformat(),
                 })
 
+    # Reaction handler
+    async def handle_reaction(self, data):
+        message_id = data.get('message_id')
+        emoji = data.get('emoji')
+        if not message_id or not emoji:
+            return
+
+        reaction_data = await self.toggle_reaction(message_id, self.user.id, emoji)
+        
+        await self.channel_layer.group_send(self.room_group_name, {
+            'type': 'message_reaction',
+            'message_id': message_id,
+            'reactions': reaction_data
+        })
+
     # ── Handlers ──────────────────────────────────────────────────
 
     async def chat_message(self, event):
+        msg_data = event['message_data']
         # Mark as delivered for recipients (not sender)
-        if event['sender_id'] != self.user.id:
-            await self.set_delivered(event['message_id'])
+        if msg_data['sender'] != self.user.id:
+            await self.set_delivered(msg_data['id'])
             # Notify sender of delivery
             await self.channel_layer.group_send(self.room_group_name, {
                 'type': 'delivery_receipt',
-                'message_id': event['message_id'],
+                'message_id': msg_data['id'],
             })
 
         await self.send(text_data=json.dumps({
             'type': 'message',
-            'message': event['message'],
-            'sender_id': event['sender_id'],
-            'sender_name': event['sender_name'],
-            'timestamp': event['timestamp'],
-            'message_id': event['message_id'],
+            **msg_data,
             'room_id': int(self.room_id),
-            'is_delivered': event.get('is_delivered', False),
-            'is_read': event.get('is_read', False),
+        }))
+
+    async def message_reaction(self, event):
+        await self.send(text_data=json.dumps({
+            'type': 'message_reaction',
+            'message_id': event['message_id'],
+            'reactions': event['reactions']
         }))
 
     async def typing_indicator(self, event):
@@ -240,10 +261,45 @@ class ChatConsumer(AsyncWebsocketConsumer):
     # ── DB helpers ────────────────────────────────────────────────
 
     @database_sync_to_async
-    def save_message(self, room_id, sender_id, message):
+    def save_message(self, room_id, sender_id, message, parent_id=None):
         room = ChatRoom.objects.get(id=room_id)
         sender = User.objects.get(id=sender_id)
-        return ChatMessage.objects.create(room=room, sender=sender, content=message)
+        parent = None
+        if parent_id:
+            try:
+                parent = ChatMessage.objects.get(id=parent_id)
+            except ChatMessage.DoesNotExist:
+                pass
+        return ChatMessage.objects.create(room=room, sender=sender, content=message, parent_message=parent)
+
+    @database_sync_to_async
+    def toggle_reaction(self, message_id, user_id, emoji):
+        message = ChatMessage.objects.get(id=message_id)
+        user = User.objects.get(id=user_id)
+        
+        # Check if reaction already exists
+        reaction = MessageReaction.objects.filter(message=message, user=user, emoji=emoji).first()
+        if reaction:
+            reaction.delete()
+        else:
+            MessageReaction.objects.create(message=message, user=user, emoji=emoji)
+        
+        # Return updated reactions for this message
+        all_reactions = message.reactions.all()
+        result = {}
+        for r in all_reactions:
+            if r.emoji not in result:
+                result[r.emoji] = []
+            result[r.emoji].append({
+                'id': r.id,
+                'user_id': r.user.id,
+                'user_name': r.user.first_name or r.user.username
+            })
+        return result
+
+    @database_sync_to_async
+    def serialize_message(self, message):
+        return ChatMessageSerializer(message).data
 
     @database_sync_to_async
     def mark_messages_delivered(self, room_id, user_id):

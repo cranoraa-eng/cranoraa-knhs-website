@@ -132,12 +132,28 @@ class ChatMessage(models.Model):
     is_read = models.BooleanField(default=False)
     is_pinned = models.BooleanField(default=False)
     is_edited = models.BooleanField(default=False)
+    
+    # Messenger-like features: Replies
+    parent_message = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='replies')
 
     class Meta:
         ordering = ['timestamp']
 
     def __str__(self):
         return f"{self.sender.username}: {self.content[:20]}..."
+
+
+class MessageReaction(models.Model):
+    message = models.ForeignKey(ChatMessage, on_delete=models.CASCADE, related_name='reactions')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='message_reactions')
+    emoji = models.CharField(max_length=20)  # The emoji string (e.g., "👍", "❤️")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('message', 'user', 'emoji')
+
+    def __str__(self):
+        return f"{self.user.username} reacted {self.emoji} to message {self.message.id}"
 
 
 class Friendship(models.Model):
