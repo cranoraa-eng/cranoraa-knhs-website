@@ -583,6 +583,8 @@ const Messages = () => {
         });
       }
     };
+  };
+
   const FriendActionButton = ({ targetUser }) => {
     const status = getFriendshipStatus(targetUser.id);
     if (status === 'friends') return (
