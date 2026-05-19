@@ -155,16 +155,16 @@ const StudentEnrollment = () => {
       {/* Enrollments table */}
       {selectedClassroom && (
         <div className="bg-white border border-gray-200 rounded-lg md:rounded-xl shadow-sm overflow-hidden min-w-0">
-          <div className="flex items-center justify-between px-3 py-1.5 md:px-6 md:py-4 border-b border-gray-100 bg-[#2D1B4D] text-white">
-            <h2 className="font-black text-[10px] md:text-base uppercase tracking-tight">
-              Enrolled
-              <span className="ml-2 text-[8px] md:text-sm font-bold text-white/60">({enrollments.length})</span>
+          <div className="flex items-center justify-between px-2 py-1 md:px-6 md:py-4 border-b border-gray-100 bg-[#2D1B4D]">
+            <h2 className="font-black text-[9px] md:text-base uppercase tracking-tight text-white flex items-center gap-1">
+              ENROLLED
+              <span className="text-[7px] md:text-sm font-bold text-white/70">({enrollments.length})</span>
             </h2>
             <button
               onClick={openModal}
-              className="flex items-center gap-1 bg-purple-600 hover:bg-purple-700 text-white text-[8px] md:text-sm font-black py-1 px-2 md:py-2 md:px-3 rounded md:rounded-lg transition-all active:scale-95 uppercase tracking-widest"
+              className="flex items-center gap-1 bg-purple-600 hover:bg-purple-700 text-white text-[7px] md:text-sm font-black py-0.5 px-1.5 md:py-2 md:px-3 rounded md:rounded-lg transition-all active:scale-95 uppercase tracking-widest shadow-sm"
             >
-              <svg className="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-2.5 h-2.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
               </svg>
               Enroll
@@ -172,21 +172,21 @@ const StudentEnrollment = () => {
           </div>
 
           {enrollments.length === 0 ? (
-            <div className="text-center py-8 md:py-12 text-gray-400 font-bold text-[10px] md:text-sm uppercase tracking-widest">
+            <div className="text-center py-6 md:py-12 text-gray-400 font-bold text-[9px] md:text-sm uppercase tracking-widest">
               No students enrolled yet.
             </div>
           ) : (
             <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-200 max-w-full">
-              <table className="w-full min-w-[500px] md:min-w-full">
+              <table className="w-full min-w-[320px] md:min-w-full">
                 <thead className="bg-gray-50">
-                  <tr className="text-[7px] md:text-xs font-black text-gray-400 uppercase tracking-widest border-b border-gray-100">
-                    <th className="text-left px-3 py-1.5 md:px-6 md:py-3">Student</th>
-                    <th className="text-center px-1.5 py-1.5 md:px-6 md:py-3">Q1</th>
-                    <th className="text-center px-1.5 py-1.5 md:px-6 md:py-3">Q2</th>
-                    <th className="text-center px-1.5 py-1.5 md:px-6 md:py-3">Q3</th>
-                    <th className="text-center px-1.5 py-1.5 md:px-6 md:py-3">Q4</th>
-                    <th className="text-center px-1.5 py-1.5 md:px-6 md:py-3">AVG</th>
-                    <th className="text-center px-3 py-1.5 md:px-6 md:py-3">OPT</th>
+                  <tr className="text-[6px] md:text-xs font-black text-gray-400 uppercase tracking-widest border-b border-gray-100">
+                    <th className="text-left px-2 py-1 md:px-6 md:py-3">Student</th>
+                    <th className="text-center px-1 py-1 md:px-6 md:py-3">Q1</th>
+                    <th className="text-center px-1 py-1 md:px-6 md:py-3">Q2</th>
+                    <th className="text-center px-1 py-1 md:px-6 md:py-3">Q3</th>
+                    <th className="text-center px-1 py-1 md:px-6 md:py-3">Q4</th>
+                    <th className="text-center px-1 py-1 md:px-6 md:py-3">AVG</th>
+                    <th className="text-center px-2 py-1 md:px-6 md:py-3">OPT</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
@@ -194,28 +194,28 @@ const StudentEnrollment = () => {
                     const remarks = getRemarksLabel(e.transmuted_average || e.gpa);
                     return (
                       <tr key={e.id} className="hover:bg-purple-50 transition-colors">
-                        <td className="px-3 py-2 md:px-6 md:py-4">
-                          <div className="font-black text-gray-800 text-[9px] md:text-sm uppercase tracking-tighter truncate max-w-[120px] md:max-w-none">{e.student_name}</div>
-                          <div className="text-[7px] md:text-xs text-gray-400 font-bold truncate max-w-[120px] md:max-w-none">{e.student_email}</div>
+                        <td className="px-2 py-1 md:px-6 md:py-4">
+                          <div className="font-black text-gray-800 text-[8px] md:text-sm uppercase tracking-tighter truncate max-w-[100px] md:max-w-none">{e.student_name}</div>
+                          <div className="text-[6px] md:text-xs text-gray-400 font-bold truncate max-w-[100px] md:max-w-none leading-none">{e.student_email}</div>
                         </td>
                         {['q1','q2','q3','q4'].map(q => (
-                          <td key={q} className="px-1.5 py-2 md:px-6 md:py-4 text-center text-[9px] md:text-sm font-bold text-gray-600">
+                          <td key={q} className="px-1 py-1 md:px-6 md:py-4 text-center text-[8px] md:text-sm font-bold text-gray-600">
                             {e[q] ?? <span className="text-gray-300">—</span>}
                           </td>
                         ))}
-                        <td className="px-1.5 py-2 md:px-6 md:py-4 text-center">
+                        <td className="px-1 py-1 md:px-6 md:py-4 text-center">
                           {remarks ? (
-                            <span className={`inline-flex items-center justify-center min-w-[20px] md:min-w-[32px] px-1.5 py-0.5 rounded-full text-[8px] md:text-xs font-black shadow-inner ${remarks.color}`}>
+                            <span className={`inline-flex items-center justify-center min-w-[18px] md:min-w-[32px] px-1 py-0 rounded-full text-[7px] md:text-xs font-black shadow-inner ${remarks.color}`}>
                               {e.transmuted_average || e.gpa}
                             </span>
                           ) : (
-                            <span className="text-gray-300 text-[9px] md:text-sm">—</span>
+                            <span className="text-gray-300 text-[8px] md:text-sm">—</span>
                           )}
                         </td>
-                        <td className="px-3 py-2 md:px-6 md:py-4 text-center">
+                        <td className="px-2 py-1 md:px-6 md:py-4 text-center">
                           <button
                             onClick={() => handleRemove(e)}
-                            className="p-1 md:px-3 md:py-1.5 text-[8px] md:text-xs font-black text-red-700 bg-red-100 hover:bg-red-200 rounded md:rounded-lg transition-all active:scale-90 uppercase tracking-widest"
+                            className="p-0.5 md:px-3 md:py-1.5 text-[7px] md:text-xs font-black text-red-700 bg-red-100 hover:bg-red-200 rounded transition-all active:scale-90 uppercase tracking-widest"
                           >
                             Rem
                           </button>
