@@ -127,22 +127,22 @@ const StudentEnrollment = () => {
   };
 
   return (
-    <div className="overflow-y-auto h-[calc(100vh-4rem)] p-6">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-800">Student Enrollment</h1>
-        <p className="text-gray-500 mt-1">Manage student enrollment per classroom</p>
+    <div className="overflow-y-auto h-[calc(100vh-4rem)] p-1.5 md:p-6 space-y-2 md:space-y-6 bg-gray-50/50 max-w-full overflow-x-hidden">
+      <div className="mb-2 md:mb-6 text-center md:text-left">
+        <h1 className="text-lg md:text-3xl font-black text-gray-800 tracking-tight uppercase">Student Enrollment</h1>
+        <p className="text-gray-500 text-[8px] md:text-base mt-0.5 font-medium uppercase tracking-widest">Enroll students per classroom</p>
       </div>
 
       {/* Classroom picker */}
-      <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-5 mb-5">
-        <label className="block text-sm font-semibold text-gray-700 mb-2">Select Classroom</label>
+      <div className={`bg-white border border-gray-200 rounded-xl shadow-sm p-3 md:p-5 transition-all duration-300 ${selectedClassroom ? 'mb-2 md:mb-5' : 'mb-5'}`}>
+        <label className="block text-[10px] md:text-sm font-black text-gray-700 mb-1 md:mb-2 uppercase tracking-widest">Select Classroom</label>
         {loading ? (
-          <div className="h-10 bg-gray-100 rounded-lg animate-pulse" />
+          <div className="h-8 md:h-10 bg-gray-100 rounded-lg animate-pulse" />
         ) : (
           <select
             value={selectedClassroom}
             onChange={e => setSelectedClassroom(e.target.value)}
-            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm"
+            className="w-full px-3 py-1.5 md:px-4 md:py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-purple-500 text-[10px] md:text-sm font-bold shadow-inner uppercase tracking-wider"
           >
             <option value="">— Choose a classroom —</option>
             {sortedClassrooms.map(c => (
@@ -154,39 +154,39 @@ const StudentEnrollment = () => {
 
       {/* Enrollments table */}
       {selectedClassroom && (
-        <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
-          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-            <h2 className="font-semibold text-gray-800">
-              Enrolled Students
-              <span className="ml-2 text-sm font-normal text-gray-400">({enrollments.length})</span>
+        <div className="bg-white border border-gray-200 rounded-lg md:rounded-xl shadow-sm overflow-hidden min-w-0">
+          <div className="flex items-center justify-between px-3 py-1.5 md:px-6 md:py-4 border-b border-gray-100 bg-[#2D1B4D] text-white">
+            <h2 className="font-black text-[10px] md:text-base uppercase tracking-tight">
+              Enrolled
+              <span className="ml-2 text-[8px] md:text-sm font-bold text-white/60">({enrollments.length})</span>
             </h2>
             <button
               onClick={openModal}
-              className="flex items-center gap-1.5 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium py-2 px-3 rounded-lg transition-colors"
+              className="flex items-center gap-1 bg-purple-600 hover:bg-purple-700 text-white text-[8px] md:text-sm font-black py-1 px-2 md:py-2 md:px-3 rounded md:rounded-lg transition-all active:scale-95 uppercase tracking-widest"
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              <svg className="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
               </svg>
-              Enroll Student
+              Enroll
             </button>
           </div>
 
           {enrollments.length === 0 ? (
-            <div className="text-center py-12 text-gray-400">
-              No students enrolled yet. Click "Enroll Student" to add students.
+            <div className="text-center py-8 md:py-12 text-gray-400 font-bold text-[10px] md:text-sm uppercase tracking-widest">
+              No students enrolled yet.
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
+            <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-200 max-w-full">
+              <table className="w-full min-w-[500px] md:min-w-full">
                 <thead className="bg-gray-50">
-                  <tr>
-                    <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Student</th>
-                    <th className="text-center px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Q1</th>
-                    <th className="text-center px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Q2</th>
-                    <th className="text-center px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Q3</th>
-                    <th className="text-center px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Q4</th>
-                    <th className="text-center px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Average</th>
-                    <th className="text-center px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
+                  <tr className="text-[7px] md:text-xs font-black text-gray-400 uppercase tracking-widest border-b border-gray-100">
+                    <th className="text-left px-3 py-1.5 md:px-6 md:py-3">Student</th>
+                    <th className="text-center px-1.5 py-1.5 md:px-6 md:py-3">Q1</th>
+                    <th className="text-center px-1.5 py-1.5 md:px-6 md:py-3">Q2</th>
+                    <th className="text-center px-1.5 py-1.5 md:px-6 md:py-3">Q3</th>
+                    <th className="text-center px-1.5 py-1.5 md:px-6 md:py-3">Q4</th>
+                    <th className="text-center px-1.5 py-1.5 md:px-6 md:py-3">AVG</th>
+                    <th className="text-center px-3 py-1.5 md:px-6 md:py-3">OPT</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
@@ -194,30 +194,30 @@ const StudentEnrollment = () => {
                     const remarks = getRemarksLabel(e.transmuted_average || e.gpa);
                     return (
                       <tr key={e.id} className="hover:bg-purple-50 transition-colors">
-                        <td className="px-6 py-4">
-                          <div className="font-semibold text-gray-800 text-sm">{e.student_name}</div>
-                          <div className="text-xs text-gray-400">{e.student_email}</div>
+                        <td className="px-3 py-2 md:px-6 md:py-4">
+                          <div className="font-black text-gray-800 text-[9px] md:text-sm uppercase tracking-tighter truncate max-w-[120px] md:max-w-none">{e.student_name}</div>
+                          <div className="text-[7px] md:text-xs text-gray-400 font-bold truncate max-w-[120px] md:max-w-none">{e.student_email}</div>
                         </td>
                         {['q1','q2','q3','q4'].map(q => (
-                          <td key={q} className="px-6 py-4 text-center text-sm text-gray-600">
+                          <td key={q} className="px-1.5 py-2 md:px-6 md:py-4 text-center text-[9px] md:text-sm font-bold text-gray-600">
                             {e[q] ?? <span className="text-gray-300">—</span>}
                           </td>
                         ))}
-                        <td className="px-6 py-4 text-center">
+                        <td className="px-1.5 py-2 md:px-6 md:py-4 text-center">
                           {remarks ? (
-                            <span className={`px-2 py-1 rounded-full text-xs font-semibold ${remarks.color}`}>
+                            <span className={`inline-flex items-center justify-center min-w-[20px] md:min-w-[32px] px-1.5 py-0.5 rounded-full text-[8px] md:text-xs font-black shadow-inner ${remarks.color}`}>
                               {e.transmuted_average || e.gpa}
                             </span>
                           ) : (
-                            <span className="text-gray-300 text-sm">—</span>
+                            <span className="text-gray-300 text-[9px] md:text-sm">—</span>
                           )}
                         </td>
-                        <td className="px-6 py-4 text-center">
+                        <td className="px-3 py-2 md:px-6 md:py-4 text-center">
                           <button
                             onClick={() => handleRemove(e)}
-                            className="px-3 py-1.5 text-xs font-medium text-red-700 bg-red-100 hover:bg-red-200 rounded-lg transition-colors"
+                            className="p-1 md:px-3 md:py-1.5 text-[8px] md:text-xs font-black text-red-700 bg-red-100 hover:bg-red-200 rounded md:rounded-lg transition-all active:scale-90 uppercase tracking-widest"
                           >
-                            Remove
+                            Rem
                           </button>
                         </td>
                       </tr>
@@ -232,58 +232,58 @@ const StudentEnrollment = () => {
 
       {/* Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100] p-4">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md">
-            <div className="flex items-center justify-between p-6 border-b border-gray-100">
-              <h2 className="text-xl font-bold text-gray-800">Enroll Student</h2>
-              <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-gray-600">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[100] p-2 md:p-4 animate-in fade-in duration-300">
+          <div className="bg-white rounded-xl md:rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-300">
+            <div className="flex items-center justify-between p-4 md:p-6 border-b border-gray-100 bg-gray-50/50">
+              <h2 className="text-base md:text-xl font-black text-gray-800 uppercase tracking-tight">Enroll Student</h2>
+              <button onClick={() => setShowModal(false)} className="p-1.5 hover:bg-white rounded-full transition-all text-gray-400 hover:text-gray-600 shadow-sm">
+                <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             </div>
-            <form onSubmit={handleSubmit} className="p-6 space-y-4">
+            <form onSubmit={handleSubmit} className="p-4 md:p-6 space-y-3 md:space-y-4">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                <label className="block text-[10px] md:text-sm font-black text-gray-700 mb-1.5 uppercase tracking-widest">
                   Select Student
-                  <span className="ml-2 text-xs font-normal text-gray-400">
+                  <span className="ml-2 text-[8px] md:text-xs font-bold text-gray-400 lowercase tracking-normal">
                     ({filteredStudents.length} available)
                   </span>
                 </label>
 
                 {/* Search */}
                 <div className="relative mb-2">
-                  <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-3 h-3 md:w-4 md:h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                   </svg>
                   <input
                     type="text"
-                    placeholder="Search by name or email..."
+                    placeholder="Search name or email..."
                     value={studentSearch}
                     onChange={e => setStudentSearch(e.target.value)}
-                    className="w-full pl-9 pr-9 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm"
+                    className="w-full pl-9 pr-9 py-1.5 md:py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-purple-500 text-[10px] md:text-sm font-bold shadow-inner uppercase tracking-wider"
                   />
                   {studentSearch && (
                     <button type="button" onClick={() => setStudentSearch('')}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1">
+                      <svg className="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
                       </svg>
                     </button>
                   )}
                 </div>
 
                 {/* Student card list */}
-                <div className="border border-gray-200 rounded-xl overflow-hidden">
+                <div className="border border-gray-200 rounded-lg md:rounded-xl overflow-hidden shadow-sm">
                   {filteredStudents.length === 0 ? (
-                    <div className="py-8 text-center text-gray-400 text-sm">
-                      <svg className="w-8 h-8 mx-auto mb-2 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <div className="py-6 md:py-8 text-center text-gray-400 text-[10px] md:text-sm font-bold uppercase tracking-widest">
+                      <svg className="w-6 h-6 md:w-8 md:h-8 mx-auto mb-2 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
                       </svg>
-                      {studentSearch ? 'No students match your search' : 'All students are already enrolled'}
+                      {studentSearch ? 'No matches' : 'All enrolled'}
                     </div>
                   ) : (
-                    <div className="max-h-56 overflow-y-auto divide-y divide-gray-100">
+                    <div className="max-h-40 md:max-h-56 overflow-y-auto divide-y divide-gray-100 scrollbar-thin scrollbar-thumb-gray-200">
                       {filteredStudents.map(s => {
                         const fullName = s.first_name && s.last_name
                           ? `${s.first_name} ${s.last_name}`
@@ -295,14 +295,14 @@ const StudentEnrollment = () => {
                             key={s.id}
                             type="button"
                             onClick={() => setFormData({ ...formData, student: String(s.id) })}
-                            className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors border-l-4 ${
+                            className={`w-full flex items-center gap-2 md:gap-3 px-3 py-2 md:px-4 md:py-3 text-left transition-colors border-l-2 md:border-l-4 ${
                               isSelected
                                 ? 'bg-purple-50 border-purple-500'
                                 : 'hover:bg-gray-50 border-transparent'
                             }`}
                           >
                             {/* Avatar */}
-                            <div className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 ${
+                            <div className={`w-7 h-7 md:w-9 md:h-9 rounded md:rounded-lg flex items-center justify-center text-[8px] md:text-sm font-black flex-shrink-0 shadow-sm ${
                               isSelected
                                 ? 'bg-purple-600 text-white'
                                 : 'bg-gradient-to-br from-purple-400 to-indigo-500 text-white'
@@ -311,17 +311,17 @@ const StudentEnrollment = () => {
                             </div>
 
                             {/* Info */}
-                            <div className="flex-1 min-w-0">
-                              <div className={`text-sm font-semibold truncate ${isSelected ? 'text-purple-800' : 'text-gray-800'}`}>
+                            <div className="flex-1 min-w-0 leading-tight">
+                              <div className={`text-[9px] md:text-sm font-black truncate uppercase tracking-tighter ${isSelected ? 'text-purple-800' : 'text-gray-800'}`}>
                                 {fullName}
                               </div>
-                              <div className="text-xs text-gray-400 truncate">{s.email}</div>
+                              <div className="text-[7px] md:text-xs text-gray-400 truncate font-bold">{s.email}</div>
                             </div>
 
                             {/* Checkmark */}
                             {isSelected && (
-                              <svg className="flex-shrink-0 w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                              <svg className="flex-shrink-0 w-3 h-3 md:w-5 md:h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
                               </svg>
                             )}
                           </button>
@@ -333,33 +333,31 @@ const StudentEnrollment = () => {
 
                 {/* Selected confirmation */}
                 {formData.student && (
-                  <div className="mt-2 flex items-center gap-2 text-xs text-purple-700 bg-purple-50 border border-purple-200 rounded-lg px-3 py-2">
-                    <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  <div className="mt-1.5 flex items-center gap-1.5 text-[8px] md:text-xs text-purple-700 bg-purple-50 border border-purple-200 rounded-md md:rounded-lg px-2 py-1 md:px-3 md:py-2 font-bold uppercase tracking-widest">
+                    <svg className="w-2.5 h-2.5 md:w-3.5 md:h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
                     </svg>
-                    Selected: <strong className="ml-1">
+                    Selected: <span className="ml-1 truncate">
                       {(() => {
                         const s = students.find(s => String(s.id) === String(formData.student));
                         return s ? (s.first_name && s.last_name ? `${s.first_name} ${s.last_name}` : s.username) : '';
                       })()}
-                    </strong>
+                    </span>
                   </div>
                 )}
-
-                <p className="text-xs text-gray-400 mt-1.5">Already-enrolled students are hidden from this list.</p>
               </div>
-              <div className="flex gap-3 pt-2">
+              <div className="flex gap-2 md:gap-3 pt-1 md:pt-2">
                 <button
                   type="submit"
                   disabled={saving}
-                  className="flex-1 bg-purple-600 hover:bg-purple-700 disabled:opacity-60 text-white font-medium py-2.5 rounded-lg transition-colors text-sm"
+                  className="flex-1 bg-purple-600 hover:bg-purple-700 disabled:opacity-60 text-white font-black py-2 md:py-2.5 rounded md:rounded-lg transition-all active:scale-95 text-[9px] md:text-sm uppercase tracking-widest"
                 >
                   {saving ? 'Enrolling...' : 'Enroll'}
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2.5 rounded-lg transition-colors text-sm"
+                  className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-black py-2 md:py-2.5 rounded md:rounded-lg transition-all active:scale-95 text-[9px] md:text-sm uppercase tracking-widest"
                 >
                   Cancel
                 </button>
