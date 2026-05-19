@@ -1099,9 +1099,9 @@ const Messages = () => {
                                   </svg>
                                 </button>
                                 {showReactionPicker === msg.id && (
-                                  <>
-                                    <div className="fixed inset-0 z-[90] bg-black/10 backdrop-blur-[1px]" onClick={() => setShowReactionPicker(null)} />
-                                    <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-white border border-slate-200 rounded-2xl shadow-2xl p-1.5 md:p-3 flex flex-row flex-nowrap items-center gap-1 md:gap-2 z-[100] animate-in fade-in zoom-in-95 duration-200 w-max max-w-[95vw]">
+                                  <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                                    <div className="absolute inset-0 bg-black/10 backdrop-blur-[1px]" onClick={() => setShowReactionPicker(null)} />
+                                    <div className="relative bg-white border border-slate-200 rounded-2xl shadow-2xl p-1.5 md:p-3 flex flex-row flex-nowrap items-center gap-1 md:gap-2 animate-in fade-in zoom-in-95 duration-200 w-max max-w-[95vw]">
                                       {COMMON_EMOJIS.map(emoji => (
                                         <button key={emoji} onClick={() => handleReactToMessage(msg.id, emoji)}
                                           className="w-8 h-8 md:w-12 md:h-12 flex items-center justify-center hover:bg-slate-50 rounded-xl transition-all text-xl md:text-3xl active:scale-150 shrink-0">
@@ -1109,7 +1109,7 @@ const Messages = () => {
                                         </button>
                                       ))}
                                     </div>
-                                  </>
+                                  </div>
                                 )}
                               </div>
 
@@ -1135,9 +1135,9 @@ const Messages = () => {
                                 </button>
 
                                 {activeMoreMenu === msg.id && (
-                                  <>
-                                    <div className="fixed inset-0 z-[90] bg-black/10 backdrop-blur-[1px]" onClick={() => setActiveMoreMenu(null)} />
-                                    <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-48 bg-white border border-slate-200 rounded-2xl shadow-2xl overflow-hidden z-[100] animate-in fade-in zoom-in-95 duration-200">
+                                  <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                                    <div className="absolute inset-0 bg-black/10 backdrop-blur-[1px]" onClick={() => setActiveMoreMenu(null)} />
+                                    <div className="relative w-48 bg-white border border-slate-200 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
                                       <div className="py-2">
                                         <div className="px-4 py-2 border-b border-slate-50 mb-1">
                                           <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Message Options</p>
@@ -1177,7 +1177,7 @@ const Messages = () => {
                                         )}
                                       </div>
                                     </div>
-                                  </>
+                                  </div>
                                 )}
                               </div>
                             </div>
