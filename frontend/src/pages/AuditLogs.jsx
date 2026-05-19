@@ -256,8 +256,8 @@ const AuditLogs = () => {
                   <th className="px-2 py-1.5 md:px-6 md:py-4">USER</th>
                   <th className="px-2 py-1.5 md:px-6 md:py-4">ACTION</th>
                   <th className="px-2 py-1.5 md:px-6 md:py-4">DESC</th>
-                  <th className="px-2 py-1.5 md:px-6 md:py-4">MODEL</th>
-                  <th className="px-2 py-1.5 md:px-6 md:py-4">IP</th>
+                  <th className="hidden md:table-cell px-2 py-1.5 md:px-6 md:py-4">MODEL</th>
+                  <th className="hidden md:table-cell px-2 py-1.5 md:px-6 md:py-4">IP</th>
                   <th className="px-2 py-1.5 md:px-6 md:py-4 text-center">OPT</th>
                 </tr>
               </thead>
@@ -297,12 +297,12 @@ const AuditLogs = () => {
                     <td className="px-2 py-1 md:px-6 md:py-4 font-medium text-gray-600 max-w-[60px] md:max-w-xs truncate text-[8px] md:text-sm" title={log.description}>
                       {log.description}
                     </td>
-                    <td className="px-2 py-1 md:px-6 md:py-4">
+                    <td className="hidden md:table-cell px-2 py-1 md:px-6 md:py-4">
                       <span className="text-[6px] md:text-[10px] font-black text-gray-400 bg-gray-100 px-1 py-0.5 rounded-full uppercase tracking-widest">
                         {log.model_name || 'Sys'}
                       </span>
                     </td>
-                    <td className="px-2 py-1 md:px-6 md:py-4 font-mono text-[7px] md:text-xs text-gray-400">
+                    <td className="hidden md:table-cell px-2 py-1 md:px-6 md:py-4 font-mono text-[7px] md:text-xs text-gray-400">
                       {log.ip_address || '—'}
                     </td>
                     <td className="px-2 py-1 md:px-6 md:py-4 text-center">
