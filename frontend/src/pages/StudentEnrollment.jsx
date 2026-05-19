@@ -158,7 +158,7 @@ const StudentEnrollment = () => {
           <div className="flex items-center justify-between px-2 py-1 md:px-6 md:py-4 border-b border-gray-100 bg-[#2D1B4D]">
             <h2 className="font-black text-[9px] md:text-base uppercase tracking-tight text-white flex items-center gap-1">
               ENROLLED
-              <span className="text-[7px] md:text-sm font-bold text-white/70">({enrollments.length})</span>
+              <span className="text-[7px] md:text-sm font-bold text-white">({enrollments.length})</span>
             </h2>
             <button
               onClick={openModal}
