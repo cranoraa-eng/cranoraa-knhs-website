@@ -146,20 +146,20 @@ const WebsiteContentManagement = () => {
   }
 
   return (
-    <div className="p-4 md:p-6 bg-gray-50 min-h-full">
+    <div className="p-4 md:p-6 bg-gray-50 min-h-full max-w-full overflow-x-hidden">
       {/* Header */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-8 gap-6">
-        <div className="text-center lg:text-left">
-          <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 tracking-tight">Mini Website Editor</h1>
-          <p className="text-sm md:text-base text-gray-500 mt-1">Customize your public portal's content</p>
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-8 gap-6 min-w-0">
+        <div className="text-center lg:text-left min-w-0">
+          <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 tracking-tight truncate">Mini Website Editor</h1>
+          <p className="text-sm md:text-base text-gray-500 mt-1 truncate">Customize your public portal's content</p>
         </div>
         
-        <div className="flex flex-col sm:flex-row gap-3">
+        <div className="flex flex-col sm:flex-row gap-3 shrink-0">
           <button
             onClick={() => setShowAddModal(true)}
-            className="flex items-center justify-center bg-purple-600 hover:bg-purple-700 text-white font-bold py-2.5 px-5 rounded-xl transition-all shadow-lg shadow-purple-200 active:scale-95 text-sm md:text-base"
+            className="flex items-center justify-center bg-purple-600 hover:bg-purple-700 text-white font-bold py-2.5 px-5 rounded-xl transition-all shadow-lg shadow-purple-200 active:scale-95 text-sm md:text-base whitespace-nowrap"
           >
-            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5 mr-2 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
             Add New Content
@@ -168,9 +168,9 @@ const WebsiteContentManagement = () => {
             href="/"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center justify-center bg-white border border-gray-200 text-gray-700 font-bold py-2.5 px-5 rounded-xl hover:bg-gray-50 transition-all shadow-sm active:scale-95 text-sm md:text-base"
+            className="flex items-center justify-center bg-white border border-gray-200 text-gray-700 font-bold py-2.5 px-5 rounded-xl hover:bg-gray-50 transition-all shadow-sm active:scale-95 text-sm md:text-base whitespace-nowrap"
           >
-            <svg className="w-5 h-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5 mr-2 text-blue-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
             </svg>
@@ -180,7 +180,7 @@ const WebsiteContentManagement = () => {
       </div>
 
       {/* Search and Filters */}
-      <div className="bg-white p-3 md:p-4 rounded-2xl shadow-sm border border-gray-100 mb-8 flex flex-col gap-4">
+      <div className="bg-white p-3 md:p-4 rounded-2xl shadow-sm border border-gray-100 mb-8 flex flex-col gap-4 min-w-0">
         <div className="relative w-full">
           <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
             <svg className="h-4 w-4 md:h-5 md:w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -195,12 +195,12 @@ const WebsiteContentManagement = () => {
             className="block w-full pl-9 pr-3 py-2 md:py-2.5 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:ring-2 focus:ring-purple-500 transition-all text-sm"
           />
         </div>
-        <div className="flex overflow-x-auto gap-2 no-scrollbar pb-1 -mx-1 px-1">
+        <div className="flex overflow-x-auto gap-2 scrollbar-none pb-1 -mx-1 px-1 min-w-0">
           {categories.map((cat) => (
             <button
               key={cat.id}
               onClick={() => setActiveCategory(cat.id)}
-              className={`flex items-center whitespace-nowrap px-3 py-1.5 md:px-4 md:py-2 rounded-xl text-xs md:text-sm font-bold transition-all ${
+              className={`flex items-center whitespace-nowrap px-3 py-1.5 md:px-4 md:py-2 rounded-xl text-xs md:text-sm font-bold transition-all shrink-0 ${
                 activeCategory === cat.id ? 'bg-purple-100 text-purple-700 ring-1 ring-purple-300' : 'bg-white text-gray-500 hover:bg-gray-50 border border-gray-100'
               }`}
             >
@@ -251,8 +251,8 @@ const WebsiteContentManagement = () => {
                       </div>
                     </div>
                     
-                    <div className="p-4 md:p-6 flex-grow">
-                      <div className="space-y-3 md:space-y-4">
+                    <div className="p-4 md:p-6 flex-grow min-w-0">
+                      <div className="space-y-3 md:space-y-4 min-w-0">
                         <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest">Text Content</label>
                         {editingId === item.id ? (
                           <textarea
@@ -262,7 +262,7 @@ const WebsiteContentManagement = () => {
                             rows={6}
                           />
                         ) : (
-                          <p className="text-gray-600 text-xs md:text-sm whitespace-pre-wrap leading-relaxed min-h-[80px]">{item.content || <span className="text-gray-300 italic">No text</span>}</p>
+                          <p className="text-gray-600 text-xs md:text-sm whitespace-pre-wrap break-words leading-relaxed min-h-[80px]">{item.content || <span className="text-gray-300 italic">No text</span>}</p>
                         )}
                       </div>
                     </div>
