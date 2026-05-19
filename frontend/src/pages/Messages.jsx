@@ -903,11 +903,11 @@ const Messages = () => {
       </div>
 
       {/* ── Main Chat Area ── */}
-      <div className={`${selectedRoom ? 'flex' : 'hidden md:flex'} flex-1 flex-col bg-white min-w-0`}>
+      <div className={`${selectedRoom ? 'flex' : 'hidden md:flex'} flex-1 flex-col bg-white min-w-0 overflow-x-hidden`}>
         {selectedRoom ? (
           <>
             {/* Chat Header */}
-            <div className="p-3 md:p-4 border-b border-slate-100 flex items-center justify-between bg-white/80 backdrop-blur-md sticky top-0 z-10 gap-2 min-w-0">
+            <div className="p-2 md:p-4 border-b border-slate-100 flex items-center justify-between bg-white/80 backdrop-blur-md sticky top-0 z-10 gap-1 md:gap-2 min-w-0 overflow-hidden">
               <div className="flex items-center gap-2 md:gap-3 min-w-0">
                 {/* Back button for mobile */}
                 <button
@@ -1032,7 +1032,7 @@ const Messages = () => {
                   const isEditing  = editingMessage?.id === msg.id;
 
                   return (
-                    <div key={msg.id} className={`flex ${isMine ? 'justify-end' : 'justify-start'} items-end gap-2 group`}>
+                    <div key={msg.id} className={`flex ${isMine ? 'justify-end' : 'justify-start'} items-end gap-2 group overflow-hidden md:overflow-visible`}>
                       {/* Avatar for other person */}
                       {!isMine && (
                         <div className={`w-8 h-8 rounded-lg shrink-0 flex items-center justify-center text-[10px] font-bold text-white shadow-sm ${showAvatar ? 'bg-gradient-to-br from-slate-400 to-slate-600' : 'opacity-0'}`}>
@@ -1040,7 +1040,7 @@ const Messages = () => {
                         </div>
                       )}
 
-                      <div className="max-w-[85%] md:max-w-[70%] flex flex-col">
+                      <div className="max-w-[85%] md:max-w-[70%] flex flex-col min-w-0">
                         {/* Sender name for group chats */}
                         {!isMine && showAvatar && selectedRoom.is_group && (
                           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1 mb-0.5">{msg.sender_name}</span>
@@ -1151,7 +1151,7 @@ const Messages = () => {
                             </div>
 
                             {/* Bubble */}
-                            <div id={`msg-${msg.id}`} className={`px-4 py-2.5 rounded-2xl text-sm font-medium shadow-sm relative transition-all duration-500 break-words whitespace-pre-wrap ${
+                            <div id={`msg-${msg.id}`} className={`px-4 py-2.5 rounded-2xl text-sm font-medium shadow-sm relative transition-all duration-500 break-all md:break-words whitespace-pre-wrap max-w-full ${
                               isMine
                                 ? 'bg-violet-600 text-white rounded-br-none'
                                 : 'bg-white text-slate-700 border border-slate-100 rounded-bl-none'
@@ -1228,7 +1228,7 @@ const Messages = () => {
             )}
 
             {/* Message Input */}
-            <div className="p-3 md:p-4 bg-white border-t border-slate-100">
+            <div className="p-2 md:p-4 bg-white border-t border-slate-100 overflow-hidden">
               {/* Reply Preview */}
               {replyingTo && (
                 <div className="mb-2 flex items-center justify-between bg-slate-50 border-l-4 border-violet-500 p-2 rounded-r-xl animate-in slide-in-from-bottom-2">
