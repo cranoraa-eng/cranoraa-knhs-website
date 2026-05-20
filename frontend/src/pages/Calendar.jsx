@@ -1,10 +1,33 @@
 import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import api from '../utils/api';
 
 const Calendar = () => {
+  const location = useLocation();
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [currentMonth, setCurrentMonth] = useState(new Date());
+  
+  // Parse year and month from URL if present
+  const queryParams = new URLSearchParams(location.search);
+  const initialYear = parseInt(queryParams.get('year')) || new Date().getFullYear();
+  const initialMonth = (parseInt(queryParams.get('month')) - 1) || new Date().getMonth();
+
+  const [currentMonth, setCurrentMonth] = useState(new Date(initialYear, initialMonth, 1));
+
+  useEffect(() => {
+    // If URL changes, update currentMonth
+    const qParams = new URLSearchParams(location.search);
+    const y = parseInt(qParams.get('year'));
+    const m = parseInt(qParams.get('month'));
+    
+    if (y && m) {
+      const newDate = new Date(y, m - 1, 1);
+      // Only update if it's different to avoid loops
+      if (newDate.getMonth() !== currentMonth.getMonth() || newDate.getFullYear() !== currentMonth.getFullYear()) {
+        setCurrentMonth(newDate);
+      }
+    }
+  }, [location.search]);
 
   useEffect(() => {
     fetchEvents();

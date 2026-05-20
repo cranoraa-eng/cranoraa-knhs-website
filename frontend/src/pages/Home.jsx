@@ -47,7 +47,18 @@ const Home = () => {
     .slice(0, 2);
   
   const upcomingEvents = announcements
-    .filter(a => a.category === 'events')
+    .filter(a => a.category === 'events' && (a.event_date || a.created_at))
+    .sort((a, b) => {
+      const dateA = new Date(a.event_date || a.created_at);
+      const dateB = new Date(b.event_date || b.created_at);
+      return dateA - dateB;
+    })
+    .filter(a => {
+      const eventDate = new Date(a.event_date || a.created_at);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      return eventDate >= today;
+    })
     .slice(0, 4);
 
   const getCategoryColor = (category) => {
@@ -395,15 +406,21 @@ const Home = () => {
                   upcomingEvents.map((event) => {
                     const imageUrl = getFirstImage(event);
                     const pdfs = getPDFs(event);
+                    const eventDate = new Date(event.event_date || event.created_at);
+                    
                     return (
-                      <div key={event.id} className="group p-6 rounded-3xl bg-white border border-slate-100 hover:border-violet-100 hover:shadow-xl transition-all duration-300">
+                      <Link 
+                        to={`/calendar?year=${eventDate.getFullYear()}&month=${eventDate.getMonth() + 1}`}
+                        key={event.id} 
+                        className="group p-6 rounded-3xl bg-white border border-slate-100 hover:border-violet-100 hover:shadow-xl transition-all duration-300 block"
+                      >
                         <div className="flex items-start space-x-4">
                           <div className="flex-shrink-0 w-12 h-12 rounded-2xl bg-violet-50 flex flex-col items-center justify-center border border-violet-100">
                             <span className="text-[10px] font-black text-violet-400 uppercase leading-none">
-                              {new Date(event.event_date || event.created_at).toLocaleString('en-US', { month: 'short' })}
+                              {eventDate.toLocaleString('en-US', { month: 'short' })}
                             </span>
                             <span className="text-lg font-black text-violet-700 leading-tight">
-                              {new Date(event.event_date || event.created_at).getDate()}
+                              {eventDate.getDate()}
                             </span>
                           </div>
                           <div className="flex-grow min-w-0">
@@ -417,38 +434,34 @@ const Home = () => {
                             {imageUrl && (
                               <div className="relative mt-3 h-20 rounded-xl overflow-hidden border border-slate-50 group/event-img">
                                 <img src={imageUrl} alt={event.title} className="w-full h-full object-cover" />
-                                <button 
-                                  onClick={() => setZoomedImage(imageUrl)}
+                                <div 
                                   className="absolute inset-0 bg-black/20 opacity-0 group-hover/event-img:opacity-100 transition-opacity flex items-center justify-center"
                                 >
                                   <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                   </svg>
-                                </button>
+                                </div>
                               </div>
                             )}
 
                             {pdfs.length > 0 && (
                               <div className="mt-2 flex flex-wrap gap-2">
                                 {pdfs.map((pdf, idx) => (
-                                  <a 
+                                  <span 
                                     key={idx}
-                                    href={pdf.url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-[9px] font-black text-red-500 uppercase tracking-tighter hover:underline flex items-center"
+                                    className="text-[9px] font-black text-red-500 uppercase tracking-tighter flex items-center"
                                   >
                                     <svg className="w-2.5 h-2.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                                     </svg>
                                     PDF
-                                  </a>
+                                  </span>
                                 ))}
                               </div>
                             )}
                           </div>
                         </div>
-                      </div>
+                      </Link>
                     );
                   })
                 ) : (
