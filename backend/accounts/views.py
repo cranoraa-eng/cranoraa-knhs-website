@@ -82,6 +82,7 @@ If you did not request this code, you can safely ignore this email.
         logger.error(f"Error sending OTP email: {str(e)}")
         return False
 
+@csrf_exempt
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def login_view(request):
@@ -143,6 +144,7 @@ def login_view(request):
         )
 
 
+@csrf_exempt
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def register_view(request):
@@ -317,6 +319,7 @@ def resend_otp_view(request):
         return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
 
 
+@csrf_exempt
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def verify_email_token_view(request):
@@ -341,6 +344,7 @@ def verify_email_token_view(request):
         return Response({'error': 'Invalid or expired token'}, status=status.HTTP_400_BAD_REQUEST)
 
 
+@csrf_exempt
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def resend_verification_email_view(request):
@@ -366,6 +370,7 @@ def resend_verification_email_view(request):
         return Response({'message': 'If an account exists with this email, a verification link has been sent.'})
 
 
+@csrf_exempt
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def password_reset_request_view(request):
@@ -404,6 +409,7 @@ If you did not request this, you can safely ignore this email.
         return Response({'message': 'If an account exists with this email, a reset link has been sent.'})
 
 
+@csrf_exempt
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def password_reset_confirm_view(request):
