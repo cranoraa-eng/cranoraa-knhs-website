@@ -21,9 +21,19 @@ const MiniCalendar = ({ events, onSelectDay }) => {
   const eventDays = useMemo(() => {
     const map = {};
     events.forEach(e => {
-      const d = new Date(e.event_date || e.created_at);
-      if (d.getMonth() === currentDate.getMonth() && d.getFullYear() === currentDate.getFullYear()) {
-        map[d.getDate()] = (map[d.getDate()] || 0) + 1;
+      const start = new Date(e.event_date || e.created_at);
+      const end = e.end_date ? new Date(e.end_date) : start;
+      
+      let curr = new Date(start);
+      curr.setHours(0,0,0,0);
+      const last = new Date(end);
+      last.setHours(0,0,0,0);
+      
+      while (curr <= last) {
+        if (curr.getMonth() === currentDate.getMonth() && curr.getFullYear() === currentDate.getFullYear()) {
+          map[curr.getDate()] = (map[curr.getDate()] || 0) + 1;
+        }
+        curr.setDate(curr.getDate() + 1);
       }
     });
     return map;
@@ -98,9 +108,15 @@ const Home = () => {
 
   const handleSelectDay = (day) => {
     const today = new Date();
+    const targetDate = new Date(today.getFullYear(), today.getMonth(), day);
+    targetDate.setHours(0,0,0,0);
+
     const dayEvents = announcements.filter(a => {
-      const d = new Date(a.event_date || a.created_at);
-      return d.getDate() === day && d.getMonth() === today.getMonth() && d.getFullYear() === today.getFullYear();
+      const start = new Date(a.event_date || a.created_at);
+      start.setHours(0,0,0,0);
+      const end = a.end_date ? new Date(a.end_date) : start;
+      end.setHours(0,0,0,0);
+      return targetDate >= start && targetDate <= end;
     });
     setSelectedDateEvents(dayEvents);
     setSelectedDayLabel(day);
@@ -143,10 +159,11 @@ const Home = () => {
       return dateA - dateB;
     })
     .filter(a => {
-      const eventDate = new Date(a.event_date || a.created_at);
+      const start = new Date(a.event_date || a.created_at);
+      const end = a.end_date ? new Date(a.end_date) : start;
       const today = new Date();
       today.setHours(0, 0, 0, 0);
-      return eventDate >= today;
+      return end >= today;
     })
     .slice(0, 4);
 
@@ -218,7 +235,7 @@ const Home = () => {
   }
 
   return (
-    <div className="min-h-screen bg-white overflow-hidden">
+    <div className="min-h-screen bg-white">
       {/* Hero Section */}
       <section className="relative min-h-[70vh] md:min-h-[90vh] flex items-center pt-12 md:pt-20 overflow-hidden">
         {/* Abstract Background Shapes */}

@@ -386,6 +386,7 @@ class Announcement(models.Model):
     is_pinned = models.BooleanField(default=False)
     is_public = models.BooleanField(default=False)
     event_date = models.DateTimeField(null=True, blank=True)
+    end_date = models.DateTimeField(null=True, blank=True)
     attachment = models.FileField(upload_to='announcements/attachments/', null=True, blank=True)
     read_by = models.ManyToManyField(User, related_name='read_announcements', blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -400,8 +401,9 @@ class Announcement(models.Model):
     @property
     def is_expired(self):
         from django.utils import timezone
-        if self.event_date:
-            return timezone.now() > self.event_date
+        compare_date = self.end_date if self.end_date else self.event_date
+        if compare_date:
+            return timezone.now() > compare_date
         return False
 
 

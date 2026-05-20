@@ -22,7 +22,7 @@ const STATUS_CONFIG = {
 const EMPTY_FORM = {
   title: '', category: 'general', priority: 'info', status: 'live',
   target_audience: 'all', content: '', is_pinned: false, is_public: false,
-  event_date: '', attachments: [],
+  event_date: '', end_date: '', attachments: [],
 };
 
 const Announcements = () => {
@@ -71,7 +71,7 @@ const Announcements = () => {
     setSelected(a);
     setForm({ title: a.title, category: a.category, priority: a.priority, status: a.status,
       target_audience: a.target_audience, content: a.content, is_pinned: a.is_pinned,
-      is_public: a.is_public, event_date: a.event_date || '', attachments: [] });
+      is_public: a.is_public, event_date: a.event_date || '', end_date: a.end_date || '', attachments: [] });
     setIsEditing(true);
     setShowModal(true);
   };
@@ -87,7 +87,7 @@ const Announcements = () => {
           if (v && v.length > 0) {
             v.forEach(file => fd.append('attachments', file));
           }
-        } else if (k === 'event_date') {
+        } else if (k === 'event_date' || k === 'end_date') {
           if (v && v.trim() !== '') fd.append(k, v);
         } else if (v !== null && v !== undefined) {
           fd.append(k, v);
@@ -386,18 +386,26 @@ const Announcements = () => {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Event Calendar Date</label>
+                  <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Event Start Date</label>
                   <input type="datetime-local" value={form.event_date}
                     onChange={e => setForm(f => ({ ...f, event_date: e.target.value }))}
                     className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm" />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Attachments</label>
-                  <input type="file" accept=".jpg,.jpeg,.png,.gif,.webp,.pdf" multiple
-                    onChange={e => setForm(f => ({ ...f, attachments: Array.from(e.target.files) }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" />
-                  
-                  {/* Show files currently being selected for upload */}
+                  <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Event End Date (Optional)</label>
+                  <input type="datetime-local" value={form.end_date}
+                    onChange={e => setForm(f => ({ ...f, end_date: e.target.value }))}
+                    className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm" />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Attachments</label>
+                <input type="file" accept=".jpg,.jpeg,.png,.gif,.webp,.pdf" multiple
+                  onChange={e => setForm(f => ({ ...f, attachments: Array.from(e.target.files) }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                
+                {/* Show files currently being selected for upload */}
                   {form.attachments && form.attachments.length > 0 && (
                     <div className="mt-2 space-y-1">
                       <p className="text-[10px] font-bold text-purple-600 uppercase tracking-tight">New files to upload:</p>
@@ -495,7 +503,15 @@ const Announcements = () => {
                 <span>By {selected.author_name || 'Admin'}</span>
                 <span>·</span>
                 <span>{new Date(selected.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
-                {selected.event_date && <><span>·</span><span>Event Date {new Date(selected.event_date).toLocaleDateString()}</span></>}
+                {selected.event_date && (
+                  <>
+                    <span>·</span>
+                    <span>
+                      Event: {new Date(selected.event_date).toLocaleDateString()}
+                      {selected.end_date && ` - ${new Date(selected.end_date).toLocaleDateString()}`}
+                    </span>
+                  </>
+                )}
               </div>
               <div className="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap">{selected.content}</div>
 

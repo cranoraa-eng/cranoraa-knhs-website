@@ -64,10 +64,18 @@ const Calendar = () => {
     return days;
   };
 
-  const getEventForDay = (day) => {
-    if (!day) return null;
-    const dateStr = `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-    return events.find(event => event.date === dateStr);
+  const getEventsForDay = (day) => {
+    if (!day) return [];
+    const targetDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
+    targetDate.setHours(0, 0, 0, 0);
+    
+    return events.filter(event => {
+      const start = new Date(event.date);
+      start.setHours(0, 0, 0, 0);
+      const end = event.end_date ? new Date(event.end_date) : start;
+      end.setHours(0, 0, 0, 0);
+      return targetDate >= start && targetDate <= end;
+    });
   };
 
   const goToPreviousMonth = () => {
@@ -149,7 +157,7 @@ const Calendar = () => {
             </div>
             <div className="grid grid-cols-7 gap-1 md:gap-2">
               {days.map((day, index) => {
-                const event = getEventForDay(day);
+                const dayEvents = getEventsForDay(day);
                 const isToday = day === new Date().getDate() && 
                                 currentMonth.getMonth() === new Date().getMonth() && 
                                 currentMonth.getFullYear() === new Date().getFullYear();
@@ -168,13 +176,13 @@ const Calendar = () => {
                         <span className={`text-[11px] md:text-sm font-black ${isToday ? 'text-violet-600' : 'text-slate-400 group-hover:text-slate-900'}`}>
                           {day}
                         </span>
-                        {event && (
-                          <div className="mt-1 md:mt-2">
-                            <div className="text-[7px] md:text-[10px] font-bold bg-violet-50 text-violet-700 p-1 md:p-1.5 rounded-md md:rounded-lg border border-violet-100 line-clamp-1 md:line-clamp-2 leading-tight">
+                        <div className="mt-1 space-y-1">
+                          {dayEvents.map((event, idx) => (
+                            <div key={idx} className="text-[7px] md:text-[10px] font-bold bg-violet-50 text-violet-700 p-1 md:p-1.5 rounded-md md:rounded-lg border border-violet-100 line-clamp-1 md:line-clamp-2 leading-tight">
                               {event.title}
                             </div>
-                          </div>
-                        )}
+                          ))}
+                        </div>
                       </>
                     )}
                   </div>

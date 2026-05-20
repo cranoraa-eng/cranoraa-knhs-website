@@ -2761,10 +2761,19 @@ def student_calendar_view(request):
         return Response({"error": "Invalid year or month"}, status=400)
     
     # Filter announcements that are live and have an event_date in the given month
+    from django.db.models import Q
+    from datetime import date
+    import calendar as py_calendar
+    
+    first_day = date(year, month, 1)
+    last_day_num = py_calendar.monthrange(year, month)[1]
+    last_day = date(year, month, last_day_num)
+
     announcements = Announcement.objects.filter(
-        status='live',
-        event_date__year=year,
-        event_date__month=month
+        status='live'
+    ).filter(
+        Q(event_date__date__lte=last_day) & 
+        (Q(end_date__date__gte=first_day) | Q(end_date__isnull=True, event_date__date__gte=first_day))
     )
     
     # Filter based on user role/authentication
@@ -2785,6 +2794,7 @@ def student_calendar_view(request):
             'title': a.title,
             'description': a.content[:100] + '...' if len(a.content) > 100 else a.content,
             'date': a.event_date.date().isoformat(),
+            'end_date': a.end_date.date().isoformat() if a.end_date else None,
             'type': 'announcement',
             'category': a.category
         })
