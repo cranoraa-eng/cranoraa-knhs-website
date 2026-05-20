@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
-// Fix for Vercel build error
 import api, { WS_ROOT } from '../utils/api';
 import { getUser } from '../utils/auth';
 import toast from 'react-hot-toast';
