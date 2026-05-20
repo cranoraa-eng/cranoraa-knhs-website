@@ -13,4 +13,3 @@ channels-redis
 gunicorn
 pillow
 resend
-django-resend
