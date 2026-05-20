@@ -16,6 +16,13 @@
   body {
     font-family: 'Inter', sans-serif;
     @apply text-slate-700 antialiased;
+    overflow-x: hidden;
+  }
+
+  /* Prevent double scrollbars */
+  html {
+    overflow-y: auto;
+    overflow-x: hidden;
   }
 
   #root {

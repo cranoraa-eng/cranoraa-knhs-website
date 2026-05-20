@@ -126,13 +126,13 @@ const Layout = () => {
     .replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-100 via-slate-50 to-violet-50/40">
-      <div className="flex items-stretch">
+    <div className="h-screen overflow-hidden bg-gradient-to-b from-slate-100 via-slate-50 to-violet-50/40">
+      <div className="flex h-full">
 
         {sidebarOpen && <div className="fixed inset-0 bg-black/50 z-40 lg:hidden" onClick={() => setSidebarOpen(false)} />}
 
         {/* ── Sidebar ── */}
-        <aside className={`fixed inset-y-0 left-0 z-50 flex h-screen w-64 transform flex-col overflow-hidden border-r border-white/10 bg-gradient-to-b from-[#25143f] via-[#2d1b4d] to-[#392062] text-white shadow-2xl transition-transform duration-300 ease-in-out lg:sticky lg:top-0 lg:h-screen ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
+        <aside className={`fixed inset-y-0 left-0 z-50 flex h-screen w-72 transform flex-col overflow-hidden border-r border-white/10 bg-[#2D1B4D] text-white shadow-2xl transition-transform duration-300 ease-in-out lg:static lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
 
           {/* Logo Section */}
           <div className="flex items-center gap-3 px-6 py-8">
@@ -408,7 +408,7 @@ const Layout = () => {
             </div>
           </header>
 
-          <div className="p-4 lg:p-8 relative z-10">
+          <div className="flex-1 overflow-y-auto p-4 lg:p-8 relative z-10">
             <div className="portal-page mx-auto w-full max-w-[1440px]">
               <Outlet />
             </div>
