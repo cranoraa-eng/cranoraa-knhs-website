@@ -82,9 +82,15 @@ def send_resend_otp_email(email, code, user_name, otp_type='signup'):
     </div>
     """
 
+    # Resend forbids sending FROM generic providers like gmail.com
+    from_email = settings.DEFAULT_FROM_EMAIL
+    if "@gmail.com" in from_email.lower():
+        from_email = "onboarding@resend.dev"
+        logger.warning(f"Detected Gmail in DEFAULT_FROM_EMAIL. Falling back to onboarding@resend.dev for Resend compatibility.")
+
     try:
         params = {
-            "from": settings.DEFAULT_FROM_EMAIL,
+            "from": from_email,
             "to": [email],
             "subject": f"KNHS Portal - {subject}",
             "html": html_content,
