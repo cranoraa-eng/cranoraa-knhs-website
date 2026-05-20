@@ -212,27 +212,17 @@ CSRF_TRUSTED_ORIGINS = os.environ.get(
     'http://localhost:5173,http://127.0.0.1:5173' # Default for local development
 ).split(',')
 
-# Email Configuration
-EMAIL_BACKEND = os.environ.get('EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')
-RESEND_API_KEY = os.environ.get('RESEND_API_KEY')
+# Email Configuration (Mailjet API)
+MAILJET_API_KEY = os.environ.get('MAILJET_API_KEY')
+MAILJET_SECRET_KEY = os.environ.get('MAILJET_SECRET_KEY')
+MAILJET_SENDER_EMAIL = os.environ.get('MAILJET_SENDER_EMAIL', 'noreply@knhsportal.dedyn.io')
 
-if not RESEND_API_KEY:
-    print("WARNING: RESEND_API_KEY is not set in environment variables!")
+if not MAILJET_API_KEY or not MAILJET_SECRET_KEY:
+    print("WARNING: MAILJET credentials are not fully set in environment variables!")
 else:
-    print(f"RESEND_API_KEY is loaded: {RESEND_API_KEY[:4]}...")
+    print(f"MAILJET API initialized with key: {MAILJET_API_KEY[:4]}...")
 
-DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'KNHS Portal <noreply@knhsportal.dedyn.io>')
-
-# SMTP Fallback (optional, if EMAIL_BACKEND is set to SMTP)
-EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
-EMAIL_PORT = int(os.environ.get('EMAIL_PORT', 465))
-EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
-EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
-EMAIL_USE_SSL = os.environ.get('EMAIL_USE_SSL', 'True').lower() in ('true', '1', 't')
-EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'False').lower() in ('true', '1', 't')
-EMAIL_TIMEOUT = 10
-
-DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'KNHS Portal <onboarding@resend.dev>')
+DEFAULT_FROM_EMAIL = MAILJET_SENDER_EMAIL
 
 # Media Files Configuration
 MEDIA_URL = '/media/'

@@ -12,4 +12,4 @@ django-axes
 channels-redis
 gunicorn
 pillow
-resend
+mailjet-rest

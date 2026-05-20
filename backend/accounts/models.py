@@ -578,7 +578,6 @@ class Notification(models.Model):
 # Signals for real-time notifications
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from django.core.mail import send_mail
 from django.conf import settings
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
@@ -587,8 +586,10 @@ from asgiref.sync import async_to_sync
 def send_announcement_email(sender, instance, created, **kwargs):
     """Send email to all users when a live announcement is created."""
     if created and instance.status == 'live':
+        from .utils import broadcast_mailjet_email
+        
         subject = f'New Announcement: {instance.title}'
-        message = f"""A new announcement has been posted on the KNHS Portal:
+        message_text = f"""A new announcement has been posted on the KNHS Portal:
 
 Title: {instance.title}
 Category: {instance.get_category_display()}
@@ -602,6 +603,17 @@ Log in to the portal to see more details:
 
 — KNHS School Portal
 """
+        message_html = f"""
+        <h3>New Announcement: {instance.title}</h3>
+        <p><strong>Category:</strong> {instance.get_category_display()}</p>
+        <p><strong>Priority:</strong> {instance.get_priority_display()}</p>
+        <hr/>
+        <p>{instance.content}</p>
+        <hr/>
+        <p>Log in to the portal to see more details: <a href="{settings.FRONTEND_URL}">{settings.FRONTEND_URL}</a></p>
+        <p>— KNHS School Portal</p>
+        """
+        
         # Determine target audience
         if instance.target_audience == 'all':
             recipients = User.objects.filter(is_active=True, is_verified=True).values_list('email', flat=True)
@@ -610,10 +622,15 @@ Log in to the portal to see more details:
         
         if recipients:
             try:
-                send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, list(recipients))
+                broadcast_mailjet_email(
+                    emails=list(recipients),
+                    subject=subject,
+                    message_html=message_html,
+                    message_text=message_text
+                )
             except Exception as e:
                 # We don't want to crash the save process if email fails
-                pass
+                logger.error(f"Failed to broadcast announcement email: {e}")
 
 @receiver(post_save, sender=Notification)
 def broadcast_notification(sender, instance, created, **kwargs):

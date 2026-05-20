@@ -21,12 +21,11 @@ import secrets
 logger = logging.getLogger(__name__)
 
 
-from django.core.mail import send_mail
 from django.conf import settings
 import random
 import string
 
-from .utils import create_otp, verify_otp_code, send_resend_otp_email
+from .utils import create_otp, verify_otp_code, send_mailjet_otp_email, send_mailjet_email
 
 @csrf_exempt
 @api_view(['POST'])
@@ -197,10 +196,10 @@ def register_view(request):
         
         profile.save()
         
-        # Send verification OTP via Resend
+        # Send verification OTP via Mailjet
         try:
             code = create_otp(user, otp_type='signup')
-            send_resend_otp_email(user.email, code, user.first_name or user.username, otp_type='signup')
+            send_mailjet_otp_email(user.email, code, user.first_name or user.username, otp_type='signup')
         except Exception as e:
             logger.error(f"Initial verification OTP failed for {user.email}: {e}")
             
@@ -259,7 +258,7 @@ def resend_otp_view(request):
             return Response({'message': 'Email is already verified'})
             
         code = create_otp(user, otp_type=otp_type)
-        if send_resend_otp_email(user.email, code, user.first_name or user.username, otp_type=otp_type):
+        if send_mailjet_otp_email(user.email, code, user.first_name or user.username, otp_type=otp_type):
             return Response({'message': f'A new verification code has been sent to {email}.'})
         else:
             return Response({'error': 'Failed to send email. Please try again later.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -337,7 +336,7 @@ def password_reset_request_view(request):
     try:
         user = User.objects.get(email=email)
         code = create_otp(user, otp_type='password_reset')
-        if send_resend_otp_email(user.email, code, user.first_name or user.username, otp_type='password_reset'):
+        if send_mailjet_otp_email(user.email, code, user.first_name or user.username, otp_type='password_reset'):
             return Response({'message': 'Password reset code sent to your email.'})
         else:
             return Response({'error': 'Failed to send email.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -647,12 +646,16 @@ class UserViewSet(viewsets.ModelViewSet):
 
             # Notify the user by email
             try:
-                send_mail(
-                    'Your KNHS Portal Account Has Been Approved',
-                    f'Hi {user.first_name or user.username},\n\nYour account has been approved by the administrator. You can now log in to the KNHS School Portal.\n\n— KNHS School Portal',
-                    settings.DEFAULT_FROM_EMAIL,
-                    [user.email],
-                    fail_silently=True
+                subject = 'Your KNHS Portal Account Has Been Approved'
+                message_text = f'Hi {user.first_name or user.username},\n\nYour account has been approved by the administrator. You can now log in to the KNHS School Portal.\n\n— KNHS School Portal'
+                message_html = f'<p>Hi {user.first_name or user.username},</p><p>Your account has been approved by the administrator. You can now log in to the KNHS School Portal.</p><p>— KNHS School Portal</p>'
+                
+                send_mailjet_email(
+                    email=user.email,
+                    subject=subject,
+                    message_html=message_html,
+                    message_text=message_text,
+                    user_name=user.first_name or user.username
                 )
             except Exception as e:
                 logger.error(f"Failed to send approval email: {e}")
@@ -692,12 +695,16 @@ class UserViewSet(viewsets.ModelViewSet):
 
             # Notify before deleting
             try:
-                send_mail(
-                    'Your KNHS Portal Account Registration',
-                    f'Hi {user.first_name or user.username},\n\n{reason}\n\nIf you believe this is a mistake, please contact the school administrator.\n\n— KNHS School Portal',
-                    settings.DEFAULT_FROM_EMAIL,
-                    [email],
-                    fail_silently=True
+                subject = 'Your KNHS Portal Account Registration'
+                message_text = f'Hi {user.first_name or user.username},\n\n{reason}\n\nIf you believe this is a mistake, please contact the school administrator.\n\n— KNHS School Portal'
+                message_html = f'<p>Hi {user.first_name or user.username},</p><p>{reason}</p><p>If you believe this is a mistake, please contact the school administrator.</p><p>— KNHS School Portal</p>'
+                
+                send_mailjet_email(
+                    email=email,
+                    subject=subject,
+                    message_html=message_html,
+                    message_text=message_text,
+                    user_name=user.first_name or user.username
                 )
             except Exception as e:
                 logger.error(f"Failed to send rejection email: {e}")
