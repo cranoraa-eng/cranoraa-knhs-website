@@ -147,7 +147,7 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen relative overflow-hidden flex items-center justify-center px-4 py-12">
+    <div className="min-h-screen relative overflow-hidden flex items-center justify-center px-4 py-8">
       {/* Mesh Gradient Background */}
       <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-purple-900 to-indigo-900">
         <div className="absolute inset-0 opacity-20">
@@ -157,25 +157,25 @@ const Login = () => {
         </div>
       </div>
 
-      <div className="relative w-full max-w-md rounded-[2.5rem] border border-white/10 bg-white/95 p-8 md:p-12 shadow-2xl backdrop-blur-xl">
+      <div className="relative w-full max-w-sm rounded-3xl border border-white/20 bg-white/95 p-6 md:p-8 shadow-2xl backdrop-blur-xl">
         {/* Header */}
-        <div className="text-center mb-10">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-white rounded-3xl mb-6 shadow-inner border border-slate-100 overflow-hidden">
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-white rounded-2xl mb-4 shadow-sm border border-slate-100 overflow-hidden">
             <img 
               src="https://plain-apac-prod-public.komododecks.com/202605/18/u3t1lOolacFscP6v1Bq8/image.png" 
               alt="KNHS Logo" 
-              className="w-14 h-14 object-contain"
+              className="w-12 h-12 object-contain"
             />
           </div>
-          <h1 className="text-4xl font-black text-slate-900 mb-2 tracking-tight">Welcome Back</h1>
-          <p className="text-slate-500 font-medium">Sign in to your KNHS Portal</p>
+          <h1 className="text-2xl font-bold text-slate-900 mb-1 tracking-tight">Welcome Back</h1>
+          <p className="text-[13px] text-slate-500 font-medium">Sign in to your KNHS Portal</p>
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-6" noValidate>
+        <form onSubmit={handleSubmit} className="space-y-4" noValidate>
           {/* Email */}
           <div>
-            <label htmlFor="email" className="block text-slate-700 text-sm font-bold mb-2 ml-1">
+            <label htmlFor="email" className="block text-slate-700 text-[12px] font-bold mb-1.5 ml-1 uppercase tracking-wider">
               Email Address
             </label>
             <input
@@ -188,22 +188,22 @@ const Login = () => {
                 setFieldErrors((prev) => ({ ...prev, email: '' }));
               }}
               placeholder="juan.delacruz@example.com"
-              className={`w-full px-5 py-4 bg-slate-50 border-2 rounded-2xl focus:outline-none focus:ring-4 focus:ring-purple-500/10 focus:border-purple-500 transition-all ${
-                fieldErrors.email ? 'border-red-500 bg-red-50' : 'border-slate-100'
+              className={`w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-[13px] focus:outline-none focus:ring-4 focus:ring-purple-500/10 focus:border-purple-500 transition-all ${
+                fieldErrors.email ? 'border-red-500 bg-red-50' : 'border-slate-200'
               }`}
             />
             {fieldErrors.email && (
-              <p className="text-red-500 text-xs mt-2 ml-1 font-bold">{fieldErrors.email}</p>
+              <p className="text-red-500 text-[10px] mt-1 ml-1 font-bold">{fieldErrors.email}</p>
             )}
           </div>
 
           {/* Password */}
           <div>
-            <div className="flex items-center justify-between mb-2 ml-1">
-              <label htmlFor="password" className="block text-slate-700 text-sm font-bold">
+            <div className="flex items-center justify-between mb-1.5 ml-1">
+              <label htmlFor="password" className="block text-slate-700 text-[12px] font-bold uppercase tracking-wider">
                 Password
               </label>
-              <Link to="/forgot-password" size="sm" className="text-purple-600 hover:text-purple-700 font-bold text-xs hover:underline">
+              <Link to="/forgot-password" size="sm" className="text-purple-600 hover:text-purple-700 font-bold text-[11px] hover:underline">
                 Forgot Password?
               </Link>
             </div>
@@ -218,22 +218,22 @@ const Login = () => {
                   setFieldErrors((prev) => ({ ...prev, password: '' }));
                 }}
                 placeholder="••••••••"
-                className={`w-full px-5 py-4 bg-slate-50 border-2 rounded-2xl focus:outline-none focus:ring-4 focus:ring-purple-500/10 focus:border-purple-500 transition-all ${
-                  fieldErrors.password ? 'border-red-500 bg-red-50' : 'border-slate-100'
+                className={`w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-[13px] focus:outline-none focus:ring-4 focus:ring-purple-500/10 focus:border-purple-500 transition-all ${
+                  fieldErrors.password ? 'border-red-500 bg-red-50' : 'border-slate-200'
                 }`}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword((v) => !v)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-purple-600 transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-purple-600 transition-colors"
                 tabIndex={-1}
               >
                 {showPassword ? (
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268-2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
                   </svg>
                 ) : (
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                   </svg>
@@ -241,7 +241,7 @@ const Login = () => {
               </button>
             </div>
             {fieldErrors.password && (
-              <p className="text-red-500 text-xs mt-2 ml-1 font-bold">{fieldErrors.password}</p>
+              <p className="text-red-500 text-[10px] mt-1 ml-1 font-bold">{fieldErrors.password}</p>
             )}
           </div>
 
@@ -249,10 +249,10 @@ const Login = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-purple-600 hover:bg-purple-700 text-white font-black py-5 rounded-2xl transition-all shadow-xl shadow-purple-200 active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-3 text-lg"
+            className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-purple-100 active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2 text-sm"
           >
             {loading ? (
-              <svg className="animate-spin h-6 w-6 text-white" viewBox="0 0 24 24">
+              <svg className="animate-spin h-5 w-5 text-white" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
               </svg>
@@ -262,10 +262,10 @@ const Login = () => {
           </button>
         </form>
 
-        <p className="text-center text-slate-500 font-bold mt-10">
+        <p className="text-center text-slate-500 font-bold mt-8 text-[12px]">
           Don't have an account?{' '}
-          <Link to="/signup" className="text-purple-600 hover:text-purple-700 decoration-2 underline-offset-4 hover:underline">
-            Sign up here
+          <Link to="/signup" className="text-purple-600 hover:text-purple-700 font-bold hover:underline">
+            Sign up
           </Link>
         </p>
       </div>

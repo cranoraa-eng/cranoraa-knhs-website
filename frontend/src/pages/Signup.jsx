@@ -106,7 +106,7 @@ const Signup = () => {
   };
 
   return (
-    <div className="min-h-screen relative overflow-hidden flex items-center justify-center px-4 py-12">
+    <div className="min-h-screen relative overflow-hidden flex items-center justify-center px-4 py-8">
       {/* Mesh Gradient Background */}
       <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-purple-900 to-indigo-900">
         <div className="absolute inset-0 opacity-20">
@@ -116,78 +116,78 @@ const Signup = () => {
         </div>
       </div>
       
-      <div className="relative w-full max-w-xl rounded-[2.5rem] border border-white/10 bg-white/95 p-8 md:p-12 shadow-2xl backdrop-blur-xl">
-        <div className="text-center mb-10">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-white rounded-3xl mb-6 shadow-inner border border-slate-100 overflow-hidden">
+      <div className="relative w-full max-w-lg rounded-3xl border border-white/20 bg-white/95 p-6 md:p-8 shadow-2xl backdrop-blur-xl">
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-white rounded-2xl mb-4 shadow-sm border border-slate-100 overflow-hidden">
             <img 
               src="https://plain-apac-prod-public.komododecks.com/202605/18/u3t1lOolacFscP6v1Bq8/image.png" 
               alt="KNHS Logo" 
-              className="w-14 h-14 object-contain"
+              className="w-12 h-12 object-contain"
             />
           </div>
-          <h1 className="text-4xl font-black text-slate-900 mb-2 tracking-tight">Create Account</h1>
-          <p className="text-slate-500 font-medium">Join the Kiwalan NHS School Portal</p>
+          <h1 className="text-2xl font-bold text-slate-900 mb-1 tracking-tight">Create Account</h1>
+          <p className="text-[13px] text-slate-500 font-medium">Join the Kiwalan NHS School Portal</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* First Name */}
             <div>
-              <label className="block text-slate-700 text-sm font-bold mb-2 ml-1">First Name</label>
+              <label className="block text-slate-700 text-[12px] font-bold mb-1.5 ml-1 uppercase tracking-wider">First Name</label>
               <input
                 type="text"
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
                 placeholder="Juan"
-                className={`w-full px-5 py-4 bg-slate-50 border-2 rounded-2xl focus:outline-none focus:ring-4 focus:ring-purple-500/10 focus:border-purple-500 transition-all ${
-                  fieldErrors.firstName ? 'border-red-500 bg-red-50' : 'border-slate-100'
+                className={`w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-[13px] focus:outline-none focus:ring-4 focus:ring-purple-500/10 focus:border-purple-500 transition-all ${
+                  fieldErrors.firstName ? 'border-red-500 bg-red-50' : 'border-slate-200'
                 }`}
               />
-              {fieldErrors.firstName && <p className="text-red-500 text-xs mt-2 ml-1 font-bold">{fieldErrors.firstName}</p>}
+              {fieldErrors.firstName && <p className="text-red-500 text-[10px] mt-1 ml-1 font-bold">{fieldErrors.firstName}</p>}
             </div>
 
             {/* Last Name */}
             <div>
-              <label className="block text-slate-700 text-sm font-bold mb-2 ml-1">Last Name</label>
+              <label className="block text-slate-700 text-[12px] font-bold mb-1.5 ml-1 uppercase tracking-wider">Last Name</label>
               <input
                 type="text"
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
                 placeholder="Dela Cruz"
-                className={`w-full px-5 py-4 bg-slate-50 border-2 rounded-2xl focus:outline-none focus:ring-4 focus:ring-purple-500/10 focus:border-purple-500 transition-all ${
-                  fieldErrors.lastName ? 'border-red-500 bg-red-50' : 'border-slate-100'
+                className={`w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-[13px] focus:outline-none focus:ring-4 focus:ring-purple-500/10 focus:border-purple-500 transition-all ${
+                  fieldErrors.lastName ? 'border-red-500 bg-red-50' : 'border-slate-200'
                 }`}
               />
-              {fieldErrors.lastName && <p className="text-red-500 text-xs mt-2 ml-1 font-bold">{fieldErrors.lastName}</p>}
+              {fieldErrors.lastName && <p className="text-red-500 text-[10px] mt-1 ml-1 font-bold">{fieldErrors.lastName}</p>}
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* LRN (Student Only) */}
             {role === 'student' && (
               <div>
-                <label className="block text-slate-700 text-sm font-bold mb-2 ml-1">LRN (12 Digits)</label>
+                <label className="block text-slate-700 text-[12px] font-bold mb-1.5 ml-1 uppercase tracking-wider">LRN (12 Digits)</label>
                 <input
                   type="text"
                   maxLength={12}
                   value={lrn}
                   onChange={(e) => setLrn(e.target.value.replace(/\D/g, ''))}
                   placeholder="123456789012"
-                  className={`w-full px-5 py-4 bg-slate-50 border-2 rounded-2xl focus:outline-none focus:ring-4 focus:ring-purple-500/10 focus:border-purple-500 transition-all ${
-                    fieldErrors.lrn ? 'border-red-500 bg-red-50' : 'border-slate-100'
+                  className={`w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-[13px] focus:outline-none focus:ring-4 focus:ring-purple-500/10 focus:border-purple-500 transition-all ${
+                    fieldErrors.lrn ? 'border-red-500 bg-red-50' : 'border-slate-200'
                   }`}
                 />
-                {fieldErrors.lrn && <p className="text-red-500 text-xs mt-2 ml-1 font-bold">{fieldErrors.lrn}</p>}
+                {fieldErrors.lrn && <p className="text-red-500 text-[10px] mt-1 ml-1 font-bold">{fieldErrors.lrn}</p>}
               </div>
             )}
 
             {/* Role */}
             <div className={role !== 'student' ? 'md:col-span-2' : ''}>
-              <label className="block text-slate-700 text-sm font-bold mb-2 ml-1">I am a...</label>
+              <label className="block text-slate-700 text-[12px] font-bold mb-1.5 ml-1 uppercase tracking-wider">Account Type</label>
               <select
                 value={role}
                 onChange={(e) => setRole(e.target.value)}
-                className="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:outline-none focus:ring-4 focus:ring-purple-500/10 focus:border-purple-500 transition-all appearance-none cursor-pointer"
+                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-[13px] focus:outline-none focus:ring-4 focus:ring-purple-500/10 focus:border-purple-500 transition-all appearance-none cursor-pointer"
               >
                 <option value="student">Student</option>
                 <option value="teacher">Teacher</option>
@@ -197,61 +197,61 @@ const Signup = () => {
 
           {/* Email */}
           <div>
-            <label className="block text-slate-700 text-sm font-bold mb-2 ml-1">Email Address</label>
+            <label className="block text-slate-700 text-[12px] font-bold mb-1.5 ml-1 uppercase tracking-wider">Email Address</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="juan.delacruz@example.com"
-              className={`w-full px-5 py-4 bg-slate-50 border-2 rounded-2xl focus:outline-none focus:ring-4 focus:ring-purple-500/10 focus:border-purple-500 transition-all ${
-                fieldErrors.email ? 'border-red-500 bg-red-50' : 'border-slate-100'
+              className={`w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-[13px] focus:outline-none focus:ring-4 focus:ring-purple-500/10 focus:border-purple-500 transition-all ${
+                fieldErrors.email ? 'border-red-500 bg-red-50' : 'border-slate-200'
               }`}
             />
-            {fieldErrors.email && <p className="text-red-500 text-xs mt-2 ml-1 font-bold">{fieldErrors.email}</p>}
+            {fieldErrors.email && <p className="text-red-500 text-[10px] mt-1 ml-1 font-bold">{fieldErrors.email}</p>}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Password */}
             <div>
-              <label className="block text-slate-700 text-sm font-bold mb-2 ml-1">Password</label>
+              <label className="block text-slate-700 text-[12px] font-bold mb-1.5 ml-1 uppercase tracking-wider">Password</label>
               <div className="relative">
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className={`w-full px-5 py-4 bg-slate-50 border-2 rounded-2xl focus:outline-none focus:ring-4 focus:ring-purple-500/10 focus:border-purple-500 transition-all ${
-                    fieldErrors.password ? 'border-red-500 bg-red-50' : 'border-slate-100'
+                  className={`w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-[13px] focus:outline-none focus:ring-4 focus:ring-purple-500/10 focus:border-purple-500 transition-all ${
+                    fieldErrors.password ? 'border-red-500 bg-red-50' : 'border-slate-200'
                   }`}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-purple-600 transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-purple-600 transition-colors"
                 >
                   {showPassword ? (
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268-2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" /></svg>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268-2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" /></svg>
                   ) : (
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
                   )}
                 </button>
               </div>
-              {fieldErrors.password && <p className="text-red-500 text-xs mt-2 ml-1 font-bold">{fieldErrors.password}</p>}
+              {fieldErrors.password && <p className="text-red-500 text-[10px] mt-1 ml-1 font-bold">{fieldErrors.password}</p>}
             </div>
 
             {/* Confirm Password */}
             <div>
-              <label className="block text-slate-700 text-sm font-bold mb-2 ml-1">Confirm</label>
+              <label className="block text-slate-700 text-[12px] font-bold mb-1.5 ml-1 uppercase tracking-wider">Confirm</label>
               <input
                 type={showPassword ? 'text' : 'password'}
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="••••••••"
-                className={`w-full px-5 py-4 bg-slate-50 border-2 rounded-2xl focus:outline-none focus:ring-4 focus:ring-purple-500/10 focus:border-purple-500 transition-all ${
-                  fieldErrors.confirmPassword ? 'border-red-500 bg-red-50' : 'border-slate-100'
+                className={`w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-[13px] focus:outline-none focus:ring-4 focus:ring-purple-500/10 focus:border-purple-500 transition-all ${
+                  fieldErrors.confirmPassword ? 'border-red-500 bg-red-50' : 'border-slate-200'
                 }`}
               />
-              {fieldErrors.confirmPassword && <p className="text-red-500 text-xs mt-2 ml-1 font-bold">{fieldErrors.confirmPassword}</p>}
+              {fieldErrors.confirmPassword && <p className="text-red-500 text-[10px] mt-1 ml-1 font-bold">{fieldErrors.confirmPassword}</p>}
             </div>
           </div>
 
@@ -265,30 +265,30 @@ const Signup = () => {
                   onChange={(e) => setAgreedToTerms(e.target.checked)}
                   className="peer sr-only"
                 />
-                <div className={`w-6 h-6 border-2 rounded-lg transition-all ${
+                <div className={`w-5 h-5 border border-slate-200 rounded-lg transition-all ${
                   fieldErrors.agreedToTerms ? 'border-red-500 bg-red-50' : 'border-slate-200 bg-slate-50 peer-checked:bg-purple-600 peer-checked:border-purple-600'
                 }`} />
-                <svg className="absolute inset-0 w-6 h-6 text-white scale-0 peer-checked:scale-100 transition-transform p-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="absolute inset-0 w-5 h-5 text-white scale-0 peer-checked:scale-100 transition-transform p-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                 </svg>
               </div>
-              <span className="text-sm font-medium text-slate-600 leading-tight">
+              <span className="text-[12px] font-medium text-slate-600 leading-tight">
                 I agree to the{' '}
                 <button type="button" onClick={() => setModalContent('terms')} className="text-purple-600 hover:underline font-bold">Terms of Service</button>
                 {' '}and{' '}
                 <button type="button" onClick={() => setModalContent('privacy')} className="text-purple-600 hover:underline font-bold">Privacy Policy</button>
               </span>
             </label>
-            {fieldErrors.agreedToTerms && <p className="text-red-500 text-xs ml-9 font-bold">{fieldErrors.agreedToTerms}</p>}
+            {fieldErrors.agreedToTerms && <p className="text-red-500 text-[10px] ml-8 font-bold">{fieldErrors.agreedToTerms}</p>}
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-purple-600 hover:bg-purple-700 text-white font-black py-5 rounded-2xl transition-all shadow-xl shadow-purple-200 active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-3 text-lg"
+            className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-purple-100 active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2 text-sm"
           >
             {loading ? (
-              <svg className="animate-spin h-6 w-6 text-white" viewBox="0 0 24 24">
+              <svg className="animate-spin h-5 w-5 text-white" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
               </svg>
@@ -296,10 +296,10 @@ const Signup = () => {
           </button>
         </form>
 
-        <p className="text-center text-slate-500 font-bold mt-10">
+        <p className="text-center text-slate-500 font-bold mt-8 text-[12px]">
           Already have an account?{' '}
-          <Link to="/login" className="text-purple-600 hover:text-purple-700 decoration-2 underline-offset-4 hover:underline">
-            Sign in here
+          <Link to="/login" className="text-purple-600 hover:text-purple-700 font-bold hover:underline">
+            Sign in
           </Link>
         </p>
       </div>
