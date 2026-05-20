@@ -160,6 +160,8 @@ const Login = () => {
             )}
           </div>
 
+          {/* Password */}
+          <div>
             <div className="flex items-center justify-between mb-2 ml-1">
               <label htmlFor="password" className="block text-slate-700 text-sm font-bold">
                 Password
@@ -231,7 +233,7 @@ const Login = () => {
         </p>
       </div>
 
-      <style>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         @keyframes blob {
           0%   { transform: translate(0, 0) scale(1); }
           33%  { transform: translate(30px, -50px) scale(1.1); }
@@ -241,7 +243,7 @@ const Login = () => {
         .animate-blob { animation: blob 7s infinite; }
         .animation-delay-2000 { animation-delay: 2s; }
         .animation-delay-4000 { animation-delay: 4s; }
-      `}</style>
+      ` }} />
     </div>
   );
 };
