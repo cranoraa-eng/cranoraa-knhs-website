@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { loginRequest } from '../utils/auth';
+import api from '../utils/api';
 import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
 
