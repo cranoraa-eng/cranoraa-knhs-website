@@ -218,9 +218,12 @@ MAILJET_SECRET_KEY = os.environ.get('MAILJET_SECRET_KEY')
 MAILJET_SENDER_EMAIL = os.environ.get('MAILJET_SENDER_EMAIL', 'noreply@knhsportal.dedyn.io')
 
 if not MAILJET_API_KEY or not MAILJET_SECRET_KEY:
-    print("WARNING: MAILJET credentials are not fully set in environment variables!")
+    print("CRITICAL WARNING: MAILJET credentials are not set in environment variables!")
 else:
-    print(f"MAILJET API initialized with key: {MAILJET_API_KEY[:4]}...")
+    # Masked print for debugging in Render logs
+    masked_key = f"{MAILJET_API_KEY[:4]}...{MAILJET_API_KEY[-4:]}" if len(MAILJET_API_KEY) > 8 else "INVALID_LENGTH"
+    print(f"DEBUG: MAILJET_API_KEY loaded: {masked_key}")
+    print(f"DEBUG: MAILJET_SECRET_KEY loaded: {len(MAILJET_SECRET_KEY)} characters")
 
 DEFAULT_FROM_EMAIL = MAILJET_SENDER_EMAIL
 
