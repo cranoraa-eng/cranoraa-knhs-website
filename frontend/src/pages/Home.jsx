@@ -1,6 +1,73 @@
-import { Link } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useState, useEffect, useMemo } from 'react';
 import api from '../utils/api';
+
+const MiniCalendar = ({ events }) => {
+  const [currentDate] = useState(new Date());
+  const navigate = useNavigate();
+
+  const daysInMonth = useMemo(() => {
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
+    const firstDay = new Date(year, month, 1).getDay();
+    const lastDate = new Date(year, month + 1, 0).getDate();
+    
+    const days = [];
+    for (let i = 0; i < firstDay; i++) days.push(null);
+    for (let i = 1; i <= lastDate; i++) days.push(i);
+    return days;
+  }, [currentDate]);
+
+  const eventDays = useMemo(() => {
+    const map = {};
+    events.forEach(e => {
+      const d = new Date(e.event_date || e.created_at);
+      if (d.getMonth() === currentDate.getMonth() && d.getFullYear() === currentDate.getFullYear()) {
+        map[d.getDate()] = true;
+      }
+    });
+    return map;
+  }, [events, currentDate]);
+
+  const monthName = currentDate.toLocaleString('en-US', { month: 'long' });
+
+  return (
+    <div className="bg-white rounded-3xl border border-slate-100 p-6 shadow-sm">
+      <div className="flex items-center justify-between mb-4">
+        <h4 className="text-sm font-black text-slate-900 uppercase tracking-widest">{monthName} {currentDate.getFullYear()}</h4>
+        <Link to="/calendar" className="text-[10px] font-bold text-violet-600 hover:underline">View Full</Link>
+      </div>
+      
+      <div className="grid grid-cols-7 gap-1 mb-2">
+        {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map(d => (
+          <div key={d} className="text-[10px] font-black text-slate-300 text-center py-1">{d}</div>
+        ))}
+      </div>
+      
+      <div className="grid grid-cols-7 gap-1 text-center">
+        {daysInMonth.map((day, i) => {
+          const hasEvent = day && eventDays[day];
+          const isToday = day === currentDate.getDate();
+          
+          return (
+            <div 
+              key={i} 
+              onClick={() => day && navigate(`/calendar?year=${currentDate.getFullYear()}&month=${currentDate.getMonth() + 1}`)}
+              className={`
+                aspect-square flex items-center justify-center text-[11px] font-bold rounded-lg cursor-pointer transition-all
+                ${!day ? 'invisible' : ''}
+                ${hasEvent ? 'bg-violet-600 text-white shadow-lg shadow-violet-200 scale-110' : 'text-slate-600 hover:bg-slate-50'}
+                ${isToday && !hasEvent ? 'border-2 border-violet-100 text-violet-600' : ''}
+              `}
+            >
+              {day}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
 
 const Home = () => {
   const [content, setContent] = useState({});
@@ -397,8 +464,15 @@ const Home = () => {
             {/* Upcoming Events Column */}
             <div className="space-y-8">
               <div className="flex items-center justify-between mb-4">
+                <h4 className="text-xl font-black text-slate-900">Events Calendar</h4>
+              </div>
+
+              {/* Mini Calendar Component */}
+              <MiniCalendar events={announcements.filter(a => a.category === 'events')} />
+
+              <div className="flex items-center justify-between mb-4">
                 <h4 className="text-xl font-black text-slate-900">Upcoming Events</h4>
-                <Link to="/calendar" className="text-sm font-bold text-violet-600 hover:text-violet-700">Calendar</Link>
+                <Link to="/calendar" className="text-sm font-bold text-violet-600 hover:text-violet-700">All Events</Link>
               </div>
 
               <div className="space-y-4">
@@ -466,8 +540,13 @@ const Home = () => {
                   })
                 ) : (
                   <div className="p-8 rounded-3xl bg-slate-50 border border-slate-100 text-center">
-                    <p className="text-sm font-bold text-slate-400">No upcoming events found</p>
-                    <Link to="/calendar" className="text-xs font-black text-violet-600 mt-2 inline-block">Check Calendar</Link>
+                    <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm">
+                      <svg className="w-6 h-6 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                    </div>
+                    <p className="text-sm font-bold text-slate-400">No events scheduled for now</p>
+                    <p className="text-[10px] text-slate-400 mt-1 uppercase tracking-widest font-black">Check back later for updates</p>
                   </div>
                 )}
                 
