@@ -27,7 +27,7 @@ const Layout = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { signOut } = useAuth();
-  const { notifications, unreadCount, setNotifications, setUnreadCount } = useNotifications();
+  const { notifications, setNotifications, unreadCount, setUnreadCount, realtimeConnected, isPolling } = useNotifications();
   const user = getStoredUser();
   const [showNotifications, setShowNotifications] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -71,29 +71,21 @@ const Layout = () => {
   const isActive = (path) => location.pathname === path;
 
   useEffect(() => {
-    fetchInitialNotifications();
-    fetchUnreadCount();
-  }, []);
-
-  const fetchInitialNotifications = async () => {
-    try {
-      const r = await api.get('/notifications/');
-      setNotifications(r.data.slice(0, 20));
-    } catch (err) {
-      if (err.code === 'ERR_NETWORK') {
-        console.warn('Backend server is unreachable. Check if Django is running.');
+    // Initial fetch of notifications
+    const fetchInitial = async () => {
+      try {
+        const r = await api.get('/notifications/');
+        setNotifications(r.data.slice(0, 20));
+        
+        const countRes = await api.get('/notifications/unread_count/');
+        setUnreadCount(countRes.data.unread_count);
+      } catch (err) {
+        console.warn('Initial notifications fetch failed', err);
       }
-    }
-  };
-
-  const fetchUnreadCount = async () => {
-    try {
-      const r = await api.get('/notifications/unread_count/');
-      setUnreadCount(r.data.unread_count);
-    } catch (err) {
-      // Silently fail for network errors to avoid console noise
-    }
-  };
+    };
+    
+    fetchInitial();
+  }, []);
 
   const markAsRead = async (id) => {
     try { 
@@ -325,12 +317,20 @@ const Layout = () => {
                           <span className="bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">{unreadCount}</span>
                         )}
                       </div>
-                      {unreadCount > 0 && (
-                        <button onClick={markAllAsRead}
-                          className="text-xs text-purple-200 hover:text-white font-medium transition-colors">
-                          Mark all read
-                        </button>
-                      )}
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-1.5">
+                          <div className={`w-2 h-2 rounded-full ${realtimeConnected ? 'bg-green-400' : isPolling ? 'bg-amber-400 animate-pulse' : 'bg-red-400'}`}></div>
+                          <span className="text-[10px] text-purple-200 font-bold uppercase tracking-tight">
+                            {realtimeConnected ? 'Realtime' : isPolling ? 'Backup Polling' : 'Offline'}
+                          </span>
+                        </div>
+                        {unreadCount > 0 && (
+                          <button onClick={markAllAsRead}
+                            className="text-xs text-purple-200 hover:text-white font-medium transition-colors">
+                            Mark all read
+                          </button>
+                        )}
+                      </div>
                     </div>
 
                     {/* List */}

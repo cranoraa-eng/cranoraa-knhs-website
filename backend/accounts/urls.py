@@ -8,7 +8,7 @@ from .views import (
     ClassroomSubjectViewSet, ScratchCardViewSet, FeeViewSet, NotificationViewSet, 
     EnrollmentApplicationViewSet, WebsiteContentViewSet, GradeViewSet, GradeReportViewSet, 
     ChatRoomViewSet, ChatMessageViewSet, FriendshipViewSet, admin_dashboard_stats, grade_distribution_stats, check_result, public_announcements_view, 
-    student_calendar_view, system_metrics_view, 
+    student_calendar_view, notifications_polling_view, system_metrics_view, 
     maintenance_feed_view, maintenance_mode_view, force_sync_view, run_backup_view, clear_cache_view,
     system_settings_view, maintenance_status_view,
     password_reset_request_view, password_reset_confirm_view
@@ -45,6 +45,7 @@ urlpatterns = [
     path('profile/', user_profile, name='profile'),
     path('student/profile/', student_profile, name='student_profile'),
     path('student/calendar/', student_calendar_view, name='student_calendar'),
+    path('notifications/polling/', notifications_polling_view, name='notifications_polling'),
     path('teacher/stats/', teacher_dashboard_stats, name='teacher_stats'),
     path('admin/stats/', admin_dashboard_stats, name='admin_stats'),
     path('admin/grade-distribution/', grade_distribution_stats, name='grade_distribution_stats'),

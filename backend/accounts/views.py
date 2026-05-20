@@ -2800,3 +2800,41 @@ def student_calendar_view(request):
         })
     
     return Response(events)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def notifications_polling_view(request):
+    """
+    Consolidated endpoint for polling notifications and latest announcements.
+    Used as a fallback when WebSockets are unavailable.
+    """
+    user = request.user
+    
+    # 1. Get unread notifications
+    unread_notifications = Notification.objects.filter(recipient=user, is_read=False).order_by('-created_at')
+    from .serializers import NotificationSerializer
+    notifications_data = NotificationSerializer(unread_notifications[:20], many=True).data
+    
+    # 2. Get unread count
+    unread_count = unread_notifications.count()
+    
+    # 3. Get latest announcements for the user's role
+    from django.utils import timezone
+    announcements_qs = Announcement.objects.filter(status='live').exclude(event_date__lt=timezone.now())
+    
+    if user.role == 'student':
+        announcements_qs = announcements_qs.filter(target_audience__in=['all', 'students'])
+    elif user.role == 'teacher':
+        from django.db.models import Q
+        announcements_qs = announcements_qs.filter(Q(target_audience__in=['all', 'teachers']) | Q(author=user))
+    
+    from .serializers import AnnouncementSerializer
+    announcements_data = AnnouncementSerializer(announcements_qs.order_by('-is_pinned', '-created_at')[:5], many=True).data
+    
+    return Response({
+        'notifications': notifications_data,
+        'unread_count': unread_count,
+        'announcements': announcements_data,
+        'timestamp': timezone.now().isoformat(),
+        'realtime_status': 'polling_active'
+    })
