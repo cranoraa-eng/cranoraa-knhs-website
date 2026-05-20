@@ -12,12 +12,19 @@ export const NotificationProvider = ({ children }) => {
   const [unreadCount, setUnreadCount] = useState(0);
   const [socket, setSocket] = useState(null);
   const user = getStoredUser();
+  const userId = user?.id;
   const reconnectTimeoutRef = useRef(null);
 
   const connect = useCallback(() => {
-    if (!user) return;
+    const currentUser = getStoredUser();
+    if (!currentUser) return;
 
     const token = localStorage.getItem('access_token');
+    if (!token) return;
+
+    // Ensure we don't have multiple connections
+    if (socket && socket.readyState <= 1) return;
+
     const ws = new WebSocket(`${WS_ROOT}/ws/notifications/?token=${token}`);
 
     ws.onopen = () => {
@@ -29,39 +36,46 @@ export const NotificationProvider = ({ children }) => {
     };
 
     ws.onmessage = (e) => {
-      const data = JSON.parse(e.data);
-      if (data.type === 'unread_count') {
-        setUnreadCount(data.count);
-      } else if (data.type === 'notification') {
-        setNotifications(prev => [data, ...prev].slice(0, 20));
-        setUnreadCount(data.unread_count);
-        
-        // Show toast for new notification
-        toast.success(data.title, {
-          description: data.message,
-          duration: 5000,
-        });
+      try {
+        const data = JSON.parse(e.data);
+        if (data.type === 'unread_count') {
+          setUnreadCount(data.count);
+        } else if (data.type === 'notification') {
+          setNotifications(prev => [data, ...prev].slice(0, 20));
+          setUnreadCount(data.unread_count);
+          
+          toast.success(data.title, {
+            description: data.message,
+            duration: 5000,
+          });
+        }
+      } catch (err) {
+        console.error('Error parsing notification message', err);
       }
     };
 
-    ws.onclose = () => {
-      console.log('Notification WS disconnected. Reconnecting...');
-      reconnectTimeoutRef.current = setTimeout(connect, 5000);
+    ws.onclose = (e) => {
+      console.log('Notification WS disconnected', e.code, e.reason);
+      // Only reconnect if not closed normally
+      if (e.code !== 1000 && e.code !== 1001) {
+        if (reconnectTimeoutRef.current) clearTimeout(reconnectTimeoutRef.current);
+        reconnectTimeoutRef.current = setTimeout(connect, 5000);
+      }
     };
 
     ws.onerror = (err) => {
       console.error('Notification WS error', err);
-      ws.close();
     };
 
     setSocket(ws);
-  }, [user]);
+  }, [userId, socket]);
 
   useEffect(() => {
     connect();
     return () => {
-      if (socket) socket.close();
       if (reconnectTimeoutRef.current) clearTimeout(reconnectTimeoutRef.current);
+      // We don't necessarily want to close it here if the component re-renders
+      // but if the provider unmounts, we should.
     };
   }, [connect]);
 

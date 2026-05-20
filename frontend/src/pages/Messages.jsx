@@ -474,13 +474,18 @@ const Messages = () => {
   const reconnectTimeoutRef = useRef(null);
 
   const connectWebSocket = useCallback((roomId) => {
+    // Only connect if we have a room and a token
+    const token = localStorage.getItem('access_token');
+    if (!token || !roomId) return;
+
     if (socketRef.current) {
+      // If already connected to this room, don't reconnect
+      if (socketRef.current.url.includes(`/ws/chat/${roomId}/`) && socketRef.current.readyState <= 1) {
+        return;
+      }
       socketRef.current.onclose = null;
       socketRef.current.close();
     }
-
-    const token = localStorage.getItem('access_token');
-    if (!token) return;
 
     const ws = new WebSocket(`${WS_ROOT}/ws/chat/${roomId}/?token=${token}`);
     socketRef.current = ws;
@@ -494,9 +499,10 @@ const Messages = () => {
     };
 
     ws.onmessage = (e) => {
-      const data = JSON.parse(e.data);
+      try {
+        const data = JSON.parse(e.data);
 
-      if (data.type === 'typing') {
+        if (data.type === 'typing') {
         if (data.sender_id !== user.id) {
           setPeerTyping(data.is_typing);
           setPeerTypingName(data.sender_name || '');
@@ -674,11 +680,17 @@ const Messages = () => {
           return prev;
         });
       }
-    };
+    } catch (err) {
+      console.error('Error parsing chat message', err);
+    }
+  };
 
-    ws.onclose = () => {
-      console.log('Chat WS disconnected. Reconnecting...');
-      reconnectTimeoutRef.current = setTimeout(() => connectWebSocket(roomId), 5000);
+    ws.onclose = (e) => {
+      console.log('Chat WS disconnected', e.code, e.reason);
+      if (e.code !== 1000 && e.code !== 1001) {
+        if (reconnectTimeoutRef.current) clearTimeout(reconnectTimeoutRef.current);
+        reconnectTimeoutRef.current = setTimeout(() => connectWebSocket(roomId), 5000);
+      }
     };
 
     ws.onerror = (err) => {
