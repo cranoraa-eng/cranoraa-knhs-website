@@ -50,7 +50,27 @@ const Login = () => {
       const code = err.response?.data?.code;
       const message = err.response?.data?.error;
 
-      if (status === 403 && code === 'not_approved') {
+      if (status === 403 && code === 'not_verified') {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Email Not Verified',
+          text: 'Please verify your email before logging in. Check your inbox for the verification link.',
+          showCancelButton: true,
+          confirmButtonText: 'Resend Email',
+          cancelButtonText: 'Close',
+          confirmButtonColor: '#9333ea',
+        }).then(async (result) => {
+          if (result.isConfirmed) {
+            try {
+              const res = await api.post('/resend-verification/', { email });
+              toast.success(res.data.message || 'Verification email resent!');
+            } catch (resendErr) {
+              toast.error(resendErr.response?.data?.error || 'Failed to resend verification email.');
+            }
+          }
+        });
+
+      } else if (status === 403 && code === 'not_approved') {
         Swal.fire({
           icon: 'info',
           title: 'Pending Approval',
@@ -140,11 +160,14 @@ const Login = () => {
             )}
           </div>
 
-          {/* Password */}
-          <div>
-            <label htmlFor="password" className="block text-slate-700 text-sm font-bold mb-2 ml-1">
-              Password
-            </label>
+            <div className="flex items-center justify-between mb-2 ml-1">
+              <label htmlFor="password" className="block text-slate-700 text-sm font-bold">
+                Password
+              </label>
+              <Link to="/forgot-password" size="sm" className="text-purple-600 hover:text-purple-700 font-bold text-xs hover:underline">
+                Forgot Password?
+              </Link>
+            </div>
             <div className="relative">
               <input
                 id="password"

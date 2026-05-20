@@ -7,6 +7,9 @@ import PublicLayout from './components/PublicLayout';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import VerifyOTP from './pages/VerifyOTP';
+import VerifyEmail from './pages/VerifyEmail';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPasswordConfirm from './pages/ResetPasswordConfirm';
 import Dashboard from './pages/Dashboard';
 import Announcements from './pages/Announcements';
 import Grades from './pages/Grades';
@@ -91,6 +94,9 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/verify-otp" element={<VerifyOTP />} />
+        <Route path="/verify-email/:token" element={<VerifyEmail />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password/:token" element={<ResetPasswordConfirm />} />
 
         {/* Public Website Routes */}
         <Route path="/" element={<PublicLayout />}>

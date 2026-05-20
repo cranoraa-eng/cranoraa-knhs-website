@@ -252,3 +252,6 @@ SESSION_COOKIE_SAMESITE = 'Lax'
 CSRF_COOKIE_SECURE = not DEBUG
 CSRF_COOKIE_HTTPONLY = True
 CSRF_COOKIE_SAMESITE = 'Lax'
+
+# Frontend URL for verification links
+FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:5173')

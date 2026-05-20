@@ -46,6 +46,20 @@ class OTP(models.Model):
         return f"OTP for {self.user.email}: {self.code}"
 
 
+class EmailVerificationToken(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='verification_tokens')
+    token = models.CharField(max_length=100, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    def is_expired(self):
+        from django.utils import timezone
+        import datetime
+        return timezone.now() > self.created_at + datetime.timedelta(days=1)
+    
+    def __str__(self):
+        return f"Token for {self.user.email}"
+
+
 class Profile(models.Model):
     TITLE_CHOICES = [
         ('Mr.', 'Mr.'),
@@ -55,6 +69,7 @@ class Profile(models.Model):
         ('Prof.', 'Prof.'),
     ]
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    lrn = models.CharField(max_length=12, blank=True, null=True, help_text="Learner Reference Number (12 digits)")
     title = models.CharField(max_length=10, choices=TITLE_CHOICES, blank=True, null=True, help_text="Honorific title for teachers")
     grade_level = models.CharField(max_length=20, blank=True, null=True, help_text="For students")
     employee_id = models.CharField(max_length=20, blank=True, null=True, help_text="For teachers")
@@ -570,8 +585,42 @@ class Notification(models.Model):
 # Signals for real-time notifications
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.core.mail import send_mail
+from django.conf import settings
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
+
+@receiver(post_save, sender=Announcement)
+def send_announcement_email(sender, instance, created, **kwargs):
+    """Send email to all users when a live announcement is created."""
+    if created and instance.status == 'live':
+        subject = f'New Announcement: {instance.title}'
+        message = f"""A new announcement has been posted on the KNHS Portal:
+
+Title: {instance.title}
+Category: {instance.get_category_display()}
+Priority: {instance.get_priority_display()}
+
+Content:
+{instance.content}
+
+Log in to the portal to see more details:
+{settings.FRONTEND_URL}
+
+— KNHS School Portal
+"""
+        # Determine target audience
+        if instance.target_audience == 'all':
+            recipients = User.objects.filter(is_active=True, is_verified=True).values_list('email', flat=True)
+        else:
+            recipients = User.objects.filter(role=instance.target_audience, is_active=True, is_verified=True).values_list('email', flat=True)
+        
+        if recipients:
+            try:
+                send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, list(recipients))
+            except Exception as e:
+                # We don't want to crash the save process if email fails
+                pass
 
 @receiver(post_save, sender=Notification)
 def broadcast_notification(sender, instance, created, **kwargs):

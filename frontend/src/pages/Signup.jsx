@@ -7,31 +7,31 @@ import * as yup from 'yup';
 import Swal from 'sweetalert2';
 
 const signupSchema = yup.object().shape({
-  username: yup.string().min(3, 'Username must be at least 3 characters').required('Username is required'),
   email: yup.string().email('Invalid email address').required('Email is required'),
   firstName: yup.string().required('First name is required'),
   lastName: yup.string().required('Last name is required'),
   password: yup.string()
-    .min(8, 'Password must be at least 8 characters')
-    .matches(/[A-Z]/, 'Password must contain at least one uppercase letter')
-    .matches(/[a-z]/, 'Password must contain at least one lowercase letter')
-    .matches(/[0-9]/, 'Password must contain at least one digit')
-    .matches(/[^A-Za-z0-9]/, 'Password must contain at least one special character')
+    .min(8, 'Password must be at least 8 characters long')
     .required('Password is required'),
   confirmPassword: yup.string().oneOf([yup.ref('password'), null], 'Passwords must match').required('Please confirm your password'),
   role: yup.string().required('Please select an account type'),
+  lrn: yup.string().when('role', {
+    is: 'student',
+    then: (schema) => schema.matches(/^\d{12}$/, 'LRN must be exactly 12 digits').required('LRN is required for students'),
+    otherwise: (schema) => schema.nullable(),
+  }),
   agreedToTerms: yup.boolean().oneOf([true], 'You must agree to the Terms and Privacy Policy').required(),
 });
 
 const Signup = () => {
   const { user } = useAuth();
-  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [role, setRole] = useState('student');
+  const [lrn, setLrn] = useState('');
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [fieldErrors, setFieldErrors] = useState({});
   const [loading, setLoading] = useState(false);
@@ -52,7 +52,7 @@ const Signup = () => {
 
     try {
       await signupSchema.validate(
-        { username, email, firstName, lastName, password, confirmPassword, role, agreedToTerms },
+        { email, firstName, lastName, password, confirmPassword, role, lrn, agreedToTerms },
         { abortEarly: false }
       );
     } catch (validationError) {
@@ -70,21 +70,24 @@ const Signup = () => {
 
     try {
       const payload = {
-        username,
+        username: email, // Use email as username
         email,
         password,
         role,
         first_name: firstName,
         last_name: lastName,
+        profile: {
+          lrn: role === 'student' ? lrn : null,
+        }
       };
 
       await api.post('/register/', payload);
       setLoading(false);
       Swal.fire({
         icon: 'success',
-        title: 'Account Created!',
-        text: 'Your account has been created successfully. Please wait for an administrator to approve your account before you can log in.',
-        confirmButtonText: 'Back to Login',
+        title: 'Verification Email Sent!',
+        text: 'Your account has been created. Please check your email to verify your account before logging in.',
+        confirmButtonText: 'OK',
         confirmButtonColor: '#9333ea',
       }).then(() => {
         navigate('/login');
@@ -160,23 +163,26 @@ const Signup = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Username */}
-            <div>
-              <label className="block text-slate-700 text-sm font-bold mb-2 ml-1">Username</label>
-              <input
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="jdelacruz"
-                className={`w-full px-5 py-4 bg-slate-50 border-2 rounded-2xl focus:outline-none focus:ring-4 focus:ring-purple-500/10 focus:border-purple-500 transition-all ${
-                  fieldErrors.username ? 'border-red-500 bg-red-50' : 'border-slate-100'
-                }`}
-              />
-              {fieldErrors.username && <p className="text-red-500 text-xs mt-2 ml-1 font-bold">{fieldErrors.username}</p>}
-            </div>
+            {/* LRN (Student Only) */}
+            {role === 'student' && (
+              <div>
+                <label className="block text-slate-700 text-sm font-bold mb-2 ml-1">LRN (12 Digits)</label>
+                <input
+                  type="text"
+                  maxLength={12}
+                  value={lrn}
+                  onChange={(e) => setLrn(e.target.value.replace(/\D/g, ''))}
+                  placeholder="123456789012"
+                  className={`w-full px-5 py-4 bg-slate-50 border-2 rounded-2xl focus:outline-none focus:ring-4 focus:ring-purple-500/10 focus:border-purple-500 transition-all ${
+                    fieldErrors.lrn ? 'border-red-500 bg-red-50' : 'border-slate-100'
+                  }`}
+                />
+                {fieldErrors.lrn && <p className="text-red-500 text-xs mt-2 ml-1 font-bold">{fieldErrors.lrn}</p>}
+              </div>
+            )}
 
             {/* Role */}
-            <div>
+            <div className={role !== 'student' ? 'md:col-span-2' : ''}>
               <label className="block text-slate-700 text-sm font-bold mb-2 ml-1">I am a...</label>
               <select
                 value={role}
