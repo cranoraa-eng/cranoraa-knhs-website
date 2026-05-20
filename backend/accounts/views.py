@@ -2793,8 +2793,8 @@ def student_calendar_view(request):
             'id': f"ann-{a.id}",
             'title': a.title,
             'description': a.content[:100] + '...' if len(a.content) > 100 else a.content,
-            'date': a.event_date.date().isoformat(),
-            'end_date': a.end_date.date().isoformat() if a.end_date else None,
+            'date': a.event_date.isoformat(),
+            'end_date': a.end_date.isoformat() if a.end_date else None,
             'type': 'announcement',
             'category': a.category
         })

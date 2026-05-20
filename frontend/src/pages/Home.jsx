@@ -539,9 +539,17 @@ const Home = () => {
                             </span>
                           </div>
                           <div className="flex-grow min-w-0">
-                            <h6 className="text-[13px] md:text-sm font-black text-slate-900 group-hover:text-violet-600 transition-colors truncate mb-0.5 md:mb-1">
+                            <h6 className="text-[13px] md:text-sm font-black text-slate-900 group-hover:text-violet-600 transition-colors truncate mb-0.5">
                               {event.title}
                             </h6>
+                            <div className="flex items-center gap-1.5 mb-1">
+                              <svg className="w-2.5 h-2.5 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              </svg>
+                              <span className="text-[9px] font-black text-violet-600 uppercase">
+                                {new Date(event.event_date || event.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                              </span>
+                            </div>
                             <p className="text-[11px] md:text-xs text-slate-500 font-medium line-clamp-2 leading-relaxed">
                               {event.content}
                             </p>

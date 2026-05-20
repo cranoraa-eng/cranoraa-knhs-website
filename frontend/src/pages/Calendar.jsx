@@ -229,7 +229,15 @@ const Calendar = () => {
                         <h4 className="font-black text-slate-800 text-[13px] md:text-sm group-hover:text-violet-600 transition-colors truncate">
                           {event.title}
                         </h4>
-                        <p className="text-[11px] md:text-xs text-slate-500 font-medium line-clamp-1 md:line-clamp-2 mt-0.5 md:mt-1 leading-relaxed">
+                        <div className="flex items-center gap-1.5 mt-0.5">
+                          <svg className="w-3 h-3 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          <span className="text-[10px] font-bold text-violet-600 uppercase">
+                            {new Date(event.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                        </div>
+                        <p className="text-[11px] md:text-xs text-slate-500 font-medium line-clamp-1 md:line-clamp-2 mt-0.5 leading-relaxed">
                           {event.description || 'No description provided'}
                         </p>
                       </div>
