@@ -354,6 +354,8 @@ def verify_email_token_view(request):
 @permission_classes([AllowAny])
 def resend_verification_email_view(request):
     email = request.data.get('email')
+    logger.info(f"Resend verification requested for: {email}")
+    
     if not email:
         return Response({'error': 'Email is required'}, status=status.HTTP_400_BAD_REQUEST)
     

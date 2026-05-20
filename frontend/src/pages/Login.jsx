@@ -24,7 +24,10 @@ const Login = () => {
           const res = await api.post('/resend-verification/', { email: userEmail });
           toast.success(res.data.message || 'Verification email resent!');
         } catch (resendErr) {
-          toast.error(resendErr.response?.data?.error || 'Failed to resend verification email.');
+          console.error('Full resend error:', resendErr);
+          const backendError = resendErr.response?.data?.error;
+          const status = resendErr.response?.status;
+          toast.error(backendError ? `Error (${status}): ${backendError}` : `Failed to resend email. Status: ${status || 'Network Error'}`);
         }
       }
     });
