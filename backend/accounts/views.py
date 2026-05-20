@@ -270,64 +270,6 @@ def resend_otp_view(request):
 @csrf_exempt
 @api_view(['POST'])
 @permission_classes([AllowAny])
-def verify_email_token_view(request):
-    token = request.data.get('token')
-    if not token:
-        return Response({'error': 'Token is required'}, status=status.HTTP_400_BAD_REQUEST)
-    
-    try:
-        verification_token = EmailVerificationToken.objects.get(token=token)
-        if verification_token.is_expired():
-            verification_token.delete()
-            return Response({'error': 'Token has expired. Please request a new one.'}, status=status.HTTP_400_BAD_REQUEST)
-        
-        user = verification_token.user
-        user.is_verified = True
-        user.save()
-        
-        verification_token.delete()
-        
-        return Response({'message': 'Email verified successfully! You can now log in once approved.'})
-    except EmailVerificationToken.DoesNotExist:
-        return Response({'error': 'Invalid or expired token'}, status=status.HTTP_400_BAD_REQUEST)
-
-
-@csrf_exempt
-@api_view(['POST'])
-@permission_classes([AllowAny])
-def resend_verification_email_view(request):
-    email = request.data.get('email')
-    logger.info(f"Resend verification requested for: {email}")
-    
-    if not email:
-        return Response({'error': 'Email is required'}, status=status.HTTP_400_BAD_REQUEST)
-    
-    try:
-        user = User.objects.get(email=email)
-        if user.is_verified:
-            return Response({'message': 'Email is already verified.'})
-        
-        # Delete old tokens
-        EmailVerificationToken.objects.filter(user=user).delete()
-        
-        try:
-            if send_verification_email(user):
-                logger.info(f"Verification email successfully sent to {user.email}")
-                return Response({'message': 'Verification email resent! Please check your inbox.'})
-        except Exception as e:
-            logger.error(f"Resend failure: {str(e)}")
-            return Response({'error': f'Email system error: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-            
-        return Response({'error': 'Failed to send email. Please try again later.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-            
-    except User.DoesNotExist:
-        # For security, don't reveal if user exists
-        return Response({'message': 'If an account exists with this email, a verification link has been sent.'})
-
-
-@csrf_exempt
-@api_view(['POST'])
-@permission_classes([AllowAny])
 def password_reset_request_view(request):
     email = request.data.get('email')
     if not email:

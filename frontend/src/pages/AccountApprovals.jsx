@@ -164,8 +164,12 @@ const AccountApprovals = () => {
                     </div>
                     <div className="text-sm text-gray-500 mt-0.5">{user.email}</div>
                     <div className="text-xs text-gray-400 mt-0.5">
-                      Registered {new Date(user.profile?.date_of_birth || Date.now()).toLocaleDateString()} ·
-                      Email verified ✓
+                      Registered {new Date(user.date_joined || Date.now()).toLocaleDateString()} ·
+                      {user.is_verified ? (
+                        <span className="text-green-600 font-medium">Email verified ✓</span>
+                      ) : (
+                        <span className="text-amber-600 font-medium">Email pending verification</span>
+                      )}
                     </div>
                   </div>
                 </div>
