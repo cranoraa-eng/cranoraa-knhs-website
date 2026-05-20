@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, Link } from 'react-router-dom';
 import api from '../utils/api';
 
 const Calendar = () => {
@@ -93,7 +93,15 @@ const Calendar = () => {
 
   return (
     <div className="overflow-y-auto h-[calc(100vh-4rem)] p-6">
-      <h1 className="text-3xl font-bold text-gray-800 mb-6">Calendar</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-3xl font-bold text-gray-800">Calendar</h1>
+        <Link to="/" className="text-sm font-semibold text-purple-600 hover:text-purple-800 flex items-center gap-2">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+          Back to Website
+        </Link>
+      </div>
       
       <div className="bg-white border border-gray-300 rounded-lg p-6 shadow-sm">
         {/* Calendar Header */}

@@ -2,9 +2,9 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useState, useEffect, useMemo } from 'react';
 import api from '../utils/api';
 
-const MiniCalendar = ({ events }) => {
+const MiniCalendar = ({ events, onSelectDay }) => {
   const [currentDate] = useState(new Date());
-  const navigate = useNavigate();
+  const [selectedDay, setSelectedDay] = useState(null);
 
   const daysInMonth = useMemo(() => {
     const year = currentDate.getFullYear();
@@ -23,13 +23,19 @@ const MiniCalendar = ({ events }) => {
     events.forEach(e => {
       const d = new Date(e.event_date || e.created_at);
       if (d.getMonth() === currentDate.getMonth() && d.getFullYear() === currentDate.getFullYear()) {
-        map[d.getDate()] = true;
+        map[d.getDate()] = (map[d.getDate()] || 0) + 1;
       }
     });
     return map;
   }, [events, currentDate]);
 
   const monthName = currentDate.toLocaleString('en-US', { month: 'long' });
+
+  const handleDayClick = (day) => {
+    if (!day) return;
+    setSelectedDay(day);
+    if (onSelectDay) onSelectDay(day);
+  };
 
   return (
     <div className="bg-white rounded-3xl border border-slate-100 p-6 shadow-sm">
@@ -48,19 +54,23 @@ const MiniCalendar = ({ events }) => {
         {daysInMonth.map((day, i) => {
           const hasEvent = day && eventDays[day];
           const isToday = day === currentDate.getDate();
+          const isSelected = day === selectedDay;
           
           return (
             <div 
               key={i} 
-              onClick={() => day && navigate(`/calendar?year=${currentDate.getFullYear()}&month=${currentDate.getMonth() + 1}`)}
+              onClick={() => handleDayClick(day)}
               className={`
-                aspect-square flex items-center justify-center text-[11px] font-bold rounded-lg cursor-pointer transition-all
+                aspect-square flex flex-col items-center justify-center text-[11px] font-bold rounded-lg cursor-pointer transition-all relative
                 ${!day ? 'invisible' : ''}
-                ${hasEvent ? 'bg-violet-600 text-white shadow-lg shadow-violet-200 scale-110' : 'text-slate-600 hover:bg-slate-50'}
-                ${isToday && !hasEvent ? 'border-2 border-violet-100 text-violet-600' : ''}
+                ${isSelected ? 'bg-slate-900 text-white shadow-xl scale-110' : hasEvent ? 'bg-violet-50 text-violet-700 border border-violet-100 hover:bg-violet-100' : 'text-slate-600 hover:bg-slate-50'}
+                ${isToday && !isSelected ? 'text-violet-600' : ''}
               `}
             >
               {day}
+              {hasEvent && !isSelected && (
+                <span className="absolute bottom-1 w-1 h-1 bg-violet-600 rounded-full"></span>
+              )}
             </div>
           );
         })}
@@ -74,6 +84,8 @@ const Home = () => {
   const [announcements, setAnnouncements] = useState([]);
   const [loading, setLoading] = useState(true);
   const [zoomedImage, setZoomedImage] = useState(null);
+  const [selectedDateEvents, setSelectedDateEvents] = useState([]);
+  const [selectedDayLabel, setSelectedDayLabel] = useState(null);
 
   useEffect(() => {
     const loadData = async () => {
@@ -83,6 +95,16 @@ const Home = () => {
     };
     loadData();
   }, []);
+
+  const handleSelectDay = (day) => {
+    const today = new Date();
+    const dayEvents = announcements.filter(a => {
+      const d = new Date(a.event_date || a.created_at);
+      return d.getDate() === day && d.getMonth() === today.getMonth() && d.getFullYear() === today.getFullYear();
+    });
+    setSelectedDateEvents(dayEvents);
+    setSelectedDayLabel(day);
+  };
 
   const fetchContent = async () => {
     try {
@@ -428,7 +450,7 @@ const Home = () => {
                         
                         <div className="flex flex-wrap gap-3 items-center mt-auto pt-6 border-t border-slate-100">
                           <Link 
-                            to="/login" 
+                            to={`/calendar?year=${new Date(announcement.created_at).getFullYear()}&month=${new Date(announcement.created_at).getMonth() + 1}`} 
                             className="inline-flex items-center text-xs font-black text-violet-600 group-hover:translate-x-1 transition-transform"
                           >
                             Read More
@@ -468,16 +490,21 @@ const Home = () => {
               </div>
 
               {/* Mini Calendar Component */}
-              <MiniCalendar events={announcements.filter(a => a.category === 'events')} />
+              <MiniCalendar 
+                events={announcements.filter(a => a.category === 'events')} 
+                onSelectDay={handleSelectDay}
+              />
 
               <div className="flex items-center justify-between mb-4">
-                <h4 className="text-xl font-black text-slate-900">Upcoming Events</h4>
+                <h4 className="text-xl font-black text-slate-900">
+                  {selectedDayLabel ? `Events on ${new Date().toLocaleString('en-US', { month: 'short' })} ${selectedDayLabel}` : 'Upcoming Events'}
+                </h4>
                 <Link to="/calendar" className="text-sm font-bold text-violet-600 hover:text-violet-700">All Events</Link>
               </div>
 
               <div className="space-y-4">
-                {upcomingEvents.length > 0 ? (
-                  upcomingEvents.map((event) => {
+                {(selectedDayLabel ? selectedDateEvents : upcomingEvents).length > 0 ? (
+                  (selectedDayLabel ? selectedDateEvents : upcomingEvents).map((event) => {
                     const imageUrl = getFirstImage(event);
                     const pdfs = getPDFs(event);
                     const eventDate = new Date(event.event_date || event.created_at);

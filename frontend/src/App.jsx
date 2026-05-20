@@ -104,6 +104,7 @@ function App() {
           <Route path="contact" element={<Contact />} />
           <Route path="enroll" element={<Enrollment />} />
           <Route path="announcement" element={<AnnouncementDetails />} />
+          <Route path="calendar" element={<Calendar />} />
         </Route>
 
         {/* Protected Portal Routes */}
@@ -125,7 +126,6 @@ function App() {
           <Route path="profile" element={<Profile />} />
           <Route path="register-subjects" element={<RegisterSubjects />} />
           <Route path="class-members" element={<ClassMembers />} />
-          <Route path="calendar" element={<Calendar />} />
           <Route path="password-reset" element={<PasswordReset />} />
           <Route path="class-management" element={<ClassManagement />} />
           <Route path="subject-assignment" element={<SubjectAssignment />} />

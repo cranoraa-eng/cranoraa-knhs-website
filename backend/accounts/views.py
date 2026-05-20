@@ -2742,7 +2742,7 @@ class FriendshipViewSet(viewsets.ModelViewSet):
         return Response(friends)
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([AllowAny])
 def student_calendar_view(request):
     """
     Returns events for the school calendar.
@@ -2767,11 +2767,16 @@ def student_calendar_view(request):
         event_date__month=month
     )
     
-    # If the user is a student, only show announcements for 'all' or 'students'
-    if request.user.role == 'student':
-        announcements = announcements.filter(target_audience__in=['all', 'students'])
-    elif request.user.role == 'teacher':
-        announcements = announcements.filter(target_audience__in=['all', 'teachers'])
+    # Filter based on user role/authentication
+    if not request.user or not request.user.is_authenticated:
+        # Public users only see public announcements
+        announcements = announcements.filter(is_public=True)
+    else:
+        # If the user is a student, only show announcements for 'all' or 'students'
+        if request.user.role == 'student':
+            announcements = announcements.filter(target_audience__in=['all', 'students'])
+        elif request.user.role == 'teacher':
+            announcements = announcements.filter(target_audience__in=['all', 'teachers'])
     
     events = []
     for a in announcements:
