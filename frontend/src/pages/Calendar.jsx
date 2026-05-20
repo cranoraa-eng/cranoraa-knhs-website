@@ -92,7 +92,7 @@ const Calendar = () => {
   const days = getDaysInMonth(currentMonth);
 
   return (
-    <div className="overflow-y-auto h-[calc(100vh-4rem)] bg-slate-50/50 p-3 md:p-8">
+    <div className="bg-slate-50/50 p-3 md:p-8">
       {/* Header */}
       <div className="max-w-6xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-3 mb-6 md:mb-8 text-center md:text-left">
         <div>
