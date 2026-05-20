@@ -2776,9 +2776,11 @@ def student_calendar_view(request):
         (Q(end_date__date__gte=first_day) | Q(end_date__isnull=True, event_date__date__gte=first_day))
     )
     
-    # Filter based on user role/authentication
-    if not request.user or not request.user.is_authenticated:
-        # Public users only see public announcements
+    # Filter based on user role/authentication/request source
+    public_only = request.query_params.get('public_only') == 'true'
+
+    if public_only or not request.user or not request.user.is_authenticated:
+        # Public users or forced public mode only see public announcements
         announcements = announcements.filter(is_public=True)
     else:
         # If the user is a student, only show announcements for 'all' or 'students'

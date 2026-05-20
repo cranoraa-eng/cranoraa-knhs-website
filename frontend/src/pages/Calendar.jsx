@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useLocation, Link } from 'react-router-dom';
 import api from '../utils/api';
 
-const Calendar = () => {
+const Calendar = ({ mode = 'public' }) => {
   const location = useLocation();
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -31,13 +31,14 @@ const Calendar = () => {
 
   useEffect(() => {
     fetchEvents();
-  }, [currentMonth]);
+  }, [currentMonth, mode]);
 
   const fetchEvents = async () => {
     try {
       const year = currentMonth.getFullYear();
       const month = currentMonth.getMonth() + 1;
-      const response = await api.get(`/student/calendar/?year=${year}&month=${month}`);
+      const isPublicOnly = mode === 'public';
+      const response = await api.get(`/student/calendar/?year=${year}&month=${month}&public_only=${isPublicOnly}`);
       setEvents(response.data);
     } catch (error) {
       console.error('Error fetching calendar events:', error);

@@ -126,6 +126,7 @@ function App() {
           <Route path="profile" element={<Profile />} />
           <Route path="register-subjects" element={<RegisterSubjects />} />
           <Route path="class-members" element={<ClassMembers />} />
+          <Route path="portal-calendar" element={<Calendar mode="portal" />} />
           <Route path="password-reset" element={<PasswordReset />} />
           <Route path="class-management" element={<ClassManagement />} />
           <Route path="subject-assignment" element={<SubjectAssignment />} />
