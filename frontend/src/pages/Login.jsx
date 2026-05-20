@@ -21,14 +21,36 @@ const Login = () => {
       confirmButtonColor: '#9333ea',
     }).then(async (result) => {
       if (result.isConfirmed) {
+        // Show loading state
+        Swal.fire({
+          title: 'Sending...',
+          text: 'Please wait while we send the verification link.',
+          allowOutsideClick: false,
+          showConfirmButton: false,
+          didOpen: () => {
+            Swal.showLoading();
+          }
+        });
+
         try {
           const res = await api.post('/resend-verification/', { email: userEmail });
-          toast.success(res.data.message || 'Verification email resent!');
+          Swal.fire({
+            icon: 'success',
+            title: 'Email Sent!',
+            text: res.data.message || 'Verification email resent! Please check your inbox.',
+            confirmButtonColor: '#9333ea',
+          });
         } catch (resendErr) {
           console.error('Full resend error:', resendErr);
           const backendError = resendErr.response?.data?.error;
           const status = resendErr.response?.status;
-          toast.error(backendError ? `Error (${status}): ${backendError}` : `Failed to resend email. Status: ${status || 'Network Error'}`);
+          
+          Swal.fire({
+            icon: 'error',
+            title: 'Failed to Send',
+            text: backendError ? `Error (${status}): ${backendError}` : `Failed to resend email. Status: ${status || 'Network Error'}`,
+            confirmButtonColor: '#9333ea',
+          });
         }
       }
     });

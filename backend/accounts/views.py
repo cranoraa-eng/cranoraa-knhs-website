@@ -369,8 +369,10 @@ def resend_verification_email_view(request):
         
         try:
             if send_verification_email(user):
+                logger.info(f"Verification email successfully sent to {user.email}")
                 return Response({'message': 'Verification email resent! Please check your inbox.'})
         except Exception as e:
+            logger.error(f"Resend failure: {str(e)}")
             return Response({'error': f'Email system error: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
             
         return Response({'error': 'Failed to send email. Please try again later.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
