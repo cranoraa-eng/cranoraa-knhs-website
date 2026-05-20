@@ -1,23 +1,25 @@
 import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import api from '../utils/api';
-import LatestNews from '../components/LatestNews';
 
 const Home = () => {
   const [content, setContent] = useState({});
+  const [announcements, setAnnouncements] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchContent();
+    const loadData = async () => {
+      setLoading(true);
+      await Promise.all([fetchContent(), fetchAnnouncements()]);
+      setLoading(false);
+    };
+    loadData();
   }, []);
 
   const fetchContent = async () => {
     try {
       const response = await api.get('/website-content/public/');
-      // Map the array of content objects to a key-value object for easier access
       const contentMap = {};
-      
-      // Safety check: Ensure response.data is an array before calling forEach
       const data = Array.isArray(response.data) ? response.data : 
                    (response.data && Array.isArray(response.data.results)) ? response.data.results : [];
       
@@ -25,11 +27,45 @@ const Home = () => {
         contentMap[item.section] = item;
       });
       setContent(contentMap);
-      setLoading(false);
     } catch (error) {
       console.error('Error fetching website content:', error);
-      setLoading(false);
     }
+  };
+
+  const fetchAnnouncements = async () => {
+    try {
+      const response = await api.get('/announcements/public/');
+      setAnnouncements(response.data);
+    } catch (error) {
+      console.error('Error fetching announcements:', error);
+    }
+  };
+
+  const generalAnnouncements = announcements
+    .filter(a => a.category !== 'events')
+    .slice(0, 3);
+  
+  const upcomingEvents = announcements
+    .filter(a => a.category === 'events')
+    .slice(0, 4);
+
+  const getCategoryColor = (category) => {
+    const colors = {
+      'academic': 'bg-purple-50 text-purple-600 border-purple-100',
+      'events': 'bg-emerald-50 text-emerald-600 border-emerald-100',
+      'emergency': 'bg-rose-50 text-rose-600 border-rose-100',
+      'holiday': 'bg-blue-50 text-blue-600 border-blue-100',
+    };
+    return colors[category] || 'bg-slate-50 text-slate-600 border-slate-100';
+  };
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { 
+      month: 'short', 
+      day: 'numeric',
+      year: 'numeric'
+    });
   };
 
   if (loading) {
@@ -169,11 +205,6 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Latest News Section */}
-      <section className="py-32">
-        <LatestNews />
-      </section>
-
       {/* Stats Banner */}
       <section className="py-20 bg-slate-900 overflow-hidden relative">
         <div className="absolute top-0 left-0 w-full h-full opacity-10">
@@ -198,39 +229,121 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Testimonials */}
+      {/* Announcements & Events Section */}
       <section className="py-32 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col lg:flex-row justify-between items-end mb-16 gap-8">
             <div className="max-w-2xl">
-              <h2 className="text-xs font-black text-violet-600 uppercase tracking-[0.3em] mb-4">Testimonials</h2>
-              <h3 className="text-4xl md:text-5xl font-black text-slate-900">Voices of our Community</h3>
+              <h2 className="text-xs font-black text-violet-600 uppercase tracking-[0.3em] mb-4">Stay Updated</h2>
+              <h3 className="text-4xl md:text-5xl font-black text-slate-900 mb-6">Announcements & School Calendar</h3>
+              <p className="text-lg text-slate-500 font-medium leading-relaxed">
+                Stay informed with the latest updates and upcoming events. 
+                For the full schedule, visit our <Link to="/calendar" className="text-violet-600 hover:underline font-bold">Event Calendar</Link>.
+              </p>
             </div>
-            <Link to="/about" className="text-violet-600 font-bold hover:text-violet-700 transition-colors flex items-center">
-              Learn more about us
-              <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4 4H3" /></svg>
-            </Link>
+            <div className="flex gap-4">
+              <Link 
+                to="/calendar" 
+                className="px-6 py-3 rounded-xl bg-violet-50 text-violet-600 font-bold hover:bg-violet-100 transition-all flex items-center border border-violet-100"
+              >
+                Full Calendar
+                <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+              </Link>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              { name: 'John Doe', role: 'Parent', text: 'Kiwalan NHS has provided my children with an excellent education. The teachers are dedicated and truly care.', initial: 'JD' },
-              { name: 'Maria Santos', role: 'Alumni', text: 'The education I received here prepared me well for college. The values I learned continue to help me.', initial: 'MS' },
-              { name: 'Roberto Perez', role: 'Teacher', text: 'Teaching here is a privilege. The supportive environment and motivated students make every day rewarding.', initial: 'RP' }
-            ].map((t, idx) => (
-              <div key={idx} className="p-10 rounded-[2.5rem] bg-slate-50 hover:bg-white border border-transparent hover:border-slate-100 hover:shadow-xl transition-all duration-300">
-                <div className="flex items-center mb-8">
-                  <div className="w-12 h-12 bg-violet-600 rounded-2xl flex items-center justify-center text-white font-black text-sm shadow-lg shadow-violet-200">
-                    {t.initial}
-                  </div>
-                  <div className="ml-4">
-                    <p className="font-black text-slate-900">{t.name}</p>
-                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{t.role}</p>
-                  </div>
-                </div>
-                <p className="text-slate-600 font-medium italic leading-relaxed">"{t.text}"</p>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+            {/* Main Announcements Column */}
+            <div className="lg:col-span-2 space-y-8">
+              <div className="flex items-center justify-between mb-4">
+                <h4 className="text-xl font-black text-slate-900">Latest Announcements</h4>
+                <Link to="/login" className="text-sm font-bold text-violet-600 hover:text-violet-700">View All</Link>
               </div>
-            ))}
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {generalAnnouncements.length > 0 ? (
+                  generalAnnouncements.map((announcement) => (
+                    <div key={announcement.id} className="group p-8 rounded-[2.5rem] bg-slate-50 hover:bg-white border border-transparent hover:border-violet-100 hover:shadow-2xl transition-all duration-300 flex flex-col h-full">
+                      <div className="flex items-center justify-between mb-6">
+                        <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${getCategoryColor(announcement.category)}`}>
+                          {announcement.category}
+                        </span>
+                        <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                          {formatDate(announcement.created_at)}
+                        </span>
+                      </div>
+                      
+                      <h5 className="text-lg font-black text-slate-900 mb-4 group-hover:text-violet-600 transition-colors line-clamp-2">
+                        {announcement.title}
+                      </h5>
+                      
+                      <p className="text-slate-500 text-sm font-medium leading-relaxed mb-6 line-clamp-3 flex-grow">
+                        {announcement.content}
+                      </p>
+                      
+                      <Link 
+                        to="/login" 
+                        className="inline-flex items-center text-xs font-black text-violet-600 group-hover:translate-x-1 transition-transform"
+                      >
+                        Read More
+                        <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4 4H3" /></svg>
+                      </Link>
+                    </div>
+                  ))
+                ) : (
+                  [1, 2].map((i) => (
+                    <div key={i} className="p-8 rounded-[2.5rem] bg-slate-50 border border-slate-100 animate-pulse h-64"></div>
+                  ))
+                )}
+              </div>
+            </div>
+
+            {/* Upcoming Events Column */}
+            <div className="space-y-8">
+              <div className="flex items-center justify-between mb-4">
+                <h4 className="text-xl font-black text-slate-900">Upcoming Events</h4>
+                <Link to="/calendar" className="text-sm font-bold text-violet-600 hover:text-violet-700">Calendar</Link>
+              </div>
+
+              <div className="space-y-4">
+                {upcomingEvents.length > 0 ? (
+                  upcomingEvents.map((event) => (
+                    <div key={event.id} className="group p-6 rounded-3xl bg-white border border-slate-100 hover:border-violet-100 hover:shadow-xl transition-all duration-300">
+                      <div className="flex items-start space-x-4">
+                        <div className="flex-shrink-0 w-12 h-12 rounded-2xl bg-violet-50 flex flex-col items-center justify-center border border-violet-100">
+                          <span className="text-[10px] font-black text-violet-400 uppercase leading-none">
+                            {new Date(event.created_at).toLocaleString('en-US', { month: 'short' })}
+                          </span>
+                          <span className="text-lg font-black text-violet-700 leading-tight">
+                            {new Date(event.created_at).getDate()}
+                          </span>
+                        </div>
+                        <div className="flex-grow min-w-0">
+                          <h6 className="text-sm font-black text-slate-900 group-hover:text-violet-600 transition-colors truncate mb-1">
+                            {event.title}
+                          </h6>
+                          <p className="text-xs text-slate-500 font-medium line-clamp-2">
+                            {event.content}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="p-8 rounded-3xl bg-slate-50 border border-slate-100 text-center">
+                    <p className="text-sm font-bold text-slate-400">No upcoming events found</p>
+                    <Link to="/calendar" className="text-xs font-black text-violet-600 mt-2 inline-block">Check Calendar</Link>
+                  </div>
+                )}
+                
+                <Link 
+                  to="/login" 
+                  className="w-full py-4 rounded-2xl bg-slate-900 text-white font-black text-center text-sm hover:bg-slate-800 transition-all shadow-xl shadow-slate-100 block"
+                >
+                  Portal Dashboard
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
       </section>

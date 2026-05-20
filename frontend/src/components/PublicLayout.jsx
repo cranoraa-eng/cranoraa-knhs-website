@@ -35,6 +35,7 @@ const PublicLayout = () => {
     { name: 'About', path: '/about' },
     { name: 'Programs', path: '/programs' },
     { name: 'Contact', path: '/contact' },
+    { name: 'Calendar', path: '/calendar' },
   ];
 
   return (
