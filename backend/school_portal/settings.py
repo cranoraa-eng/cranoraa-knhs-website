@@ -213,17 +213,19 @@ CSRF_TRUSTED_ORIGINS = os.environ.get(
 ).split(',')
 
 # Email Configuration
-EMAIL_BACKEND = os.environ.get('EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')
+EMAIL_BACKEND = os.environ.get('EMAIL_BACKEND', 'django_resend.backend.ResendBackend')
+RESEND_API_KEY = os.environ.get('RESEND_API_KEY')
+
+# SMTP Fallback (optional, if EMAIL_BACKEND is set to SMTP)
 EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
 EMAIL_PORT = int(os.environ.get('EMAIL_PORT', 465))
 EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
-DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'KNHS Portal <noreply@example.com>')
-
-# Explicitly handle SSL vs TLS to avoid conflicts
 EMAIL_USE_SSL = os.environ.get('EMAIL_USE_SSL', 'True').lower() in ('true', '1', 't')
 EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'False').lower() in ('true', '1', 't')
-EMAIL_TIMEOUT = 10  # 10 seconds timeout for SMTP connections
+EMAIL_TIMEOUT = 10
+
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'KNHS Portal <onboarding@resend.dev>')
 
 # Media Files Configuration
 MEDIA_URL = '/media/'

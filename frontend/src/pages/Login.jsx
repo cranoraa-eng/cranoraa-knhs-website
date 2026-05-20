@@ -14,17 +14,19 @@ const Login = () => {
     Swal.fire({
       icon: 'warning',
       title: 'Email Not Verified',
-      text: 'Please verify your email before logging in. Check your inbox for the verification link.',
+      text: 'Please verify your email before logging in. Would you like to enter your verification code or request a new one?',
       showCancelButton: true,
-      confirmButtonText: 'Resend Email',
-      cancelButtonText: 'Close',
+      confirmButtonText: 'Enter Code',
+      cancelButtonText: 'Resend Code',
       confirmButtonColor: '#9333ea',
     }).then(async (result) => {
       if (result.isConfirmed) {
-        // Show loading state
+        navigate('/verify-otp', { state: { email: userEmail } });
+      } else if (result.dismiss === Swal.DismissReason.cancel) {
+        // Resend logic
         Swal.fire({
           title: 'Sending...',
-          text: 'Please wait while we send the verification link.',
+          text: 'Please wait while we send a new verification code.',
           allowOutsideClick: false,
           showConfirmButton: false,
           didOpen: () => {
@@ -33,22 +35,20 @@ const Login = () => {
         });
 
         try {
-          const res = await api.post('/resend-verification/', { email: userEmail });
+          await api.post('/resend-otp/', { email: userEmail, type: 'signup' });
           Swal.fire({
             icon: 'success',
-            title: 'Email Sent!',
-            text: res.data.message || 'Verification email resent! Please check your inbox.',
+            title: 'Code Sent!',
+            text: 'A new verification code has been sent to your email.',
             confirmButtonColor: '#9333ea',
+          }).then(() => {
+            navigate('/verify-otp', { state: { email: userEmail } });
           });
         } catch (resendErr) {
-          console.error('Full resend error:', resendErr);
-          const backendError = resendErr.response?.data?.error;
-          const status = resendErr.response?.status;
-          
           Swal.fire({
             icon: 'error',
             title: 'Failed to Send',
-            text: backendError ? `Error (${status}): ${backendError}` : `Failed to resend email. Status: ${status || 'Network Error'}`,
+            text: resendErr.response?.data?.error || 'Failed to resend code.',
             confirmButtonColor: '#9333ea',
           });
         }

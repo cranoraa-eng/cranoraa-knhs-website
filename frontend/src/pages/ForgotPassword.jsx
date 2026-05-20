@@ -1,12 +1,12 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import api from '../utils/api';
 import toast from 'react-hot-toast';
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -15,10 +15,10 @@ const ForgotPassword = () => {
     setLoading(true);
     try {
       await api.post('/password-reset/', { email });
-      setSubmitted(true);
-      toast.success('Reset link sent to your email.');
+      toast.success('Reset code sent to your email.');
+      navigate('/reset-password', { state: { email } });
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Failed to send reset link.');
+      toast.error(err.response?.data?.error || 'Failed to send reset code.');
     } finally {
       setLoading(false);
     }
@@ -47,46 +47,27 @@ const ForgotPassword = () => {
           <p className="text-slate-500 font-medium">Reset your account password</p>
         </div>
 
-        {!submitted ? (
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <label className="block text-slate-700 text-sm font-bold mb-2 ml-1">Email Address</label>
-              <input
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="juan.delacruz@example.com"
-                className="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:outline-none focus:ring-4 focus:ring-purple-500/10 focus:border-purple-500 transition-all"
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-purple-600 hover:bg-purple-700 text-white font-black py-5 rounded-2xl transition-all shadow-xl shadow-purple-200 active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-3 text-lg"
-            >
-              {loading ? 'Sending...' : 'Send Reset Link'}
-            </button>
-          </form>
-        ) : (
-          <div className="text-center">
-            <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
-              <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-              </svg>
-            </div>
-            <p className="text-slate-700 font-medium mb-8">
-              If an account exists for <strong>{email}</strong>, you will receive a password reset link shortly.
-            </p>
-            <Link 
-              to="/login"
-              className="block w-full bg-purple-600 hover:bg-purple-700 text-white font-black py-4 rounded-2xl transition-all"
-            >
-              Back to Login
-            </Link>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div>
+            <label className="block text-slate-700 text-sm font-bold mb-2 ml-1">Email Address</label>
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="juan.delacruz@example.com"
+              className="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:outline-none focus:ring-4 focus:ring-purple-500/10 focus:border-purple-500 transition-all"
+            />
           </div>
-        )}
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-purple-600 hover:bg-purple-700 text-white font-black py-5 rounded-2xl transition-all shadow-xl shadow-purple-200 active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-3 text-lg"
+          >
+            {loading ? 'Sending...' : 'Send Reset Code'}
+          </button>
+        </form>
 
         <div className="text-center mt-8">
           <Link to="/login" className="text-purple-600 font-bold hover:underline">

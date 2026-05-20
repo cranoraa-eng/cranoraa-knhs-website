@@ -85,12 +85,12 @@ const Signup = () => {
       setLoading(false);
       Swal.fire({
         icon: 'success',
-        title: 'Verification Email Sent!',
-        text: 'Your account has been created. Please check your email to verify your account before logging in.',
-        confirmButtonText: 'OK',
+        title: 'Verification Code Sent!',
+        text: 'Your account has been created. Please check your email for the 6-digit verification code.',
+        confirmButtonText: 'Enter Code',
         confirmButtonColor: '#9333ea',
       }).then(() => {
-        navigate('/login');
+        navigate('/verify-otp', { state: { email } });
       });
     } catch (err) {
       setLoading(false);

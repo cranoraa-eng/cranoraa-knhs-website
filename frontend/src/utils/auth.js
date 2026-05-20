@@ -51,12 +51,12 @@ export const logoutRequest = () => {
   clearSession();
 };
 
-export const verifyOtp = async (email, code) => {
-  const { data } = await api.post('/verify-otp/', { email, code });
+export const verifyOtp = async (email, code, type = 'signup') => {
+  const { data } = await api.post('/verify-otp/', { email, code, type });
   return data;
 };
 
-export const resendOtp = async (email) => {
-  const { data } = await api.post('/resend-otp/', { email });
+export const resendOtp = async (email, type = 'signup') => {
+  const { data } = await api.post('/resend-otp/', { email, type });
   return data;
 };

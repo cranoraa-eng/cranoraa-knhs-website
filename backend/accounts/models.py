@@ -32,32 +32,25 @@ class User(AbstractUser):
 
 
 class OTP(models.Model):
+    OTP_TYPES = [
+        ('signup', 'Signup'),
+        ('password_reset', 'Password Reset'),
+    ]
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='otps')
-    code = models.CharField(max_length=6)
+    hashed_code = models.CharField(max_length=128, default='')
+    otp_type = models.CharField(max_length=20, choices=OTP_TYPES, default='signup')
     created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField(null=True)
     is_used = models.BooleanField(default=False)
     
     def is_expired(self):
         from django.utils import timezone
-        import datetime
-        return timezone.now() > self.created_at + datetime.timedelta(minutes=15)
+        return timezone.now() > self.expires_at
     
     def __str__(self):
-        return f"OTP for {self.user.email}: {self.code}"
+        return f"{self.otp_type} OTP for {self.user.email}"
 
 
-class EmailVerificationToken(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='verification_tokens')
-    token = models.CharField(max_length=100, unique=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    
-    def is_expired(self):
-        from django.utils import timezone
-        import datetime
-        return timezone.now() > self.created_at + datetime.timedelta(days=1)
-    
-    def __str__(self):
-        return f"Token for {self.user.email}"
 
 
 class Profile(models.Model):

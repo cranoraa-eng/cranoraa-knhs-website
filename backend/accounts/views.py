@@ -13,7 +13,7 @@ from .serializers import (UserSerializer, ClassroomSerializer, StudentClassEnrol
     NotificationSerializer, EnrollmentApplicationSerializer, WebsiteContentSerializer,
     GradeSerializer, GradeReportSerializer, ChatRoomSerializer, ChatMessageSerializer, FriendshipSerializer,
     SystemSettingSerializer)
-from .models import User, Classroom, StudentClassEnrollment, Announcement, AnnouncementAttachment, Attendance, LearningMaterial, Subject, ClassroomSubject, ScratchCard, Fee, Notification, EnrollmentApplication, WebsiteContent, Grade, GradeReport, ChatRoom, ChatMessage, MessageReaction, Friendship, SystemSetting, EmailVerificationToken
+from .models import User, Classroom, StudentClassEnrollment, Announcement, AnnouncementAttachment, Attendance, LearningMaterial, Subject, ClassroomSubject, ScratchCard, Fee, Notification, EnrollmentApplication, WebsiteContent, Grade, GradeReport, ChatRoom, ChatMessage, MessageReaction, Friendship, SystemSetting
 from portal.views import log_audit_action
 import logging
 import secrets
@@ -26,62 +26,7 @@ from django.conf import settings
 import random
 import string
 
-def generate_otp():
-    return ''.join(random.choices(string.digits, k=6))
-
-def send_verification_email(user):
-    token = secrets.token_urlsafe(32)
-    EmailVerificationToken.objects.create(user=user, token=token)
-    
-    verification_link = f"{settings.FRONTEND_URL}/verify-email/{token}"
-    
-    subject = 'Verify your KNHS Portal account'
-    message = f"""Hi {user.first_name or user.username},
-
-Welcome to the KNHS School Portal! Please verify your email address by clicking the link below:
-
-{verification_link}
-
-This link will expire in 24 hours.
-
-If you did not create an account, you can safely ignore this email.
-
-— KNHS School Portal
-"""
-    email_from = settings.DEFAULT_FROM_EMAIL
-    recipient_list = [user.email]
-    
-    try:
-        send_mail(subject, message, email_from, recipient_list, fail_silently=False)
-        return True
-    except Exception as e:
-        logger.error(f"Error sending verification email to {user.email}: {str(e)}")
-        # In a real environment, we'd like to know if it's a configuration error
-        raise e
-
-def send_otp_email(user, otp_code):
-    subject = 'Your KNHS Portal Verification Code'
-    message = f"""Hi {user.first_name or user.username},
-
-Your verification code for the KNHS School Portal is:
-
-    {otp_code}
-
-This code expires in 15 minutes. Do not share it with anyone.
-
-If you did not request this code, you can safely ignore this email.
-
-— KNHS School Portal
-"""
-    email_from = settings.DEFAULT_FROM_EMAIL
-    recipient_list = [user.email]
-    
-    try:
-        send_mail(subject, message, email_from, recipient_list)
-        return True
-    except Exception as e:
-        logger.error(f"Error sending OTP email: {str(e)}")
-        return False
+from .utils import create_otp, verify_otp_code, send_resend_otp_email
 
 @csrf_exempt
 @api_view(['POST'])
@@ -252,12 +197,12 @@ def register_view(request):
         
         profile.save()
         
-        # Send verification email - fail silently on initial registration to avoid blocker
-        # The user can use "Resend Verification" on the login page if this fails.
+        # Send verification OTP via Resend
         try:
-            send_verification_email(user)
+            code = create_otp(user, otp_type='signup')
+            send_resend_otp_email(user.email, code, user.first_name or user.username, otp_type='signup')
         except Exception as e:
-            logger.error(f"Initial verification email failed for {user.email}: {e}")
+            logger.error(f"Initial verification OTP failed for {user.email}: {e}")
             
     except Exception as e:
         logger.error(f"Registration error: {str(e)}")
@@ -277,28 +222,23 @@ def register_view(request):
 def verify_otp_view(request):
     email = request.data.get('email')
     code = request.data.get('code')
+    otp_type = request.data.get('type', 'signup')
     
     if not email or not code:
         return Response({'error': 'Email and code are required'}, status=status.HTTP_400_BAD_REQUEST)
         
     try:
         user = User.objects.get(email=email)
-        from .models import OTP
-        otp = OTP.objects.filter(user=user, code=code, is_used=False).order_by('-created_at').first()
+        success, message = verify_otp_code(user, code, otp_type=otp_type)
         
-        if not otp:
-            return Response({'error': 'Invalid verification code'}, status=status.HTTP_400_BAD_REQUEST)
+        if not success:
+            return Response({'error': message}, status=status.HTTP_400_BAD_REQUEST)
             
-        if otp.is_expired():
-            return Response({'error': 'Verification code has expired. Please request a new one.'}, status=status.HTTP_400_BAD_REQUEST)
-            
-        otp.is_used = True
-        otp.save()
+        if otp_type == 'signup':
+            user.is_verified = True
+            user.save()
         
-        user.is_verified = True
-        user.save()
-        
-        return Response({'message': 'Email verified successfully! Your account is now pending admin approval.'})
+        return Response({'message': message})
         
     except User.DoesNotExist:
         return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
@@ -308,21 +248,21 @@ def verify_otp_view(request):
 @permission_classes([AllowAny])
 def resend_otp_view(request):
     email = request.data.get('email')
+    otp_type = request.data.get('type', 'signup')
     
     if not email:
         return Response({'error': 'Email is required'}, status=status.HTTP_400_BAD_REQUEST)
         
     try:
         user = User.objects.get(email=email)
-        if user.is_verified:
+        if otp_type == 'signup' and user.is_verified:
             return Response({'message': 'Email is already verified'})
             
-        from .models import OTP
-        otp_code = generate_otp()
-        OTP.objects.create(user=user, code=otp_code)
-        send_otp_email(user, otp_code)
-        
-        return Response({'message': 'A new verification code has been sent to your email.'})
+        code = create_otp(user, otp_type=otp_type)
+        if send_resend_otp_email(user.email, code, user.first_name or user.username, otp_type=otp_type):
+            return Response({'message': f'A new verification code has been sent to {email}.'})
+        else:
+            return Response({'error': 'Failed to send email. Please try again later.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
     except User.DoesNotExist:
         return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
@@ -396,63 +336,43 @@ def password_reset_request_view(request):
     
     try:
         user = User.objects.get(email=email)
-        # In a real app, you'd use a more secure token logic
-        token = secrets.token_urlsafe(32)
-        # Reuse EmailVerificationToken or create a dedicated ResetToken model
-        # For simplicity, let's just use the same model but maybe add a 'type' field later
-        # Or just create a new model if needed. Let's create a ResetToken model.
-        from .models import EmailVerificationToken as ResetToken
-        ResetToken.objects.create(user=user, token=token)
-        
-        reset_link = f"{settings.FRONTEND_URL}/reset-password/{token}"
-        
-        subject = 'Reset your KNHS Portal password'
-        message = f"""Hi {user.first_name or user.username},
-
-You requested to reset your password. Click the link below to set a new password:
-
-{reset_link}
-
-This link will expire in 1 hour.
-
-If you did not request this, you can safely ignore this email.
-
-— KNHS School Portal
-"""
-        send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [user.email])
-        return Response({'message': 'Password reset link sent to your email.'})
+        code = create_otp(user, otp_type='password_reset')
+        if send_resend_otp_email(user.email, code, user.first_name or user.username, otp_type='password_reset'):
+            return Response({'message': 'Password reset code sent to your email.'})
+        else:
+            return Response({'error': 'Failed to send email.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     except User.DoesNotExist:
-        return Response({'message': 'If an account exists with this email, a reset link has been sent.'})
+        # For security, don't reveal if user exists
+        return Response({'message': 'If an account exists with this email, a reset code has been sent.'})
 
 
 @csrf_exempt
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def password_reset_confirm_view(request):
-    token = request.data.get('token')
+    email = request.data.get('email')
+    code = request.data.get('code')
     new_password = request.data.get('password')
     
-    if not token or not new_password:
-        return Response({'error': 'Token and password are required'}, status=status.HTTP_400_BAD_REQUEST)
+    if not email or not code or not new_password:
+        return Response({'error': 'Email, code, and password are required'}, status=status.HTTP_400_BAD_REQUEST)
     
     if len(new_password) < 8:
         return Response({'error': 'Password must be at least 8 characters long'}, status=status.HTTP_400_BAD_REQUEST)
         
     try:
-        from .models import EmailVerificationToken as ResetToken
-        reset_token = ResetToken.objects.get(token=token)
-        if reset_token.is_expired():
-            reset_token.delete()
-            return Response({'error': 'Token has expired'}, status=status.HTTP_400_BAD_REQUEST)
+        user = User.objects.get(email=email)
+        success, message = verify_otp_code(user, code, otp_type='password_reset')
+        
+        if not success:
+            return Response({'error': message}, status=status.HTTP_400_BAD_REQUEST)
             
-        user = reset_token.user
         user.set_password(new_password)
         user.save()
-        reset_token.delete()
         
         return Response({'message': 'Password reset successful! You can now log in.'})
-    except ResetToken.DoesNotExist:
-        return Response({'error': 'Invalid token'}, status=status.HTTP_400_BAD_REQUEST)
+    except User.DoesNotExist:
+        return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
 
 
 @api_view(['GET'])
@@ -465,26 +385,9 @@ def user_profile(request):
 @permission_classes([AllowAny])
 def get_dev_otp(request):
     """
-    DEV ONLY: Returns the latest unused OTP for a user so it can be
-    displayed in the UI when no real email service is configured.
-    Remove or disable this endpoint before going to production.
+    DEV ONLY: Disabled because OTPs are now hashed.
     """
-    if not settings.DEBUG:
-        return Response({'error': 'Not available in production'}, status=status.HTTP_403_FORBIDDEN)
-    
-    email = request.data.get('email')
-    if not email:
-        return Response({'error': 'Email required'}, status=status.HTTP_400_BAD_REQUEST)
-    
-    try:
-        user = User.objects.get(email=email)
-        from .models import OTP
-        otp = OTP.objects.filter(user=user, is_used=False).order_by('-created_at').first()
-        if otp and not otp.is_expired():
-            return Response({'code': otp.code})
-        return Response({'code': None, 'message': 'No valid OTP found. Request a new one.'})
-    except User.DoesNotExist:
-        return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+    return Response({'error': 'OTP retrieval is disabled for security (OTPs are hashed).'}, status=status.HTTP_403_FORBIDDEN)
 
 
 @api_view(['GET'])

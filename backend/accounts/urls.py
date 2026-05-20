@@ -10,7 +10,7 @@ from .views import (
     ChatRoomViewSet, ChatMessageViewSet, FriendshipViewSet, admin_dashboard_stats, 
     grade_distribution_stats, check_result, public_announcements_view, system_metrics_view, 
     maintenance_feed_view, maintenance_mode_view, force_sync_view, run_backup_view, clear_cache_view,
-    system_settings_view, maintenance_status_view, verify_email_token_view, resend_verification_email_view,
+    system_settings_view, maintenance_status_view,
     password_reset_request_view, password_reset_confirm_view
 )
 
@@ -37,8 +37,6 @@ router.register(r'friendships', FriendshipViewSet, basename='friendship')
 urlpatterns = [
     path('login/', login_view, name='login'),
     path('register/', register_view, name='register'),
-    path('verify-email/', verify_email_token_view, name='verify_email'),
-    path('resend-verification/', resend_verification_email_view, name='resend_verification'),
     path('password-reset/', password_reset_request_view, name='password_reset_request'),
     path('password-reset-confirm/', password_reset_confirm_view, name='password_reset_confirm'),
     path('verify-otp/', verify_otp_view, name='verify_otp'),
