@@ -37,6 +37,12 @@ export const hasToken = () => !!localStorage.getItem('access_token');
 
 export const loginRequest = async (email, password) => {
   const { data } = await api.post('/login/', { email, password });
+  
+  // If user is unverified, don't save session, just return the status info
+  if (data.verified === false) {
+    return data;
+  }
+
   saveSession(data.access, data.refresh, data.user || { email });
   return data.user || { email };
 };

@@ -107,10 +107,14 @@ def login_view(request):
             )
             
         if not user.is_verified:
-            return Response(
-                {'error': 'Please verify your email before logging in.', 'code': 'not_verified'},
-                status=status.HTTP_403_FORBIDDEN
-            )
+            # Return 200 instead of 403 to prevent Axes from locking out the IP
+            # when the user has correct credentials but hasn't verified email yet.
+            return Response({
+                'error': 'Please verify your email before logging in.', 
+                'code': 'not_verified',
+                'verified': False,
+                'email': user.email
+            }, status=status.HTTP_200_OK)
 
         if not user.is_approved:
             return Response(

@@ -9,6 +9,27 @@ const Login = () => {
   const { user, signIn } = useAuth();
   const navigate = useNavigate();
 
+  const handleUnverifiedUser = (userEmail) => {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Email Not Verified',
+      text: 'Please verify your email before logging in. Check your inbox for the verification link.',
+      showCancelButton: true,
+      confirmButtonText: 'Resend Email',
+      cancelButtonText: 'Close',
+      confirmButtonColor: '#9333ea',
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          const res = await api.post('/resend-verification/', { email: userEmail });
+          toast.success(res.data.message || 'Verification email resent!');
+        } catch (resendErr) {
+          toast.error(resendErr.response?.data?.error || 'Failed to resend verification email.');
+        }
+      }
+    });
+  };
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fieldErrors, setFieldErrors] = useState({});
@@ -41,6 +62,14 @@ const Login = () => {
     setLoading(true);
     try {
       const userData = await loginRequest(email, password);
+      
+      // Handle the case where the server returns 200 but with a verification error
+      if (userData?.code === 'not_verified') {
+        setLoading(false);
+        handleUnverifiedUser(userData.email);
+        return;
+      }
+
       signIn(userData);
       toast.success('Welcome back!');
       navigate('/dashboard', { replace: true });
@@ -51,25 +80,7 @@ const Login = () => {
       const message = err.response?.data?.error;
 
       if (status === 403 && code === 'not_verified') {
-        Swal.fire({
-          icon: 'warning',
-          title: 'Email Not Verified',
-          text: 'Please verify your email before logging in. Check your inbox for the verification link.',
-          showCancelButton: true,
-          confirmButtonText: 'Resend Email',
-          cancelButtonText: 'Close',
-          confirmButtonColor: '#9333ea',
-        }).then(async (result) => {
-          if (result.isConfirmed) {
-            try {
-              const res = await api.post('/resend-verification/', { email });
-              toast.success(res.data.message || 'Verification email resent!');
-            } catch (resendErr) {
-              toast.error(resendErr.response?.data?.error || 'Failed to resend verification email.');
-            }
-          }
-        });
-
+        handleUnverifiedUser(email);
       } else if (status === 403 && code === 'not_approved') {
         Swal.fire({
           icon: 'info',
