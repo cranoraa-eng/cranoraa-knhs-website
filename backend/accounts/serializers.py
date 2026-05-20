@@ -150,7 +150,7 @@ class AnnouncementSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'title', 'content', 'category', 'priority', 'status',
             'target_audience', 'author', 'author_name', 'author_email',
-            'is_pinned', 'is_public', 'expiration_date', 'attachment',
+            'is_pinned', 'is_public', 'event_date', 'attachment',
             'attachment_url', 'attachments', 'read_by', 'read_count', 'is_expired',
             'created_at', 'updated_at'
         ]

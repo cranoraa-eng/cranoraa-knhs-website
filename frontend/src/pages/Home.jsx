@@ -400,10 +400,10 @@ const Home = () => {
                         <div className="flex items-start space-x-4">
                           <div className="flex-shrink-0 w-12 h-12 rounded-2xl bg-violet-50 flex flex-col items-center justify-center border border-violet-100">
                             <span className="text-[10px] font-black text-violet-400 uppercase leading-none">
-                              {new Date(event.created_at).toLocaleString('en-US', { month: 'short' })}
+                              {new Date(event.event_date || event.created_at).toLocaleString('en-US', { month: 'short' })}
                             </span>
                             <span className="text-lg font-black text-violet-700 leading-tight">
-                              {new Date(event.created_at).getDate()}
+                              {new Date(event.event_date || event.created_at).getDate()}
                             </span>
                           </div>
                           <div className="flex-grow min-w-0">

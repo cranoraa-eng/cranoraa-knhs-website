@@ -385,7 +385,7 @@ class Announcement(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='account_announcements')
     is_pinned = models.BooleanField(default=False)
     is_public = models.BooleanField(default=False)
-    expiration_date = models.DateTimeField(null=True, blank=True)
+    event_date = models.DateTimeField(null=True, blank=True)
     attachment = models.FileField(upload_to='announcements/attachments/', null=True, blank=True)
     read_by = models.ManyToManyField(User, related_name='read_announcements', blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -400,8 +400,8 @@ class Announcement(models.Model):
     @property
     def is_expired(self):
         from django.utils import timezone
-        if self.expiration_date:
-            return timezone.now() > self.expiration_date
+        if self.event_date:
+            return timezone.now() > self.event_date
         return False
 
 

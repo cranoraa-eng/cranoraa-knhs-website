@@ -716,7 +716,7 @@ class AnnouncementViewSet(viewsets.ModelViewSet):
         # Students only see live announcements
         if user.role == 'student':
             queryset = queryset.filter(status='live')
-            queryset = queryset.exclude(expiration_date__lt=timezone.now())
+            queryset = queryset.exclude(event_date__lt=timezone.now())
 
         # Teachers see live announcements + their own drafts
         elif user.role == 'teacher':
@@ -724,7 +724,7 @@ class AnnouncementViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(
                 Q(status='live') | Q(author=user)
             ).exclude(
-                expiration_date__lt=timezone.now()
+                event_date__lt=timezone.now()
             )
 
         # Admins see everything, optionally filtered by status
@@ -733,7 +733,7 @@ class AnnouncementViewSet(viewsets.ModelViewSet):
                 queryset = queryset.filter(status=status_filter)
             else:
                 queryset = queryset.exclude(
-                    expiration_date__lt=timezone.now(),
+                    event_date__lt=timezone.now(),
                     status='expired'
                 )
 
@@ -2740,3 +2740,48 @@ class FriendshipViewSet(viewsets.ModelViewSet):
             data['friendship_id'] = f.id
             friends.append(data)
         return Response(friends)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def student_calendar_view(request):
+    """
+    Returns events for the school calendar.
+    Currently includes announcements with an event_date.
+    """
+    year = request.query_params.get('year')
+    month = request.query_params.get('month')
+    
+    if not year or not month:
+        return Response({"error": "Year and month are required"}, status=400)
+    
+    try:
+        year = int(year)
+        month = int(month)
+    except ValueError:
+        return Response({"error": "Invalid year or month"}, status=400)
+    
+    # Filter announcements that are live and have an event_date in the given month
+    announcements = Announcement.objects.filter(
+        status='live',
+        event_date__year=year,
+        event_date__month=month
+    )
+    
+    # If the user is a student, only show announcements for 'all' or 'students'
+    if request.user.role == 'student':
+        announcements = announcements.filter(target_audience__in=['all', 'students'])
+    elif request.user.role == 'teacher':
+        announcements = announcements.filter(target_audience__in=['all', 'teachers'])
+    
+    events = []
+    for a in announcements:
+        events.append({
+            'id': f"ann-{a.id}",
+            'title': a.title,
+            'description': a.content[:100] + '...' if len(a.content) > 100 else a.content,
+            'date': a.event_date.date().isoformat(),
+            'type': 'announcement',
+            'category': a.category
+        })
+    
+    return Response(events)
