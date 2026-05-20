@@ -708,73 +708,97 @@ class UserViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['post'])
     def approve(self, request, pk=None):
         """Approve a user account (admin only)"""
-        if request.user.role != 'admin':
-            return Response({'error': 'Unauthorized'}, status=status.HTTP_403_FORBIDDEN)
+        if not request.user.is_authenticated or request.user.role != 'admin':
+            return Response({'error': 'Unauthorized. Admin access required.'}, status=status.HTTP_403_FORBIDDEN)
+        
         try:
             user = User.objects.get(pk=pk)
+            
+            if user.is_approved:
+                return Response({'message': f'{user.email} is already approved.'})
+
+            user.is_approved = True
+            user.save()
+
+            # Notify the user by email
+            try:
+                send_mail(
+                    'Your KNHS Portal Account Has Been Approved',
+                    f'Hi {user.first_name or user.username},\n\nYour account has been approved by the administrator. You can now log in to the KNHS School Portal.\n\n— KNHS School Portal',
+                    settings.DEFAULT_FROM_EMAIL,
+                    [user.email],
+                    fail_silently=True
+                )
+            except Exception as e:
+                logger.error(f"Failed to send approval email: {e}")
+
+            # Log the action
+            try:
+                log_audit_action(
+                    user=request.user,
+                    action='approve',
+                    model_name='User',
+                    object_id=user.id,
+                    object_repr=str(user),
+                    description=f'Admin approved account for {user.email}',
+                    request=request,
+                )
+            except Exception as audit_err:
+                logger.error(f"Failed to log audit action for approval: {audit_err}")
+
+            return Response({'message': f'Account for {user.email} has been approved successfully.'})
+
         except User.DoesNotExist:
             return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
-
-        user.is_approved = True
-        user.save()
-
-        # Notify the user by email
-        try:
-            send_mail(
-                'Your KNHS Portal Account Has Been Approved',
-                f'Hi {user.first_name or user.username},\n\nYour account has been approved by the administrator. You can now log in to the KNHS School Portal.\n\n— KNHS School Portal',
-                settings.DEFAULT_FROM_EMAIL,
-                [user.email],
-            )
         except Exception as e:
-            logger.error(f"Failed to send approval email: {e}")
-
-        log_audit_action(
-            user=request.user,
-            action='approve',
-            model_name='User',
-            object_id=user.id,
-            object_repr=str(user),
-            description=f'Admin approved account for {user.email}',
-            request=request,
-        )
-        return Response({'message': f'{user.email} has been approved.'})
+            logger.error(f"Error in approve action: {str(e)}")
+            return Response({'error': f'Failed to approve account: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     @action(detail=True, methods=['post'])
     def reject(self, request, pk=None):
         """Reject (delete) a pending user account (admin only)"""
-        if request.user.role != 'admin':
-            return Response({'error': 'Unauthorized'}, status=status.HTTP_403_FORBIDDEN)
+        if not request.user.is_authenticated or request.user.role != 'admin':
+            return Response({'error': 'Unauthorized. Admin access required.'}, status=status.HTTP_403_FORBIDDEN)
+        
         try:
             user = User.objects.get(pk=pk)
+            email = user.email
+            reason = request.data.get('reason', 'Your account registration has been rejected by the administrator.')
+
+            # Notify before deleting
+            try:
+                send_mail(
+                    'Your KNHS Portal Account Registration',
+                    f'Hi {user.first_name or user.username},\n\n{reason}\n\nIf you believe this is a mistake, please contact the school administrator.\n\n— KNHS School Portal',
+                    settings.DEFAULT_FROM_EMAIL,
+                    [email],
+                    fail_silently=True
+                )
+            except Exception as e:
+                logger.error(f"Failed to send rejection email: {e}")
+
+            # Log the action before deleting
+            try:
+                log_audit_action(
+                    user=request.user,
+                    action='reject',
+                    model_name='User',
+                    object_id=user.id,
+                    object_repr=str(user),
+                    description=f'Admin rejected account for {email}. Reason: {reason}',
+                    request=request,
+                )
+            except Exception as audit_err:
+                logger.error(f"Failed to log audit action for rejection: {audit_err}")
+
+            user.delete()
+            return Response({'message': f'Account for {email} has been rejected and removed.'})
+
         except User.DoesNotExist:
             return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
-
-        email = user.email
-        reason = request.data.get('reason', 'Your account registration has been rejected by the administrator.')
-
-        # Notify before deleting
-        try:
-            send_mail(
-                'Your KNHS Portal Account Registration',
-                f'Hi {user.first_name or user.username},\n\n{reason}\n\nIf you believe this is a mistake, please contact the school administrator.\n\n— KNHS School Portal',
-                settings.DEFAULT_FROM_EMAIL,
-                [email],
-            )
         except Exception as e:
-            logger.error(f"Failed to send rejection email: {e}")
-
-        log_audit_action(
-            user=request.user,
-            action='reject',
-            model_name='User',
-            object_id=user.id,
-            object_repr=str(user),
-            description=f'Admin rejected account for {email}',
-            request=request,
-        )
-        user.delete()
-        return Response({'message': f'{email} has been rejected and removed.'})
+            logger.error(f"Error in reject action: {str(e)}")
+            return Response({'error': f'Failed to reject account: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     @action(detail=False, methods=['get'])
     def search(self, request):

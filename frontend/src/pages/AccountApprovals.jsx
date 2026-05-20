@@ -42,11 +42,12 @@ const AccountApprovals = () => {
 
     setProcessing(user.id);
     try {
-      await api.post(`/users/${user.id}/approve/`);
-      toast.success(`${user.email} approved`);
+      const res = await api.post(`/users/${user.id}/approve/`);
+      toast.success(res.data.message || `${user.email} approved`);
       fetchPending();
-    } catch {
-      toast.error('Failed to approve account');
+    } catch (err) {
+      const msg = err.response?.data?.error || 'Failed to approve account';
+      toast.error(msg);
     } finally {
       setProcessing(null);
     }
@@ -70,11 +71,12 @@ const AccountApprovals = () => {
 
     setProcessing(user.id);
     try {
-      await api.post(`/users/${user.id}/reject/`, { reason: result.value || undefined });
-      toast.success(`${user.email} rejected and removed`);
+      const res = await api.post(`/users/${user.id}/reject/`, { reason: result.value || undefined });
+      toast.success(res.data.message || `${user.email} rejected and removed`);
       fetchPending();
-    } catch {
-      toast.error('Failed to reject account');
+    } catch (err) {
+      const msg = err.response?.data?.error || 'Failed to reject account';
+      toast.error(msg);
     } finally {
       setProcessing(null);
     }
