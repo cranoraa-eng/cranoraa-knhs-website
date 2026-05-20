@@ -452,7 +452,17 @@ const Home = () => {
                             {announcement.category}
                           </span>
                           <span className="text-[10px] md:text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                            {formatDate(announcement.created_at)}
+                            {announcement.event_date ? (
+                              <div className="flex items-center gap-1.5 text-violet-600">
+                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                                {new Date(announcement.event_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                                {announcement.end_date && ` - ${new Date(announcement.end_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`}
+                              </div>
+                            ) : (
+                              formatDate(announcement.created_at)
+                            )}
                           </span>
                         </div>
                         
@@ -466,7 +476,7 @@ const Home = () => {
                         
                         <div className="flex flex-wrap gap-2 md:gap-3 items-center mt-auto pt-5 md:pt-6 border-t border-slate-100">
                           <Link 
-                            to={`/calendar?year=${new Date(announcement.created_at).getFullYear()}&month=${new Date(announcement.created_at).getMonth() + 1}`} 
+                            to={`/calendar?year=${new Date(announcement.event_date || announcement.created_at).getFullYear()}&month=${new Date(announcement.event_date || announcement.created_at).getMonth() + 1}`} 
                             className="inline-flex items-center text-[11px] md:text-xs font-black text-violet-600 group-hover:translate-x-1 transition-transform"
                           >
                             Read More
