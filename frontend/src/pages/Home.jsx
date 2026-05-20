@@ -220,55 +220,55 @@ const Home = () => {
   return (
     <div className="min-h-screen bg-white overflow-hidden">
       {/* Hero Section */}
-      <section className="relative min-h-[90vh] flex items-center pt-20 overflow-hidden">
+      <section className="relative min-h-[70vh] md:min-h-[90vh] flex items-center pt-12 md:pt-20 overflow-hidden">
         {/* Abstract Background Shapes */}
-        <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/4 w-[800px] h-[800px] bg-violet-100/50 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-0 left-0 translate-y-1/2 -translate-x-1/4 w-[600px] h-[600px] bg-indigo-100/50 rounded-full blur-3xl"></div>
+        <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/4 w-[400px] md:w-[800px] h-[400px] md:h-[800px] bg-violet-100/50 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-0 left-0 translate-y-1/2 -translate-x-1/4 w-[300px] md:w-[600px] h-[300px] md:h-[600px] bg-indigo-100/50 rounded-full blur-3xl"></div>
 
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-            <div className="space-y-8 animate-fadeIn">
-              <div className="inline-flex items-center space-x-2 px-4 py-2 rounded-full bg-violet-50 border border-violet-100">
-                <span className="flex h-2 w-2 rounded-full bg-violet-600 animate-pulse"></span>
-                <span className="text-xs font-black text-violet-700 uppercase tracking-widest">Enrollment is now open</span>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-16 items-center">
+            <div className="space-y-4 md:space-y-8 animate-fadeIn text-center lg:text-left">
+              <div className="inline-flex items-center space-x-2 px-3 py-1.5 rounded-full bg-violet-50 border border-violet-100 mx-auto lg:mx-0">
+                <span className="flex h-1.5 w-1.5 rounded-full bg-violet-600 animate-pulse"></span>
+                <span className="text-[9px] md:text-xs font-black text-violet-700 uppercase tracking-widest">Enrollment is now open</span>
               </div>
               
-              <h1 className="text-6xl md:text-7xl font-black text-slate-900 leading-[1.1]">
+              <h1 className="text-4xl md:text-7xl font-black text-slate-900 leading-[1.1] tracking-tight">
                 {content.home_hero_title?.content || 'Kiwalan National High School'}
               </h1>
               
-              <p className="text-xl text-slate-600 font-medium leading-relaxed max-w-xl">
+              <p className="text-base md:text-xl text-slate-600 font-medium leading-relaxed max-w-xl mx-auto lg:mx-0">
                 {content.home_hero_subtitle?.content || 'Empowering Minds, Shaping Futures through excellence in education and character development.'}
               </p>
 
-              <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
                 <Link
                   to="/enroll"
-                  className="px-10 py-4 rounded-2xl bg-violet-600 text-white font-bold text-lg hover:bg-violet-700 transition-all shadow-xl shadow-violet-200 hover:-translate-y-1 active:scale-95 text-center"
+                  className="px-8 py-3.5 rounded-xl md:rounded-2xl bg-violet-600 text-white font-bold text-base md:text-lg hover:bg-violet-700 transition-all shadow-xl shadow-violet-200 hover:-translate-y-1 active:scale-95 text-center"
                 >
                   Start Application
                 </Link>
                 <Link
                   to="/login"
-                  className="px-10 py-4 rounded-2xl bg-white border-2 border-slate-100 text-slate-700 font-bold text-lg hover:bg-slate-50 transition-all hover:-translate-y-1 active:scale-95 text-center"
+                  className="px-8 py-3.5 rounded-xl md:rounded-2xl bg-white border-2 border-slate-100 text-slate-700 font-bold text-base md:text-lg hover:bg-slate-50 transition-all hover:-translate-y-1 active:scale-95 text-center"
                 >
                   Portal Login
                 </Link>
               </div>
 
-              <div className="flex items-center space-x-4 pt-4">
-                <div className="flex -space-x-3">
+              <div className="flex items-center justify-center lg:justify-start space-x-3 pt-2">
+                <div className="flex -space-x-2">
                   {[1,2,3,4].map(i => (
                     <img 
                       key={i}
                       src={`https://i.pravatar.cc/100?img=${i+10}`} 
-                      className="w-10 h-10 rounded-full border-2 border-white object-cover" 
+                      className="w-8 h-8 rounded-full border-2 border-white object-cover shadow-sm" 
                       alt="Student"
                     />
                   ))}
                 </div>
-                <p className="text-sm font-bold text-slate-500">
-                  Joined by <span className="text-violet-600">1,200+</span> ambitious students
+                <p className="text-[11px] md:text-sm font-bold text-slate-500">
+                  Joined by <span className="text-violet-600">1,200+</span> students
                 </p>
               </div>
             </div>
@@ -303,15 +303,15 @@ const Home = () => {
       </section>
 
       {/* Features Section */}
-      <section className="py-32 bg-slate-50">
+      <section className="py-16 md:py-32 bg-slate-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto mb-20">
-            <h2 className="text-xs font-black text-violet-600 uppercase tracking-[0.3em] mb-4">Core Strengths</h2>
-            <h3 className="text-4xl md:text-5xl font-black text-slate-900 mb-6">Why Choose Kiwalan NHS?</h3>
-            <p className="text-lg text-slate-500 font-medium">We provide a holistic learning environment that combines academic rigor with character building.</p>
+          <div className="text-center max-w-3xl mx-auto mb-12 md:mb-20">
+            <h2 className="text-[10px] md:text-xs font-black text-violet-600 uppercase tracking-[0.3em] mb-3">Core Strengths</h2>
+            <h3 className="text-3xl md:text-5xl font-black text-slate-900 mb-4 md:mb-6">Why Choose Kiwalan NHS?</h3>
+            <p className="text-base md:text-lg text-slate-500 font-medium leading-relaxed">We provide a holistic learning environment that combines academic rigor with character building.</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-10">
             {[
               { 
                 title: content.home_feature_1_title?.content || 'Quality Education', 
@@ -332,14 +332,14 @@ const Home = () => {
                 color: 'indigo'
               }
             ].map((feature, idx) => (
-              <div key={idx} className="group p-10 rounded-[2.5rem] bg-white border border-slate-100 shadow-sm hover:shadow-2xl hover:border-violet-100 hover:-translate-y-2 transition-all duration-300">
-                <div className={`w-16 h-16 mb-8 rounded-2xl bg-${feature.color}-50 flex items-center justify-center group-hover:scale-110 transition-transform`}>
-                  <svg className={`w-8 h-8 text-${feature.color}-600`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div key={idx} className="group p-8 md:p-10 rounded-3xl md:rounded-[2.5rem] bg-white border border-slate-100 shadow-sm hover:shadow-2xl hover:border-violet-100 transition-all duration-300">
+                <div className={`w-12 h-12 md:w-16 md:h-16 mb-6 md:mb-8 rounded-xl md:rounded-2xl bg-${feature.color}-50 flex items-center justify-center group-hover:scale-110 transition-transform`}>
+                  <svg className={`w-6 h-6 md:w-8 md:h-8 text-${feature.color}-600`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={feature.icon} />
                   </svg>
                 </div>
-                <h4 className="text-2xl font-black text-slate-800 mb-4">{feature.title}</h4>
-                <p className="text-slate-500 font-medium leading-relaxed">{feature.desc}</p>
+                <h4 className="text-xl md:text-2xl font-black text-slate-800 mb-3 md:mb-4">{feature.title}</h4>
+                <p className="text-sm md:text-base text-slate-500 font-medium leading-relaxed">{feature.desc}</p>
               </div>
             ))}
           </div>
@@ -347,23 +347,23 @@ const Home = () => {
       </section>
 
       {/* Stats Banner */}
-      <section className="py-20 bg-slate-900 overflow-hidden relative">
+      <section className="py-12 md:py-20 bg-slate-900 overflow-hidden relative">
         <div className="absolute top-0 left-0 w-full h-full opacity-10">
-          <div className="absolute top-0 left-0 w-64 h-64 bg-violet-500 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-0 right-0 w-96 h-96 bg-indigo-500 rounded-full blur-3xl"></div>
+          <div className="absolute top-0 left-0 w-32 md:w-64 h-32 md:h-64 bg-violet-500 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-0 right-0 w-48 md:w-96 h-48 md:h-96 bg-indigo-500 rounded-full blur-3xl"></div>
         </div>
         
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-12 text-center">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12 text-center">
             {[
               { label: 'Students', val: '1,200+' },
               { label: 'Graduates', val: '5,000+' },
               { label: 'Teachers', val: '80+' },
               { label: 'Awards', val: '150+' },
             ].map((stat, idx) => (
-              <div key={idx} className="space-y-2">
-                <div className="text-5xl font-black text-white">{stat.val}</div>
-                <div className="text-xs font-black text-violet-400 uppercase tracking-[0.2em]">{stat.label}</div>
+              <div key={idx} className="space-y-1 md:space-y-2">
+                <div className="text-3xl md:text-5xl font-black text-white">{stat.val}</div>
+                <div className="text-[9px] md:text-xs font-black text-violet-400 uppercase tracking-[0.2em]">{stat.label}</div>
               </div>
             ))}
           </div>
@@ -371,13 +371,13 @@ const Home = () => {
       </section>
 
       {/* Announcements & Events Section */}
-      <section className="py-32 bg-white">
+      <section className="py-16 md:py-32 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col lg:flex-row justify-between items-end mb-16 gap-8">
+          <div className="flex flex-col lg:flex-row justify-between items-center lg:items-end mb-12 md:mb-16 gap-6 md:gap-8 text-center lg:text-left">
             <div className="max-w-2xl">
-              <h2 className="text-xs font-black text-violet-600 uppercase tracking-[0.3em] mb-4">Stay Updated</h2>
-              <h3 className="text-4xl md:text-5xl font-black text-slate-900 mb-6">Announcements & School Calendar</h3>
-              <p className="text-lg text-slate-500 font-medium leading-relaxed">
+              <h2 className="text-[10px] md:text-xs font-black text-violet-600 uppercase tracking-[0.3em] mb-3">Stay Updated</h2>
+              <h3 className="text-3xl md:text-5xl font-black text-slate-900 mb-4 md:mb-6">Announcements & School Calendar</h3>
+              <p className="text-base md:text-lg text-slate-500 font-medium leading-relaxed">
                 Stay informed with the latest updates and upcoming events. 
                 For the full schedule, visit our <Link to="/calendar" className="text-violet-600 hover:underline font-bold">Event Calendar</Link>.
               </p>
@@ -385,7 +385,7 @@ const Home = () => {
             <div className="flex gap-4">
               <Link 
                 to="/calendar" 
-                className="px-6 py-3 rounded-xl bg-violet-50 text-violet-600 font-bold hover:bg-violet-100 transition-all flex items-center border border-violet-100"
+                className="px-5 py-2.5 md:px-6 md:py-3 rounded-xl bg-violet-50 text-violet-600 font-bold text-sm md:text-base hover:bg-violet-100 transition-all flex items-center border border-violet-100"
               >
                 Full Calendar
                 <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
@@ -393,23 +393,23 @@ const Home = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 md:gap-12">
             {/* Main Announcements Column */}
-            <div className="lg:col-span-2 space-y-8">
-              <div className="flex items-center justify-between mb-4">
-                <h4 className="text-xl font-black text-slate-900">Latest Announcements</h4>
-                <Link to="/login" className="text-sm font-bold text-violet-600 hover:text-violet-700">View All</Link>
+            <div className="lg:col-span-2 space-y-6 md:space-y-8">
+              <div className="flex items-center justify-between mb-2">
+                <h4 className="text-lg md:text-xl font-black text-slate-900">Latest Announcements</h4>
+                <Link to="/login" className="text-xs md:text-sm font-bold text-violet-600 hover:text-violet-700">View All</Link>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6">
                 {generalAnnouncements.length > 0 ? (
                   generalAnnouncements.map((announcement) => {
                     const imageUrl = getFirstImage(announcement);
                     const pdfs = getPDFs(announcement);
                     return (
-                      <div key={announcement.id} className="group p-8 rounded-[2.5rem] bg-slate-50 hover:bg-white border border-transparent hover:border-violet-100 hover:shadow-2xl transition-all duration-300 flex flex-col h-full">
+                      <div key={announcement.id} className="group p-6 md:p-8 rounded-3xl md:rounded-[2.5rem] bg-slate-50 hover:bg-white border border-transparent hover:border-violet-100 hover:shadow-2xl transition-all duration-300 flex flex-col h-full">
                         {imageUrl && (
-                          <div className="relative h-48 mb-6 rounded-3xl overflow-hidden border border-slate-100">
+                          <div className="relative h-40 md:h-48 mb-5 md:mb-6 rounded-2xl md:rounded-3xl overflow-hidden border border-slate-100">
                             <img 
                               src={imageUrl} 
                               alt={announcement.title}
@@ -417,13 +417,12 @@ const Home = () => {
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-slate-900/20 to-transparent"></div>
                             
-                            {/* Magnifying Glass Overlay */}
                             <button 
                               onClick={() => setZoomedImage(imageUrl)}
                               className="absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                             >
-                              <div className="w-12 h-12 rounded-full bg-white/90 flex items-center justify-center text-slate-900 shadow-xl">
-                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-white/90 flex items-center justify-center text-slate-900 shadow-xl">
+                                <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                 </svg>
                               </div>
@@ -431,30 +430,30 @@ const Home = () => {
                           </div>
                         )}
                         
-                        <div className="flex items-center justify-between mb-6">
-                          <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${getCategoryColor(announcement.category)}`}>
+                        <div className="flex items-center justify-between mb-4 md:mb-6">
+                          <span className={`px-2.5 py-0.5 md:px-3 md:py-1 rounded-full text-[9px] md:text-[10px] font-black uppercase tracking-widest border ${getCategoryColor(announcement.category)}`}>
                             {announcement.category}
                           </span>
-                          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                          <span className="text-[10px] md:text-[11px] font-bold text-slate-400 uppercase tracking-wider">
                             {formatDate(announcement.created_at)}
                           </span>
                         </div>
                         
-                        <h5 className="text-lg font-black text-slate-900 mb-4 group-hover:text-violet-600 transition-colors line-clamp-2">
+                        <h5 className="text-base md:text-lg font-black text-slate-900 mb-3 md:mb-4 group-hover:text-violet-600 transition-colors line-clamp-2">
                           {announcement.title}
                         </h5>
                         
-                        <p className="text-slate-500 text-sm font-medium leading-relaxed mb-6 line-clamp-3 flex-grow">
+                        <p className="text-slate-500 text-xs md:text-sm font-medium leading-relaxed mb-5 md:mb-6 line-clamp-3 flex-grow">
                           {announcement.content}
                         </p>
                         
-                        <div className="flex flex-wrap gap-3 items-center mt-auto pt-6 border-t border-slate-100">
+                        <div className="flex flex-wrap gap-2 md:gap-3 items-center mt-auto pt-5 md:pt-6 border-t border-slate-100">
                           <Link 
                             to={`/calendar?year=${new Date(announcement.created_at).getFullYear()}&month=${new Date(announcement.created_at).getMonth() + 1}`} 
-                            className="inline-flex items-center text-xs font-black text-violet-600 group-hover:translate-x-1 transition-transform"
+                            className="inline-flex items-center text-[11px] md:text-xs font-black text-violet-600 group-hover:translate-x-1 transition-transform"
                           >
                             Read More
-                            <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4 4H3" /></svg>
+                            <svg className="w-3.5 h-3.5 md:w-4 md:h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4 4H3" /></svg>
                           </Link>
 
                           {pdfs.map((pdf, idx) => (
@@ -463,12 +462,12 @@ const Home = () => {
                               href={pdf.url}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="inline-flex items-center px-3 py-1.5 rounded-lg bg-red-50 text-red-600 text-[10px] font-black uppercase tracking-wider hover:bg-red-100 transition-colors"
+                              className="inline-flex items-center px-2 py-1 md:px-3 md:py-1.5 rounded-lg bg-red-50 text-red-600 text-[9px] md:text-[10px] font-black uppercase tracking-wider hover:bg-red-100 transition-colors"
                             >
-                              <svg className="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <svg className="w-3 h-3 md:w-3.5 md:h-3.5 mr-1 md:mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                               </svg>
-                              PDF Download
+                              PDF
                             </a>
                           ))}
                         </div>
@@ -477,16 +476,16 @@ const Home = () => {
                   })
                 ) : (
                   [1, 2].map((i) => (
-                    <div key={i} className="p-8 rounded-[2.5rem] bg-slate-50 border border-slate-100 animate-pulse h-64"></div>
+                    <div key={i} className="p-8 rounded-3xl md:rounded-[2.5rem] bg-slate-50 border border-slate-100 animate-pulse h-64"></div>
                   ))
                 )}
               </div>
             </div>
 
             {/* Upcoming Events Column */}
-            <div className="space-y-8">
-              <div className="flex items-center justify-between mb-4">
-                <h4 className="text-xl font-black text-slate-900">Events Calendar</h4>
+            <div className="space-y-6 md:space-y-8">
+              <div className="flex items-center justify-between mb-2 md:mb-4">
+                <h4 className="text-lg md:text-xl font-black text-slate-900">Events Calendar</h4>
               </div>
 
               {/* Mini Calendar Component */}
@@ -495,16 +494,61 @@ const Home = () => {
                 onSelectDay={handleSelectDay}
               />
 
-              <div className="flex items-center justify-between mb-4">
-                <h4 className="text-xl font-black text-slate-900">
+              <div className="flex items-center justify-between mb-2 md:mb-4">
+                <h4 className="text-lg md:text-xl font-black text-slate-900">
                   {selectedDayLabel ? `Events on ${new Date().toLocaleString('en-US', { month: 'short' })} ${selectedDayLabel}` : 'Upcoming Events'}
                 </h4>
-                <Link to="/calendar" className="text-sm font-bold text-violet-600 hover:text-violet-700">All Events</Link>
+                <Link to="/calendar" className="text-xs md:text-sm font-bold text-violet-600 hover:text-violet-700">All</Link>
               </div>
 
               <div className="space-y-4">
                 {(selectedDayLabel ? selectedDateEvents : upcomingEvents).length > 0 ? (
                   (selectedDayLabel ? selectedDateEvents : upcomingEvents).map((event) => {
+                    const eventDate = new Date(event.event_date || event.created_at);
+                    
+                    return (
+                      <Link 
+                        to={`/calendar?year=${eventDate.getFullYear()}&month=${eventDate.getMonth() + 1}`}
+                        key={event.id} 
+                        className="group p-4 md:p-6 rounded-2xl md:rounded-3xl bg-white border border-slate-100 hover:border-violet-100 hover:shadow-xl transition-all duration-300 block"
+                      >
+                        <div className="flex items-start space-x-3 md:space-x-4">
+                          <div className="flex-shrink-0 w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl bg-violet-50 flex flex-col items-center justify-center border border-violet-100">
+                            <span className="text-[8px] md:text-[10px] font-black text-violet-400 uppercase leading-none">
+                              {eventDate.toLocaleString('en-US', { month: 'short' })}
+                            </span>
+                            <span className="text-base md:text-lg font-black text-violet-700 leading-tight">
+                              {eventDate.getDate()}
+                            </span>
+                          </div>
+                          <div className="flex-grow min-w-0">
+                            <h6 className="text-[13px] md:text-sm font-black text-slate-900 group-hover:text-violet-600 transition-colors truncate mb-0.5 md:mb-1">
+                              {event.title}
+                            </h6>
+                            <p className="text-[11px] md:text-xs text-slate-500 font-medium line-clamp-2 leading-relaxed">
+                              {event.content}
+                            </p>
+                          </div>
+                        </div>
+                      </Link>
+                    );
+                  })
+                ) : (
+                  <div className="p-6 md:p-8 rounded-2xl md:rounded-3xl bg-slate-50 border border-slate-100 text-center">
+                    <div className="w-10 h-10 md:w-12 md:h-12 bg-white rounded-xl md:rounded-2xl flex items-center justify-center mx-auto mb-3 md:mb-4 shadow-sm">
+                      <svg className="w-5 h-5 md:w-6 md:h-6 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                    </div>
+                    <p className="text-[13px] md:text-sm font-bold text-slate-400">No events scheduled</p>
+                    <p className="text-[9px] md:text-[10px] text-slate-400 mt-1 uppercase tracking-widest font-black">Check back later</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
                     const imageUrl = getFirstImage(event);
                     const pdfs = getPDFs(event);
                     const eventDate = new Date(event.event_date || event.created_at);
