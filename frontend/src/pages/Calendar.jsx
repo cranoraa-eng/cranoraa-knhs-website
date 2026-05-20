@@ -92,10 +92,17 @@ const Calendar = () => {
   const days = getDaysInMonth(currentMonth);
 
   return (
-    <div className="overflow-y-auto h-[calc(100vh-4rem)] p-6">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold text-gray-800">Calendar</h1>
-        <Link to="/" className="text-sm font-semibold text-purple-600 hover:text-purple-800 flex items-center gap-2">
+    <div className="overflow-y-auto h-[calc(100vh-4rem)] bg-slate-50/50 p-4 md:p-8">
+      {/* Header */}
+      <div className="max-w-6xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+        <div>
+          <h1 className="text-3xl font-black text-slate-900 tracking-tight uppercase">School Calendar</h1>
+          <p className="text-sm text-slate-500 font-medium mt-1">Events, holidays, and academic schedules</p>
+        </div>
+        <Link 
+          to="/" 
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white border border-slate-200 text-slate-600 font-bold text-sm hover:bg-slate-50 transition-all shadow-sm w-fit"
+        >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
           </svg>
@@ -103,89 +110,134 @@ const Calendar = () => {
         </Link>
       </div>
       
-      <div className="bg-white border border-gray-300 rounded-lg p-6 shadow-sm">
-        {/* Calendar Header */}
-        <div className="flex justify-between items-center mb-6">
-          <button
-            onClick={goToPreviousMonth}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-          >
-            <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-          </button>
-          <h2 className="text-xl font-bold text-gray-800">
-            {monthNames[currentMonth.getMonth()]} {currentMonth.getFullYear()}
-          </h2>
-          <button
-            onClick={goToNextMonth}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-          >
-            <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
-        </div>
-
-        {/* Calendar Grid */}
-        <div className="grid grid-cols-7 gap-2 mb-4">
-          {dayNames.map((day) => (
-            <div key={day} className="text-center text-sm font-semibold text-gray-600 py-2">
-              {day}
-            </div>
-          ))}
-        </div>
-        <div className="grid grid-cols-7 gap-2">
-          {days.map((day, index) => {
-            const event = getEventForDay(day);
-            return (
-              <div
-                key={index}
-                className={`min-h-24 p-2 border rounded-lg ${
-                  day
-                    ? 'hover:bg-gray-50 cursor-pointer'
-                    : 'bg-gray-100'
-                }`}
-              >
-                {day && (
-                  <>
-                    <span className="text-sm font-medium text-gray-800">{day}</span>
-                    {event && (
-                      <div className="mt-1">
-                        <div className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded truncate">
-                          {event.title}
-                        </div>
-                      </div>
-                    )}
-                  </>
-                )}
+      <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Left Column: Calendar Grid */}
+        <div className="lg:col-span-2 space-y-6">
+          <div className="bg-white border border-slate-200 rounded-[2rem] p-6 shadow-sm">
+            {/* Calendar Header */}
+            <div className="flex justify-between items-center mb-8 px-2">
+              <h2 className="text-2xl font-black text-slate-900 uppercase tracking-tight">
+                {monthNames[currentMonth.getMonth()]} <span className="text-violet-600">{currentMonth.getFullYear()}</span>
+              </h2>
+              <div className="flex gap-2">
+                <button
+                  onClick={goToPreviousMonth}
+                  className="p-2.5 hover:bg-slate-50 border border-slate-100 rounded-xl transition-all text-slate-600 hover:text-violet-600"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+                <button
+                  onClick={goToNextMonth}
+                  className="p-2.5 hover:bg-slate-50 border border-slate-100 rounded-xl transition-all text-slate-600 hover:text-violet-600"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
               </div>
-            );
-          })}
-        </div>
+            </div>
 
-        {/* Upcoming Events */}
-        <div className="mt-8">
-          <h3 className="text-lg font-bold text-gray-800 mb-4">Upcoming Events</h3>
-          {events.length === 0 ? (
-            <p className="text-gray-500">No upcoming events this month.</p>
-          ) : (
-            <div className="space-y-3">
-              {events.map((event) => (
-                <div key={event.id} className="flex items-center p-4 bg-gray-50 rounded-lg border border-gray-200">
-                  <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mr-4">
-                    <span className="text-sm font-bold text-purple-700">
-                      {new Date(event.date).getDate()}
-                    </span>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-gray-800">{event.title}</h4>
-                    <p className="text-sm text-gray-600">{event.description || 'No description'}</p>
-                  </div>
+            {/* Calendar Grid */}
+            <div className="grid grid-cols-7 gap-2 mb-4">
+              {dayNames.map((day) => (
+                <div key={day} className="text-center text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] py-2">
+                  {day}
                 </div>
               ))}
             </div>
-          )}
+            <div className="grid grid-cols-7 gap-2">
+              {days.map((day, index) => {
+                const event = getEventForDay(day);
+                const isToday = day === new Date().getDate() && 
+                                currentMonth.getMonth() === new Date().getMonth() && 
+                                currentMonth.getFullYear() === new Date().getFullYear();
+                
+                return (
+                  <div
+                    key={index}
+                    className={`min-h-[80px] md:min-h-[100px] p-2 border rounded-2xl transition-all relative group ${
+                      day
+                        ? 'bg-white border-slate-100 hover:border-violet-200 hover:shadow-lg hover:shadow-violet-50/50 cursor-pointer'
+                        : 'bg-slate-50/50 border-transparent'
+                    } ${isToday ? 'ring-2 ring-violet-600 ring-offset-2 border-violet-200' : ''}`}
+                  >
+                    {day && (
+                      <>
+                        <span className={`text-sm font-black ${isToday ? 'text-violet-600' : 'text-slate-400 group-hover:text-slate-900'}`}>
+                          {day}
+                        </span>
+                        {event && (
+                          <div className="mt-2">
+                            <div className="text-[10px] font-bold bg-violet-50 text-violet-700 p-1.5 rounded-lg border border-violet-100 line-clamp-2 leading-tight">
+                              {event.title}
+                            </div>
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* Right Column: Upcoming Events List */}
+        <div className="space-y-6">
+          <div className="bg-white border border-slate-200 rounded-[2rem] p-6 shadow-sm">
+            <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight mb-6 flex items-center gap-2">
+              <span className="w-2 h-2 bg-violet-600 rounded-full animate-pulse"></span>
+              Upcoming Events
+            </h3>
+            
+            {events.length === 0 ? (
+              <div className="text-center py-12">
+                <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-slate-100">
+                  <svg className="w-8 h-8 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <p className="text-sm font-bold text-slate-400">No events scheduled for this month</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {events.map((event) => (
+                  <div 
+                    key={event.id} 
+                    className="group p-4 bg-slate-50 hover:bg-white border border-transparent hover:border-violet-100 rounded-2xl transition-all duration-300 hover:shadow-xl hover:shadow-violet-50/50"
+                  >
+                    <div className="flex items-start gap-4">
+                      <div className="w-12 h-12 bg-white rounded-xl flex flex-col items-center justify-center border border-slate-100 shadow-sm shrink-0">
+                        <span className="text-[9px] font-black text-slate-400 uppercase leading-none">
+                          {new Date(event.date).toLocaleString('en-US', { month: 'short' })}
+                        </span>
+                        <span className="text-lg font-black text-violet-600 leading-tight">
+                          {new Date(event.date).getDate()}
+                        </span>
+                      </div>
+                      <div className="min-w-0">
+                        <h4 className="font-black text-slate-800 text-sm group-hover:text-violet-600 transition-colors truncate">
+                          {event.title}
+                        </h4>
+                        <p className="text-xs text-slate-500 font-medium line-clamp-2 mt-1 leading-relaxed">
+                          {event.description || 'No description provided'}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <Link 
+              to="/enroll" 
+              className="mt-8 w-full py-4 rounded-2xl bg-slate-900 text-white font-black text-center text-xs uppercase tracking-widest hover:bg-slate-800 transition-all shadow-lg block"
+            >
+              Enroll for SY 2026-2027
+            </Link>
+          </div>
         </div>
       </div>
     </div>
