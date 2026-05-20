@@ -68,6 +68,16 @@ const Home = () => {
     });
   };
 
+  const getFirstImage = (announcement) => {
+    // Check main attachment field first
+    if (announcement.attachment_url && /\.(jpg|jpeg|png|gif|webp)$/i.test(announcement.attachment_url)) {
+      return announcement.attachment_url;
+    }
+    // Check multiple attachments array
+    const imageAttachment = announcement.attachments?.find(att => att.is_image);
+    return imageAttachment?.url;
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
@@ -262,34 +272,48 @@ const Home = () => {
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {generalAnnouncements.length > 0 ? (
-                  generalAnnouncements.map((announcement) => (
-                    <div key={announcement.id} className="group p-8 rounded-[2.5rem] bg-slate-50 hover:bg-white border border-transparent hover:border-violet-100 hover:shadow-2xl transition-all duration-300 flex flex-col h-full">
-                      <div className="flex items-center justify-between mb-6">
-                        <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${getCategoryColor(announcement.category)}`}>
-                          {announcement.category}
-                        </span>
-                        <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                          {formatDate(announcement.created_at)}
-                        </span>
+                  generalAnnouncements.map((announcement) => {
+                    const imageUrl = getFirstImage(announcement);
+                    return (
+                      <div key={announcement.id} className="group p-8 rounded-[2.5rem] bg-slate-50 hover:bg-white border border-transparent hover:border-violet-100 hover:shadow-2xl transition-all duration-300 flex flex-col h-full">
+                        {imageUrl && (
+                          <div className="relative h-48 mb-6 rounded-3xl overflow-hidden border border-slate-100">
+                            <img 
+                              src={imageUrl} 
+                              alt={announcement.title}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-slate-900/20 to-transparent"></div>
+                          </div>
+                        )}
+                        
+                        <div className="flex items-center justify-between mb-6">
+                          <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${getCategoryColor(announcement.category)}`}>
+                            {announcement.category}
+                          </span>
+                          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                            {formatDate(announcement.created_at)}
+                          </span>
+                        </div>
+                        
+                        <h5 className="text-lg font-black text-slate-900 mb-4 group-hover:text-violet-600 transition-colors line-clamp-2">
+                          {announcement.title}
+                        </h5>
+                        
+                        <p className="text-slate-500 text-sm font-medium leading-relaxed mb-6 line-clamp-3 flex-grow">
+                          {announcement.content}
+                        </p>
+                        
+                        <Link 
+                          to="/login" 
+                          className="inline-flex items-center text-xs font-black text-violet-600 group-hover:translate-x-1 transition-transform"
+                        >
+                          Read More
+                          <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4 4H3" /></svg>
+                        </Link>
                       </div>
-                      
-                      <h5 className="text-lg font-black text-slate-900 mb-4 group-hover:text-violet-600 transition-colors line-clamp-2">
-                        {announcement.title}
-                      </h5>
-                      
-                      <p className="text-slate-500 text-sm font-medium leading-relaxed mb-6 line-clamp-3 flex-grow">
-                        {announcement.content}
-                      </p>
-                      
-                      <Link 
-                        to="/login" 
-                        className="inline-flex items-center text-xs font-black text-violet-600 group-hover:translate-x-1 transition-transform"
-                      >
-                        Read More
-                        <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4 4H3" /></svg>
-                      </Link>
-                    </div>
-                  ))
+                    );
+                  })
                 ) : (
                   [1, 2].map((i) => (
                     <div key={i} className="p-8 rounded-[2.5rem] bg-slate-50 border border-slate-100 animate-pulse h-64"></div>
@@ -307,28 +331,36 @@ const Home = () => {
 
               <div className="space-y-4">
                 {upcomingEvents.length > 0 ? (
-                  upcomingEvents.map((event) => (
-                    <div key={event.id} className="group p-6 rounded-3xl bg-white border border-slate-100 hover:border-violet-100 hover:shadow-xl transition-all duration-300">
-                      <div className="flex items-start space-x-4">
-                        <div className="flex-shrink-0 w-12 h-12 rounded-2xl bg-violet-50 flex flex-col items-center justify-center border border-violet-100">
-                          <span className="text-[10px] font-black text-violet-400 uppercase leading-none">
-                            {new Date(event.created_at).toLocaleString('en-US', { month: 'short' })}
-                          </span>
-                          <span className="text-lg font-black text-violet-700 leading-tight">
-                            {new Date(event.created_at).getDate()}
-                          </span>
-                        </div>
-                        <div className="flex-grow min-w-0">
-                          <h6 className="text-sm font-black text-slate-900 group-hover:text-violet-600 transition-colors truncate mb-1">
-                            {event.title}
-                          </h6>
-                          <p className="text-xs text-slate-500 font-medium line-clamp-2">
-                            {event.content}
-                          </p>
+                  upcomingEvents.map((event) => {
+                    const imageUrl = getFirstImage(event);
+                    return (
+                      <div key={event.id} className="group p-6 rounded-3xl bg-white border border-slate-100 hover:border-violet-100 hover:shadow-xl transition-all duration-300">
+                        <div className="flex items-start space-x-4">
+                          <div className="flex-shrink-0 w-12 h-12 rounded-2xl bg-violet-50 flex flex-col items-center justify-center border border-violet-100">
+                            <span className="text-[10px] font-black text-violet-400 uppercase leading-none">
+                              {new Date(event.created_at).toLocaleString('en-US', { month: 'short' })}
+                            </span>
+                            <span className="text-lg font-black text-violet-700 leading-tight">
+                              {new Date(event.created_at).getDate()}
+                            </span>
+                          </div>
+                          <div className="flex-grow min-w-0">
+                            <h6 className="text-sm font-black text-slate-900 group-hover:text-violet-600 transition-colors truncate mb-1">
+                              {event.title}
+                            </h6>
+                            <p className="text-xs text-slate-500 font-medium line-clamp-2">
+                              {event.content}
+                            </p>
+                            {imageUrl && (
+                              <div className="mt-3 h-20 rounded-xl overflow-hidden border border-slate-50">
+                                <img src={imageUrl} alt={event.title} className="w-full h-full object-cover" />
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))
+                    );
+                  })
                 ) : (
                   <div className="p-8 rounded-3xl bg-slate-50 border border-slate-100 text-center">
                     <p className="text-sm font-bold text-slate-400">No upcoming events found</p>
