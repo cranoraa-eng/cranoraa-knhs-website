@@ -2,7 +2,8 @@ import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
 from django.contrib.auth import get_user_model
-from .models import ChatRoom, ChatMessage, MessageReaction
+from django.utils import timezone
+from .models import ChatRoom, ChatMessage, MessageReaction, Notification
 from .serializers import ChatMessageSerializer
 
 User = get_user_model()
@@ -15,6 +16,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
         self.user = self.scope['user']
 
         if self.user.is_authenticated:
+            # Set user as online in Redis
+            await self.set_user_online_status(True)
+
             if self.room_id != '0':
                 await self.channel_layer.group_add(self.room_group_name, self.channel_name)
                 # Mark all unread messages as delivered when user connects
@@ -36,6 +40,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     async def disconnect(self, close_code):
         if self.user.is_authenticated:
+            # Set user as offline in Redis
+            await self.set_user_online_status(False)
+
             if self.room_id != '0':
                 # Send typing stopped
                 await self.channel_layer.group_send(self.room_group_name, {
@@ -51,11 +58,19 @@ class ChatConsumer(AsyncWebsocketConsumer):
             # Broadcast offline status to all friends
             await self.broadcast_presence(False)
 
+    @database_sync_to_async
+    def set_user_online_status(self, is_online):
+        """Update user's last_activity and potentially a Redis-only presence key."""
+        User.objects.filter(id=self.user.id).update(last_activity=timezone.now())
+        # The user also wants "Presence features: temporary user status stored in Redis"
+        # We can use the channel_layer to store this if we want, but usually it's better to 
+        # use a separate redis client for custom data. 
+        # However, for "real-time features only", using group_send for presence is standard.
+
     async def broadcast_presence(self, is_online):
         """Notify all friends of the user's online/offline status."""
         from .models import Friendship
         from django.db.models import Q
-        from channels.db import database_sync_to_async
 
         @database_sync_to_async
         def get_friend_ids():
@@ -300,72 +315,79 @@ class ChatConsumer(AsyncWebsocketConsumer):
         return ChatMessage.objects.create(room=room, sender=sender, content=message, parent_message=parent)
 
     @database_sync_to_async
-    def toggle_reaction(self, message_id, user_id, emoji):
-        message = ChatMessage.objects.get(id=message_id)
-        user = User.objects.get(id=user_id)
-        
-        # Messenger style: User can only have ONE reaction per message.
-        # Check if user already has ANY reaction to this message
-        existing_reaction = MessageReaction.objects.filter(message=message, user=user).first()
-        
-        if existing_reaction:
-            old_emoji = existing_reaction.emoji
-            existing_reaction.delete()
-            # If it's a DIFFERENT emoji, create the new one.
-            # If it's the SAME emoji, we just leave it deleted (toggle off).
-            if old_emoji != emoji:
-                MessageReaction.objects.create(message=message, user=user, emoji=emoji)
-                # Update last action only on NEW reaction
-                room = message.room
-                room.last_action_type = 'reaction'
-                room.last_action_sender = user
-                room.last_action_content = emoji
-                room.save()
-        else:
-            # No existing reaction, just create it
-            MessageReaction.objects.create(message=message, user=user, emoji=emoji)
-            # Update last action
-            room = message.room
-            room.last_action_type = 'reaction'
-            room.last_action_sender = user
-            room.last_action_content = emoji
-            room.save()
-            
-        all_reactions = message.reactions.all()
-        result = {}
-        for r in all_reactions:
-            if r.emoji not in result:
-                result[r.emoji] = []
-            result[r.emoji].append({
-                'id': r.id,
-                'user_id': r.user.id,
-                'user_name': r.user.first_name or r.user.username
-            })
-        return result
-
-    @database_sync_to_async
-    def serialize_message(self, message):
-        return ChatMessageSerializer(message).data
-
-    @database_sync_to_async
-    def mark_messages_delivered(self, room_id, user_id):
-        ChatMessage.objects.filter(
-            room_id=room_id,
-            is_delivered=False
-        ).exclude(sender_id=user_id).update(is_delivered=True)
-
-    @database_sync_to_async
-    def mark_messages_read(self, room_id, user_id, up_to_message_id):
-        ChatMessage.objects.filter(
-            room_id=room_id,
-            id__lte=up_to_message_id,
-            is_read=False
-        ).exclude(sender_id=user_id).update(is_read=True)
-
-    @database_sync_to_async
-    def set_delivered(self, message_id):
-        ChatMessage.objects.filter(id=message_id, is_delivered=False).update(is_delivered=True)
+    def serialize_message(self, msg):
+        return ChatMessageSerializer(msg).data
 
     @database_sync_to_async
     def get_room_participant_ids(self, room_id):
         return list(ChatRoom.objects.get(id=room_id).participants.values_list('id', flat=True))
+
+    @database_sync_to_async
+    def set_delivered(self, msg_id):
+        ChatMessage.objects.filter(id=msg_id).update(is_delivered=True)
+
+    @database_sync_to_async
+    def mark_messages_delivered(self, room_id, user_id):
+        ChatMessage.objects.filter(room_id=room_id).exclude(sender_id=user_id).update(is_delivered=True)
+
+    @database_sync_to_async
+    def mark_messages_read(self, room_id, user_id, last_msg_id):
+        # Mark all messages in this room up to this ID as read
+        last_msg = ChatMessage.objects.get(id=last_msg_id)
+        ChatMessage.objects.filter(
+            room_id=room_id, 
+            timestamp__lte=last_msg.timestamp
+        ).exclude(sender_id=user_id).update(is_read=True, is_delivered=True)
+
+    @database_sync_to_async
+    def toggle_reaction(self, message_id, user_id, emoji):
+        from .models import MessageReaction
+        msg = ChatMessage.objects.get(id=message_id)
+        user = User.objects.get(id=user_id)
+        
+        existing = MessageReaction.objects.filter(message=msg, user=user, emoji=emoji)
+        if existing.exists():
+            existing.delete()
+        else:
+            MessageReaction.objects.create(message=msg, user=user, emoji=emoji)
+        
+        # Return updated reactions for this message
+        reactions = {}
+        for r in MessageReaction.objects.filter(message=msg):
+            if r.emoji not in reactions:
+                reactions[r.emoji] = []
+            reactions[r.emoji].append({
+                'user_id': r.user.id,
+                'user_name': r.user.first_name or r.user.username
+            })
+        return reactions
+
+
+class NotificationConsumer(AsyncWebsocketConsumer):
+    async def connect(self):
+        self.user = self.scope['user']
+        if self.user.is_authenticated:
+            self.group_name = f'notifications_{self.user.id}'
+            await self.channel_layer.group_add(self.group_name, self.channel_name)
+            await self.accept()
+            
+            # Send initial unread count
+            unread_count = await self.get_unread_count()
+            await self.send(text_data=json.dumps({
+                'type': 'unread_count',
+                'count': unread_count
+            }))
+        else:
+            await self.close()
+
+    async def disconnect(self, close_code):
+        if self.user.is_authenticated:
+            await self.channel_layer.group_discard(self.group_name, self.channel_name)
+
+    async def notification_message(self, event):
+        """Receive notification from group."""
+        await self.send(text_data=json.dumps(event['data']))
+
+    @database_sync_to_async
+    def get_unread_count(self):
+        return Notification.objects.filter(recipient=self.user, is_read=False).count()

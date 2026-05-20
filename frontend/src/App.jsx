@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import { NotificationProvider } from './context/NotificationContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Layout from './components/Layout';
 import PublicLayout from './components/PublicLayout';
@@ -83,8 +84,9 @@ function App() {
 
   return (
     <AuthProvider>
-    <BrowserRouter>
-      <Routes>
+      <NotificationProvider>
+        <BrowserRouter>
+          <Routes>
         {/* Auth Routes - Moved up for higher priority */}
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
@@ -138,7 +140,8 @@ function App() {
           <Route path="grade-reports" element={<GradeReports />} />
         </Route>
       </Routes>
-    </BrowserRouter>
+      </BrowserRouter>
+      </NotificationProvider>
     </AuthProvider>
   );
 }

@@ -567,6 +567,38 @@ class Notification(models.Model):
     def __str__(self):
         return f"{self.recipient.username} - {self.title}"
 
+# Signals for real-time notifications
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
+
+@receiver(post_save, sender=Notification)
+def broadcast_notification(sender, instance, created, **kwargs):
+    if created:
+        channel_layer = get_channel_layer()
+        group_name = f'notifications_{instance.recipient.id}'
+        
+        # Get unread count
+        unread_count = Notification.objects.filter(recipient=instance.recipient, is_read=False).count()
+        
+        async_to_sync(channel_layer.group_send)(
+            group_name,
+            {
+                'type': 'notification_message',
+                'data': {
+                    'type': 'notification',
+                    'id': instance.id,
+                    'title': instance.title,
+                    'message': instance.message,
+                    'notification_type': instance.notification_type,
+                    'link': instance.link,
+                    'created_at': instance.created_at.isoformat(),
+                    'unread_count': unread_count
+                }
+            }
+        )
+
 
 class EnrollmentApplication(models.Model):
     GRADE_LEVEL_CHOICES = [

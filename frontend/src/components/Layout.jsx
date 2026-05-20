@@ -1,6 +1,7 @@
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { getStoredUser } from '../utils/auth';
 import { useAuth } from '../context/AuthContext';
+import { useNotifications } from '../context/NotificationContext';
 import { useState, useEffect } from 'react';
 import api from '../utils/api';
 import Swal from 'sweetalert2';
@@ -26,9 +27,8 @@ const Layout = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { signOut } = useAuth();
+  const { notifications, unreadCount, setNotifications, setUnreadCount } = useNotifications();
   const user = getStoredUser();
-  const [notifications, setNotifications] = useState([]);
-  const [unreadCount, setUnreadCount] = useState(0);
   const [showNotifications, setShowNotifications] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -71,21 +71,21 @@ const Layout = () => {
   const isActive = (path) => location.pathname === path;
 
   useEffect(() => {
-    fetchNotifications();
-    const interval = setInterval(fetchNotifications, 30000);
-    return () => clearInterval(interval);
+    fetchInitialNotifications();
+    fetchUnreadCount();
   }, []);
 
-  const fetchNotifications = async () => {
+  const fetchInitialNotifications = async () => {
     try {
       const r = await api.get('/notifications/');
-      setNotifications(r.data.slice(0, 8));
+      setNotifications(r.data.slice(0, 20));
     } catch (err) {
       if (err.code === 'ERR_NETWORK') {
         console.warn('Backend server is unreachable. Check if Django is running.');
       }
     }
   };
+
   const fetchUnreadCount = async () => {
     try {
       const r = await api.get('/notifications/unread_count/');
@@ -94,11 +94,21 @@ const Layout = () => {
       // Silently fail for network errors to avoid console noise
     }
   };
+
   const markAsRead = async (id) => {
-    try { await api.post(`/notifications/${id}/mark_read/`); fetchNotifications(); fetchUnreadCount(); } catch {}
+    try { 
+      await api.post(`/notifications/${id}/mark_read/`); 
+      setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n));
+      setUnreadCount(prev => Math.max(0, prev - 1));
+    } catch {}
   };
+
   const markAllAsRead = async () => {
-    try { await api.post('/notifications/mark_all_read/'); fetchNotifications(); fetchUnreadCount(); } catch {}
+    try { 
+      await api.post('/notifications/mark_all_read/'); 
+      setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
+      setUnreadCount(0);
+    } catch {}
   };
 
   const NOTIF_CONFIG = {

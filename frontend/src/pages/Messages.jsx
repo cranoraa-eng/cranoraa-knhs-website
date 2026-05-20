@@ -471,18 +471,26 @@ const Messages = () => {
   }, [searchResults]);
 
   // ── WebSocket ─────────────────────────────────────────────────────────────
-  const connectWebSocket = (roomId) => {
+  const reconnectTimeoutRef = useRef(null);
+
+  const connectWebSocket = useCallback((roomId) => {
     if (socketRef.current) {
-      socketRef.current.onclose = null; // Remove old onclose handler to prevent loops
+      socketRef.current.onclose = null;
       socketRef.current.close();
     }
 
-    const token    = localStorage.getItem('access_token');
-    const ws       = new WebSocket(`${WS_ROOT}/ws/chat/${roomId}/?token=${token}`);
+    const token = localStorage.getItem('access_token');
+    if (!token) return;
+
+    const ws = new WebSocket(`${WS_ROOT}/ws/chat/${roomId}/?token=${token}`);
     socketRef.current = ws;
 
     ws.onopen = () => {
       console.log('WS connected to room', roomId);
+      if (reconnectTimeoutRef.current) {
+        clearTimeout(reconnectTimeoutRef.current);
+        reconnectTimeoutRef.current = null;
+      }
     };
 
     ws.onmessage = (e) => {
@@ -667,7 +675,17 @@ const Messages = () => {
         });
       }
     };
-  };
+
+    ws.onclose = () => {
+      console.log('Chat WS disconnected. Reconnecting...');
+      reconnectTimeoutRef.current = setTimeout(() => connectWebSocket(roomId), 5000);
+    };
+
+    ws.onerror = (err) => {
+      console.error('Chat WS error', err);
+      ws.close();
+    };
+  }, [user.id, selectedRoom]);
 
   const FriendActionButton = ({ targetUser }) => {
     const status = getFriendshipStatus(targetUser.id);
