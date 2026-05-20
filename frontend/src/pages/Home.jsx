@@ -6,6 +6,7 @@ const Home = () => {
   const [content, setContent] = useState({});
   const [announcements, setAnnouncements] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [zoomedImage, setZoomedImage] = useState(null);
 
   useEffect(() => {
     const loadData = async () => {
@@ -43,7 +44,7 @@ const Home = () => {
 
   const generalAnnouncements = announcements
     .filter(a => a.category !== 'events')
-    .slice(0, 3);
+    .slice(0, 2);
   
   const upcomingEvents = announcements
     .filter(a => a.category === 'events')
@@ -68,15 +69,14 @@ const Home = () => {
     });
   };
 
-  const getFirstImage = (announcement) => {
-    const attachUrl = (url) => {
-      if (!url) return null;
-      if (url.startsWith('http')) return url;
-      // If it's a relative path, prepend the API base URL (removing /api suffix)
-      const baseUrl = api.defaults.baseURL.replace('/api', '');
-      return `${baseUrl}${url}`;
-    };
+  const attachUrl = (url) => {
+    if (!url) return null;
+    if (url.startsWith('http')) return url;
+    const baseUrl = api.defaults.baseURL.replace('/api', '');
+    return `${baseUrl}${url}`;
+  };
 
+  const getFirstImage = (announcement) => {
     // Check main attachment field first
     if (announcement.attachment_url) {
       if (/\.(jpg|jpeg|png|gif|webp)$/i.test(announcement.attachment_url)) {
@@ -86,6 +86,27 @@ const Home = () => {
     // Check multiple attachments array
     const imageAttachment = announcement.attachments?.find(att => att.is_image);
     return attachUrl(imageAttachment?.url);
+  };
+
+  const getPDFs = (announcement) => {
+    const pdfs = [];
+    if (announcement.attachment_url?.toLowerCase().endsWith('.pdf')) {
+      pdfs.push({
+        name: 'Attachment.pdf',
+        url: attachUrl(announcement.attachment_url)
+      });
+    }
+    if (announcement.attachments) {
+      announcement.attachments.forEach(att => {
+        if (att.url?.toLowerCase().endsWith('.pdf')) {
+          pdfs.push({
+            name: att.filename || 'Document.pdf',
+            url: attachUrl(att.url)
+          });
+        }
+      });
+    }
+    return pdfs;
   };
 
   if (loading) {
@@ -284,6 +305,7 @@ const Home = () => {
                 {generalAnnouncements.length > 0 ? (
                   generalAnnouncements.map((announcement) => {
                     const imageUrl = getFirstImage(announcement);
+                    const pdfs = getPDFs(announcement);
                     return (
                       <div key={announcement.id} className="group p-8 rounded-[2.5rem] bg-slate-50 hover:bg-white border border-transparent hover:border-violet-100 hover:shadow-2xl transition-all duration-300 flex flex-col h-full">
                         {imageUrl && (
@@ -294,6 +316,18 @@ const Home = () => {
                               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-slate-900/20 to-transparent"></div>
+                            
+                            {/* Magnifying Glass Overlay */}
+                            <button 
+                              onClick={() => setZoomedImage(imageUrl)}
+                              className="absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                            >
+                              <div className="w-12 h-12 rounded-full bg-white/90 flex items-center justify-center text-slate-900 shadow-xl">
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                </svg>
+                              </div>
+                            </button>
                           </div>
                         )}
                         
@@ -314,13 +348,30 @@ const Home = () => {
                           {announcement.content}
                         </p>
                         
-                        <Link 
-                          to="/login" 
-                          className="inline-flex items-center text-xs font-black text-violet-600 group-hover:translate-x-1 transition-transform"
-                        >
-                          Read More
-                          <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4 4H3" /></svg>
-                        </Link>
+                        <div className="flex flex-wrap gap-3 items-center mt-auto pt-6 border-t border-slate-100">
+                          <Link 
+                            to="/login" 
+                            className="inline-flex items-center text-xs font-black text-violet-600 group-hover:translate-x-1 transition-transform"
+                          >
+                            Read More
+                            <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4 4H3" /></svg>
+                          </Link>
+
+                          {pdfs.map((pdf, idx) => (
+                            <a 
+                              key={idx}
+                              href={pdf.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center px-3 py-1.5 rounded-lg bg-red-50 text-red-600 text-[10px] font-black uppercase tracking-wider hover:bg-red-100 transition-colors"
+                            >
+                              <svg className="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                              </svg>
+                              PDF Download
+                            </a>
+                          ))}
+                        </div>
                       </div>
                     );
                   })
@@ -343,6 +394,7 @@ const Home = () => {
                 {upcomingEvents.length > 0 ? (
                   upcomingEvents.map((event) => {
                     const imageUrl = getFirstImage(event);
+                    const pdfs = getPDFs(event);
                     return (
                       <div key={event.id} className="group p-6 rounded-3xl bg-white border border-slate-100 hover:border-violet-100 hover:shadow-xl transition-all duration-300">
                         <div className="flex items-start space-x-4">
@@ -361,9 +413,37 @@ const Home = () => {
                             <p className="text-xs text-slate-500 font-medium line-clamp-2">
                               {event.content}
                             </p>
+                            
                             {imageUrl && (
-                              <div className="mt-3 h-20 rounded-xl overflow-hidden border border-slate-50">
+                              <div className="relative mt-3 h-20 rounded-xl overflow-hidden border border-slate-50 group/event-img">
                                 <img src={imageUrl} alt={event.title} className="w-full h-full object-cover" />
+                                <button 
+                                  onClick={() => setZoomedImage(imageUrl)}
+                                  className="absolute inset-0 bg-black/20 opacity-0 group-hover/event-img:opacity-100 transition-opacity flex items-center justify-center"
+                                >
+                                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                  </svg>
+                                </button>
+                              </div>
+                            )}
+
+                            {pdfs.length > 0 && (
+                              <div className="mt-2 flex flex-wrap gap-2">
+                                {pdfs.map((pdf, idx) => (
+                                  <a 
+                                    key={idx}
+                                    href={pdf.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-[9px] font-black text-red-500 uppercase tracking-tighter hover:underline flex items-center"
+                                  >
+                                    <svg className="w-2.5 h-2.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                                    </svg>
+                                    PDF
+                                  </a>
+                                ))}
                               </div>
                             )}
                           </div>
@@ -416,6 +496,30 @@ const Home = () => {
           </div>
         </div>
       </section>
+
+      {/* Image Zoom Modal */}
+      {zoomedImage && (
+        <div 
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/90 backdrop-blur-sm animate-fadeIn"
+          onClick={() => setZoomedImage(null)}
+        >
+          <button 
+            className="absolute top-6 right-6 p-2 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors"
+            onClick={() => setZoomedImage(null)}
+          >
+            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+          
+          <img 
+            src={zoomedImage} 
+            alt="Zoomed" 
+            className="max-w-full max-h-[90vh] object-contain rounded-2xl shadow-2xl animate-scaleIn"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
     </div>
   );
 };
