@@ -1,4 +1,4 @@
-from mailjet_rest import Client
+import resend
 import random
 import string
 from django.conf import settings
@@ -10,8 +10,8 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-# Configure Mailjet
-mailjet = Client(auth=(settings.MAILJET_API_KEY, settings.MAILJET_API_SECRET), version='v3.1')
+# Configure Resend
+resend.api_key = settings.RESEND_API_KEY
 
 def generate_otp_code(length=6):
     """Generate a secure random OTP code."""
@@ -56,8 +56,8 @@ def verify_otp_code(user, code, otp_type='signup'):
     
     return False, "Invalid verification code."
 
-def send_mailjet_otp_email(email, code, user_name, otp_type='signup'):
-    """Send an OTP email using Mailjet API."""
+def send_resend_otp_email(email, code, user_name, otp_type='signup'):
+    """Send an OTP email using Resend API."""
     subject_text = "Verify your account" if otp_type == 'signup' else "Reset your password"
     title = "Account Verification" if otp_type == 'signup' else "Password Reset"
     body_text = f"Your verification code for the KNHS School Portal is: {code}" if otp_type == 'signup' else f"Your password reset code for the KNHS School Portal is: {code}"
@@ -76,34 +76,29 @@ def send_mailjet_otp_email(email, code, user_name, otp_type='signup'):
     </div>
     """
 
-    data = {
-        'Messages': [
-            {
-                "From": {
-                    "Email": settings.DEFAULT_FROM_EMAIL,
-                    "Name": "KNHS School Portal"
-                },
-                "To": [
-                    {
-                        "Email": email,
-                        "Name": user_name
-                    }
-                ],
-                "Subject": f"KNHS Portal - {subject_text}",
-                "HTMLPart": html_content,
-                "TextPart": body_text
-            }
-        ]
-    }
+    # Resend forbids sending FROM generic providers like gmail.com
+    from_email = settings.DEFAULT_FROM_EMAIL
+    if "@gmail.com" in from_email.lower():
+        from_email = "onboarding@resend.dev"
+        logger.warning(f"Detected Gmail in DEFAULT_FROM_EMAIL. Falling back to onboarding@resend.dev for Resend compatibility.")
 
     try:
-        result = mailjet.send.create(data=data)
-        if result.status_code == 200:
-            logger.info(f"Mailjet email sent successfully to {email}")
-            return True
-        else:
-            logger.error(f"Mailjet API Error: {result.status_code} - {result.json()}")
+        params = {
+            "from": from_email,
+            "to": [email],
+            "subject": f"KNHS Portal - {subject_text}",
+            "html": html_content,
+        }
+        
+        response = resend.Emails.send(params)
+        logger.info(f"Resend API Response: {response}")
+        
+        # Check for error in response dictionary (common in Resend's Python SDK)
+        if isinstance(response, dict) and response.get('error'):
+            logger.error(f"Resend API Error: {response.get('error')}")
             return False
+            
+        return True
     except Exception as e:
-        logger.error(f"CRITICAL: Failed to send email via Mailjet to {email}. Error: {str(e)}")
+        logger.error(f"CRITICAL: Failed to send email via Resend to {email}. Error: {str(e)}")
         return False
