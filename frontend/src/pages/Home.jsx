@@ -69,13 +69,23 @@ const Home = () => {
   };
 
   const getFirstImage = (announcement) => {
+    const attachUrl = (url) => {
+      if (!url) return null;
+      if (url.startsWith('http')) return url;
+      // If it's a relative path, prepend the API base URL (removing /api suffix)
+      const baseUrl = api.defaults.baseURL.replace('/api', '');
+      return `${baseUrl}${url}`;
+    };
+
     // Check main attachment field first
-    if (announcement.attachment_url && /\.(jpg|jpeg|png|gif|webp)$/i.test(announcement.attachment_url)) {
-      return announcement.attachment_url;
+    if (announcement.attachment_url) {
+      if (/\.(jpg|jpeg|png|gif|webp)$/i.test(announcement.attachment_url)) {
+        return attachUrl(announcement.attachment_url);
+      }
     }
     // Check multiple attachments array
     const imageAttachment = announcement.attachments?.find(att => att.is_image);
-    return imageAttachment?.url;
+    return attachUrl(imageAttachment?.url);
   };
 
   if (loading) {

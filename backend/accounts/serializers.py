@@ -129,11 +129,8 @@ class AnnouncementAttachmentSerializer(serializers.ModelSerializer):
         fields = ['id', 'filename', 'url', 'is_image', 'uploaded_at']
 
     def get_url(self, obj):
-        request = self.context.get('request')
         if obj.file:
-            if request:
-                return request.build_absolute_uri(obj.file.url)
-            return f"http://127.0.0.1:8000{obj.file.url}"
+            return obj.file.url
         return None
 
     def get_is_image(self, obj):
@@ -162,10 +159,7 @@ class AnnouncementSerializer(serializers.ModelSerializer):
     def get_author_name(self, obj): return full_name(obj.author)
     def get_attachment_url(self, obj):
         if obj.attachment:
-            request = self.context.get('request')
-            if request:
-                return request.build_absolute_uri(obj.attachment.url)
-            return f"http://127.0.0.1:8000{obj.attachment.url}"
+            return obj.attachment.url
         return None
     def get_read_count(self, obj): return obj.read_by.count()
 
