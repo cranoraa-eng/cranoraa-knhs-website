@@ -26,7 +26,7 @@ from django.conf import settings
 import random
 import string
 
-from .utils import create_otp, verify_otp_code, send_resend_otp_email
+from .utils import create_otp, verify_otp_code, send_mailjet_otp_email
 
 @csrf_exempt
 @api_view(['POST'])
@@ -197,10 +197,10 @@ def register_view(request):
         
         profile.save()
         
-        # Send verification OTP via Resend
+        # Send verification OTP via Mailjet
         try:
             code = create_otp(user, otp_type='signup')
-            send_resend_otp_email(user.email, code, user.first_name or user.username, otp_type='signup')
+            send_mailjet_otp_email(user.email, code, user.first_name or user.username, otp_type='signup')
         except Exception as e:
             logger.error(f"Initial verification OTP failed for {user.email}: {e}")
             
@@ -259,7 +259,7 @@ def resend_otp_view(request):
             return Response({'message': 'Email is already verified'})
             
         code = create_otp(user, otp_type=otp_type)
-        if send_resend_otp_email(user.email, code, user.first_name or user.username, otp_type=otp_type):
+        if send_mailjet_otp_email(user.email, code, user.first_name or user.username, otp_type=otp_type):
             return Response({'message': f'A new verification code has been sent to {email}.'})
         else:
             return Response({'error': 'Failed to send email. Please try again later.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -337,7 +337,7 @@ def password_reset_request_view(request):
     try:
         user = User.objects.get(email=email)
         code = create_otp(user, otp_type='password_reset')
-        if send_resend_otp_email(user.email, code, user.first_name or user.username, otp_type='password_reset'):
+        if send_mailjet_otp_email(user.email, code, user.first_name or user.username, otp_type='password_reset'):
             return Response({'message': 'Password reset code sent to your email.'})
         else:
             return Response({'error': 'Failed to send email.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
