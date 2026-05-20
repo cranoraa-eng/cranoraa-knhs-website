@@ -52,11 +52,12 @@ If you did not create an account, you can safely ignore this email.
     recipient_list = [user.email]
     
     try:
-        send_mail(subject, message, email_from, recipient_list)
+        send_mail(subject, message, email_from, recipient_list, fail_silently=False)
         return True
     except Exception as e:
-        logger.error(f"Error sending verification email: {str(e)}")
-        return False
+        logger.error(f"Error sending verification email to {user.email}: {str(e)}")
+        # In a real environment, we'd like to know if it's a configuration error
+        raise e
 
 def send_otp_email(user, otp_code):
     subject = 'Your KNHS Portal Verification Code'
@@ -364,10 +365,13 @@ def resend_verification_email_view(request):
         # Delete old tokens
         EmailVerificationToken.objects.filter(user=user).delete()
         
-        if send_verification_email(user):
-            return Response({'message': 'Verification email resent! Please check your inbox.'})
-        else:
-            return Response({'error': 'Failed to send email. Please try again later.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        try:
+            if send_verification_email(user):
+                return Response({'message': 'Verification email resent! Please check your inbox.'})
+        except Exception as e:
+            return Response({'error': f'Email system error: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            
+        return Response({'error': 'Failed to send email. Please try again later.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
             
     except User.DoesNotExist:
         # For security, don't reveal if user exists
