@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import api from '../utils/api';
+import api, { MEDIA_ROOT } from '../utils/api';
 import { getUser } from '../utils/auth';
 import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
@@ -152,7 +152,7 @@ const Announcements = () => {
   };
 
   const isImage = (url) => url && /\.(jpg|jpeg|png|gif|webp)$/i.test(url);
-  const attachUrl = (url) => url?.startsWith('http') ? url : `http://127.0.0.1:8000${url}`;
+  const attachUrl = (url) => url?.startsWith('http') ? url : `${MEDIA_ROOT}${url}`;
 
   const pinned = announcements.filter(a => a.is_pinned);
   const regular = announcements.filter(a => !a.is_pinned);
@@ -441,7 +441,6 @@ const Announcements = () => {
                      </div>
                    )}
                 </div>
-              </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <label className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors">
