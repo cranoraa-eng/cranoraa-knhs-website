@@ -252,8 +252,12 @@ def register_view(request):
         
         profile.save()
         
-        # Send verification email
-        send_verification_email(user)
+        # Send verification email - fail silently on initial registration to avoid blocker
+        # The user can use "Resend Verification" on the login page if this fails.
+        try:
+            send_verification_email(user)
+        except Exception as e:
+            logger.error(f"Initial verification email failed for {user.email}: {e}")
             
     except Exception as e:
         logger.error(f"Registration error: {str(e)}")
