@@ -91,8 +91,14 @@ def send_resend_otp_email(email, code, user_name, otp_type='signup'):
         }
         
         response = resend.Emails.send(params)
-        logger.info(f"Resend email sent: {response}")
+        logger.info(f"Resend API Response: {response}")
+        
+        # Check if the response indicates a failure even without raising an exception
+        if hasattr(response, 'get') and response.get('error'):
+            logger.error(f"Resend API Error: {response.get('error')}")
+            return False
+            
         return True
     except Exception as e:
-        logger.error(f"Error sending email via Resend: {str(e)}")
+        logger.error(f"CRITICAL: Failed to send email via Resend to {email}. Error: {str(e)}")
         return False
