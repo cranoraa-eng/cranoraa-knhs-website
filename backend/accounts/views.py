@@ -180,21 +180,29 @@ def register_view(request):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-    if User.objects.filter(email=email).exists():
-        return Response(
-            {'error': 'Email already registered'},
-            status=status.HTTP_400_BAD_REQUEST
-        )
+    # Check for existing unverified users with this email and clear them for a fresh start
+    existing_user_email = User.objects.filter(email=email).first()
+    if existing_user_email:
+        if existing_user_email.is_verified:
+            return Response(
+                {'error': 'Email already registered and verified. Please log in.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        else:
+            # Delete unverified user to allow re-registration (clean start)
+            existing_user_email.delete()
     
-    if User.objects.filter(username=username).exists():
-        # If email is unique but username (which might be email) is taken, it's fine 
-        # but create_user will fail if username exists.
-        # Since we use email as USERNAME_FIELD, username should be unique too.
-        if username != email:
+    # Check for existing unverified users with this username
+    existing_user_username = User.objects.filter(username=username).first()
+    if existing_user_username:
+        if existing_user_username.is_verified:
             return Response(
                 {'error': 'Username already taken'},
                 status=status.HTTP_400_BAD_REQUEST
             )
+        else:
+            # Delete unverified user to allow re-registration
+            existing_user_username.delete()
     
     try:
         user = User.objects.create_user(
