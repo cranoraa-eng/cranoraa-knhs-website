@@ -1782,7 +1782,7 @@ class WebsiteContentViewSet(viewsets.ModelViewSet):
 @permission_classes([AllowAny])
 def public_announcements_view(request):
     """Public endpoint to fetch all public announcements for the school website"""
-    queryset = Announcement.objects.filter(is_public=True).order_by('-is_pinned', '-created_at')
+    queryset = Announcement.objects.filter(is_public=True, status='live').order_by('-is_pinned', '-created_at')
     serializer = AnnouncementSerializer(queryset, many=True, context={'request': request})
     return Response(serializer.data)
 

@@ -229,6 +229,11 @@ const Announcements = () => {
                         {a.priority === 'critical' && (
                           <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-red-100 text-red-700 border border-red-200">🚨 Critical</span>
                         )}
+                        {a.is_public && (
+                          <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-100 flex items-center gap-1">
+                            🌐 Public
+                          </span>
+                        )}
                         <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${stat.color}`}>{stat.label}</span>
                       </div>
                       <h2 className="text-lg font-bold text-gray-800 leading-tight">{a.title}</h2>
@@ -430,12 +435,21 @@ const Announcements = () => {
                 </div>
               </div>
 
-              <label className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg cursor-pointer">
-                <input type="checkbox" checked={form.is_pinned}
-                  onChange={e => setForm(f => ({ ...f, is_pinned: e.target.checked }))}
-                  className="w-4 h-4 text-purple-600 rounded" />
-                <span className="text-sm font-medium text-gray-700">📌 Pin to top</span>
-              </label>
+              <div className="grid grid-cols-2 gap-4">
+                <label className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors">
+                  <input type="checkbox" checked={form.is_pinned}
+                    onChange={e => setForm(f => ({ ...f, is_pinned: e.target.checked }))}
+                    className="w-4 h-4 text-purple-600 rounded" />
+                  <span className="text-sm font-medium text-gray-700">📌 Pin to top</span>
+                </label>
+
+                <label className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors">
+                  <input type="checkbox" checked={form.is_public}
+                    onChange={e => setForm(f => ({ ...f, is_public: e.target.checked }))}
+                    className="w-4 h-4 text-purple-600 rounded" />
+                  <span className="text-sm font-medium text-gray-700">🌐 Public Website</span>
+                </label>
+              </div>
 
               <div className="flex gap-3 pt-2">
                 <button type="submit" disabled={saving}
@@ -463,6 +477,9 @@ const Announcements = () => {
                 </span>
                 {selected.priority === 'critical' && (
                   <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-red-100 text-red-700 border border-red-200">🚨 Critical</span>
+                )}
+                {selected.is_public && (
+                  <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-100">🌐 Public Website</span>
                 )}
                 {selected.is_pinned && <span className="text-xs text-amber-600">📌 Pinned</span>}
               </div>
