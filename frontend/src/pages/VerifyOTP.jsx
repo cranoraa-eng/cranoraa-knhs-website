@@ -114,9 +114,12 @@ const VerifyOTP = () => {
         </div>
 
         <h1 className="text-2xl font-bold text-gray-800 mb-2">Verify Your Email</h1>
-        <p className="text-gray-500 text-sm mb-6">
+        <p className="text-gray-500 text-sm mb-4">
           Enter the 6-digit code sent to{' '}
           <span className="font-semibold text-gray-700">{email}</span>
+        </p>
+        <p className="mb-6 text-xs text-amber-600 font-semibold bg-amber-50 py-1.5 px-3 rounded-full inline-block">
+          ⚠️ Don't see it? Check your <b>Spam folder</b>
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-6">

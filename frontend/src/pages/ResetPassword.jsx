@@ -129,6 +129,9 @@ const ResetPassword = () => {
           <p className="text-gray-500 text-sm mt-1">
             Enter the code sent to <span className="font-semibold text-gray-700">{email}</span> and your new password.
           </p>
+          <p className="mt-3 text-[10px] text-amber-600 font-bold bg-amber-50 py-1 px-3 rounded-full inline-block uppercase tracking-wider">
+            ⚠️ Check your Spam folder if code is missing
+          </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">

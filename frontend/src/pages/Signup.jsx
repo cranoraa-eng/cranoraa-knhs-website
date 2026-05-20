@@ -86,7 +86,7 @@ const Signup = () => {
       Swal.fire({
         icon: 'success',
         title: 'Verification Code Sent!',
-        text: 'Your account has been created. Please check your email for the 6-digit verification code.',
+        text: 'Your account has been created. Please check your email (including the SPAM folder) for the 6-digit verification code.',
         confirmButtonText: 'Enter Code',
         confirmButtonColor: '#9333ea',
       }).then(() => {
