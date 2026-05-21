@@ -999,7 +999,7 @@ class AnnouncementViewSet(viewsets.ModelViewSet):
         
         return Response({"message": f"Successfully deleted {count} announcements"}, status=200)
 
-    @action(detail=false, methods=['post'])
+    @action(detail=False, methods=['post'])
     def delete_all(self, request):
         # Only admins can delete ALL
         if request.user.role != 'admin':
