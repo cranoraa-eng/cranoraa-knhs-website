@@ -12,10 +12,19 @@ logger = logging.getLogger(__name__)
 
 # Configure Mailjet
 def get_mailjet_client():
-    if not settings.MAILJET_API_KEY or not settings.MAILJET_SECRET_KEY:
-        logger.error("Mailjet API keys are missing in settings!")
+    api_key = settings.MAILJET_API_KEY
+    secret_key = settings.MAILJET_SECRET_KEY
+    sender_email = settings.MAILJET_SENDER_EMAIL
+    
+    if not api_key or not secret_key:
+        logger.error("CRITICAL: Mailjet API keys are missing in settings!")
         return None
-    return Client(auth=(settings.MAILJET_API_KEY, settings.MAILJET_SECRET_KEY), version='v3.1')
+        
+    # Log configuration for debugging (masked)
+    masked_key = f"{api_key[:4]}...{api_key[-4:]}" if api_key and len(api_key) > 8 else "INVALID"
+    logger.info(f"Mailjet attempting send from: {sender_email} using API Key: {masked_key}")
+    
+    return Client(auth=(api_key, secret_key), version='v3.1')
 
 def generate_otp_code(length=6):
     """Generate a secure random OTP code."""
