@@ -13,3 +13,5 @@ channels-redis
 gunicorn
 pillow
 mailjet-rest
+supabase
+
