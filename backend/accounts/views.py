@@ -1577,8 +1577,8 @@ def maintenance_status_view(request):
 @permission_classes([IsAuthenticated])
 def admin_dashboard_stats(request):
     try:
-        if request.user.role != 'admin':
-            return Response({'error': 'Admin access required'}, status=403)
+        if request.user.role not in ['admin', 'teacher']:
+            return Response({'error': 'Unauthorized access'}, status=403)
 
         from django.db.models import Count, Avg
         from django.utils import timezone
