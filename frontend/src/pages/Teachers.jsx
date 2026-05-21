@@ -142,10 +142,6 @@ const Teachers = () => {
     }
   };
 
-  const handleExportCSV = () => {
-    window.open(`${api.defaults.baseURL}/users/export_csv/?role=teacher`, '_blank');
-  };
-
   const handleToggleActive = async (teacher) => {
     try {
       const response = await api.post(`/users/${teacher.id}/toggle_active/`);
@@ -191,36 +187,6 @@ const Teachers = () => {
           <p className="text-gray-500 text-[8px] md:text-base mt-0.5 font-medium uppercase tracking-widest">Accounts and assignments</p>
         </div>
         <div className="flex flex-wrap items-center justify-center gap-2">
-          <button
-            onClick={handleExportCSV}
-            className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-black py-1.5 md:py-2.5 px-3 md:px-5 rounded-lg md:rounded-xl transition-all shadow-sm text-[8px] md:text-xs uppercase tracking-widest"
-          >
-            <svg className="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-            Export
-          </button>
-          <label className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white font-black py-1.5 md:py-2.5 px-3 md:px-5 rounded-lg md:rounded-xl transition-all shadow-sm text-[8px] md:text-xs uppercase tracking-widest cursor-pointer">
-            <svg className="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
-            Import
-            <input 
-              type="file" 
-              accept=".csv" 
-              className="hidden" 
-              onChange={async (e) => {
-                const file = e.target.files[0];
-                if (file) {
-                  const formData = new FormData();
-                  formData.append('file', file);
-                  try {
-                    const res = await api.post('/users/import_csv/', formData);
-                    toast.success(`Imported ${res.data.created_count} teachers!`);
-                    fetchTeachers();
-                  } catch (err) {
-                    toast.error('Import failed');
-                  }
-                }
-              }} 
-            />
-          </label>
           <button
             onClick={() => {
               setNewTeacher({
