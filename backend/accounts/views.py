@@ -151,6 +151,8 @@ def force_password_change_view(request):
 def admin_create_user_view(request):
     username = request.data.get('username') # For students, this will be their Student ID
     email = request.data.get('email')
+    if email == "": email = None # Treat empty string as None for unique constraint
+    
     password = request.data.get('password') # Temporary password
     role = request.data.get('role', 'student')
     first_name = request.data.get('first_name', '')
@@ -738,7 +740,9 @@ class UserViewSet(viewsets.ModelViewSet):
                     errors.append("Missing Student ID for a row")
                     continue
                 
-                email = row.get('Email') or None
+                email = row.get('Email') or row.get('email')
+                if email == "": email = None
+                
                 first_name = row.get('First Name') or ''
                 last_name = row.get('Last Name') or ''
                 grade_level = row.get('Grade Level') or ''
