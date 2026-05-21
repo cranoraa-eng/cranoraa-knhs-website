@@ -14,6 +14,8 @@ const AuditLogs = () => {
   const [deleting, setDeleting] = useState(false);
   const [stats, setStats] = useState({ size_mb: 0, max_mb: 50, count: 0 });
 
+  const [totalCount, setTotalCount] = useState(0);
+
   useEffect(() => {
     fetchLogs();
     fetchStats();
@@ -40,6 +42,7 @@ const AuditLogs = () => {
         }
       });
       setLogs(response.data.results);
+      setTotalCount(response.data.count);
       setTotalPages(Math.ceil(response.data.count / 50));
     } catch (error) {
       toast.error('Failed to load audit logs');
@@ -152,15 +155,15 @@ const AuditLogs = () => {
   };
 
   const getActionColor = (actionType) => {
-    switch (actionType?.toLowerCase()) {
-      case 'create': return 'bg-emerald-100 text-emerald-700 border-emerald-200';
-      case 'update': return 'bg-blue-100 text-blue-700 border-blue-200';
-      case 'delete': return 'bg-red-100 text-red-700 border-red-200';
-      case 'login': return 'bg-purple-100 text-purple-700 border-purple-200';
-      case 'approve': return 'bg-indigo-100 text-indigo-700 border-indigo-200';
-      case 'reject': return 'bg-orange-100 text-orange-700 border-orange-200';
-      default: return 'bg-gray-100 text-gray-700 border-gray-200';
-    }
+    const type = actionType?.toLowerCase() || '';
+    if (type.includes('create') || type.includes('mark')) return 'bg-emerald-100 text-emerald-700 border-emerald-200';
+    if (type.includes('update') || type.includes('edit')) return 'bg-blue-100 text-blue-700 border-blue-200';
+    if (type.includes('delete') || type.includes('clear')) return 'bg-red-100 text-red-700 border-red-200';
+    if (type.includes('login') || type.includes('auth')) return 'bg-purple-100 text-purple-700 border-purple-200';
+    if (type.includes('approve')) return 'bg-indigo-100 text-indigo-700 border-indigo-200';
+    if (type.includes('reject') || type.includes('suspend') || type.includes('mute')) return 'bg-orange-100 text-orange-700 border-orange-200';
+    if (type.includes('export') || type.includes('import')) return 'bg-amber-100 text-amber-700 border-amber-200';
+    return 'bg-gray-100 text-gray-700 border-gray-200';
   };
 
   if (loading) {
@@ -351,7 +354,7 @@ const AuditLogs = () => {
       {!loading && logs.length > 0 && (
         <div className="flex items-center justify-between text-[6px] md:text-[9px] font-black text-gray-400 uppercase tracking-widest px-1 py-4">
           <div className="flex items-center gap-4">
-            <span>Page {page} of {totalPages}</span>
+            <span>{totalCount} total entries (Page {page} of {totalPages})</span>
             {selectedIds.length > 0 && (
               <span className="text-purple-600 bg-purple-50 px-2 py-1 rounded-full">{selectedIds.length} selected</span>
             )}
