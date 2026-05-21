@@ -109,7 +109,14 @@ def send_mailjet_email(email, subject, message_html, message_text=None, user_nam
             logger.info(f"Mailjet email sent successfully to {email}")
             return True
         else:
-            logger.error(f"Mailjet API Error: {result.status_code} - {result.json()}")
+            error_data = result.json()
+            logger.error(f"Mailjet API Error: {result.status_code} - {error_data}")
+            # If it's a 401, it's definitely credentials
+            if result.status_code == 401:
+                logger.error("AUTHENTICATION ERROR: Check your MAILJET_API_KEY and MAILJET_SECRET_KEY.")
+            # If it's a 403, it's often the sender email not being verified
+            elif result.status_code == 403:
+                logger.error(f"PERMISSION ERROR: Ensure {settings.MAILJET_SENDER_EMAIL} is a verified sender in your Mailjet dashboard.")
             return False
     except Exception as e:
         logger.error(f"CRITICAL: Failed to send email via Mailjet to {email}. Error: {str(e)}")
