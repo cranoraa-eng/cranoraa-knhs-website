@@ -85,8 +85,10 @@ const VerifyOTP = () => {
       toast.success('New verification code sent');
       setTimer(60);
       setOtp(['', '', '', '', '', '']);
-    } catch {
-      toast.error('Failed to resend code. Please try again.');
+    } catch (err) {
+      console.error('Resend OTP error:', err);
+      const errorMsg = err.response?.data?.detail || err.response?.data?.error || 'Failed to resend code. Please try again.';
+      toast.error(errorMsg);
     } finally {
       setResending(false);
     }

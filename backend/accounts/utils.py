@@ -11,7 +11,11 @@ import logging
 logger = logging.getLogger(__name__)
 
 # Configure Mailjet
-mailjet = Client(auth=(settings.MAILJET_API_KEY, settings.MAILJET_SECRET_KEY), version='v3.1')
+def get_mailjet_client():
+    if not settings.MAILJET_API_KEY or not settings.MAILJET_SECRET_KEY:
+        logger.error("Mailjet API keys are missing in settings!")
+        return None
+    return Client(auth=(settings.MAILJET_API_KEY, settings.MAILJET_SECRET_KEY), version='v3.1')
 
 def generate_otp_code(length=6):
     """Generate a secure random OTP code."""
@@ -75,6 +79,9 @@ def broadcast_mailjet_email(emails, subject, message_html, message_text=None):
     }
 
     try:
+        mailjet = get_mailjet_client()
+        if not mailjet:
+            return False
         result = mailjet.send.create(data=data)
         return result.status_code == 200
     except Exception as e:
@@ -104,6 +111,9 @@ def send_mailjet_email(email, subject, message_html, message_text=None, user_nam
     }
 
     try:
+        mailjet = get_mailjet_client()
+        if not mailjet:
+            return False
         result = mailjet.send.create(data=data)
         if result.status_code == 200:
             logger.info(f"Mailjet email sent successfully to {email}")
@@ -163,6 +173,9 @@ def send_mailjet_otp_email(email, code, user_name, otp_type='signup'):
     }
 
     try:
+        mailjet = get_mailjet_client()
+        if not mailjet:
+            return False
         result = mailjet.send.create(data=data)
         if result.status_code == 200:
             logger.info(f"Mailjet email sent successfully to {email}")

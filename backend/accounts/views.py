@@ -253,13 +253,15 @@ def verify_otp_view(request):
         return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
 
 
+@csrf_exempt
 @api_view(['POST'])
 @permission_classes([AllowAny])
-@csrf_exempt
 def resend_otp_view(request):
     try:
         email = request.data.get('email')
         otp_type = request.data.get('type', 'signup')
+        
+        logger.info(f"Resend OTP request for email: {email}, type: {otp_type}")
         
         if not email:
             return Response({'error': 'Email is required'}, status=status.HTTP_400_BAD_REQUEST)
@@ -270,26 +272,29 @@ def resend_otp_view(request):
                 return Response({'message': 'Email is already verified'})
                 
             code = create_otp(user, otp_type=otp_type)
+            logger.info(f"Generated {otp_type} OTP for {email}")
             
             # Use safe send_mailjet_otp_email which handles its own exceptions
             sent = send_mailjet_otp_email(user.email, code, user.first_name or user.username, otp_type=otp_type)
             
             if sent:
+                logger.info(f"Successfully resent {otp_type} OTP to {email}")
                 return Response({'message': f'A new verification code has been sent to {email}.'})
             else:
+                logger.error(f"Failed to send {otp_type} OTP to {email} via Mailjet")
                 # If email fails, we return a 400 instead of 500 to indicate a service error rather than a code crash
-                # We also include a hint about checking server logs/credentials
                 return Response({
                     'error': 'Email delivery failed.',
                     'detail': 'The email service is currently unavailable. If you are the administrator, please check the Mailjet credentials in the environment variables.',
-                    'code': code if settings.DEBUG else None # Show code in debug mode for easier testing
+                    'code': code if settings.DEBUG else None
                 }, status=status.HTTP_400_BAD_REQUEST)
             
         except User.DoesNotExist:
+            logger.warning(f"Resend OTP requested for non-existent user: {email}")
             return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
         logger.error(f"Unexpected error in resend_otp_view: {str(e)}", exc_info=True)
-        return Response({'error': 'An unexpected error occurred. Please try again later.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({'error': f'An unexpected error occurred: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @csrf_exempt
