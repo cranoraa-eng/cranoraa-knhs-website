@@ -571,9 +571,10 @@ class UserViewSet(viewsets.ModelViewSet):
             role = self.request.query_params.get('role')
             queryset = User.objects.all().select_related('profile').order_by('-date_joined')
             
-            # Management views (filtering by role) should only show verified and approved accounts
+            # Management views (filtering by role) should only show approved accounts.
+            # Email verification (is_verified) is now optional per school requirements.
             if role in ['student', 'teacher']:
-                queryset = queryset.filter(is_verified=True, is_approved=True)
+                queryset = queryset.filter(is_approved=True)
             
             # RBAC: Students can only see their own data
             if user.role == 'student':
@@ -619,6 +620,16 @@ class UserViewSet(viewsets.ModelViewSet):
             request=self.request
         )
         instance.delete()
+
+    @action(detail=False, methods=['get'])
+    def pending(self, request):
+        """List all users pending admin approval"""
+        if request.user.role != 'admin':
+            return Response({'error': 'Unauthorized'}, status=403)
+        
+        queryset = User.objects.filter(is_approved=False).order_by('-date_joined')
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
 
     @action(detail=False, methods=['get'])
     def export_csv(self, request):
