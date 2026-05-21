@@ -6,6 +6,8 @@ import {
 } from 'recharts';
 import { Spinner } from '../components/Spinner';
 
+const COLORS = ['#8b5cf6', '#10b981', '#3b82f6', '#f59e0b', '#ef4444'];
+
 const Analytics = () => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
