@@ -319,8 +319,8 @@ const AuditLogs = () => {
                         </div>
                       </div>
                     </td>
-                    <td className="px-1.5 py-0.5 md:px-4 md:py-2">
-                      <span className={`px-1 py-0 md:px-2 md:py-0.5 rounded md:rounded-md border text-[5px] md:text-[8px] font-black uppercase tracking-widest ${getActionColor(log.action_type || log.action)}`}>
+                    <td className="px-3 py-1 md:px-6 md:py-4">
+                      <span className={`px-2 py-0.5 rounded text-[7px] md:text-[9px] font-black border uppercase tracking-widest ${getActionColor(log.action_type || log.action)}`}>
                         {log.action}
                       </span>
                     </td>

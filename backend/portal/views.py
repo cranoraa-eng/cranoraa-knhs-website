@@ -130,26 +130,6 @@ class AcademicYearViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
-        if self.request.user.role != 'admin':
-            return AcademicYear.objects.none()
-        return super().get_queryset()
-    
-    @action(detail=True, methods=['post'])
-    def set_active(self, request, pk=None):
-        year = self.get_object()
-        year.is_active = True
-        year.save()
-        return Response({'status': 'Academic year set as active'})
-
-
-from rest_framework.pagination import PageNumberPagination
-
-class AcademicYearViewSet(viewsets.ModelViewSet):
-    queryset = AcademicYear.objects.all()
-    serializer_class = AcademicYearSerializer
-    permission_classes = [IsAuthenticated]
-    
-    def get_queryset(self):
         if self.request.user.role == 'admin':
             return AcademicYear.objects.all()
         return AcademicYear.objects.filter(is_active=True)
@@ -162,6 +142,18 @@ class AcademicYearViewSet(viewsets.ModelViewSet):
         year.is_active = True
         year.save()
         return Response({'status': f'Academic Year {year.name} activated'})
+
+    @action(detail=True, methods=['post'])
+    def set_active(self, request, pk=None):
+        if request.user.role != 'admin':
+            return Response({'error': 'Unauthorized'}, status=403)
+        year = self.get_object()
+        year.is_active = True
+        year.save()
+        return Response({'status': 'Academic year set as active'})
+
+
+from rest_framework.pagination import PageNumberPagination
 
 class SemesterViewSet(viewsets.ModelViewSet):
     queryset = Semester.objects.all()

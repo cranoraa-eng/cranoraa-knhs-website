@@ -42,6 +42,8 @@ import GradeManagement from './pages/GradeManagement';
 import GradeDistribution from './pages/GradeDistribution';
 import StudentGradeView from './pages/StudentGradeView';
 import GradeReports from './pages/GradeReports';
+import Moderation from './pages/Moderation';
+import Analytics from './pages/Analytics';
 
 import Messages from './pages/Messages';
 import Maintenance from './pages/Maintenance';
@@ -143,6 +145,8 @@ function App() {
           <Route path="grade-distribution" element={<GradeDistribution />} />
           <Route path="student-grades" element={<StudentGradeView />} />
           <Route path="grade-reports" element={<GradeReports />} />
+          <Route path="moderation" element={<Moderation />} />
+          <Route path="analytics" element={<Analytics />} />
         </Route>
       </Routes>
       </BrowserRouter>
