@@ -208,12 +208,14 @@ def register_view(request):
         # Send verification OTP via Mailjet (only if not auto-verified)
         email_sent = False
         code = None
+        error_detail = ""
         if not user.is_verified:
             try:
                 code = create_otp(user, otp_type='signup')
-                email_sent = send_mailjet_otp_email(user.email, code, user.first_name or user.username, otp_type='signup')
+                email_sent, error_detail = send_mailjet_otp_email(user.email, code, user.first_name or user.username, otp_type='signup')
             except Exception as e:
                 logger.error(f"Initial verification OTP failed for {user.email}: {e}")
+                error_detail = str(e)
             
     except Exception as e:
         logger.error(f"Registration error: {str(e)}")
@@ -286,17 +288,17 @@ def resend_otp_view(request):
             logger.info(f"Generated {otp_type} OTP for {email}")
             
             # Use safe send_mailjet_otp_email which handles its own exceptions
-            sent = send_mailjet_otp_email(user.email, code, user.first_name or user.username, otp_type=otp_type)
+            sent, error_detail = send_mailjet_otp_email(user.email, code, user.first_name or user.username, otp_type=otp_type)
             
             if sent:
                 logger.info(f"Successfully resent {otp_type} OTP to {email}")
                 return Response({'message': f'A new verification code has been sent to {email}.'})
             else:
-                logger.error(f"Failed to send {otp_type} OTP to {email} via Mailjet")
+                logger.error(f"Failed to send {otp_type} OTP to {email} via Mailjet. Error: {error_detail}")
                 # If email fails, we return a 400 instead of 500 to indicate a service error rather than a code crash
                 return Response({
                     'error': 'Email delivery failed.',
-                    'detail': 'The email service is currently unavailable. If you are the administrator, please check the Mailjet credentials in the environment variables.',
+                    'detail': f'Service Error: {error_detail}. If you are the administrator, please verify your Mailjet credentials and sender email.',
                     'code': code if settings.DEBUG else None
                 }, status=status.HTTP_400_BAD_REQUEST)
             
@@ -319,12 +321,13 @@ def password_reset_request_view(request):
     try:
         user = User.objects.get(email=email)
         code = create_otp(user, otp_type='password_reset')
-        if send_mailjet_otp_email(user.email, code, user.first_name or user.username, otp_type='password_reset'):
+        sent, error_detail = send_mailjet_otp_email(user.email, code, user.first_name or user.username, otp_type='password_reset')
+        if sent:
             return Response({'message': 'Password reset code sent to your email.'})
         else:
             return Response({
                 'error': 'Email delivery failed.',
-                'detail': 'The email service is currently unavailable. Please contact support.',
+                'detail': f'Service Error: {error_detail}. Please contact support.',
                 'code': code if settings.DEBUG else None
             }, status=status.HTTP_400_BAD_REQUEST)
     except User.DoesNotExist:
@@ -817,13 +820,15 @@ class UserViewSet(viewsets.ModelViewSet):
                 message_text = f'Hi {user.first_name or user.username},\n\nYour account has been approved by the administrator. You can now log in to the KNHS School Portal.\n\n— KNHS School Portal'
                 message_html = f'<p>Hi {user.first_name or user.username},</p><p>Your account has been approved by the administrator. You can now log in to the KNHS School Portal.</p><p>— KNHS School Portal</p>'
                 
-                send_mailjet_email(
+                sent, err = send_mailjet_email(
                     email=user.email,
                     subject=subject,
                     message_html=message_html,
                     message_text=message_text,
                     user_name=user.first_name or user.username
                 )
+                if not sent:
+                    logger.error(f"Failed to send approval email: {err}")
             except Exception as e:
                 logger.error(f"Failed to send approval email: {e}")
 
@@ -867,13 +872,15 @@ class UserViewSet(viewsets.ModelViewSet):
                 message_text = f'Hi {user.first_name or user.username},\n\n{reason}\n\nIf you believe this is a mistake, please contact the school administrator.\n\n— KNHS School Portal'
                 message_html = f'<p>Hi {user.first_name or user.username},</p><p>{reason}</p><p>If you believe this is a mistake, please contact the school administrator.</p><p>— KNHS School Portal</p>'
                 
-                send_mailjet_email(
+                sent, err = send_mailjet_email(
                     email=email,
                     subject=subject,
                     message_html=message_html,
                     message_text=message_text,
                     user_name=user.first_name or user.username
                 )
+                if not sent:
+                    logger.error(f"Failed to send rejection email: {err}")
             except Exception as e:
                 logger.error(f"Failed to send rejection email: {e}")
 

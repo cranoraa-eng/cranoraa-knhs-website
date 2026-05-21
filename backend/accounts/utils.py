@@ -81,12 +81,12 @@ def broadcast_mailjet_email(emails, subject, message_html, message_text=None):
     try:
         mailjet = get_mailjet_client()
         if not mailjet:
-            return False
+            return False, "API Keys missing"
         result = mailjet.send.create(data=data)
-        return result.status_code == 200
+        return result.status_code == 200, f"Status: {result.status_code}"
     except Exception as e:
         logger.error(f"Failed to broadcast Mailjet email: {str(e)}")
-        return False
+        return False, str(e)
 
 def send_mailjet_email(email, subject, message_html, message_text=None, user_name="User"):
     """Generic helper to send any email via Mailjet API."""
@@ -113,11 +113,11 @@ def send_mailjet_email(email, subject, message_html, message_text=None, user_nam
     try:
         mailjet = get_mailjet_client()
         if not mailjet:
-            return False
+            return False, "API Keys missing"
         result = mailjet.send.create(data=data)
         if result.status_code == 200:
             logger.info(f"Mailjet email sent successfully to {email}")
-            return True
+            return True, "Success"
         else:
             error_data = result.json()
             logger.error(f"Mailjet API Error: {result.status_code} - {error_data}")
@@ -127,10 +127,10 @@ def send_mailjet_email(email, subject, message_html, message_text=None, user_nam
             # If it's a 403, it's often the sender email not being verified
             elif result.status_code == 403:
                 logger.error(f"PERMISSION ERROR: Ensure {settings.MAILJET_SENDER_EMAIL} is a verified sender in your Mailjet dashboard.")
-            return False
+            return False, f"Mailjet error {result.status_code}"
     except Exception as e:
         logger.error(f"CRITICAL: Failed to send email via Mailjet to {email}. Error: {str(e)}")
-        return False
+        return False, str(e)
 
 def send_mailjet_otp_email(email, code, user_name, otp_type='signup'):
     """Send an OTP email using Mailjet API."""
@@ -175,14 +175,24 @@ def send_mailjet_otp_email(email, code, user_name, otp_type='signup'):
     try:
         mailjet = get_mailjet_client()
         if not mailjet:
-            return False
+            return False, "Mailjet API keys are missing. Please check server environment variables."
+        
         result = mailjet.send.create(data=data)
         if result.status_code == 200:
             logger.info(f"Mailjet email sent successfully to {email}")
-            return True
+            return True, "Email sent successfully."
         else:
-            logger.error(f"Mailjet API Error: {result.status_code} - {result.json()}")
-            return False
+            error_info = result.json()
+            logger.error(f"Mailjet API Error: {result.status_code} - {error_info}")
+            
+            error_msg = f"Mailjet Error {result.status_code}"
+            if result.status_code == 401:
+                error_msg = "Mailjet Authentication failed. Invalid API Key or Secret."
+            elif result.status_code == 403:
+                error_msg = f"Mailjet Permission denied. Ensure {settings.MAILJET_SENDER_EMAIL} is a verified sender."
+            
+            return False, error_msg
     except Exception as e:
-        logger.error(f"CRITICAL: Failed to send email via Mailjet to {email}. Error: {str(e)}")
-        return False
+        err_str = str(e)
+        logger.error(f"CRITICAL: Failed to send email via Mailjet to {email}. Error: {err_str}")
+        return False, f"Unexpected error: {err_str}"
