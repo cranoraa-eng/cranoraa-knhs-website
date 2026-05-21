@@ -18,7 +18,8 @@ const Moderation = () => {
       const response = await api.get('/chat/reports/', {
         params: { status: filter === 'all' ? undefined : filter }
       });
-      setReports(Array.isArray(response.data) ? response.data : []);
+      const data = response.data;
+      setReports(Array.isArray(data.results) ? data.results : (Array.isArray(data) ? data : []));
     } catch (error) {
       toast.error('Failed to load reports');
       setReports([]);

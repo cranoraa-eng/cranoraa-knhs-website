@@ -972,7 +972,7 @@ class AnnouncementViewSet(viewsets.ModelViewSet):
             logger.error(f"Error in perform_create: {str(e)}")
             raise
 
-    @action(detail=false, methods=['post'])
+    @action(detail=False, methods=['post'])
     def bulk_delete(self, request):
         ids = request.data.get('ids', [])
         if not ids:
