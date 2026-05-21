@@ -269,9 +269,13 @@ def resend_otp_view(request):
             if sent:
                 return Response({'message': f'A new verification code has been sent to {email}.'})
             else:
-                # Return 200 with error message to prevent front-end 500 crash if it's just a provider error
-                # But for now, we'll keep 500 if the developer expects a hard failure
-                return Response({'error': 'Failed to send email. Please check your internet connection or try again later.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                # If email fails, we return a 400 instead of 500 to indicate a service error rather than a code crash
+                # We also include a hint about checking server logs/credentials
+                return Response({
+                    'error': 'Email delivery failed.',
+                    'detail': 'The email service is currently unavailable. If you are the administrator, please check the Mailjet credentials in the environment variables.',
+                    'code': code if settings.DEBUG else None # Show code in debug mode for easier testing
+                }, status=status.HTTP_400_BAD_REQUEST)
             
         except User.DoesNotExist:
             return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
@@ -294,7 +298,11 @@ def password_reset_request_view(request):
         if send_mailjet_otp_email(user.email, code, user.first_name or user.username, otp_type='password_reset'):
             return Response({'message': 'Password reset code sent to your email.'})
         else:
-            return Response({'error': 'Failed to send email.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({
+                'error': 'Email delivery failed.',
+                'detail': 'The email service is currently unavailable. Please contact support.',
+                'code': code if settings.DEBUG else None
+            }, status=status.HTTP_400_BAD_REQUEST)
     except User.DoesNotExist:
         # For security, don't reveal if user exists
         return Response({'message': 'If an account exists with this email, a reset code has been sent.'})
