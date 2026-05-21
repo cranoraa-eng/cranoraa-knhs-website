@@ -295,9 +295,9 @@ def resend_otp_view(request):
                 return Response({'message': f'A new verification code has been sent to {email}.'})
             else:
                 logger.error(f"Failed to send {otp_type} OTP to {email} via Mailjet. Error: {error_detail}")
-                # If email fails, we return a 400 instead of 500 to indicate a service error rather than a code crash
+                # Combine error and detail into a single string for better visibility in toasts
                 return Response({
-                    'error': 'Email delivery failed.',
+                    'error': f'Email delivery failed: {error_detail}',
                     'detail': f'Service Error: {error_detail}. If you are the administrator, please verify your Mailjet credentials and sender email.',
                     'code': code if settings.DEBUG else None
                 }, status=status.HTTP_400_BAD_REQUEST)
@@ -326,7 +326,7 @@ def password_reset_request_view(request):
             return Response({'message': 'Password reset code sent to your email.'})
         else:
             return Response({
-                'error': 'Email delivery failed.',
+                'error': f'Email delivery failed: {error_detail}',
                 'detail': f'Service Error: {error_detail}. Please contact support.',
                 'code': code if settings.DEBUG else None
             }, status=status.HTTP_400_BAD_REQUEST)
