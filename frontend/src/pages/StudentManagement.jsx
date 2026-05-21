@@ -23,11 +23,12 @@ const StudentManagement = () => {
   const fetchStudents = async () => {
     try {
       const response = await api.get('/users/?role=student');
-      setStudents(response.data);
+      setStudents(Array.isArray(response.data) ? response.data : []);
       setLoading(false);
     } catch (err) {
       console.error('Failed to fetch students:', err);
       toast.error('Failed to load students');
+      setStudents([]);
       setLoading(false);
     }
   };

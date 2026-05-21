@@ -37,7 +37,16 @@ const Analytics = () => {
 
   if (loading || !data) return <Spinner />;
 
-  const COLORS = ['#8b5cf6', '#10b981', '#3b82f6', '#f59e0b', '#ef4444'];
+  const attendanceTrends = data?.attendance?.daily_trends || [];
+  const gradeDistribution = [
+    { name: 'Outstanding', value: data?.grades?.distribution?.outstanding || 0 },
+    { name: 'Very Satisfactory', value: data?.grades?.distribution?.very_satisfactory || 0 },
+    { name: 'Satisfactory', value: data?.grades?.distribution?.satisfactory || 0 },
+    { name: 'Fairly Satisfactory', value: data?.grades?.distribution?.fairly_satisfactory || 0 },
+    { name: 'Failed', value: data?.grades?.distribution?.failed || 0 },
+  ];
+  const subjectStats = data?.grades?.subject_stats || [];
+  const userTrends = data?.dashboard?.charts?.active_users_trends || [];
 
   return (
     <div className="space-y-8 pb-12 animate-fade-in">
@@ -52,7 +61,7 @@ const Analytics = () => {
           <h3 className="text-lg font-bold text-slate-900 mb-6">Attendance Trends (Last 30 Days)</h3>
           <div className="h-72">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={data.attendance.daily_trends}>
+              <AreaChart data={attendanceTrends}>
                 <defs>
                   <linearGradient id="colorAtt" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.1}/>
@@ -60,7 +69,7 @@ const Analytics = () => {
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                <XAxis dataKey="date" tick={{fontSize: 10, fontWeight: 700}} axisLine={false} tickLine={false} tickFormatter={(str) => new Date(str).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} />
+                <XAxis dataKey="date" tick={{fontSize: 10, fontWeight: 700}} axisLine={false} tickLine={false} tickFormatter={(str) => str ? new Date(str).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : ''} />
                 <YAxis tick={{fontSize: 10, fontWeight: 700}} axisLine={false} tickLine={false} />
                 <Tooltip contentStyle={{borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)'}} />
                 <Area type="monotone" dataKey="present" stroke="#8b5cf6" strokeWidth={3} fillOpacity={1} fill="url(#colorAtt)" />
@@ -76,13 +85,7 @@ const Analytics = () => {
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
-                  data={[
-                    { name: 'Outstanding', value: data.grades.distribution.outstanding },
-                    { name: 'Very Satisfactory', value: data.grades.distribution.very_satisfactory },
-                    { name: 'Satisfactory', value: data.grades.distribution.satisfactory },
-                    { name: 'Fairly Satisfactory', value: data.grades.distribution.fairly_satisfactory },
-                    { name: 'Failed', value: data.grades.distribution.failed },
-                  ]}
+                  data={gradeDistribution}
                   cx="50%"
                   cy="50%"
                   innerRadius={70}
@@ -90,7 +93,7 @@ const Analytics = () => {
                   paddingAngle={5}
                   dataKey="value"
                 >
-                  {[0,1,2,3,4].map((entry, index) => (
+                  {gradeDistribution.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
@@ -106,7 +109,7 @@ const Analytics = () => {
           <h3 className="text-lg font-bold text-slate-900 mb-6">Subject Performance Averages</h3>
           <div className="h-80">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={data.grades.subject_stats}>
+              <BarChart data={subjectStats}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                 <XAxis dataKey="subject__name" tick={{fontSize: 10, fontWeight: 700}} axisLine={false} tickLine={false} />
                 <YAxis tick={{fontSize: 10, fontWeight: 700}} axisLine={false} tickLine={false} domain={[70, 100]} />
@@ -122,7 +125,7 @@ const Analytics = () => {
           <h3 className="text-lg font-bold text-slate-900 mb-6">Active Users (Last 24 Hours)</h3>
           <div className="h-72">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={data.dashboard.charts.active_users_trends}>
+              <AreaChart data={userTrends}>
                 <defs>
                   <linearGradient id="colorUsers" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#10b981" stopOpacity={0.1}/>

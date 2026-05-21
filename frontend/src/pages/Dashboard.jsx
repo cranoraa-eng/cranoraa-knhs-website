@@ -473,7 +473,7 @@ const StudentView = () => {
   if (loading) return <Spinner />;
 
   const thisMonth = new Date().toISOString().slice(0, 7);
-  const monthAtt = attendance.filter(r => r.date?.startsWith(thisMonth));
+  const monthAtt = Array.isArray(attendance) ? attendance.filter(r => r.date?.startsWith(thisMonth)) : [];
   const presentCount = monthAtt.filter(r => ['present', 'late'].includes(r.status)).length;
   const attRate = monthAtt.length > 0 ? Math.round((presentCount / monthAtt.length) * 100) : null;
 

@@ -41,11 +41,13 @@ const AuditLogs = () => {
           page_size: 50
         }
       });
-      setLogs(response.data.results);
-      setTotalCount(response.data.count);
-      setTotalPages(Math.ceil(response.data.count / 50));
+      const data = response.data;
+      setLogs(Array.isArray(data.results) ? data.results : []);
+      setTotalCount(data.count || 0);
+      setTotalPages(Math.ceil((data.count || 0) / 50) || 1);
     } catch (error) {
       toast.error('Failed to load audit logs');
+      setLogs([]);
     } finally {
       setLoading(false);
     }
@@ -61,7 +63,7 @@ const AuditLogs = () => {
   };
 
   const handleSelectAll = (e) => {
-    if (e.target.checked) {
+    if (e.target.checked && Array.isArray(logs)) {
       setSelectedIds(logs.map(log => log.id));
     } else {
       setSelectedIds([]);
@@ -220,7 +222,7 @@ const AuditLogs = () => {
           
           <button
             onClick={handleClearAll}
-            disabled={deleting || logs.length === 0}
+            disabled={deleting || !logs || logs.length === 0}
             className="flex-1 md:flex-none flex items-center justify-center gap-1 bg-white text-gray-700 hover:bg-gray-50 font-black py-1 md:py-1.5 px-2 md:px-4 rounded md:rounded-lg transition-all border border-gray-200 shadow-sm active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed text-[8px] md:text-xs whitespace-nowrap uppercase tracking-widest"
           >
             <svg className="w-2.5 h-2.5 md:w-3 md:h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -278,7 +280,7 @@ const AuditLogs = () => {
                   <th className="px-1.5 py-1 md:px-4 md:py-2.5 w-6 md:w-8">
                     <input
                       type="checkbox"
-                      checked={selectedIds.length === logs.length && logs.length > 0}
+                      checked={logs?.length > 0 && selectedIds.length === logs.length}
                       onChange={handleSelectAll}
                       className="rounded border-gray-300 text-purple-600 focus:ring-purple-500 w-2 h-2 md:w-3.5 md:h-3.5 cursor-pointer"
                     />

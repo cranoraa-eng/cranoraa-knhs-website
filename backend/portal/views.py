@@ -4,10 +4,10 @@ from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from rest_framework.response import Response
 from django.contrib.auth import get_user_model
 from accounts.models import User, Attendance, ChatMessage, Grade, StudentClassEnrollment, Classroom, Subject, Announcement as AccountAnnouncement
-from .models import Announcement, SchoolClass, Department, AcademicYear, AuditLog, DatabaseBackup
+from .models import Announcement, SchoolClass, Department, AcademicYear, Semester, AuditLog, DatabaseBackup
 from .serializers import (
     AnnouncementSerializer,
-    SchoolClassSerializer, DepartmentSerializer, AcademicYearSerializer,
+    SchoolClassSerializer, DepartmentSerializer, AcademicYearSerializer, SemesterSerializer,
     AuditLogSerializer, DatabaseBackupSerializer
 )
 from django.db.models import Count, Avg, Q

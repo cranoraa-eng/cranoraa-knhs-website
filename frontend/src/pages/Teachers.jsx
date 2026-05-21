@@ -31,11 +31,12 @@ const Teachers = () => {
   const fetchTeachers = async () => {
     try {
       const response = await api.get('/users/?role=teacher');
-      setTeachers(response.data);
+      setTeachers(Array.isArray(response.data) ? response.data : []);
       setLoading(false);
     } catch (err) {
       console.error('Failed to fetch teachers:', err);
       toast.error('Failed to load teachers');
+      setTeachers([]);
       setLoading(false);
     }
   };
@@ -43,9 +44,10 @@ const Teachers = () => {
   const fetchClassrooms = async () => {
     try {
       const response = await api.get('/classrooms/');
-      setClassrooms(response.data);
+      setClassrooms(Array.isArray(response.data) ? response.data : []);
     } catch (err) {
       console.error('Failed to fetch classrooms:', err);
+      setClassrooms([]);
     }
   };
 
