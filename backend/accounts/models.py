@@ -10,17 +10,28 @@ class User(AbstractUser):
         ('parent', 'Parent'),
     ]
     
-    email = models.EmailField(unique=True)
+    STATUS_CHOICES = [
+        ('active', 'Active'),
+        ('inactive', 'Inactive'),
+        ('suspended', 'Suspended'),
+        ('pending_reset', 'Pending Password Reset'),
+    ]
+    
+    email = models.EmailField(unique=True, null=True, blank=True)
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='student')
     is_verified = models.BooleanField(default=False)
     is_approved = models.BooleanField(default=False)
     last_activity = models.DateTimeField(null=True, blank=True)
     
-    USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['username', 'role']
+    # School System Fields
+    must_change_password = models.BooleanField(default=False)
+    account_status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active')
+    
+    USERNAME_FIELD = 'username'
+    REQUIRED_FIELDS = ['email', 'role']
     
     def __str__(self):
-        return f"{self.email} ({self.role})"
+        return f"{self.username} ({self.role})"
 
     @property
     def is_online(self):
@@ -71,6 +82,7 @@ class Profile(models.Model):
     address = models.TextField(blank=True, null=True)
     date_of_birth = models.DateField(blank=True, null=True)
     registration_number = models.CharField(max_length=20, blank=True, null=True, unique=True, help_text="Auto-generated unique registration number for students")
+    profile_picture = models.URLField(max_length=500, blank=True, null=True, help_text="Supabase Storage URL for profile picture")
     
     # Additional student information
     sex = models.CharField(max_length=10, choices=[('male', 'Male'), ('female', 'Female'), ('other', 'Other')], blank=True, null=True)

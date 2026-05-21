@@ -36,7 +36,8 @@ class ProfileSerializer(serializers.ModelSerializer):
         model = Profile
         fields = ['id', 'title', 'grade_level', 'classroom_name', 'employee_id', 'phone_number', 'address',
                   'date_of_birth', 'registration_number', 'sex', 'state',
-                  'nationality', 'middle_name', 'father_name', 'mother_name', 'contact_information', 'linked_students']
+                  'nationality', 'middle_name', 'father_name', 'mother_name', 'contact_information', 
+                  'linked_students', 'profile_picture']
 
     def get_classroom_name(self, obj):
         try:
@@ -56,7 +57,8 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'email', 'username', 'first_name', 'last_name', 'full_name',
-                  'role', 'is_verified', 'is_approved', 'is_online', 'profile']
+                  'role', 'is_verified', 'is_approved', 'is_online', 'profile', 
+                  'must_change_password', 'account_status']
 
     def get_full_name(self, obj):
         return full_name(obj)

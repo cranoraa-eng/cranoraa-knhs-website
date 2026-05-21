@@ -33,18 +33,20 @@ from .utils import create_otp, verify_otp_code, send_mailjet_otp_email, send_mai
 @permission_classes([AllowAny])
 def login_view(request):
     try:
-        email = request.data.get('email')
+        # Support both email and username (Student ID) in the same field
+        login_id = request.data.get('email') or request.data.get('username')
         password = request.data.get('password')
         
-        logger.info(f"Login attempt for email: {email}")
+        logger.info(f"Login attempt for ID: {login_id}")
         
-        if email is None or password is None:
+        if login_id is None or password is None:
             return Response(
-                {'error': 'Please provide both email and password'},
+                {'error': 'Please provide both ID (Email/Student ID) and password'},
                 status=status.HTTP_400_BAD_REQUEST
             )
         
-        user = authenticate(request=request, username=email, password=password)
+        # Authenticate using the custom backend
+        user = authenticate(request=request, username=login_id, password=password)
         
         if user is None:
             return Response(
@@ -52,15 +54,17 @@ def login_view(request):
                 status=status.HTTP_401_UNAUTHORIZED
             )
             
-        if not user.is_verified:
-            # Return 200 instead of 403 to prevent Axes from locking out the IP
-            # when the user has correct credentials but hasn't verified email yet.
-            return Response({
-                'error': 'Please verify your email before logging in.', 
-                'code': 'not_verified',
-                'verified': False,
-                'email': user.email
-            }, status=status.HTTP_200_OK)
+        # Check Account Status
+        if user.account_status == 'inactive':
+            return Response(
+                {'error': 'This account is currently inactive. Please contact the administrator.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        elif user.account_status == 'suspended':
+            return Response(
+                {'error': 'This account has been suspended. Please contact the administrator.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
 
         if not user.is_approved:
             return Response(
@@ -68,6 +72,21 @@ def login_view(request):
                 status=status.HTTP_403_FORBIDDEN
             )
         
+        # If email verification is still required for some roles but optional for others,
+        # we can check user.is_verified here if needed. 
+        # But per requirements: "Do NOT require email verification to access the system."
+        
+        # Check if password change is forced
+        if user.must_change_password:
+            # We still issue a temporary token but with a flag
+            refresh = RefreshToken.for_user(user)
+            return Response({
+                'must_change_password': True,
+                'access': str(refresh.access_token),
+                'refresh': str(refresh),
+                'user': UserSerializer(user).data
+            }, status=status.HTTP_200_OK)
+
         refresh = RefreshToken.for_user(user)
         
         # Log successful login
@@ -78,7 +97,7 @@ def login_view(request):
             model_name='User',
             object_id=user.id,
             object_repr=str(user),
-            description=f'User {user.email} logged in successfully',
+            description=f'User {user.username} logged in successfully',
             request=request
         )
         
@@ -95,68 +114,63 @@ def login_view(request):
         )
 
 
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def force_password_change_view(request):
+    """
+    Allows a user with must_change_password=True to set a new password.
+    """
+    user = request.user
+    new_password = request.data.get('password')
+    
+    if not new_password:
+        return Response({'error': 'Password is required'}, status=status.HTTP_400_BAD_REQUEST)
+        
+    if len(new_password) < 8:
+        return Response({'error': 'Password must be at least 8 characters long'}, status=status.HTTP_400_BAD_REQUEST)
+        
+    user.set_password(new_password)
+    user.must_change_password = False
+    user.save()
+    
+    # Update session or return new tokens if needed, but SimpleJWT tokens remain valid 
+    # for the user until expiry unless blacklisted. 
+    # We can issue fresh ones here for a clean state.
+    refresh = RefreshToken.for_user(user)
+    
+    return Response({
+        'message': 'Password changed successfully!',
+        'access': str(refresh.access_token),
+        'refresh': str(refresh)
+    })
+
+
 @csrf_exempt
 @api_view(['POST'])
-@permission_classes([AllowAny])
-def register_view(request):
-    username = request.data.get('username')
+@permission_classes([IsAdminUser])
+def admin_create_user_view(request):
+    username = request.data.get('username') # For students, this will be their Student ID
     email = request.data.get('email')
-    password = request.data.get('password')
+    password = request.data.get('password') # Temporary password
     role = request.data.get('role', 'student')
     first_name = request.data.get('first_name', '')
     last_name = request.data.get('last_name', '')
     profile_data = request.data.get('profile', {})
     
-    # Use email as username if username not provided
-    if not username and email:
-        username = email
-
-    if not username or not email or not password:
-        return Response(
-            {'error': 'Please provide first name, last name, email, and password'},
-            status=status.HTTP_400_BAD_REQUEST
-        )
-
-    # Password validation
-    if len(password) < 8:
-        return Response(
-            {'error': 'Password must be at least 8 characters long'},
-            status=status.HTTP_400_BAD_REQUEST
-        )
+    # Validation
+    if not username:
+        return Response({'error': 'Username/Student ID is required'}, status=status.HTTP_400_BAD_REQUEST)
     
-    # LRN validation for students
-    if role == 'student':
-        lrn = profile_data.get('lrn')
-        if not lrn or len(str(lrn)) != 12 or not str(lrn).isdigit():
-            return Response(
-                {'error': 'LRN must be exactly 12 digits'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+    if not password:
+        # Generate a random temporary password if not provided
+        password = ''.join(secrets.choice(string.ascii_letters + string.digits) for i in range(10))
 
-    # Check for existing unverified users with this email and clear them for a fresh start
-    existing_user_email = User.objects.filter(email=email).first()
-    if existing_user_email:
-        if existing_user_email.is_verified:
-            return Response(
-                {'error': 'Email already registered and verified. Please log in.'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        else:
-            # Delete unverified user to allow re-registration (clean start)
-            existing_user_email.delete()
-    
-    # Check for existing unverified users with this username
-    existing_user_username = User.objects.filter(username=username).first()
-    if existing_user_username:
-        if existing_user_username.is_verified:
-            return Response(
-                {'error': 'Username already taken'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        else:
-            # Delete unverified user to allow re-registration
-            existing_user_username.delete()
-    
+    if User.objects.filter(username=username).exists():
+        return Response({'error': 'User with this ID/Username already exists'}, status=status.HTTP_400_BAD_REQUEST)
+
+    if email and User.objects.filter(email=email).exists():
+        return Response({'error': 'User with this email already exists'}, status=status.HTTP_400_BAD_REQUEST)
+
     try:
         user = User.objects.create_user(
             username=username,
@@ -166,77 +180,55 @@ def register_view(request):
             last_name=last_name
         )
         user.role = role
-        
-        # If created by an admin, auto-verify and auto-approve
-        is_admin_creation = request.user.is_authenticated and request.user.role == 'admin'
-        
-        if role == 'admin' or is_admin_creation:
-            user.is_approved = True
-            user.is_verified = True
-        else:
-            user.is_approved = False
-            user.is_verified = False # Require email verification for self-signup
-            
+        user.is_verified = True if email else False
+        user.is_approved = True # Admin-created accounts are auto-approved
+        user.must_change_password = True # Force password change on first login
+        user.account_status = 'active'
         user.save()
         
-        # Create profile with additional data
+        # Create profile
         from .models import Profile
-        profile = Profile.objects.create(user=user)
+        profile, created = Profile.objects.get_or_create(user=user)
         
-        if role == 'student':
-            profile.lrn = profile_data.get('lrn')
-            
-        if profile_data:
-            profile.title = profile_data.get('title')
-            profile.phone_number = profile_data.get('phone_number')
-            profile.employee_id = profile_data.get('employee_id')
-            profile.sex = profile_data.get('sex')
-            profile.state = profile_data.get('state')
-            profile.nationality = profile_data.get('nationality')
-            profile.father_name = profile_data.get('father_name')
-            profile.mother_name = profile_data.get('mother_name')
-            if profile_data.get('date_of_birth'):
-                from datetime import datetime
-                try:
-                    profile.date_of_birth = datetime.strptime(profile_data.get('date_of_birth'), '%Y-%m-%d').date()
-                except ValueError:
-                    pass
-            profile.contact_information = profile_data.get('contact_information')
+        # Map profile fields
+        profile.lrn = profile_data.get('lrn', username if role == 'student' else None)
+        profile.title = profile_data.get('title')
+        profile.grade_level = profile_data.get('grade_level')
+        profile.employee_id = profile_data.get('employee_id')
+        profile.phone_number = profile_data.get('phone_number')
+        profile.address = profile_data.get('address')
+        
+        if profile_data.get('date_of_birth'):
+            from datetime import datetime
+            try:
+                profile.date_of_birth = datetime.strptime(profile_data.get('date_of_birth'), '%Y-%m-%d').date()
+            except ValueError:
+                pass
         
         profile.save()
-        
-        # Send verification OTP via Mailjet (only if not auto-verified)
-        email_sent = False
-        code = None
-        error_detail = ""
-        if not user.is_verified:
-            try:
-                code = create_otp(user, otp_type='signup')
-                email_sent, error_detail = send_mailjet_otp_email(user.email, code, user.first_name or user.username, otp_type='signup')
-            except Exception as e:
-                logger.error(f"Initial verification OTP failed for {user.email}: {e}")
-                error_detail = str(e)
-            
-    except Exception as e:
-        logger.error(f"Registration error: {str(e)}")
-        return Response(
-            {'error': str(e)},
-            status=status.HTTP_400_BAD_REQUEST
+
+        # Log creation
+        from portal.views import log_audit_action
+        log_audit_action(
+            user=request.user,
+            action='create',
+            model_name='User',
+            object_id=user.id,
+            object_repr=str(user),
+            description=f'Admin created {role} account: {username}',
+            request=request
         )
-    
-    if is_admin_creation:
-        res_msg = f'Account for {user.email} has been created and activated successfully.'
-    else:
-        res_msg = 'Account created! Please check your email to verify your account before logging in.'
-        if not email_sent:
-            res_msg = 'Account created, but we had trouble sending the verification email. Please try the "Resend Code" button on the next page.'
-        
-    return Response({
-        'message': res_msg,
-        'email': email,
-        'email_sent': email_sent,
-        'code': code if settings.DEBUG else None # Show code in debug mode for easier testing
-    }, status=status.HTTP_201_CREATED)
+
+        return Response({
+            'message': f'Account for {username} created successfully!',
+            'username': username,
+            'temporary_password': password,
+            'role': role
+        }, status=status.HTTP_201_CREATED)
+
+    except Exception as e:
+        logger.error(f"Admin user creation error: {str(e)}")
+        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['POST'])
@@ -674,9 +666,47 @@ class UserViewSet(viewsets.ModelViewSet):
             
         return response
 
+    @action(detail=True, methods=['post'])
+    def update_status(self, request, pk=None):
+        """Update user account status (admin only)"""
+        if request.user.role != 'admin':
+            return Response({'error': 'Unauthorized'}, status=403)
+            
+        user = self.get_object()
+        status_val = request.data.get('status')
+        if status_val not in [s[0] for s in User.STATUS_CHOICES]:
+            return Response({'error': 'Invalid status'}, status=400)
+            
+        user.account_status = status_val
+        user.save()
+        
+        return Response({'status': f'User account status updated to {status_val}', 'account_status': user.account_status})
+
+    @action(detail=True, methods=['post'])
+    def reset_password(self, request, pk=None):
+        """Manually reset a user's password (admin only)"""
+        if request.user.role != 'admin':
+            return Response({'error': 'Unauthorized'}, status=403)
+            
+        user = self.get_object()
+        new_password = request.data.get('password')
+        
+        if not new_password:
+            # Generate random password
+            new_password = ''.join(secrets.choice(string.ascii_letters + string.digits) for i in range(10))
+            
+        user.set_password(new_password)
+        user.must_change_password = True # Force them to change it again
+        user.save()
+        
+        return Response({
+            'message': 'Password reset successfully',
+            'temporary_password': new_password
+        })
+
     @action(detail=False, methods=['post'], parser_classes=[parsers.MultiPartParser])
     def import_csv(self, request):
-        """Import users from CSV (admin only)"""
+        """Import students from CSV (admin only)"""
         if request.user.role != 'admin':
             return Response({'error': 'Unauthorized'}, status=403)
             
@@ -687,48 +717,63 @@ class UserViewSet(viewsets.ModelViewSet):
         import csv
         import io
         
-        decoded_file = file.read().decode('utf-8')
-        io_string = io.StringIO(decoded_file)
-        reader = csv.DictReader(io_string)
+        try:
+            decoded_file = file.read().decode('utf-8')
+            io_string = io.StringIO(decoded_file)
+            reader = csv.DictReader(io_string)
+        except Exception as e:
+            return Response({'error': f'Failed to parse CSV: {str(e)}'}, status=400)
         
         created_count = 0
         errors = []
         
         for row in reader:
             try:
-                email = row.get('Email')
-                if not email: continue
+                # Expected fields: Student ID (username), First Name, Last Name, Grade Level, Section, Email (optional)
+                student_id = row.get('Student ID') or row.get('username')
+                if not student_id:
+                    errors.append("Missing Student ID for a row")
+                    continue
                 
-                user, created = User.objects.get_or_create(
+                email = row.get('Email') or None
+                first_name = row.get('First Name') or ''
+                last_name = row.get('Last Name') or ''
+                grade_level = row.get('Grade Level') or ''
+                
+                # Check if exists
+                if User.objects.filter(username=student_id).exists():
+                    errors.append(f"Student ID {student_id} already exists")
+                    continue
+                
+                # Generate temporary password
+                temp_password = ''.join(secrets.choice(string.ascii_letters + string.digits) for i in range(10))
+                
+                user = User.objects.create_user(
+                    username=student_id,
                     email=email,
+                    password=temp_password,
+                    first_name=first_name,
+                    last_name=last_name
+                )
+                user.role = 'student'
+                user.is_approved = True
+                user.is_verified = True if email else False
+                user.must_change_password = True
+                user.account_status = 'active'
+                user.save()
+                
+                # Create profile
+                from .models import Profile
+                Profile.objects.update_or_create(
+                    user=user,
                     defaults={
-                        'username': row.get('Username', email),
-                        'first_name': row.get('First Name', ''),
-                        'last_name': row.get('Last Name', ''),
-                        'role': row.get('Role', 'student'),
-                        'is_verified': row.get('Is Verified', 'True').lower() == 'true',
-                        'is_approved': row.get('Is Approved', 'True').lower() == 'true',
+                        'lrn': student_id,
+                        'grade_level': grade_level,
                     }
                 )
-                
-                if created:
-                    password = row.get('Password', 'ChangeMe123!')
-                    user.set_password(password)
-                    user.save()
-                    
-                    # Create profile
-                    from .models import Profile
-                    Profile.objects.update_or_create(
-                        user=user,
-                        defaults={
-                            'lrn': row.get('LRN'),
-                            'grade_level': row.get('Grade Level'),
-                            'employee_id': row.get('Employee ID'),
-                        }
-                    )
-                    created_count += 1
+                created_count += 1
             except Exception as e:
-                errors.append(f"Error importing {row.get('Email')}: {str(e)}")
+                errors.append(f"Error importing {row.get('Student ID')}: {str(e)}")
                 
         return Response({
             'status': 'success',
@@ -2009,35 +2054,42 @@ def check_result(request):
         return Response({'error': 'Invalid registration number'}, status=400)
 
 
-@api_view(['GET', 'PUT'])
+@api_view(['GET', 'PUT', 'POST'])
 @permission_classes([IsAuthenticated])
+@parser_classes([parsers.MultiPartParser, parsers.FormParser, parsers.JSONParser])
 def student_profile(request):
     """
-    Get or update student profile information.
-    Teachers and admins can view any student's profile via student_id query param.
+    Get, update, or upload student profile information/picture.
     """
     from .models import Profile
-    from .serializers import ProfileSerializer
     
     target_user = request.user
     student_id = request.query_params.get('student_id')
     
-    # If student_id is provided, check permissions and change target_user
     if student_id:
         if request.user.role not in ['teacher', 'admin']:
-            return Response({'error': 'Only teachers and admins can view other students profiles'}, status=status.HTTP_403_FORBIDDEN)
+            return Response({'error': 'Unauthorized'}, status=403)
         try:
-            target_user = User.objects.get(id=student_id, role='student')
+            target_user = User.objects.get(id=student_id)
         except User.DoesNotExist:
-            return Response({'error': 'Student not found'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'error': 'User not found'}, status=404)
     
-    try:
-        profile = target_user.profile
-    except Profile.DoesNotExist:
-        profile = Profile.objects.create(user=target_user)
+    profile, _ = Profile.objects.get_or_create(user=target_user)
     
+    if request.method == 'POST' and 'profile_picture' in request.FILES:
+        from .utils import upload_to_supabase
+        pic_file = request.FILES['profile_picture']
+        url = upload_to_supabase(pic_file)
+        
+        if url:
+            profile.profile_picture = url
+            profile.save()
+            return Response({'message': 'Profile picture updated successfully', 'profile_picture': url})
+        else:
+            return Response({'error': 'Failed to upload picture to storage'}, status=500)
+
     if request.method == 'GET':
-        # Try to get grade level from classroom enrollment if not set on profile
+        # ... existing GET logic ...
         grade_level = profile.grade_level
         if not grade_level:
             enrollment = StudentClassEnrollment.objects.filter(student=target_user).select_related('classroom').first()
@@ -2054,6 +2106,7 @@ def student_profile(request):
             'first_name': target_user.first_name,
             'last_name': target_user.last_name,
             'role': target_user.role,
+            'must_change_password': target_user.must_change_password,
             'profile': {
                 'title': profile.title,
                 'sex': profile.sex,
@@ -2068,16 +2121,22 @@ def student_profile(request):
                 'address': profile.address,
                 'grade_level': grade_level,
                 'registration_number': profile.registration_number,
+                'profile_picture': profile.profile_picture,
             }
         }
         return Response(profile_data)
     
     elif request.method == 'PUT':
-        # Only the user themselves can update their profile
         if target_user != request.user:
-            return Response({'error': 'You cannot update another user\'s profile'}, status=status.HTTP_403_FORBIDDEN)
+            return Response({'error': 'Unauthorized'}, status=403)
             
-        # Update user fields
+        # Update email if provided (Optional linking)
+        if 'email' in request.data:
+            new_email = request.data['email']
+            if new_email and User.objects.filter(email=new_email).exclude(id=request.user.id).exists():
+                return Response({'error': 'Email already in use'}, status=400)
+            request.user.email = new_email
+            
         if 'first_name' in request.data:
             request.user.first_name = request.data['first_name']
         if 'last_name' in request.data:
@@ -2085,63 +2144,22 @@ def student_profile(request):
         request.user.save()
         
         # Update profile fields
-        if 'title' in request.data:
-            profile.title = request.data['title']
-        if 'sex' in request.data:
-            profile.sex = request.data['sex']
-        if 'state' in request.data:
-            profile.state = request.data['state']
-        if 'nationality' in request.data:
-            profile.nationality = request.data['nationality']
-        if 'middle_name' in request.data:
-            profile.middle_name = request.data['middle_name']
-        if 'father_name' in request.data:
-            profile.father_name = request.data['father_name']
-        if 'mother_name' in request.data:
-            profile.mother_name = request.data['mother_name']
-        if 'date_of_birth' in request.data and request.data['date_of_birth']:
-            from datetime import datetime
-            profile.date_of_birth = datetime.strptime(request.data['date_of_birth'], '%Y-%m-%d').date()
-        elif 'date_of_birth' in request.data and not request.data['date_of_birth']:
-            profile.date_of_birth = None
-        if 'contact_information' in request.data:
-            profile.contact_information = request.data['contact_information']
-        if 'phone_number' in request.data:
-            profile.phone_number = request.data['phone_number']
-        if 'address' in request.data:
-            profile.address = request.data['address']
-        if 'registration_number' in request.data and request.data['registration_number']:
-            profile.registration_number = request.data['registration_number']
-        if 'grade_level' in request.data:
-            profile.grade_level = request.data['grade_level']
+        for field in ['title', 'sex', 'state', 'nationality', 'middle_name', 'father_name', 'mother_name', 'phone_number', 'address', 'contact_information', 'registration_number', 'grade_level']:
+            if field in request.data:
+                setattr(profile, field, request.data[field])
+        
+        if 'date_of_birth' in request.data:
+            if request.data['date_of_birth']:
+                from datetime import datetime
+                try:
+                    profile.date_of_birth = datetime.strptime(request.data['date_of_birth'], '%Y-%m-%d').date()
+                except ValueError:
+                    pass
+            else:
+                profile.date_of_birth = None
         
         profile.save()
-        
-        # Return updated data
-        profile_data = {
-            'id': request.user.id,
-            'username': request.user.username,
-            'email': request.user.email,
-            'first_name': request.user.first_name,
-            'last_name': request.user.last_name,
-            'role': request.user.role,
-            'profile': {
-                'title': profile.title,
-                'sex': profile.sex,
-                'state': profile.state,
-                'nationality': profile.nationality,
-                'middle_name': profile.middle_name,
-                'father_name': profile.father_name,
-                'mother_name': profile.mother_name,
-                'date_of_birth': profile.date_of_birth,
-                'contact_information': profile.contact_information,
-                'phone_number': profile.phone_number,
-                'address': profile.address,
-                'grade_level': profile.grade_level,
-                'registration_number': profile.registration_number,
-            }
-        }
-        return Response(profile_data)
+        return Response({'message': 'Profile updated successfully'})
 
 
 class NotificationViewSet(viewsets.ModelViewSet):

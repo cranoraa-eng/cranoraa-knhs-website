@@ -23,6 +23,11 @@ const ProtectedRoute = ({ children }) => {
     return <Navigate to="/login" replace />;
   }
 
+  // Force password change if required
+  if (user.must_change_password && window.location.pathname !== '/force-password-change') {
+    return <Navigate to="/force-password-change" replace />;
+  }
+
   return children;
 };
 

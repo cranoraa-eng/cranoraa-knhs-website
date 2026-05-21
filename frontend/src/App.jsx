@@ -9,6 +9,7 @@ import Signup from './pages/Signup';
 import VerifyOTP from './pages/VerifyOTP';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
+import ForcePasswordChange from './pages/ForcePasswordChange';
 import Dashboard from './pages/Dashboard';
 import Announcements from './pages/Announcements';
 import Grades from './pages/Grades';
@@ -93,10 +94,11 @@ function App() {
           <Routes>
         {/* Auth Routes - Moved up for higher priority */}
         <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
+        <Route path="/signup" element={<Navigate to="/login" replace />} />
         <Route path="/verify-otp" element={<VerifyOTP />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/force-password-change" element={<ForcePasswordChange />} />
 
         {/* Public Website Routes */}
         <Route path="/" element={<PublicLayout />}>

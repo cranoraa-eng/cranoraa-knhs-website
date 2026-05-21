@@ -173,6 +173,7 @@ AUTH_USER_MODEL = 'accounts.User'
 # Authentication Backends (including Axes for rate limiting)
 AUTHENTICATION_BACKENDS = [
     'axes.backends.AxesStandaloneBackend',
+    'accounts.backends.SchoolAuthBackend',
     'django.contrib.auth.backends.ModelBackend',
 ]
 
@@ -261,3 +262,8 @@ CSRF_COOKIE_SAMESITE = 'Lax'
 
 # Frontend URL for verification links
 FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:5173')
+
+# Supabase Configuration
+SUPABASE_URL = os.environ.get('SUPABASE_URL')
+SUPABASE_KEY = os.environ.get('SUPABASE_SERVICE_ROLE_KEY') or os.environ.get('SUPABASE_KEY')
+SUPABASE_BUCKET = os.environ.get('SUPABASE_STORAGE_BUCKET', 'profile-pictures')

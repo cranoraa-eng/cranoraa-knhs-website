@@ -57,10 +57,9 @@ const Teachers = () => {
     if (isSubmitting) return;
     setIsSubmitting(true);
     try {
-      // Use email as username for simplicity since we're removing username field
-      const response = await api.post('/register/', { 
+      const response = await api.post('/admin/create-user/', { 
+        username: newTeacher.email, // Use email as username for teachers
         ...newTeacher, 
-        username: newTeacher.email,
         role: 'teacher',
         profile: {
           title: newTeacher.title,
@@ -77,7 +76,7 @@ const Teachers = () => {
       });
       setShowAddModal(false);
       fetchTeachers();
-      toast.success(response.data.message || 'Teacher added successfully!');
+      toast.success(response.data.message);
     } catch (err) {
       console.error('Failed to add teacher:', err);
       toast.error(err.response?.data?.error || 'Failed to add teacher');
@@ -131,25 +130,33 @@ const Teachers = () => {
   };
 
   const handleResetPassword = async (teacherId) => {
-    const newPassword = prompt('Enter new password for this teacher:');
-    if (newPassword) {
-      if (newPassword.length < 8) {
-        toast.error('Password must be at least 8 characters long');
-        return;
-      }
+    const { value: password } = await Swal.fire({
+      title: 'Reset Password',
+      input: 'text',
+      inputLabel: 'Enter temporary password',
+      inputPlaceholder: 'Leave blank for auto-generation',
+      showCancelButton: true,
+      confirmButtonText: 'Reset',
+      confirmButtonColor: '#f59e0b',
+    });
+
+    if (password !== undefined) {
       try {
-        await api.patch(`/users/${teacherId}/`, { password: newPassword });
-        toast.success('Password reset successfully!');
+        const response = await api.post(`/users/${teacherId}/reset_password/`, { password });
+        Swal.fire({
+          icon: 'success',
+          title: 'Password Reset',
+          html: `New temporary password: <strong>${response.data.temporary_password}</strong><br/>The teacher will be forced to change it on login.`,
+        });
       } catch (err) {
-        console.error('Failed to reset password:', err);
         toast.error('Failed to reset password');
       }
     }
   };
 
-  const handleToggleActive = async (teacher) => {
+  const handleToggleStatus = async (teacher, newStatus) => {
     try {
-      const response = await api.post(`/users/${teacher.id}/toggle_active/`);
+      const response = await api.post(`/users/${teacher.id}/update_status/`, { status: newStatus });
       toast.success(response.data.status);
       fetchTeachers();
     } catch (err) {
@@ -247,19 +254,19 @@ const Teachers = () => {
             {filteredTeachers.map((teacher) => (
               <div key={teacher.id} className="bg-white border border-gray-200 rounded-lg md:rounded-2xl p-3 md:p-6 hover:shadow-xl transition-all duration-300 group relative border-t-2 md:border-t-4 border-t-purple-500 overflow-hidden min-w-0">
                 <div className="absolute top-0 right-0 p-2 md:p-4 flex gap-1 md:gap-2 opacity-0 group-hover:opacity-100 transition-opacity bg-white/80 backdrop-blur-sm rounded-bl-xl border-l border-b border-gray-100">
-                  <button
-                    onClick={() => handleToggleActive(teacher)}
-                    className={`p-1 md:p-2 rounded md:rounded-lg transition-all shadow-sm ${teacher.is_active ? 'bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white' : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white'}`}
-                    title={teacher.is_active ? 'Deactivate' : 'Activate'}
+                  <select 
+                    value={teacher.account_status} 
+                    onChange={(e) => handleToggleStatus(teacher, e.target.value)}
+                    className={`text-[8px] md:text-[10px] font-black px-1 md:px-2 py-0.5 md:py-1 rounded border-0 focus:ring-2 focus:ring-purple-500 cursor-pointer ${
+                      teacher.account_status === 'active' ? 'bg-emerald-50 text-emerald-600' : 
+                      teacher.account_status === 'suspended' ? 'bg-rose-50 text-rose-600' : 
+                      'bg-gray-50 text-gray-600'
+                    }`}
                   >
-                    <svg className="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      {teacher.is_active ? (
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
-                      ) : (
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      )}
-                    </svg>
-                  </button>
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                    <option value="suspended">Suspended</option>
+                  </select>
                    <button
                     onClick={() => {
                       setEditingTeacher({
@@ -307,10 +314,14 @@ const Teachers = () => {
                         {teacher.profile?.title} {teacher.first_name} {teacher.last_name}
                       </h3>
                       <div className="flex items-center gap-1.5 mt-0.5">
-                        <p className="text-[7px] md:text-xs font-black text-purple-500 uppercase tracking-widest">Faculty</p>
+                        <p className="text-[7px] md:text-[10px] font-black text-purple-500 uppercase tracking-widest">Faculty</p>
                         <span className="text-[7px] text-gray-300">•</span>
-                        <span className={`text-[7px] md:text-[10px] font-black uppercase tracking-widest ${teacher.is_active ? 'text-emerald-500' : 'text-rose-500'}`}>
-                          {teacher.is_active ? 'Active' : 'Inactive'}
+                        <span className={`text-[7px] md:text-[10px] font-black uppercase tracking-widest ${
+                          teacher.account_status === 'active' ? 'text-emerald-500' : 
+                          teacher.account_status === 'suspended' ? 'text-rose-500' : 
+                          'text-gray-400'
+                        }`}>
+                          {teacher.account_status}
                         </span>
                         <span className="text-[7px] text-gray-300">•</span>
                         <span className={`text-[7px] md:text-[10px] font-black uppercase tracking-widest ${teacher.is_online ? 'text-green-500' : 'text-gray-400'}`}>

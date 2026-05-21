@@ -13,6 +13,17 @@ const StudentManagement = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [showProfileModal, setShowProfileModal] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [newStudent, setNewStudent] = useState({
+    username: '',
+    first_name: '',
+    last_name: '',
+    email: '',
+    password: '',
+    grade_level: '',
+  });
 
   const GRADE_ORDER = ['Grade 7', 'Grade 8', 'Grade 9', 'Grade 10', 'Grade 11', 'Grade 12'];
 
@@ -30,6 +41,60 @@ const StudentManagement = () => {
       toast.error('Failed to load students');
       setStudents([]);
       setLoading(false);
+    }
+  };
+
+  const handleAddStudent = async (e) => {
+    e.preventDefault();
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+    try {
+      const response = await api.post('/admin/create-user/', {
+        ...newStudent,
+        role: 'student',
+        profile: {
+          lrn: newStudent.username,
+          grade_level: newStudent.grade_level
+        }
+      });
+      toast.success(response.data.message);
+      setShowAddModal(false);
+      setNewStudent({ username: '', first_name: '', last_name: '', email: '', password: '', grade_level: '' });
+      fetchStudents();
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed to create student');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleImportCSV = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const loadingToast = toast.loading('Importing students...');
+    try {
+      const response = await api.post('/users/import_csv/', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      toast.dismiss(loadingToast);
+      if (response.data.errors.length > 0) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Import Partial Success',
+          html: `Created ${response.data.created_count} students. Errors:<br/>${response.data.errors.join('<br/>')}`,
+        });
+      } else {
+        toast.success(`Successfully imported ${response.data.created_count} students!`);
+      }
+      setShowImportModal(false);
+      fetchStudents();
+    } catch (err) {
+      toast.dismiss(loadingToast);
+      toast.error('Failed to import CSV');
     }
   };
 
@@ -57,17 +122,25 @@ const StudentManagement = () => {
   };
 
   const handleResetPassword = async (studentId) => {
-    const newPassword = prompt('Enter new password for this student:');
-    if (newPassword) {
-      if (newPassword.length < 8) {
-        toast.error('Password must be at least 8 characters long');
-        return;
-      }
+    const result = await Swal.fire({
+      title: 'Reset Password',
+      text: 'Enter a new temporary password or leave blank for auto-generation:',
+      input: 'text',
+      inputPlaceholder: 'New password (optional)',
+      showCancelButton: true,
+      confirmButtonText: 'Reset',
+      confirmButtonColor: '#f59e0b',
+    });
+
+    if (result.isConfirmed) {
       try {
-        await api.patch(`/users/${studentId}/`, { password: newPassword });
-        toast.success('Password reset successfully!');
+        const response = await api.post(`/users/${studentId}/reset_password/`, { password: result.value });
+        Swal.fire({
+          icon: 'success',
+          title: 'Password Reset',
+          html: `New temporary password: <strong>${response.data.temporary_password}</strong><br/>Please provide this to the student. They will be forced to change it on login.`,
+        });
       } catch (err) {
-        console.error('Failed to reset password:', err);
         toast.error('Failed to reset password');
       }
     }
@@ -82,9 +155,9 @@ const StudentManagement = () => {
     }
   };
 
-  const handleToggleActive = async (student) => {
+  const handleToggleStatus = async (student, newStatus) => {
     try {
-      const response = await api.post(`/users/${student.id}/toggle_active/`);
+      const response = await api.post(`/users/${student.id}/update_status/`, { status: newStatus });
       toast.success(response.data.status);
       fetchStudents();
     } catch (err) {
@@ -159,6 +232,20 @@ const StudentManagement = () => {
           <p className="text-gray-500 text-[8px] md:text-base mt-0.5 font-medium uppercase tracking-widest">All registered students</p>
         </div>
         <div className="flex flex-wrap items-center justify-center gap-2">
+          <button 
+            onClick={() => setShowAddModal(true)}
+            className="bg-purple-600 text-white px-3 py-1.5 md:px-5 md:py-2.5 rounded-xl md:rounded-2xl border border-purple-700 shadow-lg hover:bg-purple-700 flex items-center gap-2 transition-all active:scale-95"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 4v16m8-8H4" /></svg>
+            <span className="text-[10px] md:text-sm font-bold uppercase tracking-wider">Add Student</span>
+          </button>
+          <button 
+            onClick={() => setShowImportModal(true)}
+            className="bg-indigo-600 text-white px-3 py-1.5 md:px-5 md:py-2.5 rounded-xl md:rounded-2xl border border-indigo-700 shadow-lg hover:bg-indigo-700 flex items-center gap-2 transition-all active:scale-95"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
+            <span className="text-[10px] md:text-sm font-bold uppercase tracking-wider">Import CSV</span>
+          </button>
           <div className="bg-white px-3 py-1.5 md:px-5 md:py-2.5 rounded-xl md:rounded-2xl border border-gray-200 shadow-sm flex items-center gap-2 md:gap-3">
             <div>
               <p className="text-[7px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest">Total Students</p>
@@ -260,25 +347,22 @@ const StudentManagement = () => {
                                 </span>
                               </td>
                               <td className="px-3 py-1 md:px-6 md:py-4 text-center">
-                                <span className={`text-[7px] md:text-[10px] font-black px-1.5 py-0.5 md:px-2 md:py-1 rounded uppercase tracking-widest ${student.is_active ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-100 text-rose-600'}`}>
-                                  {student.is_active ? 'Active' : 'Inactive'}
-                                </span>
+                                <select 
+                                  value={student.account_status} 
+                                  onChange={(e) => handleToggleStatus(student, e.target.value)}
+                                  className={`text-[7px] md:text-[10px] font-black px-1.5 py-0.5 md:px-2 md:py-1 rounded uppercase tracking-widest border-0 focus:ring-2 focus:ring-purple-500 cursor-pointer transition-all ${
+                                    student.account_status === 'active' ? 'bg-emerald-100 text-emerald-600' : 
+                                    student.account_status === 'suspended' ? 'bg-rose-100 text-rose-600' : 
+                                    'bg-gray-100 text-gray-600'
+                                  }`}
+                                >
+                                  <option value="active">Active</option>
+                                  <option value="inactive">Inactive</option>
+                                  <option value="suspended">Suspended</option>
+                                </select>
                               </td>
                               <td className="px-3 py-1 md:px-6 md:py-4">
                                 <div className="flex items-center justify-center gap-0.5 md:gap-2">
-                                  <button
-                                    onClick={() => handleToggleActive(student)}
-                                    className={`p-1 md:p-2 rounded md:rounded-lg transition-all active:scale-90 ${student.is_active ? 'text-rose-500 hover:bg-rose-50' : 'text-emerald-500 hover:bg-emerald-50'}`}
-                                    title={student.is_active ? 'Deactivate' : 'Activate'}
-                                  >
-                                    <svg className="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                      {student.is_active ? (
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
-                                      ) : (
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                      )}
-                                    </svg>
-                                  </button>
                                   <button
                                     onClick={() => handleStartChat(student.id)}
                                     className="p-1 md:p-2 text-violet-500 hover:bg-violet-50 rounded md:rounded-lg transition-all active:scale-90"
@@ -398,6 +482,116 @@ const StudentManagement = () => {
                 Close Profile
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Student Modal */}
+      {showAddModal && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[100] p-4">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden">
+            <div className="p-6 bg-purple-600 text-white">
+              <h2 className="text-xl font-black uppercase tracking-tight">Create Student Account</h2>
+            </div>
+            <form onSubmit={handleAddStudent} className="p-6 space-y-4">
+              <div>
+                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Student ID / LRN</label>
+                <input 
+                  type="text" 
+                  value={newStudent.username}
+                  onChange={e => setNewStudent({...newStudent, username: e.target.value})}
+                  className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold focus:ring-2 focus:ring-purple-500 outline-none"
+                  required
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">First Name</label>
+                  <input 
+                    type="text" 
+                    value={newStudent.first_name}
+                    onChange={e => setNewStudent({...newStudent, first_name: e.target.value})}
+                    className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold focus:ring-2 focus:ring-purple-500 outline-none"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Last Name</label>
+                  <input 
+                    type="text" 
+                    value={newStudent.last_name}
+                    onChange={e => setNewStudent({...newStudent, last_name: e.target.value})}
+                    className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold focus:ring-2 focus:ring-purple-500 outline-none"
+                    required
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Grade Level</label>
+                <select 
+                  value={newStudent.grade_level}
+                  onChange={e => setNewStudent({...newStudent, grade_level: e.target.value})}
+                  className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold focus:ring-2 focus:ring-purple-500 outline-none"
+                  required
+                >
+                  <option value="">Select Grade</option>
+                  {GRADE_ORDER.map(g => <option key={g} value={g}>{g}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Email (Optional)</label>
+                <input 
+                  type="email" 
+                  value={newStudent.email}
+                  onChange={e => setNewStudent({...newStudent, email: e.target.value})}
+                  className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold focus:ring-2 focus:ring-purple-500 outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Temporary Password</label>
+                <input 
+                  type="text" 
+                  value={newStudent.password}
+                  onChange={e => setNewStudent({...newStudent, password: e.target.value})}
+                  placeholder="Leave blank for auto-gen"
+                  className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold focus:ring-2 focus:ring-purple-500 outline-none"
+                />
+              </div>
+              <div className="flex justify-end gap-3 pt-4">
+                <button type="button" onClick={() => setShowAddModal(false)} className="px-6 py-2 bg-gray-100 text-gray-600 rounded-xl font-bold text-sm">Cancel</button>
+                <button type="submit" disabled={isSubmitting} className="px-6 py-2 bg-purple-600 text-white rounded-xl font-bold text-sm shadow-lg shadow-purple-200">
+                  {isSubmitting ? 'Creating...' : 'Create Account'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Import Modal */}
+      {showImportModal && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[100] p-4">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden p-8 text-center">
+            <div className="w-20 h-20 bg-indigo-50 rounded-full flex items-center justify-center mx-auto mb-6">
+              <svg className="w-10 h-10 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
+            </div>
+            <h2 className="text-2xl font-black text-gray-800 uppercase tracking-tight mb-2">Bulk Import Students</h2>
+            <p className="text-sm text-gray-500 font-medium mb-8">Upload a CSV file with headers: <br/><code className="bg-gray-100 px-2 py-1 rounded text-xs">Student ID, First Name, Last Name, Grade Level, Email</code></p>
+            
+            <input 
+              type="file" 
+              accept=".csv" 
+              onChange={handleImportCSV}
+              className="hidden" 
+              id="csv-upload"
+            />
+            <label 
+              htmlFor="csv-upload"
+              className="w-full block bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-2xl cursor-pointer transition-all active:scale-95 shadow-lg shadow-indigo-100 mb-4"
+            >
+              Select CSV File
+            </label>
+            <button onClick={() => setShowImportModal(false)} className="text-gray-400 font-bold text-sm hover:text-gray-600">Cancel</button>
           </div>
         </div>
       )}

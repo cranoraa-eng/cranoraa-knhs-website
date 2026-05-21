@@ -35,16 +35,20 @@ export const hasToken = () => !!localStorage.getItem('access_token');
 // API calls
 // ---------------------------------------------------------------------------
 
-export const loginRequest = async (email, password) => {
-  const { data } = await api.post('/login/', { email, password });
+export const loginRequest = async (identifier, password) => {
+  const { data } = await api.post('/login/', { 
+    username: identifier, // Use username field for both email and student ID
+    password 
+  });
   
-  // If user is unverified, don't save session, just return the status info
-  if (data.verified === false) {
-    return data;
+  // If forced password change is required, we still save session but redirect
+  if (data.must_change_password) {
+    saveSession(data.access, data.refresh, data.user);
+    return { ...data.user, must_change_password: true };
   }
 
-  saveSession(data.access, data.refresh, data.user || { email });
-  return data.user || { email };
+  saveSession(data.access, data.refresh, data.user || { email: identifier });
+  return data.user || { email: identifier };
 };
 
 export const logoutRequest = () => {

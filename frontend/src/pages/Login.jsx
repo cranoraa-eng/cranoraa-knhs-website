@@ -56,7 +56,7 @@ const Login = () => {
     });
   };
 
-  const [email, setEmail] = useState('');
+  const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [fieldErrors, setFieldErrors] = useState({});
   const [loading, setLoading] = useState(false);
@@ -64,13 +64,18 @@ const Login = () => {
 
   // Already logged in — go straight to dashboard
   useEffect(() => {
-    if (user) navigate('/dashboard', { replace: true });
+    if (user) {
+      if (user.must_change_password) {
+        navigate('/force-password-change', { replace: true });
+      } else {
+        navigate('/dashboard', { replace: true });
+      }
+    }
   }, [user, navigate]);
 
   const validate = () => {
     const errors = {};
-    if (!email.trim()) errors.email = 'Email is required';
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.email = 'Enter a valid email address';
+    if (!identifier.trim()) errors.identifier = 'Student ID or Email is required';
     if (!password) errors.password = 'Password is required';
     return errors;
   };
@@ -87,12 +92,12 @@ const Login = () => {
 
     setLoading(true);
     try {
-      const userData = await loginRequest(email, password);
+      const userData = await loginRequest(identifier, password);
       
-      // Handle the case where the server returns 200 but with a verification error
-      if (userData?.code === 'not_verified') {
-        setLoading(false);
-        handleUnverifiedUser(userData.email);
+      if (userData?.must_change_password) {
+        signIn(userData);
+        toast.success('Please update your password to continue.');
+        navigate('/force-password-change', { replace: true });
         return;
       }
 
@@ -184,27 +189,27 @@ const Login = () => {
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4" noValidate>
-          {/* Email */}
+          {/* Email or ID */}
           <div>
-            <label htmlFor="email" className="block text-slate-700 text-[12px] font-bold mb-1.5 ml-1 uppercase tracking-wider">
-              Email Address
+            <label htmlFor="identifier" className="block text-slate-700 text-[12px] font-bold mb-1.5 ml-1 uppercase tracking-wider">
+              Student ID or Email
             </label>
             <input
-              id="email"
-              type="email"
-              autoComplete="email"
-              value={email}
+              id="identifier"
+              type="text"
+              autoComplete="username"
+              value={identifier}
               onChange={(e) => {
-                setEmail(e.target.value);
-                setFieldErrors((prev) => ({ ...prev, email: '' }));
+                setIdentifier(e.target.value);
+                setFieldErrors((prev) => ({ ...prev, identifier: '' }));
               }}
-              placeholder="juan.delacruz@example.com"
+              placeholder="Student ID or Email"
               className={`w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-[13px] focus:outline-none focus:ring-4 focus:ring-purple-500/10 focus:border-purple-500 transition-all ${
-                fieldErrors.email ? 'border-red-500 bg-red-50' : 'border-slate-200'
+                fieldErrors.identifier ? 'border-red-500 bg-red-50' : 'border-slate-200'
               }`}
             />
-            {fieldErrors.email && (
-              <p className="text-red-500 text-[10px] mt-1 ml-1 font-bold">{fieldErrors.email}</p>
+            {fieldErrors.identifier && (
+              <p className="text-red-500 text-[10px] mt-1 ml-1 font-bold">{fieldErrors.identifier}</p>
             )}
           </div>
 
@@ -274,10 +279,7 @@ const Login = () => {
         </form>
 
         <p className="text-center text-slate-500 font-bold mt-8 text-[12px]">
-          Don't have an account?{' '}
-          <Link to="/signup" className="text-purple-600 hover:text-purple-700 font-bold hover:underline">
-            Sign up
-          </Link>
+          Student without an account? Contact your administrator.
         </p>
       </div>
 

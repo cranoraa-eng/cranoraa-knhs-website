@@ -7,8 +7,44 @@ from datetime import timedelta
 from django.contrib.auth.hashers import make_password, check_password
 from .models import OTP
 import logging
+import os
+from supabase import create_client, Client as SupabaseClient
+import secrets
 
 logger = logging.getLogger(__name__)
+
+def upload_to_supabase(file, folder="profiles"):
+    """
+    Upload a file to Supabase Storage and return the public URL.
+    """
+    if not settings.SUPABASE_URL or not settings.SUPABASE_KEY:
+        logger.error("Supabase configuration missing")
+        return None
+
+    try:
+        supabase: SupabaseClient = create_client(settings.SUPABASE_URL, settings.SUPABASE_KEY)
+        
+        # Generate unique filename
+        ext = os.path.splitext(file.name)[1]
+        filename = f"{folder}/{secrets.token_hex(8)}{ext}"
+        
+        # Read file content
+        file.seek(0)
+        content = file.read()
+        
+        # Upload
+        res = supabase.storage.from_(settings.SUPABASE_BUCKET).upload(
+            path=filename,
+            file=content,
+            file_options={"content-type": file.content_type or "image/jpeg"}
+        )
+        
+        # Get public URL
+        url_res = supabase.storage.from_(settings.SUPABASE_BUCKET).get_public_url(filename)
+        return url_res
+    except Exception as e:
+        logger.error(f"Supabase upload error: {str(e)}")
+        return None
 
 # Configure Mailjet
 def get_mailjet_client():
