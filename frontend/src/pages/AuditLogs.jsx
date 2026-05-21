@@ -349,33 +349,32 @@ const AuditLogs = () => {
       </div>
       
       {!loading && logs.length > 0 && (
-          <div className="flex items-center justify-between text-[6px] md:text-[9px] font-black text-gray-400 uppercase tracking-widest px-1 py-4">
-            <div className="flex items-center gap-4">
-              <span>{logs.length} entries (Page {page} of {totalPages})</span>
-              {selectedIds.length > 0 && (
-                <span className="text-purple-600 bg-purple-50 px-2 py-1 rounded-full">{selectedIds.length} selected</span>
-              )}
-            </div>
-            
-            <div className="flex items-center gap-2">
-              <button
-                disabled={page === 1}
-                onClick={() => setPage(p => Math.max(1, p - 1))}
-                className="p-1 md:p-2 rounded-lg border border-gray-200 disabled:opacity-50 hover:bg-gray-50 transition-all active:scale-95"
-              >
-                <svg className="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" /></svg>
-              </button>
-              <button
-                disabled={page === totalPages}
-                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                className="p-1 md:p-2 rounded-lg border border-gray-200 disabled:opacity-50 hover:bg-gray-50 transition-all active:scale-95"
-              >
-                <svg className="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" /></svg>
-              </button>
-            </div>
+        <div className="flex items-center justify-between text-[6px] md:text-[9px] font-black text-gray-400 uppercase tracking-widest px-1 py-4">
+          <div className="flex items-center gap-4">
+            <span>Page {page} of {totalPages}</span>
+            {selectedIds.length > 0 && (
+              <span className="text-purple-600 bg-purple-50 px-2 py-1 rounded-full">{selectedIds.length} selected</span>
+            )}
           </div>
-        )}
-      </div>
+          
+          <div className="flex items-center gap-2">
+            <button
+              disabled={page === 1}
+              onClick={() => setPage(p => Math.max(1, p - 1))}
+              className="p-1 md:p-2 rounded-lg border border-gray-200 disabled:opacity-50 hover:bg-gray-50 transition-all active:scale-95"
+            >
+              <svg className="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" /></svg>
+            </button>
+            <button
+              disabled={page === totalPages}
+              onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+              className="p-1 md:p-2 rounded-lg border border-gray-200 disabled:opacity-50 hover:bg-gray-50 transition-all active:scale-95"
+            >
+              <svg className="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" /></svg>
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
