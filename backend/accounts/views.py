@@ -247,26 +247,37 @@ def verify_otp_view(request):
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
+@csrf_exempt
 def resend_otp_view(request):
-    email = request.data.get('email')
-    otp_type = request.data.get('type', 'signup')
-    
-    if not email:
-        return Response({'error': 'Email is required'}, status=status.HTTP_400_BAD_REQUEST)
-        
     try:
-        user = User.objects.get(email=email)
-        if otp_type == 'signup' and user.is_verified:
-            return Response({'message': 'Email is already verified'})
-            
-        code = create_otp(user, otp_type=otp_type)
-        if send_mailjet_otp_email(user.email, code, user.first_name or user.username, otp_type=otp_type):
-            return Response({'message': f'A new verification code has been sent to {email}.'})
-        else:
-            return Response({'error': 'Failed to send email. Please try again later.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        email = request.data.get('email')
+        otp_type = request.data.get('type', 'signup')
         
-    except User.DoesNotExist:
-        return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+        if not email:
+            return Response({'error': 'Email is required'}, status=status.HTTP_400_BAD_REQUEST)
+            
+        try:
+            user = User.objects.get(email=email)
+            if otp_type == 'signup' and user.is_verified:
+                return Response({'message': 'Email is already verified'})
+                
+            code = create_otp(user, otp_type=otp_type)
+            
+            # Use safe send_mailjet_otp_email which handles its own exceptions
+            sent = send_mailjet_otp_email(user.email, code, user.first_name or user.username, otp_type=otp_type)
+            
+            if sent:
+                return Response({'message': f'A new verification code has been sent to {email}.'})
+            else:
+                # Return 200 with error message to prevent front-end 500 crash if it's just a provider error
+                # But for now, we'll keep 500 if the developer expects a hard failure
+                return Response({'error': 'Failed to send email. Please check your internet connection or try again later.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            
+        except User.DoesNotExist:
+            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        logger.error(f"Unexpected error in resend_otp_view: {str(e)}", exc_info=True)
+        return Response({'error': 'An unexpected error occurred. Please try again later.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @csrf_exempt
