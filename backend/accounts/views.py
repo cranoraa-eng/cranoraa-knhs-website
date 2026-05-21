@@ -689,8 +689,10 @@ class UserViewSet(viewsets.ModelViewSet):
             
         user = self.get_object()
         hours = int(request.data.get('hours', 24))
-        user.profile.mute_until = timezone.now() + datetime.timedelta(hours=hours)
-        user.profile.save()
+        
+        profile, created = Profile.objects.get_or_create(user=user)
+        profile.mute_until = timezone.now() + datetime.timedelta(hours=hours)
+        profile.save()
         
         return Response({'status': f'User muted for {hours} hours'})
 
@@ -701,10 +703,11 @@ class UserViewSet(viewsets.ModelViewSet):
             return Response({'error': 'Unauthorized'}, status=403)
             
         user = self.get_object()
-        user.profile.is_suspended = not user.profile.is_suspended
-        user.profile.save()
+        profile, created = Profile.objects.get_or_create(user=user)
+        profile.is_suspended = not profile.is_suspended
+        profile.save()
         
-        status_str = 'suspended' if user.profile.is_suspended else 'unsuspended'
+        status_str = 'suspended' if profile.is_suspended else 'unsuspended'
         return Response({'status': f'User {status_str} successfully'})
 
     @action(detail=True, methods=['post'])
@@ -883,7 +886,8 @@ class AnnouncementViewSet(viewsets.ModelViewSet):
 
         elif user.role == 'parent':
             # Parents see live announcements targeted at 'all', 'parents', or their linked students' classrooms
-            linked_student_ids = user.profile.linked_students.values_list('id', flat=True)
+            profile = getattr(user, 'profile', None)
+            linked_student_ids = profile.linked_students.values_list('id', flat=True) if profile else []
             queryset = queryset.filter(status='live')
             queryset = queryset.filter(
                 Q(target_audience__in=['all', 'parents']) |
@@ -1164,7 +1168,8 @@ class AttendanceViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(student=user)
         # RBAC: Parents can see their linked students' attendance
         elif user.role == 'parent':
-            linked_student_ids = user.profile.linked_students.values_list('id', flat=True)
+            profile = getattr(user, 'profile', None)
+            linked_student_ids = profile.linked_students.values_list('id', flat=True) if profile else []
             queryset = queryset.filter(student_id__in=linked_student_ids)
         # Teachers can only see attendance for their classrooms
         elif user.role == 'teacher':
@@ -2419,7 +2424,8 @@ class GradeViewSet(viewsets.ModelViewSet):
         elif user.role == 'student':
             return queryset.filter(student=user)
         elif user.role == 'parent':
-            linked_student_ids = user.profile.linked_students.values_list('id', flat=True)
+            profile = getattr(user, 'profile', None)
+            linked_student_ids = profile.linked_students.values_list('id', flat=True) if profile else []
             return queryset.filter(student_id__in=linked_student_ids)
         return queryset.none()
 
@@ -2665,7 +2671,8 @@ class AssignmentViewSet(viewsets.ModelViewSet):
             return queryset.filter(classroom_id__in=enrolled_classrooms)
         elif user.role == 'parent':
             # Parents see assignments for their linked students
-            linked_student_ids = user.profile.linked_students.values_list('id', flat=True)
+            profile = getattr(user, 'profile', None)
+            linked_student_ids = profile.linked_students.values_list('id', flat=True) if profile else []
             enrolled_classrooms = StudentClassEnrollment.objects.filter(student_id__in=linked_student_ids).values_list('classroom_id', flat=True)
             return queryset.filter(classroom_id__in=enrolled_classrooms)
         elif user.role == 'teacher':
@@ -2728,7 +2735,8 @@ class SubmissionViewSet(viewsets.ModelViewSet):
         if user.role == 'student':
             return queryset.filter(student=user)
         elif user.role == 'parent':
-            linked_student_ids = user.profile.linked_students.values_list('id', flat=True)
+            profile = getattr(user, 'profile', None)
+            linked_student_ids = profile.linked_students.values_list('id', flat=True) if profile else []
             return queryset.filter(student_id__in=linked_student_ids)
         elif user.role == 'teacher':
             return queryset.filter(assignment__teacher=user)
