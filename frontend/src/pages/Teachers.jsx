@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import api from '../utils/api';
 import { getUser } from '../utils/auth';
 import toast from 'react-hot-toast';
+import Swal from 'sweetalert2';
 
 const Teachers = () => {
   const user = getUser();

@@ -727,6 +727,7 @@ class UserViewSet(viewsets.ModelViewSet):
             return Response({'error': f'Failed to parse CSV: {str(e)}'}, status=400)
         
         created_count = 0
+        created_users = []
         errors = []
         
         for row in reader:
@@ -774,12 +775,18 @@ class UserViewSet(viewsets.ModelViewSet):
                     }
                 )
                 created_count += 1
+                created_users.append({
+                    'username': student_id,
+                    'password': temp_password,
+                    'name': f"{first_name} {last_name}".strip()
+                })
             except Exception as e:
                 errors.append(f"Error importing {row.get('Student ID')}: {str(e)}")
                 
         return Response({
             'status': 'success',
             'created_count': created_count,
+            'created_users': created_users,
             'errors': errors
         })
 

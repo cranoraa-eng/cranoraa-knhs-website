@@ -95,15 +95,63 @@ const StudentManagement = () => {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       toast.dismiss(loadingToast);
-      if (response.data.errors.length > 0) {
+      
+      const { created_count, created_users, errors } = response.data;
+
+      if (created_count > 0) {
+        // Show success modal with a table of credentials
         Swal.fire({
-          icon: 'warning',
-          title: 'Import Partial Success',
-          html: `Created ${response.data.created_count} students. Errors:<br/>${response.data.errors.join('<br/>')}`,
+          icon: 'success',
+          title: 'Import Successful',
+          width: '600px',
+          html: `
+            <div class="text-left">
+              <p class="mb-4 text-sm font-bold text-emerald-600">Successfully created ${created_count} students!</p>
+              <div class="max-h-60 overflow-y-auto border border-gray-200 rounded-lg">
+                <table class="w-full text-[10px] text-left">
+                  <thead class="bg-gray-50 border-b border-gray-200">
+                    <tr>
+                      <th class="px-3 py-2">Name</th>
+                      <th class="px-3 py-2">ID</th>
+                      <th class="px-3 py-2">Temp Password</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-gray-100">
+                    ${created_users.map(u => `
+                      <tr>
+                        <td class="px-3 py-2 font-bold">${u.name}</td>
+                        <td class="px-3 py-2">${u.username}</td>
+                        <td class="px-3 py-2 font-mono text-purple-600">${u.password}</td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+              <p class="mt-4 text-[10px] text-gray-500 italic">Please copy these credentials and provide them to the students.</p>
+              ${errors.length > 0 ? `
+                <div class="mt-4 p-3 bg-red-50 rounded-lg">
+                  <p class="text-[10px] font-bold text-red-600 mb-1">Errors (${errors.length}):</p>
+                  <ul class="text-[9px] text-red-500 list-disc list-inside">
+                    ${errors.map(e => `<li>${e}</li>`).join('')}
+                  </ul>
+                </div>
+              ` : ''}
+            </div>
+          `,
+          confirmButtonColor: '#9333ea'
         });
-      } else {
-        toast.success(`Successfully imported ${response.data.created_count} students!`);
+      } else if (errors.length > 0) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Import Failed',
+          html: `
+            <div class="text-left text-sm text-red-500">
+              <ul class="list-disc list-inside">${errors.map(e => `<li>${e}</li>`).join('')}</ul>
+            </div>
+          `
+        });
       }
+      
       setShowImportModal(false);
       fetchStudents();
     } catch (err) {
