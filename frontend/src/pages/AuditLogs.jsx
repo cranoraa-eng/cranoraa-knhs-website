@@ -89,7 +89,7 @@ const AuditLogs = () => {
       try {
         await api.delete(`/admin/audit-logs/${id}/`);
         toast.success('Log entry deleted');
-        setLogs(prev => prev.filter(log => log.id !== id));
+        fetchLogs();
         setSelectedIds(prev => prev.filter(i => i !== id));
         fetchStats();
       } catch (error) {
@@ -116,7 +116,7 @@ const AuditLogs = () => {
       try {
         await api.post('/admin/audit-logs/bulk_delete/', { ids: selectedIds });
         toast.success(`${selectedIds.length} log entries deleted`);
-        setLogs(prev => prev.filter(log => !selectedIds.includes(log.id)));
+        fetchLogs();
         setSelectedIds([]);
         fetchStats();
       } catch (error) {
@@ -143,7 +143,7 @@ const AuditLogs = () => {
       try {
         await api.post('/admin/audit-logs/clear_all/');
         toast.success('All audit logs cleared');
-        setLogs([]);
+        fetchLogs();
         setSelectedIds([]);
         fetchStats();
       } catch (error) {
