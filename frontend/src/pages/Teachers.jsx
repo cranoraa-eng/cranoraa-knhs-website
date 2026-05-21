@@ -14,6 +14,7 @@ const Teachers = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [editingTeacher, setEditingTeacher] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [newTeacher, setNewTeacher] = useState({
     email: '',
     first_name: '',
@@ -53,9 +54,11 @@ const Teachers = () => {
 
   const handleAddTeacher = async (e) => {
     e.preventDefault();
+    if (isSubmitting) return;
+    setIsSubmitting(true);
     try {
       // Use email as username for simplicity since we're removing username field
-      await api.post('/register/', { 
+      const response = await api.post('/register/', { 
         ...newTeacher, 
         username: newTeacher.email,
         role: 'teacher',
@@ -74,10 +77,12 @@ const Teachers = () => {
       });
       setShowAddModal(false);
       fetchTeachers();
-      toast.success('Teacher added successfully!');
+      toast.success(response.data.message || 'Teacher added successfully!');
     } catch (err) {
       console.error('Failed to add teacher:', err);
       toast.error(err.response?.data?.error || 'Failed to add teacher');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -425,8 +430,17 @@ const Teachers = () => {
                   Cancel
                 </button>
                 <button type="submit"
-                  className="px-8 py-2.5 bg-purple-600 text-white rounded-xl hover:bg-purple-700 font-bold text-sm shadow-lg shadow-purple-200 transition-all active:scale-95">
-                  Create Teacher Account
+                  disabled={isSubmitting}
+                  className="px-8 py-2.5 bg-purple-600 text-white rounded-xl hover:bg-purple-700 font-bold text-sm shadow-lg shadow-purple-200 transition-all active:scale-95 disabled:opacity-50 flex items-center gap-2">
+                  {isSubmitting ? (
+                    <>
+                      <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                      </svg>
+                      Creating...
+                    </>
+                  ) : 'Create Teacher Account'}
                 </button>
               </div>
             </form>

@@ -166,13 +166,17 @@ def register_view(request):
             last_name=last_name
         )
         user.role = role
-        # Admins are pre-approved, others need approval
-        if role == 'admin':
+        
+        # If created by an admin, auto-verify and auto-approve
+        is_admin_creation = request.user.is_authenticated and request.user.role == 'admin'
+        
+        if role == 'admin' or is_admin_creation:
             user.is_approved = True
+            user.is_verified = True
         else:
             user.is_approved = False
-        
-        user.is_verified = False # Require email verification
+            user.is_verified = False # Require email verification for self-signup
+            
         user.save()
         
         # Create profile with additional data
@@ -183,6 +187,9 @@ def register_view(request):
             profile.lrn = profile_data.get('lrn')
             
         if profile_data:
+            profile.title = profile_data.get('title')
+            profile.phone_number = profile_data.get('phone_number')
+            profile.employee_id = profile_data.get('employee_id')
             profile.sex = profile_data.get('sex')
             profile.state = profile_data.get('state')
             profile.nationality = profile_data.get('nationality')
@@ -198,14 +205,15 @@ def register_view(request):
         
         profile.save()
         
-        # Send verification OTP via Mailjet
+        # Send verification OTP via Mailjet (only if not auto-verified)
         email_sent = False
         code = None
-        try:
-            code = create_otp(user, otp_type='signup')
-            email_sent = send_mailjet_otp_email(user.email, code, user.first_name or user.username, otp_type='signup')
-        except Exception as e:
-            logger.error(f"Initial verification OTP failed for {user.email}: {e}")
+        if not user.is_verified:
+            try:
+                code = create_otp(user, otp_type='signup')
+                email_sent = send_mailjet_otp_email(user.email, code, user.first_name or user.username, otp_type='signup')
+            except Exception as e:
+                logger.error(f"Initial verification OTP failed for {user.email}: {e}")
             
     except Exception as e:
         logger.error(f"Registration error: {str(e)}")
@@ -214,9 +222,12 @@ def register_view(request):
             status=status.HTTP_400_BAD_REQUEST
         )
     
-    res_msg = 'Account created! Please check your email to verify your account before logging in.'
-    if not email_sent:
-        res_msg = 'Account created, but we had trouble sending the verification email. Please try the "Resend Code" button on the next page.'
+    if is_admin_creation:
+        res_msg = f'Account for {user.email} has been created and activated successfully.'
+    else:
+        res_msg = 'Account created! Please check your email to verify your account before logging in.'
+        if not email_sent:
+            res_msg = 'Account created, but we had trouble sending the verification email. Please try the "Resend Code" button on the next page.'
         
     return Response({
         'message': res_msg,
