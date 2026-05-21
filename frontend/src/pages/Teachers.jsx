@@ -66,6 +66,8 @@ const Teachers = () => {
           phone_number: newTeacher.phone_number
         }
       });
+      
+      setShowAddModal(false);
       setNewTeacher({
         email: '',
         first_name: '',
@@ -74,9 +76,21 @@ const Teachers = () => {
         title: '',
         phone_number: ''
       });
-      setShowAddModal(false);
       fetchTeachers();
-      toast.success(response.data.message);
+
+      // Show success with password
+      Swal.fire({
+        icon: 'success',
+        title: 'Teacher Account Created',
+        html: `
+          <div class="text-left space-y-2 text-sm">
+            <p><strong>Username/Email:</strong> ${response.data.username}</p>
+            <p><strong>Temporary Password:</strong> <span class="bg-yellow-100 px-2 py-1 rounded font-mono text-lg border border-yellow-300 select-all">${response.data.temporary_password}</span></p>
+            <p class="text-xs text-gray-500 mt-4 italic">Please provide this password to the teacher. They will be required to change it on their first login.</p>
+          </div>
+        `,
+        confirmButtonColor: '#9333ea'
+      });
     } catch (err) {
       console.error('Failed to add teacher:', err);
       toast.error(err.response?.data?.error || 'Failed to add teacher');
