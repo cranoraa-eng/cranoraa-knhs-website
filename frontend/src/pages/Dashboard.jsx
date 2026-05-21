@@ -110,6 +110,8 @@ const AdminView = () => {
   if (loading || !data) return <Spinner />;
 
   const dist = distView === 'general_average' ? data?.general_average : data?.all_subjects;
+  const gradeData = data?.charts?.grade_distribution || [];
+  const attendanceTrends = data?.charts?.attendance_trends || data?.attendance_trends || [];
   const today = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
   const COLORS = ['#10b981', '#3b82f6', '#8b5cf6', '#f59e0b', '#ef4444'];
@@ -188,7 +190,7 @@ const AdminView = () => {
           </div>
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={data?.attendance_trends}>
+              <AreaChart data={attendanceTrends}>
                 <defs>
                   <linearGradient id="colorRate" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.1}/>
@@ -240,7 +242,7 @@ const AdminView = () => {
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
-                  data={data?.charts?.grade_distribution}
+                  data={gradeData}
                   cx="50%"
                   cy="50%"
                   innerRadius={60}
@@ -248,7 +250,7 @@ const AdminView = () => {
                   paddingAngle={5}
                   dataKey="value"
                 >
-                  {data?.charts?.grade_distribution?.map((entry, index) => (
+                  {gradeData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
@@ -297,12 +299,12 @@ const AdminView = () => {
             {data?.latest_messages?.map(m => (
               <div key={m.id} className="flex gap-4 p-3 rounded-xl hover:bg-slate-50 transition-all cursor-pointer" onClick={() => navigate('/messages')}>
                 <div className="flex-shrink-0 w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 font-black text-xs">
-                  {m.sender[0].toUpperCase()}
+                  {m.sender ? m.sender[0].toUpperCase() : '?'}
                 </div>
-                <div className="min-w-0">
+                <div className="min-w-0 flex-1">
                   <div className="flex justify-between items-center gap-2">
-                    <h4 className="text-xs font-bold text-slate-800">{m.sender}</h4>
-                    <span className="text-[8px] font-bold text-slate-400">{new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                    <h4 className="text-xs font-bold text-slate-800 truncate">{m.sender || 'Unknown'}</h4>
+                    <span className="text-[8px] font-bold text-slate-400 shrink-0">{new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                   </div>
                   <p className="text-[10px] text-slate-500 line-clamp-1 mt-0.5">{m.content}</p>
                 </div>
@@ -475,9 +477,9 @@ const StudentView = () => {
   const presentCount = monthAtt.filter(r => ['present', 'late'].includes(r.status)).length;
   const attRate = monthAtt.length > 0 ? Math.round((presentCount / monthAtt.length) * 100) : null;
 
-  const finalGrades = grades.filter(g => g.grade_type === 'final_grade' && g.raw_score != null);
+  const finalGrades = Array.isArray(grades) ? grades.filter(g => g.grade_type === 'final_grade' && (g.transmuted_score != null || g.raw_score != null)) : [];
   const overallAvg = finalGrades.length > 0
-    ? (finalGrades.reduce((s, g) => s + parseFloat(g.raw_score), 0) / finalGrades.length).toFixed(2)
+    ? (finalGrades.reduce((s, g) => s + parseFloat(g.transmuted_score || g.raw_score || 0), 0) / finalGrades.length).toFixed(2)
     : null;
 
   const today = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });

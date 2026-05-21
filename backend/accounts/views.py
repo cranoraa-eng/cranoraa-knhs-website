@@ -1605,7 +1605,7 @@ def admin_dashboard_stats(request):
 
     # Prepare response data
     res_data = {
-        # Core
+        # Core Flat (for easy access)
         'total_students': total_students,
         'total_teachers': total_teachers,
         'total_classes': total_classes,
@@ -1613,36 +1613,56 @@ def admin_dashboard_stats(request):
         'pending_approvals': pending_approvals,
         'pending_enrollments': EnrollmentApplication.objects.filter(status='pending').count(),
         'active_users': active_users,
-        
-        # Attendance
-        'today_present': today_present,
-        'today_absent': today_absent,
-        'today_total': today_total,
         'today_rate': today_rate,
-        'attendance_trends': attendance_trends,
-        
-        # Grades
-        'total_grades': total_grades,
         'average_grade': average_grade,
-        'all_subjects': {
-            'outstanding_pct': round(outstanding / total_grades * 100) if total_grades else 0,
-            'very_satisfactory_pct': round(very_satisfactory / total_grades * 100) if total_grades else 0,
-            'satisfactory_pct': round(satisfactory / total_grades * 100) if total_grades else 0,
-            'fairly_satisfactory_pct': round(fairly_satisfactory / total_grades * 100) if total_grades else 0,
-            'below_75_pct': round(below_75 / total_grades * 100) if total_grades else 0,
-            'total_count': total_grades
-        },
-        'general_average': {
-             'outstanding_pct': round(ga_outstanding / total_students_graded * 100) if total_students_graded else 0,
-             'very_satisfactory_pct': round(ga_very_satisfactory / total_students_graded * 100) if total_students_graded else 0,
-             'satisfactory_pct': round(ga_satisfactory / total_students_graded * 100) if total_students_graded else 0,
-             'fairly_satisfactory_pct': round(ga_fairly_satisfactory / total_students_graded * 100) if total_students_graded else 0,
-             'below_75_pct': round(ga_below_75 / total_students_graded * 100) if total_students_graded else 0,
-             'total_count': total_students_graded
-         },
         
-        # Trends & Widgets
-        'active_users_trends': active_users_trends,
+        # Nested (for organized dashboard sections)
+        'cards': {
+            'total_students': total_students,
+            'total_teachers': total_teachers,
+            'total_classes': total_classes,
+            'total_subjects': total_subjects,
+            'active_users': active_users,
+            'attendance_rate': today_rate,
+        },
+        'charts': {
+            'attendance_trends': attendance_trends,
+            'active_users_trends': active_users_trends,
+            'grade_distribution': [
+                {'name': 'Outstanding', 'value': outstanding},
+                {'name': 'Very Satisfactory', 'value': very_satisfactory},
+                {'name': 'Satisfactory', 'value': satisfactory},
+                {'name': 'Fairly Satisfactory', 'value': fairly_satisfactory},
+                {'name': 'Did Not Meet', 'value': below_75},
+            ]
+        },
+        'widgets': {
+            'recent_announcements': list(
+                Announcement.objects.filter(status='live')
+                .order_by('-created_at')[:5]
+                .values('id', 'title', 'content', 'priority', 'is_pinned', 'created_at', 'author__username')
+            ),
+            'recent_logins': [
+                {
+                    'id': log.id,
+                    'user': log.user.username if log.user else 'System',
+                    'timestamp': log.timestamp,
+                    'description': log.description
+                } for log in recent_logins
+            ],
+            'latest_messages': [
+                {
+                    'id': m.id,
+                    'sender': m.sender.username,
+                    'content': m.content[:50],
+                    'timestamp': m.timestamp,
+                    'room_id': m.room_id
+                } for m in latest_messages
+            ],
+        },
+        
+        # Legacy/Extra
+        'attendance_trends': attendance_trends,
         'recent_logins': [
             {
                 'id': log.id,
@@ -1660,6 +1680,22 @@ def admin_dashboard_stats(request):
                 'room_id': m.room_id
             } for m in latest_messages
         ],
+        'all_subjects': {
+            'outstanding_pct': round(outstanding / total_grades * 100) if total_grades else 0,
+            'very_satisfactory_pct': round(very_satisfactory / total_grades * 100) if total_grades else 0,
+            'satisfactory_pct': round(satisfactory / total_grades * 100) if total_grades else 0,
+            'fairly_satisfactory_pct': round(fairly_satisfactory / total_grades * 100) if total_grades else 0,
+            'below_75_pct': round(below_75 / total_grades * 100) if total_grades else 0,
+            'total_count': total_grades
+        },
+        'general_average': {
+             'outstanding_pct': round(ga_outstanding / total_students_graded * 100) if total_students_graded else 0,
+             'very_satisfactory_pct': round(ga_very_satisfactory / total_students_graded * 100) if total_students_graded else 0,
+             'satisfactory_pct': round(ga_satisfactory / total_students_graded * 100) if total_students_graded else 0,
+             'fairly_satisfactory_pct': round(ga_fairly_satisfactory / total_students_graded * 100) if total_students_graded else 0,
+             'below_75_pct': round(ga_below_75 / total_students_graded * 100) if total_students_graded else 0,
+             'total_count': total_students_graded
+         },
         
         'system_settings': SystemSettingSerializer(SystemSetting.get_settings()).data,
         'recent_grades_count': Grade.objects.filter(submitted_at__date__gte=this_week_start).count(),

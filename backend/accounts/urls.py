@@ -7,7 +7,7 @@ from .views import (
     AnnouncementViewSet, AttendanceViewSet, LearningMaterialViewSet, SubjectViewSet, 
     ClassroomSubjectViewSet, ScratchCardViewSet, FeeViewSet, NotificationViewSet, 
     EnrollmentApplicationViewSet, AssignmentViewSet, SubmissionViewSet, WebsiteContentViewSet, GradeViewSet, GradeReportViewSet, 
-    ChatRoomViewSet, ChatMessageViewSet, FriendshipViewSet, admin_dashboard_stats, grade_distribution_stats, check_result, public_announcements_view, 
+    ChatRoomViewSet, ChatMessageViewSet, ReportedMessageViewSet, FriendshipViewSet, admin_dashboard_stats, grade_distribution_stats, check_result, public_announcements_view, 
     student_calendar_view, notifications_polling_view, system_metrics_view, 
     maintenance_feed_view, maintenance_mode_view, force_sync_view, run_backup_view, clear_cache_view,
     system_settings_view, maintenance_status_view,
