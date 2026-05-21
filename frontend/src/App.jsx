@@ -5,8 +5,6 @@ import ProtectedRoute from './components/ProtectedRoute';
 import Layout from './components/Layout';
 import PublicLayout from './components/PublicLayout';
 import Login from './pages/Login';
-import Signup from './pages/Signup';
-import VerifyOTP from './pages/VerifyOTP';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import ForcePasswordChange from './pages/ForcePasswordChange';
@@ -94,8 +92,6 @@ function App() {
           <Routes>
         {/* Auth Routes - Moved up for higher priority */}
         <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Navigate to="/login" replace />} />
-        <Route path="/verify-otp" element={<VerifyOTP />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/force-password-change" element={<ForcePasswordChange />} />

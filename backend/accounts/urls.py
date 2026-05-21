@@ -2,7 +2,7 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from .views import (
-    login_view, admin_create_user_view, force_password_change_view, verify_otp_view, resend_otp_view, get_dev_otp, user_profile, student_profile, 
+    login_view, admin_create_user_view, force_password_change_view, verify_otp_view, resend_otp_view, user_profile, student_profile, 
     teacher_dashboard_stats, ClassroomViewSet, StudentClassEnrollmentViewSet, UserViewSet, 
     AnnouncementViewSet, AttendanceViewSet, LearningMaterialViewSet, SubjectViewSet, 
     ClassroomSubjectViewSet, ScratchCardViewSet, FeeViewSet, NotificationViewSet, 
@@ -45,7 +45,6 @@ urlpatterns = [
     path('password-reset-confirm/', password_reset_confirm_view, name='password_reset_confirm'),
     path('verify-otp/', verify_otp_view, name='verify_otp'),
     path('resend-otp/', resend_otp_view, name='resend_otp'),
-    path('dev/otp/', get_dev_otp, name='dev_otp'),
     path('profile/', user_profile, name='profile'),
     path('student/profile/', student_profile, name='student_profile'),
     path('student/calendar/', student_calendar_view, name='student_calendar'),

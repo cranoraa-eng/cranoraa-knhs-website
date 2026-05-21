@@ -362,15 +362,6 @@ def user_profile(request):
     return Response(serializer.data)
 
 
-@api_view(['POST'])
-@permission_classes([AllowAny])
-def get_dev_otp(request):
-    """
-    DEV ONLY: Disabled because OTPs are now hashed.
-    """
-    return Response({'error': 'OTP retrieval is disabled for security (OTPs are hashed).'}, status=status.HTTP_403_FORBIDDEN)
-
-
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def teacher_dashboard_stats(request):
