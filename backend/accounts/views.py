@@ -561,9 +561,13 @@ class UserViewSet(viewsets.ModelViewSet):
             role = self.request.query_params.get('role')
             queryset = User.objects.all().select_related('profile').order_by('-date_joined')
             
+            # Management views (filtering by role) should only show verified and approved accounts
+            if role in ['student', 'teacher']:
+                queryset = queryset.filter(is_verified=True, is_approved=True)
+            
             # RBAC: Students can only see their own data
             if user.role == 'student':
-                return User.objects.filter(id=user.id)
+                return queryset.filter(id=user.id)
             
             # RBAC: Parents can see their linked students and themselves
             if user.role == 'parent':
@@ -571,19 +575,19 @@ class UserViewSet(viewsets.ModelViewSet):
                 if profile:
                     try:
                         linked_student_ids = profile.linked_students.values_list('id', flat=True)
-                        return User.objects.filter(Q(id__in=linked_student_ids) | Q(id=user.id))
+                        return queryset.filter(Q(id__in=linked_student_ids) | Q(id=user.id))
                     except:
                         pass
-                return User.objects.filter(id=user.id)
+                return queryset.filter(id=user.id)
             
             # Teachers can see students and themselves
             if user.role == 'teacher':
                 if role:
                     if role == 'student':
-                        return User.objects.filter(role='student')
+                        return queryset.filter(role='student')
                     elif role == 'teacher':
-                        return User.objects.filter(id=user.id)
-                return User.objects.filter(role='student') | User.objects.filter(id=user.id)
+                        return queryset.filter(id=user.id)
+                return queryset.filter(role='student') | queryset.filter(id=user.id)
             
             # Admins can see all users
             if role:
