@@ -199,9 +199,11 @@ def register_view(request):
         profile.save()
         
         # Send verification OTP via Mailjet
+        email_sent = False
+        code = None
         try:
             code = create_otp(user, otp_type='signup')
-            send_mailjet_otp_email(user.email, code, user.first_name or user.username, otp_type='signup')
+            email_sent = send_mailjet_otp_email(user.email, code, user.first_name or user.username, otp_type='signup')
         except Exception as e:
             logger.error(f"Initial verification OTP failed for {user.email}: {e}")
             
@@ -212,9 +214,15 @@ def register_view(request):
             status=status.HTTP_400_BAD_REQUEST
         )
     
+    res_msg = 'Account created! Please check your email to verify your account before logging in.'
+    if not email_sent:
+        res_msg = 'Account created, but we had trouble sending the verification email. Please try the "Resend Code" button on the next page.'
+        
     return Response({
-        'message': 'Account created! Please check your email to verify your account before logging in.',
-        'email': email
+        'message': res_msg,
+        'email': email,
+        'email_sent': email_sent,
+        'code': code if settings.DEBUG else None # Show code in debug mode for easier testing
     }, status=status.HTTP_201_CREATED)
 
 
