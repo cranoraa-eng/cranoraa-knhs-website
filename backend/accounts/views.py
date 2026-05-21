@@ -1021,8 +1021,6 @@ class AnnouncementViewSet(viewsets.ModelViewSet):
         )
         
         return Response({"message": f"Successfully deleted all {count} announcements"}, status=200)
-            logger.error(f"Error in perform_create: {str(e)}", exc_info=True)
-            raise
 
     def perform_update(self, serializer):
         announcement = serializer.save()
