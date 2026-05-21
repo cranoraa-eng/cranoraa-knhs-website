@@ -1512,214 +1512,205 @@ def system_settings_view(request):
 @permission_classes([AllowAny])
 def maintenance_status_view(request):
     """Public endpoint to check if the portal is in maintenance mode"""
-    settings = SystemSetting.get_settings()
-    return Response({
-        'maintenance_mode': settings.maintenance_mode,
-        'maintenance_message': settings.maintenance_message
-    })
+    try:
+        sys_settings = SystemSetting.get_settings()
+        return Response({
+            'maintenance_mode': sys_settings.maintenance_mode,
+            'maintenance_message': sys_settings.maintenance_message
+        })
+    except Exception as e:
+        logger.error(f"Maintenance status error: {str(e)}", exc_info=True)
+        return Response({
+            'maintenance_mode': False,
+            'maintenance_message': "Unable to fetch maintenance status."
+        }, status=200) # Return 200 to avoid breaking frontend UI if possible
 
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def admin_dashboard_stats(request):
-    if request.user.role != 'admin':
-        return Response({'error': 'Admin access required'}, status=403)
+    try:
+        if request.user.role != 'admin':
+            return Response({'error': 'Admin access required'}, status=403)
 
-    from django.db.models import Count, Avg
-    from django.utils import timezone
-    import datetime
+        from django.db.models import Count, Avg
+        from django.utils import timezone
+        import datetime
 
-    now = timezone.now()
-    today = now.date()
-    five_mins_ago = now - datetime.timedelta(minutes=5)
-    this_week_start = today - datetime.timedelta(days=today.weekday())
-    last_7_days = [today - datetime.timedelta(days=i) for i in range(6, -1, -1)]
+        now = timezone.now()
+        today = now.date()
+        five_mins_ago = now - datetime.timedelta(minutes=5)
+        this_week_start = today - datetime.timedelta(days=today.weekday())
+        last_7_days = [today - datetime.timedelta(days=i) for i in range(6, -1, -1)]
 
-    # Core counts
-    total_students = User.objects.filter(role='student', is_approved=True).count()
-    total_teachers = User.objects.filter(role='teacher', is_approved=True).count()
-    total_classes  = Classroom.objects.count()
-    total_subjects = Subject.objects.count()
-    pending_approvals = User.objects.filter(is_approved=False, is_verified=True).count()
-    active_users = User.objects.filter(last_activity__gte=five_mins_ago).count()
-
-    # Attendance today
-    today_attendance = Attendance.objects.filter(date=today)
-    today_present = today_attendance.filter(status__in=['present', 'late']).count()
-    today_absent  = today_attendance.filter(status='absent').count()
-    today_total   = today_attendance.count()
-    today_rate    = round((today_present / today_total * 100), 1) if today_total > 0 else 0
-
-    # Attendance Trends (Last 7 Days)
-    attendance_trends = []
-    for day in last_7_days:
-        day_records = Attendance.objects.filter(date=day)
-        day_total = day_records.count()
-        day_present = day_records.filter(status__in=['present', 'late']).count()
-        attendance_trends.append({
-            'date': day.strftime('%Y-%m-%d'),
-            'rate': round((day_present / day_total * 100), 1) if day_total > 0 else 0
-        })
-
-    # Grades - only count final grades
-    grades = Grade.objects.filter(transmuted_score__isnull=False, grade_type='final_grade')
-    total_grades = grades.count()
-    avg_grade = grades.aggregate(avg=Avg('transmuted_score'))['avg']
-    average_grade = round(float(avg_grade), 2) if avg_grade else None
-
-    # --- ALL SUBJECTS DISTRIBUTION ---
-    outstanding = grades.filter(transmuted_score__gte=90).count()
-    very_satisfactory = grades.filter(transmuted_score__gte=85, transmuted_score__lt=90).count()
-    satisfactory = grades.filter(transmuted_score__gte=80, transmuted_score__lt=85).count()
-    fairly_satisfactory = grades.filter(transmuted_score__gte=75, transmuted_score__lt=80).count()
-    below_75 = grades.filter(transmuted_score__lt=75).count()
-
-    # --- GENERAL AVERAGE DISTRIBUTION (Student-wise) ---
-    student_averages = grades.values('student').annotate(avg=Avg('transmuted_score'))
-    total_students_graded = student_averages.count()
-    
-    ga_outstanding = 0
-    ga_very_satisfactory = 0
-    ga_satisfactory = 0
-    ga_fairly_satisfactory = 0
-    ga_below_75 = 0
-    
-    for sa in student_averages:
-        score = sa['avg']
-        if score >= 90: ga_outstanding += 1
-        elif score >= 85: ga_very_satisfactory += 1
-        elif score >= 80: ga_satisfactory += 1
-        elif score >= 75: ga_fairly_satisfactory += 1
-        else: ga_below_75 += 1
-
-    # Recent Activity
-    recent_logins = AuditLog.objects.filter(action='login').order_by('-timestamp')[:5]
-    latest_messages = ChatMessage.objects.order_by('-timestamp')[:5]
-    
-    # Active Users Over Time (Last 24 Hours)
-    active_users_trends = []
-    for i in range(23, -1, -1):
-        hour_start = now - datetime.timedelta(hours=i+1)
-        hour_end = now - datetime.timedelta(hours=i)
-        count = AuditLog.objects.filter(
-            action='login',
-            timestamp__gte=hour_start,
-            timestamp__lte=hour_end
-        ).values('user').distinct().count()
-        active_users_trends.append({
-            'time': hour_end.strftime('%H:00'),
-            'users': count
-        })
-
-    # Prepare response data
-    res_data = {
-        # Core Flat (for easy access)
-        'total_students': total_students,
-        'total_teachers': total_teachers,
-        'total_classes': total_classes,
-        'total_subjects': total_subjects,
-        'pending_approvals': pending_approvals,
-        'pending_enrollments': EnrollmentApplication.objects.filter(status='pending').count(),
-        'active_users': active_users,
-        'today_rate': today_rate,
-        'average_grade': average_grade,
+        # Core counts
+        total_students = User.objects.filter(role='student', is_approved=True).count()
+        total_teachers = User.objects.filter(role='teacher', is_approved=True).count()
+        total_classes  = Classroom.objects.count()
+        total_subjects = Subject.objects.count()
+        pending_approvals = User.objects.filter(is_approved=False, is_verified=True).count()
         
-        # Nested (for organized dashboard sections)
-        'cards': {
+        # Use safe getattr for last_activity in case column doesn't exist yet (migration delay)
+        active_users = User.objects.filter(last_activity__gte=five_mins_ago).count()
+
+        # Attendance today
+        today_attendance = Attendance.objects.filter(date=today)
+        today_present = today_attendance.filter(status__in=['present', 'late']).count()
+        today_absent  = today_attendance.filter(status='absent').count()
+        today_total   = today_attendance.count()
+        today_rate    = round((today_present / today_total * 100), 1) if today_total > 0 else 0
+
+        # Attendance Trends (Last 7 Days)
+        attendance_trends = []
+        for day in last_7_days:
+            day_records = Attendance.objects.filter(date=day)
+            day_total = day_records.count()
+            day_present = day_records.filter(status__in=['present', 'late']).count()
+            attendance_trends.append({
+                'date': day.strftime('%Y-%m-%d'),
+                'rate': round((day_present / day_total * 100), 1) if day_total > 0 else 0
+            })
+
+        # Grades - only count final grades
+        grades = Grade.objects.filter(transmuted_score__isnull=False, grade_type='final_grade')
+        total_grades = grades.count()
+        avg_grade = grades.aggregate(avg=Avg('transmuted_score'))['avg']
+        average_grade = round(float(avg_grade), 2) if avg_grade else None
+
+        # --- ALL SUBJECTS DISTRIBUTION ---
+        outstanding = grades.filter(transmuted_score__gte=90).count()
+        very_satisfactory = grades.filter(transmuted_score__gte=85, transmuted_score__lt=90).count()
+        satisfactory = grades.filter(transmuted_score__gte=80, transmuted_score__lt=85).count()
+        fairly_satisfactory = grades.filter(transmuted_score__gte=75, transmuted_score__lt=80).count()
+        below_75 = grades.filter(transmuted_score__lt=75).count()
+
+        # --- GENERAL AVERAGE DISTRIBUTION (Student-wise) ---
+        student_averages = grades.values('student').annotate(avg=Avg('transmuted_score'))
+        total_students_graded = student_averages.count()
+        
+        ga_outstanding = 0
+        ga_very_satisfactory = 0
+        ga_satisfactory = 0
+        ga_fairly_satisfactory = 0
+        ga_below_75 = 0
+        
+        for sa in student_averages:
+            score = sa['avg']
+            if score >= 90: ga_outstanding += 1
+            elif score >= 85: ga_very_satisfactory += 1
+            elif score >= 80: ga_satisfactory += 1
+            elif score >= 75: ga_fairly_satisfactory += 1
+            else: ga_below_75 += 1
+
+        # Recent Activity
+        recent_logins = AuditLog.objects.filter(action='login').order_by('-timestamp')[:5]
+        latest_messages = ChatMessage.objects.order_by('-timestamp')[:5]
+        
+        # Optimized Active Users Over Time (Last 24 Hours) - Single query instead of 24
+        active_users_trends = []
+        last_24h_start = now - datetime.timedelta(hours=24)
+        recent_login_logs = list(AuditLog.objects.filter(
+            action='login',
+            timestamp__gte=last_24h_start
+        ).values('user', 'timestamp'))
+
+        for i in range(23, -1, -1):
+            hour_start = now - datetime.timedelta(hours=i+1)
+            hour_end = now - datetime.timedelta(hours=i)
+            # Filter users who logged in during this hour
+            users_in_hour = {log['user'] for log in recent_login_logs if hour_start <= log['timestamp'] <= hour_end}
+            active_users_trends.append({
+                'time': hour_end.strftime('%H:00'),
+                'users': len(users_in_hour)
+            })
+
+        # Prepare announcements
+        recent_announcements = list(
+            Announcement.objects.filter(status='live')
+            .order_by('-created_at')[:5]
+            .values('id', 'title', 'content', 'priority', 'is_pinned', 'created_at', 'author__username')
+        )
+        for a in recent_announcements:
+            a['author_name'] = a.pop('author__username', 'Unknown')
+
+        # Prepare response data
+        res_data = {
             'total_students': total_students,
             'total_teachers': total_teachers,
             'total_classes': total_classes,
             'total_subjects': total_subjects,
+            'pending_approvals': pending_approvals,
+            'pending_enrollments': EnrollmentApplication.objects.filter(status='pending').count(),
             'active_users': active_users,
-            'attendance_rate': today_rate,
-        },
-        'charts': {
-            'attendance_trends': attendance_trends,
-            'active_users_trends': active_users_trends,
-            'grade_distribution': [
-                {'name': 'Outstanding', 'value': outstanding},
-                {'name': 'Very Satisfactory', 'value': very_satisfactory},
-                {'name': 'Satisfactory', 'value': satisfactory},
-                {'name': 'Fairly Satisfactory', 'value': fairly_satisfactory},
-                {'name': 'Did Not Meet', 'value': below_75},
-            ]
-        },
-        'widgets': {
-            'recent_announcements': list(
-                Announcement.objects.filter(status='live')
-                .order_by('-created_at')[:5]
-                .values('id', 'title', 'content', 'priority', 'is_pinned', 'created_at', 'author__username')
-            ),
-            'recent_logins': [
-                {
-                    'id': log.id,
-                    'user': log.user.username if log.user else 'System',
-                    'timestamp': log.timestamp,
-                    'description': log.description
-                } for log in recent_logins
-            ],
-            'latest_messages': [
-                {
-                    'id': m.id,
-                    'sender': m.sender.username,
-                    'content': m.content[:50],
-                    'timestamp': m.timestamp,
-                    'room_id': m.room_id
-                } for m in latest_messages
-            ],
-        },
+            'today_rate': today_rate,
+            'average_grade': average_grade,
+            
+            'cards': {
+                'total_students': total_students,
+                'total_teachers': total_teachers,
+                'total_classes': total_classes,
+                'total_subjects': total_subjects,
+                'active_users': active_users,
+                'attendance_rate': today_rate,
+            },
+            'charts': {
+                'attendance_trends': attendance_trends,
+                'active_users_trends': active_users_trends,
+                'grade_distribution': [
+                    {'name': 'Outstanding', 'value': outstanding},
+                    {'name': 'Very Satisfactory', 'value': very_satisfactory},
+                    {'name': 'Satisfactory', 'value': satisfactory},
+                    {'name': 'Fairly Satisfactory', 'value': fairly_satisfactory},
+                    {'name': 'Did Not Meet', 'value': below_75},
+                ]
+            },
+            'widgets': {
+                'recent_announcements': recent_announcements,
+                'recent_logins': [
+                    {
+                        'id': log.id,
+                        'user': log.user.username if log.user else 'System',
+                        'timestamp': log.timestamp,
+                        'description': log.description
+                    } for log in recent_logins
+                ],
+                'latest_messages': [
+                    {
+                        'id': m.id,
+                        'sender': m.sender.username,
+                        'content': m.content[:50],
+                        'timestamp': m.timestamp,
+                        'room_id': m.room_id
+                    } for m in latest_messages
+                ],
+            },
+            'all_subjects': {
+                'outstanding_pct': round(outstanding / total_grades * 100) if total_grades else 0,
+                'very_satisfactory_pct': round(very_satisfactory / total_grades * 100) if total_grades else 0,
+                'satisfactory_pct': round(satisfactory / total_grades * 100) if total_grades else 0,
+                'fairly_satisfactory_pct': round(fairly_satisfactory / total_grades * 100) if total_grades else 0,
+                'below_75_pct': round(below_75 / total_grades * 100) if total_grades else 0,
+                'total_count': total_grades
+            },
+            'general_average': {
+                 'outstanding_pct': round(ga_outstanding / total_students_graded * 100) if total_students_graded else 0,
+                 'very_satisfactory_pct': round(ga_very_satisfactory / total_students_graded * 100) if total_students_graded else 0,
+                 'satisfactory_pct': round(ga_satisfactory / total_students_graded * 100) if total_students_graded else 0,
+                 'fairly_satisfactory_pct': round(ga_fairly_satisfactory / total_students_graded * 100) if total_students_graded else 0,
+                 'below_75_pct': round(ga_below_75 / total_students_graded * 100) if total_students_graded else 0,
+                 'total_count': total_students_graded
+             },
+            
+            'system_settings': SystemSettingSerializer(SystemSetting.get_settings()).data,
+            'recent_grades_count': Grade.objects.filter(submitted_at__date__gte=this_week_start).count(),
+            'total_announcements': Announcement.objects.filter(status='live').count(),
+            'recent_announcements': recent_announcements,
+        }
         
-        # Legacy/Extra
-        'attendance_trends': attendance_trends,
-        'recent_logins': [
-            {
-                'id': log.id,
-                'user': log.user.username if log.user else 'System',
-                'timestamp': log.timestamp,
-                'description': log.description
-            } for log in recent_logins
-        ],
-        'latest_messages': [
-            {
-                'id': m.id,
-                'sender': m.sender.username,
-                'content': m.content[:50],
-                'timestamp': m.timestamp,
-                'room_id': m.room_id
-            } for m in latest_messages
-        ],
-        'all_subjects': {
-            'outstanding_pct': round(outstanding / total_grades * 100) if total_grades else 0,
-            'very_satisfactory_pct': round(very_satisfactory / total_grades * 100) if total_grades else 0,
-            'satisfactory_pct': round(satisfactory / total_grades * 100) if total_grades else 0,
-            'fairly_satisfactory_pct': round(fairly_satisfactory / total_grades * 100) if total_grades else 0,
-            'below_75_pct': round(below_75 / total_grades * 100) if total_grades else 0,
-            'total_count': total_grades
-        },
-        'general_average': {
-             'outstanding_pct': round(ga_outstanding / total_students_graded * 100) if total_students_graded else 0,
-             'very_satisfactory_pct': round(ga_very_satisfactory / total_students_graded * 100) if total_students_graded else 0,
-             'satisfactory_pct': round(ga_satisfactory / total_students_graded * 100) if total_students_graded else 0,
-             'fairly_satisfactory_pct': round(ga_fairly_satisfactory / total_students_graded * 100) if total_students_graded else 0,
-             'below_75_pct': round(ga_below_75 / total_students_graded * 100) if total_students_graded else 0,
-             'total_count': total_students_graded
-         },
-        
-        'system_settings': SystemSettingSerializer(SystemSetting.get_settings()).data,
-        'recent_grades_count': Grade.objects.filter(submitted_at__date__gte=this_week_start).count(),
-        'total_announcements': Announcement.objects.filter(status='live').count(),
-        'recent_announcements': list(
-            Announcement.objects.filter(status='live')
-            .order_by('-created_at')[:5]
-            .values('id', 'title', 'content', 'priority', 'is_pinned', 'created_at', 'author__username')
-        ),
-    }
-
-    # Add author names to announcements
-    for a in res_data['recent_announcements']:
-        a['author_name'] = a.pop('author__username', 'Unknown')
-    
-    return Response(res_data)
+        return Response(res_data)
+    except Exception as e:
+        logger.error(f"Admin stats error: {str(e)}", exc_info=True)
+        return Response({'error': f'Server error: {str(e)}'}, status=500)
 
 
 @api_view(['GET'])
