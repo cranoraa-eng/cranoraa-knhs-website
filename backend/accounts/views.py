@@ -15,8 +15,7 @@ from .serializers import (UserSerializer, ClassroomSerializer, StudentClassEnrol
     SystemSettingSerializer, AssignmentSerializer, SubmissionSerializer, ReportedMessageSerializer)
 from .models import User, Classroom, StudentClassEnrollment, Announcement, AnnouncementAttachment, Attendance, LearningMaterial, Subject, ClassroomSubject, ScratchCard, Fee, Notification, EnrollmentApplication, WebsiteContent, Grade, GradeReport, ChatRoom, ChatMessage, MessageReaction, Friendship, SystemSetting, Assignment, Submission, ReportedMessage
 from .permissions import IsAdmin, IsTeacher, IsStudent, IsParent, IsAdminOrTeacher, IsAdminOrReadOnly
-from portal.models import AuditLog, SchoolClass
-from portal.views import log_audit_action
+# Moved portal imports inside functions to avoid circular dependencies
 import logging
 import secrets
 
@@ -72,6 +71,7 @@ def login_view(request):
         refresh = RefreshToken.for_user(user)
         
         # Log successful login
+        from portal.views import log_audit_action
         log_audit_action(
             user=user,
             action='login',
@@ -382,13 +382,18 @@ class ClassroomViewSet(viewsets.ModelViewSet):
     search_fields = ['name']
     
     def get_queryset(self):
-        user = self.request.user
-        # Admins see all classrooms; teachers see only their own
-        if user.role == 'admin':
-            return Classroom.objects.all()
-        return Classroom.objects.filter(teacher=user)
+        try:
+            user = self.request.user
+            # Admins see all classrooms; teachers see only their own
+            if user.role == 'admin':
+                return Classroom.objects.all()
+            return Classroom.objects.filter(teacher=user)
+        except Exception as e:
+            logger.error(f"Classroom queryset error: {str(e)}", exc_info=True)
+            return Classroom.objects.none()
     
     def perform_create(self, serializer):
+        from portal.views import log_audit_action
         classroom = serializer.save(teacher=self.request.user)
         log_audit_action(
             user=self.request.user,
@@ -482,6 +487,7 @@ class StudentClassEnrollmentViewSet(viewsets.ModelViewSet):
 
         enrollment = serializer.save(student=student, classroom=classroom)
 
+        from portal.views import log_audit_action
         log_audit_action(
             user=self.request.user,
             action='create',
@@ -500,6 +506,7 @@ class StudentClassEnrollmentViewSet(viewsets.ModelViewSet):
         enrollment = serializer.save()
         
         # Log grade update
+        from portal.views import log_audit_action
         log_audit_action(
             user=self.request.user,
             action='update',
@@ -561,6 +568,7 @@ class UserViewSet(viewsets.ModelViewSet):
         return queryset
 
     def perform_destroy(self, instance):
+        from portal.views import log_audit_action
         log_audit_action(
             user=self.request.user,
             action='delete',
@@ -721,6 +729,7 @@ class UserViewSet(viewsets.ModelViewSet):
         user.save()
         
         status_str = 'activated' if user.is_active else 'deactivated'
+        from portal.views import log_audit_action
         log_audit_action(
             user=request.user,
             action='update',
@@ -766,6 +775,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
             # Log the action
             try:
+                from portal.views import log_audit_action
                 log_audit_action(
                     user=request.user,
                     action='approve',
@@ -815,6 +825,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
             # Log the action before deleting
             try:
+                from portal.views import log_audit_action
                 log_audit_action(
                     user=request.user,
                     action='reject',
@@ -938,6 +949,7 @@ class AnnouncementViewSet(viewsets.ModelViewSet):
                     logger.error(f"Error saving attachment: {str(e)}")
 
             # Log announcement creation
+            from portal.views import log_audit_action
             log_audit_action(
                 user=self.request.user,
                 action='create',
@@ -994,6 +1006,7 @@ class AnnouncementViewSet(viewsets.ModelViewSet):
         queryset.delete()
         
         # Log bulk deletion
+        from portal.views import log_audit_action
         log_audit_action(
             user=request.user,
             action='delete',
@@ -1017,6 +1030,7 @@ class AnnouncementViewSet(viewsets.ModelViewSet):
         queryset.delete()
         
         # Log action
+        from portal.views import log_audit_action
         log_audit_action(
             user=request.user,
             action='delete',
@@ -1040,6 +1054,7 @@ class AnnouncementViewSet(viewsets.ModelViewSet):
                 file=f,
                 filename=f.name
             )
+        from portal.views import log_audit_action
         log_audit_action(
             user=self.request.user,
             action='update',
@@ -1096,6 +1111,7 @@ class AnnouncementViewSet(viewsets.ModelViewSet):
             link='/announcements',
             title__icontains=instance.title[:30]
         ).delete()
+        from portal.views import log_audit_action
         log_audit_action(
             user=self.request.user,
             action='delete',
@@ -1247,6 +1263,7 @@ class AttendanceViewSet(viewsets.ModelViewSet):
             from rest_framework.exceptions import PermissionDenied
             raise PermissionDenied("Only teachers and admins can mark attendance")
         attendance = serializer.save(marked_by=self.request.user)
+        from portal.views import log_audit_action
         log_audit_action(
             user=self.request.user,
             action='create',
@@ -1299,6 +1316,7 @@ class LearningMaterialViewSet(viewsets.ModelViewSet):
         material = serializer.save(uploaded_by=self.request.user)
         
         # Log material upload
+        from portal.views import log_audit_action
         log_audit_action(
             user=self.request.user,
             action='create',
@@ -1370,6 +1388,7 @@ class ClassroomSubjectViewSet(viewsets.ModelViewSet):
             from rest_framework.exceptions import PermissionDenied
             raise PermissionDenied("Only admins and teachers can assign subjects to classrooms")
         instance = serializer.save()
+        from portal.views import log_audit_action
         log_audit_action(user, 'create', 'ClassroomSubject',
                          object_id=instance.id,
                          object_repr=str(instance),
@@ -1385,6 +1404,7 @@ class ClassroomSubjectViewSet(viewsets.ModelViewSet):
             from rest_framework.exceptions import PermissionDenied
             raise PermissionDenied("You can only edit assignments for subjects assigned to you")
         instance = serializer.save()
+        from portal.views import log_audit_action
         log_audit_action(user, 'update', 'ClassroomSubject',
                          object_id=instance.id,
                          object_repr=str(instance),
@@ -1399,6 +1419,7 @@ class ClassroomSubjectViewSet(viewsets.ModelViewSet):
         if user.role == 'teacher' and instance.teacher != user:
             from rest_framework.exceptions import PermissionDenied
             raise PermissionDenied("You can only remove assignments for subjects assigned to you")
+        from portal.views import log_audit_action
         log_audit_action(user, 'delete', 'ClassroomSubject',
                          object_id=instance.id,
                          object_repr=str(instance),
@@ -1536,6 +1557,7 @@ def admin_dashboard_stats(request):
         from django.db.models import Count, Avg
         from django.utils import timezone
         import datetime
+        from portal.models import AuditLog # Import inside function
 
         now = timezone.now()
         today = now.date()
@@ -2298,6 +2320,7 @@ def maintenance_mode_view(request):
     
     # Log the action
     if request.user.is_authenticated:
+        from portal.views import log_audit_action
         log_audit_action(
             user=request.user,
             action='maintenance_mode_toggle',
@@ -2489,6 +2512,7 @@ class GradeViewSet(viewsets.ModelViewSet):
         serializer.save(teacher=user)
         
         # Log the action
+        from portal.views import log_audit_action
         log_audit_action(
             user=user,
             action='grade_create',
@@ -2514,6 +2538,7 @@ class GradeViewSet(viewsets.ModelViewSet):
         serializer.save()
         
         # Log the action
+        from portal.views import log_audit_action
         log_audit_action(
             user=user,
             action='grade_update',
@@ -2532,6 +2557,7 @@ class GradeViewSet(viewsets.ModelViewSet):
             raise serializers.ValidationError("Only admins can delete grades")
         
         # Log the action
+        from portal.views import log_audit_action
         log_audit_action(
             user=user,
             action='grade_delete',
@@ -2778,6 +2804,7 @@ class GradeReportViewSet(viewsets.ModelViewSet):
         report.calculate_averages()
         
         # Log the action
+        from portal.views import log_audit_action
         log_audit_action(
             user=user,
             action='grade_report_create',
