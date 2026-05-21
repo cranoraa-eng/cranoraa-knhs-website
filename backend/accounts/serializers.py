@@ -39,8 +39,13 @@ class ProfileSerializer(serializers.ModelSerializer):
                   'nationality', 'middle_name', 'father_name', 'mother_name', 'contact_information', 'linked_students']
 
     def get_classroom_name(self, obj):
-        enrollment = StudentClassEnrollment.objects.filter(student=obj.user).select_related('classroom').first()
-        return enrollment.classroom.name if enrollment else None
+        try:
+            enrollment = StudentClassEnrollment.objects.filter(student=obj.user).select_related('classroom').first()
+            if enrollment and enrollment.classroom:
+                return enrollment.classroom.name
+        except:
+            pass
+        return None
 
 
 class UserSerializer(serializers.ModelSerializer):

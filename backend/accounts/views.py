@@ -537,35 +537,42 @@ class UserViewSet(viewsets.ModelViewSet):
     search_fields = ['username', 'email', 'first_name', 'last_name', 'profile__employee_id']
     
     def get_queryset(self):
-        user = self.request.user
-        role = self.request.query_params.get('role')
-        queryset = User.objects.all().select_related('profile').order_by('-date_joined')
-        
-        # RBAC: Students can only see their own data
-        if user.role == 'student':
-            return User.objects.filter(id=user.id)
-        
-        # RBAC: Parents can see their linked students and themselves
-        if user.role == 'parent':
-            profile = getattr(user, 'profile', None)
-            if profile:
-                linked_student_ids = profile.linked_students.values_list('id', flat=True)
-                return User.objects.filter(Q(id__in=linked_student_ids) | Q(id=user.id))
-            return User.objects.filter(id=user.id)
-        
-        # Teachers can see students and themselves
-        if user.role == 'teacher':
+        try:
+            user = self.request.user
+            role = self.request.query_params.get('role')
+            queryset = User.objects.all().select_related('profile').order_by('-date_joined')
+            
+            # RBAC: Students can only see their own data
+            if user.role == 'student':
+                return User.objects.filter(id=user.id)
+            
+            # RBAC: Parents can see their linked students and themselves
+            if user.role == 'parent':
+                profile = getattr(user, 'profile', None)
+                if profile:
+                    try:
+                        linked_student_ids = profile.linked_students.values_list('id', flat=True)
+                        return User.objects.filter(Q(id__in=linked_student_ids) | Q(id=user.id))
+                    except:
+                        pass
+                return User.objects.filter(id=user.id)
+            
+            # Teachers can see students and themselves
+            if user.role == 'teacher':
+                if role:
+                    if role == 'student':
+                        return User.objects.filter(role='student')
+                    elif role == 'teacher':
+                        return User.objects.filter(id=user.id)
+                return User.objects.filter(role='student') | User.objects.filter(id=user.id)
+            
+            # Admins can see all users
             if role:
-                if role == 'student':
-                    return User.objects.filter(role='student')
-                elif role == 'teacher':
-                    return User.objects.filter(id=user.id)
-            return User.objects.filter(role='student') | User.objects.filter(id=user.id)
-        
-        # Admins can see all users
-        if role:
-            queryset = queryset.filter(role=role)
-        return queryset
+                queryset = queryset.filter(role=role)
+            return queryset
+        except Exception as e:
+            logger.error(f"UserViewSet queryset error: {str(e)}")
+            return User.objects.filter(id=self.request.user.id) if self.request.user.is_authenticated else User.objects.none()
 
     def perform_destroy(self, instance):
         from portal.views import log_audit_action
@@ -1557,7 +1564,12 @@ def admin_dashboard_stats(request):
         from django.db.models import Count, Avg
         from django.utils import timezone
         import datetime
-        from portal.models import AuditLog # Import inside function
+        
+        # Safe model imports
+        try:
+            from portal.models import AuditLog
+        except ImportError:
+            AuditLog = None
 
         now = timezone.now()
         today = now.date()
@@ -1625,26 +1637,35 @@ def admin_dashboard_stats(request):
             else: ga_below_75 += 1
 
         # Recent Activity
-        recent_logins = AuditLog.objects.filter(action='login').order_by('-timestamp')[:5]
+        recent_logins = []
+        if AuditLog:
+            try:
+                recent_logins = AuditLog.objects.filter(action='login').order_by('-timestamp')[:5]
+            except:
+                pass
+        
         latest_messages = ChatMessage.objects.order_by('-timestamp')[:5]
         
-        # Optimized Active Users Over Time (Last 24 Hours) - Single query instead of 24
+        # Optimized Active Users Over Time (Last 24 Hours)
         active_users_trends = []
-        last_24h_start = now - datetime.timedelta(hours=24)
-        recent_login_logs = list(AuditLog.objects.filter(
-            action='login',
-            timestamp__gte=last_24h_start
-        ).values('user', 'timestamp'))
+        if AuditLog:
+            try:
+                last_24h_start = now - datetime.timedelta(hours=24)
+                recent_login_logs = list(AuditLog.objects.filter(
+                    action='login',
+                    timestamp__gte=last_24h_start
+                ).values('user', 'timestamp'))
 
-        for i in range(23, -1, -1):
-            hour_start = now - datetime.timedelta(hours=i+1)
-            hour_end = now - datetime.timedelta(hours=i)
-            # Filter users who logged in during this hour
-            users_in_hour = {log['user'] for log in recent_login_logs if hour_start <= log['timestamp'] <= hour_end}
-            active_users_trends.append({
-                'time': hour_end.strftime('%H:00'),
-                'users': len(users_in_hour)
-            })
+                for i in range(23, -1, -1):
+                    hour_start = now - datetime.timedelta(hours=i+1)
+                    hour_end = now - datetime.timedelta(hours=i)
+                    users_in_hour = {log['user'] for log in recent_login_logs if hour_start <= log['timestamp'] <= hour_end}
+                    active_users_trends.append({
+                        'time': hour_end.strftime('%H:00'),
+                        'users': len(users_in_hour)
+                    })
+            except:
+                pass
 
         # Prepare announcements
         recent_announcements = list(
@@ -1699,7 +1720,7 @@ def admin_dashboard_stats(request):
                 'latest_messages': [
                     {
                         'id': m.id,
-                        'sender': m.sender.username,
+                        'sender': m.sender.username if m.sender else 'Unknown',
                         'content': m.content[:50],
                         'timestamp': m.timestamp,
                         'room_id': m.room_id
@@ -2919,7 +2940,11 @@ class ChatRoomViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return self.request.user.chat_rooms.all().order_by('-updated_at')
+        try:
+            return self.request.user.chat_rooms.all().order_by('-updated_at')
+        except Exception as e:
+            logger.error(f"ChatRoom queryset error: {str(e)}")
+            return ChatRoom.objects.none()
 
     def perform_create(self, serializer):
         room = serializer.save(created_by=self.request.user)
@@ -3261,31 +3286,43 @@ class FriendshipViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        user = self.request.user
-        return Friendship.objects.filter(Q(from_user=user) | Q(to_user=user))
+        try:
+            user = self.request.user
+            return Friendship.objects.filter(Q(from_user=user) | Q(to_user=user))
+        except Exception as e:
+            logger.error(f"Friendship queryset error: {str(e)}")
+            return Friendship.objects.none()
 
     def perform_create(self, serializer):
-        friendship = serializer.save(from_user=self.request.user, status='pending')
-        # Notify the target user of the new request
-        serialized = FriendshipSerializer(friendship, context={'request': self.request}).data
-        _notify_user_of_friendship_update(friendship.to_user.id, serialized, 'request_received')
+        try:
+            friendship = serializer.save(from_user=self.request.user, status='pending')
+            # Notify the target user of the new request
+            serialized = FriendshipSerializer(friendship, context={'request': self.request}).data
+            _notify_user_of_friendship_update(friendship.to_user.id, serialized, 'request_received')
+        except Exception as e:
+            logger.error(f"Friendship create error: {str(e)}")
+            raise
 
     @action(detail=True, methods=['post'])
     def accept(self, request, pk=None):
-        friendship = self.get_object()
-        if friendship.to_user != request.user:
-            return Response({'error': 'Unauthorized'}, status=status.HTTP_403_FORBIDDEN)
-        
-        friendship.status = 'accepted'
-        friendship.save()
-        
-        serialized = FriendshipSerializer(friendship, context={'request': request}).data
-        # Notify the requester that it was accepted
-        _notify_user_of_friendship_update(friendship.from_user.id, serialized, 'request_accepted')
-        # Notify self to sync tabs
-        _notify_user_of_friendship_update(request.user.id, serialized, 'request_accepted')
-        
-        return Response(serialized)
+        try:
+            friendship = self.get_object()
+            if friendship.to_user != request.user:
+                return Response({'error': 'Unauthorized'}, status=status.HTTP_403_FORBIDDEN)
+            
+            friendship.status = 'accepted'
+            friendship.save()
+            
+            serialized = FriendshipSerializer(friendship, context={'request': request}).data
+            # Notify the requester that it was accepted
+            _notify_user_of_friendship_update(friendship.from_user.id, serialized, 'request_accepted')
+            # Notify self to sync tabs
+            _notify_user_of_friendship_update(request.user.id, serialized, 'request_accepted')
+            
+            return Response(serialized)
+        except Exception as e:
+            logger.error(f"Friendship accept error: {str(e)}")
+            return Response({'error': str(e)}, status=500)
 
     @action(detail=True, methods=['post'])
     def reject(self, request, pk=None):
