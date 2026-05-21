@@ -2178,9 +2178,6 @@ class NotificationViewSet(viewsets.ModelViewSet):
             created_at__gte=cutoff
         ).order_by('-created_at')
     
-    def get_queryset(self):
-        return Notification.objects.filter(recipient=self.request.user)
-    
     def perform_create(self, serializer):
         serializer.save(recipient=self.request.user)
     

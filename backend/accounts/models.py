@@ -60,7 +60,7 @@ class OTP(models.Model):
         return timezone.now() > self.expires_at
     
     def __str__(self):
-        return f"{self.otp_type} OTP for {self.user.email}"
+        return f"{self.otp_type} OTP for {self.user.email or self.user.username}"
 
 
 

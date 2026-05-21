@@ -8,7 +8,6 @@ from django.contrib.auth.hashers import make_password, check_password
 from .models import OTP
 import logging
 import os
-from supabase import create_client, Client as SupabaseClient
 import secrets
 
 logger = logging.getLogger(__name__)
@@ -17,6 +16,12 @@ def upload_to_supabase(file, folder="profiles"):
     """
     Upload a file to Supabase Storage and return the public URL.
     """
+    try:
+        from supabase import create_client, Client as SupabaseClient
+    except ImportError:
+        logger.error("Supabase package not installed")
+        return None
+        
     if not settings.SUPABASE_URL or not settings.SUPABASE_KEY:
         logger.error("Supabase configuration missing")
         return None
