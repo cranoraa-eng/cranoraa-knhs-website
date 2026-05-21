@@ -100,6 +100,11 @@ export const NotificationProvider = ({ children }) => {
             description: data.message,
             duration: 5000,
           });
+        } else if (data.type === 'moderation_alert') {
+          toast.error(`NEW REPORT: ${data.data.reason}`, {
+            icon: '⚠️',
+            duration: 10000,
+          });
         }
       } catch (err) {
         console.error('Error parsing notification message', err);

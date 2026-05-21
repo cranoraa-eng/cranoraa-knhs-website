@@ -21,7 +21,7 @@ const STATUS_CONFIG = {
 
 const EMPTY_FORM = {
   title: '', category: 'general', priority: 'info', status: 'live',
-  target_audience: 'all', content: '', is_pinned: false, is_public: false,
+  target_audience: 'all', target_classrooms: [], content: '', is_pinned: false, is_public: false,
   event_date: '', end_date: '', attachments: [],
 };
 
@@ -30,6 +30,7 @@ const Announcements = () => {
   const canManage = user?.role === 'admin' || user?.role === 'teacher';
 
   const [announcements, setAnnouncements] = useState([]);
+  const [classrooms, setClassrooms]     = useState([]);
   const [loading, setLoading]             = useState(true);
   const [search, setSearch]               = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
@@ -41,12 +42,28 @@ const Announcements = () => {
   const [saving, setSaving]               = useState(false);
   const [zoomedImage, setZoomedImage]     = useState(null);
 
-  useEffect(() => { fetchAnnouncements(); }, [categoryFilter]);
+  const [selectedIds, setSelectedIds]     = useState([]);
+  const [undoBuffer, setUndoBuffer]       = useState(null);
+  const [undoTimer, setUndoTimer]         = useState(null);
+
+  useEffect(() => { 
+    fetchAnnouncements(); 
+    if (canManage) fetchClassrooms();
+  }, [categoryFilter]);
 
   useEffect(() => {
     const t = setTimeout(fetchAnnouncements, 400);
     return () => clearTimeout(t);
   }, [search]);
+
+  const fetchClassrooms = async () => {
+    try {
+      const r = await api.get('/classrooms/');
+      setClassrooms(r.data);
+    } catch (err) {
+      console.error('Failed to load classrooms');
+    }
+  };
 
   const fetchAnnouncements = async () => {
     setLoading(true);
@@ -70,7 +87,8 @@ const Announcements = () => {
   const openEdit = (a) => {
     setSelected(a);
     setForm({ title: a.title, category: a.category, priority: a.priority, status: a.status,
-      target_audience: a.target_audience, content: a.content, is_pinned: a.is_pinned,
+      target_audience: a.target_audience, target_classrooms: a.target_classrooms || [], 
+      content: a.content, is_pinned: a.is_pinned,
       is_public: a.is_public, event_date: a.event_date || '', end_date: a.end_date || '', attachments: [] });
     setIsEditing(true);
     setShowModal(true);
@@ -86,6 +104,10 @@ const Announcements = () => {
         if (k === 'attachments') {
           if (v && v.length > 0) {
             v.forEach(file => fd.append('attachments', file));
+          }
+        } else if (k === 'target_classrooms') {
+          if (v && v.length > 0) {
+            v.forEach(id => fd.append('target_classrooms', id));
           }
         } else if (k === 'event_date' || k === 'end_date') {
           if (v && v.trim() !== '') fd.append(k, v);
@@ -118,14 +140,128 @@ const Announcements = () => {
   const handleDelete = async (a) => {
     const result = await Swal.fire({
       title: 'Delete Announcement?',
-      text: `"${a.title}" will be permanently removed.`,
+      text: `"${a.title}" will be removed. You can undo this for 5 seconds.`,
       icon: 'warning', showCancelButton: true,
       confirmButtonColor: '#ef4444', cancelButtonColor: '#6b7280',
       confirmButtonText: 'Delete',
     });
     if (!result.isConfirmed) return;
-    try { await api.delete(`/announcements/${a.id}/`); toast.success('Deleted'); fetchAnnouncements(); }
-    catch { toast.error('Failed to delete'); }
+
+    // Local update
+    const originalList = [...announcements];
+    setAnnouncements(announcements.filter(item => item.id !== a.id));
+    
+    // Setup Undo
+    if (undoTimer) clearTimeout(undoTimer);
+    setUndoBuffer({ type: 'single', data: a, originalList });
+    
+    const timer = setTimeout(async () => {
+      try { 
+        await api.delete(`/announcements/${a.id}/`); 
+        setUndoBuffer(null);
+      } catch { 
+        toast.error('Failed to delete from server'); 
+        setAnnouncements(originalList);
+      }
+    }, 5000);
+    
+    setUndoTimer(timer);
+    toast.success('Announcement removed', {
+      duration: 5000,
+      position: 'bottom-right',
+      style: { background: '#333', color: '#fff' },
+    });
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedIds.length === 0) return;
+    const result = await Swal.fire({
+      title: `Delete ${selectedIds.length} Announcements?`,
+      text: "Items will be removed. You can undo this for 5 seconds.",
+      icon: 'warning', showCancelButton: true,
+      confirmButtonColor: '#ef4444', cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Delete All Selected',
+    });
+    if (!result.isConfirmed) return;
+
+    // Local update
+    const originalList = [...announcements];
+    const deletedItems = announcements.filter(a => selectedIds.includes(a.id));
+    setAnnouncements(announcements.filter(a => !selectedIds.includes(a.id)));
+    
+    // Setup Undo
+    if (undoTimer) clearTimeout(undoTimer);
+    setUndoBuffer({ type: 'bulk', ids: selectedIds, originalList });
+    
+    const timer = setTimeout(async () => {
+      try { 
+        await api.post('/announcements/bulk_delete/', { ids: selectedIds }); 
+        setUndoBuffer(null);
+        setSelectedIds([]);
+      } catch { 
+        toast.error('Failed to delete from server'); 
+        setAnnouncements(originalList);
+      }
+    }, 5000);
+    
+    setUndoTimer(timer);
+    toast.success(`${selectedIds.length} items removed`, {
+      duration: 5000,
+      position: 'bottom-right',
+      style: { background: '#333', color: '#fff' },
+    });
+  };
+
+  const handleDeleteAll = async () => {
+    const result = await Swal.fire({
+      title: 'Delete ALL Announcements?',
+      text: "This will clear everything! You can undo this for 5 seconds.",
+      icon: 'warning', showCancelButton: true,
+      confirmButtonColor: '#ef4444', cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Yes, Delete Everything',
+    });
+    if (!result.isConfirmed) return;
+
+    const originalList = [...announcements];
+    setAnnouncements([]);
+    
+    if (undoTimer) clearTimeout(undoTimer);
+    setUndoBuffer({ type: 'all', originalList });
+
+    const timer = setTimeout(async () => {
+      try { 
+        await api.post('/announcements/delete_all/'); 
+        setUndoBuffer(null);
+        setSelectedIds([]);
+      } catch { 
+        toast.error('Failed to delete from server'); 
+        setAnnouncements(originalList);
+      }
+    }, 5000);
+
+    setUndoTimer(timer);
+    toast.success('All announcements removed', {
+      duration: 5000,
+      position: 'bottom-right',
+    });
+  };
+
+  const handleUndo = () => {
+    if (!undoBuffer) return;
+    if (undoTimer) clearTimeout(undoTimer);
+    setAnnouncements(undoBuffer.originalList);
+    setUndoBuffer(null);
+    setUndoTimer(null);
+    toast.success('Action undone');
+  };
+
+  const toggleSelect = (id) => {
+    setSelectedIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.length === sorted.length) setSelectedIds([]);
+    else setSelectedIds(sorted.map(a => a.id));
   };
 
   const handlePin    = async (a) => { try { await api.patch(`/announcements/${a.id}/`, { is_pinned: !a.is_pinned }); fetchAnnouncements(); } catch {} };
@@ -177,20 +313,65 @@ const Announcements = () => {
         )}
       </div>
 
-      {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-3 mb-6">
-        <div className="relative flex-1">
-          <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-          <input type="text" placeholder="Search announcements..." value={search} onChange={e => setSearch(e.target.value)}
-            className="w-full pl-9 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm" />
+      {/* Filters & Actions */}
+      <div className="flex flex-col space-y-4 mb-6">
+        <div className="flex flex-col sm:flex-row gap-3">
+          <div className="relative flex-1">
+            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <input type="text" placeholder="Search announcements..." value={search} onChange={e => setSearch(e.target.value)}
+              className="w-full pl-9 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm" />
+          </div>
+          <select value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)}
+            className="px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm">
+            <option value="all">All Categories</option>
+            {Object.entries(CATEGORY_CONFIG).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
+          </select>
         </div>
-        <select value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)}
-          className="px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm">
-          <option value="all">All Categories</option>
-          {Object.entries(CATEGORY_CONFIG).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
-        </select>
+
+        {canManage && sorted.length > 0 && (
+          <div className="flex flex-wrap items-center justify-between gap-3 bg-gray-50 p-3 rounded-xl border border-gray-200 animate-fadeIn">
+            <div className="flex items-center gap-4">
+              <label className="flex items-center gap-2 cursor-pointer group">
+                <input type="checkbox" 
+                  checked={selectedIds.length === sorted.length && sorted.length > 0}
+                  onChange={toggleSelectAll}
+                  className="w-4 h-4 text-purple-600 rounded border-gray-300 focus:ring-purple-500" />
+                <span className="text-xs font-bold text-gray-600 uppercase tracking-wider group-hover:text-purple-600 transition-colors">
+                  {selectedIds.length === sorted.length ? 'Deselect All' : 'Select All'}
+                </span>
+              </label>
+              
+              {selectedIds.length > 0 && (
+                <div className="h-4 w-px bg-gray-300 mx-1"></div>
+              )}
+
+              {selectedIds.length > 0 && (
+                <button onClick={handleBulkDelete}
+                  className="flex items-center gap-1.5 text-xs font-black text-red-600 uppercase tracking-widest hover:bg-red-50 px-2 py-1 rounded-lg transition-all">
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                  Delete Selected ({selectedIds.length})
+                </button>
+              )}
+
+              {user?.role === 'admin' && (
+                <button onClick={handleDeleteAll}
+                  className="flex items-center gap-1.5 text-xs font-black text-red-500/60 uppercase tracking-widest hover:text-red-600 hover:bg-red-50 px-2 py-1 rounded-lg transition-all">
+                  Delete All
+                </button>
+              )}
+            </div>
+
+            {undoBuffer && (
+              <button onClick={handleUndo}
+                className="flex items-center gap-1.5 bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full hover:bg-slate-800 shadow-lg shadow-slate-200 animate-bounce">
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" /></svg>
+                Undo Deletion
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       {/* List */}
@@ -207,111 +388,126 @@ const Announcements = () => {
           </div>
           <h3 className="text-lg font-semibold text-gray-700 mb-1">No announcements yet</h3>
           <p className="text-gray-400 text-sm">School updates and notices will appear here.</p>
+          {undoBuffer && (
+            <button onClick={handleUndo} className="mt-4 text-purple-600 font-bold hover:underline">Undo last deletion</button>
+          )}
         </div>
       ) : (
         <div className="space-y-4">
           {sorted.map(a => {
             const cat = CATEGORY_CONFIG[a.category] || CATEGORY_CONFIG.general;
             const stat = STATUS_CONFIG[a.status] || STATUS_CONFIG.draft;
+            const isSelected = selectedIds.includes(a.id);
+
             return (
-              <div key={a.id} className={`bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-shadow ${a.priority === 'critical' ? 'border-l-4 border-l-red-500' : 'border-l-4 border-l-purple-500'}`}>
-                <div className="p-5">
-                  {/* Top row */}
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex flex-wrap items-center gap-2 mb-2">
-                        {a.is_pinned && (
-                          <span className="flex items-center gap-1 text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
-                            📌 Pinned
-                          </span>
-                        )}
-                        <span className={`text-xs font-semibold px-2 py-0.5 rounded-full border ${cat.color}`}>{cat.label}</span>
-                        {a.priority === 'critical' && (
-                          <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-red-100 text-red-700 border border-red-200">🚨 Critical</span>
-                        )}
-                        {a.is_public && (
-                          <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-100 flex items-center gap-1">
-                            🌐 Public
-                          </span>
-                        )}
-                        <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${stat.color}`}>{stat.label}</span>
-                      </div>
-                      <h2 className="text-lg font-bold text-gray-800 leading-tight">{a.title}</h2>
-                      <p className="text-gray-500 text-sm mt-1 line-clamp-2">{a.content}</p>
+              <div key={a.id} className={`bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-all ${a.priority === 'critical' ? 'border-l-4 border-l-red-500' : 'border-l-4 border-l-purple-500'} ${isSelected ? 'ring-2 ring-purple-500 bg-purple-50/30' : ''}`}>
+                <div className="p-5 flex gap-4">
+                  {canManage && (
+                    <div className="flex-shrink-0 pt-1">
+                      <input type="checkbox" 
+                        checked={isSelected}
+                        onChange={() => toggleSelect(a.id)}
+                        className="w-4 h-4 text-purple-600 rounded border-gray-300 focus:ring-purple-500 cursor-pointer" />
                     </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    {/* Top row */}
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex flex-wrap items-center gap-2 mb-2">
+                          {a.is_pinned && (
+                            <span className="flex items-center gap-1 text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
+                              📌 Pinned
+                            </span>
+                          )}
+                          <span className={`text-xs font-semibold px-2 py-0.5 rounded-full border ${cat.color}`}>{cat.label}</span>
+                          {a.priority === 'critical' && (
+                            <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-red-100 text-red-700 border border-red-200">🚨 Critical</span>
+                          )}
+                          {a.is_public && (
+                            <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-100 flex items-center gap-1">
+                              🌐 Public
+                            </span>
+                          )}
+                          <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${stat.color}`}>{stat.label}</span>
+                        </div>
+                        <h2 className="text-lg font-bold text-gray-800 leading-tight">{a.title}</h2>
+                        <p className="text-gray-500 text-sm mt-1 line-clamp-2">{a.content}</p>
+                      </div>
 
-                    {/* Actions */}
-                    {canManage && (
-                      <div className="flex items-center gap-1 flex-shrink-0">
-                        <button onClick={() => handlePin(a)} title={a.is_pinned ? 'Unpin' : 'Pin'}
-                          className={`p-1.5 rounded-lg transition-colors ${a.is_pinned ? 'text-amber-600 bg-amber-50 hover:bg-amber-100' : 'text-gray-400 hover:bg-gray-100'}`}>
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 18V4z" />
-                          </svg>
-                        </button>
-                        {a.status === 'draft' && (
-                          <button onClick={() => handlePublish(a)} title="Publish"
-                            className="p-1.5 rounded-lg text-green-600 hover:bg-green-50 transition-colors">
+                      {/* Actions */}
+                      {canManage && (
+                        <div className="flex items-center gap-1 flex-shrink-0">
+                          <button onClick={() => handlePin(a)} title={a.is_pinned ? 'Unpin' : 'Pin'}
+                            className={`p-1.5 rounded-lg transition-colors ${a.is_pinned ? 'text-amber-600 bg-amber-50 hover:bg-amber-100' : 'text-gray-400 hover:bg-gray-100'}`}>
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 18V4z" />
                             </svg>
                           </button>
-                        )}
-                        {a.status === 'live' && (
-                          <button onClick={() => handleArchive(a)} title="Archive"
-                            className="p-1.5 rounded-lg text-orange-500 hover:bg-orange-50 transition-colors">
+                          {a.status === 'draft' && (
+                            <button onClick={() => handlePublish(a)} title="Publish"
+                              className="p-1.5 rounded-lg text-green-600 hover:bg-green-50 transition-colors">
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                              </svg>
+                            </button>
+                          )}
+                          {a.status === 'live' && (
+                            <button onClick={() => handleArchive(a)} title="Archive"
+                              className="p-1.5 rounded-lg text-orange-500 hover:bg-orange-50 transition-colors">
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                              </svg>
+                            </button>
+                          )}
+                          <button onClick={() => openEdit(a)} title="Edit"
+                            className="p-1.5 rounded-lg text-blue-500 hover:bg-blue-50 transition-colors">
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                             </svg>
                           </button>
-                        )}
-                        <button onClick={() => openEdit(a)} title="Edit"
-                          className="p-1.5 rounded-lg text-blue-500 hover:bg-blue-50 transition-colors">
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                          </svg>
-                        </button>
-                        <button onClick={() => handleDelete(a)} title="Delete"
-                          className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 transition-colors">
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                          </svg>
-                        </button>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Footer */}
-                  <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100">
-                    <div className="flex items-center gap-2">
-                      <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#9F7AEA] to-[#6B46C1] flex items-center justify-center text-white text-xs font-bold">
-                        {(a.author_name || 'A').charAt(0).toUpperCase()}
-                      </div>
-                      <div>
-                        <p className="text-xs font-semibold text-gray-700">{a.author_name || 'Admin'}</p>
-                        <p className="text-xs text-gray-400">{new Date(a.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
-                      </div>
+                          <button onClick={() => handleDelete(a)} title="Delete"
+                            className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 transition-colors">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                          </button>
+                        </div>
+                      )}
                     </div>
-                    <div className="flex items-center gap-3">
-                      <span className="flex items-center gap-1 text-xs text-gray-400">
-                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                        </svg>
-                        {a.read_count || 0}
-                      </span>
-                      {(a.attachment || (a.attachments && a.attachments.length > 0)) && (
+
+                    {/* Footer */}
+                    <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100">
+                      <div className="flex items-center gap-2">
+                        <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#9F7AEA] to-[#6B46C1] flex items-center justify-center text-white text-xs font-bold">
+                          {(a.author_name || 'A').charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                          <p className="text-xs font-semibold text-gray-700">{a.author_name || 'Admin'}</p>
+                          <p className="text-xs text-gray-400">{new Date(a.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
                         <span className="flex items-center gap-1 text-xs text-gray-400">
                           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                           </svg>
-                          {a.attachments?.length > 0 ? `${a.attachments.length} Attachment(s)` : 'Attachment'}
+                          {a.read_count || 0}
                         </span>
-                      )}
-                      <button onClick={() => { setSelected(a); setShowView(true); if (!a.is_read) handleRead(a); }}
-                        className="text-xs font-semibold text-purple-600 hover:text-purple-800 transition-colors">
-                        Read more →
-                      </button>
+                        {(a.attachment_url || (a.attachments && a.attachments.length > 0)) && (
+                          <span className="flex items-center gap-1 text-xs text-gray-400">
+                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                            </svg>
+                            {a.attachments?.length > 0 ? `${a.attachments.length} Attachment(s)` : 'Attachment'}
+                          </span>
+                        )}
+                        <button onClick={() => { setSelected(a); setShowView(true); if (!a.is_read) handleRead(a); }}
+                          className="text-xs font-semibold text-purple-600 hover:text-purple-800 transition-colors">
+                          Read more →
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -362,9 +558,10 @@ const Announcements = () => {
                   <select value={form.target_audience} onChange={e => setForm(f => ({ ...f, target_audience: e.target.value }))}
                     className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm">
                     <option value="all">All Users</option>
-                    <option value="students">Students</option>
-                    <option value="teachers">Teachers</option>
-                    <option value="admins">Admins</option>
+                    <option value="students">Students Only</option>
+                    <option value="teachers">Teachers Only</option>
+                    <option value="parents">Parents Only</option>
+                    <option value="admins">Admins Only</option>
                   </select>
                 </div>
                 <div>
@@ -375,6 +572,34 @@ const Announcements = () => {
                     <option value="live">Live</option>
                   </select>
                 </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Target Specific Sections (Optional)</label>
+                <div className="flex flex-wrap gap-2 p-3 bg-gray-50 rounded-xl border border-gray-200 min-h-[60px]">
+                  {classrooms.map(cls => (
+                    <button
+                      key={cls.id}
+                      type="button"
+                      onClick={() => {
+                        const current = form.target_classrooms || [];
+                        const updated = current.includes(cls.id) 
+                          ? current.filter(id => id !== cls.id) 
+                          : [...current, cls.id];
+                        setForm(f => ({ ...f, target_classrooms: updated }));
+                      }}
+                      className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all ${
+                        (form.target_classrooms || []).includes(cls.id)
+                          ? 'bg-purple-600 text-white shadow-md'
+                          : 'bg-white text-gray-400 border border-gray-200 hover:border-purple-300'
+                      }`}
+                    >
+                      {cls.name}
+                    </button>
+                  ))}
+                  {classrooms.length === 0 && <p className="text-[10px] text-gray-400 italic">No classrooms available</p>}
+                </div>
+                <p className="text-[9px] text-gray-400 mt-1 font-medium italic">* Leave empty to target all sections based on audience selection.</p>
               </div>
 
               <div>

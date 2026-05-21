@@ -3,13 +3,16 @@ from rest_framework.decorators import api_view, permission_classes, action
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from rest_framework.response import Response
 from django.contrib.auth import get_user_model
+from accounts.models import User, Attendance, ChatMessage, Grade, StudentClassEnrollment, Classroom, Subject, Announcement as AccountAnnouncement
 from .models import Announcement, SchoolClass, Department, AcademicYear, AuditLog, DatabaseBackup
 from .serializers import (
     AnnouncementSerializer,
     SchoolClassSerializer, DepartmentSerializer, AcademicYearSerializer,
     AuditLogSerializer, DatabaseBackupSerializer
 )
-from accounts.models import User
+from django.db.models import Count, Avg, Q
+from django.utils import timezone
+import datetime
 import logging
 
 logger = logging.getLogger(__name__)
@@ -76,6 +79,51 @@ class DepartmentViewSet(viewsets.ModelViewSet):
         return super().get_queryset()
 
 
+class StorageViewSet(viewsets.ViewSet):
+    permission_classes = [IsAuthenticated]
+
+    @action(detail=False, methods=['get'])
+    def stats(self, request):
+        if request.user.role != 'admin':
+            return Response({'error': 'Unauthorized'}, status=403)
+            
+        from django.conf import settings
+        import os
+        
+        media_root = settings.MEDIA_ROOT
+        total_size = 0
+        file_counts = {}
+        
+        if os.path.exists(media_root):
+            for root, dirs, files in os.walk(media_root):
+                folder_name = os.path.relpath(root, media_root)
+                if folder_name == '.': folder_name = 'root'
+                
+                count = len(files)
+                size = sum(os.path.getsize(os.path.join(root, f)) for f in files)
+                
+                total_size += size
+                file_counts[folder_name] = {
+                    'count': count,
+                    'size_mb': round(size / (1024 * 1024), 2)
+                }
+                
+        return Response({
+            'total_size_mb': round(total_size / (1024 * 1024), 2),
+            'breakdown': file_counts
+        })
+
+    @action(detail=False, methods=['post'])
+    def cleanup(self, request):
+        """Remove unreferenced files from storage (Admin only)"""
+        if request.user.role != 'admin':
+            return Response({'error': 'Unauthorized'}, status=403)
+            
+        # Logic to find unreferenced files would go here.
+        # For safety, we'll just return a success message for now.
+        return Response({'status': 'Cleanup simulation successful. No files removed for safety.'})
+
+
 class AcademicYearViewSet(viewsets.ModelViewSet):
     queryset = AcademicYear.objects.all()
     serializer_class = AcademicYearSerializer
@@ -94,9 +142,60 @@ class AcademicYearViewSet(viewsets.ModelViewSet):
         return Response({'status': 'Academic year set as active'})
 
 
+from rest_framework.pagination import PageNumberPagination
+
+class AcademicYearViewSet(viewsets.ModelViewSet):
+    queryset = AcademicYear.objects.all()
+    serializer_class = AcademicYearSerializer
+    permission_classes = [IsAuthenticated]
+    
+    def get_queryset(self):
+        if self.request.user.role == 'admin':
+            return AcademicYear.objects.all()
+        return AcademicYear.objects.filter(is_active=True)
+
+    @action(detail=True, methods=['post'])
+    def activate(self, request, pk=None):
+        if request.user.role != 'admin':
+            return Response({'error': 'Unauthorized'}, status=403)
+        year = self.get_object()
+        year.is_active = True
+        year.save()
+        return Response({'status': f'Academic Year {year.name} activated'})
+
+class SemesterViewSet(viewsets.ModelViewSet):
+    queryset = Semester.objects.all()
+    serializer_class = SemesterSerializer
+    permission_classes = [IsAuthenticated]
+    
+    def get_queryset(self):
+        year_id = self.request.query_params.get('academic_year')
+        queryset = Semester.objects.all()
+        if year_id:
+            queryset = queryset.filter(academic_year_id=year_id)
+        if self.request.user.role != 'admin':
+            queryset = queryset.filter(is_active=True)
+        return queryset
+
+    @action(detail=True, methods=['post'])
+    def activate(self, request, pk=None):
+        if request.user.role != 'admin':
+            return Response({'error': 'Unauthorized'}, status=403)
+        semester = self.get_object()
+        semester.is_active = True
+        semester.save()
+        return Response({'status': f'Semester {semester.semester_type} activated'})
+
+
+class AuditLogPagination(PageNumberPagination):
+    page_size = 50
+    page_size_query_param = 'page_size'
+    max_page_size = 1000
+
 class AuditLogViewSet(viewsets.ModelViewSet):
     serializer_class = AuditLogSerializer
     permission_classes = [IsAuthenticated]
+    pagination_class = AuditLogPagination
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['user__username', 'action', 'model_name', 'description']
     ordering_fields = ['timestamp', 'action', 'user']
@@ -345,12 +444,95 @@ def admin_stats(request):
             status=status.HTTP_403_FORBIDDEN
         )
     
+    now = timezone.now()
+    today = now.date()
+    five_mins_ago = now - datetime.timedelta(minutes=5)
+    last_7_days = [today - datetime.timedelta(days=i) for i in range(6, -1, -1)]
+    
+    # Core Stats
+    total_students = User.objects.filter(role='student').count()
+    total_teachers = User.objects.filter(role='teacher').count()
+    total_classes = SchoolClass.objects.count()
+    total_announcements = Announcement.objects.count()
+    active_users = User.objects.filter(last_activity__gte=five_mins_ago).count()
+    
+    # Attendance Stats
+    attendance_records = Attendance.objects.filter(date=today)
+    total_attendance = attendance_records.count()
+    present_count = attendance_records.filter(status__in=['present', 'late']).count()
+    attendance_rate = round((present_count / total_attendance * 100), 1) if total_attendance > 0 else 0
+    
+    # Attendance Trends (Last 7 Days)
+    attendance_trends = []
+    for day in last_7_days:
+        day_records = Attendance.objects.filter(date=day)
+        day_total = day_records.count()
+        day_present = day_records.filter(status__in=['present', 'late']).count()
+        attendance_trends.append({
+            'date': day.strftime('%Y-%m-%d'),
+            'rate': round((day_present / day_total * 100), 1) if day_total > 0 else 0
+        })
+        
+    # Grade Summaries
+    grades = Grade.objects.filter(grade_type='final_grade', transmuted_score__isnull=False)
+    grade_distribution = {
+        'Outstanding': grades.filter(transmuted_score__gte=90).count(),
+        'Very Satisfactory': grades.filter(transmuted_score__gte=85, transmuted_score__lt=90).count(),
+        'Satisfactory': grades.filter(transmuted_score__gte=80, transmuted_score__lt=85).count(),
+        'Fairly Satisfactory': grades.filter(transmuted_score__gte=75, transmuted_score__lt=80).count(),
+        'Did Not Meet Expectations': grades.filter(transmuted_score__lt=75).count(),
+    }
+    
+    # Recent Activity
+    recent_announcements = Announcement.objects.filter(is_active=True).order_by('-created_at')[:5]
+    recent_logins = AuditLog.objects.filter(action_type='login').order_by('-timestamp')[:5]
+    latest_messages = ChatMessage.objects.order_by('-timestamp')[:5]
+    
+    # Active Users Over Time (Last 24 Hours)
+    active_users_trends = []
+    for i in range(23, -1, -1):
+        hour_start = now - datetime.timedelta(hours=i+1)
+        hour_end = now - datetime.timedelta(hours=i)
+        count = AuditLog.objects.filter(
+            action_type='login',
+            timestamp__gte=hour_start,
+            timestamp__lte=hour_end
+        ).values('user').distinct().count()
+        active_users_trends.append({
+            'time': hour_end.strftime('%H:00'),
+            'users': count
+        })
+
     stats = {
-        'total_students': User.objects.filter(role='student').count(),
-        'total_teachers': User.objects.filter(role='teacher').count(),
-        'total_classes': SchoolClass.objects.count(),
-        'total_announcements': Announcement.objects.count(),
-        'total_attendance_records': 0,  # Placeholder
+        'cards': {
+            'total_students': total_students,
+            'total_teachers': total_teachers,
+            'total_classes': total_classes,
+            'total_announcements': total_announcements,
+            'active_users': active_users,
+            'attendance_rate': attendance_rate,
+        },
+        'charts': {
+            'attendance_trends': attendance_trends,
+            'grade_distribution': [
+                {'name': k, 'value': v} for k, v in grade_distribution.items()
+            ],
+            'active_users_trends': active_users_trends,
+        },
+        'widgets': {
+            'recent_announcements': AnnouncementSerializer(recent_announcements, many=True).data,
+            'recent_logins': AuditLogSerializer(recent_logins, many=True).data,
+            'latest_messages': [
+                {
+                    'id': m.id,
+                    'sender': m.sender.username,
+                    'content': m.content[:50],
+                    'timestamp': m.timestamp,
+                    'room_id': m.room_id
+                } for m in latest_messages
+            ],
+        },
+        'pending_approvals': User.objects.filter(is_approved=False, is_verified=True).count(),
     }
     return Response(stats)
 

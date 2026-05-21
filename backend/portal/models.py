@@ -59,6 +59,7 @@ class AcademicYear(models.Model):
     start_date = models.DateField()
     end_date = models.DateField()
     is_active = models.BooleanField(default=False)
+    is_archived = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
@@ -71,6 +72,32 @@ class AcademicYear(models.Model):
     def save(self, *args, **kwargs):
         if self.is_active:
             AcademicYear.objects.filter(is_active=True).update(is_active=False)
+        super().save(*args, **kwargs)
+
+class Semester(models.Model):
+    SEMESTER_CHOICES = [
+        ('1st', 'First Semester'),
+        ('2nd', 'Second Semester'),
+        ('summer', 'Summer'),
+    ]
+    academic_year = models.ForeignKey(AcademicYear, on_delete=models.CASCADE, related_name='semesters')
+    semester_type = models.CharField(max_length=10, choices=SEMESTER_CHOICES)
+    start_date = models.DateField()
+    end_date = models.DateField()
+    is_active = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        unique_together = ['academic_year', 'semester_type']
+        ordering = ['-academic_year__start_date', 'semester_type']
+    
+    def __str__(self):
+        return f"{self.academic_year.name} - {self.get_semester_type_display()}"
+    
+    def save(self, *args, **kwargs):
+        if self.is_active:
+            Semester.objects.filter(is_active=True).update(is_active=False)
         super().save(*args, **kwargs)
 
 
@@ -86,6 +113,13 @@ class AuditLog(models.Model):
         ('view', 'View'),
         ('export', 'Export'),
         ('import', 'Import'),
+        ('grade_create', 'Grade Create'),
+        ('grade_update', 'Grade Update'),
+        ('grade_delete', 'Grade Delete'),
+        ('attendance_mark', 'Attendance Mark'),
+        ('attendance_delete', 'Attendance Delete'),
+        ('mute', 'User Mute'),
+        ('suspend', 'User Suspend'),
     ]
     
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='audit_logs')

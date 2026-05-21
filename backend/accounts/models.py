@@ -7,6 +7,7 @@ class User(AbstractUser):
         ('admin', 'Admin'),
         ('teacher', 'Teacher'),
         ('student', 'Student'),
+        ('parent', 'Parent'),
     ]
     
     email = models.EmailField(unique=True)
@@ -80,6 +81,13 @@ class Profile(models.Model):
     mother_name = models.CharField(max_length=100, blank=True, null=True)
     contact_information = models.TextField(blank=True, null=True, help_text="Additional contact details")
     
+    # Moderation
+    mute_until = models.DateTimeField(null=True, blank=True)
+    is_suspended = models.BooleanField(default=False)
+    
+    # Parent-Student relationship
+    linked_students = models.ManyToManyField(User, blank=True, related_name='parent_profiles', limit_choices_to={'role': 'student'})
+    
     def __str__(self):
         return f"{self.user.username}'s Profile"
     
@@ -97,7 +105,13 @@ class Profile(models.Model):
 
 class Classroom(models.Model):
     name = models.CharField(max_length=100)
-    teacher = models.ForeignKey(User, on_delete=models.CASCADE, related_name='classrooms')
+    description = models.TextField(blank=True, null=True)
+    teacher = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='teaching_classrooms')
+    
+    # Academic Context
+    academic_year = models.ForeignKey('portal.AcademicYear', on_delete=models.SET_NULL, null=True, blank=True, related_name='classrooms')
+    semester = models.ForeignKey('portal.Semester', on_delete=models.SET_NULL, null=True, blank=True, related_name='classrooms')
+    
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
@@ -169,6 +183,27 @@ class MessageReaction(models.Model):
         return f"{self.user.username} reacted {self.emoji} to message {self.message.id}"
 
 
+class ReportedMessage(models.Model):
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('resolved', 'Resolved'),
+        ('dismissed', 'Dismissed'),
+    ]
+    message = models.ForeignKey(ChatMessage, on_delete=models.CASCADE, related_name='reports')
+    reporter = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reported_messages')
+    reason = models.TextField()
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    moderator_note = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    resolved_at = models.DateTimeField(null=True, blank=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Report by {self.reporter.username} on msg {self.message.id}"
+
+
 class Friendship(models.Model):
     STATUS_CHOICES = [
         ('pending', 'Pending'),
@@ -235,11 +270,28 @@ class SystemSetting(models.Model):
     Only one instance should exist.
     """
     site_name = models.CharField(max_length=255, default='School Portal')
+    school_address = models.TextField(blank=True, null=True)
+    school_phone = models.CharField(max_length=20, blank=True, null=True)
+    school_email = models.EmailField(blank=True, null=True)
+    school_logo = models.ImageField(upload_to='branding/', null=True, blank=True)
+    
+    # Branding
+    primary_color = models.CharField(max_length=7, default='#2D1B4D')
+    secondary_color = models.CharField(max_length=7, default='#9F7AEA')
+    
+    # Modes
     maintenance_mode = models.BooleanField(default=False)
     maintenance_message = models.TextField(default='The portal is currently undergoing maintenance. Please check back later.')
+    enrollment_open = models.BooleanField(default=True)
+    
+    # Academic Context
     current_quarter = models.CharField(max_length=1, default='1', choices=[('1', '1st'), ('2', '2nd'), ('3', '3rd'), ('4', '4th')])
     academic_year = models.CharField(max_length=9, default='2025-2026')
-    enrollment_open = models.BooleanField(default=True)
+    
+    # Realtime & Communication
+    allow_student_chat = models.BooleanField(default=True)
+    allow_teacher_chat = models.BooleanField(default=True)
+    
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
@@ -374,6 +426,7 @@ class Announcement(models.Model):
         ('admins', 'Admins'),
         ('students', 'Students'),
         ('teachers', 'Teachers'),
+        ('parents', 'Parents'),
     ]
     
     title = models.CharField(max_length=200)
@@ -382,6 +435,7 @@ class Announcement(models.Model):
     priority = models.CharField(max_length=10, choices=PRIORITY_CHOICES, default='info')
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='draft')
     target_audience = models.CharField(max_length=20, choices=TARGET_AUDIENCE_CHOICES, default='all')
+    target_classrooms = models.ManyToManyField(Classroom, blank=True, related_name='announcements')
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='account_announcements')
     is_pinned = models.BooleanField(default=False)
     is_public = models.BooleanField(default=False)
@@ -815,6 +869,47 @@ class WebsiteContent(models.Model):
     
     def __str__(self):
         return f"[{self.get_category_display()}] {self.get_section_display()}"
+
+
+class Assignment(models.Model):
+    title = models.CharField(max_length=200)
+    description = models.TextField(blank=True, null=True)
+    classroom = models.ForeignKey(Classroom, on_delete=models.CASCADE, related_name='assignments')
+    subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name='assignments')
+    teacher = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_assignments')
+    file = models.FileField(upload_to='assignments/', null=True, blank=True)
+    due_date = models.DateTimeField()
+    points = models.IntegerField(default=100)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['-due_date']
+    
+    def __str__(self):
+        return f"{self.title} - {self.classroom.name}"
+
+class Submission(models.Model):
+    assignment = models.ForeignKey(Assignment, on_delete=models.CASCADE, related_name='submissions')
+    student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='submissions')
+    file = models.FileField(upload_to='submissions/')
+    submitted_at = models.DateTimeField(auto_now_add=True)
+    grade = models.IntegerField(null=True, blank=True)
+    feedback = models.TextField(blank=True, null=True)
+    is_late = models.BooleanField(default=False)
+    
+    class Meta:
+        unique_together = ['assignment', 'student']
+        ordering = ['-submitted_at']
+    
+    def __str__(self):
+        return f"{self.student.username} - {self.assignment.title}"
+    
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            if timezone.now() > self.assignment.due_date:
+                self.is_late = True
+        super().save(*args, **kwargs)
 
 
 class Grade(models.Model):

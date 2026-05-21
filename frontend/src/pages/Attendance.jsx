@@ -4,6 +4,10 @@ import api from '../utils/api';
 import { getUser } from '../utils/auth';
 import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
+import { 
+  ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, 
+  PieChart, Pie, Cell, BarChart, Bar, Legend 
+} from 'recharts';
 
 const STATUS_CONFIG = {
   present: { label: 'Present', short: 'P', active: 'bg-green-500 text-white border-green-500',   inactive: 'bg-white text-gray-500 border-gray-300 hover:border-green-400 hover:text-green-600' },
@@ -44,8 +48,10 @@ const Attendance = () => {
   // History view
   const [view, setView]               = useState('mark');
   const [history, setHistory]         = useState([]);
+  const [analytics, setAnalytics]     = useState(null);
   const [historyDate, setHistoryDate] = useState(new Date().toISOString().split('T')[0]);
   const [loadingHistory, setLoadingHistory] = useState(false);
+  const [loadingAnalytics, setLoadingAnalytics] = useState(false);
 
   useEffect(() => {
     if (!isStudent) {
@@ -54,6 +60,21 @@ const Attendance = () => {
       api.get('/attendance/').then(r => setMyAttendance(r.data)).catch(() => toast.error('Failed to load attendance'));
     }
   }, [isStudent]);
+
+  const fetchAnalytics = useCallback(async () => {
+    setLoadingAnalytics(true);
+    try {
+      const params = {};
+      if (selectedClassroom) params.classroom = selectedClassroom;
+      const res = await api.get('/attendance/summary/', { params });
+      setAnalytics(res.data);
+    } catch { toast.error('Failed to load analytics'); }
+    finally { setLoadingAnalytics(false); }
+  }, [selectedClassroom]);
+
+  useEffect(() => {
+    if (view === 'analytics') fetchAnalytics();
+  }, [view, fetchAnalytics]);
 
   const loadAttendance = useCallback(async () => {
     if (!selectedClassroom || !selectedDate || isStudent) return;
@@ -283,7 +304,11 @@ const Attendance = () => {
           </p>
         </div>
         <div className="flex rounded-lg md:rounded-xl border border-gray-300 overflow-hidden text-[10px] md:text-sm shadow-sm w-full lg:w-auto shrink-0">
-          {[{ key: 'mark', label: '✏️ MARK' }, { key: 'history', label: '📋 HISTORY' }].map(v => (
+          {[
+            { key: 'mark', label: '✏️ MARK' }, 
+            { key: 'history', label: '📋 HISTORY' },
+            { key: 'analytics', label: '📊 ANALYTICS' }
+          ].map(v => (
             <button key={v.key} onClick={() => setView(v.key)}
               className={`flex-1 lg:px-6 py-2 md:py-2.5 font-black transition-all uppercase tracking-widest ${view === v.key ? 'bg-[#2D1B4D] text-white shadow-inner' : 'bg-white text-gray-600 hover:bg-gray-50'}`}>
               {v.label}
@@ -537,6 +562,73 @@ const Attendance = () => {
             </div>
           ) }
         </>
+      )}
+
+      {/* ── ANALYTICS VIEW ── */}
+      {view === 'analytics' && (
+        <div className="space-y-6 animate-fade-in">
+          {loadingAnalytics ? (
+            <div className="flex items-center justify-center h-48"><div className="animate-spin rounded-full h-10 w-10 border-b-2 border-purple-600" /></div>
+          ) : !analytics ? (
+            <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-16 text-center text-gray-400 font-bold text-sm uppercase tracking-widest">Failed to load analytics.</div>
+          ) : (
+            <>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Daily Trends Chart */}
+                <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+                  <div className="mb-6">
+                    <h3 className="text-lg font-bold text-gray-800">Daily Presence Trends</h3>
+                    <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest">Last 30 Days</p>
+                  </div>
+                  <div className="h-64">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <AreaChart data={analytics.daily_trends}>
+                        <defs>
+                          <linearGradient id="colorPresent" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#10b981" stopOpacity={0.1}/>
+                            <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                        <XAxis dataKey="date" tick={{fontSize: 10, fontWeight: 700}} axisLine={false} tickLine={false} tickFormatter={(str) => new Date(str).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} />
+                        <YAxis tick={{fontSize: 10, fontWeight: 700}} axisLine={false} tickLine={false} />
+                        <Tooltip contentStyle={{borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)'}} />
+                        <Area type="monotone" dataKey="present" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorPresent)" name="Present" />
+                        <Area type="monotone" dataKey="late" stroke="#f59e0b" strokeWidth={3} fill="none" name="Late" />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+
+                {/* Section Rankings */}
+                {user.role === 'admin' && (
+                  <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm overflow-hidden flex flex-col">
+                    <div className="mb-6">
+                      <h3 className="text-lg font-bold text-gray-800">Section Rankings</h3>
+                      <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest">Top Performing Classrooms</p>
+                    </div>
+                    <div className="flex-1 overflow-y-auto space-y-3 pr-2">
+                      {analytics.section_rankings?.map((rank, idx) => (
+                        <div key={rank.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-100 hover:border-purple-200 transition-all">
+                          <div className="flex items-center gap-3">
+                            <span className={`w-6 h-6 flex items-center justify-center rounded-lg font-black text-[10px] ${idx === 0 ? 'bg-amber-100 text-amber-600' : idx === 1 ? 'bg-slate-200 text-slate-600' : idx === 2 ? 'bg-orange-100 text-orange-600' : 'bg-gray-100 text-gray-400'}`}>
+                              {idx + 1}
+                            </span>
+                            <span className="text-xs font-black text-gray-700 uppercase tracking-tight">{rank.name}</span>
+                          </div>
+                          <div className="text-right">
+                            <div className={`text-sm font-black ${rank.rate >= 90 ? 'text-emerald-600' : rank.rate >= 75 ? 'text-blue-600' : 'text-rose-600'}`}>{rank.rate}%</div>
+                            <div className="text-[8px] font-bold text-gray-400 uppercase tracking-widest">{rank.total_records} records</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+        </div>
       )}
     </div>
   );

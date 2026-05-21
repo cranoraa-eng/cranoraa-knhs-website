@@ -2,6 +2,10 @@ import { getUser } from '../utils/auth';
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../utils/api';
+import { 
+  ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, 
+  PieChart, Pie, Cell, BarChart, Bar, Legend 
+} from 'recharts';
 
 // ─── Shared UI Components ───────────────────────────────────────────────────
 
@@ -108,6 +112,8 @@ const AdminView = () => {
   const dist = distView === 'general_average' ? data?.general_average : data?.all_subjects;
   const today = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
+  const COLORS = ['#10b981', '#3b82f6', '#8b5cf6', '#f59e0b', '#ef4444'];
+
   return (
     <div className="space-y-6 pb-12">
       <WelcomeBanner
@@ -133,175 +139,197 @@ const AdminView = () => {
         }
       />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
         <StatCard
           label="Total Students" value={data?.total_students} sub="Enrolled"
           color="blue" onClick={() => navigate('/student-management')}
-          icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>}
+          icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>}
         />
         <StatCard
-          label="Faculty Members" value={data?.total_teachers} sub="Verified"
+          label="Faculty" value={data?.total_teachers} sub="Verified"
           color="emerald" onClick={() => navigate('/teachers')}
-          icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" /></svg>}
+          icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" /></svg>}
         />
         <StatCard
-          label="Classrooms" value={data?.total_classes} sub="Active Sections"
+          label="Classrooms" value={data?.total_classes} sub="Sections"
           color="violet" onClick={() => navigate('/class-management')}
-          icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>}
+          icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>}
         />
         <StatCard
-          label="Subject List" value={data?.total_subjects} sub="Curriculum"
-          color="indigo" onClick={() => navigate('/subjects')}
-          icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>}
+          label="Announcements" value={data?.total_announcements} sub="Live"
+          color="amber" onClick={() => navigate('/announcements')}
+          icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" /></svg>}
+        />
+        <StatCard
+          label="Active Users" value={data?.active_users} sub="Realtime"
+          color="indigo"
+          icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>}
+        />
+        <StatCard
+          label="Attendance" value={`${data?.today_rate || 0}%`} sub="Today's Rate"
+          color={data?.today_rate >= 75 ? 'emerald' : 'rose'} onClick={() => navigate('/attendance')}
+          icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
         />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Academic Performance */}
-        <div className="lg:col-span-8 bg-white border border-slate-200 rounded-2xl p-8 shadow-sm">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+        {/* Attendance Trends */}
+        <div className="lg:col-span-8 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+          <div className="flex items-center justify-between mb-6">
             <div>
-              <h3 className="text-xl font-bold text-slate-900">Academic Performance</h3>
-              <p className="text-slate-500 font-medium text-sm">School-wide metrics</p>
+              <h3 className="text-lg font-bold text-slate-900">Attendance Trends</h3>
+              <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest">Last 7 Days</p>
             </div>
-            <div className="flex bg-slate-50 p-1 rounded-xl border border-slate-100">
-              <button
-                onClick={() => setDistView('general_average')}
-                className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${distView === 'general_average' ? 'bg-white text-violet-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
-              >
-                GA
-              </button>
-              <button
-                onClick={() => setDistView('all_subjects')}
-                className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${distView === 'all_subjects' ? 'bg-white text-violet-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
-              >
-                All
-              </button>
+            <div className="flex gap-2">
+               <span className="flex items-center gap-1.5 text-[10px] font-bold text-slate-500">
+                 <span className="w-2 h-2 rounded-full bg-violet-500" /> Presence Rate
+               </span>
             </div>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
-            <div className="md:col-span-4 space-y-4">
-              <div className="p-6 bg-violet-600 rounded-2xl text-white">
-                <p className="text-xs font-semibold text-violet-100 uppercase tracking-wider mb-2">Average Grade</p>
-                <div className="flex items-end gap-2">
-                  <span className="text-5xl font-bold leading-none">{data?.average_grade ?? '—'}</span>
-                  <span className="text-xs font-medium bg-white/20 px-2 py-0.5 rounded">
-                    {(data?.average_grade ?? 0) >= 75 ? 'Passing' : 'Critical'}
-                  </span>
-                </div>
-              </div>
-              <div className="p-6 bg-slate-50 rounded-2xl border border-slate-200">
-                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Total Entries</p>
-                <p className="text-xl font-bold text-slate-800">{data?.total_grades || 0}</p>
-              </div>
-            </div>
-
-            <div className="md:col-span-8 space-y-4">
-              {[
-                { label: 'Outstanding', range: '90–100', pct: dist?.outstanding_pct, color: 'bg-emerald-500' },
-                { label: 'Very Satisfactory', range: '85–89', pct: dist?.very_satisfactory_pct || 0, color: 'bg-blue-500' },
-                { label: 'Satisfactory', range: '80–84', pct: dist?.satisfactory_pct || 0, color: 'bg-violet-500' },
-                { label: 'Fairly Satisfactory', range: '75–79', pct: dist?.fairly_satisfactory_pct || 0, color: 'bg-amber-500' },
-                { label: 'Did Not Meet', range: 'Below 75', pct: dist?.below_75_pct, color: 'bg-rose-500' },
-              ].map(row => (
-                <div key={row.label} className="space-y-1">
-                  <div className="flex justify-between text-xs">
-                    <span className="font-bold text-slate-700 uppercase">{row.label} <span className="text-slate-400 normal-case ml-1">({row.range})</span></span>
-                    <span className="font-bold text-slate-900">{row.pct}%</span>
-                  </div>
-                  <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
-                    <div
-                      className={`h-full transition-all duration-700 rounded-full ${row.color}`}
-                      style={{ width: `${row.pct}%` }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
+          <div className="h-64 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={data?.attendance_trends}>
+                <defs>
+                  <linearGradient id="colorRate" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.1}/>
+                    <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                <XAxis 
+                  dataKey="date" 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tick={{fontSize: 10, fontWeight: 600, fill: '#94a3b8'}}
+                  tickFormatter={(str) => {
+                    const d = new Date(str);
+                    return d.toLocaleDateString('en-US', { weekday: 'short' });
+                  }}
+                />
+                <YAxis 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tick={{fontSize: 10, fontWeight: 600, fill: '#94a3b8'}}
+                  unit="%"
+                />
+                <Tooltip 
+                  contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+                  labelStyle={{ fontWeight: 800, color: '#1e293b', fontSize: '12px' }}
+                />
+                <Area type="monotone" dataKey="rate" stroke="#8b5cf6" strokeWidth={3} fillOpacity={1} fill="url(#colorRate)" />
+              </AreaChart>
+            </ResponsiveContainer>
           </div>
         </div>
 
-        {/* Side Section: Attendance */}
-        <div className="lg:col-span-4 space-y-6">
-          <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
-            <h3 className="text-lg font-bold text-slate-900 mb-6">Today's Attendance</h3>
-            
-            {data?.today_total === 0 ? (
-              <div className="text-center py-10 text-slate-400">
-                <p className="text-sm font-medium">No records today</p>
-              </div>
-            ) : (
-              <div className="space-y-6">
-                <div className="flex items-center justify-center py-4">
-                  <div className="text-center">
-                    <span className={`text-5xl font-bold ${(data?.today_rate ?? 0) >= 75 ? 'text-emerald-600' : 'text-rose-600'}`}>
-                      {data?.today_rate ?? 0}%
-                    </span>
-                    <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mt-2">Presence Rate</p>
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-emerald-50 rounded-xl p-4 border border-emerald-100">
-                    <div className="text-xl font-bold text-emerald-700">{data?.today_present ?? 0}</div>
-                    <div className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest mt-1">Present</div>
-                  </div>
-                  <div className="bg-rose-50 rounded-xl p-4 border border-rose-100">
-                    <div className="text-xl font-bold text-rose-700">{data?.today_absent ?? 0}</div>
-                    <div className="text-[10px] font-bold text-rose-600 uppercase tracking-widest mt-1">Absent</div>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-
-          <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
-            <h3 className="text-lg font-bold text-slate-900 mb-6">Quick Portal</h3>
-            <div className="grid grid-cols-2 gap-2">
-              {[
-                { label: 'Grade Input',       path: '/grade-input' },
-                { label: 'Attendance',        path: '/attendance' },
-                { label: 'Announcements',     path: '/announcements' },
-                { label: 'Classes',           path: '/class-management' },
-              ].map(a => (
-                <button
-                  key={a.path}
-                  onClick={() => navigate(a.path)}
-                  className="p-3 text-left bg-slate-50 rounded-xl border border-slate-100 hover:bg-violet-50 hover:border-violet-200 transition-all"
-                >
-                  <span className="text-[10px] font-bold text-slate-600 uppercase tracking-tight">{a.label}</span>
-                </button>
-              ))}
+        {/* Grade Distribution */}
+        <div className="lg:col-span-4 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h3 className="text-lg font-bold text-slate-900">Grade Distribution</h3>
+              <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest">{distView === 'general_average' ? 'General Average' : 'All Subjects'}</p>
             </div>
+            <button 
+              onClick={() => setDistView(distView === 'general_average' ? 'all_subjects' : 'general_average')}
+              className="p-1.5 rounded-lg bg-slate-50 text-slate-400 hover:text-violet-600 transition-colors"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+            </button>
+          </div>
+          <div className="h-64 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={data?.charts?.grade_distribution}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={60}
+                  outerRadius={80}
+                  paddingAngle={5}
+                  dataKey="value"
+                >
+                  {data?.charts?.grade_distribution?.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip />
+                <Legend 
+                  verticalAlign="bottom" 
+                  align="center"
+                  iconType="circle"
+                  wrapperStyle={{ fontSize: '10px', fontWeight: 700, paddingTop: '20px' }}
+                />
+              </PieChart>
+            </ResponsiveContainer>
           </div>
         </div>
       </div>
 
-      {/* Announcements */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-8 shadow-sm">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h3 className="text-xl font-bold text-slate-900">Announcements</h3>
-            <p className="text-slate-500 font-medium text-sm">Latest updates and news</p>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Recent Announcements Widget */}
+        <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-md font-bold text-slate-900">Recent Announcements</h3>
+            <Link to="/announcements" className="text-[10px] font-black text-violet-600 uppercase tracking-widest hover:underline">View All</Link>
           </div>
-          <Link to="/announcements" className="text-sm font-bold text-violet-600 hover:text-violet-700">View All</Link>
-        </div>
-        {!data?.recent_announcements?.length ? (
-          <p className="text-center py-10 text-slate-400 font-medium italic">No recent announcements</p>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {data.recent_announcements.slice(0, 3).map(a => (
-              <div key={a.id} className="p-6 rounded-xl bg-slate-50 border border-slate-100 hover:bg-white hover:border-violet-200 transition-all">
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="text-[10px] font-bold text-violet-600 uppercase tracking-widest">{new Date(a.created_at).toLocaleDateString()}</span>
-                  {a.priority === 'critical' && <span className="text-[8px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded bg-rose-100 text-rose-600">Critical</span>}
+          <div className="space-y-4">
+            {data?.recent_announcements?.map(a => (
+              <div key={a.id} className="group flex gap-4 p-3 rounded-xl hover:bg-slate-50 transition-all">
+                <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-violet-50 flex items-center justify-center text-violet-600 font-bold text-xs">
+                  {new Date(a.created_at).getDate()}
                 </div>
-                <h4 className="font-bold text-slate-900 mb-2 line-clamp-1">{a.title}</h4>
-                <p className="text-sm text-slate-500 line-clamp-2 leading-relaxed">{a.content}</p>
+                <div className="min-w-0">
+                  <h4 className="text-xs font-bold text-slate-800 line-clamp-1 group-hover:text-violet-600 transition-colors">{a.title}</h4>
+                  <p className="text-[10px] text-slate-400 font-medium mt-0.5">{a.author_name} · {new Date(a.created_at).toLocaleDateString()}</p>
+                </div>
               </div>
             ))}
           </div>
-        )}
+        </div>
+
+        {/* Latest Messages Widget */}
+        <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-md font-bold text-slate-900">Latest Messages</h3>
+            <Link to="/messages" className="text-[10px] font-black text-violet-600 uppercase tracking-widest hover:underline">Open Chat</Link>
+          </div>
+          <div className="space-y-4">
+            {data?.latest_messages?.map(m => (
+              <div key={m.id} className="flex gap-4 p-3 rounded-xl hover:bg-slate-50 transition-all cursor-pointer" onClick={() => navigate('/messages')}>
+                <div className="flex-shrink-0 w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 font-black text-xs">
+                  {m.sender[0].toUpperCase()}
+                </div>
+                <div className="min-w-0">
+                  <div className="flex justify-between items-center gap-2">
+                    <h4 className="text-xs font-bold text-slate-800">{m.sender}</h4>
+                    <span className="text-[8px] font-bold text-slate-400">{new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                  </div>
+                  <p className="text-[10px] text-slate-500 line-clamp-1 mt-0.5">{m.content}</p>
+                </div>
+              </div>
+            ))}
+            {!data?.latest_messages?.length && <p className="text-center py-6 text-[10px] font-bold text-slate-400 uppercase tracking-widest">No messages yet</p>}
+          </div>
+        </div>
+
+        {/* Recent Logins Widget */}
+        <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-md font-bold text-slate-900">Recent Activity</h3>
+            <Link to="/audit-logs" className="text-[10px] font-black text-violet-600 uppercase tracking-widest hover:underline">Audit Logs</Link>
+          </div>
+          <div className="space-y-4">
+            {data?.recent_logins?.map(log => (
+              <div key={log.id} className="flex items-center gap-4 p-3 rounded-xl hover:bg-slate-50 transition-all">
+                <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                <div className="min-w-0">
+                  <h4 className="text-xs font-bold text-slate-800">{log.user} logged in</h4>
+                  <p className="text-[10px] text-slate-400 font-medium mt-0.5">{new Date(log.timestamp).toLocaleString()}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );

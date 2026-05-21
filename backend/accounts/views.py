@@ -12,8 +12,10 @@ from .serializers import (UserSerializer, ClassroomSerializer, StudentClassEnrol
     SubjectSerializer, ClassroomSubjectSerializer, ScratchCardSerializer, FeeSerializer,
     NotificationSerializer, EnrollmentApplicationSerializer, WebsiteContentSerializer,
     GradeSerializer, GradeReportSerializer, ChatRoomSerializer, ChatMessageSerializer, FriendshipSerializer,
-    SystemSettingSerializer)
-from .models import User, Classroom, StudentClassEnrollment, Announcement, AnnouncementAttachment, Attendance, LearningMaterial, Subject, ClassroomSubject, ScratchCard, Fee, Notification, EnrollmentApplication, WebsiteContent, Grade, GradeReport, ChatRoom, ChatMessage, MessageReaction, Friendship, SystemSetting
+    SystemSettingSerializer, AssignmentSerializer, SubmissionSerializer, ReportedMessageSerializer)
+from .models import User, Classroom, StudentClassEnrollment, Announcement, AnnouncementAttachment, Attendance, LearningMaterial, Subject, ClassroomSubject, ScratchCard, Fee, Notification, EnrollmentApplication, WebsiteContent, Grade, GradeReport, ChatRoom, ChatMessage, MessageReaction, Friendship, SystemSetting, Assignment, Submission, ReportedMessage
+from .permissions import IsAdmin, IsTeacher, IsStudent, IsParent, IsAdminOrTeacher, IsAdminOrReadOnly
+from portal.models import AuditLog, SchoolClass
 from portal.views import log_audit_action
 import logging
 import secrets
@@ -530,11 +532,16 @@ class UserViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         user = self.request.user
         role = self.request.query_params.get('role')
-        queryset = User.objects.all()
+        queryset = User.objects.all().select_related('profile').order_by('-date_joined')
         
         # RBAC: Students can only see their own data
         if user.role == 'student':
             return User.objects.filter(id=user.id)
+        
+        # RBAC: Parents can see their linked students and themselves
+        if user.role == 'parent':
+            linked_student_ids = user.profile.linked_students.values_list('id', flat=True)
+            return User.objects.filter(Q(id__in=linked_student_ids) | Q(id=user.id))
         
         # Teachers can see students and themselves
         if user.role == 'teacher':
@@ -563,6 +570,105 @@ class UserViewSet(viewsets.ModelViewSet):
         instance.delete()
 
     @action(detail=False, methods=['get'])
+    def export_csv(self, request):
+        """Export users to CSV (admin only)"""
+        if request.user.role != 'admin':
+            return Response({'error': 'Unauthorized'}, status=403)
+        
+        import csv
+        from django.http import HttpResponse
+        
+        role = request.query_params.get('role')
+        queryset = self.get_queryset()
+        if role:
+            queryset = queryset.filter(role=role)
+            
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = f'attachment; filename="users_{role or "all"}_{timezone.now().strftime("%Y%m%d")}.csv"'
+        
+        writer = csv.writer(response)
+        writer.writerow(['Email', 'Username', 'First Name', 'Last Name', 'Role', 'Is Verified', 'Is Approved', 'LRN', 'Grade Level', 'Employee ID'])
+        
+        for user in queryset:
+            profile = getattr(user, 'profile', None)
+            writer.writerow([
+                user.email,
+                user.username,
+                user.first_name,
+                user.last_name,
+                user.role,
+                user.is_verified,
+                user.is_approved,
+                profile.lrn if profile else '',
+                profile.grade_level if profile else '',
+                profile.employee_id if profile else '',
+            ])
+            
+        return response
+
+    @action(detail=False, methods=['post'], parser_classes=[parsers.MultiPartParser])
+    def import_csv(self, request):
+        """Import users from CSV (admin only)"""
+        if request.user.role != 'admin':
+            return Response({'error': 'Unauthorized'}, status=403)
+            
+        file = request.FILES.get('file')
+        if not file:
+            return Response({'error': 'No file provided'}, status=400)
+            
+        import csv
+        import io
+        
+        decoded_file = file.read().decode('utf-8')
+        io_string = io.StringIO(decoded_file)
+        reader = csv.DictReader(io_string)
+        
+        created_count = 0
+        errors = []
+        
+        for row in reader:
+            try:
+                email = row.get('Email')
+                if not email: continue
+                
+                user, created = User.objects.get_or_create(
+                    email=email,
+                    defaults={
+                        'username': row.get('Username', email),
+                        'first_name': row.get('First Name', ''),
+                        'last_name': row.get('Last Name', ''),
+                        'role': row.get('Role', 'student'),
+                        'is_verified': row.get('Is Verified', 'True').lower() == 'true',
+                        'is_approved': row.get('Is Approved', 'True').lower() == 'true',
+                    }
+                )
+                
+                if created:
+                    password = row.get('Password', 'ChangeMe123!')
+                    user.set_password(password)
+                    user.save()
+                    
+                    # Create profile
+                    from .models import Profile
+                    Profile.objects.update_or_create(
+                        user=user,
+                        defaults={
+                            'lrn': row.get('LRN'),
+                            'grade_level': row.get('Grade Level'),
+                            'employee_id': row.get('Employee ID'),
+                        }
+                    )
+                    created_count += 1
+            except Exception as e:
+                errors.append(f"Error importing {row.get('Email')}: {str(e)}")
+                
+        return Response({
+            'status': 'success',
+            'created_count': created_count,
+            'errors': errors
+        })
+
+    @action(detail=False, methods=['get'])
     def pending(self, request):
         """Return all verified users pending approval (admin only)"""
         if request.user.role != 'admin':
@@ -571,6 +677,55 @@ class UserViewSet(viewsets.ModelViewSet):
         users = User.objects.filter(is_approved=False, is_verified=True).order_by('date_joined')
         serializer = self.get_serializer(users, many=True)
         return Response(serializer.data)
+
+    @action(detail=True, methods=['post'])
+    def mute(self, request, pk=None):
+        """Mute a user for a specific duration (admin only)"""
+        if request.user.role != 'admin':
+            return Response({'error': 'Unauthorized'}, status=403)
+            
+        user = self.get_object()
+        hours = int(request.data.get('hours', 24))
+        user.profile.mute_until = timezone.now() + datetime.timedelta(hours=hours)
+        user.profile.save()
+        
+        return Response({'status': f'User muted for {hours} hours'})
+
+    @action(detail=True, methods=['post'])
+    def suspend(self, request, pk=None):
+        """Suspend a user account (admin only)"""
+        if request.user.role != 'admin':
+            return Response({'error': 'Unauthorized'}, status=403)
+            
+        user = self.get_object()
+        user.profile.is_suspended = not user.profile.is_suspended
+        user.profile.save()
+        
+        status_str = 'suspended' if user.profile.is_suspended else 'unsuspended'
+        return Response({'status': f'User {status_str} successfully'})
+
+    @action(detail=True, methods=['post'])
+    def toggle_active(self, request, pk=None):
+        """Toggle user active status (admin only)"""
+        if request.user.role != 'admin':
+            return Response({'error': 'Unauthorized'}, status=403)
+            
+        user = self.get_object()
+        user.is_active = not user.is_active
+        user.save()
+        
+        status_str = 'activated' if user.is_active else 'deactivated'
+        log_audit_action(
+            user=request.user,
+            action='update',
+            model_name='User',
+            object_id=user.id,
+            object_repr=str(user),
+            description=f'Admin {status_str} user account: {user.email}',
+            request=request
+        )
+        
+        return Response({'status': f'User {status_str} successfully', 'is_active': user.is_active})
 
     @action(detail=True, methods=['post'])
     def approve(self, request, pk=None):
@@ -713,22 +868,36 @@ class AnnouncementViewSet(viewsets.ModelViewSet):
 
         user = self.request.user
 
-        # Students only see live announcements
+        # RBAC and Targeting logic
         if user.role == 'student':
+            # Students see live announcements targeted at 'all', 'students', or their classroom
             queryset = queryset.filter(status='live')
+            queryset = queryset.filter(
+                Q(target_audience__in=['all', 'students']) | 
+                Q(target_classrooms__enrollments__student=user)
+            ).distinct()
             queryset = queryset.exclude(event_date__lt=timezone.now())
 
-        # Teachers see live announcements + their own drafts
-        elif user.role == 'teacher':
-            from django.db.models import Q
+        elif user.role == 'parent':
+            # Parents see live announcements targeted at 'all', 'parents', or their linked students' classrooms
+            linked_student_ids = user.profile.linked_students.values_list('id', flat=True)
+            queryset = queryset.filter(status='live')
             queryset = queryset.filter(
-                Q(status='live') | Q(author=user)
-            ).exclude(
-                event_date__lt=timezone.now()
-            )
+                Q(target_audience__in=['all', 'parents']) |
+                Q(target_classrooms__enrollments__student_id__in=linked_student_ids)
+            ).distinct()
+            queryset = queryset.exclude(event_date__lt=timezone.now())
 
-        # Admins see everything, optionally filtered by status
+        elif user.role == 'teacher':
+            # Teachers see live announcements targeted at 'all', 'teachers', or their own drafts
+            queryset = queryset.filter(
+                Q(status='live', target_audience__in=['all', 'teachers']) | 
+                Q(author=user)
+            ).distinct()
+            queryset = queryset.exclude(event_date__lt=timezone.now())
+
         elif user.role == 'admin':
+            # Admins see everything
             if status_filter:
                 queryset = queryset.filter(status=status_filter)
             else:
@@ -775,19 +944,22 @@ class AnnouncementViewSet(viewsets.ModelViewSet):
             # Create notifications for target audience
             from django.contrib.auth import get_user_model
             User = get_user_model()
-            users = User.objects.all()
-            if announcement.target_audience == 'admins':
-                users = users.filter(role='admin')
-            elif announcement.target_audience == 'students':
-                users = users.filter(role='student')
-            elif announcement.target_audience == 'teachers':
-                users = users.filter(role='teacher')
+            
+            # Filter users based on target audience and classrooms
+            target_users = User.objects.filter(is_active=True, is_verified=True)
+            
+            if announcement.target_audience != 'all':
+                target_users = target_users.filter(role=announcement.target_audience.rstrip('s'))
+            
+            if announcement.target_classrooms.exists():
+                target_users = target_users.filter(enrollments__classroom__in=announcement.target_classrooms.all()).distinct()
+            
             notifications_to_create = []
-            for user in users:
-                if user != self.request.user:
+            for target_user in target_users:
+                if target_user != self.request.user:
                     notifications_to_create.append(
                         Notification(
-                            recipient=user,
+                            recipient=target_user,
                             notification_type='announcement',
                             title=f'New Announcement: {announcement.title}',
                             message=announcement.content[:200] + '...' if len(announcement.content) > 200 else announcement.content,
@@ -797,6 +969,58 @@ class AnnouncementViewSet(viewsets.ModelViewSet):
             if notifications_to_create:
                 Notification.objects.bulk_create(notifications_to_create)
         except Exception as e:
+            logger.error(f"Error in perform_create: {str(e)}")
+            raise
+
+    @action(detail=false, methods=['post'])
+    def bulk_delete(self, request):
+        ids = request.data.get('ids', [])
+        if not ids:
+            return Response({"error": "No IDs provided"}, status=400)
+        
+        # Only admins and the author (teachers) can delete
+        queryset = Announcement.objects.filter(id__in=ids)
+        if request.user.role != 'admin':
+            queryset = queryset.filter(author=request.user)
+            
+        count = queryset.count()
+        queryset.delete()
+        
+        # Log bulk deletion
+        log_audit_action(
+            user=request.user,
+            action='delete',
+            model_name='Announcement',
+            object_id=None,
+            object_repr=f"Bulk delete {count} announcements",
+            description=f'Deleted {count} announcements with IDs: {ids}',
+            request=request
+        )
+        
+        return Response({"message": f"Successfully deleted {count} announcements"}, status=200)
+
+    @action(detail=false, methods=['post'])
+    def delete_all(self, request):
+        # Only admins can delete ALL
+        if request.user.role != 'admin':
+            return Response({"error": "Unauthorized"}, status=403)
+            
+        queryset = Announcement.objects.all()
+        count = queryset.count()
+        queryset.delete()
+        
+        # Log action
+        log_audit_action(
+            user=request.user,
+            action='delete',
+            model_name='Announcement',
+            object_id=None,
+            object_repr="Delete all announcements",
+            description=f'Deleted all {count} announcements from the system',
+            request=request
+        )
+        
+        return Response({"message": f"Successfully deleted all {count} announcements"}, status=200)
             logger.error(f"Error in perform_create: {str(e)}", exc_info=True)
             raise
 
@@ -929,7 +1153,7 @@ class AttendanceViewSet(viewsets.ModelViewSet):
     
     def get_queryset(self):
         user = self.request.user
-        queryset = Attendance.objects.all()
+        queryset = Attendance.objects.all().select_related('student', 'classroom')
         classroom_id = self.request.query_params.get('classroom')
         date = self.request.query_params.get('date')
         status = self.request.query_params.get('status')
@@ -937,6 +1161,10 @@ class AttendanceViewSet(viewsets.ModelViewSet):
         # RBAC: Students can only see their own attendance
         if user.role == 'student':
             queryset = queryset.filter(student=user)
+        # RBAC: Parents can see their linked students' attendance
+        elif user.role == 'parent':
+            linked_student_ids = user.profile.linked_students.values_list('id', flat=True)
+            queryset = queryset.filter(student_id__in=linked_student_ids)
         # Teachers can only see attendance for their classrooms
         elif user.role == 'teacher':
             teacher_classrooms = Classroom.objects.filter(teacher=user)
@@ -949,6 +1177,63 @@ class AttendanceViewSet(viewsets.ModelViewSet):
         if status:
             queryset = queryset.filter(status=status)
         return queryset
+
+    @action(detail=False, methods=['get'])
+    def summary(self, request):
+        """Advanced attendance analytics (Admin/Teacher only)"""
+        if request.user.role not in ['admin', 'teacher']:
+            return Response({'error': 'Unauthorized'}, status=403)
+            
+        from django.db.models import Count, Case, When, IntegerField
+        from django.utils import timezone
+        import datetime
+        
+        now = timezone.now()
+        today = now.date()
+        classroom_id = request.query_params.get('classroom')
+        
+        # Daily trends (last 30 days)
+        last_30_days = today - datetime.timedelta(days=30)
+        daily_trends = Attendance.objects.filter(date__gte=last_30_days)
+        if classroom_id:
+            daily_trends = daily_trends.filter(classroom_id=classroom_id)
+        
+        daily_data = daily_trends.values('date').annotate(
+            present=Count(Case(When(status='present', then=1), output_field=IntegerField())),
+            absent=Count(Case(When(status='absent', then=1), output_field=IntegerField())),
+            late=Count(Case(When(status='late', then=1), output_field=IntegerField())),
+        ).order_by('date')
+        
+        # Monthly trends
+        monthly_data = daily_trends.values('date__month').annotate(
+            present=Count(Case(When(status='present', then=1), output_field=IntegerField())),
+            absent=Count(Case(When(status='absent', then=1), output_field=IntegerField())),
+            late=Count(Case(When(status='late', then=1), output_field=IntegerField())),
+        ).order_by('date__month')
+        
+        # Section Rankings (Overall Attendance Rate)
+        rankings = []
+        if request.user.role == 'admin':
+            classrooms = Classroom.objects.all()
+            for cls in classrooms:
+                att = Attendance.objects.filter(classroom=cls)
+                total = att.count()
+                present = att.filter(status__in=['present', 'late']).count()
+                rate = round(present / total * 100, 1) if total > 0 else 0
+                rankings.append({
+                    'id': cls.id,
+                    'name': cls.name,
+                    'rate': rate,
+                    'total_records': total
+                })
+            rankings = sorted(rankings, key=lambda x: x['rate'], reverse=True)
+
+        return Response({
+            'daily_trends': daily_data,
+            'monthly_trends': monthly_data,
+            'section_rankings': rankings,
+            'period': 'Last 30 Days'
+        })
     
     def perform_create(self, serializer):
         # Teachers and admins can mark attendance
@@ -1231,12 +1516,18 @@ def maintenance_status_view(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def admin_dashboard_stats(request):
+    if request.user.role != 'admin':
+        return Response({'error': 'Admin access required'}, status=403)
+
     from django.db.models import Count, Avg
     from django.utils import timezone
     import datetime
 
-    today = timezone.now().date()
+    now = timezone.now()
+    today = now.date()
+    five_mins_ago = now - datetime.timedelta(minutes=5)
     this_week_start = today - datetime.timedelta(days=today.weekday())
+    last_7_days = [today - datetime.timedelta(days=i) for i in range(6, -1, -1)]
 
     # Core counts
     total_students = User.objects.filter(role='student', is_approved=True).count()
@@ -1244,13 +1535,25 @@ def admin_dashboard_stats(request):
     total_classes  = Classroom.objects.count()
     total_subjects = Subject.objects.count()
     pending_approvals = User.objects.filter(is_approved=False, is_verified=True).count()
+    active_users = User.objects.filter(last_activity__gte=five_mins_ago).count()
 
     # Attendance today
     today_attendance = Attendance.objects.filter(date=today)
     today_present = today_attendance.filter(status__in=['present', 'late']).count()
     today_absent  = today_attendance.filter(status='absent').count()
     today_total   = today_attendance.count()
-    today_rate    = round((today_present / today_total * 100), 1) if today_total > 0 else None
+    today_rate    = round((today_present / today_total * 100), 1) if today_total > 0 else 0
+
+    # Attendance Trends (Last 7 Days)
+    attendance_trends = []
+    for day in last_7_days:
+        day_records = Attendance.objects.filter(date=day)
+        day_total = day_records.count()
+        day_present = day_records.filter(status__in=['present', 'late']).count()
+        attendance_trends.append({
+            'date': day.strftime('%Y-%m-%d'),
+            'rate': round((day_present / day_total * 100), 1) if day_total > 0 else 0
+        })
 
     # Grades - only count final grades
     grades = Grade.objects.filter(transmuted_score__isnull=False, grade_type='final_grade')
@@ -1283,6 +1586,25 @@ def admin_dashboard_stats(request):
         elif score >= 75: ga_fairly_satisfactory += 1
         else: ga_below_75 += 1
 
+    # Recent Activity
+    recent_logins = AuditLog.objects.filter(action='login').order_by('-timestamp')[:5]
+    latest_messages = ChatMessage.objects.order_by('-timestamp')[:5]
+    
+    # Active Users Over Time (Last 24 Hours)
+    active_users_trends = []
+    for i in range(23, -1, -1):
+        hour_start = now - datetime.timedelta(hours=i+1)
+        hour_end = now - datetime.timedelta(hours=i)
+        count = AuditLog.objects.filter(
+            action='login',
+            timestamp__gte=hour_start,
+            timestamp__lte=hour_end
+        ).values('user').distinct().count()
+        active_users_trends.append({
+            'time': hour_end.strftime('%H:00'),
+            'users': count
+        })
+
     # Prepare response data
     res_data = {
         # Core
@@ -1292,16 +1614,18 @@ def admin_dashboard_stats(request):
         'total_subjects': total_subjects,
         'pending_approvals': pending_approvals,
         'pending_enrollments': EnrollmentApplication.objects.filter(status='pending').count(),
+        'active_users': active_users,
+        
         # Attendance
         'today_present': today_present,
         'today_absent': today_absent,
         'today_total': today_total,
         'today_rate': today_rate,
+        'attendance_trends': attendance_trends,
+        
         # Grades
         'total_grades': total_grades,
         'average_grade': average_grade,
-        
-        # All Subjects breakdown
         'all_subjects': {
             'outstanding_pct': round(outstanding / total_grades * 100) if total_grades else 0,
             'very_satisfactory_pct': round(very_satisfactory / total_grades * 100) if total_grades else 0,
@@ -1310,8 +1634,6 @@ def admin_dashboard_stats(request):
             'below_75_pct': round(below_75 / total_grades * 100) if total_grades else 0,
             'total_count': total_grades
         },
-        
-        # General Average breakdown
         'general_average': {
              'outstanding_pct': round(ga_outstanding / total_students_graded * 100) if total_students_graded else 0,
              'very_satisfactory_pct': round(ga_very_satisfactory / total_students_graded * 100) if total_students_graded else 0,
@@ -1320,13 +1642,33 @@ def admin_dashboard_stats(request):
              'below_75_pct': round(ga_below_75 / total_students_graded * 100) if total_students_graded else 0,
              'total_count': total_students_graded
          },
+        
+        # Trends & Widgets
+        'active_users_trends': active_users_trends,
+        'recent_logins': [
+            {
+                'id': log.id,
+                'user': log.user.username if log.user else 'System',
+                'timestamp': log.timestamp,
+                'description': log.description
+            } for log in recent_logins
+        ],
+        'latest_messages': [
+            {
+                'id': m.id,
+                'sender': m.sender.username,
+                'content': m.content[:50],
+                'timestamp': m.timestamp,
+                'room_id': m.room_id
+            } for m in latest_messages
+        ],
+        
         'system_settings': SystemSettingSerializer(SystemSetting.get_settings()).data,
-
         'recent_grades_count': Grade.objects.filter(submitted_at__date__gte=this_week_start).count(),
         'total_announcements': Announcement.objects.filter(status='live').count(),
         'recent_announcements': list(
             Announcement.objects.filter(status='live')
-            .order_by('-created_at')[:3]
+            .order_by('-created_at')[:5]
             .values('id', 'title', 'content', 'priority', 'is_pinned', 'created_at', 'author__username')
         ),
     }
@@ -2035,14 +2377,75 @@ class GradeViewSet(viewsets.ModelViewSet):
         if user.role == 'admin':
             return queryset
         elif user.role == 'teacher':
-            # Teachers see ALL grades in classrooms they are assigned to,
-            # not just grades they personally entered — so admin and teacher
-            # see the same data for shared classrooms.
             teacher_classrooms = Classroom.objects.filter(teacher=user)
             return queryset.filter(classroom__in=teacher_classrooms)
         elif user.role == 'student':
             return queryset.filter(student=user)
+        elif user.role == 'parent':
+            linked_student_ids = user.profile.linked_students.values_list('id', flat=True)
+            return queryset.filter(student_id__in=linked_student_ids)
         return queryset.none()
+
+    @action(detail=False, methods=['get'])
+    def summary(self, request):
+        """Advanced grade analytics and monitoring"""
+        if request.user.role not in ['admin', 'teacher']:
+            return Response({'error': 'Unauthorized'}, status=403)
+            
+        from django.db.models import Avg, Count, Max, Min
+        
+        classroom_id = request.query_params.get('classroom')
+        subject_id = request.query_params.get('subject')
+        quarter = request.query_params.get('quarter')
+        
+        queryset = Grade.objects.filter(grade_type='final_grade', transmuted_score__isnull=False)
+        if classroom_id: queryset = queryset.filter(classroom_id=classroom_id)
+        if subject_id: queryset = queryset.filter(subject_id=subject_id)
+        if quarter: queryset = queryset.filter(quarter=quarter)
+        
+        # Subject Averages
+        subject_stats = queryset.values('subject__name', 'subject__code').annotate(
+            avg_grade=Avg('transmuted_score'),
+            count=Count('id'),
+            highest=Max('transmuted_score'),
+            lowest=Min('transmuted_score')
+        ).order_by('-avg_grade')
+        
+        # Distribution
+        distribution = {
+            'outstanding': queryset.filter(transmuted_score__gte=90).count(),
+            'very_satisfactory': queryset.filter(transmuted_score__gte=85, transmuted_score__lt=90).count(),
+            'satisfactory': queryset.filter(transmuted_score__gte=80, transmuted_score__lt=85).count(),
+            'fairly_satisfactory': queryset.filter(transmuted_score__gte=75, transmuted_score__lt=80).count(),
+            'failed': queryset.filter(transmuted_score__lt=75).count(),
+        }
+        
+        # Missing Grade Detection
+        missing_grades = []
+        if classroom_id and quarter:
+            enrolled_students = StudentClassEnrollment.objects.filter(classroom_id=classroom_id)
+            for enrollment in enrolled_students:
+                classroom_subjects = ClassroomSubject.objects.filter(classroom_id=classroom_id)
+                for cs in classroom_subjects:
+                    exists = Grade.objects.filter(
+                        student=enrollment.student,
+                        subject=cs.subject,
+                        classroom_id=classroom_id,
+                        quarter=quarter
+                    ).exists()
+                    if not exists:
+                        missing_grades.append({
+                            'student_name': f"{enrollment.student.first_name} {enrollment.student.last_name}",
+                            'subject_name': cs.subject.name,
+                            'student_id': enrollment.student.id
+                        })
+
+        return Response({
+            'subject_stats': subject_stats,
+            'distribution': distribution,
+            'missing_grades': missing_grades[:50],
+            'total_graded': queryset.count()
+        })
     
     def perform_create(self, serializer):
         user = self.request.user
@@ -2208,6 +2611,98 @@ class GradeViewSet(viewsets.ModelViewSet):
             return Response(serializer.data)
         
         return Response({'error': 'Could not calculate final grade'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class AssignmentViewSet(viewsets.ModelViewSet):
+    serializer_class = AssignmentSerializer
+    permission_classes = [IsAuthenticated]
+    parser_classes = [parsers.JSONParser, parsers.MultiPartParser, parsers.FormParser]
+
+    def get_queryset(self):
+        user = self.request.user
+        queryset = Assignment.objects.annotate(submission_count=Count('submissions'))
+        
+        if user.role == 'student':
+            # Students see assignments for their enrolled classrooms
+            enrolled_classrooms = StudentClassEnrollment.objects.filter(student=user).values_list('classroom_id', flat=True)
+            return queryset.filter(classroom_id__in=enrolled_classrooms)
+        elif user.role == 'parent':
+            # Parents see assignments for their linked students
+            linked_student_ids = user.profile.linked_students.values_list('id', flat=True)
+            enrolled_classrooms = StudentClassEnrollment.objects.filter(student_id__in=linked_student_ids).values_list('classroom_id', flat=True)
+            return queryset.filter(classroom_id__in=enrolled_classrooms)
+        elif user.role == 'teacher':
+            # Teachers see assignments they created or for their classrooms
+            return queryset.filter(Q(teacher=user) | Q(classroom__teacher=user)).distinct()
+            
+        return queryset
+
+    def perform_create(self, serializer):
+        if self.request.user.role not in ['admin', 'teacher']:
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("Only teachers and admins can create assignments")
+        serializer.save(teacher=self.request.user)
+
+    @action(detail=False, methods=['get'])
+    def analytics(self, request):
+        """Assignment and submission analytics"""
+        if request.user.role not in ['admin', 'teacher']:
+            return Response({'error': 'Unauthorized'}, status=403)
+            
+        classroom_id = request.query_params.get('classroom')
+        queryset = Assignment.objects.all()
+        if classroom_id:
+            queryset = queryset.filter(classroom_id=classroom_id)
+            
+        total_assignments = queryset.count()
+        total_submissions = Submission.objects.filter(assignment__in=queryset).count()
+        late_submissions = Submission.objects.filter(assignment__in=queryset, is_late=True).count()
+        
+        # Submission rate per assignment
+        assignment_rates = []
+        for assignment in queryset:
+            enrolled_count = StudentClassEnrollment.objects.filter(classroom=assignment.classroom).count()
+            sub_count = assignment.submissions.count()
+            rate = round(sub_count / enrolled_count * 100, 1) if enrolled_count > 0 else 0
+            assignment_rates.append({
+                'id': assignment.id,
+                'title': assignment.title,
+                'rate': rate,
+                'submissions': sub_count,
+                'total_possible': enrolled_count
+            })
+
+        return Response({
+            'total_assignments': total_assignments,
+            'total_submissions': total_submissions,
+            'late_submissions': late_submissions,
+            'assignment_rates': assignment_rates
+        })
+
+class SubmissionViewSet(viewsets.ModelViewSet):
+    serializer_class = SubmissionSerializer
+    permission_classes = [IsAuthenticated]
+    parser_classes = [parsers.MultiPartParser, parsers.FormParser]
+
+    def get_queryset(self):
+        user = self.request.user
+        queryset = Submission.objects.all()
+        
+        if user.role == 'student':
+            return queryset.filter(student=user)
+        elif user.role == 'parent':
+            linked_student_ids = user.profile.linked_students.values_list('id', flat=True)
+            return queryset.filter(student_id__in=linked_student_ids)
+        elif user.role == 'teacher':
+            return queryset.filter(assignment__teacher=user)
+            
+        return queryset
+
+    def perform_create(self, serializer):
+        if self.request.user.role != 'student':
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("Only students can submit assignments")
+        serializer.save(student=self.request.user)
 
 
 class GradeReportViewSet(viewsets.ModelViewSet):
@@ -2655,6 +3150,48 @@ class ChatMessageViewSet(viewsets.ModelViewSet):
             }
         )
         return Response({'status': 'unpinned'})
+
+class ReportedMessageViewSet(viewsets.ModelViewSet):
+    serializer_class = ReportedMessageSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        if self.request.user.role == 'admin':
+            return ReportedMessage.objects.all()
+        return ReportedMessage.objects.filter(reporter=self.request.user)
+
+    def perform_create(self, serializer):
+        report = serializer.save(reporter=self.request.user)
+        
+        # Send realtime alert to admins
+        from channels.layers import get_channel_layer
+        from asgiref.sync import async_to_sync
+        
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            'moderation_alerts',
+            {
+                'type': 'moderation_alert',
+                'data': {
+                    'id': report.id,
+                    'reporter': report.reporter.username,
+                    'reason': report.reason[:100],
+                    'message_sender': report.message.sender.username
+                }
+            }
+        )
+
+    @action(detail=True, methods=['post'])
+    def resolve(self, request, pk=None):
+        if request.user.role != 'admin':
+            return Response({'error': 'Unauthorized'}, status=403)
+        report = self.get_object()
+        report.status = 'resolved'
+        report.moderator_note = request.data.get('note', '')
+        report.resolved_at = timezone.now()
+        report.save()
+        return Response({'status': 'Report resolved'})
+
 
 class FriendshipViewSet(viewsets.ModelViewSet):
     serializer_class = FriendshipSerializer

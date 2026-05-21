@@ -6,7 +6,10 @@ import Swal from 'sweetalert2';
 const AuditLogs = () => {
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState('');
+  const [search, setSearch] = useState('');
+  const [actionFilter, setActionFilter] = useState('');
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [selectedIds, setSelectedIds] = useState([]);
   const [deleting, setDeleting] = useState(false);
   const [stats, setStats] = useState({ size_mb: 0, max_mb: 50, count: 0 });
@@ -14,12 +17,30 @@ const AuditLogs = () => {
   useEffect(() => {
     fetchLogs();
     fetchStats();
-  }, []);
+  }, [page, actionFilter]);
+
+  // Debounced search
+  useEffect(() => {
+    const t = setTimeout(() => {
+      if (page !== 1) setPage(1);
+      else fetchLogs();
+    }, 500);
+    return () => clearTimeout(t);
+  }, [search]);
 
   const fetchLogs = async () => {
+    setLoading(true);
     try {
-      const response = await api.get('/admin/audit-logs/');
-      setLogs(response.data);
+      const response = await api.get('/admin/audit-logs/', {
+        params: {
+          search: search,
+          action: actionFilter,
+          page: page,
+          page_size: 50
+        }
+      });
+      setLogs(response.data.results);
+      setTotalPages(Math.ceil(response.data.count / 50));
     } catch (error) {
       toast.error('Failed to load audit logs');
     } finally {
@@ -36,18 +57,9 @@ const AuditLogs = () => {
     }
   };
 
-  const filteredLogs = useMemo(() => {
-    return logs.filter(log =>
-      log.action?.toLowerCase().includes(filter.toLowerCase()) ||
-      log.user_name?.toLowerCase().includes(filter.toLowerCase()) ||
-      log.description?.toLowerCase().includes(filter.toLowerCase()) ||
-      log.model_name?.toLowerCase().includes(filter.toLowerCase())
-    );
-  }, [logs, filter]);
-
   const handleSelectAll = (e) => {
     if (e.target.checked) {
-      setSelectedIds(filteredLogs.map(log => log.id));
+      setSelectedIds(logs.map(log => log.id));
     } else {
       setSelectedIds([]);
     }
@@ -218,21 +230,37 @@ const AuditLogs = () => {
 
       <div className="bg-white border border-gray-200 rounded-lg md:rounded-xl shadow-sm overflow-hidden min-w-0">
         <div className="p-1 md:p-2 border-b border-gray-100 bg-gray-50/50 min-w-0">
-          <div className="relative group max-w-sm min-w-0">
-            <svg className="absolute left-2 md:left-3 top-1/2 -translate-y-1/2 w-2.5 h-2.5 md:w-3 md:h-3 text-gray-400 group-focus-within:text-purple-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-            <input
-              type="text"
-              placeholder="Filter activities..."
-              value={filter}
-              onChange={(e) => setFilter(e.target.value)}
-              className="w-full pl-6 md:pl-9 pr-3 py-1 md:py-1.5 bg-white border border-gray-200 rounded md:rounded-lg focus:outline-none focus:ring-1 focus:ring-purple-500 text-[8px] md:text-xs font-bold transition-all shadow-inner uppercase tracking-wider"
-            />
+          <div className="flex flex-col md:flex-row gap-2 md:gap-4 items-stretch md:items-center min-w-0">
+            <div className="relative flex-1 min-w-0">
+              <input
+                type="text"
+                placeholder="Search by user, model, or description..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full pl-8 md:pl-10 pr-4 py-1.5 md:py-2.5 bg-white border border-gray-200 rounded md:rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-[8px] md:text-xs font-black placeholder:text-gray-300 shadow-sm transition-all uppercase tracking-widest"
+              />
+              <svg className="absolute left-2.5 md:left-4 top-1/2 -translate-y-1/2 w-3 h-3 md:w-4 md:h-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
+
+            <select
+              value={actionFilter}
+              onChange={(e) => setActionFilter(e.target.value)}
+              className="bg-white border border-gray-200 rounded md:rounded-xl px-2 md:px-4 py-1.5 md:py-2.5 text-[8px] md:text-xs font-black focus:outline-none focus:ring-2 focus:ring-purple-500 shadow-sm transition-all uppercase tracking-widest min-w-[80px] md:min-w-[150px]"
+            >
+              <option value="">All Actions</option>
+              <option value="create">Create</option>
+              <option value="update">Update</option>
+              <option value="delete">Delete</option>
+              <option value="login">Login</option>
+              <option value="grade_create">Grade Create</option>
+              <option value="attendance_mark">Attendance Mark</option>
+            </select>
           </div>
         </div>
         
-        {filteredLogs.length === 0 ? (
+        {logs.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-6 md:py-12 text-gray-400">
             <svg className="w-8 h-8 md:w-12 md:h-12 mb-2 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -247,7 +275,7 @@ const AuditLogs = () => {
                   <th className="px-1.5 py-1 md:px-4 md:py-2.5 w-6 md:w-8">
                     <input
                       type="checkbox"
-                      checked={selectedIds.length === filteredLogs.length && filteredLogs.length > 0}
+                      checked={selectedIds.length === logs.length && logs.length > 0}
                       onChange={handleSelectAll}
                       className="rounded border-gray-300 text-purple-600 focus:ring-purple-500 w-2 h-2 md:w-3.5 md:h-3.5 cursor-pointer"
                     />
@@ -261,7 +289,7 @@ const AuditLogs = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {filteredLogs.map((log) => (
+                {logs.map((log) => (
                   <tr key={log.id} className={`group hover:bg-purple-50 transition-colors ${selectedIds.includes(log.id) ? 'bg-purple-50/50' : ''}`}>
                     <td className="px-1.5 py-0.5 md:px-4 md:py-2">
                       <input
@@ -321,13 +349,33 @@ const AuditLogs = () => {
       </div>
       
       {!loading && logs.length > 0 && (
-        <div className="flex items-center justify-between text-[6px] md:text-[9px] font-black text-gray-400 uppercase tracking-widest px-1">
-          <span>{filteredLogs.length} of {logs.length} entries</span>
-          {selectedIds.length > 0 && (
-            <span className="text-purple-600 bg-purple-50 px-1 rounded">{selectedIds.length} selected</span>
-          )}
-        </div>
-      )}
+          <div className="flex items-center justify-between text-[6px] md:text-[9px] font-black text-gray-400 uppercase tracking-widest px-1 py-4">
+            <div className="flex items-center gap-4">
+              <span>{logs.length} entries (Page {page} of {totalPages})</span>
+              {selectedIds.length > 0 && (
+                <span className="text-purple-600 bg-purple-50 px-2 py-1 rounded-full">{selectedIds.length} selected</span>
+              )}
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <button
+                disabled={page === 1}
+                onClick={() => setPage(p => Math.max(1, p - 1))}
+                className="p-1 md:p-2 rounded-lg border border-gray-200 disabled:opacity-50 hover:bg-gray-50 transition-all active:scale-95"
+              >
+                <svg className="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" /></svg>
+              </button>
+              <button
+                disabled={page === totalPages}
+                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                className="p-1 md:p-2 rounded-lg border border-gray-200 disabled:opacity-50 hover:bg-gray-50 transition-all active:scale-95"
+              >
+                <svg className="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" /></svg>
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

@@ -369,6 +369,11 @@ class NotificationConsumer(AsyncWebsocketConsumer):
         if self.user.is_authenticated:
             self.group_name = f'notifications_{self.user.id}'
             await self.channel_layer.group_add(self.group_name, self.channel_name)
+            
+            # Admins also join a global moderation group
+            if self.user.role == 'admin':
+                await self.channel_layer.group_add('moderation_alerts', self.channel_name)
+                
             await self.accept()
             
             # Send initial unread count
@@ -383,6 +388,15 @@ class NotificationConsumer(AsyncWebsocketConsumer):
     async def disconnect(self, close_code):
         if self.user.is_authenticated:
             await self.channel_layer.group_discard(self.group_name, self.channel_name)
+            if self.user.role == 'admin':
+                await self.channel_layer.group_discard('moderation_alerts', self.channel_name)
+
+    async def moderation_alert(self, event):
+        """Receive moderation alert (Admins only)."""
+        await self.send(text_data=json.dumps({
+            'type': 'moderation_alert',
+            'data': event['data']
+        }))
 
     async def notification_message(self, event):
         """Receive notification from group."""

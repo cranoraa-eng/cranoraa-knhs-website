@@ -35,7 +35,7 @@ class ProfileSerializer(serializers.ModelSerializer):
         model = Profile
         fields = ['id', 'title', 'grade_level', 'classroom_name', 'employee_id', 'phone_number', 'address',
                   'date_of_birth', 'registration_number', 'sex', 'state',
-                  'nationality', 'middle_name', 'father_name', 'mother_name', 'contact_information']
+                  'nationality', 'middle_name', 'father_name', 'mother_name', 'contact_information', 'linked_students']
 
     def get_classroom_name(self, obj):
         enrollment = StudentClassEnrollment.objects.filter(student=obj.user).select_related('classroom').first()
@@ -149,7 +149,7 @@ class AnnouncementSerializer(serializers.ModelSerializer):
         model = Announcement
         fields = [
             'id', 'title', 'content', 'category', 'priority', 'status',
-            'target_audience', 'author', 'author_name', 'author_email',
+            'target_audience', 'target_classrooms', 'author', 'author_name', 'author_email',
             'is_pinned', 'is_public', 'event_date', 'end_date', 'attachment',
             'attachment_url', 'attachments', 'read_by', 'read_count', 'is_expired',
             'created_at', 'updated_at'
@@ -303,6 +303,38 @@ class WebsiteContentSerializer(serializers.ModelSerializer):
         return full_name(obj.updated_by) if obj.updated_by else ''
 
 
+class AssignmentSerializer(serializers.ModelSerializer):
+    teacher_name = serializers.ReadOnlyField(source='teacher.get_full_name')
+    subject_name = serializers.ReadOnlyField(source='subject.name')
+    classroom_name = serializers.ReadOnlyField(source='classroom.name')
+    submission_count = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        model = Assignment
+        fields = ['id', 'title', 'description', 'classroom', 'classroom_name', 'subject', 'subject_name', 
+                  'teacher', 'teacher_name', 'file', 'due_date', 'points', 'submission_count', 'created_at']
+
+class SubmissionSerializer(serializers.ModelSerializer):
+    student_name = serializers.ReadOnlyField(source='student.get_full_name')
+    assignment_title = serializers.ReadOnlyField(source='assignment.title')
+
+    class Meta:
+        model = Submission
+        fields = ['id', 'assignment', 'assignment_title', 'student', 'student_name', 'file', 
+                  'submitted_at', 'grade', 'feedback', 'is_late']
+
+
+class ReportedMessageSerializer(serializers.ModelSerializer):
+    reporter_name = serializers.ReadOnlyField(source='reporter.get_full_name')
+    message_content = serializers.ReadOnlyField(source='message.content')
+    message_sender = serializers.ReadOnlyField(source='message.sender.username')
+
+    class Meta:
+        model = ReportedMessage
+        fields = ['id', 'message', 'message_content', 'message_sender', 'reporter', 'reporter_name', 
+                  'reason', 'status', 'moderator_note', 'created_at', 'resolved_at']
+
+
 class GradeSerializer(serializers.ModelSerializer):
     student_name = serializers.SerializerMethodField()
     student_email = serializers.CharField(source='student.email', read_only=True)
@@ -447,7 +479,9 @@ class ChatRoomSerializer(serializers.ModelSerializer):
 class SystemSettingSerializer(serializers.ModelSerializer):
     class Meta:
         model = SystemSetting
-        fields = '__all__'
+        fields = ['site_name', 'school_address', 'school_phone', 'school_email', 'school_logo', 
+                  'primary_color', 'secondary_color', 'maintenance_mode', 'maintenance_message', 
+                  'enrollment_open', 'current_quarter', 'academic_year', 'allow_student_chat', 'allow_teacher_chat', 'updated_at']
 
 
 class FriendshipSerializer(serializers.ModelSerializer):

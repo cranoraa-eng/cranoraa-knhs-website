@@ -81,6 +81,20 @@ const StudentManagement = () => {
     }
   };
 
+  const handleExportCSV = () => {
+    window.open(`${api.defaults.baseURL}/users/export_csv/?role=student`, '_blank');
+  };
+
+  const handleToggleActive = async (student) => {
+    try {
+      const response = await api.post(`/users/${student.id}/toggle_active/`);
+      toast.success(response.data.status);
+      fetchStudents();
+    } catch (err) {
+      toast.error('Failed to update status');
+    }
+  };
+
   const organizedData = useMemo(() => {
     const filtered = students.filter(s => {
       const search = searchQuery.toLowerCase();
@@ -147,15 +161,42 @@ const StudentManagement = () => {
           <h1 className="text-lg md:text-3xl font-black text-gray-800 tracking-tight uppercase">Student Management</h1>
           <p className="text-gray-500 text-[8px] md:text-base mt-0.5 font-medium uppercase tracking-widest">All registered students</p>
         </div>
-        <div className="bg-white px-3 py-1.5 md:px-5 md:py-2.5 rounded-xl md:rounded-2xl border border-gray-200 shadow-sm flex items-center gap-2 md:gap-3 w-fit mx-auto md:mx-0">
-          <div className="w-6 h-6 md:w-10 md:h-10 bg-purple-100 rounded-lg md:rounded-xl flex items-center justify-center">
-            <svg className="w-3.5 h-3.5 md:w-5 md:h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-            </svg>
-          </div>
-          <div>
-            <p className="text-[7px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest">Total Students</p>
-            <p className="text-sm md:text-xl font-black text-gray-800 leading-none">{students.length}</p>
+        <div className="flex flex-wrap items-center justify-center gap-2">
+          <button
+            onClick={handleExportCSV}
+            className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-black py-1.5 md:py-2.5 px-3 md:px-5 rounded-lg md:rounded-xl transition-all shadow-sm text-[8px] md:text-xs uppercase tracking-widest"
+          >
+            <svg className="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+            Export CSV
+          </button>
+          <label className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white font-black py-1.5 md:py-2.5 px-3 md:px-5 rounded-lg md:rounded-xl transition-all shadow-sm text-[8px] md:text-xs uppercase tracking-widest cursor-pointer">
+            <svg className="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+            Import CSV
+            <input 
+              type="file" 
+              accept=".csv" 
+              className="hidden" 
+              onChange={async (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                  const formData = new FormData();
+                  formData.append('file', file);
+                  try {
+                    const res = await api.post('/users/import_csv/', formData);
+                    toast.success(`Imported ${res.data.created_count} students!`);
+                    fetchStudents();
+                  } catch (err) {
+                    toast.error('Import failed');
+                  }
+                }
+              }} 
+            />
+          </label>
+          <div className="bg-white px-3 py-1.5 md:px-5 md:py-2.5 rounded-xl md:rounded-2xl border border-gray-200 shadow-sm flex items-center gap-2 md:gap-3">
+            <div>
+              <p className="text-[7px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest">Total Students</p>
+              <p className="text-sm md:text-xl font-black text-gray-800 leading-none">{students.length}</p>
+            </div>
           </div>
         </div>
       </div>
@@ -221,6 +262,7 @@ const StudentManagement = () => {
                             <th className="px-3 py-1.5 md:px-6 md:py-4">Student</th>
                             <th className="hidden md:table-cell px-6 py-4">Email</th>
                             <th className="hidden md:table-cell px-6 py-4">LRN</th>
+                            <th className="px-3 py-1.5 md:px-6 md:py-4 text-center">Status</th>
                             <th className="px-3 py-1.5 md:px-6 md:py-4 text-center">Opt</th>
                           </tr>
                         </thead>
@@ -250,8 +292,26 @@ const StudentManagement = () => {
                                   {student.profile?.registration_number || '—'}
                                 </span>
                               </td>
+                              <td className="px-3 py-1 md:px-6 md:py-4 text-center">
+                                <span className={`text-[7px] md:text-[10px] font-black px-1.5 py-0.5 md:px-2 md:py-1 rounded uppercase tracking-widest ${student.is_active ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-100 text-rose-600'}`}>
+                                  {student.is_active ? 'Active' : 'Inactive'}
+                                </span>
+                              </td>
                               <td className="px-3 py-1 md:px-6 md:py-4">
                                 <div className="flex items-center justify-center gap-0.5 md:gap-2">
+                                  <button
+                                    onClick={() => handleToggleActive(student)}
+                                    className={`p-1 md:p-2 rounded md:rounded-lg transition-all active:scale-90 ${student.is_active ? 'text-rose-500 hover:bg-rose-50' : 'text-emerald-500 hover:bg-emerald-50'}`}
+                                    title={student.is_active ? 'Deactivate' : 'Activate'}
+                                  >
+                                    <svg className="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      {student.is_active ? (
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                                      ) : (
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                      )}
+                                    </svg>
+                                  </button>
                                   <button
                                     onClick={() => handleStartChat(student.id)}
                                     className="p-1 md:p-2 text-violet-500 hover:bg-violet-50 rounded md:rounded-lg transition-all active:scale-90"

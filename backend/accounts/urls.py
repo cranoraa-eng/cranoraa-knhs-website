@@ -6,7 +6,7 @@ from .views import (
     teacher_dashboard_stats, ClassroomViewSet, StudentClassEnrollmentViewSet, UserViewSet, 
     AnnouncementViewSet, AttendanceViewSet, LearningMaterialViewSet, SubjectViewSet, 
     ClassroomSubjectViewSet, ScratchCardViewSet, FeeViewSet, NotificationViewSet, 
-    EnrollmentApplicationViewSet, WebsiteContentViewSet, GradeViewSet, GradeReportViewSet, 
+    EnrollmentApplicationViewSet, AssignmentViewSet, SubmissionViewSet, WebsiteContentViewSet, GradeViewSet, GradeReportViewSet, 
     ChatRoomViewSet, ChatMessageViewSet, FriendshipViewSet, admin_dashboard_stats, grade_distribution_stats, check_result, public_announcements_view, 
     student_calendar_view, notifications_polling_view, system_metrics_view, 
     maintenance_feed_view, maintenance_mode_view, force_sync_view, run_backup_view, clear_cache_view,
@@ -27,11 +27,14 @@ router.register(r'scratch-cards', ScratchCardViewSet, basename='scratch-card')
 router.register(r'fees', FeeViewSet, basename='fee')
 router.register(r'notifications', NotificationViewSet, basename='notification')
 router.register(r'enrollment-applications', EnrollmentApplicationViewSet, basename='enrollment-application')
+router.register(r'assignments', AssignmentViewSet, basename='assignment')
+router.register(r'submissions', SubmissionViewSet, basename='submission')
 router.register(r'website-content', WebsiteContentViewSet, basename='website-content')
 router.register(r'grades', GradeViewSet, basename='grade')
 router.register(r'grade-reports', GradeReportViewSet, basename='grade-report')
 router.register(r'chat/rooms', ChatRoomViewSet, basename='chat-room')
 router.register(r'chat/messages', ChatMessageViewSet, basename='chat-message')
+router.register(r'chat/reports', ReportedMessageViewSet, basename='chat-report')
 router.register(r'friendships', FriendshipViewSet, basename='friendship')
 
 urlpatterns = [

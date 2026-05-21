@@ -140,6 +140,20 @@ const Teachers = () => {
     }
   };
 
+  const handleExportCSV = () => {
+    window.open(`${api.defaults.baseURL}/users/export_csv/?role=teacher`, '_blank');
+  };
+
+  const handleToggleActive = async (teacher) => {
+    try {
+      const response = await api.post(`/users/${teacher.id}/toggle_active/`);
+      toast.success(response.data.status);
+      fetchTeachers();
+    } catch (err) {
+      toast.error('Failed to update status');
+    }
+  };
+
   const getTeacherClassrooms = (teacherId) => {
     return classrooms.filter(cls => cls.teacher === teacherId);
   };
@@ -174,25 +188,57 @@ const Teachers = () => {
           <h1 className="text-lg md:text-3xl font-black text-gray-800 tracking-tight uppercase">Teachers Management</h1>
           <p className="text-gray-500 text-[8px] md:text-base mt-0.5 font-medium uppercase tracking-widest">Accounts and assignments</p>
         </div>
-        <button
-          onClick={() => {
-            setNewTeacher({
-              email: '',
-              first_name: '',
-              last_name: '',
-              password: '',
-              title: '',
-              phone_number: ''
-            });
-            setShowAddModal(true);
-          }}
-          className="flex items-center justify-center gap-1.5 bg-[#2D1B4D] hover:bg-[#3D2B5D] text-white font-black py-1.5 md:py-2.5 px-3 md:px-6 rounded-lg md:rounded-xl transition-all shadow-md active:scale-95 text-[10px] md:text-sm uppercase tracking-widest w-full md:w-auto"
-        >
-          <svg className="w-3.5 h-3.5 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
-          </svg>
-          Add Teacher
-        </button>
+        <div className="flex flex-wrap items-center justify-center gap-2">
+          <button
+            onClick={handleExportCSV}
+            className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-black py-1.5 md:py-2.5 px-3 md:px-5 rounded-lg md:rounded-xl transition-all shadow-sm text-[8px] md:text-xs uppercase tracking-widest"
+          >
+            <svg className="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+            Export
+          </button>
+          <label className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white font-black py-1.5 md:py-2.5 px-3 md:px-5 rounded-lg md:rounded-xl transition-all shadow-sm text-[8px] md:text-xs uppercase tracking-widest cursor-pointer">
+            <svg className="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+            Import
+            <input 
+              type="file" 
+              accept=".csv" 
+              className="hidden" 
+              onChange={async (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                  const formData = new FormData();
+                  formData.append('file', file);
+                  try {
+                    const res = await api.post('/users/import_csv/', formData);
+                    toast.success(`Imported ${res.data.created_count} teachers!`);
+                    fetchTeachers();
+                  } catch (err) {
+                    toast.error('Import failed');
+                  }
+                }
+              }} 
+            />
+          </label>
+          <button
+            onClick={() => {
+              setNewTeacher({
+                email: '',
+                first_name: '',
+                last_name: '',
+                password: '',
+                title: '',
+                phone_number: ''
+              });
+              setShowAddModal(true);
+            }}
+            className="flex items-center justify-center gap-1.5 bg-[#2D1B4D] hover:bg-[#3D2B5D] text-white font-black py-1.5 md:py-2.5 px-3 md:px-6 rounded-lg md:rounded-xl transition-all shadow-md active:scale-95 text-[8px] md:text-xs uppercase tracking-widest"
+          >
+            <svg className="w-3.5 h-3.5 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
+            </svg>
+            Add Teacher
+          </button>
+        </div>
       </div>
 
       {/* Search Bar */}
@@ -228,6 +274,19 @@ const Teachers = () => {
             {filteredTeachers.map((teacher) => (
               <div key={teacher.id} className="bg-white border border-gray-200 rounded-lg md:rounded-2xl p-3 md:p-6 hover:shadow-xl transition-all duration-300 group relative border-t-2 md:border-t-4 border-t-purple-500 overflow-hidden min-w-0">
                 <div className="absolute top-0 right-0 p-2 md:p-4 flex gap-1 md:gap-2 opacity-0 group-hover:opacity-100 transition-opacity bg-white/80 backdrop-blur-sm rounded-bl-xl border-l border-b border-gray-100">
+                  <button
+                    onClick={() => handleToggleActive(teacher)}
+                    className={`p-1 md:p-2 rounded md:rounded-lg transition-all shadow-sm ${teacher.is_active ? 'bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white' : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white'}`}
+                    title={teacher.is_active ? 'Deactivate' : 'Activate'}
+                  >
+                    <svg className="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      {teacher.is_active ? (
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                      ) : (
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      )}
+                    </svg>
+                  </button>
                    <button
                     onClick={() => {
                       setEditingTeacher({
@@ -276,6 +335,10 @@ const Teachers = () => {
                       </h3>
                       <div className="flex items-center gap-1.5 mt-0.5">
                         <p className="text-[7px] md:text-xs font-black text-purple-500 uppercase tracking-widest">Faculty</p>
+                        <span className="text-[7px] text-gray-300">•</span>
+                        <span className={`text-[7px] md:text-[10px] font-black uppercase tracking-widest ${teacher.is_active ? 'text-emerald-500' : 'text-rose-500'}`}>
+                          {teacher.is_active ? 'Active' : 'Inactive'}
+                        </span>
                         <span className="text-[7px] text-gray-300">•</span>
                         <span className={`text-[7px] md:text-[10px] font-black uppercase tracking-widest ${teacher.is_online ? 'text-green-500' : 'text-gray-400'}`}>
                           {teacher.is_online ? 'Online' : 'Offline'}
