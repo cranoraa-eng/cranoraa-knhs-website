@@ -119,7 +119,8 @@ class Classroom(models.Model):
         ordering = ['-created_at']
     
     def __str__(self):
-        return f"{self.name} - {self.teacher.username}"
+        teacher_name = self.teacher.username if self.teacher else "No Teacher"
+        return f"{self.name} - {teacher_name}"
     
     def get_average_gpa(self):
         enrollments = self.enrollments.all()

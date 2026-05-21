@@ -540,8 +540,11 @@ class UserViewSet(viewsets.ModelViewSet):
         
         # RBAC: Parents can see their linked students and themselves
         if user.role == 'parent':
-            linked_student_ids = user.profile.linked_students.values_list('id', flat=True)
-            return User.objects.filter(Q(id__in=linked_student_ids) | Q(id=user.id))
+            profile = getattr(user, 'profile', None)
+            if profile:
+                linked_student_ids = profile.linked_students.values_list('id', flat=True)
+                return User.objects.filter(Q(id__in=linked_student_ids) | Q(id=user.id))
+            return User.objects.filter(id=user.id)
         
         # Teachers can see students and themselves
         if user.role == 'teacher':
