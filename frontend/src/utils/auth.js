@@ -10,6 +10,10 @@ export const saveSession = (access, refresh, user) => {
   localStorage.setItem('user', JSON.stringify(user));
 };
 
+export const updateStoredUser = (user) => {
+  localStorage.setItem('user', JSON.stringify(user));
+};
+
 export const clearSession = () => {
   localStorage.removeItem('access_token');
   localStorage.removeItem('refresh_token');

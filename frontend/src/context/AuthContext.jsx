@@ -28,6 +28,9 @@ export const AuthProvider = ({ children }) => {
 
   const signIn = useCallback((userData) => {
     setUser(userData);
+    if (userData) {
+      localStorage.setItem('user', JSON.stringify(userData));
+    }
   }, []);
 
   const signOut = useCallback(() => {

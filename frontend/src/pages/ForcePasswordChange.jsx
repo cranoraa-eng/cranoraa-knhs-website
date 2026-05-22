@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../utils/api';
+import { updateStoredUser } from '../utils/auth';
 import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
 
@@ -29,12 +30,13 @@ const ForcePasswordChange = () => {
       
       // Update local storage with new tokens if returned
       if (response.data.access) {
-        localStorage.setItem('accessToken', response.data.access);
-        localStorage.setItem('refreshToken', response.data.refresh);
+        localStorage.setItem('access_token', response.data.access);
+        localStorage.setItem('refresh_token', response.data.refresh);
       }
       
       // Update user state (must_change_password is now false)
       const updatedUser = { ...user, must_change_password: false };
+      updateStoredUser(updatedUser);
       signIn(updatedUser);
       
       toast.success('Password updated successfully!');
