@@ -329,7 +329,19 @@ const GradeManagement = () => {
                                 const subjectKey = `${classroom.id}-${subject.id}`;
                                 const subjectOpen = openSubject === subjectKey;
                                 const studentDataMap = gradeIndex[classroom.id]?.[subject.id] || {};
-                                const studentsList = Object.values(studentDataMap).sort((a, b) => a.name.localeCompare(b.name));
+                                
+                                const formatName = (fullName = '') => {
+                                  const parts = fullName.trim().split(/\s+/);
+                                  if (parts.length < 2) return fullName;
+                                  const last = parts.pop();
+                                  return `${last}, ${parts.join(' ')}`;
+                                };
+
+                                const studentsList = Object.values(studentDataMap).sort((a, b) => {
+                                  const nameA = formatName(a.name).toLowerCase();
+                                  const nameB = formatName(b.name).toLowerCase();
+                                  return nameA.localeCompare(nameB);
+                                });
 
                                 return (
                                   <div key={subject.id} className="border-t border-slate-100">
@@ -388,7 +400,7 @@ const GradeManagement = () => {
                                                         <div className="min-w-0">
                                                           <div className="font-black text-slate-800 leading-tight whitespace-nowrap text-[8px] md:text-sm uppercase tracking-tight truncate max-w-[60px] md:max-w-none" title={s.name}>
                                                             <span className="md:hidden">{s.name?.split(' ').pop()}</span>
-                                                            <span className="hidden md:inline">{s.name}</span>
+                                                            <span className="hidden md:inline">{formatName(s.name)}</span>
                                                           </div>
                                                           <div className="hidden md:block text-[7px] md:text-[10px] text-slate-400 truncate max-w-[60px] md:max-w-[120px] font-medium">{s.email}</div>
                                                         </div>
