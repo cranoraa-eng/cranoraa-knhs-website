@@ -408,56 +408,78 @@ const StudentManagement = () => {
             <span className="text-[10px] md:text-sm font-bold uppercase tracking-wider">Import Excel</span>
           </button>
 
-          <button 
-            onClick={() => {
-              const headers = [['Student ID', 'First Name', 'Last Name', 'Grade Level', 'Email']];
-              const sampleData = [
-                ['128150150092', 'Arc', 'Capisen', 'Grade 12', ''],
-                ['128150150093', 'Arcc', 'Capisenq', 'Grade 12', ''],
-                ['128150150094', 'Arcy', 'Capisenw', 'Grade 12', ''],
-              ];
-              const instructions = [
-                [],
-                ['INSTRUCTIONS:'],
-                ['1. Student ID must be exactly 12 digits (LRN).'],
-                ['2. Email is optional - you can leave it blank.'],
-                ['3. Grade Level should be one of: Grade 7, Grade 8, Grade 9, Grade 10, Grade 11, Grade 12.'],
-                ['4. Do not change the header names in the first row.'],
-              ];
-              
-              const ws = XLSX.utils.aoa_to_sheet([...headers, ...sampleData, ...instructions]);
-              
-              // Apply basic styling to headers
-              const headerRange = XLSX.utils.decode_range(ws['!ref']);
-              for (let C = headerRange.s.c; C <= 4; ++C) {
-                const address = XLSX.utils.encode_col(C) + '1';
-                if (!ws[address]) continue;
-                ws[address].s = {
-                  font: { bold: true, color: { rgb: "FFFFFF" } },
-                  fill: { fgColor: { rgb: "4F46E5" } }, // Indigo 600
-                  alignment: { horizontal: "center" }
-                };
-              }
+          <div className="flex items-center gap-1">
+            <button 
+              onClick={() => {
+                const headers = [['Student ID', 'First Name', 'Last Name', 'Grade Level', 'Email']];
+                const sampleData = [
+                  ['128150150092', 'Arc', 'Capisen', 'Grade 12', ''],
+                  ['128150150093', 'Arcc', 'Capisenq', 'Grade 12', ''],
+                  ['128150150094', 'Arcy', 'Capisenw', 'Grade 12', ''],
+                ];
+                
+                const ws = XLSX.utils.aoa_to_sheet([...headers, ...sampleData]);
+                
+                // Apply basic styling to headers
+                const headerRange = XLSX.utils.decode_range(ws['!ref']);
+                for (let C = headerRange.s.c; C <= 4; ++C) {
+                  const address = XLSX.utils.encode_col(C) + '1';
+                  if (!ws[address]) continue;
+                  ws[address].s = {
+                    font: { bold: true, color: { rgb: "FFFFFF" } },
+                    fill: { fgColor: { rgb: "4F46E5" } }, // Indigo 600
+                    alignment: { horizontal: "center" }
+                  };
+                }
 
-              // Set column widths
-              ws['!cols'] = [
-                { wch: 20 }, // Student ID
-                { wch: 20 }, // First Name
-                { wch: 20 }, // Last Name
-                { wch: 15 }, // Grade Level
-                { wch: 30 }, // Email
-              ];
+                // Set column widths
+                ws['!cols'] = [
+                  { wch: 20 }, // Student ID
+                  { wch: 20 }, // First Name
+                  { wch: 20 }, // Last Name
+                  { wch: 15 }, // Grade Level
+                  { wch: 30 }, // Email
+                ];
 
-              const wb = XLSX.utils.book_new();
-              XLSX.utils.book_append_sheet(wb, ws, "Student Template");
-              XLSX.writeFile(wb, "KNHS_Student_Import_Template.xlsx");
-              toast.success('Professional template downloaded');
-            }}
-            className="bg-emerald-600 text-white px-3 py-1.5 md:px-5 md:py-2.5 rounded-xl md:rounded-2xl border border-emerald-700 shadow-lg hover:bg-emerald-700 flex items-center gap-2 transition-all active:scale-95"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-            <span className="text-[10px] md:text-sm font-bold uppercase tracking-wider">Download Template</span>
-          </button>
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, "Student Template");
+                XLSX.writeFile(wb, "KNHS_Student_Import_Template.xlsx");
+                toast.success('Professional template downloaded');
+              }}
+              className="bg-emerald-600 text-white px-3 py-1.5 md:px-5 md:py-2.5 rounded-xl md:rounded-2xl border border-emerald-700 shadow-lg hover:bg-emerald-700 flex items-center gap-2 transition-all active:scale-95"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+              <span className="text-[10px] md:text-sm font-bold uppercase tracking-wider">Download Template</span>
+            </button>
+            
+            <div className="relative group/info">
+              <button className="w-6 h-6 md:w-10 md:h-10 flex items-center justify-center rounded-xl md:rounded-2xl bg-white text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all border border-gray-200 shadow-sm active:scale-90">
+                <span className="font-black text-xs md:text-lg">!</span>
+              </button>
+              
+              <div className="absolute top-full right-0 mt-2 w-64 md:w-80 p-4 md:p-6 bg-slate-900/95 backdrop-blur-md text-white rounded-2xl md:rounded-3xl shadow-2xl opacity-0 invisible group-hover/info:opacity-100 group-hover/info:visible transition-all z-[110] border border-white/10 scale-95 group-hover/info:scale-100 origin-top-right">
+                <h4 className="text-[10px] md:text-xs font-black uppercase tracking-[0.2em] text-indigo-400 mb-3 md:mb-4 border-b border-white/10 pb-2">Import Instructions</h4>
+                <ul className="space-y-2 md:space-y-3">
+                  <li className="flex gap-2 md:gap-3">
+                    <span className="text-indigo-400 font-black text-[10px] md:text-xs mt-0.5">01</span>
+                    <p className="text-[9px] md:text-[11px] font-bold leading-relaxed text-gray-300">Student ID must be exactly <span className="text-white">12 digits (LRN)</span>.</p>
+                  </li>
+                  <li className="flex gap-2 md:gap-3">
+                    <span className="text-indigo-400 font-black text-[10px] md:text-xs mt-0.5">02</span>
+                    <p className="text-[9px] md:text-[11px] font-bold leading-relaxed text-gray-300">Email is <span className="text-white">optional</span> - you can leave it blank.</p>
+                  </li>
+                  <li className="flex gap-2 md:gap-3">
+                    <span className="text-indigo-400 font-black text-[10px] md:text-xs mt-0.5">03</span>
+                    <p className="text-[9px] md:text-[11px] font-bold leading-relaxed text-gray-300">Grade Level: <span className="text-white">Grade 7 to Grade 12</span>.</p>
+                  </li>
+                  <li className="flex gap-2 md:gap-3">
+                    <span className="text-indigo-400 font-black text-[10px] md:text-xs mt-0.5">04</span>
+                    <p className="text-[9px] md:text-[11px] font-bold leading-relaxed text-gray-300">Do <span className="text-rose-400">NOT</span> change the header names in the first row.</p>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
           
           <div className="flex items-center gap-1 bg-white p-1 rounded-xl md:rounded-2xl border border-gray-200 shadow-sm">
             <button 
