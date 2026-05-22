@@ -341,6 +341,7 @@ class ReportedMessageSerializer(serializers.ModelSerializer):
         model = ReportedMessage
         fields = ['id', 'message', 'message_content', 'message_sender', 'reporter', 'reporter_name', 
                   'reason', 'status', 'moderator_note', 'created_at', 'resolved_at']
+        read_only_fields = ['reporter', 'status', 'resolved_at']
 
 
 class GradeSerializer(serializers.ModelSerializer):
