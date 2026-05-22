@@ -262,42 +262,99 @@ const Teachers = () => {
     toast.success('PDF exported successfully');
   };
 
-  const handleImportCSV = async (e) => {
+  const handleImportExcel = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    const formData = new FormData();
-    formData.append('file', file);
-
-    const loadingToast = toast.loading('Importing teachers...');
+    const loadingToast = toast.loading('Reading file...');
     try {
-      const response = await api.post('/users/import_teachers_csv/', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
+      const reader = new FileReader();
+      reader.onload = async (evt) => {
+        try {
+          const bstr = evt.target.result;
+          const wb = XLSX.read(bstr, { type: 'binary' });
+          const wsname = wb.SheetNames[0];
+          const ws = wb.Sheets[wsname];
+          
+          // Convert sheet to CSV format for the backend
+          const csvData = XLSX.utils.sheet_to_csv(ws);
+          
+          const blob = new Blob([csvData], { type: 'text/csv' });
+          const formData = new FormData();
+          formData.append('file', blob, 'import.csv');
 
-      if (response.data.errors?.length > 0) {
-        Swal.fire({
-          icon: 'warning',
-          title: 'Import Completed with Errors',
-          html: `
-            <div class="text-left">
-              <p class="mb-2 font-bold text-emerald-600">Successfully created: ${response.data.created_count}</p>
-              <p class="mb-1 font-bold text-rose-600">Errors (${response.data.errors.length}):</p>
-              <div class="max-h-40 overflow-y-auto text-xs bg-gray-50 p-2 rounded border font-mono">
-                ${response.data.errors.join('<br/>')}
-              </div>
-            </div>
-          `,
-          confirmButtonColor: '#9333ea'
-        });
-      } else {
-        toast.success(`Successfully imported ${response.data.created_count} teachers!`, { id: loadingToast });
-      }
-      
-      fetchTeachers();
-      setShowImportModal(false);
+          toast.loading('Importing teachers...', { id: loadingToast });
+          const response = await api.post('/users/import_teachers_csv/', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+          });
+          toast.dismiss(loadingToast);
+          
+          const { created_count, created_users, errors } = response.data;
+
+          if (created_count > 0) {
+            Swal.fire({
+              icon: 'success',
+              title: 'Import Successful',
+              width: '600px',
+              html: `
+                <div class="text-left">
+                  <p class="mb-4 text-sm font-bold text-emerald-600">Successfully created ${created_count} teachers!</p>
+                  <div class="max-h-60 overflow-y-auto border border-gray-200 rounded-lg">
+                    <table class="w-full text-[10px] text-left">
+                      <thead class="bg-gray-50 border-b border-gray-200">
+                        <tr>
+                          <th class="px-3 py-2">Name</th>
+                          <th class="px-3 py-2">Email</th>
+                          <th class="px-3 py-2">Temp Password</th>
+                        </tr>
+                      </thead>
+                      <tbody class="divide-y divide-gray-100">
+                        ${created_users.map(u => `
+                          <tr>
+                            <td class="px-3 py-2 font-bold">${u.name}</td>
+                            <td class="px-3 py-2">${u.username}</td>
+                            <td class="px-3 py-2 font-mono text-purple-600">${u.password}</td>
+                          </tr>
+                        `).join('')}
+                      </tbody>
+                    </table>
+                  </div>
+                  <p class="mt-4 text-[10px] text-gray-500 italic">Please copy these credentials and provide them to the teachers.</p>
+                  ${errors.length > 0 ? `
+                    <div class="mt-4 p-3 bg-red-50 rounded-lg">
+                      <p class="text-[10px] font-bold text-red-600 mb-1">Errors (${errors.length}):</p>
+                      <ul class="text-[9px] text-red-500 list-disc list-inside">
+                        ${errors.map(e => `<li>${e}</li>`).join('')}
+                      </ul>
+                    </div>
+                  ` : ''}
+                </div>
+              `,
+              confirmButtonColor: '#9333ea'
+            });
+          } else if (errors.length > 0) {
+            Swal.fire({
+              icon: 'error',
+              title: 'Import Failed',
+              html: `
+                <div class="text-left text-sm text-red-500">
+                  <ul class="list-disc list-inside">${errors.map(e => `<li>${e}</li>`).join('')}</ul>
+                </div>
+              `
+            });
+          }
+          
+          setShowImportModal(false);
+          fetchTeachers();
+        } catch (err) {
+          toast.dismiss(loadingToast);
+          toast.error('Failed to parse Excel file');
+        }
+      };
+      reader.readAsBinaryString(file);
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Failed to import teachers', { id: loadingToast });
+      toast.dismiss(loadingToast);
+      toast.error('Failed to read file');
     }
   };
 
@@ -750,7 +807,7 @@ const Teachers = () => {
                 <input 
                   type="file" 
                   accept=".csv, .xlsx, .xls"
-                  onChange={handleImportCSV}
+                  onChange={handleImportExcel}
                   className="absolute inset-0 opacity-0 cursor-pointer z-10"
                 />
                 <div className="space-y-4">
