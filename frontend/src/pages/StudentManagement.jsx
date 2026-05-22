@@ -379,32 +379,23 @@ const StudentManagement = () => {
     // Group by Grade -> Classroom
     const groups = {};
     
-    if (user?.role === 'teacher') {
-      // Teachers only manage their own advisory classroom
-      if (advisoryClass) {
-        let grade = advisoryClass.grade_level;
-        
-        // If grade_level is missing, try to infer it from the classroom name
-        if (!grade && advisoryClass.name) {
-          const match = advisoryClass.name.match(/Grade\s+(\d+)/i);
-          if (match) grade = `Grade ${match[1]}`;
+    filtered.forEach(s => {
+      let grade = s.profile?.grade_level || 'Unassigned';
+      let classroom = s.profile?.classroom_name || 'No Classroom';
+      
+      // For teachers, force students into their advisory classroom grouping
+      if (user?.role === 'teacher' && advisoryClass) {
+        if (!grade || grade === 'Unassigned') {
+          const match = advisoryClass.name?.match(/Grade\s+(\d+)/i);
+          grade = match ? `Grade ${match[1]}` : (advisoryClass.grade_level || 'Unassigned');
         }
-        
-        grade = grade || 'Unassigned';
-        const classroom = advisoryClass.name;
-        groups[grade] = { [classroom]: filtered };
+        classroom = advisoryClass.name;
       }
-    } else {
-      // Admin grouping logic: show all students grouped by their assigned grade/classroom
-      filtered.forEach(s => {
-        const grade = s.profile?.grade_level || 'Unassigned';
-        const classroom = s.profile?.classroom_name || 'No Classroom';
-        
-        if (!groups[grade]) groups[grade] = {};
-        if (!groups[grade][classroom]) groups[grade][classroom] = [];
-        groups[grade][classroom].push(s);
-      });
-    }
+      
+      if (!groups[grade]) groups[grade] = {};
+      if (!groups[grade][classroom]) groups[grade][classroom] = [];
+      groups[grade][classroom].push(s);
+    });
 
     // Sort Grades
     const sortedGrades = Object.keys(groups).sort((a, b) => {
@@ -430,7 +421,8 @@ const StudentManagement = () => {
         return {
           name: classroom,
           male: sorted.filter(s => (s.profile?.sex || '').toLowerCase() === 'male'),
-          female: sorted.filter(s => (s.profile?.sex || '').toLowerCase() === 'female')
+          female: sorted.filter(s => (s.profile?.sex || '').toLowerCase() === 'female'),
+          totalCount: classStudents.length
         };
       })
     }));
@@ -703,7 +695,7 @@ const StudentManagement = () => {
                         <h3 className="font-black text-gray-700 text-[9px] md:text-sm uppercase tracking-wider">{cls.name}</h3>
                       </div>
                       <span className="text-[7px] md:text-[10px] font-black text-indigo-500 bg-indigo-50 px-1.5 py-0.5 md:px-2.5 md:py-1 rounded-full uppercase tracking-widest">
-                        {cls.students.length}
+                        {cls.totalCount}
                       </span>
                     </div>
 
