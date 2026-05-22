@@ -81,15 +81,15 @@ const GradeDistribution = () => {
   return (
     <div className="space-y-4 pb-8 animate-fade-in max-w-full overflow-hidden">
       {/* Header */}
-      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4 bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-2xl">
+      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4 bg-slate-900 py-8 px-6 rounded-2xl border border-slate-800 shadow-2xl">
         <div className="flex-1">
-          <h1 className="text-xl md:text-2xl font-black text-white tracking-tighter uppercase leading-none">Academic Intelligence</h1>
-          <p className="text-slate-400 text-[10px] font-bold uppercase tracking-[0.2em] mt-2 flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse" />
+          <h1 className="text-xl md:text-3xl font-black text-slate-50 tracking-tighter uppercase leading-none">Academic Intelligence</h1>
+          <p className="text-slate-200 text-[10px] font-bold uppercase tracking-[0.2em] mt-3 flex items-center gap-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-indigo-500 animate-pulse shadow-[0_0_10px_rgba(99,102,241,0.5)]" />
             Performance Distribution Matrix — {academicYear}
           </p>
           
-          <div className="flex flex-wrap gap-3 mt-6">
+          <div className="flex flex-wrap gap-3 mt-8">
             <div className="relative min-w-[140px]">
               <label className="absolute -top-2 left-2 px-1 bg-slate-900 text-[8px] font-black text-slate-500 uppercase tracking-widest z-10">Grade Level</label>
               <select 
@@ -182,8 +182,8 @@ const GradeDistribution = () => {
                       data={data.category_counts}
                       cx="50%"
                       cy="45%"
-                      innerRadius={55}
-                      outerRadius={75}
+                      innerRadius={60}
+                      outerRadius={80}
                       paddingAngle={6}
                       dataKey="value"
                     >
@@ -212,9 +212,9 @@ const GradeDistribution = () => {
                     />
                   </PieChart>
                 </ResponsiveContainer>
-                <div className="absolute top-[45%] left-1/2 -translate-x-1/2 -translate-y-1/2 mt-[-10px] text-center pointer-events-none">
-                  <p className="text-xl font-black text-slate-900 leading-none">{data.total_students}</p>
-                  <p className="text-[7px] font-black text-slate-400 uppercase tracking-widest mt-0.5">Students</p>
+                <div className="absolute top-[45%] left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center justify-center pointer-events-none">
+                  <p className="text-2xl font-black text-slate-900 leading-none">{data.total_students}</p>
+                  <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mt-1">Students</p>
                 </div>
               </div>
             </div>
@@ -244,6 +244,7 @@ const GradeDistribution = () => {
                       tickLine={false}
                       angle={-25}
                       textAnchor="end"
+                      padding={{ left: 20, right: 20 }}
                     />
                     <YAxis 
                       domain={[70, 100]} 
@@ -252,7 +253,13 @@ const GradeDistribution = () => {
                       tickLine={false}
                     />
                     <Tooltip content={<CustomTooltip unit="%" />} />
-                    <Bar dataKey="average" fill="#6366f1" radius={[2, 2, 0, 0]} barSize={32} label={renderCustomBarLabel}>
+                    <Bar 
+                      dataKey="average" 
+                      fill="#6366f1" 
+                      radius={[2, 2, 0, 0]} 
+                      barSize={data.by_level.length === 1 ? 60 : 32} 
+                      label={renderCustomBarLabel}
+                    >
                       {data.by_level.map((entry, index) => (
                         <Cell 
                           key={`cell-${index}`} 
