@@ -469,22 +469,35 @@ const StudentManagement = () => {
         <p className="text-[10px] font-bold text-gray-500 truncate max-w-[150px] lowercase italic">{student.email || '—'}</p>
       </td>
       <td className="hidden md:table-cell px-6 py-4">
-        <span className="text-[10px] font-mono font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded-md">
-          {student.profile?.registration_number || student.username}
-        </span>
-      </td>
+         <div className="flex flex-col">
+           <span className="text-[10px] font-mono font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded-md w-fit">
+             {student.profile?.registration_number || student.username}
+           </span>
+           {student.must_change_password && student.temp_password_storage && (
+             <div className="mt-1 flex items-center gap-1 group/pass">
+               <span className="text-[8px] font-black text-amber-500 uppercase tracking-widest">Temp Pass:</span>
+               <span className="text-[10px] font-mono font-bold text-amber-600 bg-amber-50 px-1 rounded border border-amber-100 select-all cursor-help" title="Visible until student changes password">
+                 {student.temp_password_storage}
+               </span>
+             </div>
+           )}
+         </div>
+       </td>
       <td className="px-3 py-1.5 md:px-6 md:py-4 text-center">
-        <button 
-          onClick={() => handleToggleStatus(student, student.account_status === 'active' ? 'suspended' : 'active')}
-          className={`px-1.5 py-0.5 md:px-3 md:py-1 rounded-full text-[6px] md:text-[10px] font-black uppercase tracking-widest transition-all ${
-            student.account_status === 'active' 
-              ? 'bg-emerald-50 text-emerald-600 border border-emerald-100 hover:bg-emerald-100' 
-              : 'bg-rose-50 text-rose-600 border border-rose-100 hover:bg-rose-100'
-          }`}
-        >
-          {student.account_status}
-        </button>
-      </td>
+         <select 
+           value={student.account_status} 
+           onChange={(e) => handleToggleStatus(student, e.target.value)}
+           className={`text-[7px] md:text-[10px] font-black px-1.5 py-0.5 md:px-2 md:py-1 rounded uppercase tracking-widest border-0 focus:ring-2 focus:ring-purple-500 cursor-pointer transition-all ${
+             student.account_status === 'active' ? 'bg-emerald-100 text-emerald-600' : 
+             student.account_status === 'suspended' ? 'bg-rose-100 text-rose-600' : 
+             'bg-gray-100 text-gray-600'
+           }`}
+         >
+           <option value="active">Active</option>
+           <option value="inactive">Inactive</option>
+           <option value="suspended">Suspended</option>
+         </select>
+       </td>
       <td className="px-3 py-1.5 md:px-6 md:py-4">
         <div className="flex items-center justify-center gap-1 md:gap-2">
           <button 
