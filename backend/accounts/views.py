@@ -2703,6 +2703,63 @@ class GradeViewSet(viewsets.ModelViewSet):
             return queryset.filter(student_id__in=linked_student_ids)
         return queryset.none()
 
+    def create(self, request, *args, **kwargs):
+        """Custom create to handle upsert (update if exists, otherwise create)"""
+        student_id = request.data.get('student')
+        subject_id = request.data.get('subject')
+        grade_type = request.data.get('grade_type')
+        quarter = request.data.get('quarter')
+        academic_year = request.data.get('academic_year')
+        
+        # We only handle upsert for specific grade inputs to prevent unique constraint errors
+        if all([student_id, subject_id, grade_type, quarter, academic_year]):
+            try:
+                # Check if a grade already exists for this unique combination
+                grade = Grade.objects.get(
+                    student_id=student_id,
+                    subject_id=subject_id,
+                    grade_type=grade_type,
+                    quarter=quarter,
+                    academic_year=academic_year
+                )
+                
+                # Verify permissions (ensure the teacher is allowed to update this grade)
+                if self.request.user.role != 'admin' and grade.teacher != self.request.user:
+                    # Check if teacher is at least assigned to this classroom/subject
+                    assigned = ClassroomSubject.objects.filter(
+                        classroom=grade.classroom,
+                        subject=grade.subject,
+                        teacher=self.request.user
+                    ).exists()
+                    if not assigned:
+                        return Response({'error': 'You do not have permission to update this grade.'}, status=status.HTTP_403_FORBIDDEN)
+
+                # Update existing grade
+                # Check if grade is locked before updating
+                if grade.is_locked and self.request.user.role != 'admin':
+                    return Response({'error': 'This grade is locked and cannot be edited'}, status=status.HTTP_403_FORBIDDEN)
+
+                serializer = self.get_serializer(grade, data=request.data, partial=True)
+                serializer.is_valid(raise_exception=True)
+                serializer.save()
+                
+                # Log the update
+                from portal.views import log_audit_action
+                log_audit_action(
+                    user=self.request.user,
+                    action='grade_update',
+                    model_name='Grade',
+                    object_id=grade.id,
+                    object_repr=str(grade),
+                    description=f'Updated grade for {grade.student.username} via upsert',
+                    request=self.request
+                )
+                return Response(serializer.data)
+            except Grade.DoesNotExist:
+                pass
+                
+        return super().create(request, *args, **kwargs)
+
     @action(detail=False, methods=['get'])
     def summary(self, request):
         """Advanced grade analytics and monitoring"""
