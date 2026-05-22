@@ -384,13 +384,15 @@ def teacher_dashboard_stats(request):
         if user.role != 'teacher' and user.role != 'admin':
             return Response({'error': 'Unauthorized'}, status=403)
 
-        # Get teacher's classrooms
-        classrooms = Classroom.objects.filter(teacher=user)
+        from .models import StudentClassEnrollment, Grade, ClassroomSubject
+        from django.db.models import Q
+        
+        # Get classrooms where teacher is adviser OR has assigned subjects
+        assigned_classrooms_ids = ClassroomSubject.objects.filter(teacher=user).values_list('classroom_id', flat=True)
+        classrooms = Classroom.objects.filter(Q(teacher=user) | Q(id__in=assigned_classrooms_ids)).distinct()
         total_classes = classrooms.count()
         
         # Get total students across those classrooms
-        # Note: Students are linked to classrooms via StudentClassEnrollment
-        from .models import StudentClassEnrollment, Grade
         student_ids = StudentClassEnrollment.objects.filter(
             classroom__in=classrooms
         ).values_list('student_id', flat=True).distinct()
