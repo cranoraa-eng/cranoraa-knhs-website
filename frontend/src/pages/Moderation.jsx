@@ -116,15 +116,15 @@ const Moderation = () => {
 
       <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+          <table className="w-full text-left border-collapse table-fixed">
             <thead>
               <tr className="bg-slate-50 border-b border-slate-100">
-                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Reporter</th>
-                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Message Content</th>
-                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Sender</th>
-                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Reason</th>
-                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Status</th>
-                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Action</th>
+                <th className="w-[15%] px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Reporter</th>
+                <th className="w-[30%] px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Message Content</th>
+                <th className="w-[15%] px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Sender</th>
+                <th className="w-[20%] px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Reason</th>
+                <th className="w-[10%] px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Status</th>
+                <th className="w-[10%] px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -143,17 +143,21 @@ const Moderation = () => {
               ) : (
                 reports.map((report) => (
                   <tr key={report.id} className="hover:bg-slate-50 transition-colors">
-                    <td className="px-6 py-4">
-                      <span className="text-xs font-bold text-slate-700">{report.reporter_name}</span>
+                    <td className="px-6 py-4 truncate">
+                      <span className="text-xs font-bold text-slate-700 block truncate" title={report.reporter_name}>{report.reporter_name}</span>
                     </td>
                     <td className="px-6 py-4">
-                      <p className="text-xs text-slate-600 line-clamp-2 max-w-xs">{report.message_content}</p>
+                      <p className="text-xs text-slate-600 line-clamp-3 break-words whitespace-pre-wrap" title={report.message_content}>
+                        {report.message_content}
+                      </p>
+                    </td>
+                    <td className="px-6 py-4 truncate">
+                      <span className="text-xs font-bold text-slate-700 block truncate" title={`@${report.message_sender}`}>@{report.message_sender}</span>
                     </td>
                     <td className="px-6 py-4">
-                      <span className="text-xs font-bold text-slate-700">@{report.message_sender}</span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="text-xs text-slate-500 italic">"{report.reason}"</span>
+                      <p className="text-xs text-slate-500 italic line-clamp-3 break-words" title={report.reason}>
+                        "{report.reason}"
+                      </p>
                     </td>
                     <td className="px-6 py-4">
                       <span className={`px-2 py-1 rounded-full text-[8px] font-black uppercase tracking-widest ${
