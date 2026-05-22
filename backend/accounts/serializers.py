@@ -105,6 +105,7 @@ class ClassroomSerializer(serializers.ModelSerializer):
 class StudentClassEnrollmentSerializer(serializers.ModelSerializer):
     student_name = serializers.SerializerMethodField()
     student_email = serializers.CharField(source='student.email', read_only=True)
+    student_sex = serializers.CharField(source='student.profile.sex', read_only=True)
     classroom_name = serializers.CharField(source='classroom.name', read_only=True)
     general_average = serializers.SerializerMethodField()
     transmuted_average = serializers.SerializerMethodField()
@@ -113,7 +114,7 @@ class StudentClassEnrollmentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = StudentClassEnrollment
-        fields = ['id', 'student', 'student_name', 'student_email', 'classroom',
+        fields = ['id', 'student', 'student_name', 'student_email', 'student_sex', 'classroom',
                   'classroom_name', 'q1', 'q2', 'q3', 'q4', 'gpa',
                   'general_average', 'transmuted_average', 'transmuted_quarters',
                   'descriptive_equivalent', 'enrolled_at', 'updated_at']
@@ -212,9 +213,10 @@ class SubjectSerializer(serializers.ModelSerializer):
 
 class SimplifiedStudentSerializer(serializers.ModelSerializer):
     full_name = serializers.SerializerMethodField()
+    student_sex = serializers.CharField(source='profile.sex', read_only=True)
     class Meta:
         model = User
-        fields = ['id', 'username', 'full_name', 'email', 'role']
+        fields = ['id', 'username', 'full_name', 'email', 'role', 'student_sex']
     def get_full_name(self, obj): return full_name(obj)
 
 class ClassroomSubjectSerializer(serializers.ModelSerializer):
@@ -360,6 +362,7 @@ class ReportedMessageSerializer(serializers.ModelSerializer):
 class GradeSerializer(serializers.ModelSerializer):
     student_name = serializers.SerializerMethodField()
     student_email = serializers.CharField(source='student.email', read_only=True)
+    student_sex = serializers.CharField(source='student.profile.sex', read_only=True)
     subject_name = serializers.CharField(source='subject.name', read_only=True)
     subject_code = serializers.CharField(source='subject.code', read_only=True)
     classroom_name = serializers.CharField(source='classroom.name', read_only=True)
@@ -371,7 +374,7 @@ class GradeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Grade
         fields = [
-            'id', 'student', 'student_name', 'student_email', 'subject',
+            'id', 'student', 'student_name', 'student_email', 'student_sex', 'subject',
             'subject_name', 'subject_code', 'classroom', 'classroom_name',
             'teacher', 'teacher_name', 'grade_type', 'grade_type_display',
             'quarter', 'quarter_display', 'academic_year', 'raw_score', 'total_score',

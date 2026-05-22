@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, Fragment } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../utils/api';
 import { getUser } from '../utils/auth';
@@ -338,6 +338,13 @@ const GradeManagement = () => {
                                 };
 
                                 const studentsList = Object.values(studentDataMap).sort((a, b) => {
+                                  // Group by sex (Male first, then Female)
+                                  const sexOrder = { 'male': 1, 'female': 2, 'other': 3 };
+                                  const sexA = sexOrder[a.sex?.toLowerCase()] || 4;
+                                  const sexB = sexOrder[b.sex?.toLowerCase()] || 4;
+                                  if (sexA !== sexB) return sexA - sexB;
+
+                                  // Then by last name
                                   const nameA = formatName(a.name).toLowerCase();
                                   const nameB = formatName(b.name).toLowerCase();
                                   return nameA.localeCompare(nameB);
@@ -382,30 +389,54 @@ const GradeManagement = () => {
                                               </tr>
                                             </thead>
                                             <tbody className="divide-y divide-gray-100">
-                                              {studentsList.map((s, idx) => {
-                                                const final = calculateFinal(s.quarters);
-                                                const rounded = final != null ? Math.round(parseFloat(final)) : null;
-                                                const remarks = getRemarks(rounded);
-                                                const anyLocked = Object.values(s.quarters).some(q => q.is_locked);
-                                                const anyUnlocked = Object.values(s.quarters).some(q => !q.is_locked);
+                                              {(() => {
+                                                let lastSex = null;
+                                                let maleIdx = 0;
+                                                let femaleIdx = 0;
 
-                                                return (
-                                                  <tr key={s.id} className="hover:bg-purple-50 transition-colors group/row text-center">
-                                                    <td className="px-1 md:px-4 py-2 md:py-3 text-slate-400 text-[8px] md:text-xs font-black sticky left-0 bg-white group-hover/row:bg-purple-50 z-10 w-8 md:w-12 border-r border-gray-100">{idx + 1}</td>
-                                                    <td className="px-1 md:px-4 py-2 md:py-3 sticky left-8 md:left-12 bg-white group-hover/row:bg-purple-50 z-10 border-r border-gray-200">
-                                                      <div className="flex items-center gap-1.5 md:gap-2 min-w-[70px] md:min-w-[180px] text-left">
-                                                        <div className="hidden sm:flex w-5 h-5 md:w-8 md:h-8 rounded-lg bg-gradient-to-br from-purple-500 to-indigo-500 items-center justify-center text-white font-black text-[9px] md:text-xs flex-shrink-0 shadow-sm">
-                                                          {s.name?.charAt(0).toUpperCase()}
-                                                        </div>
-                                                        <div className="min-w-0">
-                                                          <div className="font-black text-slate-800 leading-tight whitespace-nowrap text-[8px] md:text-sm uppercase tracking-tight truncate max-w-[60px] md:max-w-none" title={s.name}>
-                                                            <span className="md:hidden">{s.name?.split(' ').pop()}</span>
-                                                            <span className="hidden md:inline">{formatName(s.name)}</span>
+                                                return studentsList.map((s, idx) => {
+                                                  const currentSex = (s.sex || 'other').toLowerCase();
+                                                  const showHeader = currentSex !== lastSex;
+                                                  lastSex = currentSex;
+
+                                                  if (currentSex === 'male') maleIdx++;
+                                                  if (currentSex === 'female') femaleIdx++;
+                                                  const displayIdx = currentSex === 'male' ? maleIdx : currentSex === 'female' ? femaleIdx : idx + 1;
+
+                                                  const final = calculateFinal(s.quarters);
+                                                  const rounded = final != null ? Math.round(parseFloat(final)) : null;
+                                                  const remarks = getRemarks(rounded);
+                                                  const anyLocked = Object.values(s.quarters).some(q => q.is_locked);
+                                                  const anyUnlocked = Object.values(s.quarters).some(q => !q.is_locked);
+
+                                                  return (
+                                                    <Fragment key={s.id}>
+                                                      {showHeader && (
+                                                        <tr className="bg-slate-100/80 backdrop-blur-sm border-y border-slate-200">
+                                                          <td colSpan={(user?.role === 'admin' || user?.role === 'teacher') ? 10 : 9} className="px-3 py-1.5 md:px-6 md:py-2 text-[8px] md:text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] text-left">
+                                                            <div className="flex items-center gap-2">
+                                                              <div className={`w-1.5 h-1.5 rounded-full ${currentSex === 'male' ? 'bg-blue-500' : currentSex === 'female' ? 'bg-rose-500' : 'bg-slate-400'}`} />
+                                                              {currentSex === 'male' ? 'Male Students' : currentSex === 'female' ? 'Female Students' : 'Other / Unassigned'}
+                                                            </div>
+                                                          </td>
+                                                        </tr>
+                                                      )}
+                                                      <tr className="hover:bg-purple-50 transition-colors group/row text-center">
+                                                        <td className="px-1 md:px-4 py-2 md:py-3 text-slate-400 text-[8px] md:text-xs font-black sticky left-0 bg-white group-hover/row:bg-purple-50 z-10 w-8 md:w-12 border-r border-gray-100">{displayIdx}</td>
+                                                        <td className="px-1 md:px-4 py-2 md:py-3 sticky left-8 md:left-12 bg-white group-hover/row:bg-purple-50 z-10 border-r border-gray-200">
+                                                          <div className="flex items-center gap-1.5 md:gap-2 min-w-[70px] md:min-w-[180px] text-left">
+                                                            <div className={`hidden sm:flex w-5 h-5 md:w-8 md:h-8 rounded-lg items-center justify-center text-white font-black text-[9px] md:text-xs flex-shrink-0 shadow-sm ${currentSex === 'male' ? 'bg-gradient-to-br from-blue-500 to-indigo-500' : currentSex === 'female' ? 'bg-gradient-to-br from-rose-500 to-purple-500' : 'bg-gradient-to-br from-slate-500 to-slate-700'}`}>
+                                                              {s.name?.charAt(0).toUpperCase()}
+                                                            </div>
+                                                            <div className="min-w-0">
+                                                              <div className="font-black text-slate-800 leading-tight whitespace-nowrap text-[8px] md:text-sm uppercase tracking-tight truncate max-w-[60px] md:max-w-none" title={s.name}>
+                                                                <span className="md:hidden">{s.name?.split(' ').pop()}</span>
+                                                                <span className="hidden md:inline">{formatName(s.name)}</span>
+                                                              </div>
+                                                              <div className="hidden md:block text-[7px] md:text-[10px] text-slate-400 truncate max-w-[60px] md:max-w-120px font-medium">{s.email}</div>
+                                                            </div>
                                                           </div>
-                                                          <div className="hidden md:block text-[7px] md:text-[10px] text-slate-400 truncate max-w-[60px] md:max-w-[120px] font-medium">{s.email}</div>
-                                                        </div>
-                                                      </div>
-                                                    </td>
+                                                        </td>
                                                     {[1, 2, 3, 4].map(qNum => (
                                                       <td key={qNum} className="px-1 md:px-2 py-2 md:py-3 text-center border-l border-gray-50">
                                                         <div className="flex flex-col items-center gap-0.5">
@@ -521,9 +552,11 @@ const GradeManagement = () => {
                                                     </td>
                                                     )}
                                                   </tr>
-                                                );
-                                              })}
-                                            </tbody>
+                                                </Fragment>
+                                              );
+                                            });
+                                          })()}
+                                        </tbody>
                                           </table>
                                         </div>
                                       </div>

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, Fragment } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import api from '../utils/api';
 import toast from 'react-hot-toast';
@@ -77,6 +77,14 @@ const GradeInput = () => {
     try {
       const res = await api.get(`/enrollments/?classroom=${selClassroom}`);
       const sorted = res.data.sort((a, b) => {
+        // Group by sex (Male first, then Female, then Other/None)
+        const sexOrder = { 'male': 1, 'female': 2, 'other': 3 };
+        const sexA = sexOrder[a.student_sex?.toLowerCase()] || 4;
+        const sexB = sexOrder[b.student_sex?.toLowerCase()] || 4;
+        
+        if (sexA !== sexB) return sexA - sexB;
+
+        // Then by last name
         const nameA = formatName(a.student_name).toLowerCase();
         const nameB = formatName(b.student_name).toLowerCase();
         return nameA.localeCompare(nameB);
@@ -400,75 +408,101 @@ const GradeInput = () => {
                 </tr>
               </thead>
               <tbody>
-                {students.map((s, idx) => {
-                  const raw      = cells[s.student];
-                  const score    = raw !== '' && !isNaN(parseFloat(raw)) ? parseFloat(raw) : null;
-                  const isOver   = score !== null && score > 100;
-                  const isActive = active === s.student;
-                  const rowBg    = isActive ? 'bg-violet-50/80' : idx % 2 === 0 ? 'bg-white' : 'bg-gray-50/40';
+                {(() => {
+                  let lastSex = null;
+                  let maleIdx = 0;
+                  let femaleIdx = 0;
+                  
+                  return students.map((s, idx) => {
+                    const currentSex = (s.student_sex || 'other').toLowerCase();
+                    const showHeader = currentSex !== lastSex;
+                    lastSex = currentSex;
+                    
+                    if (currentSex === 'male') maleIdx++;
+                    if (currentSex === 'female') femaleIdx++;
+                    const displayIdx = currentSex === 'male' ? maleIdx : currentSex === 'female' ? femaleIdx : idx + 1;
 
-                  return (
-                    <tr key={s.student} onClick={() => setActive(s.student)}
-                      className={`cursor-default transition-colors ${isActive ? 'outline outline-2 outline-purple-500 outline-offset-[-2px] z-10' : 'hover:bg-purple-50/30'}`}>
-                      <td className={`border border-gray-100 text-center text-[7px] md:text-[10px] font-bold text-gray-400 py-1.5 md:py-3 sticky left-0 z-10 ${rowBg} select-none`}>{idx + 1}</td>
-                      <td className={`border border-gray-100 px-1 md:px-4 py-1 md:py-2.5 sticky left-8 md:left-12 z-10 ${rowBg} min-w-0`}>
-                        <div className="flex items-center gap-1 md:gap-3 min-w-0">
-                          <div className="hidden sm:flex w-5 h-5 md:w-8 md:h-8 rounded-lg bg-gradient-to-br from-purple-500 to-indigo-600 items-center justify-center text-white font-black text-[9px] md:text-xs flex-shrink-0 shadow-sm transition-transform group-hover:scale-110">
-                            {s.student_name?.charAt(0).toUpperCase()}
-                          </div>
-                          <div className="min-w-0">
-                            <button 
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                navigate(`/profile?student_id=${s.student}`);
-                              }}
-                              className="font-black text-gray-800 text-[8px] md:text-sm leading-tight truncate block hover:text-purple-600 transition-colors uppercase tracking-tight max-w-[60px] md:max-w-none"
-                              title="View Profile"
-                            >
-                              <span className="md:hidden">{s.student_name?.split(' ').pop()}</span>
-                              <span className="hidden md:inline">{formatName(s.student_name)}</span>
-                            </button>
-                            <div className="hidden md:block text-[7px] md:text-[10px] text-gray-400 leading-tight mt-0.5 font-medium truncate">{s.student_email}</div>
-                          </div>
-                        </div>
-                      </td>
-                      <td className={`p-0 border border-gray-100 relative ${isActive ? 'bg-white' : isOver ? 'bg-red-50' : rowBg}`}>
-                        {existingGrades[s.student] && cells[s.student] === '' && (
-                          <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-30 select-none">
-                            <span className="font-mono text-[10px] md:text-sm font-black text-slate-400 tracking-tighter">
-                              {existingGrades[s.student].raw_score}
-                            </span>
-                          </div>
+                    const raw      = cells[s.student];
+                    const score    = raw !== '' && !isNaN(parseFloat(raw)) ? parseFloat(raw) : null;
+                    const isOver   = score !== null && score > 100;
+                    const isActive = active === s.student;
+                    const rowBg    = isActive ? 'bg-violet-50/80' : idx % 2 === 0 ? 'bg-white' : 'bg-gray-50/40';
+
+                    return (
+                      <Fragment key={s.student}>
+                        {showHeader && (
+                          <tr className="bg-slate-100/80 backdrop-blur-sm border-y border-slate-200">
+                            <td colSpan="4" className="px-3 py-1.5 md:px-6 md:py-2 text-[8px] md:text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">
+                              <div className="flex items-center gap-2">
+                                <div className={`w-1.5 h-1.5 rounded-full ${currentSex === 'male' ? 'bg-blue-500' : currentSex === 'female' ? 'bg-rose-500' : 'bg-slate-400'}`} />
+                                {currentSex === 'male' ? 'Male Students' : currentSex === 'female' ? 'Female Students' : 'Other / Unassigned'}
+                              </div>
+                            </td>
+                          </tr>
                         )}
-                        <input
-                          ref={el => inputRefs.current[s.student] = el}
-                          type="number" min="0" max="100" step="0.01"
-                          value={raw}
-                          onChange={e => handleGradeChange(s.student, e.target.value)}
-                          onFocus={() => setActive(s.student)}
-                          onKeyDown={e => handleKeyDown(e, s.student)}
-                          placeholder="—"
-                          className={`w-full h-full px-1.5 py-1.5 md:px-4 md:py-3 text-center font-mono text-[10px] md:text-sm bg-transparent focus:outline-none transition-all ${isOver ? 'text-red-600 font-bold' : 'text-gray-900 font-semibold'}`}
-                        />
-                      </td>
-                      <td className={`border border-gray-100 text-center py-1 md:py-2 px-1 md:px-3 ${rowBg}`}>
-                        {score !== null && !isOver ? (
-                          <span className={`text-[7px] md:text-[10px] font-black px-1 py-0.5 md:px-3 md:py-1 rounded-md md:rounded-lg shadow-sm border border-black/5 uppercase tracking-tighter md:tracking-normal ${scoreColor(score)}`}>
-                            {remarksFor(score).toUpperCase()}
-                          </span>
-                        ) : isOver ? (
-                          <span className="text-[7px] text-red-600 font-black uppercase tracking-widest bg-red-50 px-1 py-0.5 rounded">OVER!</span>
-                        ) : existingGrades[s.student] ? (
-                          <span className={`text-[7px] md:text-[10px] font-black px-1 py-0.5 md:px-3 md:py-1 rounded-md md:rounded-lg shadow-sm border border-black/5 uppercase tracking-tighter md:tracking-normal opacity-40 ${scoreColor(parseFloat(existingGrades[s.student].raw_score))}`}>
-                            {remarksFor(parseFloat(existingGrades[s.student].raw_score)).toUpperCase()}
-                          </span>
-                        ) : (
-                          <span className="text-gray-300 text-[9px] md:text-xs font-bold">—</span>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })}
+                        <tr onClick={() => setActive(s.student)}
+                          className={`cursor-default transition-colors ${isActive ? 'outline outline-2 outline-purple-500 outline-offset-[-2px] z-10' : 'hover:bg-purple-50/30'}`}>
+                          <td className={`border border-gray-100 text-center text-[7px] md:text-[10px] font-bold text-gray-400 py-1.5 md:py-3 sticky left-0 z-10 ${rowBg} select-none`}>{displayIdx}</td>
+                          <td className={`border border-gray-100 px-1 md:px-4 py-1 md:py-2.5 sticky left-8 md:left-12 z-10 ${rowBg} min-w-0`}>
+                            <div className="flex items-center gap-1 md:gap-3 min-w-0">
+                              <div className={`hidden sm:flex w-5 h-5 md:w-8 md:h-8 rounded-lg items-center justify-center text-white font-black text-[9px] md:text-xs flex-shrink-0 shadow-sm transition-transform group-hover:scale-110 ${currentSex === 'male' ? 'bg-gradient-to-br from-blue-500 to-indigo-600' : currentSex === 'female' ? 'bg-gradient-to-br from-rose-500 to-purple-600' : 'bg-gradient-to-br from-slate-500 to-slate-700'}`}>
+                                {s.student_name?.charAt(0).toUpperCase()}
+                              </div>
+                              <div className="min-w-0">
+                                <button 
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    navigate(`/profile?student_id=${s.student}`);
+                                  }}
+                                  className="font-black text-gray-800 text-[8px] md:text-sm leading-tight truncate block hover:text-purple-600 transition-colors uppercase tracking-tight max-w-[60px] md:max-w-none"
+                                  title="View Profile"
+                                >
+                                  <span className="md:hidden">{s.student_name?.split(' ').pop()}</span>
+                                  <span className="hidden md:inline">{formatName(s.student_name)}</span>
+                                </button>
+                                <div className="hidden md:block text-[7px] md:text-[10px] text-gray-400 leading-tight mt-0.5 font-medium truncate">{s.student_email}</div>
+                              </div>
+                            </div>
+                          </td>
+                          <td className={`p-0 border border-gray-100 relative ${isActive ? 'bg-white' : isOver ? 'bg-red-50' : rowBg}`}>
+                            {existingGrades[s.student] && cells[s.student] === '' && (
+                              <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-30 select-none">
+                                <span className="font-mono text-[10px] md:text-sm font-black text-slate-400 tracking-tighter">
+                                  {existingGrades[s.student].raw_score}
+                                </span>
+                              </div>
+                            )}
+                            <input
+                              ref={el => inputRefs.current[s.student] = el}
+                              type="number" min="0" max="100" step="0.01"
+                              value={raw}
+                              onChange={e => handleGradeChange(s.student, e.target.value)}
+                              onFocus={() => setActive(s.student)}
+                              onKeyDown={e => handleKeyDown(e, s.student)}
+                              placeholder="—"
+                              className={`w-full h-full px-1.5 py-1.5 md:px-4 md:py-3 text-center font-mono text-[10px] md:text-sm bg-transparent focus:outline-none transition-all ${isOver ? 'text-red-600 font-bold' : 'text-gray-900 font-semibold'}`}
+                            />
+                          </td>
+                          <td className={`border border-gray-100 text-center py-1 md:py-2 px-1 md:px-3 ${rowBg}`}>
+                            {score !== null && !isOver ? (
+                              <span className={`text-[7px] md:text-[10px] font-black px-1 py-0.5 md:px-3 md:py-1 rounded-md md:rounded-lg shadow-sm border border-black/5 uppercase tracking-tighter md:tracking-normal ${scoreColor(score)}`}>
+                                {remarksFor(score).toUpperCase()}
+                              </span>
+                            ) : isOver ? (
+                              <span className="text-[7px] text-red-600 font-black uppercase tracking-widest bg-red-50 px-1 py-0.5 rounded">OVER!</span>
+                            ) : existingGrades[s.student] ? (
+                              <span className={`text-[7px] md:text-[10px] font-black px-1 py-0.5 md:px-3 md:py-1 rounded-md md:rounded-lg shadow-sm border border-black/5 uppercase tracking-tighter md:tracking-normal opacity-40 ${scoreColor(parseFloat(existingGrades[s.student].raw_score))}`}>
+                                {remarksFor(parseFloat(existingGrades[s.student].raw_score)).toUpperCase()}
+                              </span>
+                            ) : (
+                              <span className="text-gray-300 text-[9px] md:text-xs font-bold">—</span>
+                            )}
+                          </td>
+                        </tr>
+                      </Fragment>
+                    );
+                  });
+                })()}
 
                 {/* Summary row */}
                 <tr className="sticky bottom-0 z-20 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">

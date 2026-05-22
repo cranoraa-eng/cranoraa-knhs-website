@@ -213,6 +213,7 @@ def admin_create_user_view(request):
         # Map profile fields
         profile.lrn = profile_data.get('lrn', username if role == 'student' else None)
         profile.title = profile_data.get('title')
+        profile.sex = profile_data.get('sex')
         profile.grade_level = profile_data.get('grade_level')
         profile.employee_id = profile_data.get('employee_id')
         profile.phone_number = profile_data.get('phone_number')
@@ -768,7 +769,7 @@ class UserViewSet(viewsets.ModelViewSet):
         
         for row in reader:
             try:
-                # Expected fields: Student ID (username), First Name, Last Name, Grade Level, Section, Email (optional)
+                # Expected fields: Student ID (username), First Name, Last Name, Grade Level, Section, Email (optional), Sex
                 student_id = row.get('Student ID') or row.get('username')
                 if not student_id:
                     errors.append("Missing Student ID for a row")
@@ -792,6 +793,15 @@ class UserViewSet(viewsets.ModelViewSet):
                 first_name = row.get('First Name') or ''
                 last_name = row.get('Last Name') or ''
                 grade_level = row.get('Grade Level') or ''
+                sex = row.get('Sex') or row.get('sex') or ''
+                
+                # Normalize sex
+                if sex:
+                    sex = sex.lower().strip()
+                    if sex not in ['male', 'female']:
+                        sex = None
+                else:
+                    sex = None
                 
                 # Check if exists
                 if User.objects.filter(username=student_id).exists():
@@ -824,6 +834,7 @@ class UserViewSet(viewsets.ModelViewSet):
                     defaults={
                         'lrn': student_id,
                         'grade_level': grade_level,
+                        'sex': sex
                     }
                 )
                 created_count += 1
@@ -884,6 +895,15 @@ class UserViewSet(viewsets.ModelViewSet):
                 title = row.get('Title') or ''
                 first_name = row.get('First Name') or ''
                 last_name = row.get('Last Name') or ''
+                sex = row.get('Sex') or row.get('sex') or ''
+                
+                # Normalize sex
+                if sex:
+                    sex = sex.lower().strip()
+                    if sex not in ['male', 'female']:
+                        sex = None
+                else:
+                    sex = None
                 
                 # Generate temporary password
                 temp_password = ''.join(secrets.choice(string.ascii_letters + string.digits) for i in range(10))
@@ -910,6 +930,7 @@ class UserViewSet(viewsets.ModelViewSet):
                     user=user,
                     defaults={
                         'title': title,
+                        'sex': sex
                     }
                 )
                 created_count += 1

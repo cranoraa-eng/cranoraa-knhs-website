@@ -20,11 +20,12 @@ const StudentManagement = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [newStudent, setNewStudent] = useState({
     username: '',
+    email: '',
     first_name: '',
     last_name: '',
-    email: '',
-    password: '',
     grade_level: '',
+    password: '',
+    sex: ''
   });
 
   const GRADE_ORDER = ['Grade 7', 'Grade 8', 'Grade 9', 'Grade 10', 'Grade 11', 'Grade 12'];
@@ -56,12 +57,13 @@ const StudentManagement = () => {
         role: 'student',
         profile: {
           lrn: newStudent.username,
-          grade_level: newStudent.grade_level
+          grade_level: newStudent.grade_level,
+          sex: newStudent.sex
         }
       });
       
       setShowAddModal(false);
-      setNewStudent({ username: '', first_name: '', last_name: '', email: '', password: '', grade_level: '' });
+      setNewStudent({ username: '', first_name: '', last_name: '', email: '', password: '', grade_level: '', sex: '' });
       fetchStudents();
 
       // Show success with password
@@ -253,6 +255,7 @@ const StudentManagement = () => {
       'Last Name': s.last_name,
       'Student ID': s.profile?.registration_number || s.username,
       'Grade Level': s.profile?.grade_level || 'N/A',
+      'Sex': s.profile?.sex || 'N/A',
       'Classroom': s.profile?.classroom_name || 'N/A',
       'Email': s.email || '',
       'Temp Password': s.must_change_password ? (s.temp_password_storage || 'Pending') : 'Changed',
@@ -411,18 +414,18 @@ const StudentManagement = () => {
           <div className="flex items-center gap-1">
             <button 
               onClick={() => {
-                const headers = [['Student ID', 'First Name', 'Last Name', 'Grade Level', 'Email']];
+                const headers = [['Student ID', 'First Name', 'Last Name', 'Grade Level', 'Sex', 'Email']];
                 const sampleData = [
-                  ['128150150092', 'Arc', 'Capisen', 'Grade 12', ''],
-                  ['128150150093', 'Arcc', 'Capisenq', 'Grade 12', ''],
-                  ['128150150094', 'Arcy', 'Capisenw', 'Grade 12', ''],
+                  ['128150150092', 'Arc', 'Capisen', 'Grade 12', 'Male', ''],
+                  ['128150150093', 'Arcc', 'Capisenq', 'Grade 12', 'Female', ''],
+                  ['128150150094', 'Arcy', 'Capisenw', 'Grade 12', 'Male', ''],
                 ];
                 
                 const ws = XLSX.utils.aoa_to_sheet([...headers, ...sampleData]);
                 
                 // Apply basic styling to headers
                 const headerRange = XLSX.utils.decode_range(ws['!ref']);
-                for (let C = headerRange.s.c; C <= 4; ++C) {
+                for (let C = headerRange.s.c; C <= 5; ++C) {
                   const address = XLSX.utils.encode_col(C) + '1';
                   if (!ws[address]) continue;
                   ws[address].s = {
@@ -438,6 +441,7 @@ const StudentManagement = () => {
                   { wch: 20 }, // First Name
                   { wch: 20 }, // Last Name
                   { wch: 15 }, // Grade Level
+                  { wch: 10 }, // Sex
                   { wch: 30 }, // Email
                 ];
 
@@ -565,6 +569,7 @@ const StudentManagement = () => {
                           <tr className="text-[7px] md:text-[10px] font-black text-white uppercase tracking-widest border-b border-gray-50 bg-[#2D1B4D]">
                             <th className="px-3 py-1.5 md:px-6 md:py-4 w-10 md:w-16">#</th>
                             <th className="px-3 py-1.5 md:px-6 md:py-4">Student</th>
+                            <th className="hidden md:table-cell px-6 py-4">Sex</th>
                             <th className="hidden md:table-cell px-6 py-4">Email</th>
                             <th className="hidden md:table-cell px-6 py-4">LRN</th>
                             <th className="px-3 py-1.5 md:px-6 md:py-4 text-center">Status</th>
@@ -591,6 +596,7 @@ const StudentManagement = () => {
                                   </div>
                                 </div>
                               </td>
+                              <td className="hidden md:table-cell px-6 py-4 text-xs font-black text-gray-500 uppercase tracking-widest">{student.profile?.sex || 'N/A'}</td>
                               <td className="hidden md:table-cell px-6 py-4 text-sm font-medium text-gray-500">{student.email}</td>
                               <td className="hidden md:table-cell px-6 py-4">
                                 <div className="flex flex-col">
@@ -787,17 +793,32 @@ const StudentManagement = () => {
                   />
                 </div>
               </div>
-              <div>
-                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Grade Level</label>
-                <select 
-                  value={newStudent.grade_level}
-                  onChange={e => setNewStudent({...newStudent, grade_level: e.target.value})}
-                  className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold focus:ring-2 focus:ring-purple-500 outline-none"
-                  required
-                >
-                  <option value="">Select Grade</option>
-                  {GRADE_ORDER.map(g => <option key={g} value={g}>{g}</option>)}
-                </select>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Grade Level</label>
+                  <select 
+                    value={newStudent.grade_level}
+                    onChange={e => setNewStudent({...newStudent, grade_level: e.target.value})}
+                    className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold focus:ring-2 focus:ring-purple-500 outline-none"
+                    required
+                  >
+                    <option value="">Select Grade</option>
+                    {GRADE_ORDER.map(g => <option key={g} value={g}>{g}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Sex</label>
+                  <select 
+                    value={newStudent.sex}
+                    onChange={e => setNewStudent({...newStudent, sex: e.target.value})}
+                    className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold focus:ring-2 focus:ring-purple-500 outline-none"
+                    required
+                  >
+                    <option value="">Select Sex</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                  </select>
+                </div>
               </div>
               <div>
                 <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Email (Optional)</label>
@@ -837,7 +858,7 @@ const StudentManagement = () => {
               <svg className="w-10 h-10 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
             </div>
             <h2 className="text-2xl font-black text-gray-800 uppercase tracking-tight mb-2">Bulk Import Students</h2>
-            <p className="text-sm text-gray-500 font-medium mb-8">Upload an Excel file (.xlsx, .xls) with headers: <br/><code className="bg-gray-100 px-2 py-1 rounded text-xs">Student ID, First Name, Last Name, Grade Level, Email</code></p>
+            <p className="text-sm text-gray-500 font-medium mb-8">Upload an Excel file (.xlsx, .xls) with headers: <br/><code className="bg-gray-100 px-2 py-1 rounded text-xs">Student ID, First Name, Last Name, Grade Level, Sex, Email</code></p>
             
             <input 
               type="file" 
