@@ -43,8 +43,7 @@ const Announcements = () => {
   const [zoomedImage, setZoomedImage]     = useState(null);
 
   const [selectedIds, setSelectedIds]     = useState([]);
-  const [undoBuffer, setUndoBuffer]       = useState(null);
-  const [undoTimer, setUndoTimer]         = useState(null);
+  const [processing, setProcessing]       = useState(false);
 
   useEffect(() => { 
     fetchAnnouncements(); 
@@ -140,120 +139,76 @@ const Announcements = () => {
   const handleDelete = async (a) => {
     const result = await Swal.fire({
       title: 'Delete Announcement?',
-      text: `"${a.title}" will be removed. You can undo this for 5 seconds.`,
-      icon: 'warning', showCancelButton: true,
-      confirmButtonColor: '#ef4444', cancelButtonColor: '#6b7280',
-      confirmButtonText: 'Delete',
+      text: "This action cannot be undone.",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, delete it',
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#64748b',
+      customClass: { popup: 'rounded-3xl' }
     });
-    if (!result.isConfirmed) return;
 
-    // Local update
-    const originalList = [...announcements];
-    setAnnouncements(announcements.filter(item => item.id !== a.id));
-    
-    // Setup Undo
-    if (undoTimer) clearTimeout(undoTimer);
-    setUndoBuffer({ type: 'single', data: a, originalList });
-    
-    const timer = setTimeout(async () => {
-      try { 
-        await api.delete(`/announcements/${a.id}/`); 
-        setUndoBuffer(null);
-      } catch { 
-        toast.error('Failed to delete from server'); 
-        setAnnouncements(originalList);
+    if (result.isConfirmed) {
+      try {
+        await api.delete(`/announcements/${a.id}/`);
+        setAnnouncements(prev => prev.filter(item => item.id !== a.id));
+        toast.success('Announcement deleted');
+      } catch (error) {
+        toast.error('Failed to delete announcement');
       }
-    }, 5000);
-    
-    setUndoTimer(timer);
-    toast.success('Announcement removed', {
-      duration: 5000,
-      position: 'bottom-right',
-      style: { background: '#333', color: '#fff' },
-    });
+    }
   };
 
   const handleBulkDelete = async () => {
     if (selectedIds.length === 0) return;
+    
     const result = await Swal.fire({
       title: `Delete ${selectedIds.length} Announcements?`,
-      text: "Items will be removed. You can undo this for 5 seconds.",
-      icon: 'warning', showCancelButton: true,
-      confirmButtonColor: '#ef4444', cancelButtonColor: '#6b7280',
-      confirmButtonText: 'Delete All Selected',
+      text: "This action cannot be undone.",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, delete them',
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#64748b',
+      customClass: { popup: 'rounded-3xl' }
     });
-    if (!result.isConfirmed) return;
 
-    // Local update
-    const originalList = [...announcements];
-    const deletedItems = announcements.filter(a => selectedIds.includes(a.id));
-    setAnnouncements(announcements.filter(a => !selectedIds.includes(a.id)));
-    
-    // Setup Undo
-    if (undoTimer) clearTimeout(undoTimer);
-    setUndoBuffer({ type: 'bulk', ids: selectedIds, originalList });
-    
-    const timer = setTimeout(async () => {
-      try { 
-        await api.post('/announcements/bulk_delete/', { ids: selectedIds }); 
-        setUndoBuffer(null);
+    if (result.isConfirmed) {
+      try {
+        await api.post('/announcements/bulk_delete/', { ids: selectedIds });
+        setAnnouncements(prev => prev.filter(a => !selectedIds.includes(a.id)));
         setSelectedIds([]);
-      } catch { 
-        toast.error('Failed to delete from server'); 
-        setAnnouncements(originalList);
+        toast.success(`${selectedIds.length} announcements deleted`);
+      } catch (error) {
+        toast.error('Failed to delete from server');
       }
-    }, 5000);
-    
-    setUndoTimer(timer);
-    toast.success(`${selectedIds.length} items removed`, {
-      duration: 5000,
-      position: 'bottom-right',
-      style: { background: '#333', color: '#fff' },
-    });
+    }
   };
 
   const handleDeleteAll = async () => {
     const result = await Swal.fire({
       title: 'Delete ALL Announcements?',
-      text: "This will clear everything! You can undo this for 5 seconds.",
-      icon: 'warning', showCancelButton: true,
-      confirmButtonColor: '#ef4444', cancelButtonColor: '#6b7280',
-      confirmButtonText: 'Yes, Delete Everything',
+      text: "This will permanently remove every announcement from the system.",
+      icon: 'error',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, delete ALL',
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#64748b',
+      customClass: { popup: 'rounded-3xl' }
     });
-    if (!result.isConfirmed) return;
 
-    const originalList = [...announcements];
-    setAnnouncements([]);
-    
-    if (undoTimer) clearTimeout(undoTimer);
-    setUndoBuffer({ type: 'all', originalList });
-
-    const timer = setTimeout(async () => {
-      try { 
-        await api.post('/announcements/delete_all/'); 
-        setUndoBuffer(null);
+    if (result.isConfirmed) {
+      try {
+        await api.post('/announcements/delete_all/');
+        setAnnouncements([]);
         setSelectedIds([]);
-      } catch { 
-        toast.error('Failed to delete from server'); 
-        setAnnouncements(originalList);
+        toast.success('All announcements deleted');
+      } catch (error) {
+        toast.error('Failed to delete from server');
       }
-    }, 5000);
-
-    setUndoTimer(timer);
-    toast.success('All announcements removed', {
-      duration: 5000,
-      position: 'bottom-right',
-    });
+    }
   };
 
-  const handleUndo = () => {
-    if (!undoBuffer) return;
-    if (undoTimer) clearTimeout(undoTimer);
-    setAnnouncements(undoBuffer.originalList);
-    setUndoBuffer(null);
-    setUndoTimer(null);
-    toast.success('Action undone');
-  };
 
   const toggleSelect = (id) => {
     setSelectedIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
