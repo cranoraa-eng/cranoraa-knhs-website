@@ -404,51 +404,55 @@ const TrafficIntelligenceSection = ({ data }) => (
   </div>
 );
 
-const GradeDistributionPieSection = ({ data, totalStudents }) => (
-  <div className="lg:col-span-4 bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex flex-col min-h-[400px]">
-    <div className="mb-6">
-      <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Achievement Spread</h3>
-      <p className="text-sm font-black text-slate-900 uppercase tracking-tight">Performance Tier Distribution</p>
-    </div>
-    <div className="flex-1 relative">
-      <ResponsiveContainer width="100%" height="100%">
-        <PieChart>
-          <Pie 
-            data={data} 
-            cx="50%" 
-            cy="50%" 
-            innerRadius={65} 
-            outerRadius={85} 
-            paddingAngle={6} 
-            dataKey="value"
-            stroke="none"
-          >
-            {data.map((_, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />)}
-          </Pie>
-          <Tooltip content={<CustomPieTooltip />} />
-          <Legend 
-            verticalAlign="bottom" 
-            align="center" 
-            iconType="circle" 
-            iconSize={6} 
-            layout="horizontal" 
-            wrapperStyle={{ bottom: 0, paddingTop: '20px' }}
-            formatter={(value) => {
-              const item = data.find(d => d.name === value);
-              const total = data.reduce((sum, d) => sum + d.value, 0);
-              const percentage = total > 0 ? ((item.value / total) * 100).toFixed(1) : 0;
-              return <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter">{value} ({percentage}%)</span>;
-            }}
-          />
-        </PieChart>
-      </ResponsiveContainer>
-      <div className="absolute top-[50%] left-1/2 -translate-x-1/2 flex flex-col items-center justify-center pointer-events-none transform -translate-y-[calc(50%+20px)]">
-        <p className="text-3xl font-black text-slate-900 leading-none">{totalStudents}</p>
-        <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mt-1">Students</p>
+const GradeDistributionPieSection = ({ data, totalStudents }) => {
+  const chartData = Array.isArray(data) ? data : [];
+  return (
+    <div className="lg:col-span-4 bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex flex-col min-h-[400px]">
+      <div className="mb-6">
+        <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Achievement Spread</h3>
+        <p className="text-sm font-black text-slate-900 uppercase tracking-tight">Performance Tier Distribution</p>
+      </div>
+      <div className="flex-1 relative">
+        <ResponsiveContainer width="100%" height="100%">
+          <PieChart>
+            <Pie 
+              data={chartData} 
+              cx="50%" 
+              cy="50%" 
+              innerRadius={65} 
+              outerRadius={85} 
+              paddingAngle={6} 
+              dataKey="value"
+              stroke="none"
+            >
+              {chartData.map((_, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />)}
+            </Pie>
+            <Tooltip content={<CustomPieTooltip />} />
+            <Legend 
+              verticalAlign="bottom" 
+              align="center" 
+              iconType="circle" 
+              iconSize={6} 
+              layout="horizontal" 
+              wrapperStyle={{ bottom: 0, paddingTop: '20px' }}
+              formatter={(value) => {
+                const item = chartData.find(d => d.name === value);
+                if (!item) return value;
+                const total = chartData.reduce((sum, d) => sum + d.value, 0);
+                const percentage = total > 0 ? ((item.value / total) * 100).toFixed(1) : 0;
+                return <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter">{value} ({percentage}%)</span>;
+              }}
+            />
+          </PieChart>
+        </ResponsiveContainer>
+        <div className="absolute top-[50%] left-1/2 -translate-x-1/2 flex flex-col items-center justify-center pointer-events-none transform -translate-y-[calc(50%+20px)]">
+          <p className="text-3xl font-black text-slate-900 leading-none">{totalStudents}</p>
+          <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mt-1">Students</p>
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 const GradeDistributionBarSection = ({ data, filterLevel }) => (
   <div className="lg:col-span-8 bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
