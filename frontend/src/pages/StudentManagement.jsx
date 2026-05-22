@@ -328,10 +328,11 @@ const StudentManagement = () => {
   const organizedData = useMemo(() => {
     const filtered = students.filter(s => {
       const search = searchQuery.toLowerCase();
-      const fullName = `${s.first_name} ${s.last_name}`.toLowerCase();
-      const lrn = (s.profile?.registration_number || '').toLowerCase();
+      const fullName = `${s.first_name || ''} ${s.last_name || ''}`.toLowerCase();
+      const lrn = (s.profile?.registration_number || s.username || '').toLowerCase();
+      const email = (s.email || '').toLowerCase();
       return (
-        s.email.toLowerCase().includes(search) ||
+        email.includes(search) ||
         fullName.includes(search) ||
         lrn.includes(search)
       );
