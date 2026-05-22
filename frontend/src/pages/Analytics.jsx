@@ -645,6 +645,3 @@ const YearSelector = ({ academicYear, onYearChange }) => (
 );
 
 export default Analytics;
-
-
-export default Analytics;
