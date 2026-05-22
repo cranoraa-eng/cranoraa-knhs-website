@@ -606,24 +606,24 @@ const StudentManagement = () => {
                 <span className="font-black text-xs md:text-lg">!</span>
               </button>
               
-              <div className="absolute top-full right-0 mt-2 w-64 md:w-80 p-4 md:p-6 bg-slate-900/95 backdrop-blur-md text-white rounded-2xl md:rounded-3xl shadow-2xl opacity-0 invisible group-hover/info:opacity-100 group-hover/info:visible transition-all z-[110] border border-white/10 scale-95 group-hover/info:scale-100 origin-top-right">
-                <h4 className="text-[10px] md:text-xs font-black uppercase tracking-[0.2em] text-indigo-400 mb-3 md:mb-4 border-b border-white/10 pb-2">Import Instructions</h4>
-                <ul className="space-y-2 md:space-y-3">
-                  <li className="flex gap-2 md:gap-3">
-                    <span className="text-indigo-400 font-black text-[10px] md:text-xs mt-0.5">01</span>
-                    <p className="text-[9px] md:text-[11px] font-bold leading-relaxed text-gray-300">Student ID must be exactly <span className="text-white">12 digits (LRN)</span>.</p>
+              <div className="absolute top-full right-0 mt-2 w-48 md:w-80 p-3 md:p-6 bg-slate-900/95 backdrop-blur-md text-white rounded-2xl md:rounded-3xl shadow-2xl opacity-0 invisible group-hover/info:opacity-100 group-hover/info:visible transition-all z-[110] border border-white/10 scale-95 group-hover/info:scale-100 origin-top-right">
+                <h4 className="text-[8px] md:text-xs font-black uppercase tracking-[0.2em] text-indigo-400 mb-2 md:mb-4 border-b border-white/10 pb-2">Import Instructions</h4>
+                <ul className="space-y-1.5 md:space-y-3">
+                  <li className="flex gap-1.5 md:gap-3">
+                    <span className="text-indigo-400 font-black text-[9px] md:text-xs mt-0.5">01</span>
+                    <p className="text-[8px] md:text-[11px] font-bold leading-relaxed text-gray-300">Student ID must be exactly <span className="text-white">12 digits (LRN)</span>.</p>
                   </li>
-                  <li className="flex gap-2 md:gap-3">
-                    <span className="text-indigo-400 font-black text-[10px] md:text-xs mt-0.5">02</span>
-                    <p className="text-[9px] md:text-[11px] font-bold leading-relaxed text-gray-300">Email is <span className="text-white">optional</span> - you can leave it blank.</p>
+                  <li className="flex gap-1.5 md:gap-3">
+                    <span className="text-indigo-400 font-black text-[9px] md:text-xs mt-0.5">02</span>
+                    <p className="text-[8px] md:text-[11px] font-bold leading-relaxed text-gray-300">Email is <span className="text-white">optional</span> - you can leave it blank.</p>
                   </li>
-                  <li className="flex gap-2 md:gap-3">
-                    <span className="text-indigo-400 font-black text-[10px] md:text-xs mt-0.5">03</span>
-                    <p className="text-[9px] md:text-[11px] font-bold leading-relaxed text-gray-300">Grade Level: <span className="text-white">Grade 7 to Grade 12</span>.</p>
+                  <li className="flex gap-1.5 md:gap-3">
+                    <span className="text-indigo-400 font-black text-[9px] md:text-xs mt-0.5">03</span>
+                    <p className="text-[8px] md:text-[11px] font-bold leading-relaxed text-gray-300">Grade Level: <span className="text-white">Grade 7 to Grade 12</span>.</p>
                   </li>
-                  <li className="flex gap-2 md:gap-3">
-                    <span className="text-indigo-400 font-black text-[10px] md:text-xs mt-0.5">04</span>
-                    <p className="text-[9px] md:text-[11px] font-bold leading-relaxed text-gray-300">Do <span className="text-rose-400">NOT</span> change the header names in the first row.</p>
+                  <li className="flex gap-1.5 md:gap-3">
+                    <span className="text-indigo-400 font-black text-[9px] md:text-xs mt-0.5">04</span>
+                    <p className="text-[8px] md:text-[11px] font-bold leading-relaxed text-gray-300">Do <span className="text-rose-400">NOT</span> change the header names in the first row.</p>
                   </li>
                 </ul>
               </div>
