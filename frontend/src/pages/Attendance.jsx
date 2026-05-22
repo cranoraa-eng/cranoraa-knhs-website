@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import api from '../utils/api';
 import { getUser } from '../utils/auth';
 import toast from 'react-hot-toast';
@@ -27,11 +27,12 @@ const STAT_CONFIG = [
 const Attendance = () => {
   const user = getUser();
   const navigate = useNavigate();
+  const location = useLocation();
   const isStudent = user?.role === 'student';
 
   // Teacher/admin state
   const [classrooms, setClassrooms]             = useState([]);
-  const [selectedClassroom, setSelectedClassroom] = useState('');
+  const [selectedClassroom, setSelectedClassroom] = useState(location.state?.classroomId || '');
   const [selectedDate, setSelectedDate]         = useState(new Date().toISOString().split('T')[0]);
   const [students, setStudents]                 = useState([]);
   const [savedAttendance, setSavedAttendance]   = useState({}); // { studentId: { id, status } }

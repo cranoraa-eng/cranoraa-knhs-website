@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import api from '../utils/api';
 import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
@@ -28,12 +28,13 @@ const remarksFor = (score) => {
 
 const GradeInput = () => {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [classrooms, setClassrooms]     = useState([]);
   const [subjects, setSubjects]         = useState([]);
   const [students, setStudents]         = useState([]);
-  const [selClassroom, setSelClassroom] = useState('');
-  const [selSubject, setSelSubject]     = useState('');
+  const [selClassroom, setSelClassroom] = useState(location.state?.classroomId || '');
+  const [selSubject, setSelSubject]     = useState(location.state?.subjectId || '');
   const [selQuarter, setSelQuarter]     = useState(1);
   const [academicYear, setAcademicYear] = useState(localStorage.getItem('knhs_academic_year') || '2025-2026');
 

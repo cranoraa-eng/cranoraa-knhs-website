@@ -109,7 +109,12 @@ const MyClasses = () => {
                           <td className="px-3 py-2.5">
                             <div className="flex items-center justify-center gap-1.5 md:gap-2">
                               <button
-                                onClick={() => navigate('/grade-input', { state: { assignmentId: a.id } })}
+                                onClick={() => navigate('/grade-input', { 
+                                  state: { 
+                                    classroomId: classroom.id, 
+                                    subjectId: a.subject 
+                                  } 
+                                })}
                                 className="p-1.5 md:p-2 bg-white border border-slate-200 rounded-lg text-violet-500 hover:bg-violet-600 hover:text-white hover:border-violet-600 transition-all active:scale-90 shadow-sm"
                                 title="Input Grades"
                               >
@@ -118,7 +123,12 @@ const MyClasses = () => {
                                 </svg>
                               </button>
                               <button
-                                onClick={() => navigate('/attendance', { state: { assignmentId: a.id } })}
+                                onClick={() => navigate('/attendance', { 
+                                  state: { 
+                                    classroomId: classroom.id, 
+                                    subjectId: a.subject 
+                                  } 
+                                })}
                                 className="p-1.5 md:p-2 bg-white border border-slate-200 rounded-lg text-emerald-500 hover:bg-emerald-600 hover:text-white hover:border-emerald-600 transition-all active:scale-90 shadow-sm"
                                 title="Attendance"
                               >
