@@ -529,7 +529,7 @@ const StudentManagement = () => {
   );
 
   return (
-    <div className="overflow-y-auto h-[calc(100vh-4rem)] p-1.5 md:p-6 space-y-2 md:space-y-6 bg-gray-50/50 max-w-full overflow-x-hidden">
+    <div className="p-1.5 md:p-6 space-y-2 md:space-y-6 bg-gray-50/50 max-w-full">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 md:gap-6">
         <div className="text-center md:text-left">
