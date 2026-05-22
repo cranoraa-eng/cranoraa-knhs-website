@@ -5,6 +5,7 @@ import { getUser } from '../utils/auth';
 import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
 import { jsPDF } from 'jspdf';
+import * as XLSX from 'xlsx';
 
 const Teachers = () => {
   const user = getUser();
@@ -180,29 +181,22 @@ const Teachers = () => {
     }
   };
 
-  const handleExportCSV = () => {
-    const headers = ['Title', 'First Name', 'Last Name', 'Email', 'Phone', 'Temp Password', 'Status'];
-    const data = teachers.map(t => [
-      t.profile?.title || '',
-      t.first_name,
-      t.last_name,
-      t.email,
-      t.profile?.phone_number || '',
-      t.must_change_password ? (t.temp_password_storage || 'Pending') : 'Changed',
-      t.account_status
-    ]);
+  const handleExportExcel = () => {
+    const data = teachers.map(t => ({
+      'Title': t.profile?.title || '',
+      'First Name': t.first_name,
+      'Last Name': t.last_name,
+      'Email': t.email,
+      'Phone': t.profile?.phone_number || '',
+      'Temp Password': t.must_change_password ? (t.temp_password_storage || 'Pending') : 'Changed',
+      'Status': t.account_status
+    }));
 
-    const csvContent = [headers, ...data].map(e => e.map(val => `"${val}"`).join(",")).join("\n");
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement("a");
-    const url = URL.createObjectURL(blob);
-    link.setAttribute("href", url);
-    link.setAttribute("download", `teachers_export_${new Date().toISOString().split('T')[0]}.csv`);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    toast.success('CSV exported successfully');
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Teachers");
+    XLSX.writeFile(wb, `teachers_export_${new Date().toISOString().split('T')[0]}.xlsx`);
+    toast.success('Excel exported successfully');
   };
 
   const handleExportPDF = () => {
@@ -317,9 +311,9 @@ const Teachers = () => {
 
           <div className="flex items-center gap-1 bg-white p-1 rounded-lg md:rounded-xl border border-gray-200 shadow-sm">
             <button 
-              onClick={handleExportCSV}
+              onClick={handleExportExcel}
               className="p-1 md:p-2 text-emerald-600 hover:bg-emerald-50 rounded md:rounded-lg transition-all"
-              title="Export CSV"
+              title="Export Excel"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
             </button>

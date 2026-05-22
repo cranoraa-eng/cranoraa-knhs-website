@@ -5,6 +5,7 @@ import { getUser } from '../utils/auth';
 import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
 import { jsPDF } from 'jspdf';
+import * as XLSX from 'xlsx';
 
 const StudentManagement = () => {
   const user = getUser();
@@ -83,81 +84,99 @@ const StudentManagement = () => {
     }
   };
 
-  const handleImportCSV = async (e) => {
+  const handleImportExcel = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    const formData = new FormData();
-    formData.append('file', file);
-
-    const loadingToast = toast.loading('Importing students...');
+    const loadingToast = toast.loading('Processing file...');
     try {
-      const response = await api.post('/users/import_csv/', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
-      toast.dismiss(loadingToast);
-      
-      const { created_count, created_users, errors } = response.data;
+      const reader = new FileReader();
+      reader.onload = async (evt) => {
+        try {
+          const bstr = evt.target.result;
+          const wb = XLSX.read(bstr, { type: 'binary' });
+          const wsname = wb.SheetNames[0];
+          const ws = wb.Sheets[wsname];
+          
+          // Convert sheet to CSV format for the backend
+          const csvData = XLSX.utils.sheet_to_csv(ws);
+          
+          const blob = new Blob([csvData], { type: 'text/csv' });
+          const formData = new FormData();
+          formData.append('file', blob, 'import.csv');
 
-      if (created_count > 0) {
-        // Show success modal with a table of credentials
-        Swal.fire({
-          icon: 'success',
-          title: 'Import Successful',
-          width: '600px',
-          html: `
-            <div class="text-left">
-              <p class="mb-4 text-sm font-bold text-emerald-600">Successfully created ${created_count} students!</p>
-              <div class="max-h-60 overflow-y-auto border border-gray-200 rounded-lg">
-                <table class="w-full text-[10px] text-left">
-                  <thead class="bg-gray-50 border-b border-gray-200">
-                    <tr>
-                      <th class="px-3 py-2">Name</th>
-                      <th class="px-3 py-2">ID</th>
-                      <th class="px-3 py-2">Temp Password</th>
-                    </tr>
-                  </thead>
-                  <tbody class="divide-y divide-gray-100">
-                    ${created_users.map(u => `
-                      <tr>
-                        <td class="px-3 py-2 font-bold">${u.name}</td>
-                        <td class="px-3 py-2">${u.username}</td>
-                        <td class="px-3 py-2 font-mono text-purple-600">${u.password}</td>
-                      </tr>
-                    `).join('')}
-                  </tbody>
-                </table>
-              </div>
-              <p class="mt-4 text-[10px] text-gray-500 italic">Please copy these credentials and provide them to the students.</p>
-              ${errors.length > 0 ? `
-                <div class="mt-4 p-3 bg-red-50 rounded-lg">
-                  <p class="text-[10px] font-bold text-red-600 mb-1">Errors (${errors.length}):</p>
-                  <ul class="text-[9px] text-red-500 list-disc list-inside">
-                    ${errors.map(e => `<li>${e}</li>`).join('')}
-                  </ul>
+          toast.loading('Importing students...', { id: loadingToast });
+          const response = await api.post('/users/import_csv/', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+          });
+          toast.dismiss(loadingToast);
+          
+          const { created_count, created_users, errors } = response.data;
+
+          if (created_count > 0) {
+            Swal.fire({
+              icon: 'success',
+              title: 'Import Successful',
+              width: '600px',
+              html: `
+                <div class="text-left">
+                  <p class="mb-4 text-sm font-bold text-emerald-600">Successfully created ${created_count} students!</p>
+                  <div class="max-h-60 overflow-y-auto border border-gray-200 rounded-lg">
+                    <table class="w-full text-[10px] text-left">
+                      <thead class="bg-gray-50 border-b border-gray-200">
+                        <tr>
+                          <th class="px-3 py-2">Name</th>
+                          <th class="px-3 py-2">ID</th>
+                          <th class="px-3 py-2">Temp Password</th>
+                        </tr>
+                      </thead>
+                      <tbody class="divide-y divide-gray-100">
+                        ${created_users.map(u => `
+                          <tr>
+                            <td class="px-3 py-2 font-bold">${u.name}</td>
+                            <td class="px-3 py-2">${u.username}</td>
+                            <td class="px-3 py-2 font-mono text-purple-600">${u.password}</td>
+                          </tr>
+                        `).join('')}
+                      </tbody>
+                    </table>
+                  </div>
+                  <p class="mt-4 text-[10px] text-gray-500 italic">Please copy these credentials and provide them to the students.</p>
+                  ${errors.length > 0 ? `
+                    <div class="mt-4 p-3 bg-red-50 rounded-lg">
+                      <p class="text-[10px] font-bold text-red-600 mb-1">Errors (${errors.length}):</p>
+                      <ul class="text-[9px] text-red-500 list-disc list-inside">
+                        ${errors.map(e => `<li>${e}</li>`).join('')}
+                      </ul>
+                    </div>
+                  ` : ''}
                 </div>
-              ` : ''}
-            </div>
-          `,
-          confirmButtonColor: '#9333ea'
-        });
-      } else if (errors.length > 0) {
-        Swal.fire({
-          icon: 'error',
-          title: 'Import Failed',
-          html: `
-            <div class="text-left text-sm text-red-500">
-              <ul class="list-disc list-inside">${errors.map(e => `<li>${e}</li>`).join('')}</ul>
-            </div>
-          `
-        });
-      }
-      
-      setShowImportModal(false);
-      fetchStudents();
+              `,
+              confirmButtonColor: '#9333ea'
+            });
+          } else if (errors.length > 0) {
+            Swal.fire({
+              icon: 'error',
+              title: 'Import Failed',
+              html: `
+                <div class="text-left text-sm text-red-500">
+                  <ul class="list-disc list-inside">${errors.map(e => `<li>${e}</li>`).join('')}</ul>
+                </div>
+              `
+            });
+          }
+          
+          setShowImportModal(false);
+          fetchStudents();
+        } catch (err) {
+          toast.dismiss(loadingToast);
+          toast.error('Failed to parse Excel file');
+        }
+      };
+      reader.readAsBinaryString(file);
     } catch (err) {
       toast.dismiss(loadingToast);
-      toast.error('Failed to import CSV');
+      toast.error('Failed to read file');
     }
   };
 
@@ -228,30 +247,23 @@ const StudentManagement = () => {
     }
   };
 
-  const handleExportCSV = () => {
-    const headers = ['First Name', 'Last Name', 'LRN', 'Grade', 'Classroom', 'Email', 'Temp Password', 'Status'];
-    const data = students.map(s => [
-      s.first_name,
-      s.last_name,
-      s.profile?.registration_number || s.username,
-      s.profile?.grade_level || 'N/A',
-      s.profile?.classroom_name || 'N/A',
-      s.email,
-      s.must_change_password ? (s.temp_password_storage || 'Pending') : 'Changed',
-      s.account_status
-    ]);
+  const handleExportExcel = () => {
+    const data = students.map(s => ({
+      'First Name': s.first_name,
+      'Last Name': s.last_name,
+      'Student ID': s.profile?.registration_number || s.username,
+      'Grade Level': s.profile?.grade_level || 'N/A',
+      'Classroom': s.profile?.classroom_name || 'N/A',
+      'Email': s.email || '',
+      'Temp Password': s.must_change_password ? (s.temp_password_storage || 'Pending') : 'Changed',
+      'Status': s.account_status
+    }));
 
-    const csvContent = [headers, ...data].map(e => e.map(val => `"${val}"`).join(",")).join("\n");
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement("a");
-    const url = URL.createObjectURL(blob);
-    link.setAttribute("href", url);
-    link.setAttribute("download", `students_export_${new Date().toISOString().split('T')[0]}.csv`);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    toast.success('CSV exported successfully');
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Students");
+    XLSX.writeFile(wb, `students_export_${new Date().toISOString().split('T')[0]}.xlsx`);
+    toast.success('Excel exported successfully');
   };
 
   const handleExportPDF = () => {
@@ -392,14 +404,14 @@ const StudentManagement = () => {
             className="bg-indigo-600 text-white px-3 py-1.5 md:px-5 md:py-2.5 rounded-xl md:rounded-2xl border border-indigo-700 shadow-lg hover:bg-indigo-700 flex items-center gap-2 transition-all active:scale-95"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
-            <span className="text-[10px] md:text-sm font-bold uppercase tracking-wider">Import CSV</span>
+            <span className="text-[10px] md:text-sm font-bold uppercase tracking-wider">Import Excel</span>
           </button>
           
           <div className="flex items-center gap-1 bg-white p-1 rounded-xl md:rounded-2xl border border-gray-200 shadow-sm">
             <button 
-              onClick={handleExportCSV}
+              onClick={handleExportExcel}
               className="p-1.5 md:p-2.5 text-emerald-600 hover:bg-emerald-50 rounded-lg md:rounded-xl transition-all"
-              title="Export CSV"
+              title="Export Excel"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
             </button>
@@ -751,20 +763,20 @@ const StudentManagement = () => {
               <svg className="w-10 h-10 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
             </div>
             <h2 className="text-2xl font-black text-gray-800 uppercase tracking-tight mb-2">Bulk Import Students</h2>
-            <p className="text-sm text-gray-500 font-medium mb-8">Upload a CSV file with headers: <br/><code className="bg-gray-100 px-2 py-1 rounded text-xs">Student ID, First Name, Last Name, Grade Level, Email</code></p>
+            <p className="text-sm text-gray-500 font-medium mb-8">Upload an Excel file (.xlsx, .xls) with headers: <br/><code className="bg-gray-100 px-2 py-1 rounded text-xs">Student ID, First Name, Last Name, Grade Level, Email</code></p>
             
             <input 
               type="file" 
-              accept=".csv" 
-              onChange={handleImportCSV}
+              accept=".xlsx, .xls" 
+              onChange={handleImportExcel}
               className="hidden" 
-              id="csv-upload"
+              id="excel-upload"
             />
             <label 
-              htmlFor="csv-upload"
+              htmlFor="excel-upload"
               className="w-full block bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-2xl cursor-pointer transition-all active:scale-95 shadow-lg shadow-indigo-100 mb-4"
             >
-              Select CSV File
+              Select Excel File
             </label>
             <button onClick={() => setShowImportModal(false)} className="text-gray-400 font-bold text-sm hover:text-gray-600">Cancel</button>
           </div>
