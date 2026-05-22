@@ -345,10 +345,16 @@ class ChatConsumer(AsyncWebsocketConsumer):
         msg = ChatMessage.objects.get(id=message_id)
         user = User.objects.get(id=user_id)
         
-        existing = MessageReaction.objects.filter(message=msg, user=user, emoji=emoji)
-        if existing.exists():
-            existing.delete()
+        # Check if user already has THIS specific emoji reaction
+        existing_this_emoji = MessageReaction.objects.filter(message=msg, user=user, emoji=emoji)
+        
+        if existing_this_emoji.exists():
+            # If they already reacted with this emoji, remove it (toggle off)
+            existing_this_emoji.delete()
         else:
+            # If they are reacting with a NEW emoji, remove ANY existing reaction they have for this message
+            MessageReaction.objects.filter(message=msg, user=user).delete()
+            # Then create the new one
             MessageReaction.objects.create(message=msg, user=user, emoji=emoji)
         
         # Return updated reactions for this message

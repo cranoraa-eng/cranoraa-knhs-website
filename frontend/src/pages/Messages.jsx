@@ -10,6 +10,7 @@ const Messages = () => {
   // ── Refs ──────────────────────────────────────────────────────────────────
   const messagesEndRef       = useRef(null);
   const socketRef            = useRef(null);
+  const typingTimeoutRef     = useRef(null);
   const selectedRoomRef      = useRef(null); // always current selectedRoom for WS closures
 
   // ── State ─────────────────────────────────────────────────────────────────
@@ -50,7 +51,6 @@ const Messages = () => {
   const [replyingTo, setReplyingTo] = useState(null);
   const [showReactionPicker, setShowReactionPicker] = useState(null);
   const [activeMoreMenu, setActiveMoreMenu] = useState(null);
-  const [mobileActiveMessage, setMobileActiveMessage] = useState(null);
 
   const COMMON_EMOJIS = ['👍', '❤️', '😂', '😮', '😢', '😡', '🔥', '✨'];
   const [addMemberSearch, setAddMemberSearch]     = useState('');
@@ -107,8 +107,6 @@ const Messages = () => {
     connectWebSocket(roomId);
     
     if (selectedRoom) {
-      setPeerTyping(false);
-      setPeerTypingName('');
       fetchMessages(selectedRoom.id);
       // Clear unread badge immediately when room is opened
       setRooms(prev => prev.map(r => r.id === selectedRoom.id ? { ...r, unread_count: 0 } : r));
@@ -182,10 +180,7 @@ const Messages = () => {
     if (!newMessage.trim() || !selectedRoom) return;
     const content = newMessage.trim();
     setNewMessage('');
-    
-    // Clear typing indicator on message send
-    safeSend({ type: 'typing', is_typing: false });
-    lastTypingSentRef.current = 0;
+    setIsTyping(false);
     
     const msgPayload = {
       type: 'message',
@@ -200,23 +195,21 @@ const Messages = () => {
   };
 
   const handleTyping = (e) => {
-    const value = e.target.value;
-    const wasEmpty = !newMessage.trim();
-    const isEmpty = !value.trim();
-    
-    setNewMessage(value);
+    setNewMessage(e.target.value);
     if (!selectedRoom) return;
 
-    // Send typing: true when starting to type (transition from empty to non-empty)
-    if (!isEmpty && wasEmpty) {
+    const now = Date.now();
+    // Throttle typing signals: send immediately on first stroke, then every 3s
+    if (now - lastTypingSentRef.current > 3000) {
       safeSend({ type: 'typing', is_typing: true });
-      lastTypingSentRef.current = Date.now();
-    } 
-    // Send typing: false when clearing the input manually
-    else if (isEmpty && !wasEmpty) {
-      safeSend({ type: 'typing', is_typing: false });
-      lastTypingSentRef.current = 0;
+      lastTypingSentRef.current = now;
     }
+
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+    typingTimeoutRef.current = setTimeout(() => {
+      safeSend({ type: 'typing', is_typing: false });
+      lastTypingSentRef.current = 0; // Reset so next stroke sends immediately
+    }, 1500);
   };
 
   const handleCreateGroup = async (e) => {
@@ -285,7 +278,6 @@ const Messages = () => {
       emoji: emoji
     });
     setShowReactionPicker(null);
-    setMobileActiveMessage(null);
   };
 
   const handlePinMessage = async (msg) => {
@@ -295,40 +287,6 @@ const Messages = () => {
       // Update locally immediately, WS will sync others
       setMessages(prev => prev.map(m => m.id === msg.id ? { ...m, is_pinned: !msg.is_pinned } : m));
     } catch { toast.error('Failed to toggle pin'); }
-  };
-
-  const handleReportMessage = async (msg) => {
-    const { value: reason } = await Swal.fire({
-      title: 'Report Message',
-      input: 'textarea',
-      inputLabel: 'Reason for reporting',
-      inputPlaceholder: 'Enter why you are reporting this message...',
-      inputAttributes: {
-        'aria-label': 'Enter why you are reporting this message'
-      },
-      showCancelButton: true,
-      confirmButtonText: 'Submit Report',
-      confirmButtonColor: '#ef4444',
-      cancelButtonColor: '#64748b',
-      customClass: { popup: 'rounded-[2rem]' },
-      inputValidator: (value) => {
-        if (!value) {
-          return 'You need to provide a reason!';
-        }
-      }
-    });
-
-    if (reason) {
-      try {
-        await api.post('/chat/reports/', {
-          message: msg.id,
-          reason: reason
-        });
-        toast.success('Message reported to moderators');
-      } catch (err) {
-        toast.error(err.response?.data?.error || 'Failed to submit report');
-      }
-    }
   };
 
   const handleDeleteConversation = async (roomId) => {
@@ -567,13 +525,6 @@ const Messages = () => {
       }
       if (data.type === 'message') {
         const msg = data; // the whole serialized message
-        
-        // Immediately clear typing indicator if message received from that peer
-        if (msg.sender !== user.id) {
-          setPeerTyping(false);
-          setPeerTypingName('');
-        }
-
         setMessages(prev => {
           if (prev.find(m => m.id === msg.id)) return prev;
           return [...prev, msg];
@@ -1239,7 +1190,7 @@ const Messages = () => {
                             )}
 
                             {/* Hover/Tap actions — Messenger style */}
-                            <div className={`absolute top-1/2 -translate-y-1/2 flex items-center gap-1 ${isMine ? '-left-20' : '-right-20'} transition-all z-20 ${mobileActiveMessage === msg.id ? 'opacity-100 visible' : 'opacity-0 invisible md:group-hover:opacity-100 md:group-hover:visible'}`}>
+                            <div className={`absolute top-1/2 -translate-y-1/2 flex items-center gap-1 ${isMine ? '-left-20' : '-right-20'} transition-all z-20 opacity-0 invisible md:group-hover:opacity-100 md:group-hover:visible`}>
                               {/* React Button */}
                               <div className="relative">
                                 <button
@@ -1250,25 +1201,11 @@ const Messages = () => {
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                   </svg>
                                 </button>
-
-                                {/* Reaction Picker Dropdown */}
-                                {showReactionPicker === msg.id && (
-                                  <div 
-                                    className={`absolute bottom-full mb-2 bg-white border border-slate-100 rounded-full shadow-xl z-30 p-1 flex items-center gap-0.5 animate-in fade-in zoom-in duration-200 ${isMine ? 'right-0' : 'left-0'}`}
-                                    onMouseLeave={() => setShowReactionPicker(null)}>
-                                    {COMMON_EMOJIS.map(emoji => (
-                                      <button key={emoji} onClick={() => handleReactToMessage(msg.id, emoji)}
-                                        className="w-7 h-7 md:w-9 md:h-9 flex items-center justify-center hover:bg-slate-50 rounded-full transition-all text-sm md:text-xl active:scale-150">
-                                        {emoji}
-                                      </button>
-                                    ))}
-                                  </div>
-                                )}
                               </div>
 
                               {/* Reply Button */}
                               <button
-                                onClick={() => { setReplyingTo(msg); setMobileActiveMessage(null); }}
+                                onClick={() => { setReplyingTo(msg); }}
                                 className="p-1 md:p-1.5 bg-white border border-slate-200 rounded-lg text-slate-400 hover:text-blue-500 hover:border-blue-300 shadow-sm transition-all"
                                 title="Reply">
                                 <svg className="w-3 md:w-3.5 h-3 md:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1286,57 +1223,6 @@ const Messages = () => {
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z" />
                                   </svg>
                                 </button>
-
-                                {/* More Menu Dropdown */}
-                                {activeMoreMenu === msg.id && (
-                                  <div 
-                                    className={`absolute bottom-full mb-2 w-32 md:w-40 bg-white border border-slate-100 rounded-2xl shadow-xl z-30 py-2 animate-in fade-in zoom-in duration-200 ${isMine ? 'right-0' : 'left-0'}`}
-                                    onMouseLeave={() => setActiveMoreMenu(null)}>
-                                    
-                                    {isMine && (
-                                      <>
-                                        <button
-                                          onClick={() => { setEditingMessage(msg.id); setEditContent(msg.content); setActiveMoreMenu(null); }}
-                                          className="w-full px-4 py-2 flex items-center gap-2.5 text-[10px] md:text-xs font-bold text-slate-600 hover:bg-slate-50 transition-colors">
-                                          <svg className="w-3.5 h-3.5 md:w-4 md:h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                          </svg>
-                                          Edit
-                                        </button>
-                                        <button
-                                          onClick={() => { handleDeleteMessage(msg.id); setActiveMoreMenu(null); }}
-                                          className="w-full px-4 py-2 flex items-center gap-2.5 text-[10px] md:text-xs font-bold text-red-600 hover:bg-red-50 transition-colors">
-                                          <svg className="w-3.5 h-3.5 md:w-4 md:h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                          </svg>
-                                          Unsend
-                                        </button>
-                                        <div className="my-1 border-t border-slate-100" />
-                                      </>
-                                    )}
-
-                                    {/* Pin and Report - Always together for all messages */}
-                                    <button
-                                      onClick={() => { handlePinMessage(msg); setActiveMoreMenu(null); }}
-                                      className="w-full px-4 py-2 flex items-center gap-2.5 text-[10px] md:text-xs font-bold text-amber-600 hover:bg-amber-50 transition-colors">
-                                      <svg className="w-3.5 h-3.5 md:w-4 md:h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
-                                      </svg>
-                                      {msg.is_pinned ? 'Unpin' : 'Pin'}
-                                    </button>
-
-                                    {!isMine && (
-                                      <button
-                                        onClick={() => { handleReportMessage(msg); setActiveMoreMenu(null); }}
-                                        className="w-full px-4 py-2 flex items-center gap-2.5 text-[10px] md:text-xs font-bold text-orange-600 hover:bg-orange-50 transition-colors">
-                                        <svg className="w-3.5 h-3.5 md:w-4 md:h-4 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                                        </svg>
-                                        Report
-                                      </button>
-                                    )}
-                                  </div>
-                                )}
                               </div>
                             </div>
 
@@ -1345,7 +1231,7 @@ const Messages = () => {
                               id={`msg-${msg.id}`}
                               onClick={() => {
                                 if (window.innerWidth < 768) {
-                                  setMobileActiveMessage(mobileActiveMessage === msg.id ? null : msg.id);
+                                  setActiveMoreMenu(activeMoreMenu === msg.id ? null : msg.id);
                                 }
                               }}
                               className={`px-2.5 py-1.5 md:px-4 md:py-2.5 rounded-2xl text-[11px] md:text-sm font-medium shadow-sm relative transition-all duration-500 break-all md:break-words whitespace-pre-wrap max-w-full cursor-pointer md:cursor-default ${
@@ -1461,6 +1347,82 @@ const Messages = () => {
                 </button>
               </form>
             </div>
+
+            {/* Global Overlays for Reactions and More Menu */}
+            {showReactionPicker && (
+              <div className="absolute inset-0 z-[100] flex items-center justify-center p-4 pointer-events-none">
+                <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm pointer-events-auto" onClick={() => setShowReactionPicker(null)} />
+                <div className="relative bg-white border border-slate-200 rounded-full shadow-2xl p-1 md:p-1.5 flex flex-row flex-nowrap items-center gap-0.5 md:gap-1 animate-in fade-in zoom-in-95 duration-200 pointer-events-auto">
+                  {COMMON_EMOJIS.map(emoji => (
+                    <button key={emoji} onClick={() => handleReactToMessage(showReactionPicker, emoji)}
+                      className="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center hover:bg-slate-50 rounded-full transition-all text-lg md:text-2xl active:scale-150 shrink-0">
+                      {emoji}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {activeMoreMenu && (
+              <div className="absolute inset-0 z-[100] flex items-center justify-center p-4 pointer-events-none">
+                <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm pointer-events-auto" onClick={() => setActiveMoreMenu(null)} />
+                <div className="relative bg-white border border-slate-200 rounded-full shadow-2xl p-1 md:p-1.5 flex flex-row items-center gap-1 animate-in fade-in zoom-in-95 duration-200 pointer-events-auto">
+                  {(() => {
+                    const activeMsg = messages.find(m => m.id === activeMoreMenu);
+                    if (!activeMsg) return null;
+                    const isMsgMine = activeMsg.sender === user.id;
+
+                    return (
+                      <>
+                        {/* Edit — own messages only */}
+                        {isMsgMine && (
+                          <button
+                            onClick={() => { 
+                              setEditingMessage(activeMsg); 
+                              setEditContent(activeMsg.content); 
+                              setActiveMoreMenu(null); 
+                            }}
+                            className="p-2 md:p-2.5 text-slate-500 hover:bg-violet-50 hover:text-violet-600 rounded-full transition-all"
+                            title="Edit Message">
+                            <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                          </button>
+                        )}
+
+                        {/* Pin button — everyone */}
+                        <button
+                          onClick={() => { 
+                            handlePinMessage(activeMsg); 
+                            setActiveMoreMenu(null); 
+                          }}
+                          className={`p-2 md:p-2.5 rounded-full transition-all ${activeMsg.is_pinned ? 'text-amber-500 bg-amber-50' : 'text-slate-500 hover:bg-amber-50 hover:text-amber-600'}`}
+                          title={activeMsg.is_pinned ? 'Unpin' : 'Pin'}>
+                          <svg className="w-4 h-4 md:w-5 md:h-5" fill={activeMsg.is_pinned ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 18V4z" />
+                          </svg>
+                        </button>
+
+                        {/* Unsend — own messages only */}
+                        {isMsgMine && (
+                          <button
+                            onClick={() => { 
+                              handleDeleteMessage(activeMoreMenu); 
+                              setActiveMoreMenu(null); 
+                            }}
+                            className="p-2 md:p-2.5 text-slate-500 hover:bg-red-50 hover:text-red-500 rounded-full transition-all"
+                            title="Unsend Message">
+                            <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                          </button>
+                        )}
+                      </>
+                    );
+                  })()}
+                </div>
+              </div>
+            )}
           </>
         ) : (
           /* Empty state */
@@ -1474,6 +1436,11 @@ const Messages = () => {
             <p className="text-slate-400 text-sm font-medium max-w-xs mx-auto">
               Select a conversation from the sidebar or start a new chat with your teachers and classmates.
             </p>
+            <button
+              onClick={() => setActiveTab('search')}
+              className="mt-6 px-8 py-3 bg-violet-600 text-white rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl shadow-violet-200 hover:bg-violet-700 transition-all active:scale-95">
+              Start a Conversation
+            </button>
           </div>
         )}
       </div>
