@@ -41,7 +41,7 @@ const Messages = () => {
   const [editContent, setEditContent]       = useState('');
 
   // Typing
-  const [isTyping, setIsTyping]             = useState(false);
+  const lastTypingSentRef           = useRef(0);
   const [peerTyping, setPeerTyping]         = useState(false);
   const [peerTypingName, setPeerTypingName] = useState('');
 
@@ -197,15 +197,20 @@ const Messages = () => {
 
   const handleTyping = (e) => {
     setNewMessage(e.target.value);
-    if (!isTyping && selectedRoom) {
-      setIsTyping(true);
+    if (!selectedRoom) return;
+
+    const now = Date.now();
+    // Throttle typing signals: send immediately on first stroke, then every 3s
+    if (now - lastTypingSentRef.current > 3000) {
       safeSend({ type: 'typing', is_typing: true });
+      lastTypingSentRef.current = now;
     }
+
     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
     typingTimeoutRef.current = setTimeout(() => {
-      setIsTyping(false);
       safeSend({ type: 'typing', is_typing: false });
-    }, 2000);
+      lastTypingSentRef.current = 0; // Reset so next stroke sends immediately
+    }, 1500);
   };
 
   const handleCreateGroup = async (e) => {
