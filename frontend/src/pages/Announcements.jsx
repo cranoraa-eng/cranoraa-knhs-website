@@ -463,178 +463,186 @@ const Announcements = () => {
 
       {/* ── Create / Edit Modal ── */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100] p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-              <h2 className="text-xl font-bold text-gray-800">{isEditing ? 'Edit Announcement' : 'New Announcement'}</h2>
-              <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-gray-600">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4 animate-in fade-in duration-300">
+          <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-4 duration-300 border border-white/20">
+            <div className="px-5 py-4 bg-gradient-to-br from-indigo-600 via-indigo-700 to-purple-800 text-white relative">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center">
+                  <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
+                  </svg>
+                </div>
+                <div>
+                  <h2 className="text-sm font-black tracking-[0.2em] uppercase leading-none">{isEditing ? 'Edit Post' : 'New Broadcast'}</h2>
+                  <p className="text-indigo-100 text-[9px] mt-1 font-bold uppercase tracking-widest opacity-70">Internal Communication Hub</p>
+                </div>
+              </div>
+              <button onClick={() => setShowModal(false)} className="absolute top-4 right-4 w-8 h-8 rounded-full hover:bg-white/10 flex items-center justify-center transition-all group">
+                <svg className="w-4 h-4 text-white/50 group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
             </div>
-            <form onSubmit={handleSave} className="flex-1 overflow-y-auto p-6 space-y-4">
-              <div>
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Title <span className="text-red-400">*</span></label>
+            
+            <form onSubmit={handleSave} className="flex-1 overflow-y-auto p-5 space-y-4 scrollbar-none">
+              <div className="space-y-1">
+                <div className="flex justify-between items-center px-1">
+                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.15em]">Headline <span className="text-rose-400">*</span></label>
+                  <span className="text-[9px] font-bold text-slate-300">{form.title.length}/100</span>
+                </div>
                 <input type="text" value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
-                  placeholder="Announcement title..." required
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm" />
+                  placeholder="Clear and concise title" required maxLength={100}
+                  className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:bg-white text-xs font-bold transition-all placeholder:text-slate-300" />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Category</label>
+              <div className="grid grid-cols-4 gap-2">
+                <div className="space-y-1">
+                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.15em] ml-1">Type</label>
                   <select value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))}
-                    className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm">
+                    className="w-full px-2 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-[10px] font-black uppercase tracking-tight cursor-pointer">
                     {Object.entries(CATEGORY_CONFIG).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
                   </select>
                 </div>
-                <div>
-                  <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Priority</label>
+                <div className="space-y-1">
+                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.15em] ml-1">Priority</label>
                   <select value={form.priority} onChange={e => setForm(f => ({ ...f, priority: e.target.value }))}
-                    className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm">
-                    <option value="info">Info</option>
-                    <option value="critical">Critical</option>
+                    className="w-full px-2 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-[10px] font-black uppercase tracking-tight cursor-pointer">
+                    <option value="info">Normal</option>
+                    <option value="critical">Urgent</option>
                   </select>
                 </div>
-                <div>
-                  <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Audience</label>
+                <div className="space-y-1">
+                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.15em] ml-1">Group</label>
                   <select value={form.target_audience} onChange={e => setForm(f => ({ ...f, target_audience: e.target.value }))}
-                    className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm">
-                    <option value="all">All Users</option>
-                    <option value="students">Students Only</option>
-                    <option value="teachers">Teachers Only</option>
-                    <option value="parents">Parents Only</option>
-                    <option value="admins">Admins Only</option>
+                    className="w-full px-2 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-[10px] font-black uppercase tracking-tight cursor-pointer">
+                    <option value="all">Everyone</option>
+                    <option value="students">Students</option>
+                    <option value="teachers">Teachers</option>
                   </select>
                 </div>
-                <div>
-                  <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Status</label>
+                <div className="space-y-1">
+                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.15em] ml-1">Status</label>
                   <select value={form.status} onChange={e => setForm(f => ({ ...f, status: e.target.value }))}
-                    className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm">
+                    className="w-full px-2 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-[10px] font-black uppercase tracking-tight cursor-pointer">
                     <option value="draft">Draft</option>
                     <option value="live">Live</option>
                   </select>
                 </div>
               </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Target Specific Sections (Optional)</label>
-                <div className="flex flex-wrap gap-2 p-3 bg-gray-50 rounded-xl border border-gray-200 min-h-[60px]">
+              <div className="space-y-1.5">
+                <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.15em] ml-1 flex items-center gap-1.5">
+                  Target Sections 
+                  <span className="text-[8px] font-bold text-indigo-500 lowercase opacity-60">(Optional: Click to select)</span>
+                </label>
+                <div className="flex flex-wrap gap-1 p-2 bg-slate-50/50 rounded-xl border border-slate-100 max-h-[80px] overflow-y-auto scrollbar-none">
                   {classrooms.map(cls => (
                     <button
                       key={cls.id}
                       type="button"
                       onClick={() => {
                         const current = form.target_classrooms || [];
-                        const updated = current.includes(cls.id) 
-                          ? current.filter(id => id !== cls.id) 
-                          : [...current, cls.id];
+                        const updated = current.includes(cls.id) ? current.filter(id => id !== cls.id) : [...current, cls.id];
                         setForm(f => ({ ...f, target_classrooms: updated }));
                       }}
-                      className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all ${
+                      className={`px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest transition-all border ${
                         (form.target_classrooms || []).includes(cls.id)
-                          ? 'bg-purple-600 text-white shadow-md'
-                          : 'bg-white text-gray-400 border border-gray-200 hover:border-purple-300'
+                          ? 'bg-indigo-600 text-white border-indigo-700 shadow-sm scale-95'
+                          : 'bg-white text-slate-400 border-slate-200 hover:border-indigo-300 hover:text-indigo-500'
                       }`}
                     >
                       {cls.name}
                     </button>
                   ))}
-                  {classrooms.length === 0 && <p className="text-[10px] text-gray-400 italic">No classrooms available</p>}
+                  {classrooms.length === 0 && <span className="text-[8px] font-bold text-slate-300 uppercase tracking-widest p-1">No sections available</span>}
                 </div>
-                <p className="text-[9px] text-gray-400 mt-1 font-medium italic">* Leave empty to target all sections based on audience selection.</p>
               </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Content <span className="text-red-400">*</span></label>
+              <div className="space-y-1">
+                <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.15em] ml-1">Message Content <span className="text-rose-400">*</span></label>
                 <textarea value={form.content} onChange={e => setForm(f => ({ ...f, content: e.target.value }))}
-                  rows={5} required placeholder="Write your announcement here..."
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm resize-none" />
+                  rows={3} required placeholder="What do you want to announce?"
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:bg-white text-xs font-medium leading-relaxed resize-none scrollbar-none" />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Event Start Date</label>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.15em] ml-1">Event Date</label>
                   <input type="datetime-local" value={form.event_date}
                     onChange={e => setForm(f => ({ ...f, event_date: e.target.value }))}
-                    className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm" />
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-[10px] font-bold uppercase" />
                 </div>
-                <div>
-                  <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Event End Date (Optional)</label>
+                <div className="space-y-1">
+                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.15em] ml-1">Expiry Date</label>
                   <input type="datetime-local" value={form.end_date}
                     onChange={e => setForm(f => ({ ...f, end_date: e.target.value }))}
-                    className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm" />
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-[10px] font-bold uppercase" />
                 </div>
               </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Attachments</label>
-                <input type="file" accept=".jpg,.jpeg,.png,.gif,.webp,.pdf" multiple
-                  onChange={e => setForm(f => ({ ...f, attachments: Array.from(e.target.files) }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+              <div className="space-y-1.5">
+                <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.15em] ml-1">Media & Documents</label>
+                <div className="relative group/upload">
+                  <input type="file" accept=".jpg,.jpeg,.png,.gif,.webp,.pdf" multiple
+                    onChange={e => setForm(f => ({ ...f, attachments: Array.from(e.target.files) }))}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
+                  <div className="w-full px-4 py-2.5 bg-slate-50 border border-dashed border-slate-300 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover/upload:border-indigo-400 group-hover/upload:text-indigo-500 group-hover/upload:bg-indigo-50/30 transition-all flex items-center justify-center gap-2">
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" /></svg>
+                    Upload Attachments
+                  </div>
+                </div>
                 
-                {/* Show files currently being selected for upload */}
-                  {form.attachments && form.attachments.length > 0 && (
-                    <div className="mt-2 space-y-1">
-                      <p className="text-[10px] font-bold text-purple-600 uppercase tracking-tight">New files to upload:</p>
-                      {form.attachments.map((file, i) => (
-                        <div key={i} className="flex items-center justify-between bg-purple-50 px-2 py-1 rounded text-[11px] text-purple-700 border border-purple-100">
-                          <span className="truncate max-w-[150px]">{file.name}</span>
-                          <button type="button" onClick={() => setForm(f => ({ ...f, attachments: f.attachments.filter((_, idx) => idx !== i) }))}
-                            className="text-purple-400 hover:text-purple-600">
-                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                {/* File list indicators */}
+                {(form.attachments?.length > 0 || (isEditing && selected?.attachments?.length > 0)) && (
+                  <div className="flex flex-wrap gap-1.5">
+                    {form.attachments?.map((file, i) => (
+                      <div key={i} className="flex items-center gap-1.5 bg-indigo-50 text-indigo-700 px-2 py-1 rounded-lg border border-indigo-100 text-[8px] font-black uppercase tracking-tighter">
+                        <span className="truncate max-w-[80px]">{file.name}</span>
+                        <button type="button" onClick={() => setForm(f => ({ ...f, attachments: f.attachments.filter((_, idx) => idx !== i) }))} className="hover:text-rose-500 transition-colors">
+                          <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" /></svg>
+                        </button>
+                      </div>
+                    ))}
+                    {isEditing && selected?.attachments?.map((att, i) => (
+                      <div key={`old-${i}`} className="flex items-center gap-1.5 bg-slate-100 text-slate-600 px-2 py-1 rounded-lg border border-slate-200 text-[8px] font-black uppercase tracking-tighter">
+                        <span className="truncate max-w-[80px]">{att.filename}</span>
+                        <button type="button" onClick={() => handleDeleteAttachment(att.id)} className="hover:text-rose-500 transition-colors">
+                          <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
 
-                  {/* Show existing attachments when editing */}
-                   {isEditing && selected?.attachments?.length > 0 && (
-                     <div className="mt-3 space-y-1">
-                       <p className="text-[10px] font-bold text-gray-500 uppercase tracking-tight">Existing attachments:</p>
-                       {selected.attachments.map((att, i) => (
-                         <div key={i} className="flex items-center justify-between bg-gray-50 px-2 py-1 rounded text-[11px] text-gray-600 border border-gray-100">
-                           <span className="truncate max-w-[150px]">{att.filename}</span>
-                           <button type="button" onClick={() => handleDeleteAttachment(att.id)}
-                             className="text-red-400 hover:text-red-600 ml-2" title="Delete from server">
-                             <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                             </svg>
-                           </button>
-                         </div>
-                       ))}
-                     </div>
-                   )}
-                </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <label className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors">
-                  <input type="checkbox" checked={form.is_pinned}
-                    onChange={e => setForm(f => ({ ...f, is_pinned: e.target.checked }))}
-                    className="w-4 h-4 text-purple-600 rounded" />
-                  <span className="text-sm font-medium text-gray-700">📌 Pin to top</span>
+              <div className="grid grid-cols-2 gap-2">
+                <label className="flex items-center gap-2.5 p-2.5 bg-slate-50/80 border border-slate-100 rounded-xl cursor-pointer hover:bg-white hover:border-amber-200 transition-all group">
+                  <div className={`w-4 h-4 rounded-md border flex items-center justify-center transition-all ${form.is_pinned ? 'bg-amber-500 border-amber-600' : 'bg-white border-slate-300'}`}>
+                    {form.is_pinned && <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg>}
+                  </div>
+                  <input type="checkbox" checked={form.is_pinned} className="hidden"
+                    onChange={e => setForm(f => ({ ...f, is_pinned: e.target.checked }))} />
+                  <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest group-hover:text-amber-600">Pin Post</span>
                 </label>
 
-                <label className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors">
-                  <input type="checkbox" checked={form.is_public}
-                    onChange={e => setForm(f => ({ ...f, is_public: e.target.checked }))}
-                    className="w-4 h-4 text-purple-600 rounded" />
-                  <span className="text-sm font-medium text-gray-700">🌐 Public Website</span>
+                <label className="flex items-center gap-2.5 p-2.5 bg-slate-50/80 border border-slate-100 rounded-xl cursor-pointer hover:bg-white hover:border-blue-200 transition-all group">
+                  <div className={`w-4 h-4 rounded-md border flex items-center justify-center transition-all ${form.is_public ? 'bg-blue-500 border-blue-600' : 'bg-white border-slate-300'}`}>
+                    {form.is_public && <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg>}
+                  </div>
+                  <input type="checkbox" checked={form.is_public} className="hidden"
+                    onChange={e => setForm(f => ({ ...f, is_public: e.target.checked }))} />
+                  <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest group-hover:text-blue-600">Public Access</span>
                 </label>
               </div>
 
-              <div className="flex gap-3 pt-2">
-                <button type="submit" disabled={saving}
-                  className="flex-1 bg-[#2D1B4D] hover:bg-[#3D2B5D] disabled:opacity-60 text-white font-medium py-2.5 rounded-lg transition-colors text-sm">
-                  {saving ? 'Saving...' : isEditing ? 'Update' : 'Publish'}
-                </button>
+              <div className="flex gap-2.5 pt-4 border-t border-slate-100">
                 <button type="button" onClick={() => setShowModal(false)}
-                  className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2.5 rounded-lg transition-colors text-sm">
+                  className="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-500 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] transition-all">
                   Cancel
+                </button>
+                <button type="submit" disabled={saving}
+                  className="flex-[2.5] bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white font-black py-3 rounded-2xl shadow-xl shadow-indigo-100 transition-all active:scale-[0.98] text-[10px] uppercase tracking-[0.2em] flex items-center justify-center gap-2">
+                  {saving ? (
+                    <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                  ) : isEditing ? 'Update Broadcast' : 'Deploy Post'}
                 </button>
               </div>
             </form>
