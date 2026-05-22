@@ -16,6 +16,18 @@ export const clearSession = () => {
   localStorage.removeItem('user');
 };
 
+export const updateStoredUser = (updatedUser) => {
+  const current = getStoredUser();
+  const merged = { ...current, ...updatedUser };
+  localStorage.setItem('user', JSON.stringify(merged));
+  return merged;
+};
+
+export const updateTokens = (access, refresh) => {
+  if (access) localStorage.setItem('access_token', access);
+  if (refresh) localStorage.setItem('refresh_token', refresh);
+};
+
 export const getStoredUser = () => {
   try {
     const raw = localStorage.getItem('user');
