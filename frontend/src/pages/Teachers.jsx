@@ -19,6 +19,7 @@ const Teachers = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [editingTeacher, setEditingTeacher] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [activeMenu, setActiveMenu] = useState(null);
   const [newTeacher, setNewTeacher] = useState({
     email: '',
     first_name: '',
@@ -535,53 +536,7 @@ const Teachers = () => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
             {filteredTeachers.map((teacher) => (
-              <div key={teacher.id} className="bg-white border border-gray-200 rounded-lg md:rounded-2xl p-3 md:p-6 hover:shadow-xl transition-all duration-300 group relative border-t-2 md:border-t-4 border-t-purple-500 overflow-hidden min-w-0">
-                <div className="absolute top-0 right-0 p-2 md:p-4 flex gap-1 md:gap-2 opacity-0 group-hover:opacity-100 transition-opacity bg-white/80 backdrop-blur-sm rounded-bl-xl border-l border-b border-gray-100">
-                  <select 
-                    value={teacher.account_status} 
-                    onChange={(e) => handleToggleStatus(teacher, e.target.value)}
-                    className={`text-[8px] md:text-[10px] font-black px-1 md:px-2 py-0.5 md:py-1 rounded border-0 focus:ring-2 focus:ring-purple-500 cursor-pointer ${
-                      teacher.account_status === 'active' ? 'bg-emerald-50 text-emerald-600' : 
-                      teacher.account_status === 'suspended' ? 'bg-rose-50 text-rose-600' : 
-                      'bg-gray-50 text-gray-600'
-                    }`}
-                  >
-                    <option value="active">Active</option>
-                    <option value="inactive">Inactive</option>
-                    <option value="suspended">Suspended</option>
-                  </select>
-                   <button
-                    onClick={() => {
-                      setEditingTeacher({
-                        ...teacher,
-                        profile: {
-                          title: teacher.profile?.title || '',
-                          phone_number: teacher.profile?.phone_number || ''
-                        }
-                      });
-                      setShowEditModal(true);
-                    }}
-                    className="p-1 md:p-2 bg-blue-50 text-blue-600 rounded md:rounded-lg hover:bg-blue-600 hover:text-white transition-all shadow-sm"
-                    title="Edit Details"
-                  >
-                    <svg className="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
-                  </button>
-                  <button
-                    onClick={() => handleResetPassword(teacher.id)}
-                    className="p-1 md:p-2 bg-amber-50 text-amber-600 rounded md:rounded-lg hover:bg-amber-600 hover:text-white transition-all shadow-sm"
-                    title="Reset Password"
-                  >
-                    <svg className="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" /></svg>
-                  </button>
-                  <button
-                    onClick={() => handleDelete(teacher.id)}
-                    className="p-1 md:p-2 bg-red-50 text-red-600 rounded md:rounded-lg hover:bg-red-600 hover:text-white transition-all shadow-sm"
-                    title="Delete Account"
-                  >
-                    <svg className="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                  </button>
-                </div>
-
+              <div key={teacher.id} className="bg-white border border-gray-200 rounded-lg md:rounded-2xl p-3 md:p-6 hover:shadow-xl transition-all duration-300 group relative border-t-2 md:border-t-4 border-t-purple-500 overflow-visible min-w-0">
                 <div className="flex items-start justify-between mb-3 md:mb-6">
                   <div className="flex items-center gap-2 md:gap-4">
                     <div className="relative flex-shrink-0">
@@ -622,15 +577,94 @@ const Teachers = () => {
                     </div>
                   </div>
 
-                  {user?.id !== teacher.id && (
+                  <div className="relative">
                     <button 
-                      onClick={() => handleStartChat(teacher.id)}
-                      className="p-1.5 md:p-2.5 bg-violet-50 text-violet-600 rounded-lg md:rounded-xl hover:bg-violet-600 hover:text-white transition-all shadow-sm active:scale-95 flex-shrink-0"
-                      title="Send Message"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setActiveMenu(activeMenu === teacher.id ? null : teacher.id);
+                      }}
+                      className="p-1.5 md:p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all active:scale-90"
                     >
-                      <svg className="w-3.5 h-3.5 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" /></svg>
+                      <svg className="w-5 h-5 md:w-6 md:h-6" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
+                      </svg>
                     </button>
-                  )}
+
+                    {activeMenu === teacher.id && (
+                      <>
+                        <div className="fixed inset-0 z-[100]" onClick={() => setActiveMenu(null)}></div>
+                        <div className="absolute right-0 mt-2 w-48 md:w-56 bg-slate-900/95 backdrop-blur-md border border-white/10 rounded-2xl shadow-2xl z-[110] overflow-hidden py-2 animate-in zoom-in-95 origin-top-right">
+                          <div className="px-4 py-2 border-b border-white/5 mb-1">
+                            <p className="text-[8px] font-black text-indigo-400 uppercase tracking-[0.2em]">Account Actions</p>
+                          </div>
+                          
+                          {user?.id !== teacher.id && (
+                            <button 
+                              onClick={() => { setActiveMenu(null); handleStartChat(teacher.id); }}
+                              className="w-full flex items-center gap-3 px-4 py-2.5 text-white hover:bg-white/10 transition-colors text-left group"
+                            >
+                              <div className="w-8 h-8 rounded-lg bg-violet-500/20 flex items-center justify-center text-violet-400 group-hover:scale-110 transition-transform">
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" /></svg>
+                              </div>
+                              <span className="text-[10px] md:text-xs font-bold uppercase tracking-widest">Send Message</span>
+                            </button>
+                          )}
+
+                          <button 
+                            onClick={() => {
+                              setActiveMenu(null);
+                              setEditingTeacher({
+                                ...teacher,
+                                profile: {
+                                  title: teacher.profile?.title || '',
+                                  phone_number: teacher.profile?.phone_number || ''
+                                }
+                              });
+                              setShowEditModal(true);
+                            }}
+                            className="w-full flex items-center gap-3 px-4 py-2.5 text-white hover:bg-white/10 transition-colors text-left group"
+                          >
+                            <div className="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center text-blue-400 group-hover:scale-110 transition-transform">
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                            </div>
+                            <span className="text-[10px] md:text-xs font-bold uppercase tracking-widest">Edit Details</span>
+                          </button>
+
+                          <button 
+                            onClick={() => { setActiveMenu(null); handleResetPassword(teacher.id); }}
+                            className="w-full flex items-center gap-3 px-4 py-2.5 text-white hover:bg-white/10 transition-colors text-left group"
+                          >
+                            <div className="w-8 h-8 rounded-lg bg-amber-500/20 flex items-center justify-center text-amber-400 group-hover:scale-110 transition-transform">
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" /></svg>
+                            </div>
+                            <span className="text-[10px] md:text-xs font-bold uppercase tracking-widest">Reset Password</span>
+                          </button>
+
+                          <div className="px-4 py-2 mt-1 border-t border-white/5">
+                            <p className="text-[8px] font-black text-rose-400 uppercase tracking-[0.2em] mb-2">Status & Risk</p>
+                            <div className="flex flex-col gap-2">
+                              <select 
+                                value={teacher.account_status} 
+                                onChange={(e) => { setActiveMenu(null); handleToggleStatus(teacher, e.target.value); }}
+                                className={`w-full text-[9px] font-black px-2 py-1.5 rounded-lg border-0 bg-white/5 text-white focus:ring-1 focus:ring-purple-500 cursor-pointer uppercase tracking-widest`}
+                              >
+                                <option value="active" className="bg-slate-900">Active</option>
+                                <option value="inactive" className="bg-slate-900">Inactive</option>
+                                <option value="suspended" className="bg-slate-900 text-rose-400">Suspended</option>
+                              </select>
+                              <button 
+                                onClick={() => { setActiveMenu(null); handleDelete(teacher.id); }}
+                                className="w-full flex items-center gap-3 px-2 py-1.5 text-rose-400 hover:bg-rose-500/20 rounded-lg transition-colors text-left group"
+                              >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                <span className="text-[9px] font-black uppercase tracking-widest">Delete User</span>
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </>
+                    )}
+                  </div>
                 </div>
 
                 <div className="space-y-1.5 md:space-y-3 mb-3 md:mb-6">
