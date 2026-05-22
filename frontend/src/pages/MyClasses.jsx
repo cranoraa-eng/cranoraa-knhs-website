@@ -1,22 +1,22 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../utils/api';
-import { getUser } from '../utils/auth';
+import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 
 const MyClasses = () => {
-  const user = getUser();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [assignments, setAssignments] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchMyClasses();
-  }, []);
+    if (user?.id) fetchMyClasses();
+  }, [user?.id]);
 
   const fetchMyClasses = async () => {
     try {
-      const res = await api.get(`/classroom-subjects/by_teacher/?teacher_id=${user.id}`);
+      const res = await api.get(`/classroom-subjects/by_teacher/?teacher_id=${user?.id}`);
       setAssignments(res.data);
     } catch (err) {
       toast.error('Failed to load assigned classes');

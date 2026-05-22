@@ -1,11 +1,11 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import api, { WS_ROOT } from '../utils/api';
-import { getUser } from '../utils/auth';
+import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
 
 const Messages = () => {
-  const user = getUser();
+  const { user } = useAuth();
 
   // ── Refs ──────────────────────────────────────────────────────────────────
   const messagesEndRef       = useRef(null);
@@ -131,15 +131,17 @@ const Messages = () => {
   };
 
   const fetchFriends = async () => {
+    if (!user) return;
     try { const r = await api.get('/friendships/my_friends/'); setFriends(r.data); }
     catch { console.error('Failed to load friends'); }
   };
 
   const fetchFriendships = async () => {
+    if (!user) return;
     try {
       const r = await api.get('/friendships/');
       setAllFriendships(r.data);
-      setRequests(r.data.filter(f => f.status === 'pending' && f.to_user === user.id));
+      setRequests(r.data.filter(f => f.status === 'pending' && f.to_user === user?.id));
     } catch { console.error('Failed to load friendships'); }
   };
 
@@ -152,7 +154,7 @@ const Messages = () => {
 
       // Send read receipt for the last message so server marks all as read
       const lastMsg = r.data[r.data.length - 1];
-      if (lastMsg && lastMsg.sender !== user.id) {
+      if (lastMsg && lastMsg.sender !== user?.id) {
         setTimeout(() => {
           safeSend({ type: 'read', message_id: lastMsg.id });
         }, 200);
@@ -180,7 +182,11 @@ const Messages = () => {
     if (!newMessage.trim() || !selectedRoom) return;
     const content = newMessage.trim();
     setNewMessage('');
-    setIsTyping(false);
+    
+    // Clear typing timeout and send "not typing" signal
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+    safeSend({ type: 'typing', is_typing: false });
+    lastTypingSentRef.current = 0;
     
     const msgPayload = {
       type: 'message',
@@ -463,8 +469,8 @@ const Messages = () => {
     const f = allFriendships.find(fr => fr.from_user === userId || fr.to_user === userId);
     if (!f) return null;
     if (f.status === 'accepted') return 'friends';
-    if (f.from_user === user.id) return 'sent';
-    if (f.to_user === user.id) return 'received';
+    if (f.from_user === user?.id) return 'sent';
+    if (f.to_user === user?.id) return 'received';
     return null;
   };
 
@@ -473,7 +479,7 @@ const Messages = () => {
     let list = [...rooms];
     if (searchQuery.trim()) {
       list = list.filter(r => {
-        const name = r.is_group ? r.name : r.participants_details.find(p => p.id !== user.id)?.full_name;
+        const name = r.is_group ? r.name : r.participants_details.find(p => p.id !== user?.id)?.full_name;
         return name?.toLowerCase().includes(searchQuery.toLowerCase());
       });
     }
@@ -483,7 +489,7 @@ const Messages = () => {
       if (!a.is_pinned && b.is_pinned) return 1;
       return new Date(b.updated_at) - new Date(a.updated_at);
     });
-  }, [rooms, searchQuery, user.id]);
+  }, [rooms, searchQuery, user?.id]);
 
   const organizedSearchResults = useMemo(() => {
     const results = {
@@ -538,49 +544,49 @@ const Messages = () => {
         const data = JSON.parse(e.data);
 
         if (data.type === 'typing') {
-        if (data.sender_id !== user.id) {
-          setPeerTyping(data.is_typing);
-          setPeerTypingName(data.sender_name || '');
+          if (data.sender_id !== user?.id) {
+            setPeerTyping(data.is_typing);
+            setPeerTypingName(data.sender_name || '');
+          }
+          return;
         }
-        return;
-      }
-      if (data.type === 'delivered') {
-        setMessages(prev => prev.map(m => m.id === data.message_id ? { ...m, is_delivered: true } : m));
-        return;
-      }
-      if (data.type === 'read') {
-        setMessages(prev => prev.map(m =>
-          m.id <= data.message_id && m.sender === user.id
-            ? { ...m, is_read: true, is_delivered: true } : m
-        ));
-        return;
-      }
-      if (data.type === 'message') {
-        const msg = data; // the whole serialized message
-        setMessages(prev => {
-          if (prev.find(m => m.id === msg.id)) return prev;
-          return [...prev, msg];
-        });
-        if (msg.sender !== user.id) {
-          safeSend({ type: 'read', message_id: msg.id });
+        if (data.type === 'delivered') {
+          setMessages(prev => prev.map(m => m.id === data.message_id ? { ...m, is_delivered: true } : m));
+          return;
         }
-        // Update room state live (for sorting and preview)
-        setRooms(prev => prev.map(r =>
-          r.id === data.room_id
-            ? {
-                ...r,
-                last_message: msg,
-                last_action_type: 'message',
-                last_action_sender: msg.sender,
-                last_action_sender_name: msg.sender_name,
-                last_action_content: msg.content,
-                updated_at: msg.timestamp,
-                unread_count: (msg.sender !== user.id && selectedRoomRef.current?.id !== data.room_id)
-                  ? (r.unread_count || 0) + 1
-                  : r.unread_count,
-              }
-            : r
-        ));
+        if (data.type === 'read') {
+          setMessages(prev => prev.map(m =>
+            m.id <= data.message_id && m.sender === user?.id
+              ? { ...m, is_read: true, is_delivered: true } : m
+          ));
+          return;
+        }
+        if (data.type === 'message') {
+          const msg = data; // the whole serialized message
+          setMessages(prev => {
+            if (prev.find(m => m.id === msg.id)) return prev;
+            return [...prev, msg];
+          });
+          if (msg.sender !== user?.id) {
+            safeSend({ type: 'read', message_id: msg.id });
+          }
+          // Update room state live (for sorting and preview)
+          setRooms(prev => prev.map(r =>
+            r.id === data.room_id
+              ? {
+                  ...r,
+                  last_message: msg,
+                  last_action_type: 'message',
+                  last_action_sender: msg.sender,
+                  last_action_sender_name: msg.sender_name,
+                  last_action_content: msg.content,
+                  updated_at: msg.timestamp,
+                  unread_count: (msg.sender !== user?.id && selectedRoomRef.current?.id !== data.room_id)
+                    ? (r.unread_count || 0) + 1
+                    : r.unread_count,
+                }
+              : r
+          ));
       }
 
       if (data.type === 'message_reaction') {
@@ -666,7 +672,7 @@ const Messages = () => {
         if (data.event === 'new_room') {
            setRooms(prev => {
              if (prev.some(r => r.id === updated.id)) return prev;
-             toast(`New chat: ${updated.is_group ? updated.name : updated.participants_details.find(p => p.id !== user.id)?.full_name}`, { icon: '💬' });
+             toast(`New chat: ${updated.is_group ? updated.name : updated.participants_details.find(p => p.id !== user?.id)?.full_name}`, { icon: '💬' });
              return [updated, ...prev];
            });
         } else {
@@ -732,7 +738,7 @@ const Messages = () => {
       console.error('Chat WS error', err);
       ws.close();
     };
-  }, [user.id, selectedRoom]);
+  }, [user?.id, selectedRoom]);
 
   const FriendActionButton = ({ targetUser }) => {
     const status = getFriendshipStatus(targetUser.id);
@@ -820,7 +826,7 @@ const Messages = () => {
             filteredRooms.length === 0
               ? <div className="p-8 text-center"><p className="text-sm text-slate-400 font-medium">No conversations found</p></div>
               : filteredRooms.map(room => {
-                  const otherUser   = !room.is_group ? room.participants_details.find(p => p.id !== user.id) : null;
+                  const otherUser   = !room.is_group ? room.participants_details.find(p => p.id !== user?.id) : null;
                   const displayName = room.is_group ? room.name : otherUser?.full_name;
                   const initials    = displayName?.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
                   const isSelected  = selectedRoom?.id === room.id;
@@ -890,7 +896,7 @@ const Messages = () => {
                         </div>
                         <p className={`text-[10px] md:text-xs truncate font-medium max-w-[120px] xs:max-w-[160px] sm:max-w-[200px] md:max-w-full ${room.unread_count > 0 ? 'text-slate-700 font-semibold' : 'text-slate-500'}`}>
                           {(() => {
-                            const sender = room.last_action_sender === user.id ? 'You' : (room.last_action_sender_name?.split(' ')[0] || 'Someone');
+                            const sender = room.last_action_sender === user?.id ? 'You' : (room.last_action_sender_name?.split(' ')[0] || 'Someone');
                             
                             if (room.last_action_type === 'reaction') {
                               return `${sender} reacted ${room.last_action_content} to a message`;
@@ -1063,7 +1069,7 @@ const Messages = () => {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
                   ) : (
-                    (selectedRoom.participants_details.find(p => p.id !== user.id)?.full_name)
+                    (selectedRoom.participants_details.find(p => p.id !== user?.id)?.full_name)
                       ?.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2)
                   )}
                 </div>
@@ -1072,7 +1078,7 @@ const Messages = () => {
                     <h3 className="text-[10px] md:text-sm font-black text-slate-800 uppercase tracking-tight truncate">
                       {selectedRoom.is_group
                         ? selectedRoom.name
-                        : selectedRoom.participants_details.find(p => p.id !== user.id)?.full_name}
+                        : selectedRoom.participants_details.find(p => p.id !== user?.id)?.full_name}
                     </h3>
                     {selectedRoom.is_group && (
                       <span className="hidden sm:inline-block text-[7px] font-black bg-indigo-100 text-indigo-600 px-1.5 py-0.5 rounded-full uppercase tracking-widest shrink-0">Group</span>
@@ -1085,9 +1091,9 @@ const Messages = () => {
                       </span>
                     ) : (
                       <>
-                        <span className={`w-1 md:w-1.5 h-1 md:h-1.5 rounded-full ${selectedRoom.participants_details?.find(p => p.id !== user.id)?.is_online ? 'bg-green-500' : 'bg-slate-300'}`} />
+                        <span className={`w-1 md:w-1.5 h-1 md:h-1.5 rounded-full ${selectedRoom.participants_details?.find(p => p.id !== user?.id)?.is_online ? 'bg-green-500' : 'bg-slate-300'}`} />
                         <span className="text-[7px] md:text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                          {selectedRoom.participants_details?.find(p => p.id !== user.id)?.is_online ? 'Active now' : 'Offline'}
+                          {selectedRoom.participants_details?.find(p => p.id !== user?.id)?.is_online ? 'Active now' : 'Offline'}
                         </span>
                       </>
                     )}
@@ -1135,7 +1141,7 @@ const Messages = () => {
                 )}
 
                 {/* Group settings — only for creator */}
-                {selectedRoom.is_group && selectedRoom.created_by === user.id && (
+                {selectedRoom.is_group && selectedRoom.created_by === user?.id && (
                   <button
                     onClick={openGroupSettings}
                     className="p-0.5 md:p-2 text-slate-400 hover:text-violet-600 hover:bg-violet-50 rounded-lg md:rounded-xl transition-all"
@@ -1165,7 +1171,7 @@ const Messages = () => {
                 </div>
               ) : (
                 messages.map((msg, i) => {
-                  const isMine    = msg.sender === user.id;
+                  const isMine    = msg.sender === user?.id;
                   const showAvatar = i === 0 || messages[i - 1].sender !== msg.sender;
                   const isEditing  = editingMessage?.id === msg.id;
 
@@ -1402,7 +1408,7 @@ const Messages = () => {
                   {(() => {
                     const activeMsg = messages.find(m => m.id === activeMoreMenu);
                     if (!activeMsg) return null;
-                    const isMsgMine = activeMsg.sender === user.id;
+                    const isMsgMine = activeMsg.sender === user?.id;
 
                     return (
                       <>
@@ -1509,7 +1515,7 @@ const Messages = () => {
             <div className="flex-1 overflow-y-auto p-3 space-y-1">
               {selectedRoom.participants_details?.map(member => {
                 const isCreator = member.id === selectedRoom.created_by;
-                const isMe = member.id === user.id;
+                const isMe = member.id === user?.id;
                 return (
                   <div key={member.id} className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 transition-all">
                     <div className="relative shrink-0">
@@ -1626,7 +1632,7 @@ const Messages = () => {
                   </p>
                   {selectedRoom.participants_details?.map(member => {
                     const isCreator = member.id === selectedRoom.created_by;
-                    const isMe = member.id === user.id;
+                    const isMe = member.id === user?.id;
                     return (
                       <div key={member.id} className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 transition-all">
                         <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-violet-400 to-indigo-500 flex items-center justify-center text-white font-bold text-sm shrink-0">
