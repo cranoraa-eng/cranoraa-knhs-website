@@ -8,6 +8,25 @@ import { Spinner } from '../components/Spinner';
 
 const COLORS = ['#8b5cf6', '#10b981', '#3b82f6', '#f59e0b', '#ef4444'];
 
+const renderCustomPieLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, name }) => {
+  const RADIAN = Math.PI / 180;
+  const radius = outerRadius + 20;
+  const x = cx + radius * Math.cos(-midAngle * RADIAN);
+  const y = cy + radius * Math.sin(-midAngle * RADIAN);
+
+  return (
+    <text x={x} y={y} fill="#64748b" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central" className="text-[8px] font-black uppercase tracking-tighter">
+      {`${name} (${(percent * 100).toFixed(0)}%)`}
+    </text>
+  );
+};
+
+const renderCustomBarLabel = ({ x, y, width, value }) => (
+  <text x={x + width / 2} y={y - 6} fill="#64748b" textAnchor="middle" className="text-[8px] font-black">
+    {value}%
+  </text>
+);
+
 const Analytics = () => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -131,6 +150,8 @@ const Analytics = () => {
                   outerRadius={85}
                   paddingAngle={8}
                   dataKey="value"
+                  labelLine={false}
+                  label={renderCustomPieLabel}
                 >
                   {gradeDistribution.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} strokeWidth={0} />
@@ -169,7 +190,7 @@ const Analytics = () => {
                 <XAxis dataKey="subject__name" tick={{fontSize: 8, fontWeight: 900, fill: '#64748b'}} axisLine={false} tickLine={false} />
                 <YAxis tick={{fontSize: 8, fontWeight: 900, fill: '#64748b'}} axisLine={false} tickLine={false} domain={[70, 100]} />
                 <Tooltip content={<CustomTooltip unit="%" />} />
-                <Bar dataKey="avg_grade" fill="#6366f1" radius={[2, 2, 0, 0]} barSize={24} />
+                <Bar dataKey="avg_grade" fill="#6366f1" radius={[2, 2, 0, 0]} barSize={24} label={renderCustomBarLabel} />
               </BarChart>
             </ResponsiveContainer>
           </div>

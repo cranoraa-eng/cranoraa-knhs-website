@@ -7,6 +7,31 @@ import {
 
 const COLORS = ['#10b981', '#6366f1', '#3b82f6', '#f59e0b', '#ef4444'];
 
+const renderCustomPieLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, name }) => {
+  const RADIAN = Math.PI / 180;
+  const radius = outerRadius + 15;
+  const x = cx + radius * Math.cos(-midAngle * RADIAN);
+  const y = cy + radius * Math.sin(-midAngle * RADIAN);
+
+  return (
+    <text x={x} y={y} fill="#64748b" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central" className="text-[7px] font-black uppercase tracking-tighter">
+      {`${name} (${(percent * 100).toFixed(0)}%)`}
+    </text>
+  );
+};
+
+const renderCustomBarLabel = ({ x, y, width, value }) => (
+  <text x={x + width / 2} y={y - 6} fill="#64748b" textAnchor="middle" className="text-[8px] font-black">
+    {value}%
+  </text>
+);
+
+const renderHorizontalBarLabel = ({ x, y, width, height, value }) => (
+  <text x={x + width + 5} y={y + height / 2} fill="#64748b" dominantBaseline="central" className="text-[8px] font-black">
+    {value}%
+  </text>
+);
+
 const GradeDistribution = () => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -174,6 +199,8 @@ const GradeDistribution = () => {
                       outerRadius={90}
                       paddingAngle={6}
                       dataKey="value"
+                      labelLine={false}
+                      label={renderCustomPieLabel}
                     >
                       {data.category_counts.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} strokeWidth={0} />
@@ -229,7 +256,7 @@ const GradeDistribution = () => {
                       tickLine={false}
                     />
                     <Tooltip content={<CustomTooltip unit="%" />} />
-                    <Bar dataKey="average" fill="#6366f1" radius={[2, 2, 0, 0]} barSize={32}>
+                    <Bar dataKey="average" fill="#6366f1" radius={[2, 2, 0, 0]} barSize={32} label={renderCustomBarLabel}>
                       {data.by_level.map((entry, index) => (
                         <Cell 
                           key={`cell-${index}`} 
@@ -259,7 +286,7 @@ const GradeDistribution = () => {
                   <BarChart 
                     data={data.by_group} 
                     layout="vertical"
-                    margin={{ left: 40, right: 30 }}
+                    margin={{ left: 40, right: 60 }}
                   >
                     <CartesianGrid strokeDasharray="2 2" horizontal={true} vertical={false} stroke="#f1f5f9" />
                     <XAxis type="number" domain={[0, 100]} hide />
@@ -272,7 +299,7 @@ const GradeDistribution = () => {
                       tickLine={false}
                     />
                     <Tooltip content={<CustomTooltip unit="%" />} />
-                    <Bar dataKey="average" fill="#4f46e5" radius={[0, 2, 2, 0]} barSize={20}>
+                    <Bar dataKey="average" fill="#4f46e5" radius={[0, 2, 2, 0]} barSize={20} label={renderHorizontalBarLabel}>
                       {data.by_group.map((entry, index) => (
                         <Cell 
                           key={`cell-${index}`} 

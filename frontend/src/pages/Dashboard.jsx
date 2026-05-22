@@ -85,6 +85,27 @@ const StatCard = ({ label, value, sub, icon, color = 'violet', onClick, badge })
 
 // ─── ADMIN DASHBOARD ──────────────────────────────────────────────────────────
 
+const COLORS = ['#8b5cf6', '#10b981', '#3b82f6', '#f59e0b', '#ef4444'];
+
+const renderCustomPieLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, name }) => {
+  const RADIAN = Math.PI / 180;
+  const radius = outerRadius + 15;
+  const x = cx + radius * Math.cos(-midAngle * RADIAN);
+  const y = cy + radius * Math.sin(-midAngle * RADIAN);
+
+  return (
+    <text x={x} y={y} fill="#64748b" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central" className="text-[7px] font-black uppercase tracking-tighter">
+      {`${name} (${(percent * 100).toFixed(0)}%)`}
+    </text>
+  );
+};
+
+const renderCustomBarLabel = ({ x, y, width, value }) => (
+  <text x={x + width / 2} y={y - 6} fill="#64748b" textAnchor="middle" className="text-[8px] font-black">
+    {value}%
+  </text>
+);
+
 const AdminView = () => {
   const navigate = useNavigate();
   const user = getUser();
@@ -105,8 +126,6 @@ const AdminView = () => {
   const gradeData = data?.charts?.grade_distribution || [];
   const attendanceTrends = data?.charts?.attendance_trends || data?.attendance_trends || [];
   const today = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-
-  const COLORS = ['#10b981', '#3b82f6', '#8b5cf6', '#f59e0b', '#ef4444'];
 
   return (
     <div className="space-y-6 pb-12">
@@ -238,6 +257,8 @@ const AdminView = () => {
                   outerRadius={80}
                   paddingAngle={5}
                   dataKey="value"
+                  labelLine={false}
+                  label={renderCustomPieLabel}
                 >
                   {gradeData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} strokeWidth={0} />
