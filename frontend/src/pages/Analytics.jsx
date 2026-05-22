@@ -325,7 +325,7 @@ const GradeMatrixSection = ({ gradeDistribution }) => {
               dataKey="value"
               stroke="none"
             >
-              {gradeDistribution.map((entry, index) => (
+              {gradeDistribution.map((_, index) => (
                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
               ))}
             </Pie>
@@ -345,7 +345,7 @@ const GradeMatrixSection = ({ gradeDistribution }) => {
             />
           </PieChart>
         </ResponsiveContainer>
-        <div className="absolute top-[50%] left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center justify-center pointer-events-none transform -translate-y-[20px]">
+        <div className="absolute top-[50%] left-1/2 -translate-x-1/2 flex flex-col items-center justify-center pointer-events-none transform -translate-y-[calc(50%+20px)]">
           <p className="text-3xl font-black text-slate-900 leading-none">{total}</p>
           <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mt-1">Students</p>
         </div>
@@ -423,7 +423,7 @@ const GradeDistributionPieSection = ({ data, totalStudents }) => (
             dataKey="value"
             stroke="none"
           >
-            {data.map((entry, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />)}
+            {data.map((_, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />)}
           </Pie>
           <Tooltip content={<CustomPieTooltip />} />
           <Legend 
@@ -442,7 +442,7 @@ const GradeDistributionPieSection = ({ data, totalStudents }) => (
           />
         </PieChart>
       </ResponsiveContainer>
-      <div className="absolute top-[50%] left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center justify-center pointer-events-none transform -translate-y-[20px]">
+      <div className="absolute top-[50%] left-1/2 -translate-x-1/2 flex flex-col items-center justify-center pointer-events-none transform -translate-y-[calc(50%+20px)]">
         <p className="text-3xl font-black text-slate-900 leading-none">{totalStudents}</p>
         <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mt-1">Students</p>
       </div>
@@ -494,7 +494,7 @@ const GradeRankingSection = ({ data, filterSubject, meta }) => (
           <YAxis type="category" dataKey="code" width={80} tick={{fontSize: 8, fontWeight: 900, fill: '#475569'}} axisLine={false} tickLine={false} />
           <Tooltip content={<CustomTooltip unit="%" />} />
           <Bar dataKey="average" fill="#4f46e5" radius={[0, 2, 2, 0]} barSize={20} label={renderHorizontalBarLabel}>
-            {data.map((entry, index) => <Cell key={`cell-${index}`} fill="#4f46e5" opacity={1 - (index * 0.05)} />)}
+            {data.map((_, index) => <Cell key={`cell-${index}`} fill="#4f46e5" opacity={1 - (index * 0.05)} />)}
           </Bar>
         </BarChart>
       </ResponsiveContainer>
