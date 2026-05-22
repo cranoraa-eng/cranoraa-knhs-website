@@ -109,8 +109,21 @@ const AdminView = () => {
 
   if (loading || !data) return <Spinner />;
 
+  const getGradeArray = (source) => {
+    if (!source) return [];
+    if (Array.isArray(source)) return source;
+    // If it's the object format from general_average/all_subjects
+    return [
+      { name: 'Outstanding', value: source.outstanding || 0 },
+      { name: 'Very Satisfactory', value: source.very_satisfactory || 0 },
+      { name: 'Satisfactory', value: source.satisfactory || 0 },
+      { name: 'Fairly Satisfactory', value: source.fairly_satisfactory || 0 },
+      { name: 'Failed', value: source.failed || 0 },
+    ];
+  };
+
   const dist = distView === 'general_average' ? data?.general_average : data?.all_subjects;
-  const gradeData = dist || data?.charts?.grade_distribution || [];
+  const gradeData = getGradeArray(dist || data?.charts?.grade_distribution);
   const attendanceTrends = data?.charts?.attendance_trends || data?.attendance_trends || [];
   const today = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
