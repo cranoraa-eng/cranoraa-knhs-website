@@ -567,19 +567,29 @@ const Attendance = () => {
 
       {/* ── ANALYTICS VIEW ── */}
       {view === 'analytics' && (
-        <div className="space-y-6 animate-fade-in">
+        <div className="space-y-4 animate-fade-in max-w-full overflow-hidden">
           {loadingAnalytics ? (
-            <div className="flex items-center justify-center h-48"><div className="animate-spin rounded-full h-10 w-10 border-b-2 border-purple-600" /></div>
+            <div className="flex items-center justify-center h-48">
+              <div className="flex flex-col items-center gap-2">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600" />
+                <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Synthesizing Data...</span>
+              </div>
+            </div>
           ) : !analytics ? (
-            <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-16 text-center text-gray-400 font-bold text-sm uppercase tracking-widest">Failed to load analytics.</div>
+            <div className="bg-white border border-slate-200 rounded-xl shadow-sm p-16 text-center text-slate-400 font-bold text-[10px] uppercase tracking-[0.2em]">Failed to load analytics engine.</div>
           ) : (
             <>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
                 {/* Daily Trends Chart */}
-                <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
-                  <div className="mb-6">
-                    <h3 className="text-lg font-bold text-gray-800">Daily Presence Trends</h3>
-                    <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest">Last 30 Days</p>
+                <div className="lg:col-span-8 bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+                  <div className="flex items-center justify-between mb-6">
+                    <div>
+                      <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Presence Trends</h3>
+                      <p className="text-sm font-black text-slate-900 uppercase tracking-tight">30-Day Activity Monitor</p>
+                    </div>
+                    <div className="flex gap-1.5">
+                      <div className="px-2 py-0.5 bg-emerald-50 border border-emerald-100 rounded text-[7px] font-black text-emerald-600 uppercase tracking-widest">Live</div>
+                    </div>
                   </div>
                   <div className="h-64">
                     <ResponsiveContainer width="100%" height="100%">
@@ -589,13 +599,23 @@ const Attendance = () => {
                             <stop offset="5%" stopColor="#10b981" stopOpacity={0.1}/>
                             <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
                           </linearGradient>
+                          <linearGradient id="colorLate" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.1}/>
+                            <stop offset="95%" stopColor="#f59e0b" stopOpacity={0}/>
+                          </linearGradient>
                         </defs>
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                        <XAxis dataKey="date" tick={{fontSize: 10, fontWeight: 700}} axisLine={false} tickLine={false} tickFormatter={(str) => new Date(str).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} />
-                        <YAxis tick={{fontSize: 10, fontWeight: 700}} axisLine={false} tickLine={false} />
-                        <Tooltip contentStyle={{borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)'}} />
-                        <Area type="monotone" dataKey="present" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorPresent)" name="Present" />
-                        <Area type="monotone" dataKey="late" stroke="#f59e0b" strokeWidth={3} fill="none" name="Late" />
+                        <CartesianGrid strokeDasharray="2 2" vertical={false} stroke="#f1f5f9" />
+                        <XAxis 
+                          dataKey="date" 
+                          tick={{fontSize: 8, fontWeight: 900, fill: '#64748b'}} 
+                          axisLine={false} 
+                          tickLine={false} 
+                          tickFormatter={(str) => new Date(str).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} 
+                        />
+                        <YAxis tick={{fontSize: 8, fontWeight: 900, fill: '#64748b'}} axisLine={false} tickLine={false} />
+                        <Tooltip content={<AnalyticsTooltip />} cursor={{stroke: '#cbd5e1', strokeWidth: 1}} />
+                        <Area type="monotone" dataKey="present" stroke="#10b981" strokeWidth={2} fillOpacity={1} fill="url(#colorPresent)" name="Present" />
+                        <Area type="monotone" dataKey="late" stroke="#f59e0b" strokeWidth={2} fillOpacity={1} fill="url(#colorLate)" name="Late" />
                       </AreaChart>
                     </ResponsiveContainer>
                   </div>
@@ -603,23 +623,35 @@ const Attendance = () => {
 
                 {/* Section Rankings */}
                 {user.role === 'admin' && (
-                  <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm overflow-hidden flex flex-col">
+                  <div className="lg:col-span-4 bg-white border border-slate-200 rounded-xl p-4 shadow-sm overflow-hidden flex flex-col">
                     <div className="mb-6">
-                      <h3 className="text-lg font-bold text-gray-800">Section Rankings</h3>
-                      <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest">Top Performing Classrooms</p>
+                      <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Rankings</h3>
+                      <p className="text-sm font-black text-slate-900 uppercase tracking-tight">Section Performance Index</p>
                     </div>
-                    <div className="flex-1 overflow-y-auto space-y-3 pr-2">
+                    <div className="flex-1 overflow-y-auto space-y-2 pr-1 scrollbar-thin scrollbar-thumb-slate-200">
                       {analytics.section_rankings?.map((rank, idx) => (
-                        <div key={rank.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-100 hover:border-purple-200 transition-all">
+                        <div key={rank.id} className="group flex items-center justify-between p-2.5 bg-slate-50/50 rounded-lg border border-slate-100 hover:border-indigo-200 hover:bg-white transition-all">
                           <div className="flex items-center gap-3">
-                            <span className={`w-6 h-6 flex items-center justify-center rounded-lg font-black text-[10px] ${idx === 0 ? 'bg-amber-100 text-amber-600' : idx === 1 ? 'bg-slate-200 text-slate-600' : idx === 2 ? 'bg-orange-100 text-orange-600' : 'bg-gray-100 text-gray-400'}`}>
+                            <span className={`w-5 h-5 flex items-center justify-center rounded-md font-black text-[9px] ${
+                              idx === 0 ? 'bg-amber-100 text-amber-600 shadow-sm' : 
+                              idx === 1 ? 'bg-slate-200 text-slate-600' : 
+                              idx === 2 ? 'bg-orange-100 text-orange-600' : 
+                              'bg-slate-100 text-slate-400'
+                            }`}>
                               {idx + 1}
                             </span>
-                            <span className="text-xs font-black text-gray-700 uppercase tracking-tight">{rank.name}</span>
+                            <div className="flex flex-col">
+                              <span className="text-[10px] font-black text-slate-700 uppercase tracking-tight leading-none mb-1">{rank.name}</span>
+                              <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest leading-none">{rank.total_records} records</span>
+                            </div>
                           </div>
                           <div className="text-right">
-                            <div className={`text-sm font-black ${rank.rate >= 90 ? 'text-emerald-600' : rank.rate >= 75 ? 'text-blue-600' : 'text-rose-600'}`}>{rank.rate}%</div>
-                            <div className="text-[8px] font-bold text-gray-400 uppercase tracking-widest">{rank.total_records} records</div>
+                            <div className={`text-xs font-black leading-none mb-1 ${rank.rate >= 90 ? 'text-emerald-600' : rank.rate >= 75 ? 'text-blue-600' : 'text-rose-600'}`}>
+                              {rank.rate}%
+                            </div>
+                            <div className="w-12 h-1 bg-slate-200 rounded-full overflow-hidden">
+                              <div className={`h-full rounded-full ${rank.rate >= 90 ? 'bg-emerald-500' : rank.rate >= 75 ? 'bg-blue-500' : 'bg-rose-500'}`} style={{ width: `${rank.rate}%` }} />
+                            </div>
                           </div>
                         </div>
                       ))}
@@ -634,5 +666,28 @@ const Attendance = () => {
     </div>
   );
 };
+
+const AnalyticsTooltip = ({ active, payload, label }) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-slate-900 border border-slate-800 p-2 rounded-lg shadow-2xl backdrop-blur-md bg-opacity-95">
+        <p className="text-[8px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1.5">{label}</p>
+        <div className="space-y-1">
+          {payload.map((entry, index) => (
+            <div key={index} className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: entry.color }} />
+                <span className="text-[8px] font-bold text-slate-500 uppercase tracking-widest">{entry.name}</span>
+              </div>
+              <span className="text-[10px] font-black text-white">{entry.value}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+  return null;
+};
+
 
 export default Attendance;
