@@ -43,6 +43,7 @@ import StudentGradeView from './pages/StudentGradeView';
 import GradeReports from './pages/GradeReports';
 import Moderation from './pages/Moderation';
 import Analytics from './pages/Analytics';
+import Notifications from './pages/Notifications';
 
 import Messages from './pages/Messages';
 import Maintenance from './pages/Maintenance';
@@ -145,6 +146,7 @@ function App() {
           <Route path="grade-reports" element={<GradeReports />} />
           <Route path="moderation" element={<Moderation />} />
           <Route path="analytics" element={<Analytics />} />
+          <Route path="notifications" element={<Notifications />} />
         </Route>
       </Routes>
       </BrowserRouter>
