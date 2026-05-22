@@ -526,7 +526,18 @@ class StudentClassEnrollmentViewSet(viewsets.ModelViewSet):
         classroom_id = self.request.query_params.get('classroom')
 
         if user.role == 'student':
-            queryset = queryset.filter(student=user)
+            if classroom_id:
+                # If a specific classroom is requested, ensure the student is enrolled there
+                is_enrolled = StudentClassEnrollment.objects.filter(student=user, classroom_id=classroom_id).exists()
+                if is_enrolled:
+                    # Allow seeing all students in that classroom
+                    queryset = queryset.filter(classroom_id=classroom_id)
+                else:
+                    # Not enrolled in the requested classroom, restrict to self
+                    queryset = queryset.filter(student=user)
+            else:
+                # Default: only see own enrollments
+                queryset = queryset.filter(student=user)
         elif user.role == 'teacher':
             from django.db.models import Q
             assigned_classrooms = ClassroomSubject.objects.filter(teacher=user).values_list('classroom_id', flat=True)

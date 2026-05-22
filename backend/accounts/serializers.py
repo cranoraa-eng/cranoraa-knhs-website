@@ -137,6 +137,21 @@ class StudentClassEnrollmentSerializer(serializers.ModelSerializer):
     def get_transmuted_quarters(self, obj): return obj.get_transmuted_quarters()
     def get_descriptive_equivalent(self, obj): return obj.get_descriptive_equivalent()
 
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        request = self.context.get('request')
+        
+        # If the request is from a student and they are looking at someone else's enrollment
+        if request and request.user.role == 'student' and instance.student != request.user:
+            # Hide sensitive academic data
+            grade_fields = ['q1', 'q2', 'q3', 'q4', 'gpa', 'general_average', 
+                           'transmuted_average', 'transmuted_quarters', 'descriptive_equivalent']
+            for field in grade_fields:
+                if field in representation:
+                    representation[field] = None
+        
+        return representation
+
 
 class AnnouncementAttachmentSerializer(serializers.ModelSerializer):
     url = serializers.SerializerMethodField()
