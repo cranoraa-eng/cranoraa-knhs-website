@@ -411,14 +411,24 @@ const StudentManagement = () => {
             onClick={() => {
               const headers = [['Student ID', 'First Name', 'Last Name', 'Grade Level', 'Email']];
               const sampleData = [
-                ['128150150092', 'John', 'Doe', 'Grade 7', 'john@example.com'],
-                ['128150150093', 'Jane', 'Smith', 'Grade 8', ''],
+                ['128150150092', 'Arc', 'Capisen', 'Grade 12', ''],
+                ['128150150093', 'Arcc', 'Capisenq', 'Grade 12', ''],
+                ['128150150094', 'Arcy', 'Capisenw', 'Grade 12', ''],
               ];
-              const ws = XLSX.utils.aoa_to_sheet([...headers, ...sampleData]);
+              const instructions = [
+                [],
+                ['INSTRUCTIONS:'],
+                ['1. Student ID must be exactly 12 digits (LRN).'],
+                ['2. Email is optional - you can leave it blank.'],
+                ['3. Grade Level should be one of: Grade 7, Grade 8, Grade 9, Grade 10, Grade 11, Grade 12.'],
+                ['4. Do not change the header names in the first row.'],
+              ];
+              
+              const ws = XLSX.utils.aoa_to_sheet([...headers, ...sampleData, ...instructions]);
               
               // Apply basic styling to headers
               const headerRange = XLSX.utils.decode_range(ws['!ref']);
-              for (let C = headerRange.s.c; C <= headerRange.e.c; ++C) {
+              for (let C = headerRange.s.c; C <= 4; ++C) {
                 const address = XLSX.utils.encode_col(C) + '1';
                 if (!ws[address]) continue;
                 ws[address].s = {
@@ -438,9 +448,9 @@ const StudentManagement = () => {
               ];
 
               const wb = XLSX.utils.book_new();
-              XLSX.utils.book_append_sheet(wb, ws, "Template");
-              XLSX.writeFile(wb, "student_import_template.xlsx");
-              toast.success('Import template downloaded');
+              XLSX.utils.book_append_sheet(wb, ws, "Student Template");
+              XLSX.writeFile(wb, "KNHS_Student_Import_Template.xlsx");
+              toast.success('Professional template downloaded');
             }}
             className="bg-emerald-600 text-white px-3 py-1.5 md:px-5 md:py-2.5 rounded-xl md:rounded-2xl border border-emerald-700 shadow-lg hover:bg-emerald-700 flex items-center gap-2 transition-all active:scale-95"
           >

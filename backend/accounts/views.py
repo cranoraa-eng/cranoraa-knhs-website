@@ -772,22 +772,23 @@ class UserViewSet(viewsets.ModelViewSet):
                     continue
                 
                 # Generate temporary password
-                temp_password = ''.join(secrets.choice(string.ascii_letters + string.digits) for i in range(10))
-                
-                user = User.objects.create_user(
-                    username=student_id,
-                    email=email,
-                    password=temp_password,
-                    first_name=first_name,
-                    last_name=last_name
-                )
-                user.role = 'student'
-                user.is_approved = True
-                user.is_verified = True if email else False
-                user.must_change_password = True
-                user.temp_password_storage = temp_password # Store it
-                user.account_status = 'active'
-                user.save()
+                 temp_password = ''.join(secrets.choice(string.ascii_letters + string.digits) for i in range(10))
+
+                 # Create user with raw create to ensure email=None stays NULL in PostgreSQL
+                 user = User(
+                     username=student_id,
+                     email=email,
+                     first_name=first_name,
+                     last_name=last_name,
+                     role='student',
+                     is_approved=True,
+                     is_verified=True if email else False,
+                     must_change_password=True,
+                     temp_password_storage=temp_password,
+                     account_status='active'
+                 )
+                 user.set_password(temp_password)
+                 user.save()
                 
                 # Create profile
                 from .models import Profile
