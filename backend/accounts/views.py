@@ -644,14 +644,17 @@ class UserViewSet(viewsets.ModelViewSet):
                         pass
                 return queryset.filter(id=user.id)
             
-            # Teachers can see students and themselves
+            # RBAC: Teachers can only manage their own advisory classroom
             if user.role == 'teacher':
-                if role:
-                    if role == 'student':
-                        return queryset.filter(role='student')
-                    elif role == 'teacher':
-                        return queryset.filter(id=user.id)
-                return queryset.filter(role='student') | queryset.filter(id=user.id)
+                from django.db.models import Q
+                if role == 'student':
+                    # Only return students in their advisory classroom
+                    return queryset.filter(enrollments__classroom__teacher=user).distinct()
+                elif role == 'teacher':
+                    return queryset.filter(id=user.id)
+                
+                # Default: Return advisory students + self
+                return queryset.filter(Q(enrollments__classroom__teacher=user) | Q(id=user.id)).distinct()
             
             # Admins can see all users
             if role:

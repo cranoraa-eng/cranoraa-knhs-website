@@ -47,7 +47,8 @@ const StudentManagement = () => {
       
       if (user?.role === 'teacher' && Array.isArray(classesRes.data)) {
         // Teacher visibility is restricted to advisory by backend
-        const advisory = classesRes.data.find(c => c.teacher === user.id);
+        // Use string comparison to be safe with IDs
+        const advisory = classesRes.data.find(c => String(c.teacher) === String(user.id));
         if (advisory) setAdvisoryClass(advisory);
       }
       
@@ -386,8 +387,15 @@ const StudentManagement = () => {
     }
     
     filtered.forEach(s => {
-      const grade = s.profile?.grade_level || 'Unassigned';
-      const classroom = s.profile?.classroom_name || 'No Classroom';
+      let grade = s.profile?.grade_level || 'Unassigned';
+      let classroom = s.profile?.classroom_name || 'No Classroom';
+      
+      // For teachers, force students into their advisory classroom grouping
+      // in case the student's profile computed field picks a different enrollment
+      if (user?.role === 'teacher' && advisoryClass) {
+        grade = advisoryClass.grade_level || grade;
+        classroom = advisoryClass.name;
+      }
       
       if (!groups[grade]) groups[grade] = {};
       if (!groups[grade][classroom]) groups[grade][classroom] = [];
