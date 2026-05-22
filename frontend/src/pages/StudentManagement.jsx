@@ -79,7 +79,7 @@ const StudentManagement = () => {
       
       setShowAddModal(false);
       setNewStudent({ username: '', first_name: '', last_name: '', email: '', password: '', grade_level: '', sex: '' });
-      fetchStudents();
+      fetchData();
 
       // Show success with password
       Swal.fire({
@@ -184,7 +184,7 @@ const StudentManagement = () => {
           }
           
           setShowImportModal(false);
-          fetchStudents();
+          fetchData();
         } catch (err) {
           toast.dismiss(loadingToast);
           toast.error('Failed to parse Excel file');
@@ -211,7 +211,7 @@ const StudentManagement = () => {
     if (result.isConfirmed) {
       try {
         await api.delete(`/users/${id}/`);
-        fetchStudents();
+        fetchData();
         toast.success('Student account deleted');
       } catch (err) {
         console.error('Failed to delete student:', err);
@@ -258,7 +258,7 @@ const StudentManagement = () => {
     try {
       const response = await api.post(`/users/${student.id}/update_status/`, { status: newStatus });
       toast.success(response.data.status);
-      fetchStudents();
+      fetchData();
     } catch (err) {
       toast.error('Failed to update status');
     }
