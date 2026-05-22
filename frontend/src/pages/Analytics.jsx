@@ -59,11 +59,11 @@ const Analytics = () => {
 
   return (
     <div className="space-y-4 pb-8 animate-fade-in max-w-full overflow-hidden">
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-2xl">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 bg-slate-900 p-8 rounded-2xl border border-slate-800 shadow-2xl">
         <div>
-          <h1 className="text-xl md:text-2xl font-black text-white tracking-tighter uppercase leading-none">System Intelligence</h1>
-          <p className="text-slate-400 text-[10px] font-bold uppercase tracking-[0.2em] mt-2 flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+          <h1 className="text-xl md:text-3xl font-black text-slate-50 tracking-tighter uppercase leading-none">System Intelligence</h1>
+          <p className="text-slate-300 text-[10px] font-bold uppercase tracking-[0.2em] mt-3 flex items-center gap-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
             Live Portal Performance Metrics
           </p>
         </div>
@@ -123,46 +123,51 @@ const Analytics = () => {
 
         {/* Grade Distribution */}
         <div className="lg:col-span-4 bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
-          <div className="mb-6">
+          <div className="mb-4">
             <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Grade Matrix</h3>
             <p className="text-sm font-black text-slate-900 uppercase tracking-tight">Global Performance Spread</p>
           </div>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart margin={{ top: -20, bottom: 0 }}>
-                <Pie
-                  data={gradeDistribution}
-                  cx="50%"
-                  cy="45%"
-                  innerRadius={50}
-                  outerRadius={70}
-                  paddingAngle={8}
-                  dataKey="value"
-                >
-                  {gradeDistribution.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} strokeWidth={0} />
-                  ))}
-                </Pie>
-                <Tooltip content={<CustomPieTooltip />} />
-                <Legend 
-                  verticalAlign="bottom" 
-                  align="center"
-                  iconType="rect"
-                  iconSize={4}
-                  layout="vertical"
-                  wrapperStyle={{ paddingTop: '10px', bottom: 0 }}
-                  formatter={(value) => {
-                    const item = gradeDistribution.find(d => d.name === value);
-                    const percentage = totalGrades > 0 ? ((item.value / totalGrades) * 100).toFixed(1) : 0;
-                    return (
-                      <span className="text-[7px] font-black text-slate-400 uppercase tracking-tighter">
-                        {value}: {item.value} ({percentage}%)
-                      </span>
-                    );
-                  }}
-                />
-              </PieChart>
-            </ResponsiveContainer>
+          <div className="h-64 flex items-center justify-between gap-2">
+            <div className="w-1/2 h-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart margin={{ top: 0, bottom: 0, left: 0, right: 0 }}>
+                  <Pie
+                    data={gradeDistribution}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={55}
+                    outerRadius={75}
+                    paddingAngle={8}
+                    dataKey="value"
+                  >
+                    {gradeDistribution.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} strokeWidth={0} />
+                    ))}
+                  </Pie>
+                  <Tooltip content={<CustomPieTooltip />} />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="w-1/2 overflow-y-auto max-h-full pr-2">
+              <div className="space-y-2.5">
+                {gradeDistribution.map((item, index) => {
+                  const percentage = totalGrades > 0 ? ((item.value / totalGrades) * 100).toFixed(1) : 0;
+                  return (
+                    <div key={item.name} className="flex items-start gap-2">
+                      <div className="w-2 h-2 rounded-full mt-1 shrink-0" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
+                      <div className="flex flex-col min-w-0">
+                        <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-tight truncate">
+                          {item.name}
+                        </span>
+                        <span className="text-[10px] font-bold text-slate-700">
+                          {item.value} <span className="text-slate-400 font-medium ml-1">({percentage}%)</span>
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
           </div>
         </div>
 
@@ -181,7 +186,7 @@ const Analytics = () => {
           </div>
           <div className="h-72">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={subjectStats}>
+              <BarChart data={subjectStats} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="2 2" vertical={false} stroke="#f1f5f9" />
                 <XAxis dataKey="subject__name" tick={{fontSize: 8, fontWeight: 900, fill: '#64748b'}} axisLine={false} tickLine={false} />
                 <YAxis tick={{fontSize: 8, fontWeight: 900, fill: '#64748b'}} axisLine={false} tickLine={false} domain={[70, 100]} />
@@ -200,7 +205,7 @@ const Analytics = () => {
           </div>
           <div className="h-72">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={userTrends}>
+              <AreaChart data={userTrends} margin={{ top: 10, right: 30, left: -20, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorUsers" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#10b981" stopOpacity={0.1}/>
@@ -236,15 +241,15 @@ const StatChip = ({ label, value, color }) => {
 };
 
 const MiniCard = ({ title, value, icon, alert }) => (
-  <div className={`bg-white border ${alert ? 'border-rose-200 bg-rose-50/30' : 'border-slate-200'} rounded-xl p-4 shadow-sm flex items-center gap-4`}>
-    <div className={`p-2 rounded-lg ${alert ? 'bg-rose-100 text-rose-600' : 'bg-slate-100 text-slate-600'}`}>
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={icon} />
+  <div className={`bg-white border ${alert ? 'border-rose-200 bg-rose-50/30' : 'border-slate-200'} rounded-xl p-5 shadow-sm flex items-center gap-5 min-h-[90px]`}>
+    <div className={`p-3 rounded-lg ${alert ? 'bg-rose-100 text-rose-600' : 'bg-slate-100 text-slate-600'} flex items-center justify-center`}>
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d={icon} />
       </svg>
     </div>
-    <div>
-      <h4 className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1.5">{title}</h4>
-      <p className={`text-xl font-black tracking-tight leading-none ${alert ? 'text-rose-600' : 'text-slate-900'}`}>{value || 0}</p>
+    <div className="flex flex-col justify-center">
+      <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-2">{title}</h4>
+      <p className={`text-2xl font-black tracking-tight leading-none ${alert ? 'text-rose-600' : 'text-slate-900'}`}>{value || 0}</p>
     </div>
   </div>
 );
