@@ -412,8 +412,12 @@ const StudentManagement = () => {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 md:gap-6">
         <div className="text-center md:text-left">
-          <h1 className="text-lg md:text-3xl font-black text-gray-800 tracking-tight uppercase">Student Management</h1>
-          <p className="text-gray-500 text-[8px] md:text-base mt-0.5 font-medium uppercase tracking-widest">All registered students</p>
+          <h1 className="text-lg md:text-3xl font-black text-gray-800 tracking-tight uppercase">
+            {user?.role === 'teacher' ? 'Advisory Class' : 'Student Management'}
+          </h1>
+          <p className="text-gray-500 text-[8px] md:text-base mt-0.5 font-medium uppercase tracking-widest">
+            {user?.role === 'teacher' ? 'Manage your advisory students' : 'All registered students'}
+          </p>
         </div>
         <div className="flex flex-wrap items-center justify-center gap-2">
           <button 
@@ -523,7 +527,9 @@ const StudentManagement = () => {
           </div>
           <div className="bg-white px-3 py-1.5 md:px-5 md:py-2.5 rounded-xl md:rounded-2xl border border-gray-200 shadow-sm flex items-center gap-2 md:gap-3">
             <div>
-              <p className="text-[7px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest">Total Students</p>
+              <p className="text-[7px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                {user?.role === 'teacher' ? 'Advisory Students' : 'Total Students'}
+              </p>
               <p className="text-sm md:text-xl font-black text-gray-800 leading-none">{students.length}</p>
             </div>
           </div>
