@@ -382,7 +382,15 @@ const StudentManagement = () => {
     if (user?.role === 'teacher') {
       // Teachers only manage their own advisory classroom
       if (advisoryClass) {
-        const grade = advisoryClass.grade_level || 'Unassigned';
+        let grade = advisoryClass.grade_level;
+        
+        // If grade_level is missing, try to infer it from the classroom name
+        if (!grade && advisoryClass.name) {
+          const match = advisoryClass.name.match(/Grade\s+(\d+)/i);
+          if (match) grade = `Grade ${match[1]}`;
+        }
+        
+        grade = grade || 'Unassigned';
         const classroom = advisoryClass.name;
         groups[grade] = { [classroom]: filtered };
       }
@@ -592,10 +600,12 @@ const StudentManagement = () => {
         ) : (
           organizedData.map((gradeGroup) => (
             <div key={gradeGroup.grade} className="space-y-2 md:space-y-6">
-              <div className="flex items-center gap-2 md:gap-4 px-1 md:px-2">
-                <h2 className="text-xs md:text-xl font-black text-gray-800 uppercase tracking-tight">{gradeGroup.grade}</h2>
-                <div className="h-px flex-1 bg-gradient-to-r from-gray-200 to-transparent"></div>
-              </div>
+              {user?.role === 'admin' && (
+                <div className="flex items-center gap-2 md:gap-4 px-1 md:px-2">
+                  <h2 className="text-xs md:text-xl font-black text-gray-800 uppercase tracking-tight">{gradeGroup.grade}</h2>
+                  <div className="h-px flex-1 bg-gradient-to-r from-gray-200 to-transparent"></div>
+                </div>
+              )}
 
               <div className="grid grid-cols-1 gap-3 md:gap-8">
                 {gradeGroup.classrooms.map((cls) => (
