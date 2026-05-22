@@ -6,6 +6,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
 from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
+from datetime import timedelta
 from django.db.models import Q
 from .serializers import (UserSerializer, ClassroomSerializer, StudentClassEnrollmentSerializer,
     AnnouncementSerializer, AttendanceSerializer, LearningMaterialSerializer,
@@ -3372,6 +3373,102 @@ class ReportedMessageViewSet(viewsets.ModelViewSet):
         report.resolved_at = timezone.now()
         report.save()
         return Response({'status': 'Report resolved'})
+
+    @action(detail=True, methods=['post'])
+    def delete_message(self, request, pk=None):
+        if request.user.role != 'admin':
+            return Response({'error': 'Unauthorized'}, status=403)
+        report = self.get_object()
+        message = report.message
+        if not message:
+             return Response({'error': 'Message already deleted'}, status=404)
+        
+        room_id = message.room_id
+        message_id = message.id
+        room = message.room
+        
+        # Broadcast before deletion
+        from channels.layers import get_channel_layer
+        from asgiref.sync import async_to_sync
+        channel_layer = get_channel_layer()
+        
+        broadcast_data = {
+            'type': 'message_deleted',
+            'message_id': message_id,
+            'deleted_by': request.user.id,
+            'deleted_by_name': "Moderator",
+            'room_id': room_id,
+        }
+        
+        # Room broadcast
+        async_to_sync(channel_layer.group_send)(f'chat_{room_id}', broadcast_data)
+        
+        # Personal channel broadcasts
+        participants = room.participants.all()
+        for p in participants:
+            async_to_sync(channel_layer.group_send)(f'user_{p.id}', broadcast_data)
+            
+        message.delete()
+        
+        report.status = 'resolved'
+        report.moderator_note = request.data.get('note', 'Message deleted by moderator.')
+        report.resolved_at = timezone.now()
+        report.save()
+        
+        return Response({'status': 'Message deleted and report resolved'})
+
+    @action(detail=True, methods=['post'])
+    def dismiss(self, request, pk=None):
+        if request.user.role != 'admin':
+            return Response({'error': 'Unauthorized'}, status=403)
+        report = self.get_object()
+        report.status = 'dismissed'
+        report.moderator_note = request.data.get('note', 'Report dismissed by moderator.')
+        report.resolved_at = timezone.now()
+        report.save()
+        return Response({'status': 'Report dismissed'})
+
+    @action(detail=True, methods=['post'])
+    def suspend_user(self, request, pk=None):
+        if request.user.role != 'admin':
+            return Response({'error': 'Unauthorized'}, status=403)
+        report = self.get_object()
+        user_to_suspend = report.message.sender
+        
+        # Suspend user
+        user_to_suspend.account_status = 'suspended'
+        user_to_suspend.save()
+        
+        # Also update profile
+        if hasattr(user_to_suspend, 'profile'):
+            user_to_suspend.profile.is_suspended = True
+            user_to_suspend.profile.save()
+            
+        report.status = 'resolved'
+        report.moderator_note = request.data.get('note', f'User {user_to_suspend.username} suspended.')
+        report.resolved_at = timezone.now()
+        report.save()
+        
+        return Response({'status': f'User {user_to_suspend.username} suspended and report resolved'})
+
+    @action(detail=True, methods=['post'])
+    def mute_user(self, request, pk=None):
+        if request.user.role != 'admin':
+            return Response({'error': 'Unauthorized'}, status=403)
+        report = self.get_object()
+        user_to_mute = report.message.sender
+        hours = int(request.data.get('hours', 24))
+        
+        if hasattr(user_to_mute, 'profile'):
+            user_to_mute.profile.mute_until = timezone.now() + timedelta(hours=hours)
+            user_to_mute.profile.save()
+            
+        report.status = 'resolved'
+        report.moderator_note = request.data.get('note', f'User {user_to_mute.username} muted for {hours} hours.')
+        report.resolved_at = timezone.now()
+        report.save()
+        
+        return Response({'status': f'User {user_to_mute.username} muted and report resolved'})
 
 
 class FriendshipViewSet(viewsets.ModelViewSet):

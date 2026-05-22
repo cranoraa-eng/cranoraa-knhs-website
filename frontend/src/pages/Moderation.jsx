@@ -28,22 +28,66 @@ const Moderation = () => {
     }
   };
 
-  const handleResolve = async (reportId) => {
+  const handleAction = async (reportId, actionType, label) => {
+    const isDestructive = actionType === 'delete_message' || actionType === 'suspend_user';
+    
     const { value: note } = await Swal.fire({
-      title: 'Resolve Report',
+      title: label,
       input: 'textarea',
-      inputLabel: 'Moderator Note',
-      inputPlaceholder: 'Enter your note here...',
+      inputLabel: 'Moderator Note (Optional)',
+      inputPlaceholder: 'Reason for this action...',
       showCancelButton: true,
+      confirmButtonText: 'Confirm',
+      confirmButtonColor: isDestructive ? '#ef4444' : '#6366f1',
+      customClass: {
+        popup: 'rounded-[2rem]',
+        input: 'text-sm'
+      }
     });
 
     if (note !== undefined) {
       try {
-        await api.post(`/chat/reports/${reportId}/resolve/`, { note });
-        toast.success('Report resolved');
+        await api.post(`/chat/reports/${reportId}/${actionType}/`, { note });
+        toast.success('Action applied successfully');
         fetchReports();
       } catch (error) {
-        toast.error('Failed to resolve report');
+        toast.error('Failed to apply action');
+      }
+    }
+  };
+
+  const handleMute = async (reportId) => {
+    const { value: formValues } = await Swal.fire({
+      title: 'Mute User',
+      html:
+        '<div class="flex flex-col gap-4 p-2">' +
+        '<div class="text-left"><label class="text-[10px] font-black uppercase text-slate-400">Duration (Hours)</label>' +
+        '<input id="mute-hours" class="w-full mt-1 p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm" value="24" type="number"></div>' +
+        '<div class="text-left"><label class="text-[10px] font-black uppercase text-slate-400">Moderator Note</label>' +
+        '<textarea id="mute-note" class="w-full mt-1 p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm min-h-[100px]" placeholder="Reason for muting..."></textarea></div>' +
+        '</div>',
+      focusConfirm: false,
+      showCancelButton: true,
+      confirmButtonText: 'Mute User',
+      confirmButtonColor: '#f59e0b',
+      customClass: {
+        popup: 'rounded-[2rem]',
+      },
+      preConfirm: () => {
+        return {
+          hours: document.getElementById('mute-hours').value,
+          note: document.getElementById('mute-note').value
+        }
+      }
+    });
+
+    if (formValues) {
+      try {
+        await api.post(`/chat/reports/${reportId}/mute_user/`, formValues);
+        toast.success('User muted successfully');
+        fetchReports();
+      } catch (error) {
+        toast.error('Failed to mute user');
       }
     }
   };
@@ -119,16 +163,51 @@ const Moderation = () => {
                       </span>
                     </td>
                     <td className="px-6 py-4 text-center">
-                      {report.status === 'pending' && (
-                        <button
-                          onClick={() => handleResolve(report.id)}
-                          className="p-2 text-violet-600 hover:bg-violet-50 rounded-lg transition-colors"
-                          title="Resolve Report"
-                        >
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                          </svg>
-                        </button>
+                      {report.status === 'pending' ? (
+                        <div className="flex items-center justify-center gap-1">
+                          <button
+                            onClick={() => handleAction(report.id, 'delete_message', 'Delete Message')}
+                            className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                            title="Delete Message & Resolve"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                          </button>
+                          <button
+                            onClick={() => handleMute(report.id)}
+                            className="p-2 text-amber-500 hover:bg-amber-50 rounded-lg transition-colors"
+                            title="Mute User"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
+                            </svg>
+                          </button>
+                          <button
+                            onClick={() => handleAction(report.id, 'suspend_user', 'Suspend User')}
+                            className="p-2 text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
+                            title="Suspend User"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                            </svg>
+                          </button>
+                          <button
+                            onClick={() => handleAction(report.id, 'dismiss', 'Dismiss Report')}
+                            className="p-2 text-slate-400 hover:bg-slate-100 rounded-lg transition-colors"
+                            title="Dismiss (No Action)"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center gap-0.5">
+                           <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tight">Resolved by</span>
+                           <span className="text-[10px] font-black text-slate-600 truncate max-w-[80px]">Admin</span>
+                        </div>
                       )}
                     </td>
                   </tr>
