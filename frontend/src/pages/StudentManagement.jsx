@@ -292,8 +292,8 @@ const StudentManagement = () => {
       : ['Name', 'LRN', 'Classroom', 'Status'];
     
     const colWidths = user?.role === 'admin'
-      ? [60, 40, 30, 40, 20]
-      : [70, 40, 50, 25];
+       ? [55, 37, 25, 40, 25]
+       : [65, 40, 52, 25];
     
     let y = 40;
 
