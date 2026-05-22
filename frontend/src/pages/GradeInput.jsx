@@ -46,6 +46,7 @@ const GradeInput = () => {
   };
 
   const [cells, setCells]               = useState({});
+  const [existingGrades, setExistingGrades] = useState({});
   const [active, setActive]             = useState(null);
   const [loading, setLoading]           = useState(false);
   const [submitting, setSubmitting]     = useState(false);
@@ -57,7 +58,7 @@ const GradeInput = () => {
   }, []);
 
   useEffect(() => {
-    if (!selClassroom) { setSubjects([]); setStudents([]); setCells({}); return; }
+    if (!selClassroom) { setSubjects([]); setStudents([]); setCells({}); setExistingGrades({}); return; }
     api.get(`/classroom-subjects/by_classroom/?classroom_id=${selClassroom}`)
       .then(r => setSubjects(r.data))
       .catch(() => toast.error('Failed to load subjects'));
@@ -69,6 +70,7 @@ const GradeInput = () => {
     try {
       const res = await api.get(`/enrollments/?classroom=${selClassroom}`);
       setStudents(res.data);
+      
       const init = {};
       res.data.forEach(s => { init[s.student] = ''; });
       setCells(init);
@@ -76,7 +78,50 @@ const GradeInput = () => {
     finally { setLoading(false); }
   }, [selClassroom]);
 
+  const fetchExistingGrades = useCallback(async () => {
+    if (!selClassroom || !selSubject || !selQuarter) {
+      setExistingGrades({});
+      return;
+    }
+    try {
+      const res = await api.get(`/grades/?classroom=${selClassroom}&subject=${selSubject}&quarter=${selQuarter}&academic_year=${academicYear}&grade_type=final_grade`);
+      const map = {};
+      res.data.forEach(g => {
+        map[g.student] = g;
+      });
+      setExistingGrades(map);
+    } catch (err) {
+      console.error('Failed to fetch existing grades', err);
+    }
+  }, [selClassroom, selSubject, selQuarter, academicYear]);
+
   useEffect(() => { loadStudents(); }, [loadStudents]);
+  useEffect(() => { fetchExistingGrades(); }, [fetchExistingGrades]);
+
+  const handleGradeChange = async (studentId, value) => {
+    const existing = existingGrades[studentId];
+    
+    if (existing && value !== '' && parseFloat(value) !== parseFloat(existing.raw_score)) {
+      const result = await Swal.fire({
+        title: 'Change Existing Grade?',
+        html: `Student already has a grade of <strong>${existing.raw_score}</strong>.<br/>Would you like to change it to <strong>${value}</strong>?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#9333ea',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Yes, change it',
+        cancelButtonText: 'Keep original',
+        customClass: { popup: 'rounded-3xl' }
+      });
+
+      if (!result.isConfirmed) {
+        setCells(prev => ({ ...prev, [studentId]: '' }));
+        return;
+      }
+    }
+    
+    setCells(prev => ({ ...prev, [studentId]: value }));
+  };
 
   const handleKeyDown = (e, studentId) => {
     const idx = students.findIndex(s => s.student === studentId);
@@ -168,6 +213,7 @@ const GradeInput = () => {
       toast.success('Final grades submitted');
       // Instead of navigating away, just clear the inputs but keep the context
       setCells({});
+      fetchExistingGrades();
     } else {
       const allDuplicates = errors.every(e => e.toLowerCase().includes('already submitted'));
       Swal.fire({
@@ -362,12 +408,19 @@ const GradeInput = () => {
                           </div>
                         </div>
                       </td>
-                      <td className={`p-0 border border-gray-100 ${isActive ? 'bg-white' : isOver ? 'bg-red-50' : rowBg}`}>
+                      <td className={`p-0 border border-gray-100 relative ${isActive ? 'bg-white' : isOver ? 'bg-red-50' : rowBg}`}>
+                        {existingGrades[s.student] && cells[s.student] === '' && (
+                          <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-30 select-none">
+                            <span className="font-mono text-[10px] md:text-sm font-black text-slate-400 tracking-tighter">
+                              {existingGrades[s.student].raw_score}
+                            </span>
+                          </div>
+                        )}
                         <input
                           ref={el => inputRefs.current[s.student] = el}
                           type="number" min="0" max="100" step="0.01"
                           value={raw}
-                          onChange={e => setCells(prev => ({ ...prev, [s.student]: e.target.value }))}
+                          onChange={e => handleGradeChange(s.student, e.target.value)}
                           onFocus={() => setActive(s.student)}
                           onKeyDown={e => handleKeyDown(e, s.student)}
                           placeholder="—"
@@ -381,6 +434,10 @@ const GradeInput = () => {
                           </span>
                         ) : isOver ? (
                           <span className="text-[7px] text-red-600 font-black uppercase tracking-widest bg-red-50 px-1 py-0.5 rounded">OVER!</span>
+                        ) : existingGrades[s.student] ? (
+                          <span className={`text-[7px] md:text-[10px] font-black px-1 py-0.5 md:px-3 md:py-1 rounded-md md:rounded-lg shadow-sm border border-black/5 uppercase tracking-tighter md:tracking-normal opacity-40 ${scoreColor(parseFloat(existingGrades[s.student].raw_score))}`}>
+                            {remarksFor(parseFloat(existingGrades[s.student].raw_score)).toUpperCase()}
+                          </span>
                         ) : (
                           <span className="text-gray-300 text-[9px] md:text-xs font-bold">—</span>
                         )}
