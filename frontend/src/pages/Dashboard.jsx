@@ -306,22 +306,38 @@ const AdminView = () => {
           </div>
         </div>
 
-        {/* Recent Logins Widget */}
+        {/* Recent Activity Widget */}
         <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-md font-bold text-slate-900">Recent Activity</h3>
             <Link to="/audit-logs" className="text-[10px] font-black text-violet-600 uppercase tracking-widest hover:underline">Audit Logs</Link>
           </div>
           <div className="space-y-4">
-            {data?.recent_logins?.map(log => (
-              <div key={log.id} className="flex items-center gap-4 p-3 rounded-xl hover:bg-slate-50 transition-all">
-                <div className="w-2 h-2 rounded-full bg-emerald-500" />
+            {data?.widgets?.recent_activity?.map(log => (
+              <div key={log.id} className="flex items-start gap-4 p-3 rounded-xl hover:bg-slate-50 transition-all">
+                <div className={`mt-1 w-2 h-2 rounded-full shrink-0 ${
+                  log.action === 'login' ? 'bg-emerald-500' : 
+                  log.action === 'delete' ? 'bg-rose-500' : 
+                  log.action === 'create' ? 'bg-blue-500' : 'bg-amber-500'
+                }`} />
                 <div className="min-w-0">
-                  <h4 className="text-xs font-bold text-slate-800">{log.user} logged in</h4>
-                  <p className="text-[10px] text-slate-400 font-medium mt-0.5">{new Date(log.timestamp).toLocaleString()}</p>
+                  <h4 className="text-[11px] font-bold text-slate-800 leading-tight">
+                    <span className="text-violet-600">{log.user}</span> {log.description}
+                  </h4>
+                  <p className="text-[9px] text-slate-400 font-medium mt-1 uppercase tracking-tighter">
+                    {new Date(log.timestamp).toLocaleString(undefined, { 
+                      month: 'short', 
+                      day: 'numeric', 
+                      hour: '2-digit', 
+                      minute: '2-digit' 
+                    })}
+                  </p>
                 </div>
               </div>
             ))}
+            {!data?.widgets?.recent_activity?.length && (
+              <p className="text-center py-10 text-[10px] font-bold text-slate-400 uppercase tracking-widest">No activity recorded</p>
+            )}
           </div>
         </div>
       </div>

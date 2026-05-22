@@ -1876,10 +1876,10 @@ def admin_dashboard_stats(request):
             else: ga_below_75 += 1
 
         # Recent Activity
-        recent_logins = []
+        recent_activity = []
         if AuditLog:
             try:
-                recent_logins = AuditLog.objects.filter(action='login').order_by('-timestamp')[:5]
+                recent_activity = AuditLog.objects.order_by('-timestamp')[:5]
             except:
                 pass
         
@@ -1948,13 +1948,14 @@ def admin_dashboard_stats(request):
             },
             'widgets': {
                 'recent_announcements': recent_announcements,
-                'recent_logins': [
+                'recent_activity': [
                     {
                         'id': log.id,
                         'user': log.user.username if log.user else 'System',
                         'timestamp': log.timestamp,
-                        'description': log.description
-                    } for log in recent_logins
+                        'description': log.description,
+                        'action': log.action
+                    } for log in recent_activity
                 ],
                 'latest_messages': [
                     {
