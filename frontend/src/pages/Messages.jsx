@@ -297,6 +297,40 @@ const Messages = () => {
     } catch { toast.error('Failed to toggle pin'); }
   };
 
+  const handleReportMessage = async (msg) => {
+    const { value: reason } = await Swal.fire({
+      title: 'Report Message',
+      input: 'textarea',
+      inputLabel: 'Reason for reporting',
+      inputPlaceholder: 'Enter why you are reporting this message...',
+      inputAttributes: {
+        'aria-label': 'Enter why you are reporting this message'
+      },
+      showCancelButton: true,
+      confirmButtonText: 'Submit Report',
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#64748b',
+      customClass: { popup: 'rounded-[2rem]' },
+      inputValidator: (value) => {
+        if (!value) {
+          return 'You need to provide a reason!';
+        }
+      }
+    });
+
+    if (reason) {
+      try {
+        await api.post('/chat/reports/', {
+          message: msg.id,
+          reason: reason
+        });
+        toast.success('Message reported to moderators');
+      } catch (err) {
+        toast.error(err.response?.data?.error || 'Failed to submit report');
+      }
+    }
+  };
+
   const handleDeleteConversation = async (roomId) => {
     const result = await Swal.fire({
       title: 'Delete conversation?',
@@ -1238,6 +1272,58 @@ const Messages = () => {
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z" />
                                   </svg>
                                 </button>
+
+                                {/* More Menu Dropdown */}
+                                {activeMoreMenu === msg.id && (
+                                  <div 
+                                    className={`absolute bottom-full mb-2 w-32 md:w-40 bg-white border border-slate-100 rounded-2xl shadow-xl z-30 py-2 animate-in fade-in zoom-in duration-200 ${isMine ? 'right-0' : 'left-0'}`}
+                                    onMouseLeave={() => setActiveMoreMenu(null)}>
+                                    
+                                    {isMine && (
+                                      <>
+                                        <button
+                                          onClick={() => { setEditingMessage(msg.id); setEditContent(msg.content); setActiveMoreMenu(null); }}
+                                          className="w-full px-4 py-2 flex items-center gap-2.5 text-[10px] md:text-xs font-bold text-slate-600 hover:bg-slate-50 transition-colors">
+                                          <svg className="w-3.5 h-3.5 md:w-4 md:h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                          </svg>
+                                          Edit
+                                        </button>
+                                        <button
+                                          onClick={() => { handleDeleteMessage(msg.id); setActiveMoreMenu(null); }}
+                                          className="w-full px-4 py-2 flex items-center gap-2.5 text-[10px] md:text-xs font-bold text-red-600 hover:bg-red-50 transition-colors">
+                                          <svg className="w-3.5 h-3.5 md:w-4 md:h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                          </svg>
+                                          Unsend
+                                        </button>
+                                      </>
+                                    )}
+
+                                    {/* Admin/Creator can pin */}
+                                    {(user.role === 'admin' || selectedRoom.created_by === user.id) && (
+                                      <button
+                                        onClick={() => { handlePinMessage(msg); setActiveMoreMenu(null); }}
+                                        className="w-full px-4 py-2 flex items-center gap-2.5 text-[10px] md:text-xs font-bold text-amber-600 hover:bg-amber-50 transition-colors">
+                                        <svg className="w-3.5 h-3.5 md:w-4 md:h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                                        </svg>
+                                        {msg.is_pinned ? 'Unpin' : 'Pin'}
+                                      </button>
+                                    )}
+
+                                    {!isMine && (
+                                      <button
+                                        onClick={() => { handleReportMessage(msg); setActiveMoreMenu(null); }}
+                                        className="w-full px-4 py-2 flex items-center gap-2.5 text-[10px] md:text-xs font-bold text-orange-600 hover:bg-orange-50 transition-colors">
+                                        <svg className="w-3.5 h-3.5 md:w-4 md:h-4 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                        </svg>
+                                        Report
+                                      </button>
+                                    )}
+                                  </div>
+                                )}
                               </div>
                             </div>
 
