@@ -815,6 +815,92 @@ class UserViewSet(viewsets.ModelViewSet):
             'errors': errors
         })
 
+    @action(detail=False, methods=['post'])
+    def import_teachers_csv(self, request):
+        """Import teachers from CSV (admin only)"""
+        if request.user.role != 'admin':
+            return Response({'error': 'Unauthorized'}, status=403)
+            
+        file = request.FILES.get('file')
+        if not file:
+            return Response({'error': 'No file provided'}, status=400)
+            
+        import csv
+        import io
+        import secrets
+        import string
+        
+        try:
+            decoded_file = file.read().decode('utf-8')
+            io_string = io.StringIO(decoded_file)
+            reader = csv.DictReader(io_string)
+        except Exception as e:
+            return Response({'error': f'Failed to parse CSV: {str(e)}'}, status=400)
+        
+        created_count = 0
+        created_users = []
+        errors = []
+        
+        for row in reader:
+            try:
+                # Expected fields: Email (username), Title, First Name, Last Name
+                email = row.get('Email') or row.get('email')
+                if not email:
+                    errors.append("Missing Email for a row")
+                    continue
+                
+                email = email.strip()
+                if User.objects.filter(username=email).exists() or User.objects.filter(email=email).exists():
+                    errors.append(f"Email {email} already exists")
+                    continue
+                
+                title = row.get('Title') or ''
+                first_name = row.get('First Name') or ''
+                last_name = row.get('Last Name') or ''
+                
+                # Generate temporary password
+                temp_password = ''.join(secrets.choice(string.ascii_letters + string.digits) for i in range(10))
+
+                # Create user
+                user = User(
+                    username=email,
+                    email=email,
+                    first_name=first_name,
+                    last_name=last_name,
+                    role='teacher',
+                    is_approved=True,
+                    is_verified=False,
+                    must_change_password=True,
+                    temp_password_storage=temp_password,
+                    account_status='active'
+                )
+                user.set_password(temp_password)
+                user.save()
+                
+                # Create profile
+                from .models import Profile
+                Profile.objects.update_or_create(
+                    user=user,
+                    defaults={
+                        'title': title,
+                    }
+                )
+                created_count += 1
+                created_users.append({
+                    'username': email,
+                    'password': temp_password,
+                    'name': f"{title} {first_name} {last_name}".strip()
+                })
+            except Exception as e:
+                errors.append(f"Error importing {row.get('Email')}: {str(e)}")
+                
+        return Response({
+            'status': 'success',
+            'created_count': created_count,
+            'created_users': created_users,
+            'errors': errors
+        })
+
     @action(detail=False, methods=['get'])
     def pending(self, request):
         """Return all verified users pending approval (admin only)"""

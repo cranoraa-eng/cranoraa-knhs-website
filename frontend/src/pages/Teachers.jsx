@@ -15,6 +15,7 @@ const Teachers = () => {
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [editingTeacher, setEditingTeacher] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -59,7 +60,7 @@ const Teachers = () => {
     setIsSubmitting(true);
     try {
       const response = await api.post('/admin/create-user/', { 
-        username: newTeacher.email, // Use email as username for teachers
+        username: newTeacher.email, 
         ...newTeacher, 
         role: 'teacher',
         profile: {
@@ -76,7 +77,6 @@ const Teachers = () => {
       });
       fetchTeachers();
 
-      // Show success with password
       Swal.fire({
         icon: 'success',
         title: 'Teacher Account Created',
@@ -122,7 +122,17 @@ const Teachers = () => {
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this teacher account? This action cannot be undone.')) {
+    const result = await Swal.fire({
+      title: 'Delete Teacher?',
+      text: "This action cannot be undone and will remove all teacher records.",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Yes, delete it!'
+    });
+
+    if (result.isConfirmed) {
       try {
         await api.delete(`/users/${id}/`);
         fetchTeachers();
@@ -136,7 +146,7 @@ const Teachers = () => {
 
   const handleStartChat = async (teacherId) => {
     try {
-      const response = await api.post('/chat/rooms/get_or_create_private_chat/', { user_id: teacherId });
+      await api.post('/chat/rooms/get_or_create_private_chat/', { user_id: teacherId });
       navigate('/messages');
     } catch (err) {
       toast.error('Failed to start conversation');
@@ -162,6 +172,7 @@ const Teachers = () => {
           title: 'Password Reset',
           html: `New temporary password: <strong>${response.data.temporary_password}</strong><br/>The teacher will be forced to change it on login.`,
         });
+        fetchTeachers();
       } catch (err) {
         toast.error('Failed to reset password');
       }
@@ -251,6 +262,45 @@ const Teachers = () => {
     toast.success('PDF exported successfully');
   };
 
+  const handleImportCSV = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const loadingToast = toast.loading('Importing teachers...');
+    try {
+      const response = await api.post('/users/import_teachers_csv/', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+
+      if (response.data.errors?.length > 0) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Import Completed with Errors',
+          html: `
+            <div class="text-left">
+              <p class="mb-2 font-bold text-emerald-600">Successfully created: ${response.data.created_count}</p>
+              <p class="mb-1 font-bold text-rose-600">Errors (${response.data.errors.length}):</p>
+              <div class="max-h-40 overflow-y-auto text-xs bg-gray-50 p-2 rounded border font-mono">
+                ${response.data.errors.join('<br/>')}
+              </div>
+            </div>
+          `,
+          confirmButtonColor: '#9333ea'
+        });
+      } else {
+        toast.success(`Successfully imported ${response.data.created_count} teachers!`, { id: loadingToast });
+      }
+      
+      fetchTeachers();
+      setShowImportModal(false);
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed to import teachers', { id: loadingToast });
+    }
+  };
+
   const getTeacherClassrooms = (teacherId) => {
     return classrooms.filter(cls => cls.teacher === teacherId);
   };
@@ -259,9 +309,10 @@ const Teachers = () => {
     return teachers.filter(t => {
       const search = searchQuery.toLowerCase();
       const title = t.profile?.title || '';
-      const fullName = `${title} ${t.first_name} ${t.last_name}`.trim().toLowerCase();
+      const fullName = `${title || ''} ${t.first_name || ''} ${t.last_name || ''}`.trim().toLowerCase();
+      const email = (t.email || '').toLowerCase();
       return (
-        t.email.toLowerCase().includes(search) ||
+        email.includes(search) ||
         fullName.includes(search)
       );
     });
@@ -296,13 +347,86 @@ const Teachers = () => {
               });
               setShowAddModal(true);
             }}
-            className="flex items-center justify-center gap-1.5 bg-[#2D1B4D] hover:bg-[#3D2B5D] text-white font-black py-1.5 md:py-2.5 px-3 md:px-6 rounded-lg md:rounded-xl transition-all shadow-md active:scale-95 text-[8px] md:text-xs uppercase tracking-widest"
+            className="flex items-center justify-center gap-1.5 bg-purple-600 hover:bg-purple-700 text-white font-black py-1.5 md:py-2.5 px-3 md:px-6 rounded-lg md:rounded-xl transition-all shadow-md active:scale-95 text-[8px] md:text-xs uppercase tracking-widest border border-purple-700"
           >
             <svg className="w-3.5 h-3.5 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
             </svg>
             Add Teacher
           </button>
+
+          <button 
+            onClick={() => setShowImportModal(true)}
+            className="bg-indigo-600 text-white px-3 py-1.5 md:px-5 md:py-2.5 rounded-xl md:rounded-2xl border border-indigo-700 shadow-lg hover:bg-indigo-700 flex items-center gap-2 transition-all active:scale-95"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
+            <span className="text-[10px] md:text-sm font-bold uppercase tracking-wider">Import Excel</span>
+          </button>
+
+          <div className="flex items-center gap-1">
+            <button 
+              onClick={() => {
+                const headers = [['Title', 'First Name', 'Last Name', 'Email']];
+                const sampleData = [
+                  ['Mr.', 'John', 'Doe', 'john.doe@example.com'],
+                  ['Ms.', 'Jane', 'Smith', 'jane.smith@example.com'],
+                ];
+                
+                const ws = XLSX.utils.aoa_to_sheet([...headers, ...sampleData]);
+                
+                const headerRange = XLSX.utils.decode_range(ws['!ref']);
+                for (let C = headerRange.s.c; C <= 3; ++C) {
+                  const address = XLSX.utils.encode_col(C) + '1';
+                  if (!ws[address]) continue;
+                  ws[address].s = {
+                    font: { bold: true, color: { rgb: "FFFFFF" } },
+                    fill: { fgColor: { rgb: "4F46E5" } }, 
+                    alignment: { horizontal: "center" }
+                  };
+                }
+
+                ws['!cols'] = [
+                  { wch: 10 }, // Title
+                  { wch: 20 }, // First Name
+                  { wch: 20 }, // Last Name
+                  { wch: 30 }, // Email
+                ];
+
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, "Teacher Template");
+                XLSX.writeFile(wb, "KNHS_Teacher_Import_Template.xlsx");
+                toast.success('Professional template downloaded');
+              }}
+              className="bg-emerald-600 text-white px-3 py-1.5 md:px-5 md:py-2.5 rounded-xl md:rounded-2xl border border-emerald-700 shadow-lg hover:bg-emerald-700 flex items-center gap-2 transition-all active:scale-95"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+              <span className="text-[10px] md:text-sm font-bold uppercase tracking-wider">Download Template</span>
+            </button>
+            
+            <div className="relative group/info">
+              <button className="w-6 h-6 md:w-10 md:h-10 flex items-center justify-center rounded-xl md:rounded-2xl bg-white text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all border border-gray-200 shadow-sm active:scale-90">
+                <span className="font-black text-xs md:text-lg">!</span>
+              </button>
+              
+              <div className="absolute top-full right-0 mt-2 w-64 md:w-80 p-4 md:p-6 bg-slate-900/95 backdrop-blur-md text-white rounded-2xl md:rounded-3xl shadow-2xl opacity-0 invisible group-hover/info:opacity-100 group-hover/info:visible transition-all z-[110] border border-white/10 scale-95 group-hover/info:scale-100 origin-top-right">
+                <h4 className="text-[10px] md:text-xs font-black uppercase tracking-[0.2em] text-indigo-400 mb-3 md:mb-4 border-b border-white/10 pb-2">Import Instructions</h4>
+                <ul className="space-y-2 md:space-y-3">
+                  <li className="flex gap-2 md:gap-3">
+                    <span className="text-indigo-400 font-black text-[10px] md:text-xs mt-0.5">01</span>
+                    <p className="text-[9px] md:text-[11px] font-bold leading-relaxed text-gray-300">Email is <span className="text-white">required</span> and serves as the username.</p>
+                  </li>
+                  <li className="flex gap-2 md:gap-3">
+                    <span className="text-indigo-400 font-black text-[10px] md:text-xs mt-0.5">02</span>
+                    <p className="text-[9px] md:text-[11px] font-bold leading-relaxed text-gray-300">Valid Titles: <span className="text-white">Mr., Ms., Mrs., Dr., Prof.</span></p>
+                  </li>
+                  <li className="flex gap-2 md:gap-3">
+                    <span className="text-indigo-400 font-black text-[10px] md:text-xs mt-0.5">03</span>
+                    <p className="text-[9px] md:text-[11px] font-bold leading-relaxed text-gray-300">Do <span className="text-rose-400">NOT</span> change the header names in the first row.</p>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
 
           <div className="flex items-center gap-1 bg-white p-1 rounded-lg md:rounded-xl border border-gray-200 shadow-sm">
             <button 
@@ -609,6 +733,60 @@ const Teachers = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Import Modal */}
+      {showImportModal && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-[100] p-4 animate-in fade-in duration-300">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-300">
+            <div className="p-6 bg-[#2D1B4D] text-white">
+              <h2 className="text-xl font-black uppercase tracking-tight">Bulk Import Teachers</h2>
+              <p className="text-purple-200 text-[10px] font-bold uppercase tracking-widest mt-1">Upload CSV or Excel file</p>
+            </div>
+            <div className="p-8 space-y-6">
+              <div className="border-2 border-dashed border-gray-200 rounded-3xl p-10 text-center hover:border-purple-400 transition-all group relative">
+                <input 
+                  type="file" 
+                  accept=".csv, .xlsx, .xls"
+                  onChange={handleImportCSV}
+                  className="absolute inset-0 opacity-0 cursor-pointer z-10"
+                />
+                <div className="space-y-4">
+                  <div className="w-16 h-16 bg-purple-50 rounded-2xl flex items-center justify-center mx-auto group-hover:scale-110 transition-transform">
+                    <svg className="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-sm font-black text-gray-700 uppercase tracking-tight">Click or drag file here</p>
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">Supports CSV, XLSX</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-amber-50 border border-amber-100 rounded-2xl p-4">
+                <div className="flex gap-3">
+                  <svg className="w-5 h-5 text-amber-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <div>
+                    <p className="text-[10px] font-black text-amber-800 uppercase tracking-widest mb-1">Important Note</p>
+                    <p className="text-[9px] font-bold text-amber-700 leading-relaxed uppercase tracking-tight">
+                      Ensure your file follows the official template format to avoid errors.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <button 
+                onClick={() => setShowImportModal(false)}
+                className="w-full py-3 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] transition-all active:scale-95"
+              >
+                Cancel
+              </button>
+            </div>
           </div>
         </div>
       )}
