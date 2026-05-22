@@ -334,7 +334,7 @@ const StudentManagement = () => {
         y = 20;
       }
       
-      const name = `${s.first_name} ${s.last_name}`;
+      const name = `${s.last_name}, ${s.first_name}`.toUpperCase();
       const lrn = s.profile?.registration_number || s.username || '—';
       const grade = s.profile?.grade_level || 'N/A';
       const classroom = s.profile?.classroom_name || 'N/A';
@@ -418,10 +418,21 @@ const StudentManagement = () => {
 
     return sortedGrades.map(grade => ({
       grade,
-      classrooms: Object.keys(groups[grade]).sort().map(classroom => ({
-        name: classroom,
-        students: groups[grade][classroom].sort((a, b) => a.last_name.localeCompare(b.last_name))
-      }))
+      classrooms: Object.keys(groups[grade]).sort().map(classroom => {
+        const classStudents = groups[grade][classroom];
+        
+        // Sort all students by Last Name first
+        const sorted = [...classStudents].sort((a, b) => 
+          (a.last_name || '').localeCompare(b.last_name || '')
+        );
+
+        // Split into Male and Female
+        return {
+          name: classroom,
+          male: sorted.filter(s => (s.profile?.sex || '').toLowerCase() === 'male'),
+          female: sorted.filter(s => (s.profile?.sex || '').toLowerCase() === 'female')
+        };
+      })
     }));
   }, [students, searchQuery]);
 
@@ -434,10 +445,82 @@ const StudentManagement = () => {
   }
 
   const ProfileField = ({ label, value }) => (
-    <div className="border-b border-gray-50 py-3 last:border-0">
-      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-0.5">{label}</p>
-      <p className="text-sm font-bold text-gray-700">{value || <span className="text-gray-300 font-normal">Not provided</span>}</p>
+    <div className="py-1 md:py-2 border-b border-gray-50 last:border-0">
+      <p className="text-[7px] md:text-[9px] font-black text-indigo-400 uppercase tracking-widest mb-0.5">{label}</p>
+      <p className="text-[10px] md:text-sm font-bold text-gray-700 truncate">{value || '—'}</p>
     </div>
+  );
+
+  const StudentRow = ({ student, idx }) => (
+    <tr key={student.id} className="group hover:bg-gray-50/80 transition-all duration-200">
+      <td className="px-3 py-1.5 md:px-6 md:py-4 text-[8px] md:text-xs font-black text-gray-400">{idx + 1}</td>
+      <td className="px-3 py-1.5 md:px-6 md:py-4">
+        <div className="flex items-center gap-2 md:gap-3">
+          <div className="w-6 h-6 md:w-10 md:h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg md:rounded-xl flex items-center justify-center text-white font-black text-[10px] md:text-sm shadow-sm">
+            {student.first_name?.charAt(0)}{student.last_name?.charAt(0)}
+          </div>
+          <div className="min-w-0">
+             <p className="text-[9px] md:text-sm font-black text-gray-800 truncate uppercase tracking-tight leading-none mb-0.5 md:mb-1">
+               {student.last_name}, {student.first_name}
+             </p>
+            <div className="flex items-center gap-1">
+              <span className={`w-1 h-1 md:w-1.5 md:h-1.5 rounded-full ${student.is_online ? 'bg-green-500 animate-pulse' : 'bg-gray-300'}`}></span>
+              <p className="text-[6px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest">{student.is_online ? 'Online' : 'Offline'}</p>
+            </div>
+          </div>
+        </div>
+      </td>
+      <td className="hidden md:table-cell px-6 py-4">
+        <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">{student.profile?.sex || '—'}</span>
+      </td>
+      <td className="hidden md:table-cell px-6 py-4">
+        <p className="text-[10px] font-bold text-gray-500 truncate max-w-[150px] lowercase italic">{student.email || '—'}</p>
+      </td>
+      <td className="hidden md:table-cell px-6 py-4">
+        <span className="text-[10px] font-mono font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded-md">
+          {student.profile?.registration_number || student.username}
+        </span>
+      </td>
+      <td className="px-3 py-1.5 md:px-6 md:py-4 text-center">
+        <button 
+          onClick={() => handleToggleStatus(student, student.account_status === 'active' ? 'suspended' : 'active')}
+          className={`px-1.5 py-0.5 md:px-3 md:py-1 rounded-full text-[6px] md:text-[10px] font-black uppercase tracking-widest transition-all ${
+            student.account_status === 'active' 
+              ? 'bg-emerald-50 text-emerald-600 border border-emerald-100 hover:bg-emerald-100' 
+              : 'bg-rose-50 text-rose-600 border border-rose-100 hover:bg-rose-100'
+          }`}
+        >
+          {student.account_status}
+        </button>
+      </td>
+      <td className="px-3 py-1.5 md:px-6 md:py-4">
+        <div className="flex items-center justify-center gap-1 md:gap-2">
+          <button 
+            onClick={() => { setSelectedStudent(student); setShowProfileModal(true); }}
+            className="p-1 md:p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all"
+            title="View Profile"
+          >
+            <svg className="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+          </button>
+          <button 
+            onClick={() => handleResetPassword(student.id)}
+            className="p-1 md:p-2 text-amber-600 hover:bg-amber-50 rounded-lg transition-all"
+            title="Reset Password"
+          >
+            <svg className="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" /></svg>
+          </button>
+          {(user?.role === 'admin' || user?.role === 'teacher') && (
+             <button 
+               onClick={() => handleDelete(student.id)}
+               className="p-1 md:p-2 text-rose-600 hover:bg-rose-50 rounded-lg transition-all"
+               title="Delete Account"
+             >
+               <svg className="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+             </button>
+           )}
+        </div>
+      </td>
+    </tr>
   );
 
   return (
@@ -638,99 +721,34 @@ const StudentManagement = () => {
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-50">
-                          {cls.students.map((student, idx) => (
-                            <tr key={student.id} className="group hover:bg-purple-50 transition-colors">
-                              <td className="px-3 py-1 md:px-6 md:py-4 text-[7px] md:text-xs font-black text-gray-300">{idx + 1}</td>
-                              <td className="px-3 py-1 md:px-6 md:py-4">
-                                <div className="flex items-center gap-1.5 md:gap-3">
-                                  <div className="relative flex-shrink-0">
-                                    <div className="w-6 h-6 md:w-8 md:h-8 rounded md:rounded-lg bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white font-black text-[8px] md:text-xs shadow-sm">
-                                      {student.first_name?.charAt(0)}{student.last_name?.charAt(0)}
-                                    </div>
-                                    <div className={`absolute -bottom-0.5 -right-0.5 w-1.5 h-1.5 md:w-2.5 md:h-2.5 rounded-full border border-white shadow-sm ${student.is_online ? 'bg-green-500' : 'bg-gray-300'}`}></div>
-                                  </div>
-                                  <div className="flex flex-col min-w-0">
-                                    <span className="text-[9px] md:text-sm font-black text-gray-800 leading-tight uppercase tracking-tighter truncate">{student.first_name} {student.last_name}</span>
-                                    <span className={`text-[6px] md:text-[9px] font-black uppercase tracking-widest truncate ${student.is_online ? 'text-green-500' : 'text-gray-400'}`}>
-                                      {student.is_online ? 'Online' : 'Offline'}
-                                    </span>
-                                  </div>
-                                </div>
-                              </td>
-                              <td className="hidden md:table-cell px-6 py-4 text-xs font-black text-gray-500 uppercase tracking-widest">{student.profile?.sex || 'N/A'}</td>
-                              <td className="hidden md:table-cell px-6 py-4 text-sm font-medium text-gray-500">{student.email}</td>
-                              <td className="hidden md:table-cell px-6 py-4">
-                                <div className="flex flex-col">
-                                  <span className="text-xs font-black text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full w-fit">
-                                    {student.profile?.registration_number || student.username || '—'}
-                                  </span>
-                                  {student.must_change_password && student.temp_password_storage && (
-                                    <div className="mt-1 flex items-center gap-1 group/pass">
-                                      <span className="text-[8px] font-black text-amber-500 uppercase tracking-widest">Temp Pass:</span>
-                                      <span className="text-[10px] font-mono font-bold text-amber-600 bg-amber-50 px-1 rounded border border-amber-100 select-all cursor-help" title="Visible until student changes password">
-                                        {student.temp_password_storage}
-                                      </span>
-                                    </div>
-                                  )}
-                                </div>
-                              </td>
-                              <td className="px-3 py-1 md:px-6 md:py-4 text-center">
-                                <select 
-                                  value={student.account_status} 
-                                  onChange={(e) => handleToggleStatus(student, e.target.value)}
-                                  className={`text-[7px] md:text-[10px] font-black px-1.5 py-0.5 md:px-2 md:py-1 rounded uppercase tracking-widest border-0 focus:ring-2 focus:ring-purple-500 cursor-pointer transition-all ${
-                                    student.account_status === 'active' ? 'bg-emerald-100 text-emerald-600' : 
-                                    student.account_status === 'suspended' ? 'bg-rose-100 text-rose-600' : 
-                                    'bg-gray-100 text-gray-600'
-                                  }`}
-                                >
-                                  <option value="active">Active</option>
-                                  <option value="inactive">Inactive</option>
-                                  <option value="suspended">Suspended</option>
-                                </select>
-                              </td>
-                              <td className="px-3 py-1 md:px-6 md:py-4">
-                                <div className="flex items-center justify-center gap-0.5 md:gap-2">
-                                  <button
-                                    onClick={() => handleStartChat(student.id)}
-                                    className="p-1 md:p-2 text-violet-500 hover:bg-violet-50 rounded md:rounded-lg transition-all active:scale-90"
-                                    title="Send Message"
-                                  >
-                                    <svg className="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-                                    </svg>
-                                  </button>
-                                  <button
-                                    onClick={() => { setSelectedStudent(student); setShowProfileModal(true); }}
-                                    className="p-1 md:p-2 text-blue-500 hover:bg-blue-50 rounded md:rounded-lg transition-all active:scale-90"
-                                    title="View Profile"
-                                  >
-                                    <svg className="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                    </svg>
-                                  </button>
-                                  <button
-                                    onClick={() => handleResetPassword(student.id)}
-                                    className="p-1 md:p-2 text-amber-500 hover:bg-amber-50 rounded md:rounded-lg transition-all active:scale-90"
-                                    title="Reset Password"
-                                  >
-                                    <svg className="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
-                                    </svg>
-                                  </button>
-                                  <button
-                                    onClick={() => handleDelete(student.id)}
-                                    className="p-1 md:p-2 text-red-500 hover:bg-red-50 rounded md:rounded-lg transition-all active:scale-90"
-                                    title="Delete Student"
-                                  >
-                                    <svg className="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                    </svg>
-                                  </button>
+                          {/* Male Students */}
+                          {cls.male.length > 0 && (
+                            <tr className="bg-blue-50/50">
+                              <td colSpan="7" className="px-6 py-2 text-[10px] font-black text-blue-600 uppercase tracking-widest border-y border-blue-100">
+                                <div className="flex items-center gap-2">
+                                  <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a8 8 0 100 16 8 8 0 000-16zM9 9H5v2h4v4h2v-4h4V9h-4V5H9v4z" /></svg>
+                                  Male ({cls.male.length})
                                 </div>
                               </td>
                             </tr>
+                          )}
+                          {cls.male.map((student, idx) => (
+                            <StudentRow key={student.id} student={student} idx={idx} />
+                          ))}
+
+                          {/* Female Students */}
+                          {cls.female.length > 0 && (
+                            <tr className="bg-rose-50/50">
+                              <td colSpan="7" className="px-6 py-2 text-[10px] font-black text-rose-600 uppercase tracking-widest border-y border-rose-100">
+                                <div className="flex items-center gap-2">
+                                  <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a8 8 0 100 16 8 8 0 000-16zM9 9H5v2h4v4h2v-4h4V9h-4V5H9v4z" /></svg>
+                                  Female ({cls.female.length})
+                                </div>
+                              </td>
+                            </tr>
+                          )}
+                          {cls.female.map((student, idx) => (
+                            <StudentRow key={student.id} student={student} idx={idx} />
                           ))}
                         </tbody>
                       </table>
@@ -759,7 +777,7 @@ const StudentManagement = () => {
                 </div>
                 <div>
                   <div className="flex items-center gap-3">
-                    <h2 className="text-3xl font-black tracking-tight">{selectedStudent.first_name} {selectedStudent.last_name}</h2>
+                    <h2 className="text-3xl font-black tracking-tight uppercase">{selectedStudent.last_name}, {selectedStudent.first_name}</h2>
                     <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest border ${selectedStudent.is_online ? 'bg-green-500/20 border-green-400 text-green-200' : 'bg-white/10 border-white/20 text-white/60'}`}>
                       {selectedStudent.is_online ? 'Online' : 'Offline'}
                     </span>
