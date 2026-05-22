@@ -177,13 +177,13 @@ const GradeDistribution = () => {
               </div>
               <div className="h-72 relative">
                 <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
+                  <PieChart margin={{ top: -20, bottom: 0 }}>
                     <Pie
                       data={data.category_counts}
                       cx="50%"
-                      cy="50%"
-                      innerRadius={65}
-                      outerRadius={90}
+                      cy="45%"
+                      innerRadius={55}
+                      outerRadius={75}
                       paddingAngle={6}
                       dataKey="value"
                     >
@@ -196,15 +196,15 @@ const GradeDistribution = () => {
                       verticalAlign="bottom" 
                       align="center"
                       iconType="rect"
-                      iconSize={6}
+                      iconSize={4}
                       layout="vertical"
-                      wrapperStyle={{ paddingTop: '20px' }}
+                      wrapperStyle={{ paddingTop: '10px', bottom: 0 }}
                       formatter={(value) => {
                         const item = data.category_counts.find(d => d.name === value);
                         const total = data.category_counts.reduce((sum, d) => sum + d.value, 0);
                         const percentage = total > 0 ? ((item.value / total) * 100).toFixed(1) : 0;
                         return (
-                          <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest">
+                          <span className="text-[7px] font-black text-slate-400 uppercase tracking-tighter">
                             {value}: {item.value} ({percentage}%)
                           </span>
                         );
@@ -212,9 +212,9 @@ const GradeDistribution = () => {
                     />
                   </PieChart>
                 </ResponsiveContainer>
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 mt-[-15px] text-center pointer-events-none">
-                  <p className="text-2xl font-black text-slate-900 leading-none">{data.total_students}</p>
-                  <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mt-1">Students</p>
+                <div className="absolute top-[45%] left-1/2 -translate-x-1/2 -translate-y-1/2 mt-[-10px] text-center pointer-events-none">
+                  <p className="text-xl font-black text-slate-900 leading-none">{data.total_students}</p>
+                  <p className="text-[7px] font-black text-slate-400 uppercase tracking-widest mt-0.5">Students</p>
                 </div>
               </div>
             </div>

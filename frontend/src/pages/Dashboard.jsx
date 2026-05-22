@@ -235,13 +235,13 @@ const AdminView = () => {
           </div>
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
+              <PieChart margin={{ top: -20, bottom: 0 }}>
                 <Pie
                   data={gradeData}
                   cx="50%"
-                  cy="50%"
-                  innerRadius={60}
-                  outerRadius={80}
+                  cy="45%"
+                  innerRadius={50}
+                  outerRadius={70}
                   paddingAngle={5}
                   dataKey="value"
                 >
@@ -254,15 +254,15 @@ const AdminView = () => {
                   verticalAlign="bottom" 
                   align="center"
                   iconType="rect"
-                  iconSize={6}
+                  iconSize={4}
                   layout="vertical"
-                  wrapperStyle={{ paddingTop: '20px' }}
+                  wrapperStyle={{ paddingTop: '10px', bottom: 0 }}
                   formatter={(value) => {
                     const item = gradeData.find(d => d.name === value);
                     const total = gradeData.reduce((sum, d) => sum + d.value, 0);
                     const percentage = total > 0 ? ((item.value / total) * 100).toFixed(1) : 0;
                     return (
-                      <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest">
+                      <span className="text-[7px] font-black text-slate-400 uppercase tracking-tighter">
                         {value}: {item.value} ({percentage}%)
                       </span>
                     );

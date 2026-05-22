@@ -129,13 +129,13 @@ const Analytics = () => {
           </div>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
+              <PieChart margin={{ top: -20, bottom: 0 }}>
                 <Pie
                   data={gradeDistribution}
                   cx="50%"
-                  cy="50%"
-                  innerRadius={60}
-                  outerRadius={85}
+                  cy="45%"
+                  innerRadius={50}
+                  outerRadius={70}
                   paddingAngle={8}
                   dataKey="value"
                 >
@@ -148,14 +148,14 @@ const Analytics = () => {
                   verticalAlign="bottom" 
                   align="center"
                   iconType="rect"
-                  iconSize={6}
+                  iconSize={4}
                   layout="vertical"
-                  wrapperStyle={{ paddingTop: '20px' }}
+                  wrapperStyle={{ paddingTop: '10px', bottom: 0 }}
                   formatter={(value) => {
                     const item = gradeDistribution.find(d => d.name === value);
                     const percentage = totalGrades > 0 ? ((item.value / totalGrades) * 100).toFixed(1) : 0;
                     return (
-                      <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest">
+                      <span className="text-[7px] font-black text-slate-400 uppercase tracking-tighter">
                         {value}: {item.value} ({percentage}%)
                       </span>
                     );
