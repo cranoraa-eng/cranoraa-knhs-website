@@ -21,6 +21,7 @@ import ClassMembers from './pages/ClassMembers';
 import Calendar from './pages/Calendar';
 import PasswordReset from './pages/PasswordReset';
 import ClassManagement from './pages/ClassManagement';
+import MyClasses from './pages/MyClasses';
 import SubjectAssignment from './pages/SubjectAssignment';
 import StudentEnrollment from './pages/StudentEnrollment';
 import StudentManagement from './pages/StudentManagement';
@@ -128,6 +129,7 @@ function App() {
           <Route path="portal-calendar" element={<Calendar mode="portal" />} />
           <Route path="password-reset" element={<PasswordReset />} />
           <Route path="class-management" element={<ClassManagement />} />
+          <Route path="my-classes" element={<MyClasses />} />
           <Route path="subject-assignment" element={<SubjectAssignment />} />
           <Route path="student-enrollment" element={<StudentEnrollment />} />
           <Route path="student-management" element={<StudentManagement />} />
