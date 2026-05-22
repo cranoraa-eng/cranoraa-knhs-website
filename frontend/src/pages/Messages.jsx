@@ -271,6 +271,38 @@ const Messages = () => {
     } catch { toast.error('Failed to unsend message'); }
   };
 
+  const handleReportMessage = async (msgId) => {
+    const { value: reason } = await Swal.fire({
+      title: 'Report Message',
+      input: 'textarea',
+      inputLabel: 'Why are you reporting this message?',
+      inputPlaceholder: 'e.g., Harassment, Inappropriate content...',
+      inputAttributes: {
+        'aria-label': 'Type your reason here'
+      },
+      showCancelButton: true,
+      confirmButtonText: 'Submit Report',
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#64748b',
+      customClass: {
+        popup: 'rounded-[2rem]',
+        input: 'text-sm'
+      }
+    });
+
+    if (reason) {
+      try {
+        await api.post('/chat/reports/', {
+          message: msgId,
+          reason: reason
+        });
+        toast.success('Report submitted successfully');
+      } catch (err) {
+        toast.error('Failed to submit report');
+      }
+    }
+  };
+
   const handleReactToMessage = (messageId, emoji) => {
     safeSend({
       type: 'reaction',
@@ -1402,6 +1434,21 @@ const Messages = () => {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 18V4z" />
                           </svg>
                         </button>
+
+                        {/* Report — for others' messages */}
+                        {!isMsgMine && (
+                          <button
+                            onClick={() => { 
+                              handleReportMessage(activeMoreMenu); 
+                              setActiveMoreMenu(null); 
+                            }}
+                            className="p-2 md:p-2.5 text-slate-500 hover:bg-amber-50 hover:text-amber-600 rounded-full transition-all"
+                            title="Report Message">
+                            <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                          </button>
+                        )}
 
                         {/* Unsend — own messages only */}
                         {isMsgMine && (
