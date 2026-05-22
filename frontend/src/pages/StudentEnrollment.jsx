@@ -12,7 +12,8 @@ const StudentEnrollment = () => {
   const [saving, setSaving] = useState(false);
   const [selectedClassroom, setSelectedClassroom] = useState('');
   const [studentSearch, setStudentSearch] = useState('');
-  const [formData, setFormData] = useState({ classroom: '', student: '' });
+  const [selectedStudents, setSelectedStudents] = useState([]);
+  const [formData, setFormData] = useState({ classroom: '' });
 
   useEffect(() => {
     fetchMeta();
@@ -49,7 +50,8 @@ const StudentEnrollment = () => {
   };
 
   const openModal = () => {
-    setFormData({ classroom: selectedClassroom, student: '' });
+    setFormData({ classroom: selectedClassroom });
+    setSelectedStudents([]);
     setStudentSearch('');
     setShowModal(true);
   };
@@ -74,31 +76,49 @@ const StudentEnrollment = () => {
     }
   };
 
+  const toggleStudentSelection = (studentId) => {
+    setSelectedStudents(prev => 
+      prev.includes(studentId) 
+        ? prev.filter(id => id !== studentId)
+        : [...prev, studentId]
+    );
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.student) return toast.error('Please select a student');
+    if (selectedStudents.length === 0) return toast.error('Please select at least one student');
     setSaving(true);
+    
+    const loadingToast = toast.loading(`Enrolling ${selectedStudents.length} student(s)...`);
+    
     try {
-      await api.post('/enrollments/', {
-        classroom: parseInt(formData.classroom),
-        student: parseInt(formData.student),
-      });
-      toast.success('Student enrolled');
+      // Since backend usually handles single enrollment, we map and await all
+      // If backend had a bulk endpoint, we would use that.
+      await Promise.all(selectedStudents.map(studentId => 
+        api.post('/enrollments/', {
+          classroom: parseInt(formData.classroom),
+          student: parseInt(studentId),
+        })
+      ));
+      
+      toast.success(`${selectedStudents.length} student(s) enrolled successfully`, { id: loadingToast });
       setShowModal(false);
       fetchEnrollments(selectedClassroom);
     } catch (err) {
       const msg = err.response?.data?.error
         || err.response?.data?.detail
         || err.response?.data?.non_field_errors?.[0];
-      toast.error(msg || 'Failed to enroll student');    } finally {
+      toast.error(msg || 'Failed to enroll student(s)', { id: loadingToast });
+    } finally {
       setSaving(false);
     }
   };
 
   const enrolledIds = new Set(enrollments.map(e => e.student));
   const filteredStudents = students.filter(s =>
-    (s.username.toLowerCase().includes(studentSearch.toLowerCase()) ||
-     s.email.toLowerCase().includes(studentSearch.toLowerCase())) &&
+    ((s.username || '').toLowerCase().includes(studentSearch.toLowerCase()) ||
+     (s.email || '').toLowerCase().includes(studentSearch.toLowerCase()) ||
+     (`${s.first_name || ''} ${s.last_name || ''}`).toLowerCase().includes(studentSearch.toLowerCase())) &&
     !enrolledIds.has(s.id)
   );
 
@@ -289,18 +309,29 @@ const StudentEnrollment = () => {
                           ? `${s.first_name} ${s.last_name}`
                           : s.username;
                         const initials = fullName.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
-                        const isSelected = String(formData.student) === String(s.id);
+                        const isSelected = selectedStudents.includes(s.id);
                         return (
                           <button
                             key={s.id}
                             type="button"
-                            onClick={() => setFormData({ ...formData, student: String(s.id) })}
+                            onClick={() => toggleStudentSelection(s.id)}
                             className={`w-full flex items-center gap-2 md:gap-3 px-3 py-2 md:px-4 md:py-3 text-left transition-colors border-l-2 md:border-l-4 ${
                               isSelected
                                 ? 'bg-purple-50 border-purple-500'
                                 : 'hover:bg-gray-50 border-transparent'
                             }`}
                           >
+                            {/* Checkbox-like Indicator */}
+                            <div className={`w-3.5 h-3.5 md:w-5 md:h-5 rounded border flex items-center justify-center transition-colors ${
+                              isSelected ? 'bg-purple-600 border-purple-600' : 'bg-white border-gray-300'
+                            }`}>
+                              {isSelected && (
+                                <svg className="w-2.5 h-2.5 md:w-3.5 md:h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                                </svg>
+                              )}
+                            </div>
+
                             {/* Avatar */}
                             <div className={`w-7 h-7 md:w-9 md:h-9 rounded md:rounded-lg flex items-center justify-center text-[8px] md:text-sm font-black flex-shrink-0 shadow-sm ${
                               isSelected
@@ -317,13 +348,6 @@ const StudentEnrollment = () => {
                               </div>
                               <div className="text-[7px] md:text-xs text-gray-400 truncate font-bold">{s.email}</div>
                             </div>
-
-                            {/* Checkmark */}
-                            {isSelected && (
-                              <svg className="flex-shrink-0 w-3 h-3 md:w-5 md:h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-                              </svg>
-                            )}
                           </button>
                         );
                       })}
@@ -332,27 +356,31 @@ const StudentEnrollment = () => {
                 </div>
 
                 {/* Selected confirmation */}
-                {formData.student && (
-                  <div className="mt-1.5 flex items-center gap-1.5 text-[8px] md:text-xs text-purple-700 bg-purple-50 border border-purple-200 rounded-md md:rounded-lg px-2 py-1 md:px-3 md:py-2 font-bold uppercase tracking-widest">
-                    <svg className="w-2.5 h-2.5 md:w-3.5 md:h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-                    </svg>
-                    Selected: <span className="ml-1 truncate">
-                      {(() => {
-                        const s = students.find(s => String(s.id) === String(formData.student));
-                        return s ? (s.first_name && s.last_name ? `${s.first_name} ${s.last_name}` : s.username) : '';
-                      })()}
-                    </span>
+                {selectedStudents.length > 0 && (
+                  <div className="mt-1.5 flex items-center justify-between text-[8px] md:text-xs text-purple-700 bg-purple-50 border border-purple-200 rounded-md md:rounded-lg px-2 py-1 md:px-3 md:py-2 font-bold uppercase tracking-widest">
+                    <div className="flex items-center gap-1.5">
+                      <svg className="w-2.5 h-2.5 md:w-3.5 md:h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                      </svg>
+                      Selected: {selectedStudents.length} Student(s)
+                    </div>
+                    <button 
+                      type="button"
+                      onClick={() => setSelectedStudents([])}
+                      className="text-purple-400 hover:text-purple-600 transition-colors px-1"
+                    >
+                      Clear
+                    </button>
                   </div>
                 )}
               </div>
               <div className="flex gap-2 md:gap-3 pt-1 md:pt-2">
                 <button
                   type="submit"
-                  disabled={saving}
+                  disabled={saving || selectedStudents.length === 0}
                   className="flex-1 bg-purple-600 hover:bg-purple-700 disabled:opacity-60 text-white font-black py-2 md:py-2.5 rounded md:rounded-lg transition-all active:scale-95 text-[9px] md:text-sm uppercase tracking-widest"
                 >
-                  {saving ? 'Enrolling...' : 'Enroll'}
+                  {saving ? 'Enrolling...' : `Enroll ${selectedStudents.length || ''}`}
                 </button>
                 <button
                   type="button"
