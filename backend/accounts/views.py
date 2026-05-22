@@ -161,7 +161,7 @@ def force_password_change_view(request):
 
 @csrf_exempt
 @api_view(['POST'])
-@permission_classes([IsAdminUser])
+@permission_classes([IsAdminOrTeacher])
 def admin_create_user_view(request):
     username = request.data.get('username') # For students, this will be their Student ID
     email = request.data.get('email')
@@ -173,6 +173,17 @@ def admin_create_user_view(request):
     last_name = request.data.get('last_name', '')
     profile_data = request.data.get('profile', {})
     
+    # Permission check for teachers
+    advisory_classroom = None
+    if request.user.role == 'teacher':
+        if role != 'student':
+            return Response({'error': 'Teachers can only create student accounts.'}, status=status.HTTP_403_FORBIDDEN)
+        
+        try:
+            advisory_classroom = Classroom.objects.get(teacher=request.user)
+        except Classroom.DoesNotExist:
+            return Response({'error': 'You must be assigned as an advisory teacher to create students.'}, status=status.HTTP_403_FORBIDDEN)
+
     # Validation
     if not username:
         return Response({'error': 'Username/Student ID is required'}, status=status.HTTP_400_BAD_REQUEST)
@@ -200,7 +211,7 @@ def admin_create_user_view(request):
         )
         user.role = role
         user.is_verified = True if email else False
-        user.is_approved = True # Admin-created accounts are auto-approved
+        user.is_approved = True # Admin/Teacher-created accounts are auto-approved
         user.must_change_password = True # Force password change on first login
         user.temp_password_storage = password # Store temporary password
         user.account_status = 'active'
@@ -228,6 +239,13 @@ def admin_create_user_view(request):
         
         profile.save()
 
+        # Auto-enroll student if created by teacher
+        if advisory_classroom:
+            StudentClassEnrollment.objects.get_or_create(
+                student=user,
+                classroom=advisory_classroom
+            )
+
         # Log creation
         from portal.views import log_audit_action
         log_audit_action(
@@ -236,7 +254,7 @@ def admin_create_user_view(request):
             model_name='User',
             object_id=user.id,
             object_repr=str(user),
-            description=f'Admin created {role} account: {username}',
+            description=f'{request.user.role.capitalize()} created {role} account: {username}',
             request=request
         )
 
@@ -248,7 +266,7 @@ def admin_create_user_view(request):
         }, status=status.HTTP_201_CREATED)
 
     except Exception as e:
-        logger.error(f"Admin user creation error: {str(e)}")
+        logger.error(f"User creation error: {str(e)}")
         return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -627,14 +645,21 @@ class UserViewSet(viewsets.ModelViewSet):
                         pass
                 return queryset.filter(id=user.id)
             
-            # Teachers can see students and themselves
+            # Teachers can see students in their advisory classroom or classrooms they teach subjects in
             if user.role == 'teacher':
-                if role:
-                    if role == 'student':
-                        return queryset.filter(role='student')
-                    elif role == 'teacher':
-                        return queryset.filter(id=user.id)
-                return queryset.filter(role='student') | queryset.filter(id=user.id)
+                from django.db.models import Q
+                assigned_classrooms = ClassroomSubject.objects.filter(teacher=user).values_list('classroom_id', flat=True)
+                # Teachers can see students in their advisory classroom OR students in classrooms where they teach subjects
+                student_enrollments = StudentClassEnrollment.objects.filter(
+                    Q(classroom__teacher=user) | Q(classroom_id__in=assigned_classrooms)
+                ).values_list('student_id', flat=True)
+                
+                if role == 'student':
+                    return queryset.filter(id__in=student_enrollments)
+                elif role == 'teacher':
+                    return queryset.filter(id=user.id)
+                
+                return queryset.filter(Q(id__in=student_enrollments) | Q(id=user.id))
             
             # Admins can see all users
             if role:
@@ -645,6 +670,17 @@ class UserViewSet(viewsets.ModelViewSet):
             return User.objects.filter(id=self.request.user.id) if self.request.user.is_authenticated else User.objects.none()
 
     def perform_destroy(self, instance):
+        user = self.request.user
+        if user.role == 'teacher':
+            # Teachers can only delete students in their advisory classroom
+            is_advisory_student = StudentClassEnrollment.objects.filter(
+                student=instance,
+                classroom__teacher=user
+            ).exists()
+            if not is_advisory_student:
+                from rest_framework.exceptions import PermissionDenied
+                raise PermissionDenied("You can only delete students from your advisory classroom.")
+
         from portal.views import log_audit_action
         log_audit_action(
             user=self.request.user,
@@ -652,7 +688,7 @@ class UserViewSet(viewsets.ModelViewSet):
             model_name='User',
             object_id=instance.id,
             object_repr=str(instance),
-            description=f'Admin deleted user account: {instance.email}',
+            description=f'{self.request.user.role.capitalize()} deleted user account: {instance.username}',
             request=self.request
         )
         instance.delete()
@@ -706,11 +742,22 @@ class UserViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post'])
     def update_status(self, request, pk=None):
-        """Update user account status (admin only)"""
-        if request.user.role != 'admin':
+        """Update user account status (admin and advisory teachers)"""
+        user_role = request.user.role
+        if user_role not in ['admin', 'teacher']:
             return Response({'error': 'Unauthorized'}, status=403)
             
         user = self.get_object()
+        
+        if user_role == 'teacher':
+            # Teachers can only update status for students in their advisory classroom
+            is_advisory_student = StudentClassEnrollment.objects.filter(
+                student=user,
+                classroom__teacher=request.user
+            ).exists()
+            if not is_advisory_student:
+                return Response({'error': 'You can only update status for students in your advisory classroom.'}, status=403)
+
         status_val = request.data.get('status')
         if status_val not in [s[0] for s in User.STATUS_CHOICES]:
             return Response({'error': 'Invalid status'}, status=400)
@@ -722,11 +769,22 @@ class UserViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post'])
     def reset_password(self, request, pk=None):
-        """Manually reset a user's password (admin only)"""
-        if request.user.role != 'admin':
+        """Manually reset a user's password (admin and advisory teachers)"""
+        user_role = request.user.role
+        if user_role not in ['admin', 'teacher']:
             return Response({'error': 'Unauthorized'}, status=403)
             
         user = self.get_object()
+        
+        if user_role == 'teacher':
+            # Teachers can only reset password for students in their advisory classroom
+            is_advisory_student = StudentClassEnrollment.objects.filter(
+                student=user,
+                classroom__teacher=request.user
+            ).exists()
+            if not is_advisory_student:
+                return Response({'error': 'You can only reset passwords for students in your advisory classroom.'}, status=403)
+
         new_password = request.data.get('password')
         
         if not new_password:
@@ -745,10 +803,17 @@ class UserViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['post'], parser_classes=[parsers.MultiPartParser])
     def import_csv(self, request):
-        """Import students from CSV (admin only)"""
-        if request.user.role != 'admin':
+        """Import students from CSV (admin and advisory teachers)"""
+        if request.user.role not in ['admin', 'teacher']:
             return Response({'error': 'Unauthorized'}, status=403)
             
+        advisory_classroom = None
+        if request.user.role == 'teacher':
+            try:
+                advisory_classroom = Classroom.objects.get(teacher=request.user)
+            except Classroom.DoesNotExist:
+                return Response({'error': 'You must be an advisory teacher to import students.'}, status=403)
+
         file = request.FILES.get('file')
         if not file:
             return Response({'error': 'No file provided'}, status=400)
@@ -837,6 +902,14 @@ class UserViewSet(viewsets.ModelViewSet):
                         'sex': sex
                     }
                 )
+
+                # Auto-enroll student if imported by teacher
+                if advisory_classroom:
+                    StudentClassEnrollment.objects.get_or_create(
+                        student=user,
+                        classroom=advisory_classroom
+                    )
+
                 created_count += 1
                 created_users.append({
                     'username': student_id,

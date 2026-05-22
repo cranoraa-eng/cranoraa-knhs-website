@@ -759,6 +759,11 @@ const StudentManagement = () => {
           <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden">
             <div className="p-6 bg-purple-600 text-white">
               <h2 className="text-xl font-black uppercase tracking-tight">Create Student Account</h2>
+              {user?.role === 'teacher' && (
+                <p className="text-[10px] font-bold text-purple-200 mt-1 uppercase tracking-widest">
+                  Auto-enrolling to your advisory classroom
+                </p>
+              )}
             </div>
             <form onSubmit={handleAddStudent} className="p-6 space-y-4">
               <div>
@@ -858,6 +863,11 @@ const StudentManagement = () => {
               <svg className="w-10 h-10 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
             </div>
             <h2 className="text-2xl font-black text-gray-800 uppercase tracking-tight mb-2">Bulk Import Students</h2>
+            {user?.role === 'teacher' && (
+              <p className="text-[10px] font-black text-indigo-500 mb-4 uppercase tracking-widest bg-indigo-50 py-1 rounded-lg">
+                Students will be auto-enrolled to your advisory classroom
+              </p>
+            )}
             <p className="text-sm text-gray-500 font-medium mb-8">Upload an Excel file (.xlsx, .xls) with headers: <br/><code className="bg-gray-100 px-2 py-1 rounded text-xs">Student ID, First Name, Last Name, Grade Level, Sex, Email</code></p>
             
             <input 
