@@ -4,6 +4,7 @@ import api from '../utils/api';
 import { getUser } from '../utils/auth';
 import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
+import { jsPDF } from 'jspdf';
 
 const StudentManagement = () => {
   const user = getUser();
@@ -227,6 +228,91 @@ const StudentManagement = () => {
     }
   };
 
+  const handleExportCSV = () => {
+    const headers = ['First Name', 'Last Name', 'LRN', 'Grade', 'Classroom', 'Email', 'Temp Password', 'Status'];
+    const data = students.map(s => [
+      s.first_name,
+      s.last_name,
+      s.profile?.registration_number || s.username,
+      s.profile?.grade_level || 'N/A',
+      s.profile?.classroom_name || 'N/A',
+      s.email,
+      s.must_change_password ? (s.temp_password_storage || 'Pending') : 'Changed',
+      s.account_status
+    ]);
+
+    const csvContent = [headers, ...data].map(e => e.map(val => `"${val}"`).join(",")).join("\n");
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", `students_export_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success('CSV exported successfully');
+  };
+
+  const handleExportPDF = () => {
+    const doc = new jsPDF();
+    doc.setFontSize(18);
+    doc.text('Student Directory', 14, 20);
+    doc.setFontSize(8);
+    doc.setTextColor(100);
+    doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 28);
+
+    const headers = ['Name', 'LRN', 'Grade', 'Classroom', 'Status'];
+    const colWidths = [60, 40, 30, 40, 20];
+    let y = 40;
+
+    // Header background
+    doc.setFillColor(45, 27, 77); // #2D1B4D
+    doc.rect(14, y - 5, 182, 7, 'F');
+    doc.setTextColor(255);
+    doc.setFont("helvetica", "bold");
+    
+    let x = 14;
+    headers.forEach((h, i) => {
+      doc.text(h, x, y);
+      x += colWidths[i];
+    });
+
+    y += 10;
+    doc.setTextColor(0);
+    doc.setFont("helvetica", "normal");
+
+    students.forEach((s, index) => {
+      if (y > 280) {
+        doc.addPage();
+        y = 20;
+      }
+      
+      const name = `${s.first_name} ${s.last_name}`;
+      const lrn = s.profile?.registration_number || s.username || '—';
+      const grade = s.profile?.grade_level || 'N/A';
+      const classroom = s.profile?.classroom_name || 'N/A';
+      const status = s.account_status;
+
+      let cx = 14;
+      doc.text(name.substring(0, 35), cx, y); cx += colWidths[0];
+      doc.text(String(lrn), cx, y); cx += colWidths[1];
+      doc.text(String(grade), cx, y); cx += colWidths[2];
+      doc.text(String(classroom).substring(0, 20), cx, y); cx += colWidths[3];
+      doc.text(String(status), cx, y);
+
+      y += 7;
+      // Zebra striping
+      if (index % 2 === 0) {
+        doc.setFillColor(245, 245, 245);
+        doc.rect(14, y - 5, 182, 7, 'F');
+      }
+    });
+
+    doc.save(`students_export_${new Date().toISOString().split('T')[0]}.pdf`);
+    toast.success('PDF exported successfully');
+  };
+
   const organizedData = useMemo(() => {
     const filtered = students.filter(s => {
       const search = searchQuery.toLowerCase();
@@ -308,6 +394,23 @@ const StudentManagement = () => {
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
             <span className="text-[10px] md:text-sm font-bold uppercase tracking-wider">Import CSV</span>
           </button>
+          
+          <div className="flex items-center gap-1 bg-white p-1 rounded-xl md:rounded-2xl border border-gray-200 shadow-sm">
+            <button 
+              onClick={handleExportCSV}
+              className="p-1.5 md:p-2.5 text-emerald-600 hover:bg-emerald-50 rounded-lg md:rounded-xl transition-all"
+              title="Export CSV"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+            </button>
+            <button 
+              onClick={handleExportPDF}
+              className="p-1.5 md:p-2.5 text-rose-600 hover:bg-rose-50 rounded-lg md:rounded-xl transition-all"
+              title="Export PDF"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
+            </button>
+          </div>
           <div className="bg-white px-3 py-1.5 md:px-5 md:py-2.5 rounded-xl md:rounded-2xl border border-gray-200 shadow-sm flex items-center gap-2 md:gap-3">
             <div>
               <p className="text-[7px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest">Total Students</p>
@@ -404,9 +507,19 @@ const StudentManagement = () => {
                               </td>
                               <td className="hidden md:table-cell px-6 py-4 text-sm font-medium text-gray-500">{student.email}</td>
                               <td className="hidden md:table-cell px-6 py-4">
-                                <span className="text-xs font-black text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">
-                                  {student.profile?.registration_number || '—'}
-                                </span>
+                                <div className="flex flex-col">
+                                  <span className="text-xs font-black text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full w-fit">
+                                    {student.profile?.registration_number || student.username || '—'}
+                                  </span>
+                                  {student.must_change_password && student.temp_password_storage && (
+                                    <div className="mt-1 flex items-center gap-1 group/pass">
+                                      <span className="text-[8px] font-black text-amber-500 uppercase tracking-widest">Temp Pass:</span>
+                                      <span className="text-[10px] font-mono font-bold text-amber-600 bg-amber-50 px-1 rounded border border-amber-100 select-all cursor-help" title="Visible until student changes password">
+                                        {student.temp_password_storage}
+                                      </span>
+                                    </div>
+                                  )}
+                                </div>
                               </td>
                               <td className="px-3 py-1 md:px-6 md:py-4 text-center">
                                 <select 

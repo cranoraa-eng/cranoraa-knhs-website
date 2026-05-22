@@ -4,6 +4,7 @@ import api from '../utils/api';
 import { getUser } from '../utils/auth';
 import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
+import { jsPDF } from 'jspdf';
 
 const Teachers = () => {
   const user = getUser();
@@ -179,6 +180,86 @@ const Teachers = () => {
     }
   };
 
+  const handleExportCSV = () => {
+    const headers = ['Title', 'First Name', 'Last Name', 'Email', 'Phone', 'Temp Password', 'Status'];
+    const data = teachers.map(t => [
+      t.profile?.title || '',
+      t.first_name,
+      t.last_name,
+      t.email,
+      t.profile?.phone_number || '',
+      t.must_change_password ? (t.temp_password_storage || 'Pending') : 'Changed',
+      t.account_status
+    ]);
+
+    const csvContent = [headers, ...data].map(e => e.map(val => `"${val}"`).join(",")).join("\n");
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", `teachers_export_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success('CSV exported successfully');
+  };
+
+  const handleExportPDF = () => {
+    const doc = new jsPDF();
+    doc.setFontSize(18);
+    doc.text('Faculty Directory', 14, 20);
+    doc.setFontSize(8);
+    doc.setTextColor(100);
+    doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 28);
+
+    const headers = ['Name', 'Email', 'Phone', 'Status'];
+    const colWidths = [70, 60, 30, 22];
+    let y = 40;
+
+    doc.setFillColor(45, 27, 77); // #2D1B4D
+    doc.rect(14, y - 5, 182, 7, 'F');
+    doc.setTextColor(255);
+    doc.setFont("helvetica", "bold");
+    
+    let x = 14;
+    headers.forEach((h, i) => {
+      doc.text(h, x, y);
+      x += colWidths[i];
+    });
+
+    y += 10;
+    doc.setTextColor(0);
+    doc.setFont("helvetica", "normal");
+
+    teachers.forEach((t, index) => {
+      if (y > 280) {
+        doc.addPage();
+        y = 20;
+      }
+      
+      const name = `${t.profile?.title || ''} ${t.first_name} ${t.last_name}`.trim();
+      const email = t.email;
+      const phone = t.profile?.phone_number || '—';
+      const status = t.account_status;
+
+      let cx = 14;
+      doc.text(name.substring(0, 40), cx, y); cx += colWidths[0];
+      doc.text(email.substring(0, 35), cx, y); cx += colWidths[1];
+      doc.text(String(phone), cx, y); cx += colWidths[2];
+      doc.text(String(status), cx, y);
+
+      y += 7;
+      if (index % 2 === 0) {
+        doc.setFillColor(245, 245, 245);
+        doc.rect(14, y - 5, 182, 7, 'F');
+      }
+    });
+
+    doc.save(`teachers_export_${new Date().toISOString().split('T')[0]}.pdf`);
+    toast.success('PDF exported successfully');
+  };
+
   const getTeacherClassrooms = (teacherId) => {
     return classrooms.filter(cls => cls.teacher === teacherId);
   };
@@ -233,6 +314,23 @@ const Teachers = () => {
             </svg>
             Add Teacher
           </button>
+
+          <div className="flex items-center gap-1 bg-white p-1 rounded-lg md:rounded-xl border border-gray-200 shadow-sm">
+            <button 
+              onClick={handleExportCSV}
+              className="p-1 md:p-2 text-emerald-600 hover:bg-emerald-50 rounded md:rounded-lg transition-all"
+              title="Export CSV"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+            </button>
+            <button 
+              onClick={handleExportPDF}
+              className="p-1 md:p-2 text-rose-600 hover:bg-rose-50 rounded md:rounded-lg transition-all"
+              title="Export PDF"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -343,6 +441,14 @@ const Teachers = () => {
                           {teacher.is_online ? 'Online' : 'Offline'}
                         </span>
                       </div>
+                      {teacher.must_change_password && teacher.temp_password_storage && (
+                        <div className="mt-1 flex items-center gap-1">
+                          <span className="text-[7px] font-black text-amber-500 uppercase tracking-widest">Temp Pass:</span>
+                          <span className="text-[9px] font-mono font-bold text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-100 select-all cursor-help" title="Visible until teacher changes password">
+                            {teacher.temp_password_storage}
+                          </span>
+                        </div>
+                      )}
                     </div>
                   </div>
 

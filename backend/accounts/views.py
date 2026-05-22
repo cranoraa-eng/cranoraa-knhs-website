@@ -131,6 +131,7 @@ def force_password_change_view(request):
         
     user.set_password(new_password)
     user.must_change_password = False
+    user.temp_password_storage = None # Clear temporary password storage
     user.save()
     
     # Update session or return new tokens if needed, but SimpleJWT tokens remain valid 
@@ -185,6 +186,7 @@ def admin_create_user_view(request):
         user.is_verified = True if email else False
         user.is_approved = True # Admin-created accounts are auto-approved
         user.must_change_password = True # Force password change on first login
+        user.temp_password_storage = password # Store temporary password
         user.account_status = 'active'
         user.save()
         
@@ -701,6 +703,7 @@ class UserViewSet(viewsets.ModelViewSet):
             
         user.set_password(new_password)
         user.must_change_password = True # Force them to change it again
+        user.temp_password_storage = new_password # Store it
         user.save()
         
         return Response({
@@ -766,6 +769,7 @@ class UserViewSet(viewsets.ModelViewSet):
                 user.is_approved = True
                 user.is_verified = True if email else False
                 user.must_change_password = True
+                user.temp_password_storage = temp_password # Store it
                 user.account_status = 'active'
                 user.save()
                 
