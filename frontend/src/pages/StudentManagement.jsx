@@ -416,9 +416,9 @@ const StudentManagement = () => {
               onClick={() => {
                 const headers = [['Student ID', 'First Name', 'Last Name', 'Grade Level', 'Sex', 'Email']];
                 const sampleData = [
-                  ['128150150092', 'Arc', 'Capisen', 'Grade 12', 'Male', ''],
-                  ['128150150093', 'Arcc', 'Capisenq', 'Grade 12', 'Female', ''],
-                  ['128150150094', 'Arcy', 'Capisenw', 'Grade 12', 'Male', ''],
+                  ['128150150092', 'Arc', 'Capisen', user?.role === 'teacher' ? '' : 'Grade 12', 'Male', ''],
+                  ['128150150093', 'Arcc', 'Capisenq', user?.role === 'teacher' ? '' : 'Grade 12', 'Female', ''],
+                  ['128150150094', 'Arcy', 'Capisenw', user?.role === 'teacher' ? '' : 'Grade 12', 'Male', ''],
                 ];
                 
                 const ws = XLSX.utils.aoa_to_sheet([...headers, ...sampleData]);
@@ -474,7 +474,7 @@ const StudentManagement = () => {
                   </li>
                   <li className="flex gap-2 md:gap-3">
                     <span className="text-indigo-400 font-black text-[10px] md:text-xs mt-0.5">03</span>
-                    <p className="text-[9px] md:text-[11px] font-bold leading-relaxed text-gray-300">Grade Level: <span className="text-white">Grade 7 to Grade 12</span>.</p>
+                    <p className="text-[9px] md:text-[11px] font-bold leading-relaxed text-gray-300">Grade Level: <span className="text-white">Grade 7 to Grade 12</span>. {user?.role === 'teacher' && <span className="text-indigo-300 italic">(Optional for you)</span>}</p>
                   </li>
                   <li className="flex gap-2 md:gap-3">
                     <span className="text-indigo-400 font-black text-[10px] md:text-xs mt-0.5">04</span>
@@ -799,19 +799,21 @@ const StudentManagement = () => {
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Grade Level</label>
-                  <select 
-                    value={newStudent.grade_level}
-                    onChange={e => setNewStudent({...newStudent, grade_level: e.target.value})}
-                    className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold focus:ring-2 focus:ring-purple-500 outline-none"
-                    required
-                  >
-                    <option value="">Select Grade</option>
-                    {GRADE_ORDER.map(g => <option key={g} value={g}>{g}</option>)}
-                  </select>
-                </div>
-                <div>
+                {user?.role === 'admin' && (
+                  <div>
+                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Grade Level</label>
+                    <select 
+                      value={newStudent.grade_level}
+                      onChange={e => setNewStudent({...newStudent, grade_level: e.target.value})}
+                      className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold focus:ring-2 focus:ring-purple-500 outline-none"
+                      required
+                    >
+                      <option value="">Select Grade</option>
+                      {GRADE_ORDER.map(g => <option key={g} value={g}>{g}</option>)}
+                    </select>
+                  </div>
+                )}
+                <div className={user?.role === 'admin' ? '' : 'col-span-2'}>
                   <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Sex</label>
                   <select 
                     value={newStudent.sex}

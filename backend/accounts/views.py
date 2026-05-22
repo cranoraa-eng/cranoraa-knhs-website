@@ -225,7 +225,13 @@ def admin_create_user_view(request):
         profile.lrn = profile_data.get('lrn', username if role == 'student' else None)
         profile.title = profile_data.get('title')
         profile.sex = profile_data.get('sex')
-        profile.grade_level = profile_data.get('grade_level')
+        
+        # Auto-fill grade level for teachers if missing
+        assigned_grade = profile_data.get('grade_level')
+        if not assigned_grade and advisory_classroom:
+            assigned_grade = advisory_classroom.grade_level
+        
+        profile.grade_level = assigned_grade
         profile.employee_id = profile_data.get('employee_id')
         profile.phone_number = profile_data.get('phone_number')
         profile.address = profile_data.get('address')
@@ -481,7 +487,13 @@ class ClassroomViewSet(viewsets.ModelViewSet):
     
     def perform_create(self, serializer):
         from portal.views import log_audit_action
-        classroom = serializer.save(teacher=self.request.user)
+        # If admin is creating, teacher might be specified in validated_data
+        # If teacher is creating (which they shouldn't usually, but if they do), set them as advisor
+        if 'teacher' not in serializer.validated_data and self.request.user.role == 'teacher':
+            classroom = serializer.save(teacher=self.request.user)
+        else:
+            classroom = serializer.save()
+            
         log_audit_action(
             user=self.request.user,
             action='create',
@@ -861,6 +873,11 @@ class UserViewSet(viewsets.ModelViewSet):
                 first_name = row.get('First Name') or ''
                 last_name = row.get('Last Name') or ''
                 grade_level = row.get('Grade Level') or ''
+                
+                # Auto-fill grade level if teacher is importing and it's missing
+                if advisory_classroom and not grade_level:
+                    grade_level = advisory_classroom.grade_level or ''
+                
                 sex = row.get('Sex') or row.get('sex') or ''
                 
                 # Normalize sex
