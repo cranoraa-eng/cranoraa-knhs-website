@@ -53,15 +53,22 @@ class UserSerializer(serializers.ModelSerializer):
     profile = ProfileSerializer(required=False)
     full_name = serializers.SerializerMethodField()
     is_online = serializers.BooleanField(read_only=True)
+    is_adviser = serializers.SerializerMethodField()
 
     class Meta:
         model = User
         fields = ['id', 'email', 'username', 'first_name', 'last_name', 'full_name',
                   'role', 'is_verified', 'is_approved', 'is_online', 'profile', 
-                  'must_change_password', 'temp_password_storage', 'account_status']
+                  'must_change_password', 'temp_password_storage', 'account_status',
+                  'is_adviser']
 
     def get_full_name(self, obj):
         return full_name(obj)
+
+    def get_is_adviser(self, obj):
+        if obj.role != 'teacher':
+            return False
+        return Classroom.objects.filter(teacher=obj).exists()
 
     def update(self, instance, validated_data):
         profile_data = validated_data.pop('profile', None)

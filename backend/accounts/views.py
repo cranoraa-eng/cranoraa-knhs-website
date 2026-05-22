@@ -458,7 +458,13 @@ class ClassroomViewSet(viewsets.ModelViewSet):
     
     def perform_create(self, serializer):
         from portal.views import log_audit_action
-        classroom = serializer.save(teacher=self.request.user)
+        # If admin is creating, teacher might be specified in validated_data
+        # If teacher is creating, they should be assigned as the teacher (adviser)
+        if 'teacher' not in serializer.validated_data and self.request.user.role == 'teacher':
+            classroom = serializer.save(teacher=self.request.user)
+        else:
+            classroom = serializer.save()
+            
         log_audit_action(
             user=self.request.user,
             action='create',
