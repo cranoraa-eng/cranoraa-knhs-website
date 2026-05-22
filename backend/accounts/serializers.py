@@ -114,6 +114,7 @@ class StudentClassEnrollmentSerializer(serializers.ModelSerializer):
     student_email = serializers.CharField(source='student.email', read_only=True)
     student_sex = serializers.CharField(source='student.profile.sex', read_only=True)
     classroom_name = serializers.CharField(source='classroom.name', read_only=True)
+    classroom_advisor = serializers.SerializerMethodField()
     general_average = serializers.SerializerMethodField()
     transmuted_average = serializers.SerializerMethodField()
     descriptive_equivalent = serializers.SerializerMethodField()
@@ -122,14 +123,15 @@ class StudentClassEnrollmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = StudentClassEnrollment
         fields = ['id', 'student', 'student_name', 'student_email', 'student_sex', 'classroom',
-                  'classroom_name', 'q1', 'q2', 'q3', 'q4', 'gpa',
+                  'classroom_name', 'classroom_advisor', 'q1', 'q2', 'q3', 'q4', 'gpa',
                   'general_average', 'transmuted_average', 'transmuted_quarters',
                   'descriptive_equivalent', 'enrolled_at', 'updated_at']
-        read_only_fields = ['student', 'classroom', 'classroom_name',
+        read_only_fields = ['student', 'classroom', 'classroom_name', 'classroom_advisor',
                             'general_average', 'transmuted_average',
                             'transmuted_quarters', 'descriptive_equivalent']
 
     def get_student_name(self, obj): return full_name(obj.student)
+    def get_classroom_advisor(self, obj): return full_name(obj.classroom.teacher) if obj.classroom.teacher else 'No Advisor'
     def get_general_average(self, obj): return obj.calculate_general_average()
     def get_transmuted_average(self, obj): return obj.calculate_transmuted_average()
     def get_transmuted_quarters(self, obj): return obj.get_transmuted_quarters()
