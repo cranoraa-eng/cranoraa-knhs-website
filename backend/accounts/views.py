@@ -418,9 +418,11 @@ def teacher_dashboard_stats(request):
         from .models import StudentClassEnrollment, Grade, ClassroomSubject
         from django.db.models import Q
         
-        # Get classrooms where teacher is adviser OR has assigned subjects
+        # Get classrooms where teacher is adviser OR has assigned subjects AND the classroom has an advisor
         assigned_classrooms_ids = ClassroomSubject.objects.filter(teacher=user).values_list('classroom_id', flat=True)
-        classrooms = Classroom.objects.filter(Q(teacher=user) | Q(id__in=assigned_classrooms_ids)).distinct()
+        classrooms = Classroom.objects.filter(
+            Q(teacher=user) | (Q(id__in=assigned_classrooms_ids) & Q(teacher__isnull=False))
+        ).distinct()
         total_classes = classrooms.count()
         
         # Get total students across those classrooms
@@ -459,10 +461,13 @@ class ClassroomViewSet(viewsets.ModelViewSet):
                 return Classroom.objects.all()
             
             from django.db.models import Q
-            # Teachers see classrooms where they are the adviser OR have assigned subjects
+            # Teachers see classrooms where they are the adviser OR have assigned subjects AND the classroom has an advisor
             if user.role == 'teacher':
                 assigned_classrooms = ClassroomSubject.objects.filter(teacher=user).values_list('classroom_id', flat=True)
-                return Classroom.objects.filter(Q(teacher=user) | Q(id__in=assigned_classrooms)).distinct()
+                # Restricted: Can only see their advisory classroom OR classrooms with assigned advisors where they teach subjects
+                return Classroom.objects.filter(
+                    Q(teacher=user) | (Q(id__in=assigned_classrooms) & Q(teacher__isnull=False))
+                ).distinct()
             
             # Students see classrooms they are enrolled in
             if user.role == 'student':
@@ -542,7 +547,10 @@ class StudentClassEnrollmentViewSet(viewsets.ModelViewSet):
         elif user.role == 'teacher':
             from django.db.models import Q
             assigned_classrooms = ClassroomSubject.objects.filter(teacher=user).values_list('classroom_id', flat=True)
-            queryset = queryset.filter(Q(classroom__teacher=user) | Q(classroom_id__in=assigned_classrooms))
+            # Sync: Only see enrollments in advisory classroom OR classes with advisors where they teach subjects
+            queryset = queryset.filter(
+                Q(classroom__teacher=user) | (Q(classroom_id__in=assigned_classrooms) & Q(classroom__teacher__isnull=False))
+            )
 
         if classroom_id:
             queryset = queryset.filter(classroom_id=classroom_id)
@@ -645,21 +653,16 @@ class UserViewSet(viewsets.ModelViewSet):
                         pass
                 return queryset.filter(id=user.id)
             
-            # Teachers can see students in their advisory classroom or classrooms they teach subjects in
+            # Teachers can ONLY manage their own advisory classroom
             if user.role == 'teacher':
-                from django.db.models import Q
-                assigned_classrooms = ClassroomSubject.objects.filter(teacher=user).values_list('classroom_id', flat=True)
-                # Teachers can see students in their advisory classroom OR students in classrooms where they teach subjects
-                student_enrollments = StudentClassEnrollment.objects.filter(
-                    Q(classroom__teacher=user) | Q(classroom_id__in=assigned_classrooms)
-                ).values_list('student_id', flat=True)
-                
                 if role == 'student':
-                    return queryset.filter(id__in=student_enrollments)
+                    # Only return students in their advisory classroom
+                    return queryset.filter(enrollments__classroom__teacher=user).distinct()
                 elif role == 'teacher':
                     return queryset.filter(id=user.id)
                 
-                return queryset.filter(Q(id__in=student_enrollments) | Q(id=user.id))
+                # Default: Return advisory students + self
+                return queryset.filter(Q(enrollments__classroom__teacher=user) | Q(id=user.id)).distinct()
             
             # Admins can see all users
             if role:
@@ -1534,11 +1537,14 @@ class AttendanceViewSet(viewsets.ModelViewSet):
             profile = getattr(user, 'profile', None)
             linked_student_ids = profile.linked_students.values_list('id', flat=True) if profile else []
             queryset = queryset.filter(student_id__in=linked_student_ids)
-        # Teachers can only see attendance for their classrooms
+        # Teachers can only see attendance for their classrooms (advisory or assigned with advisor)
         elif user.role == 'teacher':
             from django.db.models import Q
             assigned_classrooms = ClassroomSubject.objects.filter(teacher=user).values_list('classroom_id', flat=True)
-            queryset = queryset.filter(Q(classroom__teacher=user) | Q(classroom_id__in=assigned_classrooms))
+            queryset = queryset.filter(
+                Q(classroom__teacher=user) | 
+                (Q(classroom_id__in=assigned_classrooms) & Q(classroom__teacher__isnull=False))
+            )
         
         if classroom_id:
             queryset = queryset.filter(classroom_id=classroom_id)
@@ -1642,10 +1648,15 @@ class LearningMaterialViewSet(viewsets.ModelViewSet):
             student_enrollments = StudentClassEnrollment.objects.filter(student=user)
             student_classrooms = [e.classroom for e in student_enrollments]
             queryset = queryset.filter(Q(classroom__in=student_classrooms) | Q(classroom__isnull=True))
-        # Teachers see materials for their classrooms + general materials
+        # Teachers see materials for their advisory classrooms + general materials 
+        # + classrooms with assigned advisors where they teach
         elif user.role == 'teacher':
-            teacher_classrooms = Classroom.objects.filter(teacher=user)
-            queryset = queryset.filter(Q(classroom__in=teacher_classrooms) | Q(classroom__isnull=True))
+            assigned_classrooms = ClassroomSubject.objects.filter(teacher=user).values_list('classroom_id', flat=True)
+            queryset = queryset.filter(
+                Q(classroom__teacher=user) | 
+                (Q(classroom_id__in=assigned_classrooms) & Q(classroom__teacher__isnull=False)) | 
+                Q(classroom__isnull=True)
+            )
         # Admins see everything
         
         if classroom_id:
@@ -1708,8 +1719,10 @@ class ClassroomSubjectViewSet(viewsets.ModelViewSet):
         
         # Filter based on user role
         if user.role == 'teacher':
-            # Teachers can only see subjects assigned to them
-            queryset = queryset.filter(teacher=user)
+            # Teachers can only see subjects assigned to them in classrooms with advisors (unless they are the advisor)
+            queryset = queryset.filter(teacher=user).filter(
+                Q(classroom__teacher=user) | Q(classroom__teacher__isnull=False)
+            )
         elif user.role == 'student':
             # Students can see subjects for their enrolled classrooms
             enrolled_classrooms = StudentClassEnrollment.objects.filter(student=user).values_list('classroom_id', flat=True)
@@ -1846,9 +1859,13 @@ class FeeViewSet(viewsets.ModelViewSet):
         # RBAC: Students can only see their own fees
         if user.role == 'student':
             queryset = queryset.filter(student=user)
-        # Teachers can only see fees for their classrooms
+        # Teachers can only see fees for their classrooms (advisory or assigned with advisor)
         elif user.role == 'teacher':
-            teacher_classrooms = Classroom.objects.filter(teacher=user)
+            from django.db.models import Q
+            assigned_classrooms = ClassroomSubject.objects.filter(teacher=user).values_list('classroom_id', flat=True)
+            teacher_classrooms = Classroom.objects.filter(
+                Q(teacher=user) | (Q(id__in=assigned_classrooms) & Q(teacher__isnull=False))
+            )
             student_enrollments = StudentClassEnrollment.objects.filter(classroom__in=teacher_classrooms)
             students = [e.student for e in student_enrollments]
             queryset = queryset.filter(student__in=students)
@@ -2825,8 +2842,12 @@ class GradeViewSet(viewsets.ModelViewSet):
         elif user.role == 'teacher':
             from django.db.models import Q
             assigned_classrooms = ClassroomSubject.objects.filter(teacher=user).values_list('classroom_id', flat=True)
-            # Teachers can see grades in classrooms they advise OR subjects they teach
-            return queryset.filter(Q(classroom__teacher=user) | Q(classroom_id__in=assigned_classrooms) | Q(teacher=user)).distinct()
+            # Sync: Only see grades in advisory classroom OR classes with advisors where they teach subjects OR grades they created
+            return queryset.filter(
+                Q(classroom__teacher=user) | 
+                (Q(classroom_id__in=assigned_classrooms) & Q(classroom__teacher__isnull=False)) | 
+                Q(teacher=user)
+            ).distinct()
         elif user.role == 'student':
             return queryset.filter(student=user)
         elif user.role == 'parent':
@@ -3142,8 +3163,14 @@ class AssignmentViewSet(viewsets.ModelViewSet):
             enrolled_classrooms = StudentClassEnrollment.objects.filter(student_id__in=linked_student_ids).values_list('classroom_id', flat=True)
             return queryset.filter(classroom_id__in=enrolled_classrooms)
         elif user.role == 'teacher':
-            # Teachers see assignments they created or for their classrooms
-            return queryset.filter(Q(teacher=user) | Q(classroom__teacher=user)).distinct()
+            from django.db.models import Q
+            # Teachers see assignments they created OR for their advisory classroom 
+            # OR for classrooms with assigned advisors where they teach
+            return queryset.filter(
+                Q(teacher=user) | 
+                Q(classroom__teacher=user) | 
+                (Q(classroom__teacher__isnull=False) & Q(classroom__classroom_subjects__teacher=user))
+            ).distinct()
             
         return queryset
 
@@ -3237,6 +3264,7 @@ class GradeReportViewSet(viewsets.ModelViewSet):
         if user.role == 'admin':
             return queryset
         elif user.role == 'teacher':
+            # Teachers only see reports for their advisory classroom
             return queryset.filter(classroom__teacher=user)
         elif user.role == 'student':
             return queryset.filter(student=user)
