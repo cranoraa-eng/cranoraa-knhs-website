@@ -145,6 +145,7 @@ const GradeManagement = () => {
           id: g.student,
           name: g.student_name,
           email: g.student_email,
+          sex: g.student_sex, // Added sex field
           quarters: {},
         };
       }
