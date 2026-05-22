@@ -108,6 +108,18 @@ class ClassroomSerializer(serializers.ModelSerializer):
     def get_student_count(self, obj): return obj.enrollments.count()
     def get_average_gpa(self, obj): return obj.get_average_gpa()
 
+    def validate_teacher(self, value):
+        if value:
+            # Check if this teacher is already assigned to a DIFFERENT classroom
+            existing = Classroom.objects.filter(teacher=value)
+            if self.instance:
+                existing = existing.exclude(id=self.instance.id)
+            
+            if existing.exists():
+                other_class = existing.first()
+                raise serializers.ValidationError(f"This teacher is already the advisor for {other_class.name}.")
+        return value
+
 
 class StudentClassEnrollmentSerializer(serializers.ModelSerializer):
     student_name = serializers.SerializerMethodField()

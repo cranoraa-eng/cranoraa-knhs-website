@@ -47,9 +47,11 @@ const ClassManagement = () => {
 
   const openEdit = (cls) => {
     setEditingClass(cls);
-    // Try to detect grade level from the class name if not stored separately
-    const detected = GRADE_LEVELS.find(l => cls.name.toLowerCase().includes(l.toLowerCase())) || '';
-    setFormData({ name: cls.name, teacher: cls.teacher, grade_level: detected });
+    setFormData({ 
+      name: cls.name, 
+      teacher: cls.teacher, 
+      grade_level: cls.grade_level || '' 
+    });
     setShowModal(true);
   };
 
@@ -80,7 +82,11 @@ const ClassManagement = () => {
     setSaving(true);
     try {
       // Send only the fields the backend expects
-      const payload = { name: formData.name.trim(), teacher: formData.teacher };
+      const payload = { 
+        name: formData.name.trim(), 
+        teacher: formData.teacher,
+        grade_level: formData.grade_level
+      };
       if (editingClass) {
         await api.patch(`/classrooms/${editingClass.id}/`, payload);
         toast.success('Class updated');
@@ -105,9 +111,9 @@ const ClassManagement = () => {
     return matchSearch && matchLevel;
   });
 
-  // Group by grade level extracted from class name, sorted 7→12
+  // Group by grade level field, sorted 7→12
   const grouped = filtered.reduce((acc, cls) => {
-    const level = GRADE_LEVELS.find(l => cls.name.toLowerCase().includes(l.toLowerCase())) || 'Other';
+    const level = cls.grade_level || GRADE_LEVELS.find(l => cls.name.toLowerCase().includes(l.toLowerCase())) || 'Other';
     if (!acc[level]) acc[level] = [];
     acc[level].push(cls);
     return acc;
@@ -313,11 +319,18 @@ const ClassManagement = () => {
                   required
                 >
                   <option value="">Select a teacher</option>
-                  {teachers.map(t => (
-                    <option key={t.id} value={t.id}>
-                      {t.first_name && t.last_name ? `${t.first_name} ${t.last_name}` : t.username} ({t.email})
-                    </option>
-                  ))}
+                  {teachers.map(t => {
+                    // Check if this teacher is already an advisor for ANOTHER classroom
+                    const otherClass = classes.find(c => c.teacher === t.id && c.id !== editingClass?.id);
+                    const isAssigned = !!otherClass;
+                    
+                    return (
+                      <option key={t.id} value={t.id} disabled={isAssigned}>
+                        {t.first_name && t.last_name ? `${t.first_name} ${t.last_name}` : t.username} 
+                        {isAssigned ? ` (Already advisor for ${otherClass.name})` : ` (${t.email})`}
+                      </option>
+                    );
+                  })}
                 </select>
               </div>
               <div className="flex gap-3 pt-2">
