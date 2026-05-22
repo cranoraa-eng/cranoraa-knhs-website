@@ -9,12 +9,6 @@ import {
   PieChart, Pie, Cell, BarChart, Bar, Legend
 } from 'recharts';
 
-const renderCustomBarLabel = ({ x, y, width, value }) => (
-  <text x={x + width / 2} y={y - 6} fill="#64748b" textAnchor="middle" className="text-[8px] font-black">
-    {value}
-  </text>
-);
-
 const STATUS_CONFIG = {
   present: { label: 'Present', short: 'P', active: 'bg-green-500 text-white border-green-500',   inactive: 'bg-white text-gray-500 border-gray-300 hover:border-green-400 hover:text-green-600' },
   absent:  { label: 'Absent',  short: 'A', active: 'bg-red-500 text-white border-red-500',      inactive: 'bg-white text-gray-500 border-gray-300 hover:border-red-400 hover:text-red-600' },

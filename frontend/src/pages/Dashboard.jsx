@@ -87,19 +87,6 @@ const StatCard = ({ label, value, sub, icon, color = 'violet', onClick, badge })
 
 const COLORS = ['#8b5cf6', '#10b981', '#3b82f6', '#f59e0b', '#ef4444'];
 
-const renderCustomPieLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, name }) => {
-  const RADIAN = Math.PI / 180;
-  const radius = outerRadius + 15;
-  const x = cx + radius * Math.cos(-midAngle * RADIAN);
-  const y = cy + radius * Math.sin(-midAngle * RADIAN);
-
-  return (
-    <text x={x} y={y} fill="#64748b" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central" className="text-[7px] font-black uppercase tracking-tighter">
-      {`${name} (${(percent * 100).toFixed(0)}%)`}
-    </text>
-  );
-};
-
 const renderCustomBarLabel = ({ x, y, width, value }) => (
   <text x={x + width / 2} y={y - 6} fill="#64748b" textAnchor="middle" className="text-[8px] font-black">
     {value}%
@@ -257,8 +244,6 @@ const AdminView = () => {
                   outerRadius={80}
                   paddingAngle={5}
                   dataKey="value"
-                  labelLine={false}
-                  label={renderCustomPieLabel}
                 >
                   {gradeData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} strokeWidth={0} />
@@ -270,7 +255,18 @@ const AdminView = () => {
                   align="center"
                   iconType="rect"
                   iconSize={6}
-                  formatter={(value) => <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest">{value}</span>}
+                  layout="vertical"
+                  wrapperStyle={{ paddingTop: '20px' }}
+                  formatter={(value) => {
+                    const item = gradeData.find(d => d.name === value);
+                    const total = gradeData.reduce((sum, d) => sum + d.value, 0);
+                    const percentage = total > 0 ? ((item.value / total) * 100).toFixed(1) : 0;
+                    return (
+                      <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest">
+                        {value}: {item.value} ({percentage}%)
+                      </span>
+                    );
+                  }}
                 />
               </PieChart>
             </ResponsiveContainer>

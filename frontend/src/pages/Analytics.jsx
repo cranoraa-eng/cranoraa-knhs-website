@@ -8,19 +8,6 @@ import { Spinner } from '../components/Spinner';
 
 const COLORS = ['#8b5cf6', '#10b981', '#3b82f6', '#f59e0b', '#ef4444'];
 
-const renderCustomPieLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, name }) => {
-  const RADIAN = Math.PI / 180;
-  const radius = outerRadius + 20;
-  const x = cx + radius * Math.cos(-midAngle * RADIAN);
-  const y = cy + radius * Math.sin(-midAngle * RADIAN);
-
-  return (
-    <text x={x} y={y} fill="#64748b" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central" className="text-[8px] font-black uppercase tracking-tighter">
-      {`${name} (${(percent * 100).toFixed(0)}%)`}
-    </text>
-  );
-};
-
 const renderCustomBarLabel = ({ x, y, width, value }) => (
   <text x={x + width / 2} y={y - 6} fill="#64748b" textAnchor="middle" className="text-[8px] font-black">
     {value}%
@@ -68,6 +55,7 @@ const Analytics = () => {
   ];
   const subjectStats = data?.grades?.subject_stats || [];
   const userTrends = data?.dashboard?.charts?.active_users_trends || [];
+  const totalGrades = gradeDistribution.reduce((sum, item) => sum + item.value, 0);
 
   return (
     <div className="space-y-4 pb-8 animate-fade-in max-w-full overflow-hidden">
@@ -150,8 +138,6 @@ const Analytics = () => {
                   outerRadius={85}
                   paddingAngle={8}
                   dataKey="value"
-                  labelLine={false}
-                  label={renderCustomPieLabel}
                 >
                   {gradeDistribution.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} strokeWidth={0} />
@@ -162,8 +148,18 @@ const Analytics = () => {
                   verticalAlign="bottom" 
                   align="center"
                   iconType="rect"
-                  iconSize={8}
-                  formatter={(value) => <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest">{value}</span>}
+                  iconSize={6}
+                  layout="vertical"
+                  wrapperStyle={{ paddingTop: '20px' }}
+                  formatter={(value) => {
+                    const item = gradeDistribution.find(d => d.name === value);
+                    const percentage = totalGrades > 0 ? ((item.value / totalGrades) * 100).toFixed(1) : 0;
+                    return (
+                      <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest">
+                        {value}: {item.value} ({percentage}%)
+                      </span>
+                    );
+                  }}
                 />
               </PieChart>
             </ResponsiveContainer>
