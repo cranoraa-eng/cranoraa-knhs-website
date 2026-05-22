@@ -3383,9 +3383,12 @@ class ReportedMessageViewSet(viewsets.ModelViewSet):
         if not message:
              return Response({'error': 'Message already deleted'}, status=404)
         
+        sender = message.sender
+        room_name = message.room.name if message.room else "a chat room"
         room_id = message.room_id
         message_id = message.id
         room = message.room
+        note = request.data.get('note', 'Message deleted by moderator.')
         
         # Broadcast before deletion
         from channels.layers import get_channel_layer
@@ -3410,8 +3413,24 @@ class ReportedMessageViewSet(viewsets.ModelViewSet):
             
         message.delete()
         
+        # Notify the sender
+        Notification.objects.create(
+            recipient=sender,
+            notification_type='system',
+            title='Message Removed',
+            message=f'Your message in "{room_name}" was removed by a moderator. Reason: {note}'
+        )
+        
+        # Notify the reporter
+        Notification.objects.create(
+            recipient=report.reporter,
+            notification_type='system',
+            title='Report Resolved',
+            message=f'Your report regarding a message has been resolved. The message was removed.'
+        )
+        
         report.status = 'resolved'
-        report.moderator_note = request.data.get('note', 'Message deleted by moderator.')
+        report.moderator_note = note
         report.resolved_at = timezone.now()
         report.save()
         
@@ -3422,8 +3441,18 @@ class ReportedMessageViewSet(viewsets.ModelViewSet):
         if request.user.role != 'admin':
             return Response({'error': 'Unauthorized'}, status=403)
         report = self.get_object()
+        note = request.data.get('note', 'Report dismissed by moderator.')
+        
+        # Notify the reporter
+        Notification.objects.create(
+            recipient=report.reporter,
+            notification_type='system',
+            title='Report Dismissed',
+            message=f'Your report has been reviewed and dismissed. No action was taken at this time.'
+        )
+        
         report.status = 'dismissed'
-        report.moderator_note = request.data.get('note', 'Report dismissed by moderator.')
+        report.moderator_note = note
         report.resolved_at = timezone.now()
         report.save()
         return Response({'status': 'Report dismissed'})
@@ -3434,6 +3463,7 @@ class ReportedMessageViewSet(viewsets.ModelViewSet):
             return Response({'error': 'Unauthorized'}, status=403)
         report = self.get_object()
         user_to_suspend = report.message.sender
+        note = request.data.get('note', f'User {user_to_suspend.username} suspended.')
         
         # Suspend user
         user_to_suspend.account_status = 'suspended'
@@ -3444,8 +3474,24 @@ class ReportedMessageViewSet(viewsets.ModelViewSet):
             user_to_suspend.profile.is_suspended = True
             user_to_suspend.profile.save()
             
+        # Notify the suspended user (they might see this before being logged out or on next attempt)
+        Notification.objects.create(
+            recipient=user_to_suspend,
+            notification_type='system',
+            title='Account Suspended',
+            message=f'Your account has been suspended by a moderator. Reason: {note}'
+        )
+
+        # Notify the reporter
+        Notification.objects.create(
+            recipient=report.reporter,
+            notification_type='system',
+            title='Report Resolved',
+            message=f'Action has been taken against the user you reported. They have been suspended.'
+        )
+            
         report.status = 'resolved'
-        report.moderator_note = request.data.get('note', f'User {user_to_suspend.username} suspended.')
+        report.moderator_note = note
         report.resolved_at = timezone.now()
         report.save()
         
@@ -3458,13 +3504,30 @@ class ReportedMessageViewSet(viewsets.ModelViewSet):
         report = self.get_object()
         user_to_mute = report.message.sender
         hours = int(request.data.get('hours', 24))
+        note = request.data.get('note', f'User {user_to_mute.username} muted for {hours} hours.')
         
         if hasattr(user_to_mute, 'profile'):
             user_to_mute.profile.mute_until = timezone.now() + timedelta(hours=hours)
             user_to_mute.profile.save()
             
+        # Notify the muted user
+        Notification.objects.create(
+            recipient=user_to_mute,
+            notification_type='system',
+            title='Messaging Muted',
+            message=f'Your messaging privileges have been suspended for {hours} hours. Reason: {note}'
+        )
+
+        # Notify the reporter
+        Notification.objects.create(
+            recipient=report.reporter,
+            notification_type='system',
+            title='Report Resolved',
+            message=f'Action has been taken against the user you reported. They have been muted for {hours} hours.'
+        )
+            
         report.status = 'resolved'
-        report.moderator_note = request.data.get('note', f'User {user_to_mute.username} muted for {hours} hours.')
+        report.moderator_note = note
         report.resolved_at = timezone.now()
         report.save()
         
