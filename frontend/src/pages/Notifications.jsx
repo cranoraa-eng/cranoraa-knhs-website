@@ -170,7 +170,6 @@ const Notifications = () => {
                 <option value="announcement">Announcements</option>
                 <option value="grade">Grades</option>
                 <option value="attendance">Attendance</option>
-                <option value="fee">Fees</option>
                 <option value="system">System</option>
               </select>
 
