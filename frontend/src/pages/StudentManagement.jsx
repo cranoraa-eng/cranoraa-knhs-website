@@ -250,17 +250,27 @@ const StudentManagement = () => {
   };
 
   const handleExportExcel = () => {
-    const data = students.map(s => ({
-      'First Name': s.first_name,
-      'Last Name': s.last_name,
-      'Student ID': s.profile?.registration_number || s.username,
-      'Grade Level': s.profile?.grade_level || 'N/A',
-      'Sex': s.profile?.sex || 'N/A',
-      'Classroom': s.profile?.classroom_name || 'N/A',
-      'Email': s.email || '',
-      'Temp Password': s.must_change_password ? (s.temp_password_storage || 'Pending') : 'Changed',
-      'Status': s.account_status
-    }));
+    const data = students.map(s => {
+      const row = {
+        'First Name': s.first_name,
+        'Last Name': s.last_name,
+        'Student ID': s.profile?.registration_number || s.username,
+        'Sex': s.profile?.sex || 'N/A',
+        'Classroom': s.profile?.classroom_name || 'N/A',
+        'Email': s.email || '',
+        'Temp Password': s.must_change_password ? (s.temp_password_storage || 'Pending') : 'Changed',
+        'Status': s.account_status
+      };
+
+      // Only include Grade Level for admins
+      if (user?.role === 'admin') {
+        return {
+          ...row,
+          'Grade Level': s.profile?.grade_level || 'N/A'
+        };
+      }
+      return row;
+    });
 
     const ws = XLSX.utils.json_to_sheet(data);
     const wb = XLSX.utils.book_new();
@@ -277,8 +287,14 @@ const StudentManagement = () => {
     doc.setTextColor(100);
     doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 28);
 
-    const headers = ['Name', 'LRN', 'Grade', 'Classroom', 'Status'];
-    const colWidths = [60, 40, 30, 40, 20];
+    const headers = user?.role === 'admin' 
+      ? ['Name', 'LRN', 'Grade', 'Classroom', 'Status']
+      : ['Name', 'LRN', 'Classroom', 'Status'];
+    
+    const colWidths = user?.role === 'admin'
+      ? [60, 40, 30, 40, 20]
+      : [70, 40, 50, 25];
+    
     let y = 40;
 
     // Header background
@@ -312,7 +328,11 @@ const StudentManagement = () => {
       let cx = 14;
       doc.text(name.substring(0, 35), cx, y); cx += colWidths[0];
       doc.text(String(lrn), cx, y); cx += colWidths[1];
-      doc.text(String(grade), cx, y); cx += colWidths[2];
+      
+      if (user?.role === 'admin') {
+        doc.text(String(grade), cx, y); cx += colWidths[2];
+      }
+      
       doc.text(String(classroom).substring(0, 20), cx, y); cx += colWidths[3];
       doc.text(String(status), cx, y);
 
@@ -416,9 +436,9 @@ const StudentManagement = () => {
               onClick={() => {
                 const headers = [['Student ID', 'First Name', 'Last Name', 'Grade Level', 'Sex', 'Email']];
                 const sampleData = [
-                  ['128150150092', 'Arc', 'Capisen', user?.role === 'teacher' ? '' : 'Grade 12', 'Male', ''],
-                  ['128150150093', 'Arcc', 'Capisenq', user?.role === 'teacher' ? '' : 'Grade 12', 'Female', ''],
-                  ['128150150094', 'Arcy', 'Capisenw', user?.role === 'teacher' ? '' : 'Grade 12', 'Male', ''],
+                  ['128150150092', 'Arc', 'Capisen', 'Grade 12', 'Male', ''],
+                  ['128150150093', 'Arcc', 'Capisenq', 'Grade 12', 'Female', ''],
+                  ['128150150094', 'Arcy', 'Capisenw', 'Grade 12', 'Male', ''],
                 ];
                 
                 const ws = XLSX.utils.aoa_to_sheet([...headers, ...sampleData]);
@@ -474,7 +494,7 @@ const StudentManagement = () => {
                   </li>
                   <li className="flex gap-2 md:gap-3">
                     <span className="text-indigo-400 font-black text-[10px] md:text-xs mt-0.5">03</span>
-                    <p className="text-[9px] md:text-[11px] font-bold leading-relaxed text-gray-300">Grade Level: <span className="text-white">Grade 7 to Grade 12</span>. {user?.role === 'teacher' && <span className="text-indigo-300 italic">(Optional for you)</span>}</p>
+                    <p className="text-[9px] md:text-[11px] font-bold leading-relaxed text-gray-300">Grade Level: <span className="text-white">Grade 7 to Grade 12</span>.</p>
                   </li>
                   <li className="flex gap-2 md:gap-3">
                     <span className="text-indigo-400 font-black text-[10px] md:text-xs mt-0.5">04</span>
@@ -759,11 +779,6 @@ const StudentManagement = () => {
           <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden">
             <div className="p-6 bg-purple-600 text-white">
               <h2 className="text-xl font-black uppercase tracking-tight">Create Student Account</h2>
-              {user?.role === 'teacher' && (
-                <p className="text-[10px] font-bold text-purple-200 mt-1 uppercase tracking-widest">
-                  Auto-enrolling to your advisory classroom
-                </p>
-              )}
             </div>
             <form onSubmit={handleAddStudent} className="p-6 space-y-4">
               <div>
@@ -799,21 +814,19 @@ const StudentManagement = () => {
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
-                {user?.role === 'admin' && (
-                  <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Grade Level</label>
-                    <select 
-                      value={newStudent.grade_level}
-                      onChange={e => setNewStudent({...newStudent, grade_level: e.target.value})}
-                      className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold focus:ring-2 focus:ring-purple-500 outline-none"
-                      required
-                    >
-                      <option value="">Select Grade</option>
-                      {GRADE_ORDER.map(g => <option key={g} value={g}>{g}</option>)}
-                    </select>
-                  </div>
-                )}
-                <div className={user?.role === 'admin' ? '' : 'col-span-2'}>
+                <div>
+                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Grade Level</label>
+                  <select 
+                    value={newStudent.grade_level}
+                    onChange={e => setNewStudent({...newStudent, grade_level: e.target.value})}
+                    className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold focus:ring-2 focus:ring-purple-500 outline-none"
+                    required
+                  >
+                    <option value="">Select Grade</option>
+                    {GRADE_ORDER.map(g => <option key={g} value={g}>{g}</option>)}
+                  </select>
+                </div>
+                <div>
                   <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Sex</label>
                   <select 
                     value={newStudent.sex}
@@ -865,11 +878,6 @@ const StudentManagement = () => {
               <svg className="w-10 h-10 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
             </div>
             <h2 className="text-2xl font-black text-gray-800 uppercase tracking-tight mb-2">Bulk Import Students</h2>
-            {user?.role === 'teacher' && (
-              <p className="text-[10px] font-black text-indigo-500 mb-4 uppercase tracking-widest bg-indigo-50 py-1 rounded-lg">
-                Students will be auto-enrolled to your advisory classroom
-              </p>
-            )}
             <p className="text-sm text-gray-500 font-medium mb-8">Upload an Excel file (.xlsx, .xls) with headers: <br/><code className="bg-gray-100 px-2 py-1 rounded text-xs">Student ID, First Name, Last Name, Grade Level, Sex, Email</code></p>
             
             <input 

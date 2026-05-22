@@ -124,16 +124,7 @@ class Profile(models.Model):
 class Classroom(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True, null=True)
-    grade_level = models.CharField(max_length=20, blank=True, null=True, help_text="Academic grade level for this classroom (e.g., Grade 7)")
-    teacher = models.OneToOneField(
-        User, 
-        on_delete=models.SET_NULL, 
-        null=True, 
-        blank=True,
-        related_name='teaching_classroom',
-        limit_choices_to={'role': 'teacher'},
-        help_text="The advisory teacher for this classroom. Each teacher can only have one advisory classroom."
-    )
+    teacher = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='teaching_classrooms')
     
     # Academic Context
     academic_year = models.ForeignKey('portal.AcademicYear', on_delete=models.SET_NULL, null=True, blank=True, related_name='classrooms')

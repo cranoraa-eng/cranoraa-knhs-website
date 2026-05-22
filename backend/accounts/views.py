@@ -161,7 +161,7 @@ def force_password_change_view(request):
 
 @csrf_exempt
 @api_view(['POST'])
-@permission_classes([IsAdminOrTeacher])
+@permission_classes([IsAdminUser])
 def admin_create_user_view(request):
     username = request.data.get('username') # For students, this will be their Student ID
     email = request.data.get('email')
@@ -173,17 +173,6 @@ def admin_create_user_view(request):
     last_name = request.data.get('last_name', '')
     profile_data = request.data.get('profile', {})
     
-    # Permission check for teachers
-    advisory_classroom = None
-    if request.user.role == 'teacher':
-        if role != 'student':
-            return Response({'error': 'Teachers can only create student accounts.'}, status=status.HTTP_403_FORBIDDEN)
-        
-        try:
-            advisory_classroom = Classroom.objects.get(teacher=request.user)
-        except Classroom.DoesNotExist:
-            return Response({'error': 'You must be assigned as an advisory teacher to create students.'}, status=status.HTTP_403_FORBIDDEN)
-
     # Validation
     if not username:
         return Response({'error': 'Username/Student ID is required'}, status=status.HTTP_400_BAD_REQUEST)
@@ -211,7 +200,7 @@ def admin_create_user_view(request):
         )
         user.role = role
         user.is_verified = True if email else False
-        user.is_approved = True # Admin/Teacher-created accounts are auto-approved
+        user.is_approved = True # Admin-created accounts are auto-approved
         user.must_change_password = True # Force password change on first login
         user.temp_password_storage = password # Store temporary password
         user.account_status = 'active'
@@ -225,13 +214,7 @@ def admin_create_user_view(request):
         profile.lrn = profile_data.get('lrn', username if role == 'student' else None)
         profile.title = profile_data.get('title')
         profile.sex = profile_data.get('sex')
-        
-        # Auto-fill grade level for teachers if missing
-        assigned_grade = profile_data.get('grade_level')
-        if not assigned_grade and advisory_classroom:
-            assigned_grade = advisory_classroom.grade_level
-        
-        profile.grade_level = assigned_grade
+        profile.grade_level = profile_data.get('grade_level')
         profile.employee_id = profile_data.get('employee_id')
         profile.phone_number = profile_data.get('phone_number')
         profile.address = profile_data.get('address')
@@ -245,13 +228,6 @@ def admin_create_user_view(request):
         
         profile.save()
 
-        # Auto-enroll student if created by teacher
-        if advisory_classroom:
-            StudentClassEnrollment.objects.get_or_create(
-                student=user,
-                classroom=advisory_classroom
-            )
-
         # Log creation
         from portal.views import log_audit_action
         log_audit_action(
@@ -260,7 +236,7 @@ def admin_create_user_view(request):
             model_name='User',
             object_id=user.id,
             object_repr=str(user),
-            description=f'{request.user.role.capitalize()} created {role} account: {username}',
+            description=f'Admin created {role} account: {username}',
             request=request
         )
 
@@ -272,7 +248,7 @@ def admin_create_user_view(request):
         }, status=status.HTTP_201_CREATED)
 
     except Exception as e:
-        logger.error(f"User creation error: {str(e)}")
+        logger.error(f"Admin user creation error: {str(e)}")
         return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -424,11 +400,9 @@ def teacher_dashboard_stats(request):
         from .models import StudentClassEnrollment, Grade, ClassroomSubject
         from django.db.models import Q
         
-        # Get classrooms where teacher is adviser OR has assigned subjects AND the classroom has an advisor
+        # Get classrooms where teacher is adviser OR has assigned subjects
         assigned_classrooms_ids = ClassroomSubject.objects.filter(teacher=user).values_list('classroom_id', flat=True)
-        classrooms = Classroom.objects.filter(
-            Q(teacher=user) | (Q(id__in=assigned_classrooms_ids) & Q(teacher__isnull=False))
-        ).distinct()
+        classrooms = Classroom.objects.filter(Q(teacher=user) | Q(id__in=assigned_classrooms_ids)).distinct()
         total_classes = classrooms.count()
         
         # Get total students across those classrooms
@@ -467,13 +441,10 @@ class ClassroomViewSet(viewsets.ModelViewSet):
                 return Classroom.objects.all()
             
             from django.db.models import Q
-            # Teachers see classrooms where they are the adviser OR have assigned subjects AND the classroom has an advisor
+            # Teachers see classrooms where they are the adviser OR have assigned subjects
             if user.role == 'teacher':
                 assigned_classrooms = ClassroomSubject.objects.filter(teacher=user).values_list('classroom_id', flat=True)
-                # Restricted: Can only see their advisory classroom OR classrooms with assigned advisors where they teach subjects
-                return Classroom.objects.filter(
-                    Q(teacher=user) | (Q(id__in=assigned_classrooms) & Q(teacher__isnull=False))
-                ).distinct()
+                return Classroom.objects.filter(Q(teacher=user) | Q(id__in=assigned_classrooms)).distinct()
             
             # Students see classrooms they are enrolled in
             if user.role == 'student':
@@ -487,13 +458,7 @@ class ClassroomViewSet(viewsets.ModelViewSet):
     
     def perform_create(self, serializer):
         from portal.views import log_audit_action
-        # If admin is creating, teacher might be specified in validated_data
-        # If teacher is creating (which they shouldn't usually, but if they do), set them as advisor
-        if 'teacher' not in serializer.validated_data and self.request.user.role == 'teacher':
-            classroom = serializer.save(teacher=self.request.user)
-        else:
-            classroom = serializer.save()
-            
+        classroom = serializer.save(teacher=self.request.user)
         log_audit_action(
             user=self.request.user,
             action='create',
@@ -559,10 +524,7 @@ class StudentClassEnrollmentViewSet(viewsets.ModelViewSet):
         elif user.role == 'teacher':
             from django.db.models import Q
             assigned_classrooms = ClassroomSubject.objects.filter(teacher=user).values_list('classroom_id', flat=True)
-            # Sync: Only see enrollments in advisory classroom OR classes with advisors where they teach subjects
-            queryset = queryset.filter(
-                Q(classroom__teacher=user) | (Q(classroom_id__in=assigned_classrooms) & Q(classroom__teacher__isnull=False))
-            )
+            queryset = queryset.filter(Q(classroom__teacher=user) | Q(classroom_id__in=assigned_classrooms))
 
         if classroom_id:
             queryset = queryset.filter(classroom_id=classroom_id)
@@ -665,16 +627,14 @@ class UserViewSet(viewsets.ModelViewSet):
                         pass
                 return queryset.filter(id=user.id)
             
-            # Teachers can ONLY manage their own advisory classroom
+            # Teachers can see students and themselves
             if user.role == 'teacher':
-                if role == 'student':
-                    # Only return students in their advisory classroom
-                    return queryset.filter(enrollments__classroom__teacher=user).distinct()
-                elif role == 'teacher':
-                    return queryset.filter(id=user.id)
-                
-                # Default: Return advisory students + self
-                return queryset.filter(Q(enrollments__classroom__teacher=user) | Q(id=user.id)).distinct()
+                if role:
+                    if role == 'student':
+                        return queryset.filter(role='student')
+                    elif role == 'teacher':
+                        return queryset.filter(id=user.id)
+                return queryset.filter(role='student') | queryset.filter(id=user.id)
             
             # Admins can see all users
             if role:
@@ -685,17 +645,6 @@ class UserViewSet(viewsets.ModelViewSet):
             return User.objects.filter(id=self.request.user.id) if self.request.user.is_authenticated else User.objects.none()
 
     def perform_destroy(self, instance):
-        user = self.request.user
-        if user.role == 'teacher':
-            # Teachers can only delete students in their advisory classroom
-            is_advisory_student = StudentClassEnrollment.objects.filter(
-                student=instance,
-                classroom__teacher=user
-            ).exists()
-            if not is_advisory_student:
-                from rest_framework.exceptions import PermissionDenied
-                raise PermissionDenied("You can only delete students from your advisory classroom.")
-
         from portal.views import log_audit_action
         log_audit_action(
             user=self.request.user,
@@ -703,7 +652,7 @@ class UserViewSet(viewsets.ModelViewSet):
             model_name='User',
             object_id=instance.id,
             object_repr=str(instance),
-            description=f'{self.request.user.role.capitalize()} deleted user account: {instance.username}',
+            description=f'Admin deleted user account: {instance.email}',
             request=self.request
         )
         instance.delete()
@@ -757,22 +706,11 @@ class UserViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post'])
     def update_status(self, request, pk=None):
-        """Update user account status (admin and advisory teachers)"""
-        user_role = request.user.role
-        if user_role not in ['admin', 'teacher']:
+        """Update user account status (admin only)"""
+        if request.user.role != 'admin':
             return Response({'error': 'Unauthorized'}, status=403)
             
         user = self.get_object()
-        
-        if user_role == 'teacher':
-            # Teachers can only update status for students in their advisory classroom
-            is_advisory_student = StudentClassEnrollment.objects.filter(
-                student=user,
-                classroom__teacher=request.user
-            ).exists()
-            if not is_advisory_student:
-                return Response({'error': 'You can only update status for students in your advisory classroom.'}, status=403)
-
         status_val = request.data.get('status')
         if status_val not in [s[0] for s in User.STATUS_CHOICES]:
             return Response({'error': 'Invalid status'}, status=400)
@@ -784,22 +722,11 @@ class UserViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post'])
     def reset_password(self, request, pk=None):
-        """Manually reset a user's password (admin and advisory teachers)"""
-        user_role = request.user.role
-        if user_role not in ['admin', 'teacher']:
+        """Manually reset a user's password (admin only)"""
+        if request.user.role != 'admin':
             return Response({'error': 'Unauthorized'}, status=403)
             
         user = self.get_object()
-        
-        if user_role == 'teacher':
-            # Teachers can only reset password for students in their advisory classroom
-            is_advisory_student = StudentClassEnrollment.objects.filter(
-                student=user,
-                classroom__teacher=request.user
-            ).exists()
-            if not is_advisory_student:
-                return Response({'error': 'You can only reset passwords for students in your advisory classroom.'}, status=403)
-
         new_password = request.data.get('password')
         
         if not new_password:
@@ -818,17 +745,10 @@ class UserViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['post'], parser_classes=[parsers.MultiPartParser])
     def import_csv(self, request):
-        """Import students from CSV (admin and advisory teachers)"""
-        if request.user.role not in ['admin', 'teacher']:
+        """Import students from CSV (admin only)"""
+        if request.user.role != 'admin':
             return Response({'error': 'Unauthorized'}, status=403)
             
-        advisory_classroom = None
-        if request.user.role == 'teacher':
-            try:
-                advisory_classroom = Classroom.objects.get(teacher=request.user)
-            except Classroom.DoesNotExist:
-                return Response({'error': 'You must be an advisory teacher to import students.'}, status=403)
-
         file = request.FILES.get('file')
         if not file:
             return Response({'error': 'No file provided'}, status=400)
@@ -873,11 +793,6 @@ class UserViewSet(viewsets.ModelViewSet):
                 first_name = row.get('First Name') or ''
                 last_name = row.get('Last Name') or ''
                 grade_level = row.get('Grade Level') or ''
-                
-                # Auto-fill grade level if teacher is importing and it's missing
-                if advisory_classroom and not grade_level:
-                    grade_level = advisory_classroom.grade_level or ''
-                
                 sex = row.get('Sex') or row.get('sex') or ''
                 
                 # Normalize sex
@@ -922,14 +837,6 @@ class UserViewSet(viewsets.ModelViewSet):
                         'sex': sex
                     }
                 )
-
-                # Auto-enroll student if imported by teacher
-                if advisory_classroom:
-                    StudentClassEnrollment.objects.get_or_create(
-                        student=user,
-                        classroom=advisory_classroom
-                    )
-
                 created_count += 1
                 created_users.append({
                     'username': student_id,
@@ -1554,14 +1461,11 @@ class AttendanceViewSet(viewsets.ModelViewSet):
             profile = getattr(user, 'profile', None)
             linked_student_ids = profile.linked_students.values_list('id', flat=True) if profile else []
             queryset = queryset.filter(student_id__in=linked_student_ids)
-        # Teachers can only see attendance for their classrooms (advisory or assigned with advisor)
+        # Teachers can only see attendance for their classrooms
         elif user.role == 'teacher':
             from django.db.models import Q
             assigned_classrooms = ClassroomSubject.objects.filter(teacher=user).values_list('classroom_id', flat=True)
-            queryset = queryset.filter(
-                Q(classroom__teacher=user) | 
-                (Q(classroom_id__in=assigned_classrooms) & Q(classroom__teacher__isnull=False))
-            )
+            queryset = queryset.filter(Q(classroom__teacher=user) | Q(classroom_id__in=assigned_classrooms))
         
         if classroom_id:
             queryset = queryset.filter(classroom_id=classroom_id)
@@ -1665,15 +1569,10 @@ class LearningMaterialViewSet(viewsets.ModelViewSet):
             student_enrollments = StudentClassEnrollment.objects.filter(student=user)
             student_classrooms = [e.classroom for e in student_enrollments]
             queryset = queryset.filter(Q(classroom__in=student_classrooms) | Q(classroom__isnull=True))
-        # Teachers see materials for their advisory classrooms + general materials 
-        # + classrooms with assigned advisors where they teach
+        # Teachers see materials for their classrooms + general materials
         elif user.role == 'teacher':
-            assigned_classrooms = ClassroomSubject.objects.filter(teacher=user).values_list('classroom_id', flat=True)
-            queryset = queryset.filter(
-                Q(classroom__teacher=user) | 
-                (Q(classroom_id__in=assigned_classrooms) & Q(classroom__teacher__isnull=False)) | 
-                Q(classroom__isnull=True)
-            )
+            teacher_classrooms = Classroom.objects.filter(teacher=user)
+            queryset = queryset.filter(Q(classroom__in=teacher_classrooms) | Q(classroom__isnull=True))
         # Admins see everything
         
         if classroom_id:
@@ -1736,10 +1635,8 @@ class ClassroomSubjectViewSet(viewsets.ModelViewSet):
         
         # Filter based on user role
         if user.role == 'teacher':
-            # Teachers can only see subjects assigned to them in classrooms with advisors (unless they are the advisor)
-            queryset = queryset.filter(teacher=user).filter(
-                Q(classroom__teacher=user) | Q(classroom__teacher__isnull=False)
-            )
+            # Teachers can only see subjects assigned to them
+            queryset = queryset.filter(teacher=user)
         elif user.role == 'student':
             # Students can see subjects for their enrolled classrooms
             enrolled_classrooms = StudentClassEnrollment.objects.filter(student=user).values_list('classroom_id', flat=True)
@@ -1876,13 +1773,9 @@ class FeeViewSet(viewsets.ModelViewSet):
         # RBAC: Students can only see their own fees
         if user.role == 'student':
             queryset = queryset.filter(student=user)
-        # Teachers can only see fees for their classrooms (advisory or assigned with advisor)
+        # Teachers can only see fees for their classrooms
         elif user.role == 'teacher':
-            from django.db.models import Q
-            assigned_classrooms = ClassroomSubject.objects.filter(teacher=user).values_list('classroom_id', flat=True)
-            teacher_classrooms = Classroom.objects.filter(
-                Q(teacher=user) | (Q(id__in=assigned_classrooms) & Q(teacher__isnull=False))
-            )
+            teacher_classrooms = Classroom.objects.filter(teacher=user)
             student_enrollments = StudentClassEnrollment.objects.filter(classroom__in=teacher_classrooms)
             students = [e.student for e in student_enrollments]
             queryset = queryset.filter(student__in=students)
@@ -2859,12 +2752,8 @@ class GradeViewSet(viewsets.ModelViewSet):
         elif user.role == 'teacher':
             from django.db.models import Q
             assigned_classrooms = ClassroomSubject.objects.filter(teacher=user).values_list('classroom_id', flat=True)
-            # Sync: Only see grades in advisory classroom OR classes with advisors where they teach subjects OR grades they created
-            return queryset.filter(
-                Q(classroom__teacher=user) | 
-                (Q(classroom_id__in=assigned_classrooms) & Q(classroom__teacher__isnull=False)) | 
-                Q(teacher=user)
-            ).distinct()
+            # Teachers can see grades in classrooms they advise OR subjects they teach
+            return queryset.filter(Q(classroom__teacher=user) | Q(classroom_id__in=assigned_classrooms) | Q(teacher=user)).distinct()
         elif user.role == 'student':
             return queryset.filter(student=user)
         elif user.role == 'parent':
@@ -3180,14 +3069,8 @@ class AssignmentViewSet(viewsets.ModelViewSet):
             enrolled_classrooms = StudentClassEnrollment.objects.filter(student_id__in=linked_student_ids).values_list('classroom_id', flat=True)
             return queryset.filter(classroom_id__in=enrolled_classrooms)
         elif user.role == 'teacher':
-            from django.db.models import Q
-            # Teachers see assignments they created OR for their advisory classroom 
-            # OR for classrooms with assigned advisors where they teach
-            return queryset.filter(
-                Q(teacher=user) | 
-                Q(classroom__teacher=user) | 
-                (Q(classroom__teacher__isnull=False) & Q(classroom__classroom_subjects__teacher=user))
-            ).distinct()
+            # Teachers see assignments they created or for their classrooms
+            return queryset.filter(Q(teacher=user) | Q(classroom__teacher=user)).distinct()
             
         return queryset
 
@@ -3281,7 +3164,6 @@ class GradeReportViewSet(viewsets.ModelViewSet):
         if user.role == 'admin':
             return queryset
         elif user.role == 'teacher':
-            # Teachers only see reports for their advisory classroom
             return queryset.filter(classroom__teacher=user)
         elif user.role == 'student':
             return queryset.filter(student=user)
