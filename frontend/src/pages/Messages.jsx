@@ -181,7 +181,14 @@ const Messages = () => {
     if (!newMessage.trim() || !selectedRoom) return;
     const content = newMessage.trim();
     setNewMessage('');
-    setIsTyping(false);
+    
+    // Clear typing indicator on message send
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+      typingTimeoutRef.current = null;
+    }
+    safeSend({ type: 'typing', is_typing: false });
+    lastTypingSentRef.current = 0;
     
     const msgPayload = {
       type: 'message',
