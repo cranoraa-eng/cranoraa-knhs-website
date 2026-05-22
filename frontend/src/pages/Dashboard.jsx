@@ -114,7 +114,8 @@ const AdminView = () => {
     if (Array.isArray(source)) return source;
     
     // Check if source is an object with the expected keys
-    const hasData = Object.keys(source).some(k => ['outstanding', 'very_satisfactory', 'satisfactory', 'fairly_satisfactory', 'below_75', 'failed'].includes(k.toLowerCase()));
+    const keys = Object.keys(source).map(k => k.toLowerCase());
+    const hasData = keys.some(k => ['outstanding', 'very_satisfactory', 'satisfactory', 'fairly_satisfactory', 'below_75', 'failed'].includes(k));
     
     if (!hasData) return [];
 
@@ -127,14 +128,14 @@ const AdminView = () => {
     ];
   };
 
-  const dist = distView === 'general_average' ? data?.general_average : data?.all_subjects;
-  let gradeData = getGradeArray(dist);
-  
-  // If specific view is empty, fallback to the main grade distribution
-  if (gradeData.length === 0 || gradeData.every(d => d.value === 0)) {
-    gradeData = getGradeArray(data?.charts?.grade_distribution);
-  }
-  
+  const getActiveDist = () => {
+    const dist = distView === 'general_average' ? data?.general_average : data?.all_subjects;
+    const arr = getGradeArray(dist);
+    if (arr.length > 0) return arr;
+    return getGradeArray(data?.charts?.grade_distribution);
+  };
+
+  const gradeData = getActiveDist();
   const attendanceTrends = data?.charts?.attendance_trends || data?.attendance_trends || [];
   const today = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
@@ -250,12 +251,20 @@ const AdminView = () => {
               <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Achievement Matrix</h3>
               <p className="text-sm font-black text-slate-900 uppercase tracking-tight">{distView === 'general_average' ? 'General Average' : 'Cumulative Grades'}</p>
             </div>
-            <button 
-              onClick={() => setDistView(distView === 'general_average' ? 'all_subjects' : 'general_average')}
-              className="p-2 rounded-xl bg-slate-50 text-slate-400 hover:text-violet-600 hover:bg-violet-50 transition-all active:scale-95"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
-            </button>
+            <div className="flex bg-slate-100 p-1 rounded-xl">
+              <button 
+                onClick={() => setDistView('general_average')}
+                className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${distView === 'general_average' ? 'bg-white text-violet-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+              >
+                Average
+              </button>
+              <button 
+                onClick={() => setDistView('all_subjects')}
+                className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${distView === 'all_subjects' ? 'bg-white text-violet-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+              >
+                Cumulative
+              </button>
+            </div>
           </div>
           
           <div className="flex-1 flex items-center">
