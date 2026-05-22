@@ -307,47 +307,47 @@ const AttendanceSection = ({ data }) => (
 const GradeMatrixSection = ({ gradeDistribution }) => {
   const total = gradeDistribution.reduce((sum, d) => sum + d.value, 0);
   return (
-    <div className="lg:col-span-4 bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
-      <div className="mb-4">
+    <div className="lg:col-span-4 bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex flex-col min-h-[400px]">
+      <div className="mb-6">
         <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Grade Matrix</h3>
         <p className="text-sm font-black text-slate-900 uppercase tracking-tight">Global Performance Spread</p>
       </div>
-      <div className="h-64 flex items-center justify-between gap-2">
-        <div className="w-1/2 h-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart margin={{ top: 0, bottom: 0, left: 0, right: 0 }}>
-              <Pie
-                data={gradeDistribution}
-                cx="50%"
-                cy="50%"
-                innerRadius={55}
-                outerRadius={75}
-                paddingAngle={8}
-                dataKey="value"
-              >
-                {gradeDistribution.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} strokeWidth={0} />
-                ))}
-              </Pie>
-              <Tooltip content={<CustomPieTooltip />} />
-            </PieChart>
-          </ResponsiveContainer>
-        </div>
-        <div className="w-1/2 overflow-y-auto max-h-full pr-2">
-          <div className="space-y-2.5">
-            {gradeDistribution.map((item, index) => {
-              const percentage = total > 0 ? ((item.value / total) * 100).toFixed(1) : 0;
-              return (
-                <div key={item.name} className="flex items-start gap-2">
-                  <div className="w-2 h-2 rounded-full mt-1 shrink-0" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
-                  <div className="flex flex-col min-w-0">
-                    <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-tight truncate">{item.name}</span>
-                    <span className="text-[10px] font-bold text-slate-700">{item.value} <span className="text-slate-400 font-medium ml-1">({percentage}%)</span></span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+      <div className="flex-1 relative">
+        <ResponsiveContainer width="100%" height="100%">
+          <PieChart>
+            <Pie
+              data={gradeDistribution}
+              cx="50%"
+              cy="50%"
+              innerRadius={65}
+              outerRadius={85}
+              paddingAngle={6}
+              dataKey="value"
+              stroke="none"
+            >
+              {gradeDistribution.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+              ))}
+            </Pie>
+            <Tooltip content={<CustomPieTooltip />} />
+            <Legend 
+              verticalAlign="bottom" 
+              align="center" 
+              iconType="circle" 
+              iconSize={6}
+              layout="horizontal"
+              wrapperStyle={{ bottom: 0, paddingTop: '20px' }}
+              formatter={(value) => {
+                const item = gradeDistribution.find(d => d.name === value);
+                const percentage = total > 0 ? ((item.value / total) * 100).toFixed(1) : 0;
+                return <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter">{value} ({percentage}%)</span>;
+              }}
+            />
+          </PieChart>
+        </ResponsiveContainer>
+        <div className="absolute top-[50%] left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center justify-center pointer-events-none transform -translate-y-[20px]">
+          <p className="text-3xl font-black text-slate-900 leading-none">{total}</p>
+          <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mt-1">Students</p>
         </div>
       </div>
     </div>
@@ -405,30 +405,45 @@ const TrafficIntelligenceSection = ({ data }) => (
 );
 
 const GradeDistributionPieSection = ({ data, totalStudents }) => (
-  <div className="lg:col-span-4 bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+  <div className="lg:col-span-4 bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex flex-col min-h-[400px]">
     <div className="mb-6">
       <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Achievement Spread</h3>
       <p className="text-sm font-black text-slate-900 uppercase tracking-tight">Performance Tier Distribution</p>
     </div>
-    <div className="h-72 relative">
+    <div className="flex-1 relative">
       <ResponsiveContainer width="100%" height="100%">
-        <PieChart margin={{ top: -20, bottom: 0 }}>
-          <Pie data={data} cx="50%" cy="45%" innerRadius={60} outerRadius={80} paddingAngle={6} dataKey="value">
-            {data.map((entry, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} strokeWidth={0} />)}
+        <PieChart>
+          <Pie 
+            data={data} 
+            cx="50%" 
+            cy="50%" 
+            innerRadius={65} 
+            outerRadius={85} 
+            paddingAngle={6} 
+            dataKey="value"
+            stroke="none"
+          >
+            {data.map((entry, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />)}
           </Pie>
           <Tooltip content={<CustomPieTooltip />} />
-          <Legend verticalAlign="bottom" align="center" iconType="rect" iconSize={4} layout="vertical" wrapperStyle={{ paddingTop: '10px', bottom: 0 }}
+          <Legend 
+            verticalAlign="bottom" 
+            align="center" 
+            iconType="circle" 
+            iconSize={6} 
+            layout="horizontal" 
+            wrapperStyle={{ bottom: 0, paddingTop: '20px' }}
             formatter={(value) => {
               const item = data.find(d => d.name === value);
               const total = data.reduce((sum, d) => sum + d.value, 0);
               const percentage = total > 0 ? ((item.value / total) * 100).toFixed(1) : 0;
-              return <span className="text-[7px] font-black text-slate-400 uppercase tracking-tighter">{value}: {item.value} ({percentage}%)</span>;
+              return <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter">{value} ({percentage}%)</span>;
             }}
           />
         </PieChart>
       </ResponsiveContainer>
-      <div className="absolute top-[45%] left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center justify-center pointer-events-none">
-        <p className="text-2xl font-black text-slate-900 leading-none">{totalStudents}</p>
+      <div className="absolute top-[50%] left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center justify-center pointer-events-none transform -translate-y-[20px]">
+        <p className="text-3xl font-black text-slate-900 leading-none">{totalStudents}</p>
         <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mt-1">Students</p>
       </div>
     </div>
