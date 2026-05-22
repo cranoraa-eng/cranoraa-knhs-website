@@ -2198,10 +2198,23 @@ class NotificationViewSet(viewsets.ModelViewSet):
         import datetime
         # Only return notifications from the last 30 days
         cutoff = timezone.now() - datetime.timedelta(days=30)
-        return Notification.objects.filter(
+        queryset = Notification.objects.filter(
             recipient=self.request.user,
             created_at__gte=cutoff
-        ).order_by('-created_at')
+        )
+        
+        # Filtering
+        notification_type = self.request.query_params.get('notification_type')
+        if notification_type:
+            queryset = queryset.filter(notification_type=notification_type)
+            
+        is_read = self.request.query_params.get('is_read')
+        if is_read is not None:
+            # Handle string 'true'/'false' from JS params
+            is_read_bool = is_read.lower() == 'true'
+            queryset = queryset.filter(is_read=is_read_bool)
+            
+        return queryset.order_by('-created_at')
     
     def perform_create(self, serializer):
         serializer.save(recipient=self.request.user)
