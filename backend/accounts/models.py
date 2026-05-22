@@ -105,8 +105,13 @@ class Profile(models.Model):
         return f"{self.user.username}'s Profile"
     
     def save(self, *args, **kwargs):
-        if self.user.role == 'student' and not self.registration_number:
-            self.registration_number = self.generate_registration_number()
+        if self.user.role == 'student':
+            # Use LRN as registration number if provided
+            if self.lrn:
+                self.registration_number = self.lrn
+            # Fallback to auto-generation if both are missing
+            elif not self.registration_number:
+                self.registration_number = self.generate_registration_number()
         super().save(*args, **kwargs)
     
     def generate_registration_number(self):

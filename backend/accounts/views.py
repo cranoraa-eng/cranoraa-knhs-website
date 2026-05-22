@@ -164,6 +164,9 @@ def admin_create_user_view(request):
     if not username:
         return Response({'error': 'Username/Student ID is required'}, status=status.HTTP_400_BAD_REQUEST)
     
+    if role == 'student' and (len(str(username)) != 12 or not str(username).isdigit()):
+        return Response({'error': 'Student LRN must be exactly 12 digits'}, status=status.HTTP_400_BAD_REQUEST)
+    
     if not password:
         # Generate a random temporary password if not provided
         password = ''.join(secrets.choice(string.ascii_letters + string.digits) for i in range(10))
@@ -741,6 +744,10 @@ class UserViewSet(viewsets.ModelViewSet):
                 student_id = row.get('Student ID') or row.get('username')
                 if not student_id:
                     errors.append("Missing Student ID for a row")
+                    continue
+                
+                if len(str(student_id)) != 12 or not str(student_id).isdigit():
+                    errors.append(f"Invalid LRN {student_id}: Must be exactly 12 digits")
                     continue
                 
                 email = row.get('Email') or row.get('email')
