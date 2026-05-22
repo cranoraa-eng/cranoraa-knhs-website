@@ -416,33 +416,97 @@ const GradeManagement = () => {
                                                       ) : '—'}
                                                     </td>
                                                     {(user?.role === 'admin' || user?.role === 'teacher') && (
-                                                      <td className="px-2 md:px-4 py-2 md:py-3 text-center">
-                                                        <div className="flex items-center justify-center gap-0.5 md:gap-1 md:opacity-0 group-hover/row:opacity-100 transition-opacity">
-                                                          <button onClick={() => window.open(`/profile?student_id=${s.id}`, '_blank')}
-                                                            className="p-1 md:p-1.5 text-blue-700 bg-blue-100 hover:bg-blue-200 rounded-lg transition-all active:scale-95" title="View Student Profile">
-                                                            <svg className="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
-                                                          </button>
-                                                          <button onClick={() => window.open(`/student-grades?student_id=${s.id}`, '_blank')}
-                                                            className="p-1 md:p-1.5 text-purple-700 bg-purple-100 hover:bg-purple-200 rounded-lg transition-all active:scale-95" title="View Grade Details">
-                                                            <svg className="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
-                                                          </button>
-                                                          <button onClick={() => handleLockAll(s)}
-                                                            className={`p-1 md:p-1.5 rounded-lg transition-all active:scale-95 ${anyUnlocked ? 'text-yellow-700 bg-yellow-100 hover:bg-yellow-200' : 'text-green-700 bg-green-100 hover:bg-green-200'}`}
-                                                            title={anyUnlocked ? 'Lock All' : 'Unlock All'}>
-                                                            {anyUnlocked ? (
-                                                              <svg className="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
-                                                            ) : (
-                                                              <svg className="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" /></svg>
-                                                            )}
-                                                          </button>
-                                                          {user?.role === 'admin' && (
-                                                            <button onClick={() => handleDeleteAll(s)}
-                                                              className="p-1 md:p-1.5 text-red-700 bg-red-100 hover:bg-red-200 rounded-lg transition-all active:scale-95" title="Delete All Quarters">
-                                                              <svg className="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                                                            </button>
+                                                      <td className="px-1 md:px-4 py-2 md:py-3 text-center">
+                                                      {/* Desktop Actions */}
+                                                      <div className="hidden md:flex items-center justify-center gap-1 opacity-0 group-hover/row:opacity-100 transition-opacity">
+                                                        <button onClick={() => window.open(`/profile?student_id=${s.id}`, '_blank')}
+                                                          className="p-1.5 text-blue-700 bg-blue-100 hover:bg-blue-200 rounded-lg transition-all active:scale-95" title="View Student Profile">
+                                                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                                                        </button>
+                                                        <button onClick={() => window.open(`/student-grades?student_id=${s.id}`, '_blank')}
+                                                          className="p-1.5 text-purple-700 bg-purple-100 hover:bg-purple-200 rounded-lg transition-all active:scale-95" title="View Grade Details">
+                                                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                                                        </button>
+                                                        <button onClick={() => handleLockAll(s)}
+                                                          className={`p-1.5 rounded-lg transition-all active:scale-95 ${anyUnlocked ? 'text-yellow-700 bg-yellow-100 hover:bg-yellow-200' : 'text-green-700 bg-green-100 hover:bg-green-200'}`}
+                                                          title={anyUnlocked ? 'Lock All' : 'Unlock All'}>
+                                                          {anyUnlocked ? (
+                                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                                                          ) : (
+                                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" /></svg>
                                                           )}
-                                                        </div>
-                                                      </td>
+                                                        </button>
+                                                        {user?.role === 'admin' && (
+                                                          <button onClick={() => handleDeleteAll(s)}
+                                                            className="p-1.5 text-red-700 bg-red-100 hover:bg-red-200 rounded-lg transition-all active:scale-95" title="Delete All Quarters">
+                                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                                          </button>
+                                                        )}
+                                                      </div>
+
+                                                      {/* Mobile Actions Dropdown */}
+                                                      <div className="md:hidden relative inline-block text-left">
+                                                        <button 
+                                                          onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            const rect = e.currentTarget.getBoundingClientRect();
+                                                            Swal.fire({
+                                                              title: '<span class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Manage Grade</span>',
+                                                              html: `
+                                                                <div class="grid grid-cols-1 gap-2 p-1">
+                                                                  <button id="view-profile" class="flex items-center gap-3 w-full p-3 rounded-xl hover:bg-slate-50 transition-all group">
+                                                                    <div class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                                                                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                                                                    </div>
+                                                                    <span class="text-[10px] font-black uppercase tracking-widest text-slate-600">View Profile</span>
+                                                                  </button>
+                                                                  <button id="view-details" class="flex items-center gap-3 w-full p-3 rounded-xl hover:bg-slate-50 transition-all group">
+                                                                    <div class="w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center text-purple-600 group-hover:bg-purple-600 group-hover:text-white transition-colors">
+                                                                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                                                                    </div>
+                                                                    <span class="text-[10px] font-black uppercase tracking-widest text-slate-600">Grade Details</span>
+                                                                  </button>
+                                                                  <button id="lock-grades" class="flex items-center gap-3 w-full p-3 rounded-xl hover:bg-slate-50 transition-all group">
+                                                                    <div class="w-8 h-8 rounded-lg ${anyUnlocked ? 'bg-yellow-50 text-yellow-600 group-hover:bg-yellow-600' : 'bg-green-50 text-green-600 group-hover:bg-green-600'} group-hover:text-white transition-colors">
+                                                                      ${anyUnlocked ? '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>' : '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" /></svg>'}
+                                                                    </div>
+                                                                    <span class="text-[10px] font-black uppercase tracking-widest text-slate-600">${anyUnlocked ? 'Lock Grades' : 'Unlock Grades'}</span>
+                                                                  </button>
+                                                                  ${user?.role === 'admin' ? `
+                                                                    <button id="delete-grades" class="flex items-center gap-3 w-full p-3 rounded-xl hover:bg-red-50 transition-all group">
+                                                                      <div class="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center text-red-600 group-hover:bg-red-600 group-hover:text-white transition-colors">
+                                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                                                      </div>
+                                                                      <span class="text-[10px] font-black uppercase tracking-widest text-red-600">Delete Record</span>
+                                                                    </button>
+                                                                  ` : ''}
+                                                                </div>
+                                                              `,
+                                                              showConfirmButton: false,
+                                                              showCloseButton: true,
+                                                              position: 'center',
+                                                              width: '280px',
+                                                              customClass: {
+                                                                popup: 'rounded-3xl border border-slate-200 shadow-2xl overflow-hidden',
+                                                                container: 'p-0',
+                                                                htmlContainer: 'p-2'
+                                                              },
+                                                              didOpen: () => {
+                                                                document.getElementById('view-profile')?.addEventListener('click', () => { Swal.close(); window.open(`/profile?student_id=${s.id}`, '_blank'); });
+                                                                document.getElementById('view-details')?.addEventListener('click', () => { Swal.close(); window.open(`/student-grades?student_id=${s.id}`, '_blank'); });
+                                                                document.getElementById('lock-grades')?.addEventListener('click', () => { Swal.close(); handleLockAll(s); });
+                                                                document.getElementById('delete-grades')?.addEventListener('click', () => { Swal.close(); handleDeleteAll(s); });
+                                                              }
+                                                            });
+                                                          }}
+                                                          className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all"
+                                                        >
+                                                          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                                            <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
+                                                          </svg>
+                                                        </button>
+                                                      </div>
+                                                    </td>
                                                     )}
                                                   </tr>
                                                 );
