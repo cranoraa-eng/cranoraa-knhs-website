@@ -2677,8 +2677,10 @@ class GradeViewSet(viewsets.ModelViewSet):
         if user.role == 'admin':
             return queryset
         elif user.role == 'teacher':
-            teacher_classrooms = Classroom.objects.filter(teacher=user)
-            return queryset.filter(classroom__in=teacher_classrooms)
+            from django.db.models import Q
+            assigned_classrooms = ClassroomSubject.objects.filter(teacher=user).values_list('classroom_id', flat=True)
+            # Teachers can see grades in classrooms they advise OR subjects they teach
+            return queryset.filter(Q(classroom__teacher=user) | Q(classroom_id__in=assigned_classrooms) | Q(teacher=user)).distinct()
         elif user.role == 'student':
             return queryset.filter(student=user)
         elif user.role == 'parent':
