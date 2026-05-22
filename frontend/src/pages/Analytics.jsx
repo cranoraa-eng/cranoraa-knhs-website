@@ -79,7 +79,7 @@ const Analytics = () => {
   const fetchAttendanceAnalytics = async () => {
     setAttendanceLoading(true);
     try {
-      const res = await api.get('/attendance/analytics/');
+      const res = await api.get('/attendance/summary/');
       setAttendanceAnalytics(res.data);
     } catch (err) {
       console.error('Failed to fetch attendance analytics', err);
