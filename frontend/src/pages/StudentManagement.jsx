@@ -410,7 +410,33 @@ const StudentManagement = () => {
           <button 
             onClick={() => {
               const headers = [['Student ID', 'First Name', 'Last Name', 'Grade Level', 'Email']];
-              const ws = XLSX.utils.aoa_to_sheet(headers);
+              const sampleData = [
+                ['128150150092', 'John', 'Doe', 'Grade 7', 'john@example.com'],
+                ['128150150093', 'Jane', 'Smith', 'Grade 8', ''],
+              ];
+              const ws = XLSX.utils.aoa_to_sheet([...headers, ...sampleData]);
+              
+              // Apply basic styling to headers
+              const headerRange = XLSX.utils.decode_range(ws['!ref']);
+              for (let C = headerRange.s.c; C <= headerRange.e.c; ++C) {
+                const address = XLSX.utils.encode_col(C) + '1';
+                if (!ws[address]) continue;
+                ws[address].s = {
+                  font: { bold: true, color: { rgb: "FFFFFF" } },
+                  fill: { fgColor: { rgb: "4F46E5" } }, // Indigo 600
+                  alignment: { horizontal: "center" }
+                };
+              }
+
+              // Set column widths
+              ws['!cols'] = [
+                { wch: 20 }, // Student ID
+                { wch: 20 }, // First Name
+                { wch: 20 }, // Last Name
+                { wch: 15 }, // Grade Level
+                { wch: 30 }, // Email
+              ];
+
               const wb = XLSX.utils.book_new();
               XLSX.utils.book_append_sheet(wb, ws, "Template");
               XLSX.writeFile(wb, "student_import_template.xlsx");

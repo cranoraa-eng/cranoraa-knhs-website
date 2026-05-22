@@ -752,7 +752,15 @@ class UserViewSet(viewsets.ModelViewSet):
                     continue
                 
                 email = row.get('Email') or row.get('email')
-                if email == "": email = None
+                if email:
+                    email = email.strip()
+                if not email:
+                    email = None
+                
+                # Check if email exists if provided
+                if email and User.objects.filter(email=email).exists():
+                    errors.append(f"Email {email} already exists")
+                    continue
                 
                 first_name = row.get('First Name') or ''
                 last_name = row.get('Last Name') or ''
