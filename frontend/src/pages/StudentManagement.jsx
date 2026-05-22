@@ -379,29 +379,24 @@ const StudentManagement = () => {
     // Group by Grade -> Classroom
     const groups = {};
     
-    // For teachers, always ensure their advisory class exists in the groups
-    if (user?.role === 'teacher' && advisoryClass) {
-      const grade = advisoryClass.grade_level || 'Unassigned';
-      const classroom = advisoryClass.name;
-      if (!groups[grade]) groups[grade] = {};
-      if (!groups[grade][classroom]) groups[grade][classroom] = [];
-    }
-    
-    filtered.forEach(s => {
-      let grade = s.profile?.grade_level || 'Unassigned';
-      let classroom = s.profile?.classroom_name || 'No Classroom';
-      
-      // For teachers, force students into their advisory classroom grouping
-      // in case the student's profile computed field picks a different enrollment
-      if (user?.role === 'teacher' && advisoryClass) {
-        grade = advisoryClass.grade_level || grade;
-        classroom = advisoryClass.name;
+    if (user?.role === 'teacher') {
+      // Teachers only manage their own advisory classroom
+      if (advisoryClass) {
+        const grade = advisoryClass.grade_level || 'Unassigned';
+        const classroom = advisoryClass.name;
+        groups[grade] = { [classroom]: filtered };
       }
-      
-      if (!groups[grade]) groups[grade] = {};
-      if (!groups[grade][classroom]) groups[grade][classroom] = [];
-      groups[grade][classroom].push(s);
-    });
+    } else {
+      // Admin grouping logic: show all students grouped by their assigned grade/classroom
+      filtered.forEach(s => {
+        const grade = s.profile?.grade_level || 'Unassigned';
+        const classroom = s.profile?.classroom_name || 'No Classroom';
+        
+        if (!groups[grade]) groups[grade] = {};
+        if (!groups[grade][classroom]) groups[grade][classroom] = [];
+        groups[grade][classroom].push(s);
+      });
+    }
 
     // Sort Grades
     const sortedGrades = Object.keys(groups).sort((a, b) => {
