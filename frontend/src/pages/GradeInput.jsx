@@ -98,28 +98,7 @@ const GradeInput = () => {
   useEffect(() => { loadStudents(); }, [loadStudents]);
   useEffect(() => { fetchExistingGrades(); }, [fetchExistingGrades]);
 
-  const handleGradeChange = async (studentId, value) => {
-    const existing = existingGrades[studentId];
-    
-    if (existing && value !== '' && parseFloat(value) !== parseFloat(existing.raw_score)) {
-      const result = await Swal.fire({
-        title: 'Change Existing Grade?',
-        html: `Student already has a grade of <strong>${existing.raw_score}</strong>.<br/>Would you like to change it to <strong>${value}</strong>?`,
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#9333ea',
-        cancelButtonColor: '#6b7280',
-        confirmButtonText: 'Yes, change it',
-        cancelButtonText: 'Keep original',
-        customClass: { popup: 'rounded-3xl' }
-      });
-
-      if (!result.isConfirmed) {
-        setCells(prev => ({ ...prev, [studentId]: '' }));
-        return;
-      }
-    }
-    
+  const handleGradeChange = (studentId, value) => {
     setCells(prev => ({ ...prev, [studentId]: value }));
   };
 
@@ -168,12 +147,44 @@ const GradeInput = () => {
         return toast.error(`${s.student_name}: grade must be between 0 and 100`);
     }
 
+    // Check for overwrites
+    const overwriting = toSubmit.filter(s => {
+      const existing = existingGrades[s.student];
+      return existing && parseFloat(cells[s.student]) !== parseFloat(existing.raw_score);
+    });
+
+    let confirmTitle = 'Submit Final Grades?';
+    let confirmHtml = `Submit final grades for <strong>${toSubmit.length}</strong> student(s) — Q${selQuarter}?`;
+    let confirmIcon = 'question';
+
+    if (overwriting.length > 0) {
+      confirmTitle = 'Overwrite Existing Grades?';
+      confirmIcon = 'warning';
+      confirmHtml = `
+        <div class="text-left space-y-2">
+          <p class="font-bold text-amber-600 mb-2">You are about to overwrite grades for ${overwriting.length} student(s):</p>
+          <div class="max-h-32 overflow-y-auto border border-amber-100 rounded-lg p-2 bg-amber-50/50 text-[10px] md:text-xs">
+            ${overwriting.map(s => {
+              const ex = existingGrades[s.student];
+              return `<div class="py-0.5 border-b border-amber-100 last:border-0">
+                <strong>${s.student_name}</strong>: ${ex.raw_score} → <span class="text-purple-700 font-black">${cells[s.student]}</span>
+              </div>`;
+            }).join('')}
+          </div>
+          <p class="text-[10px] md:text-xs text-gray-500 mt-2 italic">Total to submit: ${toSubmit.length} students.</p>
+        </div>
+      `;
+    }
+
     const result = await Swal.fire({
-      title: 'Submit Final Grades?',
-      html: `Submit final grades for <strong>${toSubmit.length}</strong> student(s) — Q${selQuarter}?`,
-      icon: 'question', showCancelButton: true,
-      confirmButtonColor: '#9333ea', cancelButtonColor: '#6b7280',
-      confirmButtonText: 'Submit',
+      title: confirmTitle,
+      html: confirmHtml,
+      icon: confirmIcon, 
+      showCancelButton: true,
+      confirmButtonColor: '#9333ea', 
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Yes, Submit',
+      customClass: { popup: 'rounded-3xl' }
     });
     if (!result.isConfirmed) return;
 
