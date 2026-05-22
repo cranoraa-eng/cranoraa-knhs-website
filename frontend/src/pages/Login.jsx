@@ -95,7 +95,7 @@ const Login = () => {
 
     setLoading(true);
     try {
-      const userData = await loginRequest(identifier, password);
+      const userData = await loginRequest(identifier, password, loginType);
       
       if (userData?.must_change_password) {
         signIn(userData);

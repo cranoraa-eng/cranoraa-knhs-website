@@ -35,10 +35,11 @@ export const hasToken = () => !!localStorage.getItem('access_token');
 // API calls
 // ---------------------------------------------------------------------------
 
-export const loginRequest = async (identifier, password) => {
+export const loginRequest = async (identifier, password, role) => {
   const { data } = await api.post('/login/', { 
     username: identifier, // Use username field for both email and student ID
-    password 
+    password,
+    role
   });
   
   // If forced password change is required, we still save session but redirect

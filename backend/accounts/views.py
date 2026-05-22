@@ -37,8 +37,9 @@ def login_view(request):
         # Support both email and username (Student ID) in the same field
         login_id = request.data.get('email') or request.data.get('username')
         password = request.data.get('password')
+        required_role = request.data.get('role') # Optional role validation
         
-        logger.info(f"Login attempt for ID: {login_id}")
+        logger.info(f"Login attempt for ID: {login_id}, Role: {required_role}")
         
         if login_id is None or password is None:
             return Response(
@@ -55,6 +56,17 @@ def login_view(request):
                 status=status.HTTP_401_UNAUTHORIZED
             )
             
+        # Role Validation: Ensure user role matches the requested login type
+        # If required_role is provided (e.g., from frontend toggle), enforce it.
+        # Admins can bypass this to log in from any portal.
+        if required_role and user.role != 'admin':
+            if user.role != required_role:
+                role_display = "Student" if required_role == 'student' else "Teacher/Staff"
+                return Response(
+                    {'error': f'This account is not registered as a {role_display}. Please use the correct login portal.'},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+
         # Check Account Status
         if user.account_status == 'inactive':
             return Response(
