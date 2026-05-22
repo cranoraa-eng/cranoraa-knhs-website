@@ -357,13 +357,13 @@ const GradeManagement = () => {
                                               <tr>
                                                 <th className="text-left px-2 md:px-4 py-2 md:py-3 text-[8px] md:text-xs font-black text-slate-400 uppercase tracking-[0.2em] sticky left-0 bg-gray-50 z-10 w-8 md:w-12 border-r border-gray-100">#</th>
                                                 <th className="text-left px-2 md:px-4 py-2 md:py-3 text-[8px] md:text-xs font-black text-slate-400 uppercase tracking-[0.2em] sticky left-8 md:left-12 bg-gray-50 z-10 border-r border-gray-200">Student</th>
-                                                <th className="text-center px-2 md:px-4 py-2 md:py-3 text-[8px] md:text-xs font-black text-slate-400 uppercase tracking-[0.2em] bg-blue-50/30">Q1</th>
-                                                <th className="text-center px-2 md:px-4 py-2 md:py-3 text-[8px] md:text-xs font-black text-slate-400 uppercase tracking-[0.2em] bg-blue-50/30">Q2</th>
-                                                <th className="text-center px-2 md:px-4 py-2 md:py-3 text-[8px] md:text-xs font-black text-slate-400 uppercase tracking-[0.2em] bg-blue-50/30">Q3</th>
-                                                <th className="text-center px-2 md:px-4 py-2 md:py-3 text-[8px] md:text-xs font-black text-slate-400 uppercase tracking-[0.2em] bg-blue-50/30">Q4</th>
-                                                <th className="text-center px-2 md:px-4 py-2 md:py-3 text-[8px] md:text-xs font-black text-purple-600 uppercase tracking-[0.2em] border-l border-gray-200 bg-purple-50/30">Final</th>
-                                                <th className="text-center px-2 md:px-4 py-2 md:py-3 text-[8px] md:text-xs font-black text-indigo-600 uppercase tracking-[0.2em] bg-indigo-50/30">Round</th>
-                                                <th className="text-center px-2 md:px-4 py-2 md:py-3 text-[8px] md:text-xs font-black text-slate-400 uppercase tracking-[0.2em] bg-purple-50/30">Remarks</th>
+                                                <th className="text-center px-1 md:px-4 py-2 md:py-3 text-[8px] md:text-xs font-black text-slate-400 uppercase tracking-[0.2em] bg-blue-50/30">Q1</th>
+                                                <th className="text-center px-1 md:px-4 py-2 md:py-3 text-[8px] md:text-xs font-black text-slate-400 uppercase tracking-[0.2em] bg-blue-50/30">Q2</th>
+                                                <th className="text-center px-1 md:px-4 py-2 md:py-3 text-[8px] md:text-xs font-black text-slate-400 uppercase tracking-[0.2em] bg-blue-50/30">Q3</th>
+                                                <th className="text-center px-1 md:px-4 py-2 md:py-3 text-[8px] md:text-xs font-black text-slate-400 uppercase tracking-[0.2em] bg-blue-50/30">Q4</th>
+                                                <th className="hidden md:table-cell text-center px-1 md:px-4 py-2 md:py-3 text-[8px] md:text-xs font-black text-purple-600 uppercase tracking-[0.2em] border-l border-gray-200 bg-purple-50/30">Final</th>
+                                                <th className="text-center px-1 md:px-4 py-2 md:py-3 text-[8px] md:text-xs font-black text-indigo-600 uppercase tracking-[0.2em] bg-indigo-50/30">Round</th>
+                                                <th className="text-center px-1 md:px-4 py-2 md:py-3 text-[8px] md:text-xs font-black text-slate-400 uppercase tracking-[0.2em] bg-purple-50/30">Remarks</th>
                                                 {(user?.role === 'admin' || user?.role === 'teacher') && (
                                                   <th className="text-center px-2 md:px-4 py-2 md:py-3 text-[8px] md:text-xs font-black text-slate-400 uppercase tracking-[0.2em]">Actions</th>
                                                 )}
@@ -379,15 +379,18 @@ const GradeManagement = () => {
 
                                                 return (
                                                   <tr key={s.id} className="hover:bg-purple-50 transition-colors group/row text-center">
-                                                    <td className="px-2 md:px-4 py-2 md:py-3 text-slate-400 text-[8px] md:text-xs font-black sticky left-0 bg-white group-hover/row:bg-purple-50 z-10 w-8 md:w-12 border-r border-gray-100">{idx + 1}</td>
-                                                    <td className="px-2 md:px-4 py-2 md:py-3 sticky left-8 md:left-12 bg-white group-hover/row:bg-purple-50 z-10 border-r border-gray-200">
-                                                      <div className="flex items-center gap-1.5 md:gap-2 min-w-[120px] md:min-w-[180px] text-left">
-                                                        <div className="w-5 h-5 md:w-8 md:h-8 rounded-lg bg-gradient-to-br from-purple-500 to-indigo-500 flex items-center justify-center text-white font-black text-[9px] md:text-xs flex-shrink-0 shadow-sm">
+                                                    <td className="px-1 md:px-4 py-2 md:py-3 text-slate-400 text-[8px] md:text-xs font-black sticky left-0 bg-white group-hover/row:bg-purple-50 z-10 w-8 md:w-12 border-r border-gray-100">{idx + 1}</td>
+                                                    <td className="px-1 md:px-4 py-2 md:py-3 sticky left-8 md:left-12 bg-white group-hover/row:bg-purple-50 z-10 border-r border-gray-200">
+                                                      <div className="flex items-center gap-1.5 md:gap-2 min-w-[70px] md:min-w-[180px] text-left">
+                                                        <div className="hidden sm:flex w-5 h-5 md:w-8 md:h-8 rounded-lg bg-gradient-to-br from-purple-500 to-indigo-500 items-center justify-center text-white font-black text-[9px] md:text-xs flex-shrink-0 shadow-sm">
                                                           {s.name?.charAt(0).toUpperCase()}
                                                         </div>
                                                         <div className="min-w-0">
-                                                          <div className="font-black text-slate-800 leading-tight whitespace-nowrap text-[9px] md:text-sm uppercase tracking-tight truncate max-w-[80px] md:max-w-none" title={s.name}>{s.name}</div>
-                                                          <div className="text-[7px] md:text-[10px] text-slate-400 truncate max-w-[60px] md:max-w-[120px] font-medium">{s.email}</div>
+                                                          <div className="font-black text-slate-800 leading-tight whitespace-nowrap text-[8px] md:text-sm uppercase tracking-tight truncate max-w-[60px] md:max-w-none" title={s.name}>
+                                                            <span className="md:hidden">{s.name?.split(' ').pop()}</span>
+                                                            <span className="hidden md:inline">{s.name}</span>
+                                                          </div>
+                                                          <div className="hidden md:block text-[7px] md:text-[10px] text-slate-400 truncate max-w-[60px] md:max-w-[120px] font-medium">{s.email}</div>
                                                         </div>
                                                       </div>
                                                     </td>
@@ -399,10 +402,10 @@ const GradeManagement = () => {
                                                         </div>
                                                       </td>
                                                     ))}
-                                                    <td className="px-1.5 md:px-4 py-2 md:py-3 text-center border-l border-gray-200 bg-purple-50/10">
+                                                    <td className="hidden md:table-cell px-1.5 md:px-4 py-2 md:py-3 text-center border-l border-gray-200 bg-purple-50/10">
                                                       <ScoreBadge score={final} />
                                                     </td>
-                                                    <td className="px-1.5 md:px-4 py-2 md:py-3 text-center bg-indigo-50/10">
+                                                    <td className="px-1.5 md:px-4 py-2 md:py-3 text-center md:border-l border-indigo-50/10 bg-indigo-50/10">
                                                       <ScoreBadge score={rounded} />
                                                     </td>
                                                     <td className="px-2 md:px-4 py-2 md:py-3 text-center bg-purple-50/10">

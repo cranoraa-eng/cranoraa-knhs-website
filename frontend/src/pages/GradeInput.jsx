@@ -399,9 +399,9 @@ const GradeInput = () => {
                     <tr key={s.student} onClick={() => setActive(s.student)}
                       className={`cursor-default transition-colors ${isActive ? 'outline outline-2 outline-purple-500 outline-offset-[-2px] z-10' : 'hover:bg-purple-50/30'}`}>
                       <td className={`border border-gray-100 text-center text-[7px] md:text-[10px] font-bold text-gray-400 py-1.5 md:py-3 sticky left-0 z-10 ${rowBg} select-none`}>{idx + 1}</td>
-                      <td className={`border border-gray-100 px-1.5 md:px-4 py-1 md:py-2.5 sticky left-8 md:left-12 z-10 ${rowBg} min-w-0`}>
+                      <td className={`border border-gray-100 px-1 md:px-4 py-1 md:py-2.5 sticky left-8 md:left-12 z-10 ${rowBg} min-w-0`}>
                         <div className="flex items-center gap-1 md:gap-3 min-w-0">
-                          <div className="w-5 h-5 md:w-8 md:h-8 rounded-lg bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white font-black text-[9px] md:text-xs flex-shrink-0 shadow-sm transition-transform group-hover:scale-110">
+                          <div className="hidden sm:flex w-5 h-5 md:w-8 md:h-8 rounded-lg bg-gradient-to-br from-purple-500 to-indigo-600 items-center justify-center text-white font-black text-[9px] md:text-xs flex-shrink-0 shadow-sm transition-transform group-hover:scale-110">
                             {s.student_name?.charAt(0).toUpperCase()}
                           </div>
                           <div className="min-w-0">
@@ -410,12 +410,13 @@ const GradeInput = () => {
                                 e.stopPropagation();
                                 navigate(`/profile?student_id=${s.student}`);
                               }}
-                              className="font-bold text-gray-800 text-[9px] md:text-sm leading-tight truncate block hover:text-purple-600 transition-colors uppercase tracking-tight"
+                              className="font-black text-gray-800 text-[8px] md:text-sm leading-tight truncate block hover:text-purple-600 transition-colors uppercase tracking-tight max-w-[60px] md:max-w-none"
                               title="View Profile"
                             >
-                              {s.student_name}
+                              <span className="md:hidden">{s.student_name?.split(' ').pop()}</span>
+                              <span className="hidden md:inline">{s.student_name}</span>
                             </button>
-                            <div className="text-[7px] md:text-[10px] text-gray-400 leading-tight mt-0.5 font-medium truncate">{s.student_email}</div>
+                            <div className="hidden md:block text-[7px] md:text-[10px] text-gray-400 leading-tight mt-0.5 font-medium truncate">{s.student_email}</div>
                           </div>
                         </div>
                       </td>
