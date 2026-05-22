@@ -10,7 +10,6 @@ const Messages = () => {
   // ── Refs ──────────────────────────────────────────────────────────────────
   const messagesEndRef       = useRef(null);
   const socketRef            = useRef(null);
-  const typingTimeoutRef     = useRef(null);
   const selectedRoomRef      = useRef(null); // always current selectedRoom for WS closures
 
   // ── State ─────────────────────────────────────────────────────────────────
@@ -108,6 +107,8 @@ const Messages = () => {
     connectWebSocket(roomId);
     
     if (selectedRoom) {
+      setPeerTyping(false);
+      setPeerTypingName('');
       fetchMessages(selectedRoom.id);
       // Clear unread badge immediately when room is opened
       setRooms(prev => prev.map(r => r.id === selectedRoom.id ? { ...r, unread_count: 0 } : r));
@@ -183,10 +184,6 @@ const Messages = () => {
     setNewMessage('');
     
     // Clear typing indicator on message send
-    if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current);
-      typingTimeoutRef.current = null;
-    }
     safeSend({ type: 'typing', is_typing: false });
     lastTypingSentRef.current = 0;
     
@@ -203,21 +200,23 @@ const Messages = () => {
   };
 
   const handleTyping = (e) => {
-    setNewMessage(e.target.value);
+    const value = e.target.value;
+    const wasEmpty = !newMessage.trim();
+    const isEmpty = !value.trim();
+    
+    setNewMessage(value);
     if (!selectedRoom) return;
 
-    const now = Date.now();
-    // Throttle typing signals: send immediately on first stroke, then every 3s
-    if (now - lastTypingSentRef.current > 3000) {
+    // Send typing: true when starting to type (transition from empty to non-empty)
+    if (!isEmpty && wasEmpty) {
       safeSend({ type: 'typing', is_typing: true });
-      lastTypingSentRef.current = now;
-    }
-
-    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
-    typingTimeoutRef.current = setTimeout(() => {
+      lastTypingSentRef.current = Date.now();
+    } 
+    // Send typing: false when clearing the input manually
+    else if (isEmpty && !wasEmpty) {
       safeSend({ type: 'typing', is_typing: false });
-      lastTypingSentRef.current = 0; // Reset so next stroke sends immediately
-    }, 1500);
+      lastTypingSentRef.current = 0;
+    }
   };
 
   const handleCreateGroup = async (e) => {
@@ -534,6 +533,13 @@ const Messages = () => {
       }
       if (data.type === 'message') {
         const msg = data; // the whole serialized message
+        
+        // Immediately clear typing indicator if message received from that peer
+        if (msg.sender !== user.id) {
+          setPeerTyping(false);
+          setPeerTypingName('');
+        }
+
         setMessages(prev => {
           if (prev.find(m => m.id === msg.id)) return prev;
           return [...prev, msg];
