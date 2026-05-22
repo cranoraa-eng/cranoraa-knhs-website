@@ -507,8 +507,9 @@ class StudentClassEnrollmentViewSet(viewsets.ModelViewSet):
         if user.role == 'student':
             queryset = queryset.filter(student=user)
         elif user.role == 'teacher':
-            teacher_classrooms = Classroom.objects.filter(teacher=user)
-            queryset = queryset.filter(classroom__in=teacher_classrooms)
+            from django.db.models import Q
+            assigned_classrooms = ClassroomSubject.objects.filter(teacher=user).values_list('classroom_id', flat=True)
+            queryset = queryset.filter(Q(classroom__teacher=user) | Q(classroom_id__in=assigned_classrooms))
 
         if classroom_id:
             queryset = queryset.filter(classroom_id=classroom_id)
@@ -1427,8 +1428,9 @@ class AttendanceViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(student_id__in=linked_student_ids)
         # Teachers can only see attendance for their classrooms
         elif user.role == 'teacher':
-            teacher_classrooms = Classroom.objects.filter(teacher=user)
-            queryset = queryset.filter(classroom__in=teacher_classrooms)
+            from django.db.models import Q
+            assigned_classrooms = ClassroomSubject.objects.filter(teacher=user).values_list('classroom_id', flat=True)
+            queryset = queryset.filter(Q(classroom__teacher=user) | Q(classroom_id__in=assigned_classrooms))
         
         if classroom_id:
             queryset = queryset.filter(classroom_id=classroom_id)
