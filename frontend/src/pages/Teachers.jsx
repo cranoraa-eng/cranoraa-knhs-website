@@ -22,9 +22,7 @@ const Teachers = () => {
     email: '',
     first_name: '',
     last_name: '',
-    password: '',
     title: '',
-    phone_number: ''
   });
 
   useEffect(() => {
@@ -66,7 +64,6 @@ const Teachers = () => {
         role: 'teacher',
         profile: {
           title: newTeacher.title,
-          phone_number: newTeacher.phone_number
         }
       });
       
@@ -75,9 +72,7 @@ const Teachers = () => {
         email: '',
         first_name: '',
         last_name: '',
-        password: '',
         title: '',
-        phone_number: ''
       });
       fetchTeachers();
 
@@ -87,6 +82,8 @@ const Teachers = () => {
         title: 'Teacher Account Created',
         html: `
           <div class="text-left space-y-2 text-sm">
+            <p><strong>Title:</strong> ${newTeacher.title}</p>
+            <p><strong>Full Name:</strong> ${newTeacher.first_name} ${newTeacher.last_name}</p>
             <p><strong>Username/Email:</strong> ${response.data.username}</p>
             <p><strong>Temporary Password:</strong> <span class="bg-yellow-100 px-2 py-1 rounded font-mono text-lg border border-yellow-300 select-all">${response.data.temporary_password}</span></p>
             <p class="text-xs text-gray-500 mt-4 italic">Please provide this password to the teacher. They will be required to change it on their first login.</p>
@@ -295,9 +292,7 @@ const Teachers = () => {
                 email: '',
                 first_name: '',
                 last_name: '',
-                password: '',
                 title: '',
-                phone_number: ''
               });
               setShowAddModal(true);
             }}
@@ -540,16 +535,6 @@ const Teachers = () => {
                     className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:bg-white text-sm font-bold transition-all" />
                 </div>
               </div>
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Temporary Password</label>
-                <input type="password" required value={newTeacher.password} onChange={(e) => setNewTeacher({ ...newTeacher, password: e.target.value })}
-                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:bg-white text-sm font-bold transition-all" />
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Phone Number</label>
-                <input type="text" value={newTeacher.phone_number} onChange={(e) => setNewTeacher({ ...newTeacher, phone_number: e.target.value })}
-                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:bg-white text-sm font-bold transition-all" />
-              </div>
               <div className="flex justify-end gap-3 pt-6 border-t border-gray-100">
                 <button type="button" onClick={() => setShowAddModal(false)}
                   className="px-6 py-2.5 text-gray-500 hover:text-gray-700 font-bold text-sm transition-colors">
@@ -612,11 +597,6 @@ const Teachers = () => {
                   <input type="email" required value={editingTeacher.email} onChange={(e) => setEditingTeacher({ ...editingTeacher, email: e.target.value })}
                     className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white text-sm font-bold transition-all" />
                 </div>
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Phone Number</label>
-                <input type="text" value={editingTeacher.profile?.phone_number || ''} onChange={(e) => setEditingTeacher({ ...editingTeacher, profile: { ...editingTeacher.profile, phone_number: e.target.value } })}
-                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white text-sm font-bold transition-all" />
               </div>
               <div className="flex justify-end gap-3 pt-6 border-t border-gray-100">
                 <button type="button" onClick={() => setShowEditModal(false)}

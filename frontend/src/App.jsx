@@ -133,17 +133,16 @@ function App() {
           <Route path="subject-assignment" element={<SubjectAssignment />} />
           <Route path="student-enrollment" element={<StudentEnrollment />} />
           <Route path="student-management" element={<StudentManagement />} />
+          <Route path="classroom-management" element={<ClassManagement />} />
           <Route path="audit-logs" element={<AuditLogs />} />
           <Route path="backups" element={<Backups />} />
           <Route path="website-content" element={<WebsiteContentManagement />} />
           <Route path="enrollment-management" element={<EnrollmentManagement />} />
-          <Route path="account-approvals" element={<AccountApprovals />} />
           <Route path="settings" element={<Settings />} />
           <Route path="grade-input" element={<GradeInput />} />
           <Route path="grade-management" element={<GradeManagement />} />
           <Route path="grade-distribution" element={<GradeDistribution />} />
           <Route path="student-grades" element={<StudentGradeView />} />
-          <Route path="grade-reports" element={<GradeReports />} />
           <Route path="moderation" element={<Moderation />} />
           <Route path="analytics" element={<Analytics />} />
           <Route path="notifications" element={<Notifications />} />
