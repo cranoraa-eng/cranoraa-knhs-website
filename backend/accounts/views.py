@@ -421,10 +421,22 @@ class ClassroomViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         try:
             user = self.request.user
-            # Admins see all classrooms; teachers see only their own
+            # Admins see all classrooms
             if user.role == 'admin':
                 return Classroom.objects.all()
-            return Classroom.objects.filter(teacher=user)
+            
+            from django.db.models import Q
+            # Teachers see classrooms where they are the adviser OR have assigned subjects
+            if user.role == 'teacher':
+                assigned_classrooms = ClassroomSubject.objects.filter(teacher=user).values_list('classroom_id', flat=True)
+                return Classroom.objects.filter(Q(teacher=user) | Q(id__in=assigned_classrooms)).distinct()
+            
+            # Students see classrooms they are enrolled in
+            if user.role == 'student':
+                enrolled_classrooms = StudentClassEnrollment.objects.filter(student=user).values_list('classroom_id', flat=True)
+                return Classroom.objects.filter(id__in=enrolled_classrooms)
+
+            return Classroom.objects.none()
         except Exception as e:
             logger.error(f"Classroom queryset error: {str(e)}", exc_info=True)
             return Classroom.objects.none()
@@ -1663,6 +1675,11 @@ class ClassroomSubjectViewSet(viewsets.ModelViewSet):
         queryset = ClassroomSubject.objects.select_related(
             'classroom', 'subject', 'teacher'
         ).filter(classroom_id=classroom_id)
+        
+        user = request.user
+        # If teacher, only show subjects they are assigned to in this classroom
+        if user.role == 'teacher':
+            queryset = queryset.filter(teacher=user)
 
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
