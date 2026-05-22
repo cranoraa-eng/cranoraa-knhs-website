@@ -110,7 +110,7 @@ const AdminView = () => {
   if (loading || !data) return <Spinner />;
 
   const dist = distView === 'general_average' ? data?.general_average : data?.all_subjects;
-  const gradeData = data?.charts?.grade_distribution || [];
+  const gradeData = dist || data?.charts?.grade_distribution || [];
   const attendanceTrends = data?.charts?.attendance_trends || data?.attendance_trends || [];
   const today = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
