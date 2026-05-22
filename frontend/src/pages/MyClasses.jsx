@@ -17,7 +17,8 @@ const MyClasses = () => {
   const fetchMyClasses = async () => {
     try {
       // Use the dedicated endpoint for teacher's assigned subjects
-      const res = await api.get('/classroom-subjects/by_teacher/');
+      // Passing user.id for robustness, though backend now handles it automatically for teachers
+      const res = await api.get(`/classroom-subjects/by_teacher/?teacher_id=${user.id}`);
       setAssignments(res.data);
     } catch (err) {
       toast.error('Failed to load assigned classes');

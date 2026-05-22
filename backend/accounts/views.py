@@ -1670,14 +1670,15 @@ class ClassroomSubjectViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'])
     def by_teacher(self, request):
         """Get all subjects assigned to a specific teacher"""
-        teacher_id = request.query_params.get('teacher_id')
-        if not teacher_id:
-            return Response({'error': 'teacher_id parameter required'}, status=status.HTTP_400_BAD_REQUEST)
-        
         user = request.user
-        # Teachers can only see their own assignments
+        teacher_id = request.query_params.get('teacher_id')
+        
+        # If user is a teacher, force filter to their own ID
         if user.role == 'teacher':
             teacher_id = user.id
+        
+        if not teacher_id:
+            return Response({'error': 'teacher_id parameter required'}, status=status.HTTP_400_BAD_REQUEST)
         
         queryset = self.get_queryset().filter(teacher_id=teacher_id)
         serializer = self.get_serializer(queryset, many=True)
