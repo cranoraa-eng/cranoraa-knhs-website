@@ -189,12 +189,12 @@ const AdminView = () => {
                     <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0}/>
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                <CartesianGrid strokeDasharray="2 2" vertical={false} stroke="#f1f5f9" />
                 <XAxis 
                   dataKey="date" 
                   axisLine={false} 
                   tickLine={false} 
-                  tick={{fontSize: 10, fontWeight: 600, fill: '#94a3b8'}}
+                  tick={{fontSize: 8, fontWeight: 900, fill: '#64748b'}}
                   tickFormatter={(str) => {
                     const d = new Date(str);
                     return d.toLocaleDateString('en-US', { weekday: 'short' });
@@ -203,25 +203,22 @@ const AdminView = () => {
                 <YAxis 
                   axisLine={false} 
                   tickLine={false} 
-                  tick={{fontSize: 10, fontWeight: 600, fill: '#94a3b8'}}
+                  tick={{fontSize: 8, fontWeight: 900, fill: '#64748b'}}
                   unit="%"
                 />
-                <Tooltip 
-                  contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
-                  labelStyle={{ fontWeight: 800, color: '#1e293b', fontSize: '12px' }}
-                />
-                <Area type="monotone" dataKey="rate" stroke="#8b5cf6" strokeWidth={3} fillOpacity={1} fill="url(#colorRate)" />
+                <Tooltip content={<DashboardTooltip unit="%" />} />
+                <Area type="monotone" dataKey="rate" stroke="#8b5cf6" strokeWidth={2} fillOpacity={1} fill="url(#colorRate)" />
               </AreaChart>
             </ResponsiveContainer>
           </div>
         </div>
 
         {/* Grade Distribution */}
-        <div className="lg:col-span-4 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+        <div className="lg:col-span-4 bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h3 className="text-lg font-bold text-slate-900">Grade Distribution</h3>
-              <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest">{distView === 'general_average' ? 'General Average' : 'All Subjects'}</p>
+              <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Achievement Matrix</h3>
+              <p className="text-sm font-black text-slate-900 uppercase tracking-tight">{distView === 'general_average' ? 'General Average' : 'Cumulative Grades'}</p>
             </div>
             <button 
               onClick={() => setDistView(distView === 'general_average' ? 'all_subjects' : 'general_average')}
@@ -243,15 +240,16 @@ const AdminView = () => {
                   dataKey="value"
                 >
                   {gradeData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} strokeWidth={0} />
                   ))}
                 </Pie>
-                <Tooltip />
+                <Tooltip content={<DashboardPieTooltip />} />
                 <Legend 
                   verticalAlign="bottom" 
                   align="center"
-                  iconType="circle"
-                  wrapperStyle={{ fontSize: '10px', fontWeight: 700, paddingTop: '20px' }}
+                  iconType="rect"
+                  iconSize={6}
+                  formatter={(value) => <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest">{value}</span>}
                 />
               </PieChart>
             </ResponsiveContainer>
@@ -566,6 +564,43 @@ const Dashboard = () => {
   if (user?.role === 'admin')   return <AdminView />;
   if (user?.role === 'teacher') return <TeacherView />;
   return <StudentView />;
+};
+
+const DashboardTooltip = ({ active, payload, label, unit = '' }) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-slate-900 border border-slate-800 p-2 rounded-lg shadow-2xl backdrop-blur-md bg-opacity-95">
+        <p className="text-[8px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1.5">{label}</p>
+        <div className="space-y-1">
+          {payload.map((entry, index) => (
+            <div key={index} className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: entry.color }} />
+                <span className="text-[8px] font-bold text-slate-500 uppercase tracking-widest">{entry.name}</span>
+              </div>
+              <span className="text-[10px] font-black text-white">{entry.value}{unit}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+  return null;
+};
+
+const DashboardPieTooltip = ({ active, payload }) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-slate-900 border border-slate-800 p-2 rounded-lg shadow-2xl backdrop-blur-md bg-opacity-95">
+        <p className="text-xs font-black text-white flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full" style={{ backgroundColor: payload[0].payload.fill }} />
+          {payload[0].value}
+          <span className="text-[8px] font-bold text-slate-500 uppercase tracking-widest ml-1">{payload[0].name}</span>
+        </p>
+      </div>
+    );
+  }
+  return null;
 };
 
 export default Dashboard;
