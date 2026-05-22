@@ -406,6 +406,21 @@ const StudentManagement = () => {
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
             <span className="text-[10px] md:text-sm font-bold uppercase tracking-wider">Import Excel</span>
           </button>
+
+          <button 
+            onClick={() => {
+              const headers = [['Student ID', 'First Name', 'Last Name', 'Grade Level', 'Email']];
+              const ws = XLSX.utils.aoa_to_sheet(headers);
+              const wb = XLSX.utils.book_new();
+              XLSX.utils.book_append_sheet(wb, ws, "Template");
+              XLSX.writeFile(wb, "student_import_template.xlsx");
+              toast.success('Import template downloaded');
+            }}
+            className="bg-emerald-600 text-white px-3 py-1.5 md:px-5 md:py-2.5 rounded-xl md:rounded-2xl border border-emerald-700 shadow-lg hover:bg-emerald-700 flex items-center gap-2 transition-all active:scale-95"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+            <span className="text-[10px] md:text-sm font-bold uppercase tracking-wider">Download Template</span>
+          </button>
           
           <div className="flex items-center gap-1 bg-white p-1 rounded-xl md:rounded-2xl border border-gray-200 shadow-sm">
             <button 
