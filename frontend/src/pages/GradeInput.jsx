@@ -53,6 +53,13 @@ const GradeInput = () => {
 
   const inputRefs = useRef({});
 
+  const formatName = useCallback((fullName = '') => {
+    const parts = fullName.trim().split(/\s+/);
+    if (parts.length < 2) return fullName;
+    const last = parts.pop();
+    return `${last}, ${parts.join(' ')}`;
+  }, []);
+
   useEffect(() => {
     api.get('/classrooms/').then(r => setClassrooms(r.data)).catch(() => toast.error('Failed to load classrooms'));
   }, []);
@@ -69,14 +76,19 @@ const GradeInput = () => {
     setLoading(true);
     try {
       const res = await api.get(`/enrollments/?classroom=${selClassroom}`);
-      setStudents(res.data);
+      const sorted = res.data.sort((a, b) => {
+        const nameA = formatName(a.student_name).toLowerCase();
+        const nameB = formatName(b.student_name).toLowerCase();
+        return nameA.localeCompare(nameB);
+      });
+      setStudents(sorted);
       
       const init = {};
-      res.data.forEach(s => { init[s.student] = ''; });
+      sorted.forEach(s => { init[s.student] = ''; });
       setCells(init);
     } catch { toast.error('Failed to load students'); }
     finally { setLoading(false); }
-  }, [selClassroom]);
+  }, [selClassroom, formatName]);
 
   const fetchExistingGrades = useCallback(async () => {
     if (!selClassroom || !selSubject || !selQuarter) {
@@ -144,7 +156,7 @@ const GradeInput = () => {
     for (const s of toSubmit) {
       const val = parseFloat(cells[s.student]);
       if (isNaN(val) || val < 0 || val > 100)
-        return toast.error(`${s.student_name}: grade must be between 0 and 100`);
+        return toast.error(`${formatName(s.student_name)}: grade must be between 0 and 100`);
     }
 
     // Check for overwrites
@@ -167,7 +179,7 @@ const GradeInput = () => {
             ${overwriting.map(s => {
               const ex = existingGrades[s.student];
               return `<div class="py-0.5 border-b border-amber-100 last:border-0">
-                <strong>${s.student_name}</strong>: ${ex.raw_score} → <span class="text-purple-700 font-black">${cells[s.student]}</span>
+                <strong>${formatName(s.student_name)}</strong>: ${ex.raw_score} → <span class="text-purple-700 font-black">${cells[s.student]}</span>
               </div>`;
             }).join('')}
           </div>
@@ -214,7 +226,7 @@ const GradeInput = () => {
         if (msg.toLowerCase().includes('unique set')) {
           msg = 'Grade already submitted for this period';
         }
-        errors.push(`${s.student_name}: ${msg}`);
+        errors.push(`${formatName(s.student_name)}: ${msg}`);
       }
     }));
 
@@ -414,7 +426,7 @@ const GradeInput = () => {
                               title="View Profile"
                             >
                               <span className="md:hidden">{s.student_name?.split(' ').pop()}</span>
-                              <span className="hidden md:inline">{s.student_name}</span>
+                              <span className="hidden md:inline">{formatName(s.student_name)}</span>
                             </button>
                             <div className="hidden md:block text-[7px] md:text-[10px] text-gray-400 leading-tight mt-0.5 font-medium truncate">{s.student_email}</div>
                           </div>
