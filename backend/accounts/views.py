@@ -2107,6 +2107,11 @@ def admin_dashboard_stats(request):
                 ],
             },
             'all_subjects': {
+                'outstanding': outstanding,
+                'very_satisfactory': very_satisfactory,
+                'satisfactory': satisfactory,
+                'fairly_satisfactory': fairly_satisfactory,
+                'below_75': below_75,
                 'outstanding_pct': round(outstanding / total_grades * 100) if total_grades else 0,
                 'very_satisfactory_pct': round(very_satisfactory / total_grades * 100) if total_grades else 0,
                 'satisfactory_pct': round(satisfactory / total_grades * 100) if total_grades else 0,
@@ -2115,6 +2120,11 @@ def admin_dashboard_stats(request):
                 'total_count': total_grades
             },
             'general_average': {
+                 'outstanding': ga_outstanding,
+                 'very_satisfactory': ga_very_satisfactory,
+                 'satisfactory': ga_satisfactory,
+                 'fairly_satisfactory': ga_fairly_satisfactory,
+                 'below_75': ga_below_75,
                  'outstanding_pct': round(ga_outstanding / total_students_graded * 100) if total_students_graded else 0,
                  'very_satisfactory_pct': round(ga_very_satisfactory / total_students_graded * 100) if total_students_graded else 0,
                  'satisfactory_pct': round(ga_satisfactory / total_students_graded * 100) if total_students_graded else 0,
