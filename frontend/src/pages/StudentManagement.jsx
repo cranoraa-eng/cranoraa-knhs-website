@@ -11,6 +11,7 @@ const StudentManagement = () => {
   const user = getUser();
   const navigate = useNavigate();
   const [students, setStudents] = useState([]);
+  const [advisoryClass, setAdvisoryClass] = useState(null);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStudent, setSelectedStudent] = useState(null);
@@ -31,16 +32,28 @@ const StudentManagement = () => {
   const GRADE_ORDER = ['Grade 7', 'Grade 8', 'Grade 9', 'Grade 10', 'Grade 11', 'Grade 12'];
 
   useEffect(() => {
-    fetchStudents();
+    fetchData();
   }, []);
 
-  const fetchStudents = async () => {
+  const fetchData = async () => {
     try {
-      const response = await api.get('/users/?role=student');
-      setStudents(Array.isArray(response.data) ? response.data : []);
+      setLoading(true);
+      const [studentsRes, classesRes] = await Promise.all([
+        api.get('/users/?role=student'),
+        user?.role === 'teacher' ? api.get('/classrooms/') : Promise.resolve({ data: [] })
+      ]);
+      
+      setStudents(Array.isArray(studentsRes.data) ? studentsRes.data : []);
+      
+      if (user?.role === 'teacher' && Array.isArray(classesRes.data)) {
+        // Teacher visibility is restricted to advisory by backend
+        const advisory = classesRes.data.find(c => c.teacher === user.id);
+        if (advisory) setAdvisoryClass(advisory);
+      }
+      
       setLoading(false);
     } catch (err) {
-      console.error('Failed to fetch students:', err);
+      console.error('Failed to fetch data:', err);
       toast.error('Failed to load students');
       setStudents([]);
       setLoading(false);
@@ -363,6 +376,14 @@ const StudentManagement = () => {
 
     // Group by Grade -> Classroom
     const groups = {};
+    
+    // For teachers, always ensure their advisory class exists in the groups
+    if (user?.role === 'teacher' && advisoryClass) {
+      const grade = advisoryClass.grade_level || 'Unassigned';
+      const classroom = advisoryClass.name;
+      if (!groups[grade]) groups[grade] = {};
+      if (!groups[grade][classroom]) groups[grade][classroom] = [];
+    }
     
     filtered.forEach(s => {
       const grade = s.profile?.grade_level || 'Unassigned';
