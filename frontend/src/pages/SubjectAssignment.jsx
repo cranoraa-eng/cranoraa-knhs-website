@@ -159,7 +159,7 @@ const SubjectAssignment = () => {
   });
 
   return (
-    <div className="overflow-y-auto h-[calc(100vh-4rem)] p-4 md:p-6 space-y-6">
+    <div className="p-4 md:p-6 space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 animate-fade-in-up">
         <div className="text-center md:text-left">
           <h1 className="text-2xl md:text-3xl font-black text-gray-800 tracking-tight">Subject Assignment</h1>

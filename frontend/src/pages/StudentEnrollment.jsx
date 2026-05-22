@@ -147,7 +147,7 @@ const StudentEnrollment = () => {
   };
 
   return (
-    <div className="overflow-y-auto h-[calc(100vh-4rem)] p-1.5 md:p-6 space-y-2 md:space-y-6 bg-gray-50/50 max-w-full overflow-x-hidden">
+    <div className="p-1.5 md:p-6 space-y-2 md:space-y-6 bg-gray-50/50 max-w-full">
       <div className="mb-2 md:mb-6 text-center md:text-left">
         <h1 className="text-lg md:text-3xl font-black text-gray-800 tracking-tight uppercase">Student Enrollment</h1>
         <p className="text-gray-500 text-[8px] md:text-base mt-0.5 font-medium uppercase tracking-widest">Enroll students per classroom</p>

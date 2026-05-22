@@ -122,7 +122,7 @@ const ClassManagement = () => {
   const sortedGroups = Object.entries(grouped).sort(([a], [b]) => gradeNum(a) - gradeNum(b));
 
   return (
-    <div className="overflow-y-auto h-[calc(100vh-4rem)] p-1.5 md:p-6 space-y-2 md:space-y-6 bg-gray-50/50 max-w-full overflow-x-hidden">
+    <div className="p-4 md:p-8 space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 md:gap-4 mb-2 md:mb-6">
         <div className="text-center md:text-left">

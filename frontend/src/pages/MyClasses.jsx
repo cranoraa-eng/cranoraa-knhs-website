@@ -50,7 +50,7 @@ const MyClasses = () => {
   }
 
   return (
-    <div className="overflow-y-auto h-[calc(100vh-4rem)] p-1.5 md:p-6 space-y-4 md:space-y-8 bg-gray-50/50">
+    <div className="p-1.5 md:p-6 space-y-4 md:space-y-8 bg-gray-50/50">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 animate-fade-in-up">
         <div>

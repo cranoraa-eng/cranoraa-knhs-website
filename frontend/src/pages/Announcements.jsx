@@ -250,7 +250,7 @@ const Announcements = () => {
   const sorted = [...pinned, ...regular];
 
   return (
-    <div className="overflow-y-auto h-[calc(100vh-4rem)] p-6">
+    <div className="p-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>

@@ -219,7 +219,7 @@ const Attendance = () => {
     const total = filteredMyAttendance.length;
     const attRate = total > 0 ? Math.round(((myStats.present || 0) + (myStats.late || 0)) / total * 100) : null;
     return (
-      <div className="overflow-y-auto h-[calc(100vh-4rem)] p-2 md:p-6 max-w-full overflow-x-hidden">
+      <div className="p-2 md:p-6 max-w-full overflow-x-hidden">
         <div className="mb-3 md:mb-6">
           <h1 className="text-xl md:text-3xl font-black text-gray-800 tracking-tight uppercase">My Attendance</h1>
           <p className="text-gray-500 text-[9px] md:text-sm font-medium mt-0.5 uppercase tracking-widest">Attendance record by month</p>
@@ -294,7 +294,7 @@ const Attendance = () => {
 
   // ── TEACHER / ADMIN VIEW ──────────────────────────────────────
   return (
-    <div className="overflow-y-auto h-[calc(100vh-4rem)] p-2 md:p-6 scrollbar-thin scrollbar-thumb-gray-300 max-w-full overflow-x-hidden">
+    <div className="p-2 md:p-6 scrollbar-thin scrollbar-thumb-gray-300 max-w-full overflow-x-hidden">
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 mb-4">
         <div className="text-center lg:text-left min-w-0">
           <h1 className="text-xl md:text-3xl font-black text-gray-800 tracking-tight uppercase truncate">Attendance Tracker</h1>

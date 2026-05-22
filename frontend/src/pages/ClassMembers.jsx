@@ -77,7 +77,7 @@ const ClassMembers = () => {
   const classroom = selectedClassroom;
 
   return (
-    <div className="overflow-y-auto h-[calc(100vh-4rem)] p-6">
+    <div className="p-4 md:p-8 space-y-6">
       {/* Header */}
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-gray-800">My Classroom</h1>

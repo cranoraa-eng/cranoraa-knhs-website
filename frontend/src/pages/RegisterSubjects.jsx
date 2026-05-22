@@ -43,7 +43,7 @@ const RegisterSubjects = () => {
   }
 
   return (
-    <div className="overflow-y-auto h-[calc(100vh-4rem)] p-6">
+    <div className="p-6">
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-gray-800">My Subject Load</h1>
         <p className="text-gray-500 mt-1">Your enrolled subjects and grade summary</p>
