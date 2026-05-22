@@ -765,10 +765,18 @@ class UserViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['post'], parser_classes=[parsers.MultiPartParser])
     def import_csv(self, request):
-        """Import students from CSV (admin only)"""
-        if request.user.role != 'admin':
+        """Import students from CSV (admin and teachers)"""
+        user_role = request.user.role
+        if user_role not in ['admin', 'teacher']:
             return Response({'error': 'Unauthorized'}, status=403)
             
+        advisory_classroom = None
+        if user_role == 'teacher':
+            try:
+                advisory_classroom = Classroom.objects.get(teacher=request.user)
+            except Classroom.DoesNotExist:
+                return Response({'error': 'You must be an advisory teacher to import students.'}, status=403)
+
         file = request.FILES.get('file')
         if not file:
             return Response({'error': 'No file provided'}, status=400)
@@ -813,6 +821,11 @@ class UserViewSet(viewsets.ModelViewSet):
                 first_name = row.get('First Name') or ''
                 last_name = row.get('Last Name') or ''
                 grade_level = row.get('Grade Level') or ''
+                
+                # Auto-fill grade level if teacher is importing and it's missing
+                if advisory_classroom and not grade_level:
+                    grade_level = advisory_classroom.grade_level or ''
+                
                 sex = row.get('Sex') or row.get('sex') or ''
                 
                 # Normalize sex
@@ -857,6 +870,15 @@ class UserViewSet(viewsets.ModelViewSet):
                         'sex': sex
                     }
                 )
+
+                # Auto-enroll student if imported by teacher
+                if advisory_classroom:
+                    from .models import StudentClassEnrollment
+                    StudentClassEnrollment.objects.get_or_create(
+                        student=user,
+                        classroom=advisory_classroom
+                    )
+
                 created_count += 1
                 created_users.append({
                     'username': student_id,

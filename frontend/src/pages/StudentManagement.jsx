@@ -18,6 +18,7 @@ const StudentManagement = () => {
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [newStudent, setNewStudent] = useState({
     username: '',
@@ -913,22 +914,65 @@ const StudentManagement = () => {
               <svg className="w-10 h-10 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
             </div>
             <h2 className="text-2xl font-black text-gray-800 uppercase tracking-tight mb-2">Bulk Import Students</h2>
-            <p className="text-sm text-gray-500 font-medium mb-8">Upload an Excel file (.xlsx, .xls) with headers: <br/><code className="bg-gray-100 px-2 py-1 rounded text-xs">Student ID, First Name, Last Name, Grade Level, Sex, Email</code></p>
+            {user?.role === 'teacher' && (
+              <p className="text-[10px] font-black text-indigo-500 mb-4 uppercase tracking-widest bg-indigo-50 py-1 rounded-lg">
+                Students will be auto-enrolled to your advisory classroom
+              </p>
+            )}
+            <p className="text-sm text-gray-500 font-medium mb-8">
+              Upload an Excel file (.xlsx, .xls) with headers: <br/>
+              <code className="bg-gray-100 px-2 py-1 rounded text-xs">
+                Student ID, First Name, Last Name, {user?.role === 'admin' ? 'Grade Level, ' : ''}Sex, Email
+              </code>
+            </p>
             
-            <input 
-              type="file" 
-              accept=".xlsx, .xls" 
-              onChange={handleImportExcel}
-              className="hidden" 
-              id="excel-upload"
-            />
-            <label 
-              htmlFor="excel-upload"
-              className="w-full block bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-2xl cursor-pointer transition-all active:scale-95 shadow-lg shadow-indigo-100 mb-4"
+            <div 
+              onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+              onDragLeave={() => setIsDragging(false)}
+              onDrop={(e) => {
+                e.preventDefault();
+                setIsDragging(false);
+                const file = e.dataTransfer.files[0];
+                if (file && (file.name.endsWith('.xlsx') || file.name.endsWith('.xls'))) {
+                  handleImportExcel({ target: { files: [file] } });
+                } else {
+                  toast.error('Please drop a valid Excel file (.xlsx or .xls)');
+                }
+              }}
+              className={`relative border-2 border-dashed rounded-3xl p-10 mb-6 transition-all duration-300 ${
+                isDragging 
+                  ? 'border-indigo-500 bg-indigo-50 scale-[1.02] shadow-xl shadow-indigo-100' 
+                  : 'border-gray-200 hover:border-indigo-300 bg-gray-50/50'
+              }`}
             >
-              Select Excel File
-            </label>
-            <button onClick={() => setShowImportModal(false)} className="text-gray-400 font-bold text-sm hover:text-gray-600">Cancel</button>
+              <input 
+                type="file" 
+                accept=".xlsx, .xls" 
+                onChange={handleImportExcel}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" 
+                id="excel-upload"
+              />
+              <div className="space-y-4">
+                <div className={`w-16 h-16 rounded-2xl mx-auto flex items-center justify-center transition-colors ${isDragging ? 'bg-indigo-600 text-white' : 'bg-white text-indigo-500 shadow-sm'}`}>
+                  <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v12m0 0l-3-3m3 3l3-3m-9 8h12" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="text-sm font-black text-gray-700 uppercase tracking-tight">
+                    {isDragging ? 'Drop it here!' : 'Click or drag file here'}
+                  </p>
+                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">Supports .xlsx, .xls</p>
+                </div>
+              </div>
+            </div>
+
+            <button 
+              onClick={() => setShowImportModal(false)} 
+              className="w-full py-3 text-gray-400 font-black text-[10px] uppercase tracking-[0.2em] hover:text-rose-500 transition-colors"
+            >
+              Cancel Import
+            </button>
           </div>
         </div>
       )}
