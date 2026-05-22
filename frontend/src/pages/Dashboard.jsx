@@ -220,56 +220,69 @@ const AdminView = () => {
         </div>
 
         {/* Grade Distribution */}
-        <div className="lg:col-span-4 bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
-          <div className="flex items-center justify-between mb-6">
+        <div className="lg:col-span-4 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col min-h-[400px]">
+          <div className="flex items-center justify-between mb-8">
             <div>
               <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Achievement Matrix</h3>
               <p className="text-sm font-black text-slate-900 uppercase tracking-tight">{distView === 'general_average' ? 'General Average' : 'Cumulative Grades'}</p>
             </div>
             <button 
               onClick={() => setDistView(distView === 'general_average' ? 'all_subjects' : 'general_average')}
-              className="p-1.5 rounded-lg bg-slate-50 text-slate-400 hover:text-violet-600 transition-colors"
+              className="p-2 rounded-xl bg-slate-50 text-slate-400 hover:text-violet-600 hover:bg-violet-50 transition-all active:scale-95"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
             </button>
           </div>
-          <div className="h-64 w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart margin={{ top: -20, bottom: 0 }}>
-                <Pie
-                  data={gradeData}
-                  cx="50%"
-                  cy="45%"
-                  innerRadius={50}
-                  outerRadius={70}
-                  paddingAngle={5}
-                  dataKey="value"
-                >
-                  {gradeData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} strokeWidth={0} />
-                  ))}
-                </Pie>
-                <Tooltip content={<DashboardPieTooltip />} />
-                <Legend 
-                  verticalAlign="bottom" 
-                  align="center"
-                  iconType="rect"
-                  iconSize={4}
-                  layout="vertical"
-                  wrapperStyle={{ paddingTop: '10px', bottom: 0 }}
-                  formatter={(value) => {
-                    const item = gradeData.find(d => d.name === value);
-                    const total = gradeData.reduce((sum, d) => sum + d.value, 0);
-                    const percentage = total > 0 ? ((item.value / total) * 100).toFixed(1) : 0;
-                    return (
-                      <span className="text-[7px] font-black text-slate-400 uppercase tracking-tighter">
-                        {value}: {item.value} ({percentage}%)
+          
+          <div className="flex-1 flex items-center">
+            <div className="w-1/2 h-full relative">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={gradeData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={80}
+                    paddingAngle={6}
+                    dataKey="value"
+                    stroke="none"
+                  >
+                    {gradeData.map((_, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip content={<DashboardPieTooltip />} />
+                </PieChart>
+              </ResponsiveContainer>
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center justify-center pointer-events-none">
+                <p className="text-2xl font-black text-slate-900 leading-none">
+                  {gradeData.reduce((sum, d) => sum + d.value, 0)}
+                </p>
+                <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mt-1">Total</p>
+              </div>
+            </div>
+
+            <div className="w-1/2 pl-6 space-y-3">
+              {gradeData.map((item, index) => {
+                const total = gradeData.reduce((sum, d) => sum + d.value, 0);
+                const percentage = total > 0 ? ((item.value / total) * 100).toFixed(1) : 0;
+                return (
+                  <div key={item.name} className="flex items-start gap-3">
+                    <div className="w-2 h-2 rounded-full mt-1.5 shrink-0" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
+                    <div className="flex flex-col min-w-0">
+                      <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1 truncate">
+                        {item.name}
                       </span>
-                    );
-                  }}
-                />
-              </PieChart>
-            </ResponsiveContainer>
+                      <div className="flex items-baseline gap-1.5">
+                        <span className="text-sm font-black text-slate-900 leading-none">{item.value}</span>
+                        <span className="text-[10px] font-bold text-slate-400">({percentage}%)</span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
       </div>
