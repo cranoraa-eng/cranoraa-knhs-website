@@ -61,6 +61,7 @@ const Login = () => {
   const [fieldErrors, setFieldErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [loginType, setLoginType] = useState('student'); // 'student' or 'teacher'
 
   // Already logged in — go straight to dashboard
   useEffect(() => {
@@ -75,7 +76,9 @@ const Login = () => {
 
   const validate = () => {
     const errors = {};
-    if (!identifier.trim()) errors.identifier = 'Student ID or Email is required';
+    if (!identifier.trim()) {
+      errors.identifier = loginType === 'student' ? 'Student ID or Email is required' : 'Email is required';
+    }
     if (!password) errors.password = 'Password is required';
     return errors;
   };
@@ -187,12 +190,44 @@ const Login = () => {
           <p className="text-[13px] text-slate-500 font-medium">Sign in to your KNHS Portal</p>
         </div>
 
+        {/* Login Type Selector */}
+        <div className="flex p-1 bg-slate-100 rounded-2xl mb-8 border border-slate-200">
+          <button
+            onClick={() => {
+              setLoginType('student');
+              setIdentifier('');
+              setFieldErrors({});
+            }}
+            className={`flex-1 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all ${
+              loginType === 'student' 
+                ? 'bg-white text-purple-600 shadow-sm border border-slate-200' 
+                : 'text-slate-500 hover:text-slate-700'
+            }`}
+          >
+            Student Login
+          </button>
+          <button
+            onClick={() => {
+              setLoginType('teacher');
+              setIdentifier('');
+              setFieldErrors({});
+            }}
+            className={`flex-1 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all ${
+              loginType === 'teacher' 
+                ? 'bg-white text-indigo-600 shadow-sm border border-slate-200' 
+                : 'text-slate-500 hover:text-slate-700'
+            }`}
+          >
+            Teacher Login
+          </button>
+        </div>
+
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4" noValidate>
           {/* Email or ID */}
           <div>
             <label htmlFor="identifier" className="block text-slate-700 text-[12px] font-bold mb-1.5 ml-1 uppercase tracking-wider">
-              Student ID or Email
+              {loginType === 'student' ? 'Student ID or Email' : 'Teacher Email'}
             </label>
             <input
               id="identifier"
@@ -203,7 +238,7 @@ const Login = () => {
                 setIdentifier(e.target.value);
                 setFieldErrors((prev) => ({ ...prev, identifier: '' }));
               }}
-              placeholder="Student ID or Email"
+              placeholder={loginType === 'student' ? 'Student ID or Email' : 'teacher@knhs.edu'}
               className={`w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-[13px] focus:outline-none focus:ring-4 focus:ring-purple-500/10 focus:border-purple-500 transition-all ${
                 fieldErrors.identifier ? 'border-red-500 bg-red-50' : 'border-slate-200'
               }`}
@@ -279,7 +314,9 @@ const Login = () => {
         </form>
 
         <p className="text-center text-slate-500 font-bold mt-8 text-[12px]">
-          Student without an account? Contact your administrator.
+          {loginType === 'student' 
+            ? 'Student without an account? Contact your administrator.' 
+            : 'Faculty without an account? Contact the ICT coordinator.'}
         </p>
       </div>
 
