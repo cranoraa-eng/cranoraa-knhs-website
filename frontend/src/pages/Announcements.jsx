@@ -317,14 +317,6 @@ const Announcements = () => {
                 </button>
               )}
             </div>
-
-            {undoBuffer && (
-              <button onClick={handleUndo}
-                className="flex items-center gap-1.5 bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full hover:bg-slate-800 shadow-lg shadow-slate-200 animate-bounce">
-                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" /></svg>
-                Undo Deletion
-              </button>
-            )}
           </div>
         )}
       </div>
@@ -343,9 +335,6 @@ const Announcements = () => {
           </div>
           <h3 className="text-lg font-semibold text-gray-700 mb-1">No announcements yet</h3>
           <p className="text-gray-400 text-sm">School updates and notices will appear here.</p>
-          {undoBuffer && (
-            <button onClick={handleUndo} className="mt-4 text-purple-600 font-bold hover:underline">Undo last deletion</button>
-          )}
         </div>
       ) : (
         <div className="space-y-4">
