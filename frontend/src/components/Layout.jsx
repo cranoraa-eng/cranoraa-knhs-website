@@ -8,6 +8,7 @@ import Swal from 'sweetalert2';
 import toast from 'react-hot-toast';
 import { useNetworkStatus } from '../hooks/useNetworkStatus';
 import { getMuted, toggleMute, playSound } from '../utils/sounds';
+import PullToRefresh from './PullToRefresh';
 
 const NavItem = ({ to, label, isActive, icon, onClick }) => (
   <Link 
@@ -562,11 +563,14 @@ const Layout = () => {
           </header>
 
           {/* Main Viewport */}
-          <div className="flex-1 overflow-y-auto p-4 lg:p-8 relative z-10 scroll-smooth pb-20 lg:pb-8">
+          <PullToRefresh
+            onRefresh={() => window.location.reload()}
+            className="p-4 lg:p-8 scroll-smooth pb-20 lg:pb-8"
+          >
             <div className="mx-auto w-full max-w-[1440px]">
               <Outlet />
             </div>
-          </div>
+          </PullToRefresh>
         </main>
       </div>
 
