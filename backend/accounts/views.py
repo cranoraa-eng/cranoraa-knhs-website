@@ -51,6 +51,20 @@ def login_view(request):
         user = authenticate(request=request, username=login_id, password=password)
         
         if user is None:
+            # Check if user exists but is suspended/inactive
+            try:
+                potential_user = User.objects.filter(models.Q(username=login_id) | models.Q(email=login_id)).first()
+                if potential_user:
+                    if potential_user.account_status == 'suspended' or not potential_user.is_active:
+                        # Double check if it's actually suspended vs just wrong password
+                        if potential_user.check_password(password):
+                            return Response(
+                                {'error': 'This account has been suspended. Please contact the administrator.'},
+                                status=status.HTTP_403_FORBIDDEN
+                            )
+            except Exception as e:
+                logger.error(f"Error checking potential suspended user: {str(e)}")
+
             return Response(
                 {'error': 'Invalid credentials'},
                 status=status.HTTP_401_UNAUTHORIZED
@@ -898,9 +912,14 @@ class UserViewSet(viewsets.ModelViewSet):
             return Response({'error': 'Invalid status'}, status=400)
             
         user.account_status = status_val
+        # Set is_active based on status
+        if status_val in ['suspended', 'inactive']:
+            user.is_active = False
+        else:
+            user.is_active = True
         user.save()
         
-        return Response({'status': f'User account status updated to {status_val}', 'account_status': user.account_status})
+        return Response({'status': f'User account status updated to {status_val}', 'account_status': user.account_status, 'is_active': user.is_active})
 
     @action(detail=True, methods=['post'])
     def reset_password(self, request, pk=None):
@@ -4063,11 +4082,16 @@ class ReportedMessageViewSet(viewsets.ModelViewSet):
         if request.user.role != 'admin':
             return Response({'error': 'Unauthorized'}, status=403)
         report = self.get_object()
-        user_to_suspend = report.message.sender
+        user_to_suspend = report.reported_user
+        
+        if not user_to_suspend:
+            return Response({'error': 'Reported user not found'}, status=404)
+            
         note = request.data.get('note', f'User {user_to_suspend.username} suspended.')
         
         # Suspend user
         user_to_suspend.account_status = 'suspended'
+        user_to_suspend.is_active = False # Hard disable
         user_to_suspend.save()
         
         # Also update profile
@@ -4111,12 +4135,37 @@ class ReportedMessageViewSet(viewsets.ModelViewSet):
         
         return Response({'status': f'User {user_to_suspend.username} suspended and report resolved'})
 
+    @action(detail=True, methods=['post'], url_path='unsuspend-user')
+    def unsuspend_user(self, request, pk=None):
+        if request.user.role != 'admin':
+            return Response({'error': 'Unauthorized'}, status=403)
+        report = self.get_object()
+        user_to_unsuspend = report.reported_user
+        
+        if not user_to_unsuspend:
+            return Response({'error': 'Reported user not found'}, status=404)
+            
+        # Unsuspend user
+        user_to_unsuspend.account_status = 'active'
+        user_to_unsuspend.is_active = True
+        user_to_unsuspend.save()
+        
+        if hasattr(user_to_unsuspend, 'profile'):
+            user_to_unsuspend.profile.is_suspended = False
+            user_to_unsuspend.profile.save()
+            
+        return Response({'status': f'User {user_to_unsuspend.username} unsuspended'})
+
     @action(detail=True, methods=['post'], url_path='mute-user')
     def mute_user(self, request, pk=None):
         if request.user.role != 'admin':
             return Response({'error': 'Unauthorized'}, status=403)
         report = self.get_object()
-        user_to_mute = report.message.sender
+        user_to_mute = report.reported_user
+        
+        if not user_to_mute:
+            return Response({'error': 'Reported user not found'}, status=404)
+            
         hours = int(request.data.get('hours', 24))
         note = request.data.get('note', f'User {user_to_mute.username} muted for {hours} hours.')
         
@@ -4153,7 +4202,10 @@ class ReportedMessageViewSet(viewsets.ModelViewSet):
         if request.user.role != 'admin':
             return Response({'error': 'Unauthorized'}, status=403)
         report = self.get_object()
-        user_to_unmute = report.message.sender
+        user_to_unmute = report.reported_user
+        
+        if not user_to_unmute:
+            return Response({'error': 'Reported user not found'}, status=404)
         
         if hasattr(user_to_unmute, 'profile'):
             user_to_unmute.profile.mute_until = None

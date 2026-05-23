@@ -398,17 +398,26 @@ class ReportedMessageSerializer(serializers.ModelSerializer):
     message_sender = serializers.ReadOnlyField(source='message.sender.username')
     resolved_by_name = serializers.ReadOnlyField(source='resolved_by.get_full_name')
     sender_is_muted = serializers.SerializerMethodField()
+    sender_is_suspended = serializers.SerializerMethodField()
 
     class Meta:
         model = ReportedMessage
         fields = ['id', 'message', 'message_content', 'message_sender', 'reporter', 'reporter_name', 
-                  'reason', 'status', 'moderator_note', 'resolved_by', 'resolved_by_name', 'created_at', 'resolved_at', 'sender_is_muted']
+                  'reason', 'status', 'moderator_note', 'resolved_by', 'resolved_by_name', 'created_at', 'resolved_at', 
+                  'sender_is_muted', 'sender_is_suspended']
         read_only_fields = ['reporter', 'status', 'resolved_at', 'resolved_by']
 
     def get_sender_is_muted(self, obj):
-        if obj.message and obj.message.sender and hasattr(obj.message.sender, 'profile'):
-            mute_until = obj.message.sender.profile.mute_until
+        user = obj.reported_user or (obj.message.sender if obj.message else None)
+        if user and hasattr(user, 'profile'):
+            mute_until = user.profile.mute_until
             return mute_until is not None and mute_until > timezone.now()
+        return False
+
+    def get_sender_is_suspended(self, obj):
+        user = obj.reported_user or (obj.message.sender if obj.message else None)
+        if user:
+            return user.account_status == 'suspended' or not user.is_active
         return False
 
 

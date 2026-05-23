@@ -217,8 +217,12 @@ class ReportedMessage(models.Model):
         ('resolved', 'Resolved'),
         ('dismissed', 'Dismissed'),
     ]
-    message = models.ForeignKey(ChatMessage, on_delete=models.CASCADE, related_name='reports')
-    reporter = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reported_messages')
+    message = models.ForeignKey(ChatMessage, on_delete=models.SET_NULL, null=True, related_name='reports')
+    # Preserve data even if message is deleted
+    reported_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_reports', null=True)
+    message_content_snapshot = models.TextField(blank=True, null=True)
+    
+    reporter = models.ForeignKey(User, on_delete=models.CASCADE, related_name='filed_reports')
     reason = models.TextField()
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     moderator_note = models.TextField(blank=True, null=True)
@@ -229,8 +233,15 @@ class ReportedMessage(models.Model):
     class Meta:
         ordering = ['-created_at']
 
+    def save(self, *args, **kwargs):
+        if not self.reported_user and self.message:
+            self.reported_user = self.message.sender
+        if not self.message_content_snapshot and self.message:
+            self.message_content_snapshot = self.message.content
+        super().save(*args, **kwargs)
+
     def __str__(self):
-        return f"Report by {self.reporter.username} on msg {self.message.id}"
+        return f"Report by {self.reporter.username} on {self.reported_user.username if self.reported_user else 'deleted message'}"
 
 
 class Friendship(models.Model):
