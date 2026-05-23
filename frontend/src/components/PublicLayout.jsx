@@ -43,7 +43,7 @@ const PublicLayout = () => {
       {/* ── Navbar ── */}
       <nav className={`sticky top-0 z-50 transition-all duration-300 ${
         scrolled
-          ? 'bg-white/98 backdrop-blur-xl border-b border-slate-200/80 shadow-sm'
+          ? 'bg-[#0f0720]/98 backdrop-blur-xl border-b border-white/8 shadow-lg shadow-black/20'
           : 'bg-[#0f0720]/85 backdrop-blur-xl border-b border-white/5'
       }`}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -52,9 +52,7 @@ const PublicLayout = () => {
             {/* ── Logo ── */}
             <Link to="/" className="flex items-center gap-3 flex-shrink-0 group">
               {/* Logo circle — matches the circular PWA icon style */}
-              <div className={`h-10 w-10 rounded-full overflow-hidden flex items-center justify-center flex-shrink-0 transition-all duration-300 ring-2 ${
-                scrolled ? 'ring-violet-100 bg-white shadow-sm' : 'ring-white/10 bg-white/10'
-              }`}>
+              <div className="h-10 w-10 rounded-full overflow-hidden flex items-center justify-center flex-shrink-0 transition-all duration-300 ring-2 ring-white/10 bg-white/10">
                 <img
                   src="https://plain-apac-prod-public.komododecks.com/202605/18/u3t1lOolacFscP6v1Bq8/image.png"
                   alt="KNHS"
@@ -62,10 +60,10 @@ const PublicLayout = () => {
                 />
               </div>
               <div className="hidden sm:flex flex-col">
-                <span className={`text-[13px] font-black leading-none tracking-tight transition-colors duration-300 ${scrolled ? 'text-slate-900' : 'text-white'}`}>
+                <span className="text-[13px] font-black leading-none tracking-tight text-white">
                   KIWALAN NHS
                 </span>
-                <span className={`text-[9px] font-bold uppercase tracking-[0.2em] leading-none mt-1 transition-colors duration-300 ${scrolled ? 'text-violet-600' : 'text-violet-400'}`}>
+                <span className="text-[9px] font-bold uppercase tracking-[0.2em] leading-none mt-1 text-violet-400">
                   Excellence in Education
                 </span>
               </div>
@@ -74,7 +72,7 @@ const PublicLayout = () => {
             {/* ── Desktop Nav ── */}
             <div className="hidden md:flex items-center">
               {/* Divider left */}
-              <div className={`w-px h-5 mr-6 transition-colors duration-300 ${scrolled ? 'bg-slate-200' : 'bg-white/10'}`} />
+              <div className="w-px h-5 mr-6 bg-white/10" />
 
               <div className="flex items-center gap-0.5">
                 {navLinks.map((link) => {
@@ -85,20 +83,13 @@ const PublicLayout = () => {
                       to={link.path}
                       className={`relative px-4 py-2 text-sm font-semibold rounded-lg transition-all duration-200 ${
                         active
-                          ? scrolled
-                            ? 'text-violet-700'
-                            : 'text-white'
-                          : scrolled
-                          ? 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'
+                          ? 'text-white'
                           : 'text-white/60 hover:text-white hover:bg-white/8'
                       }`}
                     >
                       {link.name}
-                      {/* Active underline indicator */}
                       {active && (
-                        <span className={`absolute bottom-0 left-1/2 -translate-x-1/2 w-4 h-0.5 rounded-full transition-colors duration-300 ${
-                          scrolled ? 'bg-violet-600' : 'bg-white'
-                        }`} />
+                        <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-4 h-0.5 rounded-full bg-white" />
                       )}
                     </Link>
                   );
@@ -106,7 +97,7 @@ const PublicLayout = () => {
               </div>
 
               {/* Divider right */}
-              <div className={`w-px h-5 ml-6 transition-colors duration-300 ${scrolled ? 'bg-slate-200' : 'bg-white/10'}`} />
+              <div className="w-px h-5 ml-6 bg-white/10" />
             </div>
 
             {/* ── Right actions ── */}
@@ -114,11 +105,7 @@ const PublicLayout = () => {
               {/* Enroll button */}
               <Link
                 to="/enroll"
-                className={`hidden sm:inline-flex items-center gap-1.5 px-4 py-2 rounded-lg border text-sm font-semibold transition-all duration-200 ${
-                  scrolled
-                    ? 'border-slate-200 text-slate-700 hover:border-violet-300 hover:text-violet-700 hover:bg-violet-50'
-                    : 'border-white/15 text-white/80 hover:border-white/30 hover:text-white hover:bg-white/8'
-                }`}
+                className="hidden sm:inline-flex items-center gap-1.5 px-4 py-2 rounded-lg border border-white/15 text-white/80 text-sm font-semibold hover:border-white/30 hover:text-white hover:bg-white/8 transition-all duration-200"
               >
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
@@ -175,9 +162,7 @@ const PublicLayout = () => {
               {/* Mobile hamburger */}
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className={`md:hidden p-2 rounded-lg transition-colors ${
-                  scrolled ? 'text-slate-500 hover:bg-slate-100' : 'text-white/70 hover:bg-white/10'
-                }`}
+                className="md:hidden p-2 rounded-lg text-white/70 hover:bg-white/10 transition-colors"
                 aria-label="Toggle menu"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -191,8 +176,12 @@ const PublicLayout = () => {
         </div>
 
         {/* ── Mobile drawer ── */}
-        {mobileMenuOpen && (
-          <div className="md:hidden bg-white border-t border-slate-100 shadow-xl">
+        <div
+          className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out ${
+            mobileMenuOpen ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'
+          }`}
+        >
+          <div className="bg-[#0f0720] border-t border-white/8">
             {/* Nav links */}
             <div className="px-4 pt-3 pb-2 space-y-0.5">
               {navLinks.map((link) => (
@@ -202,23 +191,23 @@ const PublicLayout = () => {
                   onClick={() => setMobileMenuOpen(false)}
                   className={`flex items-center justify-between px-4 py-3 rounded-xl text-sm font-semibold transition-colors ${
                     isActive(link.path)
-                      ? 'bg-violet-50 text-violet-700'
-                      : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                      ? 'bg-white/10 text-white'
+                      : 'text-white/60 hover:bg-white/8 hover:text-white'
                   }`}
                 >
                   {link.name}
                   {isActive(link.path) && (
-                    <span className="w-1.5 h-1.5 rounded-full bg-violet-600" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-violet-400" />
                   )}
                 </Link>
               ))}
             </div>
             {/* CTA row */}
-            <div className="px-4 pb-4 pt-2 border-t border-slate-100 flex gap-2">
+            <div className="px-4 pb-5 pt-2 border-t border-white/8 flex gap-2">
               <Link
                 to="/enroll"
                 onClick={() => setMobileMenuOpen(false)}
-                className="flex-1 py-2.5 rounded-xl text-sm font-bold text-slate-700 border border-slate-200 text-center hover:bg-slate-50 transition-colors"
+                className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white/80 border border-white/15 text-center hover:bg-white/8 hover:text-white transition-colors"
               >
                 Enroll Now
               </Link>
@@ -231,7 +220,7 @@ const PublicLayout = () => {
               </Link>
             </div>
           </div>
-        )}
+        </div>
       </nav>
 
       {/* ── Page content ── */}
