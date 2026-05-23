@@ -418,36 +418,56 @@ const TrafficIntelligenceSection = ({ data }) => (
   </div>
 );
 
-const GradeDistributionPieSection = ({ data, total, label }) => (
-  <div className="lg:col-span-4 bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
-    <div className="mb-6">
-      <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Achievement Spread</h3>
-      <p className="text-sm font-black text-slate-900 uppercase tracking-tight">Performance Tier Distribution</p>
-    </div>
-    <div className="h-72 relative">
-      <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
-        <PieChart margin={{ top: -20, bottom: 0 }}>
-          <Pie data={data} cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={6} dataKey="value">
-            {data.map((entry, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} strokeWidth={0} />)}
-          </Pie>
-          <Tooltip content={<CustomPieTooltip />} />
-          <Legend verticalAlign="bottom" align="center" iconType="rect" iconSize={4} layout="vertical" wrapperStyle={{ paddingTop: '10px', bottom: 0 }}
-            formatter={(value) => {
-              const item = data.find(d => d.name === value);
-              const totalSum = data.reduce((sum, d) => sum + d.value, 0);
-              const percentage = totalSum > 0 ? ((item.value / totalSum) * 100).toFixed(1) : 0;
-              return <span className="text-[7px] font-black text-slate-600 uppercase tracking-tighter">{value}: {item.value} ({percentage}%)</span>;
-            }}
-          />
-        </PieChart>
-      </ResponsiveContainer>
-      <div className="absolute top-[50%] left-1/2 -translate-x-1/2 -translate-y-[calc(50%+10px)] flex flex-col items-center justify-center pointer-events-none">
-        <p className="text-2xl font-black text-slate-900 leading-none">{total}</p>
-        <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest mt-1">{label}</p>
+const GradeDistributionPieSection = ({ data, total, label }) => {
+  const totalSum = data.reduce((sum, d) => sum + d.value, 0);
+  
+  return (
+    <div className="lg:col-span-4 bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+      <div className="mb-6">
+        <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Achievement Spread</h3>
+        <p className="text-sm font-black text-slate-900 uppercase tracking-tight">Performance Tier Distribution</p>
+      </div>
+      <div className="h-64 flex items-center gap-4">
+        {/* Left Side: Chart */}
+        <div className="w-1/2 h-full relative">
+          <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
+            <PieChart>
+              <Pie data={data} cx="50%" cy="50%" innerRadius={50} outerRadius={70} paddingAngle={6} dataKey="value">
+                {data.map((entry, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} strokeWidth={0} />)}
+              </Pie>
+              <Tooltip content={<CustomPieTooltip />} />
+            </PieChart>
+          </ResponsiveContainer>
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center justify-center pointer-events-none">
+            <p className="text-xl font-black text-slate-900 leading-none">{total}</p>
+            <p className="text-[7px] font-black text-slate-500 uppercase tracking-widest mt-0.5">{label}</p>
+          </div>
+        </div>
+
+        {/* Right Side: Legends & Highlighted Percentages */}
+        <div className="w-1/2 flex flex-col justify-center space-y-3">
+          {data.map((item, index) => {
+            const percentage = totalSum > 0 ? ((item.value / totalSum) * 100).toFixed(1) : 0;
+            return (
+              <div key={item.name} className="flex items-center justify-between gap-2 group">
+                <div className="flex items-center gap-2 min-w-0">
+                  <div className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
+                  <span className="text-[8px] font-black text-slate-500 uppercase tracking-tighter truncate leading-none" title={item.name}>
+                    {item.name.split(' (')[0]}
+                  </span>
+                </div>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-[10px] font-black text-slate-900 leading-none">{percentage}%</span>
+                  <span className="text-[7px] font-bold text-slate-400 leading-none">({item.value})</span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 const GradeDistributionBarSection = ({ data, filterLevel }) => (
   <div className="lg:col-span-8 bg-white border border-slate-200 rounded-xl p-4 shadow-sm">

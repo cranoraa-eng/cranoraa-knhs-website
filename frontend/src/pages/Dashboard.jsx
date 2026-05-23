@@ -230,39 +230,58 @@ const AdminView = () => {
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
             </button>
           </div>
-          <div className="h-64 w-full relative">
-            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
-              <PieChart>
-                <Pie
-                  data={gradeData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={60}
-                  outerRadius={80}
-                  paddingAngle={5}
-                  dataKey="value"
-                >
-                  {gradeData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip 
-                  contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
-                  labelStyle={{ fontWeight: 800, color: '#1e293b', fontSize: '10px', textTransform: 'uppercase' }}
-                />
-                <Legend 
-                  verticalAlign="bottom" 
-                  align="center"
-                  iconType="circle"
-                  wrapperStyle={{ fontSize: '10px', fontWeight: 700, paddingTop: '20px' }}
-                />
-              </PieChart>
-            </ResponsiveContainer>
-            <div className="absolute top-[50%] left-1/2 -translate-x-1/2 -translate-y-[calc(50%+10px)] flex flex-col items-center justify-center pointer-events-none">
-              <p className="text-xl font-black text-slate-900 leading-none">{dist?.total_count || 0}</p>
-              <p className="text-[7px] font-black text-slate-500 uppercase tracking-widest mt-1">
-                {distView === 'general_average' ? 'Students' : 'Entries'}
-              </p>
+          <div className="h-64 flex items-center gap-4">
+            {/* Left Side: Chart */}
+            <div className="w-1/2 h-full relative">
+              <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
+                <PieChart>
+                  <Pie
+                    data={gradeData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={50}
+                    outerRadius={70}
+                    paddingAngle={5}
+                    dataKey="value"
+                  >
+                    {gradeData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip 
+                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+                    labelStyle={{ fontWeight: 800, color: '#1e293b', fontSize: '10px', textTransform: 'uppercase' }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center justify-center pointer-events-none">
+                <p className="text-xl font-black text-slate-900 leading-none">{dist?.total_count || 0}</p>
+                <p className="text-[7px] font-black text-slate-400 uppercase tracking-widest mt-0.5">
+                  {distView === 'general_average' ? 'Students' : 'Entries'}
+                </p>
+              </div>
+            </div>
+
+            {/* Right Side: Legends */}
+            <div className="w-1/2 flex flex-col justify-center space-y-2.5">
+              {gradeData.map((item, index) => {
+                const total = gradeData.reduce((sum, d) => sum + d.value, 0);
+                const percentage = total > 0 ? ((item.value / total) * 100).toFixed(1) : 0;
+                return (
+                  <div key={item.name} className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <div className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
+                      <span className="text-[8px] font-black text-slate-500 uppercase tracking-tighter truncate leading-none">
+                        {item.name}
+                      </span>
+                    </div>
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-[10px] font-black text-slate-900 leading-none">{percentage}%</span>
+                      <span className="text-[7px] font-bold text-slate-400 leading-none">({item.value})</span>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>
