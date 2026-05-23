@@ -113,15 +113,16 @@ const Contact = () => {
                     title="School Location"
                   />
                 ) : (
-                  <div className="flex flex-col items-center justify-center h-full min-h-[480px] text-slate-300 gap-3 bg-slate-50">
-                    <div className="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center">
-                      <svg className="w-8 h-8 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
-                      </svg>
-                    </div>
-                    <p className="text-sm font-semibold text-slate-400">Map not yet configured</p>
-                    <p className="text-xs text-slate-400">Add a Google Maps embed URL in the admin panel</p>
-                  </div>
+                  <iframe
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3948.2297046439908!2d124.27159847501021!3d8.27992249175451!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x325576cc580e692d%3A0x1ee65da2c86ad0a6!2sKiwalan%20National%20High%20School!5e0!3m2!1sen!2sph!4v1779569511724!5m2!1sen!2sph"
+                    width="100%"
+                    height="100%"
+                    style={{ border: 0, minHeight: '480px' }}
+                    allowFullScreen=""
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                    title="School Location"
+                  />
                 )}
 
                 {/* Floating label */}
