@@ -85,14 +85,6 @@ const StatCard = ({ label, value, sub, icon, color = 'violet', onClick, badge })
 
 // ─── ADMIN DASHBOARD ──────────────────────────────────────────────────────────
 
-const COLORS = ['#8b5cf6', '#10b981', '#3b82f6', '#f59e0b', '#ef4444'];
-
-const renderCustomBarLabel = ({ x, y, width, value }) => (
-  <text x={x + width / 2} y={y - 6} fill="#64748b" textAnchor="middle" className="text-[8px] font-black">
-    {value}%
-  </text>
-);
-
 const AdminView = () => {
   const navigate = useNavigate();
   const user = getUser();
@@ -109,35 +101,12 @@ const AdminView = () => {
 
   if (loading || !data) return <Spinner />;
 
-  const getGradeArray = (source) => {
-    if (!source) return [];
-    if (Array.isArray(source)) return source;
-    
-    // Check if source is an object with the expected keys
-    const keys = Object.keys(source).map(k => k.toLowerCase());
-    const hasData = keys.some(k => ['outstanding', 'very_satisfactory', 'satisfactory', 'fairly_satisfactory', 'below_75', 'failed'].includes(k));
-    
-    if (!hasData) return [];
-
-    return [
-      { name: 'Outstanding', value: source.outstanding || 0 },
-      { name: 'Very Satisfactory', value: source.very_satisfactory || 0 },
-      { name: 'Satisfactory', value: source.satisfactory || 0 },
-      { name: 'Fairly Satisfactory', value: source.fairly_satisfactory || 0 },
-      { name: 'Did Not Meet', value: source.below_75 || source.failed || 0 },
-    ];
-  };
-
-  const getActiveDist = () => {
-    const dist = distView === 'general_average' ? data?.general_average : data?.all_subjects;
-    const arr = getGradeArray(dist);
-    if (arr.length > 0) return arr;
-    return getGradeArray(data?.charts?.grade_distribution);
-  };
-
-  const gradeData = getActiveDist();
+  const dist = distView === 'general_average' ? data?.general_average : data?.all_subjects;
+  const gradeData = data?.charts?.grade_distribution || [];
   const attendanceTrends = data?.charts?.attendance_trends || data?.attendance_trends || [];
   const today = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+  const COLORS = ['#10b981', '#3b82f6', '#8b5cf6', '#f59e0b', '#ef4444'];
 
   return (
     <div className="space-y-6 pb-12">
@@ -212,7 +181,7 @@ const AdminView = () => {
             </div>
           </div>
           <div className="h-64 w-full">
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
               <AreaChart data={attendanceTrends}>
                 <defs>
                   <linearGradient id="colorRate" x1="0" y1="0" x2="0" y2="1">
@@ -220,12 +189,12 @@ const AdminView = () => {
                     <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0}/>
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="2 2" vertical={false} stroke="#f1f5f9" />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                 <XAxis 
                   dataKey="date" 
                   axisLine={false} 
                   tickLine={false} 
-                  tick={{fontSize: 8, fontWeight: 900, fill: '#64748b'}}
+                  tick={{fontSize: 10, fontWeight: 600, fill: '#94a3b8'}}
                   tickFormatter={(str) => {
                     const d = new Date(str);
                     return d.toLocaleDateString('en-US', { weekday: 'short' });
@@ -234,88 +203,58 @@ const AdminView = () => {
                 <YAxis 
                   axisLine={false} 
                   tickLine={false} 
-                  tick={{fontSize: 8, fontWeight: 900, fill: '#64748b'}}
+                  tick={{fontSize: 10, fontWeight: 600, fill: '#94a3b8'}}
                   unit="%"
                 />
-                <Tooltip content={<DashboardTooltip unit="%" />} />
-                <Area type="monotone" dataKey="rate" stroke="#8b5cf6" strokeWidth={2} fillOpacity={1} fill="url(#colorRate)" />
+                <Tooltip 
+                  contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+                  labelStyle={{ fontWeight: 800, color: '#1e293b', fontSize: '12px' }}
+                />
+                <Area type="monotone" dataKey="rate" stroke="#8b5cf6" strokeWidth={3} fillOpacity={1} fill="url(#colorRate)" />
               </AreaChart>
             </ResponsiveContainer>
           </div>
         </div>
 
         {/* Grade Distribution */}
-        <div className="lg:col-span-4 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col min-h-[400px]">
-          <div className="flex items-center justify-between mb-8">
+        <div className="lg:col-span-4 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+          <div className="flex items-center justify-between mb-6">
             <div>
-              <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Achievement Matrix</h3>
-              <p className="text-sm font-black text-slate-900 uppercase tracking-tight">{distView === 'general_average' ? 'General Average' : 'Cumulative Grades'}</p>
+              <h3 className="text-lg font-bold text-slate-900">Grade Distribution</h3>
+              <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest">{distView === 'general_average' ? 'General Average' : 'All Subjects'}</p>
             </div>
-            <div className="flex bg-slate-100 p-1 rounded-xl">
-              <button 
-                onClick={() => setDistView('general_average')}
-                className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${distView === 'general_average' ? 'bg-white text-violet-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
-              >
-                Average
-              </button>
-              <button 
-                onClick={() => setDistView('all_subjects')}
-                className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${distView === 'all_subjects' ? 'bg-white text-violet-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
-              >
-                Cumulative
-              </button>
-            </div>
+            <button 
+              onClick={() => setDistView(distView === 'general_average' ? 'all_subjects' : 'general_average')}
+              className="p-1.5 rounded-lg bg-slate-50 text-slate-400 hover:text-violet-600 transition-colors"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+            </button>
           </div>
-          
-          <div className="flex-1 flex items-center">
-            <div className="w-1/2 h-full relative">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={gradeData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={80}
-                    paddingAngle={6}
-                    dataKey="value"
-                    stroke="none"
-                  >
-                    {gradeData.map((_, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip content={<DashboardPieTooltip />} />
-                </PieChart>
-              </ResponsiveContainer>
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center justify-center pointer-events-none">
-                <p className="text-2xl font-black text-slate-900 leading-none">
-                  {gradeData.reduce((sum, d) => sum + d.value, 0)}
-                </p>
-                <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mt-1">Total</p>
-              </div>
-            </div>
-
-            <div className="w-1/2 pl-6 space-y-3">
-              {gradeData.map((item, index) => {
-                const total = gradeData.reduce((sum, d) => sum + d.value, 0);
-                const percentage = total > 0 ? ((item.value / total) * 100).toFixed(1) : 0;
-                return (
-                  <div key={item.name} className="flex items-start gap-3">
-                    <div className="w-2 h-2 rounded-full mt-1.5 shrink-0" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
-                    <div className="flex flex-col min-w-0">
-                      <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1 truncate">
-                        {item.name}
-                      </span>
-                      <div className="flex items-baseline gap-1.5">
-                        <span className="text-sm font-black text-slate-900 leading-none">{item.value}</span>
-                        <span className="text-[10px] font-bold text-slate-400">({percentage}%)</span>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+          <div className="h-64 w-full">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
+              <PieChart>
+                <Pie
+                  data={gradeData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={60}
+                  outerRadius={80}
+                  paddingAngle={5}
+                  dataKey="value"
+                >
+                  {gradeData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip />
+                <Legend 
+                  verticalAlign="bottom" 
+                  align="center"
+                  iconType="circle"
+                  wrapperStyle={{ fontSize: '10px', fontWeight: 700, paddingTop: '20px' }}
+                />
+              </PieChart>
+            </ResponsiveContainer>
           </div>
         </div>
       </div>
@@ -627,43 +566,6 @@ const Dashboard = () => {
   if (user?.role === 'admin')   return <AdminView />;
   if (user?.role === 'teacher') return <TeacherView />;
   return <StudentView />;
-};
-
-const DashboardTooltip = ({ active, payload, label, unit = '' }) => {
-  if (active && payload && payload.length) {
-    return (
-      <div className="bg-slate-900 border border-slate-800 p-2 rounded-lg shadow-2xl backdrop-blur-md bg-opacity-95">
-        <p className="text-[8px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1.5">{label}</p>
-        <div className="space-y-1">
-          {payload.map((entry, index) => (
-            <div key={index} className="flex items-center justify-between gap-4">
-              <div className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: entry.color }} />
-                <span className="text-[8px] font-bold text-slate-500 uppercase tracking-widest">{entry.name}</span>
-              </div>
-              <span className="text-[10px] font-black text-white">{entry.value}{unit}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  }
-  return null;
-};
-
-const DashboardPieTooltip = ({ active, payload }) => {
-  if (active && payload && payload.length) {
-    return (
-      <div className="bg-slate-900 border border-slate-800 p-2 rounded-lg shadow-2xl backdrop-blur-md bg-opacity-95">
-        <p className="text-xs font-black text-white flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full" style={{ backgroundColor: payload[0].payload.fill }} />
-          {payload[0].value}
-          <span className="text-[8px] font-bold text-slate-500 uppercase tracking-widest ml-1">{payload[0].name}</span>
-        </p>
-      </div>
-    );
-  }
-  return null;
 };
 
 export default Dashboard;

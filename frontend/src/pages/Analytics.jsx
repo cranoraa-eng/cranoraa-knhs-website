@@ -279,7 +279,7 @@ const AttendanceSection = ({ data }) => (
       <div className="px-2 py-1 bg-slate-50 border border-slate-100 rounded text-[8px] font-black text-slate-500 uppercase tracking-widest">Historical Data</div>
     </div>
     <div className="h-64">
-      <ResponsiveContainer width="100%" height="100%">
+      <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
         <AreaChart data={data}>
           <defs>
             <linearGradient id="colorAtt" x1="0" y1="0" x2="0" y2="1">
@@ -307,47 +307,47 @@ const AttendanceSection = ({ data }) => (
 const GradeMatrixSection = ({ gradeDistribution }) => {
   const total = gradeDistribution.reduce((sum, d) => sum + d.value, 0);
   return (
-    <div className="lg:col-span-4 bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex flex-col min-h-[400px]">
-      <div className="mb-6">
+    <div className="lg:col-span-4 bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+      <div className="mb-4">
         <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Grade Matrix</h3>
         <p className="text-sm font-black text-slate-900 uppercase tracking-tight">Global Performance Spread</p>
       </div>
-      <div className="flex-1 relative">
-        <ResponsiveContainer width="100%" height="100%">
-          <PieChart>
-            <Pie
-              data={gradeDistribution}
-              cx="50%"
-              cy="50%"
-              innerRadius={65}
-              outerRadius={85}
-              paddingAngle={6}
-              dataKey="value"
-              stroke="none"
-            >
-              {gradeDistribution.map((_, index) => (
-                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-              ))}
-            </Pie>
-            <Tooltip content={<CustomPieTooltip />} />
-            <Legend 
-              verticalAlign="bottom" 
-              align="center" 
-              iconType="circle" 
-              iconSize={6}
-              layout="horizontal"
-              wrapperStyle={{ bottom: 0, paddingTop: '20px' }}
-              formatter={(value) => {
-                const item = gradeDistribution.find(d => d.name === value);
-                const percentage = total > 0 ? ((item.value / total) * 100).toFixed(1) : 0;
-                return <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter">{value} ({percentage}%)</span>;
-              }}
-            />
-          </PieChart>
-        </ResponsiveContainer>
-        <div className="absolute top-[50%] left-1/2 -translate-x-1/2 flex flex-col items-center justify-center pointer-events-none transform -translate-y-[calc(50%+20px)]">
-          <p className="text-3xl font-black text-slate-900 leading-none">{total}</p>
-          <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mt-1">Students</p>
+      <div className="h-64 flex items-center justify-between gap-2">
+        <div className="w-1/2 h-full">
+          <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
+            <PieChart margin={{ top: 0, bottom: 0, left: 0, right: 0 }}>
+              <Pie
+                data={gradeDistribution}
+                cx="50%"
+                cy="50%"
+                innerRadius={55}
+                outerRadius={75}
+                paddingAngle={8}
+                dataKey="value"
+              >
+                {gradeDistribution.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} strokeWidth={0} />
+                ))}
+              </Pie>
+              <Tooltip content={<CustomPieTooltip />} />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+        <div className="w-1/2 overflow-y-auto max-h-full pr-2">
+          <div className="space-y-2.5">
+            {gradeDistribution.map((item, index) => {
+              const percentage = total > 0 ? ((item.value / total) * 100).toFixed(1) : 0;
+              return (
+                <div key={item.name} className="flex items-start gap-2">
+                  <div className="w-2 h-2 rounded-full mt-1 shrink-0" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
+                  <div className="flex flex-col min-w-0">
+                    <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-tight truncate">{item.name}</span>
+                    <span className="text-[10px] font-bold text-slate-700">{item.value} <span className="text-slate-400 font-medium ml-1">({percentage}%)</span></span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
       </div>
     </div>
@@ -366,7 +366,7 @@ const SubjectPerformanceSection = ({ data }) => (
       </div>
     </div>
     <div className="h-72">
-      <ResponsiveContainer width="100%" height="100%">
+      <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
         <BarChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
           <CartesianGrid strokeDasharray="2 2" vertical={false} stroke="#f1f5f9" />
           <XAxis dataKey="subject__name" tick={{fontSize: 8, fontWeight: 900, fill: '#64748b'}} axisLine={false} tickLine={false} />
@@ -386,7 +386,7 @@ const TrafficIntelligenceSection = ({ data }) => (
       <p className="text-sm font-black text-slate-900 uppercase tracking-tight">24H Active Engagement</p>
     </div>
     <div className="h-72">
-      <ResponsiveContainer width="100%" height="100%">
+      <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
         <AreaChart data={data} margin={{ top: 10, right: 30, left: -20, bottom: 0 }}>
           <defs>
             <linearGradient id="colorUsers" x1="0" y1="0" x2="0" y2="1">
@@ -404,55 +404,36 @@ const TrafficIntelligenceSection = ({ data }) => (
   </div>
 );
 
-const GradeDistributionPieSection = ({ data, totalStudents }) => {
-  const chartData = Array.isArray(data) ? data : [];
-  return (
-    <div className="lg:col-span-4 bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex flex-col min-h-[400px]">
-      <div className="mb-6">
-        <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Achievement Spread</h3>
-        <p className="text-sm font-black text-slate-900 uppercase tracking-tight">Performance Tier Distribution</p>
-      </div>
-      <div className="flex-1 relative">
-        <ResponsiveContainer width="100%" height="100%">
-          <PieChart>
-            <Pie 
-              data={chartData} 
-              cx="50%" 
-              cy="50%" 
-              innerRadius={65} 
-              outerRadius={85} 
-              paddingAngle={6} 
-              dataKey="value"
-              stroke="none"
-            >
-              {chartData.map((_, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />)}
-            </Pie>
-            <Tooltip content={<CustomPieTooltip />} />
-            <Legend 
-              verticalAlign="bottom" 
-              align="center" 
-              iconType="circle" 
-              iconSize={6} 
-              layout="horizontal" 
-              wrapperStyle={{ bottom: 0, paddingTop: '20px' }}
-              formatter={(value) => {
-                const item = chartData.find(d => d.name === value);
-                if (!item) return value;
-                const total = chartData.reduce((sum, d) => sum + d.value, 0);
-                const percentage = total > 0 ? ((item.value / total) * 100).toFixed(1) : 0;
-                return <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter">{value} ({percentage}%)</span>;
-              }}
-            />
-          </PieChart>
-        </ResponsiveContainer>
-        <div className="absolute top-[50%] left-1/2 -translate-x-1/2 flex flex-col items-center justify-center pointer-events-none transform -translate-y-[calc(50%+20px)]">
-          <p className="text-3xl font-black text-slate-900 leading-none">{totalStudents}</p>
-          <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mt-1">Students</p>
-        </div>
+const GradeDistributionPieSection = ({ data, totalStudents }) => (
+  <div className="lg:col-span-4 bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+    <div className="mb-6">
+      <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Achievement Spread</h3>
+      <p className="text-sm font-black text-slate-900 uppercase tracking-tight">Performance Tier Distribution</p>
+    </div>
+    <div className="h-72 relative">
+      <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
+        <PieChart margin={{ top: -20, bottom: 0 }}>
+          <Pie data={data} cx="50%" cy="45%" innerRadius={60} outerRadius={80} paddingAngle={6} dataKey="value">
+            {data.map((entry, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} strokeWidth={0} />)}
+          </Pie>
+          <Tooltip content={<CustomPieTooltip />} />
+          <Legend verticalAlign="bottom" align="center" iconType="rect" iconSize={4} layout="vertical" wrapperStyle={{ paddingTop: '10px', bottom: 0 }}
+            formatter={(value) => {
+              const item = data.find(d => d.name === value);
+              const total = data.reduce((sum, d) => sum + d.value, 0);
+              const percentage = total > 0 ? ((item.value / total) * 100).toFixed(1) : 0;
+              return <span className="text-[7px] font-black text-slate-400 uppercase tracking-tighter">{value}: {item.value} ({percentage}%)</span>;
+            }}
+          />
+        </PieChart>
+      </ResponsiveContainer>
+      <div className="absolute top-[45%] left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center justify-center pointer-events-none">
+        <p className="text-2xl font-black text-slate-900 leading-none">{totalStudents}</p>
+        <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mt-1">Students</p>
       </div>
     </div>
-  );
-};
+  </div>
+);
 
 const GradeDistributionBarSection = ({ data, filterLevel }) => (
   <div className="lg:col-span-8 bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
@@ -464,7 +445,7 @@ const GradeDistributionBarSection = ({ data, filterLevel }) => (
       <div className="flex gap-1"><div className="w-1.5 h-1.5 rounded-full bg-indigo-500" /><div className="w-1.5 h-1.5 rounded-full bg-indigo-300" /></div>
     </div>
     <div className="h-72">
-      <ResponsiveContainer width="100%" height="100%">
+      <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
         <BarChart data={data} margin={{ bottom: 30 }}>
           <CartesianGrid strokeDasharray="2 2" vertical={false} stroke="#f1f5f9" />
           <XAxis dataKey="label" tick={{fontSize: 8, fontWeight: 900, fill: '#64748b'}} axisLine={false} tickLine={false} angle={-25} textAnchor="end" padding={{ left: 20, right: 20 }} />
@@ -491,14 +472,14 @@ const GradeRankingSection = ({ data, filterSubject, meta }) => (
       <div className="px-2 py-1 bg-slate-900 rounded text-[8px] font-black text-white uppercase tracking-[0.2em]">Efficiency Leaderboard</div>
     </div>
     <div className="h-96">
-      <ResponsiveContainer width="100%" height="100%">
+      <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
         <BarChart data={data} layout="vertical" margin={{ left: 40, right: 60 }}>
           <CartesianGrid strokeDasharray="2 2" horizontal={true} vertical={false} stroke="#f1f5f9" />
           <XAxis type="number" domain={[0, 100]} hide />
           <YAxis type="category" dataKey="code" width={80} tick={{fontSize: 8, fontWeight: 900, fill: '#475569'}} axisLine={false} tickLine={false} />
           <Tooltip content={<CustomTooltip unit="%" />} />
           <Bar dataKey="average" fill="#4f46e5" radius={[0, 2, 2, 0]} barSize={20} label={renderHorizontalBarLabel}>
-            {data.map((_, index) => <Cell key={`cell-${index}`} fill="#4f46e5" opacity={1 - (index * 0.05)} />)}
+            {data.map((entry, index) => <Cell key={`cell-${index}`} fill="#4f46e5" opacity={1 - (index * 0.05)} />)}
           </Bar>
         </BarChart>
       </ResponsiveContainer>
@@ -516,7 +497,7 @@ const AttendanceTrendsSection = ({ data }) => (
       <div className="flex gap-1.5"><div className="px-2 py-0.5 bg-emerald-50 border border-emerald-100 rounded text-[7px] font-black text-emerald-600 uppercase tracking-widest">Live</div></div>
     </div>
     <div className="h-64">
-      <ResponsiveContainer width="100%" height="100%">
+      <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
         <AreaChart data={data}>
           <defs>
             <linearGradient id="colorPresent" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#10b981" stopOpacity={0.1}/><stop offset="95%" stopColor="#10b981" stopOpacity={0}/></linearGradient>

@@ -38,6 +38,7 @@ import EnrollmentManagement from './pages/EnrollmentManagement';
 import Settings from './pages/Settings';
 import GradeInput from './pages/GradeInput';
 import GradeManagement from './pages/GradeManagement';
+import GradeDistribution from './pages/GradeDistribution';
 import StudentGradeView from './pages/StudentGradeView';
 import Moderation from './pages/Moderation';
 import Analytics from './pages/Analytics';
@@ -140,6 +141,7 @@ function App() {
           <Route path="settings" element={<Settings />} />
           <Route path="grade-input" element={<GradeInput />} />
           <Route path="grade-management" element={<GradeManagement />} />
+          <Route path="grade-distribution" element={<GradeDistribution />} />
           <Route path="student-grades" element={<StudentGradeView />} />
           <Route path="moderation" element={<Moderation />} />
           <Route path="analytics" element={<Analytics />} />

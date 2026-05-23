@@ -2107,11 +2107,6 @@ def admin_dashboard_stats(request):
                 ],
             },
             'all_subjects': {
-                'outstanding': outstanding,
-                'very_satisfactory': very_satisfactory,
-                'satisfactory': satisfactory,
-                'fairly_satisfactory': fairly_satisfactory,
-                'below_75': below_75,
                 'outstanding_pct': round(outstanding / total_grades * 100) if total_grades else 0,
                 'very_satisfactory_pct': round(very_satisfactory / total_grades * 100) if total_grades else 0,
                 'satisfactory_pct': round(satisfactory / total_grades * 100) if total_grades else 0,
@@ -2120,11 +2115,6 @@ def admin_dashboard_stats(request):
                 'total_count': total_grades
             },
             'general_average': {
-                 'outstanding': ga_outstanding,
-                 'very_satisfactory': ga_very_satisfactory,
-                 'satisfactory': ga_satisfactory,
-                 'fairly_satisfactory': ga_fairly_satisfactory,
-                 'below_75': ga_below_75,
                  'outstanding_pct': round(ga_outstanding / total_students_graded * 100) if total_students_graded else 0,
                  'very_satisfactory_pct': round(ga_very_satisfactory / total_students_graded * 100) if total_students_graded else 0,
                  'satisfactory_pct': round(ga_satisfactory / total_students_graded * 100) if total_students_graded else 0,
@@ -2958,25 +2948,14 @@ class GradeViewSet(viewsets.ModelViewSet):
             lowest=Min('transmuted_score')
         ).order_by('-avg_grade')
         
-        # Distribution (Student-wise General Average)
-        student_averages = queryset.values('student').annotate(avg=Avg('transmuted_score'))
-        total_students_count = student_averages.count()
-        
+        # Distribution
         distribution = {
-            'outstanding': 0,
-            'very_satisfactory': 0,
-            'satisfactory': 0,
-            'fairly_satisfactory': 0,
-            'failed': 0,
+            'outstanding': queryset.filter(transmuted_score__gte=90).count(),
+            'very_satisfactory': queryset.filter(transmuted_score__gte=85, transmuted_score__lt=90).count(),
+            'satisfactory': queryset.filter(transmuted_score__gte=80, transmuted_score__lt=85).count(),
+            'fairly_satisfactory': queryset.filter(transmuted_score__gte=75, transmuted_score__lt=80).count(),
+            'failed': queryset.filter(transmuted_score__lt=75).count(),
         }
-        
-        for sa in student_averages:
-            score = sa['avg']
-            if score >= 90: distribution['outstanding'] += 1
-            elif score >= 85: distribution['very_satisfactory'] += 1
-            elif score >= 80: distribution['satisfactory'] += 1
-            elif score >= 75: distribution['fairly_satisfactory'] += 1
-            else: distribution['failed'] += 1
         
         # Missing Grade Detection
         missing_grades = []
@@ -3002,7 +2981,7 @@ class GradeViewSet(viewsets.ModelViewSet):
             'subject_stats': subject_stats,
             'distribution': distribution,
             'missing_grades': missing_grades[:50],
-            'total_graded': total_students_count
+            'total_graded': queryset.count()
         })
     
     def perform_create(self, serializer):
