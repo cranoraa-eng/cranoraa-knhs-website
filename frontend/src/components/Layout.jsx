@@ -349,11 +349,7 @@ const Layout = () => {
           <div className="flex-shrink-0 border-t border-white/5 p-4 space-y-2 bg-[#140824]/50">
             <button
               onClick={() => {
-                // Always open in the system browser, not inside the PWA.
-                // Derive the public site URL from the API base (strip /api suffix).
-                const siteUrl = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api')
-                  .replace('/api', '');
-                window.open(siteUrl, '_blank', 'noopener,noreferrer');
+                window.open('https://cranoraa-eng-cranoraa-knhs-website.vercel.app/', '_blank', 'noopener,noreferrer');
               }}
               className="flex w-full items-center justify-center rounded-xl bg-white/5 border border-white/10 px-4 py-2.5 text-xs font-bold uppercase tracking-widest text-white hover:bg-white/10 transition-all active:scale-95"
             >
