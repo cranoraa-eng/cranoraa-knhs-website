@@ -2177,6 +2177,13 @@ def admin_dashboard_stats(request):
                 ],
             },
             'all_subjects': {
+                'counts': [
+                    {'name': 'Outstanding', 'value': outstanding},
+                    {'name': 'Very Satisfactory', 'value': very_satisfactory},
+                    {'name': 'Satisfactory', 'value': satisfactory},
+                    {'name': 'Fairly Satisfactory', 'value': fairly_satisfactory},
+                    {'name': 'Did Not Meet', 'value': below_75},
+                ],
                 'outstanding_pct': round(outstanding / total_grades * 100) if total_grades else 0,
                 'very_satisfactory_pct': round(very_satisfactory / total_grades * 100) if total_grades else 0,
                 'satisfactory_pct': round(satisfactory / total_grades * 100) if total_grades else 0,
@@ -2185,6 +2192,13 @@ def admin_dashboard_stats(request):
                 'total_count': total_grades
             },
             'general_average': {
+                 'counts': [
+                    {'name': 'Outstanding', 'value': ga_outstanding},
+                    {'name': 'Very Satisfactory', 'value': ga_very_satisfactory},
+                    {'name': 'Satisfactory', 'value': ga_satisfactory},
+                    {'name': 'Fairly Satisfactory', 'value': ga_fairly_satisfactory},
+                    {'name': 'Did Not Meet', 'value': ga_below_75},
+                 ],
                  'outstanding_pct': round(ga_outstanding / total_students_graded * 100) if total_students_graded else 0,
                  'very_satisfactory_pct': round(ga_very_satisfactory / total_students_graded * 100) if total_students_graded else 0,
                  'satisfactory_pct': round(ga_satisfactory / total_students_graded * 100) if total_students_graded else 0,

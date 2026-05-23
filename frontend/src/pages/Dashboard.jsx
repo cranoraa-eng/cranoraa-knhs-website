@@ -102,7 +102,7 @@ const AdminView = () => {
   if (loading || !data) return <Spinner />;
 
   const dist = distView === 'general_average' ? data?.general_average : data?.all_subjects;
-  const gradeData = data?.charts?.grade_distribution || [];
+  const gradeData = dist?.counts || [];
   const attendanceTrends = data?.charts?.attendance_trends || data?.attendance_trends || [];
   const today = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
@@ -230,7 +230,7 @@ const AdminView = () => {
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
             </button>
           </div>
-          <div className="h-64 w-full">
+          <div className="h-64 w-full relative">
             <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
               <PieChart>
                 <Pie
@@ -246,7 +246,10 @@ const AdminView = () => {
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip />
+                <Tooltip 
+                  contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+                  labelStyle={{ fontWeight: 800, color: '#1e293b', fontSize: '10px', textTransform: 'uppercase' }}
+                />
                 <Legend 
                   verticalAlign="bottom" 
                   align="center"
@@ -255,6 +258,12 @@ const AdminView = () => {
                 />
               </PieChart>
             </ResponsiveContainer>
+            <div className="absolute top-[40%] left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center justify-center pointer-events-none">
+              <p className="text-xl font-black text-slate-900 leading-none">{dist?.total_count || 0}</p>
+              <p className="text-[7px] font-black text-slate-400 uppercase tracking-widest mt-1">
+                {distView === 'general_average' ? 'Students' : 'Entries'}
+              </p>
+            </div>
           </div>
         </div>
       </div>
