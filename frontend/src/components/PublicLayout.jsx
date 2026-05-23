@@ -287,8 +287,8 @@ const PublicLayout = () => {
           <div className="mt-10 pt-8 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
             <p className="text-xs text-slate-500">© {new Date().getFullYear()} Kiwalan National High School. All rights reserved.</p>
             <div className="flex gap-5 text-xs text-slate-500">
-              <a href="#" className="hover:text-slate-300 transition-colors">Privacy Policy</a>
-              <a href="#" className="hover:text-slate-300 transition-colors">Terms of Service</a>
+              <Link to="/privacy" className="hover:text-slate-300 transition-colors">Privacy Policy</Link>
+              <Link to="/terms" className="hover:text-slate-300 transition-colors">Terms of Service</Link>
             </div>
           </div>
         </div>
