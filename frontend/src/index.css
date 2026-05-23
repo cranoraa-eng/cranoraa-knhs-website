@@ -24,8 +24,6 @@
     font-family: 'Inter', sans-serif;
     @apply text-slate-700 antialiased;
     overflow-x: hidden;
-    /* Prevent overscroll bounce on iOS PWA */
-    overscroll-behavior: none;
   }
 
   /* Prevent double scrollbars */

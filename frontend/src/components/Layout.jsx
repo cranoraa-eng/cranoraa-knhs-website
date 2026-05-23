@@ -275,7 +275,7 @@ const Layout = () => {
   const currentNav = NAV_STRUCTURE[user?.role] || [];
 
   return (
-    <div className="h-screen overflow-hidden bg-slate-50 font-sans antialiased">
+    <div className="h-screen overflow-hidden bg-slate-50 font-sans antialiased [overscroll-behavior:none]">
       <div className="flex h-full">
 
         {/* Mobile Sidebar Overlay */}
