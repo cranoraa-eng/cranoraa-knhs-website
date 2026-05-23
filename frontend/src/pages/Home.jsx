@@ -469,6 +469,83 @@ const Home = () => {
         </div>
       </section>
 
+      {/* ── LOCATION ── */}
+      <section className="py-20 md:py-28 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
+
+            {/* Info side */}
+            <div>
+              <p className="text-xs font-bold text-violet-600 uppercase tracking-widest mb-3">Find Us</p>
+              <h2 className="text-3xl md:text-4xl font-black text-slate-900 mb-5 leading-tight">
+                Visit Kiwalan<br />National High School
+              </h2>
+              <p className="text-slate-500 leading-relaxed mb-8">
+                We welcome prospective students and parents to visit our campus. Our registrar's office is open on school days for enrollment inquiries.
+              </p>
+
+              <div className="space-y-4">
+                {[
+                  {
+                    icon: 'M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z M15 11a3 3 0 11-6 0 3 3 0 016 0z',
+                    label: 'Address',
+                    value: 'Kiwalan, Iligan City, Lanao del Norte, Philippines',
+                  },
+                  {
+                    icon: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z',
+                    label: 'Office Hours',
+                    value: 'Monday – Friday, 7:00 AM – 5:00 PM',
+                  },
+                  {
+                    icon: 'M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z',
+                    label: 'Email',
+                    value: 'info@kiwalan-nhs.edu.ph',
+                  },
+                ].map((item, i) => (
+                  <div key={i} className="flex items-start gap-4">
+                    <div className="w-10 h-10 rounded-xl bg-violet-50 border border-violet-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <svg className="w-4 h-4 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={item.icon} />
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">{item.label}</p>
+                      <p className="text-sm font-semibold text-slate-800">{item.value}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <a
+                href="https://maps.google.com/?q=Kiwalan+National+High+School+Iligan+City"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 mt-8 px-5 py-2.5 rounded-xl bg-violet-600 text-white text-sm font-bold hover:bg-violet-500 transition-colors shadow-sm"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                Open in Google Maps
+              </a>
+            </div>
+
+            {/* Map side */}
+            <div className="rounded-2xl overflow-hidden border border-slate-100 shadow-sm h-[380px] bg-slate-50">
+              <iframe
+                title="Kiwalan National High School Location"
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3942.0!2d124.2!3d8.23!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2sKiwalan+National+High+School!5e0!3m2!1sen!2sph!4v1"
+                width="100%"
+                height="100%"
+                style={{ border: 0 }}
+                allowFullScreen=""
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ── CTA ── */}
       <section className="py-20 md:py-28 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
