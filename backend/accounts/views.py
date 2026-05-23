@@ -473,7 +473,6 @@ def teacher_dashboard_stats(request):
             })
 
         # Latest messages for this teacher
-        from .models import ChatMessage
         latest_messages = []
         msg_objs = ChatMessage.objects.filter(
             room__participants=user
@@ -530,7 +529,6 @@ def student_dashboard_stats(request):
             })
 
         # Latest messages for this student
-        from .models import ChatMessage
         latest_messages = []
         msg_objs = ChatMessage.objects.filter(
             room__participants=user
@@ -2139,8 +2137,6 @@ def admin_dashboard_stats(request):
             except:
                 pass
         
-        latest_messages = ChatMessage.objects.order_by('-timestamp')[:5]
-        
         # Optimized Active Users Over Time (Last 24 Hours)
         active_users_trends = []
         if AuditLog:
@@ -2183,7 +2179,6 @@ def admin_dashboard_stats(request):
             a['author_name'] = a.pop('author__username', 'Unknown')
 
         # Latest messages for this admin
-        from .models import ChatMessage
         latest_messages = []
         msg_objs = ChatMessage.objects.filter(
             room__participants=request.user
@@ -2259,15 +2254,6 @@ def admin_dashboard_stats(request):
                         'description': log.description,
                         'action': log.action
                     } for log in recent_activity
-                ],
-                'latest_messages': [
-                    {
-                        'id': m.id,
-                        'sender': m.sender.username if m.sender else 'Unknown',
-                        'content': m.content[:50],
-                        'timestamp': m.timestamp,
-                        'room_id': m.room_id
-                    } for m in latest_messages
                 ],
             },
             'all_subjects': {
