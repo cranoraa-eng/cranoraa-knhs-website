@@ -179,7 +179,7 @@ const Login = () => {
       <div className="relative w-full max-w-sm rounded-3xl border border-white/20 bg-white/95 p-6 md:p-8 shadow-2xl backdrop-blur-xl">
         {/* Back to Website Link */}
         <button
-          onClick={() => window.open('https://cranoraa-eng-cranoraa-knhs-website.vercel.app/', '_blank', 'noopener,noreferrer')}
+          onClick={() => { window.location.href = '/'; }}
           className="absolute -top-12 left-0 text-white/70 hover:text-white flex items-center gap-2 text-[12px] font-bold transition-colors group"
         >
           <svg className="w-4 h-4 transition-transform group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">

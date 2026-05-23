@@ -24,6 +24,19 @@ const isPWA = () =>
   window.matchMedia('(display-mode: standalone)').matches ||
   window.navigator.standalone === true;
 
+// On first PWA launch (cold start), redirect / to /login.
+// Once the user navigates inside the app, allow / to render normally
+// so "Visit Website" / "Back to Website" buttons work.
+const isFirstLaunch = () => {
+  if (!isPWA()) return false;
+  // If we already set the flag this session, not a cold start
+  if (sessionStorage.getItem('pwa_launched')) return false;
+  sessionStorage.setItem('pwa_launched', '1');
+  return true;
+};
+
+const redirectToLogin = isFirstLaunch();
+
 // ── Public website pages ──────────────────────────────────────────────────────
 const Home = lazy(() => import('./pages/Home'));
 const About = lazy(() => import('./pages/About'));
@@ -116,9 +129,9 @@ function App() {
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/force-password-change" element={<ForcePasswordChange />} />
 
-              {/* Public Website Routes — skipped in PWA standalone mode */}
-              {isPWA() ? (
-                // In PWA: redirect every public route to /login
+              {/* Public Website Routes */}
+              {redirectToLogin ? (
+                // Cold PWA launch: redirect / to /login
                 <>
                   <Route path="/" element={<Navigate to="/login" replace />} />
                   <Route path="/about" element={<Navigate to="/login" replace />} />
