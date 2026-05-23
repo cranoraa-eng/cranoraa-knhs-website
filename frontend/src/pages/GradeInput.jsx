@@ -264,93 +264,95 @@ const GradeInput = () => {
   };
 
   return (
-    <div className="flex flex-col h-screen md:h-[calc(100vh-4rem)] bg-gray-50 overflow-hidden max-w-full">
+    <div className="flex flex-col bg-gray-50 overflow-hidden max-w-full" style={{ height: 'calc(100dvh - 68px - 80px)' }}>
 
-      {/* Toolbar */}
-      <div className="flex-shrink-0 bg-white border-b border-gray-200 px-1.5 md:px-4 py-1.5 md:py-2.5 flex flex-wrap items-center gap-1.5 md:gap-3 shadow-sm z-30 min-w-0">
-        <button onClick={() => navigate('/grade-management')}
-          className="p-1 md:p-2 rounded-lg md:rounded-xl hover:bg-gray-100 text-gray-500 transition-all active:scale-95 flex-shrink-0 border border-gray-100 md:border-transparent">
-          <svg className="w-3.5 h-3.5 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-          </svg>
-        </button>
-
-        <div className="hidden md:block w-px h-5 bg-gray-200 flex-shrink-0" />
-
-        {/* Classroom */}
-        <div className="flex items-center gap-1 flex-1 md:flex-none min-w-0">
-          <label className="hidden md:block text-[10px] font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap">Class</label>
+      {/* ── Toolbar ── */}
+      <div className="flex-shrink-0 bg-white border-b border-gray-200 px-2 md:px-4 py-2 md:py-2.5 shadow-sm z-30">
+        {/* Row 1: Class + Subject + Submit */}
+        <div className="flex items-center gap-2 mb-2 md:mb-0 md:hidden">
           <select value={selClassroom} onChange={e => { setSelClassroom(e.target.value); setSelSubject(''); }}
-            className="w-full md:w-auto px-1.5 py-1 md:px-3 md:py-2 border border-gray-300 rounded-lg md:rounded-xl text-[10px] md:text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 min-w-0 md:min-w-[130px] shadow-sm truncate font-medium">
+            className="flex-1 px-2 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-purple-500 font-medium bg-white min-w-0">
             <option value="">— Class —</option>
             {sortedClassrooms.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
           </select>
-        </div>
-
-        {/* Subject */}
-        <div className="flex items-center gap-1 flex-1 md:flex-none min-w-0">
-          <label className="hidden md:block text-[10px] font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap">Subject</label>
           <select value={selSubject} onChange={e => setSelSubject(e.target.value)}
             disabled={!selClassroom}
-            className="w-full md:w-auto px-1.5 py-1 md:px-3 md:py-2 border border-gray-300 rounded-lg md:rounded-xl text-[10px] md:text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 min-w-0 md:min-w-[150px] disabled:bg-gray-50 disabled:text-gray-400 shadow-sm truncate font-medium">
+            className="flex-1 px-2 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-purple-500 font-medium bg-white min-w-0 disabled:bg-gray-50 disabled:text-gray-400">
             <option value="">— Subject —</option>
             {subjects.map(s => <option key={s.id} value={s.subject}>{s.subject_name}</option>)}
           </select>
         </div>
 
-        {/* Quarter */}
-        <div className="flex items-center gap-1 overflow-x-auto no-scrollbar py-0.5 md:py-1 shrink-0">
-          <div className="flex rounded-lg md:rounded-xl border border-gray-300 overflow-hidden shadow-sm">
+        {/* Row 2 (mobile) / Single row (desktop): Quarter + Year + Submit */}
+        <div className="flex items-center gap-2 flex-wrap md:flex-nowrap">
+          {/* Back button */}
+          <button onClick={() => navigate('/grade-management')}
+            className="p-2 rounded-lg hover:bg-gray-100 text-gray-500 transition-all active:scale-95 flex-shrink-0 border border-gray-200 md:border-transparent">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+          </button>
+
+          <div className="hidden md:block w-px h-5 bg-gray-200 flex-shrink-0" />
+
+          {/* Class (desktop only) */}
+          <div className="hidden md:flex items-center gap-1 flex-1 min-w-0">
+            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap">Class</label>
+            <select value={selClassroom} onChange={e => { setSelClassroom(e.target.value); setSelSubject(''); }}
+              className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 min-w-[130px] shadow-sm font-medium">
+              <option value="">— Class —</option>
+              {sortedClassrooms.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+            </select>
+          </div>
+
+          {/* Subject (desktop only) */}
+          <div className="hidden md:flex items-center gap-1 flex-1 min-w-0">
+            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap">Subject</label>
+            <select value={selSubject} onChange={e => setSelSubject(e.target.value)}
+              disabled={!selClassroom}
+              className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 min-w-[150px] disabled:bg-gray-50 disabled:text-gray-400 shadow-sm font-medium">
+              <option value="">— Subject —</option>
+              {subjects.map(s => <option key={s.id} value={s.subject}>{s.subject_name}</option>)}
+            </select>
+          </div>
+
+          {/* Quarter */}
+          <div className="flex rounded-lg border border-gray-300 overflow-hidden shadow-sm flex-shrink-0">
             {QUARTERS.map(q => (
               <button key={q} onClick={() => setSelQuarter(q)}
-                className={`px-2 py-1 md:px-4 md:py-2 text-[9px] md:text-xs font-bold transition-all ${
-                  selQuarter === q ? 'bg-[#2D1B4D] text-white shadow-inner' : 'bg-white text-gray-600 hover:bg-purple-50'
+                className={`px-3 py-2 text-xs font-bold transition-all ${
+                  selQuarter === q ? 'bg-[#2D1B4D] text-white' : 'bg-white text-gray-600 hover:bg-purple-50'
                 }`}>
                 Q{q}
               </button>
             ))}
           </div>
-        </div>
 
-        {/* Academic Year */}
-        <div className="flex items-center gap-1 shrink-0">
-          <div className="flex items-center border border-gray-300 rounded-lg md:rounded-xl overflow-hidden bg-white shadow-sm">
-            <button 
-              onClick={() => handleYearChange('prev')}
-              className="px-1.5 py-1 md:px-3 md:py-2 hover:bg-gray-50 text-gray-500 border-r border-gray-200 transition-colors"
-            >
-              <svg className="w-2.5 h-2.5 md:w-3.5 md:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
-              </svg>
+          {/* Academic Year */}
+          <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden bg-white shadow-sm flex-shrink-0">
+            <button onClick={() => handleYearChange('prev')} className="px-2 py-2 hover:bg-gray-50 text-gray-500 border-r border-gray-200 transition-colors">
+              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" /></svg>
             </button>
-            <div className="px-1.5 md:px-3 text-center text-[9px] md:text-xs font-bold text-gray-700 select-none min-w-[55px] md:min-w-[85px]">
-              {academicYear}
-            </div>
-            <button 
-              onClick={() => handleYearChange('next')}
-              className="px-1.5 py-1 md:px-3 md:py-2 hover:bg-gray-50 text-gray-500 border-l border-gray-200 transition-colors"
-            >
-              <svg className="w-2.5 h-2.5 md:w-3.5 md:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
-              </svg>
+            <div className="px-2 text-center text-xs font-bold text-gray-700 select-none min-w-[72px]">{academicYear}</div>
+            <button onClick={() => handleYearChange('next')} className="px-2 py-2 hover:bg-gray-50 text-gray-500 border-l border-gray-200 transition-colors">
+              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" /></svg>
             </button>
           </div>
-        </div>
 
-        <button onClick={handleSubmit}
-          disabled={submitting || !selSubject || !students.length}
-          className="flex items-center justify-center gap-1 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-[9px] md:text-sm font-bold px-2.5 py-1.5 md:px-6 md:py-2.5 rounded-lg md:rounded-xl transition-all shadow-md active:scale-95 flex-1 md:flex-none">
-          {submitting ? (
-            <><svg className="animate-spin h-3 w-3 md:h-4 md:w-4" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
-            </svg>...</>
-          ) : (
-            <><svg className="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7"/>
-            </svg>SUBMIT</>
-          )}
-        </button>
+          {/* Submit */}
+          <button onClick={handleSubmit}
+            disabled={submitting || !selSubject || !students.length}
+            className="flex items-center justify-center gap-1.5 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-bold px-4 py-2 rounded-lg transition-all shadow-md active:scale-95 flex-1 md:flex-none min-w-[80px]">
+            {submitting ? (
+              <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+              </svg>
+            ) : (
+              <><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7"/></svg>Submit</>
+            )}
+          </button>
+        </div>
       </div>
 
       {/* Context breadcrumb */}
@@ -454,13 +456,12 @@ const GradeInput = () => {
                                     e.stopPropagation();
                                     navigate(`/profile?student_id=${s.student}`);
                                   }}
-                                  className="font-black text-gray-800 text-[8px] md:text-sm leading-tight truncate block hover:text-purple-600 transition-colors uppercase tracking-tight max-w-[60px] md:max-w-none"
+                                  className="font-black text-gray-800 text-xs md:text-sm leading-tight truncate block hover:text-purple-600 transition-colors uppercase tracking-tight max-w-[90px] sm:max-w-[140px] md:max-w-none"
                                   title="View Profile"
                                 >
-                                  <span className="md:hidden">{s.student_name?.split(' ').pop()}</span>
-                                  <span className="hidden md:inline">{formatName(s.student_name)}</span>
+                                  {formatName(s.student_name)}
                                 </button>
-                                <div className="hidden md:block text-[7px] md:text-[10px] text-gray-400 leading-tight mt-0.5 font-medium truncate">{s.student_email}</div>
+                                <div className="hidden md:block text-[10px] text-gray-400 leading-tight mt-0.5 font-medium truncate">{s.student_email}</div>
                               </div>
                             </div>
                           </td>
@@ -480,22 +481,24 @@ const GradeInput = () => {
                               onFocus={() => setActive(s.student)}
                               onKeyDown={e => handleKeyDown(e, s.student)}
                               placeholder="—"
-                              className={`w-full h-full px-1.5 py-1.5 md:px-4 md:py-3 text-center font-mono text-[10px] md:text-sm bg-transparent focus:outline-none transition-all ${isOver ? 'text-red-600 font-bold' : 'text-gray-900 font-semibold'}`}
+                              className={`w-full h-full px-2 py-3 md:px-4 md:py-3 text-center font-mono text-sm bg-transparent focus:outline-none transition-all ${isOver ? 'text-red-600 font-bold' : 'text-gray-900 font-semibold'}`}
                             />
                           </td>
-                          <td className={`border border-gray-100 text-center py-1 md:py-2 px-1 md:px-3 ${rowBg}`}>
+                          <td className={`border border-gray-100 text-center py-2 px-1 md:px-3 ${rowBg}`}>
                             {score !== null && !isOver ? (
-                              <span className={`text-[7px] md:text-[10px] font-black px-1 py-0.5 md:px-3 md:py-1 rounded-md md:rounded-lg shadow-sm border border-black/5 uppercase tracking-tighter md:tracking-normal ${scoreColor(score)}`}>
-                                {remarksFor(score).toUpperCase()}
+                              <span className={`text-[9px] md:text-[10px] font-black px-1.5 py-0.5 md:px-3 md:py-1 rounded-md md:rounded-lg shadow-sm border border-black/5 uppercase tracking-tight ${scoreColor(score)}`}>
+                                <span className="hidden sm:inline">{remarksFor(score).toUpperCase()}</span>
+                                <span className="sm:hidden">{score >= 90 ? 'O' : score >= 85 ? 'VS' : score >= 80 ? 'S' : score >= 75 ? 'FS' : 'DNM'}</span>
                               </span>
                             ) : isOver ? (
-                              <span className="text-[7px] text-red-600 font-black uppercase tracking-widest bg-red-50 px-1 py-0.5 rounded">OVER!</span>
+                              <span className="text-[9px] text-red-600 font-black uppercase bg-red-50 px-1.5 py-0.5 rounded">OVER</span>
                             ) : existingGrades[s.student] ? (
-                              <span className={`text-[7px] md:text-[10px] font-black px-1 py-0.5 md:px-3 md:py-1 rounded-md md:rounded-lg shadow-sm border border-black/5 uppercase tracking-tighter md:tracking-normal opacity-40 ${scoreColor(parseFloat(existingGrades[s.student].raw_score))}`}>
-                                {remarksFor(parseFloat(existingGrades[s.student].raw_score)).toUpperCase()}
+                              <span className={`text-[9px] md:text-[10px] font-black px-1.5 py-0.5 md:px-3 md:py-1 rounded-md md:rounded-lg shadow-sm border border-black/5 uppercase tracking-tight opacity-40 ${scoreColor(parseFloat(existingGrades[s.student].raw_score))}`}>
+                                <span className="hidden sm:inline">{remarksFor(parseFloat(existingGrades[s.student].raw_score)).toUpperCase()}</span>
+                                <span className="sm:hidden">{parseFloat(existingGrades[s.student].raw_score) >= 90 ? 'O' : parseFloat(existingGrades[s.student].raw_score) >= 85 ? 'VS' : parseFloat(existingGrades[s.student].raw_score) >= 80 ? 'S' : parseFloat(existingGrades[s.student].raw_score) >= 75 ? 'FS' : 'DNM'}</span>
                               </span>
                             ) : (
-                              <span className="text-gray-300 text-[9px] md:text-xs font-bold">—</span>
+                              <span className="text-gray-300 text-xs font-bold">—</span>
                             )}
                           </td>
                         </tr>
