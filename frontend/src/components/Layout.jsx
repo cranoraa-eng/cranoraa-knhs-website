@@ -348,9 +348,7 @@ const Layout = () => {
           {/* Bottom actions */}
           <div className="flex-shrink-0 border-t border-white/5 p-4 space-y-2 bg-[#140824]/50">
             <button
-              onClick={() => {
-                window.location.href = '/open-browser.html?url=https://cranoraa-eng-cranoraa-knhs-website.vercel.app/';
-              }}
+              onClick={() => window.open('https://cranoraa-eng-cranoraa-knhs-website.vercel.app/', '_blank', 'noopener,noreferrer')}
               className="flex w-full items-center justify-center rounded-xl bg-white/5 border border-white/10 px-4 py-2.5 text-xs font-bold uppercase tracking-widest text-white hover:bg-white/10 transition-all active:scale-95"
             >
               <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
