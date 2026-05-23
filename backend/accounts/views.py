@@ -472,20 +472,25 @@ def teacher_dashboard_stats(request):
                 'type': 'grade' if 'grade' in log.description.lower() else 'attendance' if 'attendance' in log.description.lower() else 'system'
             })
 
-        # Latest messages for this teacher
+        # Latest messages for this teacher (exclude self, unique senders)
         latest_messages = []
         msg_objs = ChatMessage.objects.filter(
             room__participants=user
-        ).order_by('-timestamp')[:5]
+        ).exclude(sender=user).order_by('-timestamp')
         
+        seen_senders = set()
         for m in msg_objs:
-            latest_messages.append({
-                'id': m.id,
-                'content': m.content,
-                'timestamp': m.timestamp.isoformat(),
-                'sender': m.sender.get_full_name() or m.sender.username,
-                'is_read': m.is_read
-            })
+            if m.sender_id not in seen_senders:
+                latest_messages.append({
+                    'id': m.id,
+                    'content': m.content,
+                    'timestamp': m.timestamp.isoformat(),
+                    'sender': m.sender.get_full_name() or m.sender.username,
+                    'is_read': m.is_read
+                })
+                seen_senders.add(m.sender_id)
+            if len(latest_messages) >= 5:
+                break
         
         return Response({
             'total_students': total_students,
@@ -528,20 +533,25 @@ def student_dashboard_stats(request):
                 'type': n.notification_type
             })
 
-        # Latest messages for this student
+        # Latest messages for this student (exclude self, unique senders)
         latest_messages = []
         msg_objs = ChatMessage.objects.filter(
             room__participants=user
-        ).order_by('-timestamp')[:5]
+        ).exclude(sender=user).order_by('-timestamp')
         
+        seen_senders = set()
         for m in msg_objs:
-            latest_messages.append({
-                'id': m.id,
-                'content': m.content,
-                'timestamp': m.timestamp.isoformat(),
-                'sender': m.sender.get_full_name() or m.sender.username,
-                'is_read': m.is_read
-            })
+            if m.sender_id not in seen_senders:
+                latest_messages.append({
+                    'id': m.id,
+                    'content': m.content,
+                    'timestamp': m.timestamp.isoformat(),
+                    'sender': m.sender.get_full_name() or m.sender.username,
+                    'is_read': m.is_read
+                })
+                seen_senders.add(m.sender_id)
+            if len(latest_messages) >= 5:
+                break
 
         return Response({
             'unread_notifications': unread_notifications,
@@ -2178,20 +2188,25 @@ def admin_dashboard_stats(request):
         for a in recent_announcements:
             a['author_name'] = a.pop('author__username', 'Unknown')
 
-        # Latest messages for this admin
+        # Latest messages for this admin (exclude self, unique senders)
         latest_messages = []
         msg_objs = ChatMessage.objects.filter(
             room__participants=request.user
-        ).order_by('-timestamp')[:5]
+        ).exclude(sender=request.user).order_by('-timestamp')
         
+        seen_senders = set()
         for m in msg_objs:
-            latest_messages.append({
-                'id': m.id,
-                'content': m.content,
-                'timestamp': m.timestamp.isoformat(),
-                'sender': m.sender.get_full_name() or m.sender.username,
-                'is_read': m.is_read
-            })
+            if m.sender_id not in seen_senders:
+                latest_messages.append({
+                    'id': m.id,
+                    'content': m.content,
+                    'timestamp': m.timestamp.isoformat(),
+                    'sender': m.sender.get_full_name() or m.sender.username,
+                    'is_read': m.is_read
+                })
+                seen_senders.add(m.sender_id)
+            if len(latest_messages) >= 5:
+                break
 
         # Prepare response data
         res_data = {
