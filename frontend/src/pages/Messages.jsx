@@ -180,6 +180,35 @@ const Messages = () => {
   const handleSendMessage = (e) => {
     e?.preventDefault();
     if (!newMessage.trim() || !selectedRoom) return;
+
+    // Proactive check if we have the info locally
+    if (user?.is_suspended) {
+      Swal.fire({
+        title: 'Account Suspended',
+        text: 'Your messaging privileges have been revoked.',
+        icon: 'error',
+        confirmButtonColor: '#ef4444',
+        customClass: { popup: 'rounded-[2rem]' }
+      });
+      return;
+    }
+
+    if (user?.is_muted || (user?.mute_until && new Date(user.mute_until) > new Date())) {
+      const remaining = user.mute_until ? new Date(user.mute_until) - new Date() : 0;
+      const hours = Math.floor(remaining / (1000 * 60 * 60));
+      const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
+      const timeStr = hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
+      
+      Swal.fire({
+        title: 'Messaging Muted',
+        text: remaining > 0 ? `You are currently muted. Remaining time: ${timeStr}` : 'You are currently muted.',
+        icon: 'warning',
+        confirmButtonColor: '#f59e0b',
+        customClass: { popup: 'rounded-[2rem]' }
+      });
+      return;
+    }
+
     const content = newMessage.trim();
     setNewMessage('');
     
@@ -547,6 +576,8 @@ const Messages = () => {
         const data = JSON.parse(e.data);
 
         if (data.type === 'error') {
+          console.error('Moderation error received:', data.message);
+          toast.error(data.message, { duration: 4000 });
           Swal.fire({
             title: 'Action Restricted',
             text: data.message,

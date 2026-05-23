@@ -38,7 +38,7 @@ class ProfileSerializer(serializers.ModelSerializer):
         fields = ['id', 'title', 'grade_level', 'classroom_name', 'employee_id', 'phone_number', 'address',
                   'date_of_birth', 'registration_number', 'sex', 'state',
                   'nationality', 'middle_name', 'father_name', 'mother_name', 'contact_information', 
-                  'linked_students', 'profile_picture']
+                  'linked_students', 'profile_picture', 'mute_until', 'is_suspended']
 
     def get_classroom_name(self, obj):
         try:
