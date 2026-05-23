@@ -1587,7 +1587,7 @@ class AnnouncementViewSet(viewsets.ModelViewSet):
         if notifications_to_create:
             Notification.objects.bulk_create(notifications_to_create)
     
-    @action(detail=True, methods=['post'])
+    @action(detail=True, methods=['post'], url_path='mark-read')
     def mark_read(self, request, pk=None):
         """Mark announcement as read by current user"""
         announcement = self.get_object()
@@ -1643,7 +1643,7 @@ class AnnouncementViewSet(viewsets.ModelViewSet):
         ).delete()
         return Response({'status': 'archived'})
 
-    @action(detail=True, methods=['post'])
+    @action(detail=True, methods=['post'], url_path='delete-attachment')
     def delete_attachment(self, request, pk=None):
         """Delete a specific attachment from an announcement"""
         announcement = self.get_object()
@@ -2725,19 +2725,19 @@ class NotificationViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(recipient=self.request.user)
     
-    @action(detail=True, methods=['post'])
+    @action(detail=True, methods=['post'], url_path='mark-read')
     def mark_read(self, request, pk=None):
         notification = self.get_object()
         notification.is_read = True
         notification.save()
         return Response({'status': 'Notification marked as read'})
     
-    @action(detail=False, methods=['post'])
+    @action(detail=False, methods=['post'], url_path='mark-all-read')
     def mark_all_read(self, request):
         Notification.objects.filter(recipient=request.user, is_read=False).update(is_read=True)
         return Response({'status': 'All notifications marked as read'})
     
-    @action(detail=False, methods=['get'])
+    @action(detail=False, methods=['get'], url_path='unread-count')
     def unread_count(self, request):
         count = Notification.objects.filter(recipient=request.user, is_read=False).count()
         return Response({'unread_count': count})

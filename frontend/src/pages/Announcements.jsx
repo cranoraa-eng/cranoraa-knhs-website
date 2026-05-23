@@ -222,12 +222,12 @@ const Announcements = () => {
   const handlePin    = async (a) => { try { await api.patch(`/announcements/${a.id}/`, { is_pinned: !a.is_pinned }); fetchAnnouncements(); } catch {} };
   const handlePublish = async (a) => { try { await api.post(`/announcements/${a.id}/publish/`); toast.success('Published'); fetchAnnouncements(); } catch {} };
   const handleArchive = async (a) => { try { await api.post(`/announcements/${a.id}/archive/`); toast.success('Archived'); fetchAnnouncements(); } catch {} };
-  const handleRead    = async (a) => { try { await api.post(`/announcements/${a.id}/mark_read/`); fetchAnnouncements(); } catch {} };
+  const handleRead    = async (a) => { try { await api.post(`/announcements/${a.id}/mark-read/`); fetchAnnouncements(); } catch {} };
 
   const handleDeleteAttachment = async (attId) => {
     if (!selected) return;
     try {
-      await api.post(`/announcements/${selected.id}/delete_attachment/`, { attachment_id: attId });
+      await api.post(`/announcements/${selected.id}/delete-attachment/`, { attachment_id: attId });
       toast.success('Attachment removed');
       // Update local state
       const updatedSelected = {

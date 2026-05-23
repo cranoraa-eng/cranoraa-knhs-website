@@ -69,9 +69,9 @@ const Notifications = () => {
 
   const markRead = async (id) => {
     try {
-      await api.post(`/notifications/${id}/mark_read/`);
+      await api.post(`/notifications/${id}/mark-read/`);
       setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n));
-      const countRes = await api.get('/notifications/unread_count/');
+      const countRes = await api.get('/notifications/unread-count/');
       setUnreadCount(countRes.data.unread_count);
     } catch (error) {
       toast.error('Failed to mark as read');
@@ -90,7 +90,7 @@ const Notifications = () => {
     if (result.isConfirmed) {
       setProcessing(true);
       try {
-        await api.post('/notifications/mark_all_read/');
+        await api.post('/notifications/mark-all-read/');
         setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
         setUnreadCount(0);
         toast.success('All notifications marked as read');
