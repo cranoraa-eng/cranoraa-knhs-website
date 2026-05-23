@@ -5,6 +5,7 @@ from django.contrib.auth import get_user_model
 from django.utils import timezone
 from .models import ChatRoom, ChatMessage, MessageReaction, Notification
 from .serializers import ChatMessageSerializer
+from .utils import check_user_moderation
 
 User = get_user_model()
 
@@ -134,7 +135,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             return
 
         # Check if user is muted or suspended
-        is_allowed, reason = await self.check_user_moderation_status(self.user)
+        is_allowed, reason = check_user_moderation(self.user)
         if not is_allowed:
             await self.send(text_data=json.dumps({
                 'type': 'error',
@@ -303,24 +304,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
         }))
 
     # ── DB helpers ────────────────────────────────────────────────
-
-    @database_sync_to_async
-    def check_user_moderation_status(self, user):
-        user.refresh_from_db()
-        if user.account_status == 'suspended':
-            return False, "Your account has been suspended."
-        
-        if hasattr(user, 'profile'):
-            if user.profile.is_suspended:
-                return False, "Your account has been suspended."
-            if user.profile.mute_until and user.profile.mute_until > timezone.now():
-                remaining = user.profile.mute_until - timezone.now()
-                hours = int(remaining.total_seconds() // 3600)
-                minutes = int((remaining.total_seconds() % 3600) // 60)
-                time_str = f"{hours}h {minutes}m" if hours > 0 else f"{minutes}m"
-                return False, f"You are muted for another {time_str}."
-        
-        return True, ""
 
     @database_sync_to_async
     def save_message(self, room_id, sender_id, message, parent_id=None):

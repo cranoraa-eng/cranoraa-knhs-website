@@ -372,7 +372,10 @@ const Messages = () => {
       setRooms(prev => prev.some(rm => rm.id === room.id) ? prev : [room, ...prev]);
       setSelectedRoom(room);
       setActiveTab('chats');
-    } catch { toast.error('Failed to start chat'); }
+    } catch (err) {
+      const msg = err.response?.data?.error || 'Failed to start chat';
+      toast.error(msg);
+    }
   };
 
   const handleSearchAddMembers = async (q) => {
@@ -542,6 +545,11 @@ const Messages = () => {
     ws.onmessage = (e) => {
       try {
         const data = JSON.parse(e.data);
+
+        if (data.type === 'error') {
+          toast.error(data.message, { icon: '🚫', duration: 4000 });
+          return;
+        }
 
         if (data.type === 'typing') {
           if (data.sender_id !== user?.id) {

@@ -98,23 +98,43 @@ def create_otp(user, otp_type='signup', expiry_minutes=10):
 def verify_otp_code(user, code, otp_type='signup'):
     """Verify an OTP code for a user."""
     otp = OTP.objects.filter(
-        user=user, 
-        otp_type=otp_type, 
-        is_used=False
-    ).order_by('-created_at').first()
+        user=user,
+        otp_type=otp_type,
+        is_used=False,
+        expires_at__gt=timezone.now()
+    ).last()
     
     if not otp:
-        return False, "No active verification code found."
-    
-    if otp.is_expired():
-        return False, "Verification code has expired."
-    
+        return False
+        
     if check_password(code, otp.hashed_code):
         otp.is_used = True
         otp.save()
-        return True, "Verification successful."
+        return True
+    return False
+
+def check_user_moderation(user):
+    """
+    Checks if a user is muted or suspended.
+    Returns (is_allowed, reason)
+    """
+    # Refresh to get latest status
+    user.refresh_from_db()
     
-    return False, "Invalid verification code."
+    if user.account_status == 'suspended':
+        return False, "Your account has been suspended."
+    
+    if hasattr(user, 'profile'):
+        if user.profile.is_suspended:
+            return False, "Your account has been suspended."
+        if user.profile.mute_until and user.profile.mute_until > timezone.now():
+            remaining = user.profile.mute_until - timezone.now()
+            hours = int(remaining.total_seconds() // 3600)
+            minutes = int((remaining.total_seconds() % 3600) // 60)
+            time_str = f"{hours}h {minutes}m" if hours > 0 else f"{minutes}m"
+            return False, f"You are muted for another {time_str}."
+    
+    return True, ""
 
 def broadcast_mailjet_email(emails, subject, message_html, message_text=None):
     """Broadcast a single message to multiple recipients via Mailjet."""

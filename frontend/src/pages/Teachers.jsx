@@ -154,7 +154,8 @@ const Teachers = () => {
       await api.post('/chat/rooms/get_or_create_private_chat/', { user_id: teacherId });
       navigate('/messages');
     } catch (err) {
-      toast.error('Failed to start conversation');
+      const msg = err.response?.data?.error || 'Failed to open chat';
+      toast.error(msg);
     }
   };
 

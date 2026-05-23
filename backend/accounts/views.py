@@ -27,7 +27,7 @@ from django.conf import settings
 import random
 import string
 
-from .utils import create_otp, verify_otp_code, send_mailjet_otp_email, send_mailjet_email
+from .utils import create_otp, verify_otp_code, send_mailjet_otp_email, send_mailjet_email, check_user_moderation
 
 @csrf_exempt
 @api_view(['POST'])
@@ -3619,6 +3619,12 @@ class ChatRoomViewSet(viewsets.ModelViewSet):
             return ChatRoom.objects.none()
 
     def perform_create(self, serializer):
+        # Check if user is muted or suspended
+        is_allowed, reason = check_user_moderation(self.request.user)
+        if not is_allowed:
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied(reason)
+
         room = serializer.save(created_by=self.request.user)
         room.participants.add(self.request.user)
         
@@ -3642,6 +3648,11 @@ class ChatRoomViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['post'])
     def get_or_create_private_chat(self, request):
+        # Check if user is muted or suspended
+        is_allowed, reason = check_user_moderation(request.user)
+        if not is_allowed:
+            return Response({'error': reason}, status=status.HTTP_403_FORBIDDEN)
+
         user_id = request.data.get('user_id')
         if not user_id:
             return Response({'error': 'user_id is required'}, status=status.HTTP_400_BAD_REQUEST)

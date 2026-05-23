@@ -250,7 +250,8 @@ const StudentManagement = () => {
       await api.post('/chat/rooms/get_or_create_private_chat/', { user_id: studentId });
       navigate('/messages');
     } catch (err) {
-      toast.error('Failed to start conversation');
+      const msg = err.response?.data?.error || 'Failed to start chat';
+      toast.error(msg);
     }
   };
 
