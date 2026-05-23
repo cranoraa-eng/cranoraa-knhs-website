@@ -471,6 +471,22 @@ def teacher_dashboard_stats(request):
                 'time': log.timestamp.strftime('%I:%M %p, %b %d'),
                 'type': 'grade' if 'grade' in log.description.lower() else 'attendance' if 'attendance' in log.description.lower() else 'system'
             })
+
+        # Latest messages for this teacher
+        from .models import ChatMessage
+        latest_messages = []
+        msg_objs = ChatMessage.objects.filter(
+            room__participants=user
+        ).order_by('-timestamp')[:5]
+        
+        for m in msg_objs:
+            latest_messages.append({
+                'id': m.id,
+                'content': m.content,
+                'timestamp': m.timestamp.isoformat(),
+                'sender': m.sender.get_full_name() or m.sender.username,
+                'is_read': m.is_read
+            })
         
         return Response({
             'total_students': total_students,
@@ -478,7 +494,8 @@ def teacher_dashboard_stats(request):
             'total_grades': total_grades,
             'attendance_rate': attendance_rate,
             'pending_grades': pending_grades,
-            'recent_activities': recent_activities
+            'recent_activities': recent_activities,
+            'latest_messages': latest_messages
         })
     except Exception as e:
         logger.error(f"Teacher stats error: {str(e)}", exc_info=True)
@@ -512,9 +529,26 @@ def student_dashboard_stats(request):
                 'type': n.notification_type
             })
 
+        # Latest messages for this student
+        from .models import ChatMessage
+        latest_messages = []
+        msg_objs = ChatMessage.objects.filter(
+            room__participants=user
+        ).order_by('-timestamp')[:5]
+        
+        for m in msg_objs:
+            latest_messages.append({
+                'id': m.id,
+                'content': m.content,
+                'timestamp': m.timestamp.isoformat(),
+                'sender': m.sender.get_full_name() or m.sender.username,
+                'is_read': m.is_read
+            })
+
         return Response({
             'unread_notifications': unread_notifications,
             'recent_notifications': recent_notif_data,
+            'latest_messages': latest_messages
         })
     except Exception as e:
         logger.error(f"Student dashboard stats error: {str(e)}", exc_info=True)
@@ -2148,6 +2182,22 @@ def admin_dashboard_stats(request):
         for a in recent_announcements:
             a['author_name'] = a.pop('author__username', 'Unknown')
 
+        # Latest messages for this admin
+        from .models import ChatMessage
+        latest_messages = []
+        msg_objs = ChatMessage.objects.filter(
+            room__participants=request.user
+        ).order_by('-timestamp')[:5]
+        
+        for m in msg_objs:
+            latest_messages.append({
+                'id': m.id,
+                'content': m.content,
+                'timestamp': m.timestamp.isoformat(),
+                'sender': m.sender.get_full_name() or m.sender.username,
+                'is_read': m.is_read
+            })
+
         # Prepare response data
         res_data = {
             'total_students': total_students,
@@ -2255,6 +2305,7 @@ def admin_dashboard_stats(request):
             'recent_grades_count': Grade.objects.filter(submitted_at__date__gte=this_week_start).count(),
             'total_announcements': Announcement.objects.filter(status='live').count(),
             'recent_announcements': recent_announcements,
+            'latest_messages': latest_messages,
         }
         
         return Response(res_data)

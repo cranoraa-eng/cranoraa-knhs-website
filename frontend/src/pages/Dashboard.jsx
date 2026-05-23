@@ -83,6 +83,45 @@ const StatCard = ({ label, value, sub, icon, color = 'violet', onClick, badge })
   );
 };
 
+const LatestMessagesWidget = ({ messages, onOpenChat }) => {
+  return (
+    <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+      <div className="flex items-center justify-between mb-6">
+        <h3 className="text-md font-bold text-slate-900">Latest Messages</h3>
+        <button 
+          onClick={onOpenChat}
+          className="text-[10px] font-black text-violet-600 uppercase tracking-widest hover:underline bg-transparent border-none cursor-pointer"
+        >
+          Open Chat
+        </button>
+      </div>
+      <div className="space-y-4">
+        {messages?.map(m => (
+          <div key={m.id} className="flex gap-4 p-3 rounded-xl hover:bg-slate-50 transition-all cursor-pointer" onClick={onOpenChat}>
+            <div className="flex-shrink-0 w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 font-black text-xs">
+              {m.sender ? m.sender[0].toUpperCase() : '?'}
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex justify-between items-center gap-2">
+                <h4 className="text-xs font-bold text-slate-800 truncate">{m.sender || 'Unknown'}</h4>
+                <span className="text-[8px] font-bold text-slate-400 shrink-0">
+                  {new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </span>
+              </div>
+              <p className="text-[10px] text-slate-500 line-clamp-1 mt-0.5">{m.content}</p>
+            </div>
+          </div>
+        ))}
+        {!messages?.length && (
+          <p className="text-center py-6 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+            No messages yet
+          </p>
+        )}
+      </div>
+    </div>
+  );
+};
+
 // ─── ADMIN DASHBOARD ──────────────────────────────────────────────────────────
 
 const AdminView = () => {
@@ -310,29 +349,10 @@ const AdminView = () => {
         </div>
 
         {/* Latest Messages Widget */}
-        <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-md font-bold text-slate-900">Latest Messages</h3>
-            <Link to="/messages" className="text-[10px] font-black text-violet-600 uppercase tracking-widest hover:underline">Open Chat</Link>
-          </div>
-          <div className="space-y-4">
-            {data?.latest_messages?.map(m => (
-              <div key={m.id} className="flex gap-4 p-3 rounded-xl hover:bg-slate-50 transition-all cursor-pointer" onClick={() => navigate('/messages')}>
-                <div className="flex-shrink-0 w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 font-black text-xs">
-                  {m.sender ? m.sender[0].toUpperCase() : '?'}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex justify-between items-center gap-2">
-                    <h4 className="text-xs font-bold text-slate-800 truncate">{m.sender || 'Unknown'}</h4>
-                    <span className="text-[8px] font-bold text-slate-400 shrink-0">{new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                  </div>
-                  <p className="text-[10px] text-slate-500 line-clamp-1 mt-0.5">{m.content}</p>
-                </div>
-              </div>
-            ))}
-            {!data?.latest_messages?.length && <p className="text-center py-6 text-[10px] font-bold text-slate-400 uppercase tracking-widest">No messages yet</p>}
-          </div>
-        </div>
+        <LatestMessagesWidget 
+          messages={data?.latest_messages} 
+          onOpenChat={() => navigate('/messages')} 
+        />
 
         {/* Recent Activity Widget */}
         <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
@@ -575,6 +595,11 @@ const TeacherView = () => {
               )}
             </div>
           </div>
+
+          <LatestMessagesWidget 
+            messages={data?.latest_messages} 
+            onOpenChat={() => navigate('/messages')} 
+          />
         </div>
       </div>
     </div>
@@ -767,6 +792,11 @@ const StudentView = () => {
               )}
             </div>
           </div>
+
+          <LatestMessagesWidget 
+            messages={stats?.latest_messages} 
+            onOpenChat={() => navigate('/messages')} 
+          />
         </div>
       </div>
     </div>
