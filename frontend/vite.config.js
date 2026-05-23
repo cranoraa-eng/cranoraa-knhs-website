@@ -171,7 +171,7 @@ export default defineConfig({
         ],
 
         navigateFallback: '/index.html',
-        navigateFallbackDenylist: [/^\/api\//, /^\/admin\//],
+        navigateFallbackDenylist: [/^\/api\//, /^\/admin\//, /^\/open-browser\.html/],
 
         // Clean up caches from previous versions automatically
         cleanupOutdatedCaches: true,
