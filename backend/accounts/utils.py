@@ -14,19 +14,17 @@ logger = logging.getLogger(__name__)
 
 def upload_to_supabase(file, folder="profiles"):
     """
-    Upload a file to Supabase Storage and return the public URL.
+    Uploads a file to Supabase Storage and returns the public URL.
+    Returns (url, error_message)
     """
-    try:
-        from supabase import create_client, Client as SupabaseClient
-    except ImportError:
-        logger.error("Supabase package not installed")
-        return None
-        
     if not settings.SUPABASE_URL or not settings.SUPABASE_KEY:
-        logger.error("Supabase configuration missing")
-        return None
+        missing = []
+        if not settings.SUPABASE_URL: missing.append("SUPABASE_URL")
+        if not settings.SUPABASE_KEY: missing.append("SUPABASE_KEY")
+        return None, f"Supabase configuration missing: {', '.join(missing)}"
 
     try:
+        from supabase import create_client, Client as SupabaseClient
         supabase: SupabaseClient = create_client(settings.SUPABASE_URL, settings.SUPABASE_KEY)
         
         # Generate unique filename
@@ -38,30 +36,26 @@ def upload_to_supabase(file, folder="profiles"):
         content = file.read()
         
         # Upload
-        res = supabase.storage.from_(settings.SUPABASE_BUCKET).upload(
+        # We don't check 'res' directly because different versions of the lib
+        # handle returns differently. If it doesn't raise, we assume success or check manually.
+        supabase.storage.from_(settings.SUPABASE_BUCKET).upload(
             path=filename,
             file=content,
             file_options={"content-type": file.content_type or "image/jpeg"}
         )
+
+        # Construct public URL manually for maximum compatibility
+        # Format: [SUPABASE_URL]/storage/v1/object/public/[BUCKET]/[FILENAME]
+        base_url = settings.SUPABASE_URL.rstrip('/')
+        public_url = f"{base_url}/storage/v1/object/public/{settings.SUPABASE_BUCKET}/{filename}"
         
-        # Get public URL
-        # For recent supabase-py versions, get_public_url returns a string or an object with public_url
-        res = supabase.storage.from_(settings.SUPABASE_BUCKET).get_public_url(filename)
-        
-        # Check if res is a string (older versions) or has public_url attribute/key
-        if isinstance(res, str):
-            return res
-        elif hasattr(res, 'public_url'):
-            return res.public_url
-        elif isinstance(res, dict) and 'public_url' in res:
-            return res['public_url']
-            
-        return f"{settings.SUPABASE_URL}/storage/v1/object/public/{settings.SUPABASE_BUCKET}/{filename}"
+        return public_url, None
     except Exception as e:
-        logger.error(f"Supabase upload error: {str(e)}")
+        error_msg = str(e)
+        logger.error(f"Supabase upload error: {error_msg}")
         import traceback
         logger.error(traceback.format_exc())
-        return None
+        return None, f"Storage Error: {error_msg}"
 
 # Configure Mailjet
 def get_mailjet_client():

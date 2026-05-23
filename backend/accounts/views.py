@@ -2361,14 +2361,14 @@ def student_profile(request):
             from .utils import upload_to_supabase
             pic_file = request.FILES['profile_picture']
             try:
-                url = upload_to_supabase(pic_file)
+                url, error = upload_to_supabase(pic_file)
                 
                 if url:
                     profile.profile_picture = url
                     profile.save()
                     return Response({'message': 'Profile picture updated successfully', 'profile_picture': url})
                 else:
-                    return Response({'error': 'Failed to upload picture to storage. Check backend logs.'}, status=500)
+                    return Response({'error': error or 'Failed to upload picture to storage.'}, status=500)
             except Exception as e:
                 logger.error(f"Error in student_profile POST: {str(e)}", exc_info=True)
                 return Response({'error': f'Internal Server Error: {str(e)}'}, status=500)
