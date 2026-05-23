@@ -18,6 +18,11 @@ import ForcePasswordChange from './pages/ForcePasswordChange';
 import Dashboard from './pages/Dashboard';
 import Maintenance from './pages/Maintenance';
 
+// Detect if running as installed PWA (standalone mode)
+const isPWA = () =>
+  window.matchMedia('(display-mode: standalone)').matches ||
+  window.navigator.standalone === true;
+
 // ── Public website pages ──────────────────────────────────────────────────────
 const Home = lazy(() => import('./pages/Home'));
 const About = lazy(() => import('./pages/About'));
@@ -110,8 +115,8 @@ function App() {
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/force-password-change" element={<ForcePasswordChange />} />
 
-              {/* Public Website Routes */}
-              <Route path="/" element={<PublicLayout />}>
+              {/* Public Website Routes — skipped in PWA standalone mode */}
+              <Route path="/" element={isPWA() ? <Navigate to="/login" replace /> : <PublicLayout />}>
                 <Route index element={<Home />} />
                 <Route path="about" element={<About />} />
                 <Route path="programs" element={<Programs />} />
