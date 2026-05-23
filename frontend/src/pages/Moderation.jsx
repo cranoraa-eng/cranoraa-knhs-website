@@ -31,7 +31,7 @@ const Moderation = () => {
   };
 
   const handleAction = async (reportId, actionType, label) => {
-    const isDestructive = actionType === 'delete_message' || actionType === 'suspend_user';
+    const isDestructive = actionType === 'delete-message' || actionType === 'suspend-user';
     
     const { value: note } = await Swal.fire({
       title: label,
@@ -85,7 +85,7 @@ const Moderation = () => {
 
     if (formValues) {
       try {
-        await api.post(`/chat/reports/${reportId}/mute_user/`, formValues);
+        await api.post(`/chat/reports/${reportId}/mute-user/`, formValues);
         toast.success('User muted successfully');
         fetchReports();
       } catch (error) {
@@ -188,7 +188,7 @@ const Moderation = () => {
                             </svg>
                           </button>
                           <button
-                            onClick={() => handleAction(report.id, 'delete_message', 'Delete Message')}
+                            onClick={() => handleAction(report.id, 'delete-message', 'Delete Message')}
                             className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                             title="Delete Message & Resolve"
                           >
@@ -197,7 +197,7 @@ const Moderation = () => {
                             </svg>
                           </button>
                           <button
-                            onClick={() => handleAction(report.id, 'mute_user', 'Mute User')}
+                            onClick={() => handleAction(report.id, 'mute-user', 'Mute User')}
                             className="p-2 text-amber-500 hover:bg-amber-50 rounded-lg transition-colors"
                             title="Mute User (24h)"
                           >
@@ -208,7 +208,7 @@ const Moderation = () => {
                           </button>
                           {report.sender_is_muted && (
                             <button
-                              onClick={() => handleAction(report.id, 'unmute_user', 'Unmute User')}
+                              onClick={() => handleAction(report.id, 'unmute-user', 'Unmute User')}
                               className="p-2 text-violet-500 hover:bg-violet-50 rounded-lg transition-colors"
                               title="Unmute User"
                             >
@@ -218,7 +218,7 @@ const Moderation = () => {
                             </button>
                           )}
                           <button
-                            onClick={() => handleAction(report.id, 'suspend_user', 'Suspend User')}
+                            onClick={() => handleAction(report.id, 'suspend-user', 'Suspend User')}
                             className="p-2 text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
                             title="Suspend User"
                           >

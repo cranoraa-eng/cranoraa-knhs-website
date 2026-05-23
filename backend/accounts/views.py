@@ -3927,9 +3927,15 @@ class ReportedMessageViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        if self.request.user.role == 'admin':
-            return ReportedMessage.objects.all()
-        return ReportedMessage.objects.filter(reporter=self.request.user)
+        queryset = ReportedMessage.objects.all()
+        if self.request.user.role != 'admin':
+            queryset = queryset.filter(reporter=self.request.user)
+            
+        status_filter = self.request.query_params.get('status')
+        if status_filter and status_filter != 'all':
+            queryset = queryset.filter(status=status_filter)
+            
+        return queryset
 
     def perform_create(self, serializer):
         report = serializer.save(reporter=self.request.user)
@@ -3964,7 +3970,7 @@ class ReportedMessageViewSet(viewsets.ModelViewSet):
         report.save()
         return Response({'status': 'Report resolved'})
 
-    @action(detail=True, methods=['post'])
+    @action(detail=True, methods=['post'], url_path='delete-message')
     def delete_message(self, request, pk=None):
         if request.user.role != 'admin':
             return Response({'error': 'Unauthorized'}, status=403)
@@ -4049,7 +4055,7 @@ class ReportedMessageViewSet(viewsets.ModelViewSet):
         report.save()
         return Response({'status': 'Report dismissed'})
 
-    @action(detail=True, methods=['post'])
+    @action(detail=True, methods=['post'], url_path='suspend-user')
     def suspend_user(self, request, pk=None):
         if request.user.role != 'admin':
             return Response({'error': 'Unauthorized'}, status=403)
@@ -4090,7 +4096,7 @@ class ReportedMessageViewSet(viewsets.ModelViewSet):
         
         return Response({'status': f'User {user_to_suspend.username} suspended and report resolved'})
 
-    @action(detail=True, methods=['post'])
+    @action(detail=True, methods=['post'], url_path='mute-user')
     def mute_user(self, request, pk=None):
         if request.user.role != 'admin':
             return Response({'error': 'Unauthorized'}, status=403)
@@ -4127,7 +4133,7 @@ class ReportedMessageViewSet(viewsets.ModelViewSet):
         
         return Response({'status': f'User {user_to_mute.username} muted and report resolved'})
 
-    @action(detail=True, methods=['post'])
+    @action(detail=True, methods=['post'], url_path='unmute-user')
     def unmute_user(self, request, pk=None):
         if request.user.role != 'admin':
             return Response({'error': 'Unauthorized'}, status=403)
