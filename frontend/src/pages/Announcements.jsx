@@ -383,14 +383,14 @@ const Announcements = () => {
                       {canManage && (
                         <div className="flex items-center gap-1 flex-shrink-0">
                           <button onClick={() => handlePin(a)} title={a.is_pinned ? 'Unpin' : 'Pin'}
-                            className={`p-1.5 rounded-lg transition-colors ${a.is_pinned ? 'text-amber-600 bg-amber-50 hover:bg-amber-100' : 'text-gray-400 hover:bg-gray-100'}`}>
+                            className={`p-2 rounded-lg transition-colors ${a.is_pinned ? 'text-amber-600 bg-amber-50 hover:bg-amber-100' : 'text-gray-400 hover:bg-gray-100'}`}>
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 18V4z" />
                             </svg>
                           </button>
                           {a.status === 'draft' && (
                             <button onClick={() => handlePublish(a)} title="Publish"
-                              className="p-1.5 rounded-lg text-green-600 hover:bg-green-50 transition-colors">
+                              className="p-2 rounded-lg text-green-600 hover:bg-green-50 transition-colors">
                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                               </svg>
@@ -398,20 +398,20 @@ const Announcements = () => {
                           )}
                           {a.status === 'live' && (
                             <button onClick={() => handleArchive(a)} title="Archive"
-                              className="p-1.5 rounded-lg text-orange-500 hover:bg-orange-50 transition-colors">
+                              className="p-2 rounded-lg text-orange-500 hover:bg-orange-50 transition-colors">
                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
                               </svg>
                             </button>
                           )}
                           <button onClick={() => openEdit(a)} title="Edit"
-                            className="p-1.5 rounded-lg text-blue-500 hover:bg-blue-50 transition-colors">
+                            className="p-2 rounded-lg text-blue-500 hover:bg-blue-50 transition-colors">
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                             </svg>
                           </button>
                           <button onClick={() => handleDelete(a)} title="Delete"
-                            className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 transition-colors">
+                            className="p-2 rounded-lg text-red-500 hover:bg-red-50 transition-colors">
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                             </svg>

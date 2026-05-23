@@ -199,78 +199,122 @@ const Notifications = () => {
             <p className="text-xs font-bold uppercase tracking-widest">No notifications found</p>
           </div>
         ) : (
-          <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-200">
-            <table className="w-full min-w-[600px] text-[7px] md:text-[11px] text-left table-fixed">
-              <thead className="bg-[#2D1B4D] text-white uppercase text-[6px] md:text-[9px] font-black tracking-widest sticky top-0">
-                <tr>
-                  <th className="px-4 py-2.5 w-10 text-center">
-                    <input
-                      type="checkbox"
-                      checked={notifications.length > 0 && selectedIds.length === notifications.length}
-                      onChange={handleSelectAll}
-                      className="rounded border-gray-300 text-purple-600 focus:ring-purple-500 w-3 h-3 cursor-pointer"
-                    />
-                  </th>
-                  <th className="px-4 py-2.5 w-24">TYPE</th>
-                  <th className="px-4 py-2.5 w-40">TITLE</th>
-                  <th className="px-4 py-2.5">MESSAGE</th>
-                  <th className="px-4 py-2.5 w-32">TIME</th>
-                  <th className="px-4 py-2.5 w-24 text-center">STATUS</th>
-                  <th className="px-4 py-2.5 w-20 text-center">OPT</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {notifications.map((n) => (
-                  <tr key={n.id} className={`group hover:bg-purple-50 transition-colors ${!n.is_read ? 'bg-violet-50/40 font-semibold' : ''}`}>
-                    <td className="px-4 py-2.5 text-center">
+          <>
+            {/* ── Mobile card list (hidden on md+) ── */}
+            <div className="md:hidden divide-y divide-gray-100">
+              {notifications.map((n) => (
+                <div key={n.id} className={`p-4 ${!n.is_read ? 'bg-violet-50/40' : ''}`}>
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-start gap-3 min-w-0 flex-1">
                       <input
                         type="checkbox"
                         checked={selectedIds.includes(n.id)}
                         onChange={() => handleSelectOne(n.id)}
+                        className="mt-1 rounded border-gray-300 text-purple-600 focus:ring-purple-500 w-4 h-4 cursor-pointer flex-shrink-0"
+                      />
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2 flex-wrap mb-1">
+                          <span className={`px-2 py-0.5 rounded-full border text-[9px] font-black uppercase tracking-widest ${getTypeColor(n.notification_type)}`}>
+                            {n.notification_type}
+                          </span>
+                          <span className={`px-1.5 py-0.5 rounded text-[9px] font-black uppercase ${n.is_read ? 'text-gray-400' : 'bg-violet-600 text-white'}`}>
+                            {n.is_read ? 'READ' : 'NEW'}
+                          </span>
+                        </div>
+                        <p className="text-sm font-bold text-gray-800 leading-tight">{n.title}</p>
+                        <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">{n.message}</p>
+                        <p className="text-[10px] text-gray-400 mt-1">{new Date(n.created_at).toLocaleString()}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1 flex-shrink-0">
+                      {!n.is_read && (
+                        <button onClick={() => markRead(n.id)} className="p-2 text-violet-600 hover:bg-violet-100 rounded-lg transition-colors" title="Mark Read">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
+                        </button>
+                      )}
+                      <button onClick={() => handleDelete(n.id)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="Delete">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* ── Desktop table (hidden on mobile) ── */}
+            <div className="hidden md:block overflow-x-auto scrollbar-thin scrollbar-thumb-gray-200">
+              <table className="w-full min-w-[600px] text-[7px] md:text-[11px] text-left table-fixed">
+                <thead className="bg-[#2D1B4D] text-white uppercase text-[6px] md:text-[9px] font-black tracking-widest sticky top-0">
+                  <tr>
+                    <th className="px-4 py-2.5 w-10 text-center">
+                      <input
+                        type="checkbox"
+                        checked={notifications.length > 0 && selectedIds.length === notifications.length}
+                        onChange={handleSelectAll}
                         className="rounded border-gray-300 text-purple-600 focus:ring-purple-500 w-3 h-3 cursor-pointer"
                       />
-                    </td>
-                    <td className="px-4 py-2.5">
-                      <span className={`px-2 py-0.5 rounded-full border text-[7px] md:text-[9px] font-black uppercase tracking-widest ${getTypeColor(n.notification_type)}`}>
-                        {n.notification_type}
-                      </span>
-                    </td>
-                    <td className="px-4 py-2.5 truncate font-bold text-gray-800" title={n.title}>
-                      {n.title}
-                    </td>
-                    <td className="px-4 py-2.5">
-                      <p className="line-clamp-1 text-gray-600 group-hover:line-clamp-3 transition-all cursor-pointer" 
-                         onClick={() => { if(n.link) navigate(n.link); }} title={n.message}>
-                        {n.message}
-                      </p>
-                    </td>
-                    <td className="px-4 py-2.5 text-gray-400 font-medium">
-                      {new Date(n.created_at).toLocaleString()}
-                    </td>
-                    <td className="px-4 py-2.5 text-center">
-                      <span className={`px-1.5 py-0.5 rounded text-[7px] md:text-[8px] font-black uppercase tracking-tighter ${
-                        n.is_read ? 'text-gray-400' : 'bg-violet-600 text-white'
-                      }`}>
-                        {n.is_read ? 'READ' : 'NEW'}
-                      </span>
-                    </td>
-                    <td className="px-4 py-2.5 text-center">
-                      <div className="flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        {!n.is_read && (
-                          <button onClick={() => markRead(n.id)} className="p-1 text-violet-600 hover:bg-violet-100 rounded transition-colors" title="Mark Read">
-                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
-                          </button>
-                        )}
-                        <button onClick={() => handleDelete(n.id)} className="p-1 text-red-500 hover:bg-red-50 rounded transition-colors" title="Delete">
-                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                        </button>
-                      </div>
-                    </td>
+                    </th>
+                    <th className="px-4 py-2.5 w-24">TYPE</th>
+                    <th className="px-4 py-2.5 w-40">TITLE</th>
+                    <th className="px-4 py-2.5">MESSAGE</th>
+                    <th className="px-4 py-2.5 w-32">TIME</th>
+                    <th className="px-4 py-2.5 w-24 text-center">STATUS</th>
+                    <th className="px-4 py-2.5 w-20 text-center">OPT</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {notifications.map((n) => (
+                    <tr key={n.id} className={`group hover:bg-purple-50 transition-colors ${!n.is_read ? 'bg-violet-50/40 font-semibold' : ''}`}>
+                      <td className="px-4 py-2.5 text-center">
+                        <input
+                          type="checkbox"
+                          checked={selectedIds.includes(n.id)}
+                          onChange={() => handleSelectOne(n.id)}
+                          className="rounded border-gray-300 text-purple-600 focus:ring-purple-500 w-3 h-3 cursor-pointer"
+                        />
+                      </td>
+                      <td className="px-4 py-2.5">
+                        <span className={`px-2 py-0.5 rounded-full border text-[7px] md:text-[9px] font-black uppercase tracking-widest ${getTypeColor(n.notification_type)}`}>
+                          {n.notification_type}
+                        </span>
+                      </td>
+                      <td className="px-4 py-2.5 truncate font-bold text-gray-800" title={n.title}>
+                        {n.title}
+                      </td>
+                      <td className="px-4 py-2.5">
+                        <p className="line-clamp-1 text-gray-600 group-hover:line-clamp-3 transition-all cursor-pointer"
+                           onClick={() => { if(n.link) navigate(n.link); }} title={n.message}>
+                          {n.message}
+                        </p>
+                      </td>
+                      <td className="px-4 py-2.5 text-gray-400 font-medium">
+                        {new Date(n.created_at).toLocaleString()}
+                      </td>
+                      <td className="px-4 py-2.5 text-center">
+                        <span className={`px-1.5 py-0.5 rounded text-[7px] md:text-[8px] font-black uppercase tracking-tighter ${
+                          n.is_read ? 'text-gray-400' : 'bg-violet-600 text-white'
+                        }`}>
+                          {n.is_read ? 'READ' : 'NEW'}
+                        </span>
+                      </td>
+                      <td className="px-4 py-2.5 text-center">
+                        <div className="flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          {!n.is_read && (
+                            <button onClick={() => markRead(n.id)} className="p-1 text-violet-600 hover:bg-violet-100 rounded transition-colors" title="Mark Read">
+                              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
+                            </button>
+                          )}
+                          <button onClick={() => handleDelete(n.id)} className="p-1 text-red-500 hover:bg-red-50 rounded transition-colors" title="Delete">
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
 
         {totalPages > 1 && (

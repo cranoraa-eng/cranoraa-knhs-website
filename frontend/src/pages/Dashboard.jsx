@@ -19,25 +19,23 @@ const WelcomeBanner = ({ user, today, actions }) => {
   };
 
   return (
-    <div className="bg-white rounded-2xl p-8 border border-slate-200 shadow-sm relative overflow-hidden">
-      {/* Very subtle background accent */}
+    <div className="bg-white rounded-2xl p-5 md:p-8 border border-slate-200 shadow-sm relative overflow-hidden">
       <div className="absolute top-0 right-0 w-64 h-64 bg-violet-50 rounded-full blur-3xl -mr-32 -mt-32 opacity-60" />
-      
-      <div className="relative flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-        <div className="space-y-2">
+      <div className="relative flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        <div className="space-y-1.5">
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-emerald-500" />
             <p className="text-xs font-bold text-violet-600 uppercase tracking-widest">{getGreeting()}</p>
           </div>
-          <h1 className="text-3xl font-black text-slate-900 tracking-tight">
+          <h1 className="text-xl md:text-3xl font-black text-slate-900 tracking-tight">
             Welcome back, <span className="text-violet-600">{user?.first_name || 'User'}</span>
           </h1>
-          <p className="text-slate-500 font-medium flex items-center gap-2">
-            <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+          <p className="text-slate-500 font-medium flex items-center gap-2 text-xs md:text-sm">
+            <svg className="w-4 h-4 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
             {today}
           </p>
         </div>
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-wrap gap-2">
           {actions}
         </div>
       </div>
@@ -58,17 +56,17 @@ const StatCard = ({ label, value, sub, icon, color = 'violet', onClick, badge })
   return (
     <div
       onClick={onClick}
-      className={`group bg-white border border-slate-200 rounded-2xl p-6 transition-all duration-300 hover:border-transparent hover:shadow-xl hover:shadow-slate-200/50 ${onClick ? 'cursor-pointer' : ''}`}
+      className={`group bg-white border border-slate-200 rounded-2xl p-4 md:p-6 transition-all duration-300 hover:border-transparent hover:shadow-xl hover:shadow-slate-200/50 ${onClick ? 'cursor-pointer' : ''}`}
     >
       <div className="flex items-start justify-between">
         <div className="space-y-4 w-full">
-          <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-300 ${themes[color]}`}>
+          <div className={`w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center transition-all duration-300 ${themes[color]}`}>
             {icon}
           </div>
           <div>
             <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.15em] mb-1">{label}</p>
             <div className="flex items-baseline gap-2">
-              <h3 className="text-3xl font-black text-slate-900 tracking-tight group-hover:text-violet-600 transition-colors">{value ?? '—'}</h3>
+              <h3 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight group-hover:text-violet-600 transition-colors">{value ?? '—'}</h3>
               {badge > 0 && (
                 <span className="px-1.5 py-0.5 rounded-md bg-rose-100 text-rose-600 text-[10px] font-black">
                   {badge} New
@@ -172,7 +170,7 @@ const AdminView = () => {
         }
       />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-6 gap-4">
         <StatCard
           label="Total Students" value={data?.total_students} sub="Enrolled"
           color="blue" onClick={() => navigate('/student-management')}
@@ -205,9 +203,9 @@ const AdminView = () => {
         />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 overflow-hidden">
         {/* Attendance Trends */}
-        <div className="lg:col-span-8 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+        <div className="lg:col-span-8 bg-white border border-slate-200 rounded-2xl p-4 md:p-6 shadow-sm overflow-hidden">
           <div className="flex items-center justify-between mb-6">
             <div>
               <h3 className="text-lg font-bold text-slate-900">Attendance Trends</h3>
