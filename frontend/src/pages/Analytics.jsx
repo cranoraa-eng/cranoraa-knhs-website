@@ -33,60 +33,42 @@ const Analytics = () => {
   const [filterSubject, setFilterSubject] = useState('all');
   const [filterQuarter, setFilterQuarter] = useState('all');
   const [distributionMode, setDistributionMode] = useState('student'); // 'student' or 'entry'
+  const [gradeTimeframe, setGradeTimeframe] = useState('all'); // 'all', 'today', 'weekly'
 
   // Attendance specific data
   const [attendanceAnalytics, setAttendanceAnalytics] = useState(null);
   const [attendanceLoading, setAttendanceLoading] = useState(false);
+  const [attendanceTimeframe, setAttendanceTimeframe] = useState('all'); // 'all', 'today', 'weekly'
 
   useEffect(() => {
     if (activeTab === 'system') fetchAnalytics();
     if (activeTab === 'grades') fetchGradeStats();
     if (activeTab === 'attendance') fetchAttendanceAnalytics();
-  }, [activeTab, academicYear, filterLevel, filterSubject, filterQuarter, distributionMode]);
+  }, [activeTab, academicYear, filterLevel, filterSubject, filterQuarter, distributionMode, gradeTimeframe, attendanceTimeframe]);
 
   const fetchAnalytics = async () => {
-    setLoading(true);
     try {
-      const [dashboardRes, attendanceRes, gradeRes] = await Promise.all([
-        api.get('/admin/stats/'),
-        api.get('/attendance/summary/'),
-        api.get('/grades/summary/')
-      ]);
-      
-      setData({
-        dashboard: dashboardRes.data,
-        attendance: attendanceRes.data,
-        grades: gradeRes.data
-      });
-    } catch (error) {
-      console.error('Failed to load system analytics', error);
-    } finally {
-      setLoading(false);
-    }
+      const res = await api.get(`/admin/stats/?academic_year=${academicYear}`);
+      setData(res.data);
+    } catch (err) { console.error(err); }
   };
 
   const fetchGradeStats = async () => {
     setGradeLoading(true);
     try {
-      const res = await api.get(`/admin/grade-distribution/?academic_year=${academicYear}&grade_level=${filterLevel}&subject_id=${filterSubject}&quarter=${filterQuarter}&mode=${distributionMode}`);
+      const res = await api.get(`/admin/grade-distribution/?academic_year=${academicYear}&grade_level=${filterLevel}&subject_id=${filterSubject}&quarter=${filterQuarter}&mode=${distributionMode}&timeframe=${gradeTimeframe}`);
       setGradeData(res.data);
-    } catch (err) {
-      console.error('Failed to fetch distribution stats', err);
-    } finally {
-      setGradeLoading(false);
-    }
+    } catch (err) { console.error(err); }
+    finally { setGradeLoading(false); }
   };
 
   const fetchAttendanceAnalytics = async () => {
     setAttendanceLoading(true);
     try {
-      const res = await api.get('/attendance/summary/');
+      const res = await api.get(`/attendance/summary/?timeframe=${attendanceTimeframe}`);
       setAttendanceAnalytics(res.data);
-    } catch (err) {
-      console.error('Failed to fetch attendance analytics', err);
-    } finally {
-      setAttendanceLoading(false);
-    }
+    } catch (err) { console.error(err); }
+    finally { setAttendanceLoading(false); }
   };
 
   const handleLevelChange = (level) => {
@@ -211,7 +193,7 @@ const Analytics = () => {
                       ]}
                     />
                     <FilterSelect 
-                      label="Timeframe" 
+                      label="Quarter Focus" 
                       value={filterQuarter} 
                       onChange={e => setFilterQuarter(e.target.value)}
                       options={[
@@ -220,6 +202,16 @@ const Analytics = () => {
                         { value: '2', label: 'Q2 — 2nd Quarter' },
                         { value: '3', label: 'Q3 — 3rd Quarter' },
                         { value: '4', label: 'Q4 — 4th Quarter' }
+                      ]}
+                    />
+                    <FilterSelect 
+                      label="Data Period" 
+                      value={gradeTimeframe} 
+                      onChange={e => setGradeTimeframe(e.target.value)}
+                      options={[
+                        { value: 'all', label: 'All Records' },
+                        { value: 'today', label: 'Today Only' },
+                        { value: 'weekly', label: 'This Week' }
                       ]}
                     />
                     <YearSelector academicYear={academicYear} onYearChange={handleYearChange} />
@@ -243,7 +235,7 @@ const Analytics = () => {
                     label={distributionMode === 'student' ? 'Students' : 'Entries'}
                   />
                   <GradeDistributionBarSection data={gradeData.by_level} filterLevel={filterLevel} />
-                  <GradeRankingSection data={gradeData.by_group} filterSubject={filterSubject} meta={gradeData.meta} />
+                  <GradeRankingSection data={gradeData.by_group} filterSubject={filterSubject} meta={gradeData.meta} timeframe={gradeTimeframe} />
                 </div>
               )}
             </>
@@ -263,6 +255,18 @@ const Analytics = () => {
                     Student Presence & Engagement Analytics
                   </p>
                 </div>
+                <div className="flex flex-wrap gap-3">
+                  <FilterSelect 
+                    label="Analysis Period" 
+                    value={attendanceTimeframe} 
+                    onChange={e => setAttendanceTimeframe(e.target.value)}
+                    options={[
+                      { value: 'all', label: 'All-Time Aggregate' },
+                      { value: 'today', label: 'Today Only' },
+                      { value: 'weekly', label: 'Past 7 Days' }
+                    ]}
+                  />
+                </div>
               </div>
 
               {!attendanceAnalytics ? (
@@ -270,7 +274,7 @@ const Analytics = () => {
               ) : (
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
                   <AttendanceTrendsSection data={attendanceAnalytics.daily_trends} />
-                  <AttendanceRankingsSection rankings={attendanceAnalytics.section_rankings} />
+                  <AttendanceRankingsSection rankings={attendanceAnalytics.section_rankings} period={attendanceAnalytics.period} />
                 </div>
               )}
             </>
@@ -494,11 +498,11 @@ const GradeDistributionBarSection = ({ data, filterLevel }) => (
   </div>
 );
 
-const GradeRankingSection = ({ data, filterSubject, meta }) => (
+const GradeRankingSection = ({ data, filterSubject, meta, timeframe }) => (
   <div className="lg:col-span-12 bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
     <div className="flex items-center justify-between mb-8">
       <div>
-        <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Competitive Ranking</h3>
+        <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Competitive Ranking — {timeframe === 'all' ? 'Annual' : timeframe === 'today' ? 'Today' : 'Weekly'}</h3>
         <p className="text-sm font-black text-slate-900 uppercase tracking-tight">
           {filterSubject === 'all' ? 'Top 10 Performing Subjects' : `Top 10 Classrooms — ${meta.subjects.find(s => String(s.id) === String(filterSubject))?.name || ''}`}
         </p>
@@ -549,10 +553,10 @@ const AttendanceTrendsSection = ({ data }) => (
   </div>
 );
 
-const AttendanceRankingsSection = ({ rankings }) => (
+const AttendanceRankingsSection = ({ rankings, period }) => (
   <div className="lg:col-span-4 bg-white border border-slate-200 rounded-xl p-4 shadow-sm overflow-hidden flex flex-col">
     <div className="mb-6">
-      <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Rankings</h3>
+      <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Rankings — {period}</h3>
       <p className="text-sm font-black text-slate-900 uppercase tracking-tight">Section Performance Index</p>
     </div>
     <div className="flex-1 overflow-y-auto space-y-2 pr-1 scrollbar-thin scrollbar-thumb-slate-200">

@@ -1683,13 +1683,26 @@ class AttendanceViewSet(viewsets.ModelViewSet):
         ).order_by('date__month')
         
         # Section Rankings (Overall Attendance Rate) - Exclude weekends
+        # Now supporting today, weekly, and all-time (default) rankings
+        timeframe = request.query_params.get('timeframe', 'all')
         rankings = []
-        if request.user.role == 'admin':
+        
+        if request.user.role == 'admin' or request.user.role == 'teacher':
             classrooms = Classroom.objects.all()
+            
+            # Base filter for rankings
+            rank_att = Attendance.objects.exclude(date__week_day__in=[1, 7])
+            
+            if timeframe == 'today':
+                rank_att = rank_att.filter(date=today)
+            elif timeframe == 'weekly':
+                week_ago = today - datetime.timedelta(days=7)
+                rank_att = rank_att.filter(date__gte=week_ago)
+            
             for cls in classrooms:
-                att = Attendance.objects.filter(classroom=cls).exclude(date__week_day__in=[1, 7])
-                total = att.count()
-                present = att.filter(status__in=['present', 'late']).count()
+                cls_att = rank_att.filter(classroom=cls)
+                total = cls_att.count()
+                present = cls_att.filter(status__in=['present', 'late']).count()
                 rate = round(present / total * 100, 1) if total > 0 else 0
                 rankings.append({
                     'id': cls.id,
@@ -1703,7 +1716,7 @@ class AttendanceViewSet(viewsets.ModelViewSet):
             'daily_trends': daily_data,
             'monthly_trends': monthly_data,
             'section_rankings': rankings,
-            'period': 'Last 30 Days'
+            'period': timeframe.capitalize()
         })
     
     def perform_create(self, serializer):
@@ -2233,7 +2246,11 @@ def grade_distribution_stats(request):
     grade_level   = request.query_params.get('grade_level', 'all')
     subject_id    = request.query_params.get('subject_id', 'all')
     quarter       = request.query_params.get('quarter', 'all')
+    timeframe     = request.query_params.get('timeframe', 'all') # today, weekly, all
     mode          = request.query_params.get('mode', 'student') # 'student' (General Average) or 'entry' (Cumulative)
+    
+    from django.utils import timezone
+    import datetime
     
     # 1. Base filtering
     base_grades = Grade.objects.filter(
@@ -2241,6 +2258,13 @@ def grade_distribution_stats(request):
         academic_year=academic_year,
         transmuted_score__isnull=False
     )
+    
+    # Filter by Timeframe (submission date)
+    if timeframe == 'today':
+        base_grades = base_grades.filter(submitted_at__date=timezone.now().date())
+    elif timeframe == 'weekly':
+        week_ago = timezone.now().date() - datetime.timedelta(days=7)
+        base_grades = base_grades.filter(submitted_at__date__gte=week_ago)
     
     # Filter by Quarter if specified
     if quarter != 'all':
