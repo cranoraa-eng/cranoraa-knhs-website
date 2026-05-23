@@ -3,7 +3,7 @@ from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from .views import (
     login_view, admin_create_user_view, force_password_change_view, verify_otp_view, resend_otp_view, user_profile, student_profile, 
-    teacher_dashboard_stats, ClassroomViewSet, StudentClassEnrollmentViewSet, UserViewSet, 
+    teacher_dashboard_stats, student_dashboard_stats, ClassroomViewSet, StudentClassEnrollmentViewSet, UserViewSet, 
     AnnouncementViewSet, AttendanceViewSet, LearningMaterialViewSet, SubjectViewSet, 
     ClassroomSubjectViewSet, ScratchCardViewSet, FeeViewSet, NotificationViewSet, 
     EnrollmentApplicationViewSet, AssignmentViewSet, SubmissionViewSet, WebsiteContentViewSet, GradeViewSet, GradeReportViewSet, 
@@ -50,6 +50,7 @@ urlpatterns = [
     path('student/calendar/', student_calendar_view, name='student_calendar'),
     path('notifications/polling/', notifications_polling_view, name='notifications_polling'),
     path('teacher/stats/', teacher_dashboard_stats, name='teacher_stats'),
+    path('student/dashboard/stats/', student_dashboard_stats, name='student_dashboard_stats'),
     path('admin/stats/', admin_dashboard_stats, name='admin_stats'),
     path('attendance/summary/', AttendanceViewSet.as_view({'get': 'summary'}), name='attendance_summary'),
     path('grades/summary/', GradeViewSet.as_view({'get': 'summary'}), name='grade_summary'),

@@ -350,7 +350,7 @@ const AdminView = () => {
 const TeacherView = () => {
   const navigate = useNavigate();
   const user = getUser();
-  const [stats, setStats] = useState(null);
+  const [data, setData] = useState(null);
   const [classrooms, setClassrooms] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -359,7 +359,7 @@ const TeacherView = () => {
       api.get('/teacher/stats/'),
       api.get('/classrooms/'),
     ]).then(([statsRes, clsRes]) => {
-      setStats(statsRes.data);
+      setData(statsRes.data);
       setClassrooms(clsRes.data);
     }).catch(() => {}).finally(() => setLoading(false));
   }, []);
@@ -369,92 +369,183 @@ const TeacherView = () => {
   const today = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
 
   return (
-    <div className="space-y-6 pb-12">
+    <div className="space-y-6 pb-12 animate-fade-in">
       <WelcomeBanner
         user={user}
         today={today}
         actions={
           <>
             <button
-              onClick={() => navigate('/attendance')}
-              className="px-6 py-3 rounded-xl border border-slate-200 bg-white text-slate-700 font-bold text-sm hover:bg-slate-50 transition-all"
+              onClick={() => navigate('/announcements')}
+              className="px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 font-bold text-xs uppercase tracking-widest hover:bg-slate-50 transition-all flex items-center gap-2"
             >
-              Mark Attendance
+              <svg className="w-4 h-4 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" /></svg>
+              Post Announcement
             </button>
             <button
               onClick={() => navigate('/grade-input')}
-              className="px-6 py-3 rounded-xl bg-violet-600 text-white font-bold text-sm hover:bg-violet-700 shadow-sm transition-all"
+              className="px-4 py-2.5 rounded-xl bg-[#1A0B2E] text-white font-bold text-xs uppercase tracking-widest hover:bg-violet-900 shadow-lg shadow-violet-200/50 transition-all flex items-center gap-2"
             >
+              <svg className="w-4 h-4 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
               Input Grades
             </button>
           </>
         }
       />
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {/* Main Stats Row */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
-          label="My Classrooms" value={stats?.total_classes || 0}
-          color="violet" onClick={() => navigate('/grade-management')}
-          icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>}
+          label="Handled Classes" value={data?.total_classes || 0} sub="Active Sections"
+          color="violet" onClick={() => navigate('/my-classes')}
+          icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>}
         />
         <StatCard
-          label="Active Students" value={stats?.total_students || 0}
+          label="Total Students" value={data?.total_students || 0} sub="Enrolled in Subjects"
           color="blue"
-          icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>}
+          icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>}
         />
         <StatCard
-          label="Grade Entries" value={stats?.total_grades || 0}
-          color="emerald" onClick={() => navigate('/grade-management')}
-          icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>}
+          label="Pending Grades" value={data?.pending_grades || 0} sub="Awaiting Input"
+          color="amber" onClick={() => navigate('/grade-input')}
+          icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
+        />
+        <StatCard
+          label="Today's Attendance" value={`${data?.attendance_rate || 0}%`} sub="Presence Rate"
+          color="emerald" onClick={() => navigate('/attendance')}
+          icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 8l2 2 4-4" /></svg>}
         />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-bold text-slate-900">Assigned Classes</h3>
-            <Link to="/my-classes" className="text-[10px] font-black text-violet-600 uppercase tracking-widest hover:underline">View All</Link>
-          </div>
-          {classrooms.length === 0 ? (
-            <p className="text-center py-10 text-slate-400 italic text-sm">No classes assigned</p>
-          ) : (
-            <div className="space-y-3">
-              {classrooms.map(c => (
-                <div key={c.id} className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-100">
-                  <div>
-                    <h4 className="font-bold text-slate-900">{c.name}</h4>
-                    <p className="text-xs font-medium text-slate-400">{c.student_count || 0} Students</p>
-                  </div>
-                  <button
-                    onClick={() => navigate('/grade-input')}
-                    className="p-2 text-violet-600 hover:bg-violet-100 rounded-lg transition-colors"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
-                  </button>
-                </div>
-              ))}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* Assigned Classes - Detailed Table View */}
+        <div className="lg:col-span-8 bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden flex flex-col">
+          <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+            <div>
+              <h3 className="text-md font-black text-slate-900 uppercase tracking-tight">Active Classroom Sessions</h3>
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Real-time status of your assigned sections</p>
             </div>
-          )}
+            <Link to="/my-classes" className="text-[10px] font-black text-violet-600 hover:text-violet-800 uppercase tracking-[0.2em] transition-colors">View Directory</Link>
+          </div>
+          <div className="flex-1 overflow-x-auto">
+            <table className="w-full text-left border-separate border-spacing-0">
+              <thead className="bg-white border-b border-slate-100 sticky top-0 z-10">
+                <tr>
+                  <th className="px-6 py-4 text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Classroom</th>
+                  <th className="px-6 py-4 text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Subject</th>
+                  <th className="px-6 py-4 text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Students</th>
+                  <th className="px-6 py-4 text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-50">
+                {classrooms.length === 0 ? (
+                  <tr>
+                    <td colSpan="4" className="px-6 py-12 text-center text-slate-400 italic text-sm uppercase font-black tracking-widest">No classes currently assigned</td>
+                  </tr>
+                ) : (
+                  classrooms.map(c => (
+                    <tr key={c.id} className="hover:bg-slate-50 transition-colors group">
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-lg bg-violet-100 text-violet-600 flex items-center justify-center font-black text-xs shadow-sm group-hover:bg-violet-600 group-hover:text-white transition-all">
+                            {c.name?.match(/\d+/)?.[0] || 'C'}
+                          </div>
+                          <span className="text-sm font-bold text-slate-800">{c.name}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex flex-col">
+                          <span className="text-xs font-bold text-slate-700">{c.subject_name || 'General'}</span>
+                          <span className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">{c.subject_code || 'GEN-101'}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-2">
+                          <div className="flex -space-x-2 overflow-hidden">
+                            {[1, 2, 3].map(i => (
+                              <div key={i} className="inline-block h-6 w-6 rounded-full ring-2 ring-white bg-slate-200" />
+                            ))}
+                          </div>
+                          <span className="text-xs font-bold text-slate-500">+{c.student_count || 0}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => navigate('/attendance', { state: { classroomId: c.id } })}
+                            className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all"
+                            title="Attendance"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 8l2 2 4-4" /></svg>
+                          </button>
+                          <button
+                            onClick={() => navigate('/grade-input', { state: { classroomId: c.id } })}
+                            className="p-2 text-violet-600 hover:bg-violet-50 rounded-lg transition-all"
+                            title="Input Grades"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
 
-        <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
-          <h3 className="text-lg font-bold text-slate-900 mb-6">Teaching Tools</h3>
-          <div className="grid grid-cols-2 gap-3">
-            {[
-              { label: 'Mark Attendance',    path: '/attendance',        icon: '📋' },
-              { label: 'Input Grades',       path: '/grade-input',       icon: '✏️' },
-              { label: 'Manage Grades',      path: '/grade-management',  icon: '📊' },
-              { label: 'Announcements',      path: '/announcements',     icon: '📢' },
-            ].map(a => (
-              <button
-                key={a.path}
-                onClick={() => navigate(a.path)}
-                className="flex items-center gap-3 p-4 bg-slate-50 rounded-xl border border-slate-100 hover:bg-violet-50 hover:border-violet-200 transition-all"
-              >
-                <span className="text-xl">{a.icon}</span>
-                <span className="text-[10px] font-bold text-slate-700 uppercase tracking-widest">{a.label}</span>
-              </button>
-            ))}
+        {/* Quick Tools & Schedule Widget */}
+        <div className="lg:col-span-4 space-y-6">
+          <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+            <h3 className="text-md font-black text-slate-900 uppercase tracking-tight mb-6">Teaching Intelligence</h3>
+            <div className="grid grid-cols-2 gap-3">
+              {[
+                { label: 'Attendance',    path: '/attendance',        icon: '📋', color: 'emerald' },
+                { label: 'Grade Input',   path: '/grade-input',       icon: '✏️', color: 'violet' },
+                { label: 'Analytics',     path: '/analytics',         icon: '📈', color: 'blue' },
+                { label: 'Materials',     path: '/materials',         icon: '📂', color: 'amber' },
+              ].map(a => (
+                <button
+                  key={a.path}
+                  onClick={() => navigate(a.path)}
+                  className="flex flex-col items-center justify-center p-4 bg-slate-50/50 rounded-2xl border border-slate-100 hover:bg-white hover:border-violet-200 hover:shadow-lg hover:shadow-violet-100 transition-all group"
+                >
+                  <span className="text-2xl mb-2 group-hover:scale-125 transition-transform">{a.icon}</span>
+                  <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest group-hover:text-violet-600 transition-colors">{a.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-md font-black text-slate-900 uppercase tracking-tight">Recent Activity</h3>
+              <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            </div>
+            <div className="space-y-4">
+              {data?.recent_activities?.map((act, i) => (
+                <div key={i} className="flex gap-4">
+                  <div className="relative">
+                    <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-xs border border-slate-100">
+                      {act.type === 'grade' ? '📊' : act.type === 'attendance' ? '📋' : '📢'}
+                    </div>
+                    {i < data.recent_activities.length - 1 && (
+                      <div className="absolute top-8 left-1/2 -translate-x-1/2 w-px h-6 bg-slate-100" />
+                    )}
+                  </div>
+                  <div>
+                    <p className="text-[11px] font-bold text-slate-700 leading-tight">{act.message}</p>
+                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-tighter mt-1">{act.time}</p>
+                  </div>
+                </div>
+              ))}
+              {!data?.recent_activities?.length && (
+                <div className="py-6 text-center">
+                  <p className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em]">No recent actions</p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -469,15 +560,18 @@ const StudentView = () => {
   const user = getUser();
   const [grades, setGrades] = useState([]);
   const [attendance, setAttendance] = useState([]);
+  const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     Promise.all([
       api.get('/grades/my_grades/').catch(() => ({ data: [] })),
       api.get('/attendance/').catch(() => ({ data: [] })),
-    ]).then(([gradeRes, attRes]) => {
+      api.get('/student/dashboard/stats/').catch(() => ({ data: {} })),
+    ]).then(([gradeRes, attRes, statsRes]) => {
       setGrades(gradeRes.data);
       setAttendance(attRes.data);
+      setStats(statsRes.data);
     }).finally(() => setLoading(false));
   }, []);
 
@@ -496,63 +590,151 @@ const StudentView = () => {
   const today = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
 
   return (
-    <div className="space-y-6 pb-12">
+    <div className="space-y-6 pb-12 animate-fade-in">
       <WelcomeBanner
         user={user}
         today={today}
         actions={
           <>
             <button
-              onClick={() => navigate('/student-grades')}
-              className="px-6 py-3 rounded-xl border border-slate-200 bg-white text-slate-700 font-bold text-sm hover:bg-slate-50 transition-all"
+              onClick={() => navigate('/materials')}
+              className="px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 font-bold text-xs uppercase tracking-widest hover:bg-slate-50 transition-all flex items-center gap-2"
             >
-              My Grades
+              <svg className="w-4 h-4 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
+              Learning Materials
             </button>
             <button
-              onClick={() => navigate('/attendance')}
-              className="px-6 py-3 rounded-xl bg-violet-600 text-white font-bold text-sm hover:bg-violet-700 shadow-sm transition-all"
+              onClick={() => navigate('/student-grades')}
+              className="px-4 py-2.5 rounded-xl bg-[#1A0B2E] text-white font-bold text-xs uppercase tracking-widest hover:bg-violet-900 shadow-lg shadow-violet-200/50 transition-all flex items-center gap-2"
             >
-              Attendance
+              <svg className="w-4 h-4 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+              View All Grades
             </button>
           </>
         }
       />
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
-          label="General Average" value={overallAvg}
+          label="General Average" value={overallAvg || '0.00'} sub="Academic Standing"
           color="violet" onClick={() => navigate('/student-grades')}
-          icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>}
+          icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>}
         />
         <StatCard
-          label="Attendance Rate" value={attRate !== null ? `${attRate}%` : '—'}
+          label="Attendance" value={attRate !== null ? `${attRate}%` : '0%'} sub="This Month"
           color={attRate !== null && attRate < 75 ? 'rose' : 'emerald'} onClick={() => navigate('/attendance')}
-          icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 8l2 2 4-4" /></svg>}
+          icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 8l2 2 4-4" /></svg>}
         />
         <StatCard
-          label="Active Subjects" value={finalGrades.length}
+          label="Total Subjects" value={finalGrades.length} sub="Current Load"
           color="blue"
-          icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>}
+          icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>}
+        />
+        <StatCard
+          label="Unread Alerts" value={stats?.unread_notifications || 0} sub="Notifications"
+          color="amber" onClick={() => navigate('/notifications')}
+          icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>}
         />
       </div>
 
-      <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
-        <h3 className="text-lg font-bold text-slate-900 mb-6">Recent Performance</h3>
-        {finalGrades.length === 0 ? (
-          <p className="text-center py-10 text-slate-400 italic text-sm">No grades recorded yet</p>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {finalGrades.slice(0, 6).map(g => (
-              <div key={g.id} className="p-4 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between">
-                <div>
-                  <h4 className="font-bold text-slate-800 line-clamp-1 text-sm">{g.subject_name}</h4>
-                  <p className="text-[10px] font-bold text-slate-400 uppercase mt-1">Q{g.quarter} · {g.subject_code}</p>
-                </div>
-                <div className="text-lg font-bold text-violet-600">{g.raw_score}</div>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* Performance Visualization */}
+        <div className="lg:col-span-8 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm overflow-hidden flex flex-col">
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h3 className="text-md font-black text-slate-900 uppercase tracking-tight">Subject Performance Matrix</h3>
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Comparative view of your current grades</p>
+            </div>
+            <div className="flex gap-4">
+              <div className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-violet-500" />
+                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Score</span>
               </div>
-            ))}
+            </div>
           </div>
-        )}
+          
+          <div className="h-72 w-full">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
+              <BarChart data={finalGrades} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                <XAxis 
+                  dataKey="subject_code" 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tick={{fontSize: 9, fontWeight: 800, fill: '#94a3b8'}}
+                />
+                <YAxis 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tick={{fontSize: 9, fontWeight: 800, fill: '#94a3b8'}}
+                  domain={[70, 100]}
+                />
+                <Tooltip 
+                  cursor={{fill: '#f8fafc'}}
+                  contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+                  labelStyle={{ fontWeight: 800, color: '#1e293b', fontSize: '10px', textTransform: 'uppercase' }}
+                />
+                <Bar 
+                  dataKey="raw_score" 
+                  fill="#8b5cf6" 
+                  radius={[4, 4, 0, 0]} 
+                  barSize={32}
+                  name="Final Grade"
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Quick Links & Announcements */}
+        <div className="lg:col-span-4 space-y-6">
+          <div className="bg-[#1A0B2E] rounded-2xl p-6 shadow-xl border border-white/10 relative overflow-hidden group">
+            <div className="absolute -right-8 -top-8 w-32 h-32 bg-violet-500/20 rounded-full blur-2xl group-hover:bg-violet-500/30 transition-all duration-700" />
+            <h3 className="text-white text-md font-black uppercase tracking-tight mb-6 relative z-10">Quick Navigator</h3>
+            <div className="grid grid-cols-2 gap-3 relative z-10">
+              {[
+                { label: 'My Grades',    path: '/student-grades',    icon: '📊' },
+                { label: 'Calendar',     path: '/portal-calendar',   icon: '📅' },
+                { label: 'Materials',    path: '/materials',         icon: '📚' },
+                { label: 'Messages',     path: '/messages',          icon: '💬' },
+              ].map(a => (
+                <button
+                  key={a.path}
+                  onClick={() => navigate(a.path)}
+                  className="flex flex-col items-center justify-center p-4 bg-white/5 rounded-2xl border border-white/10 hover:bg-white/10 transition-all active:scale-95"
+                >
+                  <span className="text-xl mb-1">{a.icon}</span>
+                  <span className="text-[9px] font-black text-violet-200 uppercase tracking-widest">{a.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-md font-black text-slate-900 uppercase tracking-tight">Recent Updates</h3>
+              <Link to="/notifications" className="text-[10px] font-black text-violet-600 uppercase tracking-widest hover:underline">Inbox</Link>
+            </div>
+            <div className="space-y-4">
+              {stats?.recent_notifications?.map((notif, i) => (
+                <div key={i} className="flex gap-4 group cursor-pointer" onClick={() => navigate('/notifications')}>
+                  <div className="w-8 h-8 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center text-xs group-hover:bg-violet-50 transition-colors">
+                    {notif.type === 'grade' ? '📈' : '🔔'}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[11px] font-bold text-slate-700 leading-tight line-clamp-1">{notif.title}</p>
+                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-tighter mt-1">{notif.time}</p>
+                  </div>
+                </div>
+              ))}
+              {!stats?.recent_notifications?.length && (
+                <div className="py-6 text-center">
+                  <p className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em]">No new updates</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -415,14 +415,18 @@ def teacher_dashboard_stats(request):
     - Total students (count of students in teacher's classrooms)
     - Active classes (count of teacher's classrooms)
     - Grade entries (total grades recorded by the teacher)
+    - Attendance rate for today
+    - Recent activities
     """
     try:
         user = request.user
         if user.role != 'teacher' and user.role != 'admin':
             return Response({'error': 'Unauthorized'}, status=403)
 
-        from .models import StudentClassEnrollment, Grade, ClassroomSubject
-        from django.db.models import Q
+        from .models import StudentClassEnrollment, Grade, ClassroomSubject, Attendance, Classroom
+        from portal.models import AuditLog
+        from django.db.models import Q, Avg
+        from django.utils import timezone
         
         # Get classrooms where teacher is adviser OR has assigned subjects
         assigned_classrooms_ids = ClassroomSubject.objects.filter(teacher=user).values_list('classroom_id', flat=True)
@@ -438,17 +442,83 @@ def teacher_dashboard_stats(request):
         # Get total grade entries by this teacher
         total_grades = Grade.objects.filter(teacher=user).count()
         
+        # Attendance rate for today
+        today = timezone.now().date()
+        today_attendance = Attendance.objects.filter(
+            classroom__in=classrooms,
+            date=today
+        )
+        if today_attendance.exists():
+            present_count = today_attendance.filter(status__in=['present', 'late']).count()
+            attendance_rate = round((present_count / today_attendance.count()) * 100)
+        else:
+            attendance_rate = 0
+
+        # Pending grades (placeholder logic: students in classrooms who have subjects handled by this teacher but no grades yet)
+        # For simplicity, we'll just count students who don't have a final grade for the latest subject assignment
+        pending_grades = 0
+        for cs in ClassroomSubject.objects.filter(teacher=user):
+            students_in_class = StudentClassEnrollment.objects.filter(classroom=cs.classroom).count()
+            grades_in_subject = Grade.objects.filter(subject=cs.subject, classroom=cs.classroom).values('student').distinct().count()
+            pending_grades += max(0, students_in_class - grades_in_subject)
+
+        # Recent activities
+        recent_activities = []
+        logs = AuditLog.objects.filter(user=user).order_by('-timestamp')[:5]
+        for log in logs:
+            recent_activities.append({
+                'message': log.description,
+                'time': log.timestamp.strftime('%I:%M %p, %b %d'),
+                'type': 'grade' if 'grade' in log.description.lower() else 'attendance' if 'attendance' in log.description.lower() else 'system'
+            })
+        
         return Response({
             'total_students': total_students,
             'total_classes': total_classes,
             'total_grades': total_grades,
+            'attendance_rate': attendance_rate,
+            'pending_grades': pending_grades,
+            'recent_activities': recent_activities
         })
     except Exception as e:
         logger.error(f"Teacher stats error: {str(e)}", exc_info=True)
         return Response(
             {'error': f'Server error: {str(e)}'},
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            status=500
         )
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def student_dashboard_stats(request):
+    """
+    Returns dashboard statistics for students.
+    """
+    try:
+        user = request.user
+        if user.role != 'student':
+            return Response({'error': 'Unauthorized'}, status=403)
+
+        from .models import Notification
+        from django.utils import timezone
+        
+        unread_notifications = Notification.objects.filter(user=user, is_read=False).count()
+        recent_notifications = Notification.objects.filter(user=user).order_by('-created_at')[:5]
+        
+        recent_notif_data = []
+        for n in recent_notifications:
+            recent_notif_data.append({
+                'title': n.title,
+                'time': n.created_at.strftime('%I:%M %p, %b %d'),
+                'type': n.notification_type
+            })
+
+        return Response({
+            'unread_notifications': unread_notifications,
+            'recent_notifications': recent_notif_data,
+        })
+    except Exception as e:
+        logger.error(f"Student dashboard stats error: {str(e)}", exc_info=True)
+        return Response({'error': f'Server error: {str(e)}'}, status=500)
 
 
 class ClassroomViewSet(viewsets.ModelViewSet):
