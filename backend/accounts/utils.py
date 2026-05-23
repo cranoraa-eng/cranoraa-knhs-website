@@ -45,10 +45,22 @@ def upload_to_supabase(file, folder="profiles"):
         )
         
         # Get public URL
-        url_res = supabase.storage.from_(settings.SUPABASE_BUCKET).get_public_url(filename)
-        return url_res
+        # For recent supabase-py versions, get_public_url returns a string or an object with public_url
+        res = supabase.storage.from_(settings.SUPABASE_BUCKET).get_public_url(filename)
+        
+        # Check if res is a string (older versions) or has public_url attribute/key
+        if isinstance(res, str):
+            return res
+        elif hasattr(res, 'public_url'):
+            return res.public_url
+        elif isinstance(res, dict) and 'public_url' in res:
+            return res['public_url']
+            
+        return f"{settings.SUPABASE_URL}/storage/v1/object/public/{settings.SUPABASE_BUCKET}/{filename}"
     except Exception as e:
         logger.error(f"Supabase upload error: {str(e)}")
+        import traceback
+        logger.error(traceback.format_exc())
         return None
 
 # Configure Mailjet
