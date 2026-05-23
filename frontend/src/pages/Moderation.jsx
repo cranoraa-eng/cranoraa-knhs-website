@@ -19,7 +19,9 @@ const Moderation = () => {
         params: { status: filter === 'all' ? undefined : filter }
       });
       const data = response.data;
-      setReports(Array.isArray(data.results) ? data.results : (Array.isArray(data) ? data : []));
+      // Handle both DRF paginated and non-paginated responses
+      const reportList = Array.isArray(data.results) ? data.results : (Array.isArray(data) ? data : []);
+      setReports(reportList);
     } catch (error) {
       toast.error('Failed to load reports');
       setReports([]);
@@ -161,14 +163,30 @@ const Moderation = () => {
                     </td>
                     <td className="px-6 py-4">
                       <span className={`px-2 py-1 rounded-full text-[8px] font-black uppercase tracking-widest ${
-                        report.status === 'pending' ? 'bg-amber-100 text-amber-600' : 'bg-emerald-100 text-emerald-600'
+                        report.status === 'pending' ? 'bg-amber-100 text-amber-600' : 
+                        report.status === 'dismissed' ? 'bg-slate-100 text-slate-500' :
+                        'bg-emerald-100 text-emerald-600'
                       }`}>
                         {report.status}
                       </span>
+                      {report.moderator_note && (
+                        <p className="text-[9px] text-slate-400 mt-1 italic line-clamp-1" title={report.moderator_note}>
+                          Note: {report.moderator_note}
+                        </p>
+                      )}
                     </td>
                     <td className="px-6 py-4 text-center">
                       {report.status === 'pending' ? (
                         <div className="flex items-center justify-center gap-1">
+                          <button
+                            onClick={() => handleAction(report.id, 'resolve', 'Resolve Report')}
+                            className="p-2 text-emerald-500 hover:bg-emerald-50 rounded-lg transition-colors"
+                            title="Mark as Resolved"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                          </button>
                           <button
                             onClick={() => handleAction(report.id, 'delete_message', 'Delete Message')}
                             className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
