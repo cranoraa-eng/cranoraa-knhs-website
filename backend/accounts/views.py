@@ -1730,11 +1730,18 @@ class AttendanceViewSet(viewsets.ModelViewSet):
         if classroom_id:
             daily_trends = daily_trends.filter(classroom_id=classroom_id)
         
-        daily_data = daily_trends.values('date').annotate(
-            present=Count(Case(When(status='present', then=1), output_field=IntegerField())),
-            absent=Count(Case(When(status='absent', then=1), output_field=IntegerField())),
-            late=Count(Case(When(status='late', then=1), output_field=IntegerField())),
-        ).order_by('date')
+        daily_data = []
+        for day_dict in daily_trends.values('date').annotate(
+            present_count=Count(Case(When(status__in=['present', 'late'], then=1), output_field=IntegerField())),
+            total_count=Count('id')
+        ).order_by('date'):
+            day_total = day_dict['total_count']
+            day_present = day_dict['present_count']
+            daily_data.append({
+                'date': day_dict['date'].strftime('%Y-%m-%d'),
+                'rate': round((day_present / day_total * 100), 1) if day_total > 0 else 0,
+                'total': day_total
+            })
         
         # Monthly trends - Exclude weekends
         monthly_data = daily_trends.values('date__month').annotate(
@@ -2097,7 +2104,7 @@ def admin_dashboard_stats(request):
         today = now.date()
         five_mins_ago = now - datetime.timedelta(minutes=5)
         this_week_start = today - datetime.timedelta(days=today.weekday())
-        last_7_days = [today - datetime.timedelta(days=i) for i in range(6, -1, -1)]
+        last_30_days_list = [today - datetime.timedelta(days=i) for i in range(29, -1, -1)]
 
         # Core counts
         total_students = User.objects.filter(role='student', is_approved=True).count()
@@ -2116,9 +2123,9 @@ def admin_dashboard_stats(request):
         today_total   = today_attendance.count()
         today_rate    = round((today_present / today_total * 100), 1) if today_total > 0 else 0
 
-        # Attendance Trends (Last 7 Days)
+        # Attendance Trends (Last 30 Days)
         attendance_trends = []
-        for day in last_7_days:
+        for day in last_30_days_list:
             day_records = Attendance.objects.filter(date=day)
             day_total = day_records.count()
             day_present = day_records.filter(status__in=['present', 'late']).count()

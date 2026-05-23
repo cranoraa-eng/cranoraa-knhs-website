@@ -314,7 +314,7 @@ const AttendanceSection = ({ data }) => (
           />
           <YAxis tick={{fontSize: 8, fontWeight: 900, fill: '#64748b'}} axisLine={false} tickLine={false} />
           <Tooltip content={<CustomTooltip />} cursor={{stroke: '#6366f1', strokeWidth: 1, strokeDasharray: '4 4'}} />
-          <Area type="monotone" dataKey="present" stroke="#6366f1" strokeWidth={2} fillOpacity={1} fill="url(#colorAtt)" />
+          <Area type="monotone" dataKey="rate" stroke="#6366f1" strokeWidth={2} fillOpacity={1} fill="url(#colorAtt)" name="Presence Rate" />
         </AreaChart>
       </ResponsiveContainer>
     </div>

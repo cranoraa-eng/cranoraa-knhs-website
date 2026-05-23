@@ -142,7 +142,7 @@ const AdminView = () => {
 
   const dist = distView === 'general_average' ? data?.general_average : data?.all_subjects;
   const gradeData = dist?.counts || [];
-  const attendanceTrends = data?.charts?.attendance_trends || data?.attendance_trends || [];
+  const attendanceTrends = data?.dashboard?.charts?.attendance_trends || [];
   const today = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
   const COLORS = ['#10b981', '#3b82f6', '#8b5cf6', '#f59e0b', '#ef4444'];
@@ -211,7 +211,7 @@ const AdminView = () => {
           <div className="flex items-center justify-between mb-6">
             <div>
               <h3 className="text-lg font-bold text-slate-900">Attendance Trends</h3>
-              <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest">Last 7 Days</p>
+              <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest">Last 30 Days</p>
             </div>
             <div className="flex gap-2">
                <span className="flex items-center gap-1.5 text-[10px] font-bold text-slate-500">
@@ -236,7 +236,7 @@ const AdminView = () => {
                   tick={{fontSize: 10, fontWeight: 600, fill: '#94a3b8'}}
                   tickFormatter={(str) => {
                     const d = new Date(str);
-                    return d.toLocaleDateString('en-US', { weekday: 'short' });
+                    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
                   }}
                 />
                 <YAxis 
