@@ -154,7 +154,7 @@ const PortalMockup = () => (
       </div>
       <div>
         <p className="text-xs font-black text-slate-900 leading-none">98% Pass Rate</p>
-        <p className="text-[10px] text-slate-400 mt-0.5">SY 2025–2026</p>
+        <p className="text-[10px] text-slate-400 mt-0.5">SY 2026–2027</p>
       </div>
     </div>
     {/* Floating badge 2 */}
