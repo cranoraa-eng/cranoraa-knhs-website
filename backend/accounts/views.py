@@ -2219,6 +2219,7 @@ def grade_distribution_stats(request):
     grade_level   = request.query_params.get('grade_level', 'all')
     subject_id    = request.query_params.get('subject_id', 'all')
     quarter       = request.query_params.get('quarter', 'all')
+    mode          = request.query_params.get('mode', 'student') # 'student' (General Average) or 'entry' (Cumulative)
     
     # 1. Base filtering
     base_grades = Grade.objects.filter(
@@ -2247,6 +2248,7 @@ def grade_distribution_stats(request):
             'category_counts': [],
             'by_level': [],
             'by_group': [],
+            'mode': mode,
             'meta': {
                 'subjects': list(Subject.objects.values('id', 'name', 'code')),
                 'grade_levels': ["Grade 7", "Grade 8", "Grade 9", "Grade 10", "Grade 11", "Grade 12"]
@@ -2266,13 +2268,24 @@ def grade_distribution_stats(request):
         'Did Not Meet Expectations (<75)': 0,
     }
     
-    for sa in student_averages:
-        score = sa['avg']
-        if score >= 90: categories['Outstanding (90-100)'] += 1
-        elif score >= 85: categories['Very Satisfactory (85-89)'] += 1
-        elif score >= 80: categories['Satisfactory (80-84)'] += 1
-        elif score >= 75: categories['Fairly Satisfactory (75-79)'] += 1
-        else: categories['Did Not Meet Expectations (<75)'] += 1
+    if mode == 'student':
+        # Calculate distribution based on each student's average across filtered subjects
+        for sa in student_averages:
+            score = sa['avg']
+            if score >= 90: categories['Outstanding (90-100)'] += 1
+            elif score >= 85: categories['Very Satisfactory (85-89)'] += 1
+            elif score >= 80: categories['Satisfactory (80-84)'] += 1
+            elif score >= 75: categories['Fairly Satisfactory (75-79)'] += 1
+            else: categories['Did Not Meet Expectations (<75)'] += 1
+    else:
+        # Calculate distribution based on every individual grade entry (Cumulative)
+        for g in base_grades:
+            score = g.transmuted_score
+            if score >= 90: categories['Outstanding (90-100)'] += 1
+            elif score >= 85: categories['Very Satisfactory (85-89)'] += 1
+            elif score >= 80: categories['Satisfactory (80-84)'] += 1
+            elif score >= 75: categories['Fairly Satisfactory (75-79)'] += 1
+            else: categories['Did Not Meet Expectations (<75)'] += 1
 
     # 3. Dynamic Comparison Chart (By Level or By Classroom)
     by_level = []

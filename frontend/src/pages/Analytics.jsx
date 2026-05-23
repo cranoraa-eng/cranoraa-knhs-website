@@ -32,6 +32,7 @@ const Analytics = () => {
   const [filterLevel, setFilterLevel] = useState('all');
   const [filterSubject, setFilterSubject] = useState('all');
   const [filterQuarter, setFilterQuarter] = useState('all');
+  const [distributionMode, setDistributionMode] = useState('student'); // 'student' or 'entry'
 
   // Attendance specific data
   const [attendanceAnalytics, setAttendanceAnalytics] = useState(null);
@@ -41,7 +42,7 @@ const Analytics = () => {
     if (activeTab === 'system') fetchAnalytics();
     if (activeTab === 'grades') fetchGradeStats();
     if (activeTab === 'attendance') fetchAttendanceAnalytics();
-  }, [activeTab, academicYear, filterLevel, filterSubject, filterQuarter]);
+  }, [activeTab, academicYear, filterLevel, filterSubject, filterQuarter, distributionMode]);
 
   const fetchAnalytics = async () => {
     setLoading(true);
@@ -67,7 +68,7 @@ const Analytics = () => {
   const fetchGradeStats = async () => {
     setGradeLoading(true);
     try {
-      const res = await api.get(`/admin/grade-distribution/?academic_year=${academicYear}&grade_level=${filterLevel}&subject_id=${filterSubject}&quarter=${filterQuarter}`);
+      const res = await api.get(`/admin/grade-distribution/?academic_year=${academicYear}&grade_level=${filterLevel}&subject_id=${filterSubject}&quarter=${filterQuarter}&mode=${distributionMode}`);
       setGradeData(res.data);
     } catch (err) {
       console.error('Failed to fetch distribution stats', err);
@@ -201,6 +202,15 @@ const Analytics = () => {
                       gradeData={gradeData}
                     />
                     <FilterSelect 
+                      label="View Mode" 
+                      value={distributionMode} 
+                      onChange={e => setDistributionMode(e.target.value)}
+                      options={[
+                        { value: 'student', label: 'General Average' },
+                        { value: 'entry', label: 'Cumulative Grades' }
+                      ]}
+                    />
+                    <FilterSelect 
                       label="Timeframe" 
                       value={filterQuarter} 
                       onChange={e => setFilterQuarter(e.target.value)}
@@ -227,7 +237,11 @@ const Analytics = () => {
                 <EmptyState message="No Data Mapped" submessage="Adjust filters to synthesize academic performance data" />
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-4">
-                  <GradeDistributionPieSection data={gradeData.category_counts} totalStudents={gradeData.total_students} />
+                  <GradeDistributionPieSection 
+                    data={gradeData.category_counts} 
+                    total={distributionMode === 'student' ? gradeData.total_students : gradeData.total_entries} 
+                    label={distributionMode === 'student' ? 'Students' : 'Entries'}
+                  />
                   <GradeDistributionBarSection data={gradeData.by_level} filterLevel={filterLevel} />
                   <GradeRankingSection data={gradeData.by_group} filterSubject={filterSubject} meta={gradeData.meta} />
                 </div>
@@ -404,7 +418,7 @@ const TrafficIntelligenceSection = ({ data }) => (
   </div>
 );
 
-const GradeDistributionPieSection = ({ data, totalStudents }) => (
+const GradeDistributionPieSection = ({ data, total, label }) => (
   <div className="lg:col-span-4 bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
     <div className="mb-6">
       <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Achievement Spread</h3>
@@ -420,16 +434,16 @@ const GradeDistributionPieSection = ({ data, totalStudents }) => (
           <Legend verticalAlign="bottom" align="center" iconType="rect" iconSize={4} layout="vertical" wrapperStyle={{ paddingTop: '10px', bottom: 0 }}
             formatter={(value) => {
               const item = data.find(d => d.name === value);
-              const total = data.reduce((sum, d) => sum + d.value, 0);
-              const percentage = total > 0 ? ((item.value / total) * 100).toFixed(1) : 0;
+              const totalSum = data.reduce((sum, d) => sum + d.value, 0);
+              const percentage = totalSum > 0 ? ((item.value / totalSum) * 100).toFixed(1) : 0;
               return <span className="text-[7px] font-black text-slate-400 uppercase tracking-tighter">{value}: {item.value} ({percentage}%)</span>;
             }}
           />
         </PieChart>
       </ResponsiveContainer>
       <div className="absolute top-[45%] left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center justify-center pointer-events-none">
-        <p className="text-2xl font-black text-slate-900 leading-none">{totalStudents}</p>
-        <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mt-1">Students</p>
+        <p className="text-2xl font-black text-slate-900 leading-none">{total}</p>
+        <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mt-1">{label}</p>
       </div>
     </div>
   </div>
