@@ -2356,17 +2356,19 @@ def student_profile(request):
     
     profile, _ = Profile.objects.get_or_create(user=target_user)
     
-    if request.method == 'POST' and 'profile_picture' in request.FILES:
-        from .utils import upload_to_supabase
-        pic_file = request.FILES['profile_picture']
-        url = upload_to_supabase(pic_file)
-        
-        if url:
-            profile.profile_picture = url
-            profile.save()
-            return Response({'message': 'Profile picture updated successfully', 'profile_picture': url})
-        else:
-            return Response({'error': 'Failed to upload picture to storage'}, status=500)
+    if request.method == 'POST':
+        if 'profile_picture' in request.FILES:
+            from .utils import upload_to_supabase
+            pic_file = request.FILES['profile_picture']
+            url = upload_to_supabase(pic_file)
+            
+            if url:
+                profile.profile_picture = url
+                profile.save()
+                return Response({'message': 'Profile picture updated successfully', 'profile_picture': url})
+            else:
+                return Response({'error': 'Failed to upload picture to storage'}, status=500)
+        return Response({'error': 'No file provided'}, status=400)
 
     if request.method == 'GET':
         # ... existing GET logic ...
