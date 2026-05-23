@@ -26,22 +26,21 @@ const About = () => {
     <div className="bg-white">
 
       {/* ── Hero ── */}
-      <section className="bg-slate-900 py-20 md:py-28 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-20">
-          <img
-            src="https://images.unsplash.com/photo-1577896851231-70ef18881754?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80"
-            alt=""
-            className="w-full h-full object-cover"
-          />
+      <section className="bg-[#0f0720] py-20 md:py-28 relative overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute inset-0 opacity-10">
+            <img src="https://images.unsplash.com/photo-1577896851231-70ef18881754?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80" alt="" className="w-full h-full object-cover" />
+          </div>
+          <div className="absolute inset-0 bg-gradient-to-r from-[#0f0720] via-[#0f0720]/90 to-[#0f0720]/60" />
+          <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-violet-600/10 rounded-full blur-3xl translate-x-1/3 -translate-y-1/3" />
         </div>
-        <div className="absolute inset-0 bg-gradient-to-r from-slate-900 via-slate-900/90 to-slate-900/60" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-2xl">
             <p className="text-xs font-bold text-violet-400 uppercase tracking-widest mb-4">Our School</p>
             <h1 className="text-4xl md:text-5xl font-black text-white leading-tight mb-5">
               {content.about_title?.content || 'About Our School'}
             </h1>
-            <p className="text-slate-300 leading-relaxed text-lg">
+            <p className="text-slate-400 leading-relaxed text-lg">
               {content.about_subtitle?.content || 'Learn about our history, mission, and the values that drive our commitment to excellence in education.'}
             </p>
           </div>

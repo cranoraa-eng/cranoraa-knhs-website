@@ -41,15 +41,17 @@ const PublicLayout = () => {
     <div className="min-h-screen flex flex-col bg-white selection:bg-violet-100 selection:text-violet-800">
 
       {/* ── Navbar ── */}
-      <nav className={`sticky top-0 z-50 transition-all duration-200 ${
-        scrolled ? 'bg-white/95 backdrop-blur-md border-b border-slate-100 shadow-sm' : 'bg-white border-b border-slate-100'
+      <nav className={`sticky top-0 z-50 transition-all duration-300 ${
+        scrolled
+          ? 'bg-white/95 backdrop-blur-md border-b border-slate-100 shadow-sm'
+          : 'bg-[#0f0720]/80 backdrop-blur-md border-b border-white/5'
       }`}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
 
             {/* Logo */}
             <Link to="/" className="flex items-center gap-3 group flex-shrink-0">
-              <div className="h-9 w-9 rounded-xl overflow-hidden border border-slate-200 bg-white flex items-center justify-center shadow-sm">
+              <div className="h-9 w-9 rounded-xl overflow-hidden border border-white/20 bg-white/10 flex items-center justify-center shadow-sm">
                 <img
                   src="https://plain-apac-prod-public.komododecks.com/202605/18/u3t1lOolacFscP6v1Bq8/image.png"
                   alt="KNHS"
@@ -57,8 +59,8 @@ const PublicLayout = () => {
                 />
               </div>
               <div className="hidden sm:block">
-                <p className="text-sm font-black text-slate-900 leading-none tracking-tight">KIWALAN NHS</p>
-                <p className="text-[9px] font-bold text-violet-600 uppercase tracking-widest leading-none mt-0.5">Excellence in Education</p>
+                <p className={`text-sm font-black leading-none tracking-tight transition-colors ${scrolled ? 'text-slate-900' : 'text-white'}`}>KIWALAN NHS</p>
+                <p className={`text-[9px] font-bold uppercase tracking-widest leading-none mt-0.5 transition-colors ${scrolled ? 'text-violet-600' : 'text-violet-400'}`}>Excellence in Education</p>
               </div>
             </Link>
 
@@ -70,8 +72,8 @@ const PublicLayout = () => {
                   to={link.path}
                   className={`px-3.5 py-2 text-sm font-semibold rounded-lg transition-colors ${
                     isActive(link.path)
-                      ? 'text-violet-700 bg-violet-50'
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                      ? scrolled ? 'text-violet-700 bg-violet-50' : 'text-white bg-white/10'
+                      : scrolled ? 'text-slate-600 hover:text-slate-900 hover:bg-slate-50' : 'text-white/70 hover:text-white hover:bg-white/10'
                   }`}
                 >
                   {link.name}
@@ -83,7 +85,9 @@ const PublicLayout = () => {
             <div className="flex items-center gap-2">
               <Link
                 to="/enroll"
-                className="hidden sm:inline-flex items-center px-4 py-2 rounded-lg border border-slate-200 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
+                className={`hidden sm:inline-flex items-center px-4 py-2 rounded-lg border text-sm font-semibold transition-colors ${
+                  scrolled ? 'border-slate-200 text-slate-700 hover:bg-slate-50' : 'border-white/20 text-white/80 hover:bg-white/10'
+                }`}
               >
                 Enroll
               </Link>
@@ -128,7 +132,7 @@ const PublicLayout = () => {
               {/* Mobile hamburger */}
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="md:hidden p-2 rounded-lg text-slate-500 hover:bg-slate-100 transition-colors"
+                className={`md:hidden p-2 rounded-lg transition-colors ${scrolled ? 'text-slate-500 hover:bg-slate-100' : 'text-white/70 hover:bg-white/10'}`}
                 aria-label="Toggle menu"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
