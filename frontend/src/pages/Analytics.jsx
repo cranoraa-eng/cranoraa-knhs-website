@@ -143,13 +143,6 @@ const Analytics = () => {
 
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
                 <AttendanceSection data={data?.attendance?.daily_trends} />
-                <GradeMatrixSection gradeDistribution={[
-                  { name: 'Outstanding', value: data?.grades?.distribution?.outstanding || 0 },
-                  { name: 'Very Satisfactory', value: data?.grades?.distribution?.very_satisfactory || 0 },
-                  { name: 'Satisfactory', value: data?.grades?.distribution?.satisfactory || 0 },
-                  { name: 'Fairly Satisfactory', value: data?.grades?.distribution?.fairly_satisfactory || 0 },
-                  { name: 'Failed', value: data?.grades?.distribution?.failed || 0 },
-                ]} />
                 <SubjectPerformanceSection data={data?.grades?.subject_stats} />
                 <TrafficIntelligenceSection data={data?.dashboard?.charts?.active_users_trends} />
               </div>
@@ -288,7 +281,7 @@ const Analytics = () => {
 // --- Sub-components to keep Analytics.jsx clean ---
 
 const AttendanceSection = ({ data }) => (
-  <div className="lg:col-span-8 bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+  <div className="lg:col-span-12 bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
     <div className="flex items-center justify-between mb-6">
       <div>
         <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Attendance Dynamics</h3>
@@ -321,56 +314,6 @@ const AttendanceSection = ({ data }) => (
     </div>
   </div>
 );
-
-const GradeMatrixSection = ({ gradeDistribution }) => {
-  const total = gradeDistribution.reduce((sum, d) => sum + d.value, 0);
-  return (
-    <div className="lg:col-span-4 bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
-      <div className="mb-4">
-        <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Grade Matrix</h3>
-        <p className="text-sm font-black text-slate-900 uppercase tracking-tight">Global Performance Spread</p>
-      </div>
-      <div className="h-64 flex items-center justify-between gap-2">
-        <div className="w-1/2 h-full">
-          <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
-            <PieChart margin={{ top: 0, bottom: 0, left: 0, right: 0 }}>
-              <Pie
-                data={gradeDistribution}
-                cx="50%"
-                cy="50%"
-                innerRadius={55}
-                outerRadius={75}
-                paddingAngle={8}
-                dataKey="value"
-              >
-                {gradeDistribution.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} strokeWidth={0} />
-                ))}
-              </Pie>
-              <Tooltip content={<CustomPieTooltip />} />
-            </PieChart>
-          </ResponsiveContainer>
-        </div>
-        <div className="w-1/2 overflow-y-auto max-h-full pr-2">
-          <div className="space-y-2.5">
-            {gradeDistribution.map((item, index) => {
-              const percentage = total > 0 ? ((item.value / total) * 100).toFixed(1) : 0;
-              return (
-                <div key={item.name} className="flex items-start gap-2">
-                  <div className="w-2 h-2 rounded-full mt-1 shrink-0" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
-                  <div className="flex flex-col min-w-0">
-                    <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-tight truncate">{item.name}</span>
-                    <span className="text-[10px] font-bold text-slate-700">{item.value} <span className="text-slate-400 font-medium ml-1">({percentage}%)</span></span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
 
 const SubjectPerformanceSection = ({ data }) => (
   <div className="lg:col-span-7 bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
