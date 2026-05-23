@@ -19,8 +19,8 @@ export const AuthProvider = ({ children }) => {
         email: response.data.email,
         profile_picture: response.data.profile?.profile_picture,
         mute_until: response.data.profile?.mute_until,
-        is_muted: response.data.profile?.is_muted,
-        is_suspended: response.data.profile?.is_suspended,
+        is_muted: !!response.data.profile?.is_muted,
+        is_suspended: !!response.data.profile?.is_suspended,
       };
       localStorage.setItem('user', JSON.stringify(updatedUser));
       setUser(updatedUser);

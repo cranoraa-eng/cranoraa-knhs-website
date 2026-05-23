@@ -193,7 +193,7 @@ const Messages = () => {
       return;
     }
 
-    if (user?.is_muted || (user?.mute_until && new Date(user.mute_until) > new Date())) {
+    if (user?.is_muted) {
       const remaining = user.mute_until ? new Date(user.mute_until) - new Date() : 0;
       const hours = Math.floor(remaining / (1000 * 60 * 60));
       const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));

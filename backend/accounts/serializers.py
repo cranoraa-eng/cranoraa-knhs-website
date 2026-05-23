@@ -32,13 +32,17 @@ def full_name(user):
 
 class ProfileSerializer(serializers.ModelSerializer):
     classroom_name = serializers.SerializerMethodField()
+    is_muted = serializers.SerializerMethodField()
 
     class Meta:
         model = Profile
         fields = ['id', 'title', 'grade_level', 'classroom_name', 'employee_id', 'phone_number', 'address',
                   'date_of_birth', 'registration_number', 'sex', 'state',
                   'nationality', 'middle_name', 'father_name', 'mother_name', 'contact_information', 
-                  'linked_students', 'profile_picture', 'mute_until', 'is_suspended']
+                  'linked_students', 'profile_picture', 'mute_until', 'is_muted', 'is_suspended']
+
+    def get_is_muted(self, obj):
+        return obj.mute_until is not None and obj.mute_until > timezone.now()
 
     def get_classroom_name(self, obj):
         try:

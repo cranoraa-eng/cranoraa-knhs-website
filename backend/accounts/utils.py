@@ -118,23 +118,29 @@ def check_user_moderation(user):
     Checks if a user is muted or suspended.
     Returns (is_allowed, reason)
     """
-    # Refresh to get latest status
-    user.refresh_from_db()
-    
-    if user.account_status == 'suspended':
-        return False, "Your account has been suspended."
-    
-    if hasattr(user, 'profile'):
-        if user.profile.is_suspended:
+    try:
+        # Refresh to get latest status
+        user.refresh_from_db()
+        
+        if user.account_status == 'suspended':
             return False, "Your account has been suspended."
-        if user.profile.mute_until and user.profile.mute_until > timezone.now():
-            remaining = user.profile.mute_until - timezone.now()
-            hours = int(remaining.total_seconds() // 3600)
-            minutes = int((remaining.total_seconds() % 3600) // 60)
-            time_str = f"{hours}h {minutes}m" if hours > 0 else f"{minutes}m"
-            return False, f"You are muted for another {time_str}."
-    
-    return True, ""
+        
+        if hasattr(user, 'profile'):
+            if user.profile.is_suspended:
+                return False, "Your account has been suspended."
+            if user.profile.mute_until and user.profile.mute_until > timezone.now():
+                remaining = user.profile.mute_until - timezone.now()
+                hours = int(remaining.total_seconds() // 3600)
+                minutes = int((remaining.total_seconds() % 3600) // 60)
+                time_str = f"{hours}h {minutes}m" if hours > 0 else f"{minutes}m"
+                return False, f"You are muted for another {time_str}."
+        
+        return True, ""
+    except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error checking moderation for user {user.username}: {str(e)}")
+        return True, "" # Default to allowed if check fails to prevent blocking everyone
 
 def broadcast_mailjet_email(emails, subject, message_html, message_text=None):
     """Broadcast a single message to multiple recipients via Mailjet."""

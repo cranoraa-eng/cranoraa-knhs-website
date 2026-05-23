@@ -135,7 +135,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             return
 
         # Check if user is muted or suspended
-        is_allowed, reason = check_user_moderation(self.user)
+        is_allowed, reason = await self.async_check_moderation()
         if not is_allowed:
             await self.send(text_data=json.dumps({
                 'type': 'error',
@@ -304,6 +304,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
         }))
 
     # ── DB helpers ────────────────────────────────────────────────
+
+    @database_sync_to_async
+    def async_check_moderation(self):
+        user = User.objects.get(id=self.user.id)
+        return check_user_moderation(user)
 
     @database_sync_to_async
     def save_message(self, room_id, sender_id, message, parent_id=None):
