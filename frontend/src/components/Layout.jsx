@@ -37,9 +37,8 @@ const SectionLabel = ({ label }) => (
 const Layout = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { signOut } = useAuth();
+  const { user, signOut } = useAuth();
   const { notifications, setNotifications, unreadCount, setUnreadCount, realtimeConnected, isPolling } = useNotifications();
-  const user = getStoredUser();
   const [showNotifications, setShowNotifications] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -299,9 +298,16 @@ const Layout = () => {
 
           {/* Profile Summary */}
           <div className="flex-shrink-0 px-6 mb-4">
-            <div className="flex items-center gap-4 p-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors cursor-pointer group">
-              <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-white font-black shadow-lg group-hover:scale-105 transition-transform uppercase">
-                {user?.first_name?.charAt(0)}{user?.last_name?.charAt(0)}
+            <div 
+              onClick={() => navigate('/profile')}
+              className="flex items-center gap-4 p-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors cursor-pointer group"
+            >
+              <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-white font-black shadow-lg group-hover:scale-105 transition-transform uppercase overflow-hidden border border-white/10">
+                {user?.profile_picture ? (
+                  <img src={user.profile_picture} alt="Avatar" className="w-full h-full object-cover" />
+                ) : (
+                  <span>{user?.first_name?.charAt(0)}{user?.last_name?.charAt(0)}</span>
+                )}
               </div>
               <div className="flex flex-col min-w-0">
                 <span className="text-sm font-bold truncate">{user?.first_name} {user?.last_name}</span>
@@ -493,10 +499,14 @@ const Layout = () => {
                   <span className="text-[10px] font-bold text-violet-600 uppercase tracking-widest mt-1">{user?.role}</span>
                 </div>
                 <div className="relative group cursor-pointer" onClick={() => navigate('/profile')}>
-                  <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-white shadow-lg group-hover:rotate-3 transition-all">
-                    <span className="text-sm font-black uppercase tracking-tighter">
-                      {user?.first_name?.charAt(0)}{user?.last_name?.charAt(0)}
-                    </span>
+                  <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-white shadow-lg group-hover:rotate-3 transition-all overflow-hidden border border-slate-200">
+                    {user?.profile_picture ? (
+                      <img src={user.profile_picture} alt="Avatar" className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-sm font-black uppercase tracking-tighter">
+                        {user?.first_name?.charAt(0)}{user?.last_name?.charAt(0)}
+                      </span>
+                    )}
                   </div>
                   <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-green-500 border-2 border-white rounded-full shadow-sm"></div>
                 </div>

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Navigate, useSearchParams } from 'react-router-dom';
 import { getUser } from '../utils/auth';
+import { useAuth } from '../context/AuthContext';
 import api from '../utils/api';
 import toast from 'react-hot-toast';
 
@@ -27,6 +28,7 @@ const Input = ({ label, value, onChange, type = 'text', required }) => (
 
 const Profile = () => {
   const user = getUser();
+  const { refreshUser } = useAuth();
   const [searchParams] = useSearchParams();
   const studentId = searchParams.get('student_id');
   const [profile, setProfile] = useState(null);
@@ -94,6 +96,7 @@ const Profile = () => {
       });
       setProfilePic(response.data.profile_picture);
       toast.success('Profile picture updated');
+      if (!studentId) refreshUser();
     } catch (err) {
       toast.error('Failed to upload picture');
     } finally {
@@ -110,6 +113,7 @@ const Profile = () => {
       await api.put('/student/profile/', form);
       toast.success('Profile updated');
       setEditing(false);
+      refreshUser();
       fetchProfile();
     } catch { toast.error('Failed to update profile'); }
     finally { setSaving(false); }
