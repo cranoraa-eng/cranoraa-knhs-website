@@ -123,7 +123,18 @@ const Login = () => {
           confirmButtonText: 'OK',
           confirmButtonColor: '#9333ea',
         });
-
+      } else if (status === 403 && message?.toLowerCase().includes('suspended')) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Account Suspended',
+          text: message || 'This account has been suspended. Please contact the administrator.',
+          confirmButtonText: 'OK',
+          confirmButtonColor: '#ef4444',
+          customClass: {
+            popup: 'rounded-[2rem]',
+            title: 'font-black uppercase tracking-tight'
+          }
+        });
       } else if (status === 401) {
         Swal.fire({
           icon: 'error',

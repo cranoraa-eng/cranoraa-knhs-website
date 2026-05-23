@@ -592,6 +592,21 @@ const Messages = () => {
           return;
         }
 
+        if (data.type === 'forced_logout') {
+          Swal.fire({
+            title: 'Account Suspended',
+            text: data.message || 'Your account has been suspended by a moderator.',
+            icon: 'error',
+            confirmButtonColor: '#ef4444',
+            allowOutsideClick: false,
+            confirmButtonText: 'Logout'
+          }).then(() => {
+            window.dispatchEvent(new CustomEvent('auth:logout'));
+            navigate('/login');
+          });
+          return;
+        }
+
         if (data.type === 'typing') {
           if (data.sender_id !== user?.id) {
             setPeerTyping(data.is_typing);

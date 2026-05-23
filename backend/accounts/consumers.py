@@ -303,6 +303,15 @@ class ChatConsumer(AsyncWebsocketConsumer):
             'timestamp': event['timestamp'],
         }))
 
+    async def forced_logout(self, event):
+        """Force a user to log out immediately."""
+        await self.send(text_data=json.dumps({
+            'type': 'forced_logout',
+            'message': event.get('message', 'Your account has been suspended.')
+        }))
+        # Close the connection
+        await self.close()
+
     # ── DB helpers ────────────────────────────────────────────────
 
     @database_sync_to_async

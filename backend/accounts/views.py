@@ -4075,8 +4075,19 @@ class ReportedMessageViewSet(viewsets.ModelViewSet):
             user_to_suspend.profile.is_suspended = True
             user_to_suspend.profile.save()
             
-        # Notify the suspended user (they might see this before being logged out or on next attempt)
-        Notification.objects.create(
+        # Force logout if online via WebSocket
+        from channels.layers import get_channel_layer
+        from asgiref.sync import async_to_sync
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            f'user_{user_to_suspend.id}',
+            {
+                'type': 'forced_logout',
+                'message': 'Your account has been suspended by a moderator.'
+            }
+        )
+
+        # Notify the suspended user
             recipient=user_to_suspend,
             notification_type='system',
             title='Account Suspended',
