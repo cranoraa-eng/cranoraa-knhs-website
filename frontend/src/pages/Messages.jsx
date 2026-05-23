@@ -3,6 +3,7 @@ import api, { WS_ROOT } from '../utils/api';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
+import { playSound } from '../utils/sounds';
 
 const Messages = () => {
   const { user } = useAuth();
@@ -226,6 +227,7 @@ const Messages = () => {
     }
 
     safeSend(msgPayload);
+    playSound('messageSent');
     setReplyingTo(null);
   };
 
@@ -626,13 +628,15 @@ const Messages = () => {
           return;
         }
         if (data.type === 'message') {
-          const msg = data; // the whole serialized message
+          const msg = data;
           setMessages(prev => {
             if (prev.find(m => m.id === msg.id)) return prev;
             return [...prev, msg];
           });
           if (msg.sender !== user?.id) {
             safeSend({ type: 'read', message_id: msg.id });
+            // Play incoming sound only if message is from someone else
+            playSound('message');
           }
           // Update room state live (for sorting and preview)
           setRooms(prev => prev.map(r =>

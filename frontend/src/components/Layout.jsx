@@ -7,6 +7,7 @@ import api from '../utils/api';
 import Swal from 'sweetalert2';
 import toast from 'react-hot-toast';
 import { useNetworkStatus } from '../hooks/useNetworkStatus';
+import { getMuted, toggleMute, playSound } from '../utils/sounds';
 
 const NavItem = ({ to, label, isActive, icon, onClick }) => (
   <Link 
@@ -36,6 +37,37 @@ const SectionLabel = ({ label }) => (
   </div>
 );
 
+// ── Mute toggle button ────────────────────────────────────────────────────────
+const MuteButton = () => {
+  const [muted, setMuted] = useState(getMuted());
+  const handleToggle = () => {
+    const nowMuted = toggleMute();
+    setMuted(nowMuted);
+    toast(nowMuted ? '🔇 Sounds muted' : '🔔 Sounds on', { duration: 1500 });
+  };
+  return (
+    <button
+      onClick={handleToggle}
+      title={muted ? 'Unmute sounds' : 'Mute sounds'}
+      className="rounded-xl p-2.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-all"
+      aria-label={muted ? 'Unmute sounds' : 'Mute sounds'}
+    >
+      {muted ? (
+        /* Speaker off */
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
+        </svg>
+      ) : (
+        /* Speaker on */
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+        </svg>
+      )}
+    </button>
+  );
+};
+
 const Layout = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -53,6 +85,7 @@ const Layout = () => {
   }, [location.pathname]);
 
   const handleLogout = async () => {
+    playSound('click');
     const result = await Swal.fire({
       title: 'Are you sure?',
       text: "You will be logged out of your account",
@@ -77,6 +110,7 @@ const Layout = () => {
   };
 
   const markAllAsRead = async () => {
+    playSound('click');
     try {
       await api.post('/notifications/mark-all-read/');
       setUnreadCount(0);
@@ -89,6 +123,7 @@ const Layout = () => {
   };
 
   const markAsRead = async (id) => {
+    playSound('click');
     try {
       await api.post(`/notifications/${id}/mark-read/`);
       setUnreadCount(prev => Math.max(0, prev - 1));
@@ -374,7 +409,7 @@ const Layout = () => {
           <header className="sticky top-0 z-30 flex items-center justify-between border-b border-slate-200/60 bg-white/80 px-4 py-3 backdrop-blur-xl lg:px-8 shadow-sm">
             <div className="flex items-center gap-4 lg:gap-8">
               <button 
-                onClick={() => setSidebarOpen(!sidebarOpen)} 
+                onClick={() => { playSound('click'); setSidebarOpen(!sidebarOpen); }} 
                 className="rounded-xl p-2 text-slate-500 hover:bg-violet-50 hover:text-violet-600 lg:hidden transition-all active:scale-90"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -402,7 +437,7 @@ const Layout = () => {
               {/* Notification bell */}
               <div className="relative" data-notif-dropdown>
                 <button 
-                  onClick={() => setShowNotifications(!showNotifications)} 
+                  onClick={() => { playSound('click'); setShowNotifications(!showNotifications); }} 
                   className={`relative rounded-xl p-2.5 transition-all duration-200 ${showNotifications ? 'bg-violet-100 text-violet-700 shadow-inner scale-95' : 'text-slate-400 hover:bg-slate-100 hover:text-slate-600'}`}
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -500,6 +535,9 @@ const Layout = () => {
 
               {/* Divider */}
               <div className="h-6 w-px bg-slate-200 hidden sm:block mx-1"></div>
+
+              {/* Mute toggle */}
+              <MuteButton />
 
               {/* User Profile Summary (Desktop) */}
               <div className="hidden md:flex items-center gap-3 pl-1">

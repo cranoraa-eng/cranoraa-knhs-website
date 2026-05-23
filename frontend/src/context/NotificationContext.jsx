@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useRef, useCallb
 import api, { WS_ROOT } from '../utils/api';
 import { getStoredUser } from '../utils/auth';
 import toast from 'react-hot-toast';
+import { playSound } from '../utils/sounds';
 
 const NotificationContext = createContext();
 
@@ -99,12 +100,13 @@ export const NotificationProvider = ({ children }) => {
             return [data, ...prev].slice(0, 20);
           });
           setUnreadCount(data.unread_count);
-          
+          playSound(data.notification_type === 'announcement' ? 'announcement' : 'notification');
           toast.success(data.title, {
             description: data.message,
             duration: 5000,
           });
         } else if (data.type === 'moderation_alert') {
+          playSound('error');
           toast.error(`NEW REPORT: ${data.data.reason}`, {
             icon: '⚠️',
             duration: 10000,

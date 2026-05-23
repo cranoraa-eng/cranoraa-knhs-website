@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import api from '../utils/api';
 import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
+import { playSound } from '../utils/sounds';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -241,11 +242,13 @@ const GradeInput = () => {
     setSubmitting(false);
 
     if (!errors.length) {
+      playSound('gradeSubmit');
       toast.success('Final grades submitted');
       // Instead of navigating away, just clear the inputs but keep the context
       setCells({});
       fetchExistingGrades();
     } else {
+      playSound('error');
       const allDuplicates = errors.every(e => e.toLowerCase().includes('already submitted'));
       Swal.fire({
         icon: errors.length < toSubmit.length ? 'warning' : 'error',
