@@ -4127,6 +4127,27 @@ class ReportedMessageViewSet(viewsets.ModelViewSet):
         
         return Response({'status': f'User {user_to_mute.username} muted and report resolved'})
 
+    @action(detail=True, methods=['post'])
+    def unmute_user(self, request, pk=None):
+        if request.user.role != 'admin':
+            return Response({'error': 'Unauthorized'}, status=403)
+        report = self.get_object()
+        user_to_unmute = report.message.sender
+        
+        if hasattr(user_to_unmute, 'profile'):
+            user_to_unmute.profile.mute_until = None
+            user_to_unmute.profile.save()
+            
+        # Notify the user
+        Notification.objects.create(
+            recipient=user_to_unmute,
+            notification_type='system',
+            title='Messaging Restored',
+            message=f'Your messaging privileges have been restored by a moderator.'
+        )
+        
+        return Response({'status': f'User {user_to_unmute.username} unmuted'})
+
 
 class FriendshipViewSet(viewsets.ModelViewSet):
     serializer_class = FriendshipSerializer

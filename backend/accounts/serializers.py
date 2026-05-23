@@ -392,12 +392,19 @@ class ReportedMessageSerializer(serializers.ModelSerializer):
     message_content = serializers.ReadOnlyField(source='message.content')
     message_sender = serializers.ReadOnlyField(source='message.sender.username')
     resolved_by_name = serializers.ReadOnlyField(source='resolved_by.get_full_name')
+    sender_is_muted = serializers.SerializerMethodField()
 
     class Meta:
         model = ReportedMessage
         fields = ['id', 'message', 'message_content', 'message_sender', 'reporter', 'reporter_name', 
-                  'reason', 'status', 'moderator_note', 'resolved_by', 'resolved_by_name', 'created_at', 'resolved_at']
+                  'reason', 'status', 'moderator_note', 'resolved_by', 'resolved_by_name', 'created_at', 'resolved_at', 'sender_is_muted']
         read_only_fields = ['reporter', 'status', 'resolved_at', 'resolved_by']
+
+    def get_sender_is_muted(self, obj):
+        if obj.message and obj.message.sender and hasattr(obj.message.sender, 'profile'):
+            mute_until = obj.message.sender.profile.mute_until
+            return mute_until is not None and mute_until > timezone.now()
+        return False
 
 
 class GradeSerializer(serializers.ModelSerializer):
