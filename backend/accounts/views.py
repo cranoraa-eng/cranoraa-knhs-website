@@ -2128,6 +2128,17 @@ def admin_dashboard_stats(request):
             except:
                 pass
 
+        # --- SUBJECT PERFORMANCE INDEX (Top 10) ---
+        subject_stats = Grade.objects.filter(
+            grade_type='final_grade', 
+            transmuted_score__isnull=False
+        ).values('subject__name').annotate(
+            avg_grade=Avg('transmuted_score')
+        ).order_by('-avg_grade')[:10]
+        
+        for s in subject_stats:
+            s['avg_grade'] = round(float(s['avg_grade']), 1)
+
         # Prepare announcements
         recent_announcements = list(
             Announcement.objects.filter(status='live')
@@ -2149,6 +2160,37 @@ def admin_dashboard_stats(request):
             'today_rate': today_rate,
             'average_grade': average_grade,
             
+            # Grouped data for Analytics.jsx
+            'attendance': {
+                'today_rate': today_rate,
+                'daily_trends': attendance_trends
+            },
+            'grades': {
+                'average': average_grade,
+                'total': total_grades,
+                'subject_stats': list(subject_stats)
+            },
+            'dashboard': {
+                'active_users': active_users,
+                'total_students': total_students,
+                'total_teachers': total_teachers,
+                'total_classes': total_classes,
+                'pending_approvals': pending_approvals,
+                'today_rate': today_rate,
+                'average_grade': average_grade,
+                'charts': {
+                    'active_users_trends': active_users_trends,
+                    'attendance_trends': attendance_trends,
+                    'grade_distribution': [
+                        {'name': 'Outstanding', 'value': outstanding},
+                        {'name': 'Very Satisfactory', 'value': very_satisfactory},
+                        {'name': 'Satisfactory', 'value': satisfactory},
+                        {'name': 'Fairly Satisfactory', 'value': fairly_satisfactory},
+                        {'name': 'Did Not Meet', 'value': below_75},
+                    ]
+                }
+            },
+            
             'cards': {
                 'total_students': total_students,
                 'total_teachers': total_teachers,
@@ -2156,17 +2198,6 @@ def admin_dashboard_stats(request):
                 'total_subjects': total_subjects,
                 'active_users': active_users,
                 'attendance_rate': today_rate,
-            },
-            'charts': {
-                'attendance_trends': attendance_trends,
-                'active_users_trends': active_users_trends,
-                'grade_distribution': [
-                    {'name': 'Outstanding', 'value': outstanding},
-                    {'name': 'Very Satisfactory', 'value': very_satisfactory},
-                    {'name': 'Satisfactory', 'value': satisfactory},
-                    {'name': 'Fairly Satisfactory', 'value': fairly_satisfactory},
-                    {'name': 'Did Not Meet', 'value': below_75},
-                ]
             },
             'widgets': {
                 'recent_announcements': recent_announcements,

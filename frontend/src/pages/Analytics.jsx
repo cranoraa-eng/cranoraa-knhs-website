@@ -47,10 +47,12 @@ const Analytics = () => {
   }, [activeTab, academicYear, filterLevel, filterSubject, filterQuarter, distributionMode, gradeTimeframe, attendanceTimeframe]);
 
   const fetchAnalytics = async () => {
+    setLoading(true);
     try {
       const res = await api.get(`/admin/stats/?academic_year=${academicYear}`);
       setData(res.data);
     } catch (err) { console.error(err); }
+    finally { setLoading(false); }
   };
 
   const fetchGradeStats = async () => {
@@ -141,11 +143,15 @@ const Analytics = () => {
                 <MiniCard title="Pending Tasks" value={data?.dashboard?.pending_approvals} icon="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" alert={data?.dashboard?.pending_approvals > 0} />
               </div>
 
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-                <AttendanceSection data={data?.attendance?.daily_trends} />
-                <SubjectPerformanceSection data={data?.grades?.subject_stats} />
-                <TrafficIntelligenceSection data={data?.dashboard?.charts?.active_users_trends} />
-              </div>
+              {!data ? (
+                <EmptyState message="Failed to load systems engine" submessage="Check server connection and permissions" />
+              ) : (
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+                  <AttendanceSection data={data?.attendance?.daily_trends} />
+                  <SubjectPerformanceSection data={data?.grades?.subject_stats} />
+                  <TrafficIntelligenceSection data={data?.dashboard?.charts?.active_users_trends} />
+                </div>
+              )}
             </>
           )}
         </div>
