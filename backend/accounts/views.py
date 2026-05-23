@@ -3948,6 +3948,7 @@ class ReportedMessageViewSet(viewsets.ModelViewSet):
         report = self.get_object()
         report.status = 'resolved'
         report.moderator_note = request.data.get('note', '')
+        report.resolved_by = request.user
         report.resolved_at = timezone.now()
         report.save()
         return Response({'status': 'Report resolved'})
@@ -4009,6 +4010,7 @@ class ReportedMessageViewSet(viewsets.ModelViewSet):
         
         report.status = 'resolved'
         report.moderator_note = note
+        report.resolved_by = request.user
         report.resolved_at = timezone.now()
         report.save()
         
@@ -4031,6 +4033,7 @@ class ReportedMessageViewSet(viewsets.ModelViewSet):
         
         report.status = 'dismissed'
         report.moderator_note = note
+        report.resolved_by = request.user
         report.resolved_at = timezone.now()
         report.save()
         return Response({'status': 'Report dismissed'})
@@ -4070,6 +4073,7 @@ class ReportedMessageViewSet(viewsets.ModelViewSet):
             
         report.status = 'resolved'
         report.moderator_note = note
+        report.resolved_by = request.user
         report.resolved_at = timezone.now()
         report.save()
         
@@ -4106,6 +4110,7 @@ class ReportedMessageViewSet(viewsets.ModelViewSet):
             
         report.status = 'resolved'
         report.moderator_note = note
+        report.resolved_by = request.user
         report.resolved_at = timezone.now()
         report.save()
         

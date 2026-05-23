@@ -228,7 +228,9 @@ const Moderation = () => {
                       ) : (
                         <div className="flex flex-col items-center gap-0.5">
                            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tight">Resolved by</span>
-                           <span className="text-[10px] font-black text-slate-600 truncate max-w-[80px]">Admin</span>
+                           <span className="text-[10px] font-black text-slate-600 truncate max-w-[80px]" title={report.resolved_by_name}>
+                             {report.resolved_by_name || 'Admin'}
+                           </span>
                         </div>
                       )}
                     </td>

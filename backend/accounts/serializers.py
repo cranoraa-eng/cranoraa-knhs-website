@@ -391,12 +391,13 @@ class ReportedMessageSerializer(serializers.ModelSerializer):
     reporter_name = serializers.ReadOnlyField(source='reporter.get_full_name')
     message_content = serializers.ReadOnlyField(source='message.content')
     message_sender = serializers.ReadOnlyField(source='message.sender.username')
+    resolved_by_name = serializers.ReadOnlyField(source='resolved_by.get_full_name')
 
     class Meta:
         model = ReportedMessage
         fields = ['id', 'message', 'message_content', 'message_sender', 'reporter', 'reporter_name', 
-                  'reason', 'status', 'moderator_note', 'created_at', 'resolved_at']
-        read_only_fields = ['reporter', 'status', 'resolved_at']
+                  'reason', 'status', 'moderator_note', 'resolved_by', 'resolved_by_name', 'created_at', 'resolved_at']
+        read_only_fields = ['reporter', 'status', 'resolved_at', 'resolved_by']
 
 
 class GradeSerializer(serializers.ModelSerializer):
