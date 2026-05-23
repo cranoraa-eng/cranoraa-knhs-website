@@ -43,88 +43,131 @@ const PublicLayout = () => {
       {/* ── Navbar ── */}
       <nav className={`sticky top-0 z-50 transition-all duration-300 ${
         scrolled
-          ? 'bg-white/95 backdrop-blur-md border-b border-slate-100 shadow-sm'
-          : 'bg-[#0f0720]/80 backdrop-blur-md border-b border-white/5'
+          ? 'bg-white/98 backdrop-blur-xl border-b border-slate-200/80 shadow-sm'
+          : 'bg-[#0f0720]/85 backdrop-blur-xl border-b border-white/5'
       }`}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
+          <div className="flex items-center justify-between h-[68px]">
 
-            {/* Logo */}
-            <Link to="/" className="flex items-center gap-3 group flex-shrink-0">
-              <div className="h-9 w-9 rounded-xl overflow-hidden border border-white/20 bg-white/10 flex items-center justify-center shadow-sm">
+            {/* ── Logo ── */}
+            <Link to="/" className="flex items-center gap-3 flex-shrink-0 group">
+              {/* Logo circle — matches the circular PWA icon style */}
+              <div className={`h-10 w-10 rounded-full overflow-hidden flex items-center justify-center flex-shrink-0 transition-all duration-300 ring-2 ${
+                scrolled ? 'ring-violet-100 bg-white shadow-sm' : 'ring-white/10 bg-white/10'
+              }`}>
                 <img
                   src="https://plain-apac-prod-public.komododecks.com/202605/18/u3t1lOolacFscP6v1Bq8/image.png"
                   alt="KNHS"
-                  className="h-7 w-7 object-contain"
+                  className="h-8 w-8 object-contain group-hover:scale-110 transition-transform duration-200"
                 />
               </div>
-              <div className="hidden sm:block">
-                <p className={`text-sm font-black leading-none tracking-tight transition-colors ${scrolled ? 'text-slate-900' : 'text-white'}`}>KIWALAN NHS</p>
-                <p className={`text-[9px] font-bold uppercase tracking-widest leading-none mt-0.5 transition-colors ${scrolled ? 'text-violet-600' : 'text-violet-400'}`}>Excellence in Education</p>
+              <div className="hidden sm:flex flex-col">
+                <span className={`text-[13px] font-black leading-none tracking-tight transition-colors duration-300 ${scrolled ? 'text-slate-900' : 'text-white'}`}>
+                  KIWALAN NHS
+                </span>
+                <span className={`text-[9px] font-bold uppercase tracking-[0.2em] leading-none mt-1 transition-colors duration-300 ${scrolled ? 'text-violet-600' : 'text-violet-400'}`}>
+                  Excellence in Education
+                </span>
               </div>
             </Link>
 
-            {/* Desktop Nav */}
-            <div className="hidden md:flex items-center gap-1">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.path}
-                  to={link.path}
-                  className={`px-3.5 py-2 text-sm font-semibold rounded-lg transition-colors ${
-                    isActive(link.path)
-                      ? scrolled ? 'text-violet-700 bg-violet-50' : 'text-white bg-white/10'
-                      : scrolled ? 'text-slate-600 hover:text-slate-900 hover:bg-slate-50' : 'text-white/70 hover:text-white hover:bg-white/10'
-                  }`}
-                >
-                  {link.name}
-                </Link>
-              ))}
+            {/* ── Desktop Nav ── */}
+            <div className="hidden md:flex items-center">
+              {/* Divider left */}
+              <div className={`w-px h-5 mr-6 transition-colors duration-300 ${scrolled ? 'bg-slate-200' : 'bg-white/10'}`} />
+
+              <div className="flex items-center gap-0.5">
+                {navLinks.map((link) => {
+                  const active = isActive(link.path);
+                  return (
+                    <Link
+                      key={link.path}
+                      to={link.path}
+                      className={`relative px-4 py-2 text-sm font-semibold rounded-lg transition-all duration-200 ${
+                        active
+                          ? scrolled
+                            ? 'text-violet-700'
+                            : 'text-white'
+                          : scrolled
+                          ? 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'
+                          : 'text-white/60 hover:text-white hover:bg-white/8'
+                      }`}
+                    >
+                      {link.name}
+                      {/* Active underline indicator */}
+                      {active && (
+                        <span className={`absolute bottom-0 left-1/2 -translate-x-1/2 w-4 h-0.5 rounded-full transition-colors duration-300 ${
+                          scrolled ? 'bg-violet-600' : 'bg-white'
+                        }`} />
+                      )}
+                    </Link>
+                  );
+                })}
+              </div>
+
+              {/* Divider right */}
+              <div className={`w-px h-5 ml-6 transition-colors duration-300 ${scrolled ? 'bg-slate-200' : 'bg-white/10'}`} />
             </div>
 
-            {/* Right actions */}
-            <div className="flex items-center gap-2">
+            {/* ── Right actions ── */}
+            <div className="flex items-center gap-2.5">
+              {/* Enroll button */}
               <Link
                 to="/enroll"
-                className={`hidden sm:inline-flex items-center px-4 py-2 rounded-lg border text-sm font-semibold transition-colors ${
-                  scrolled ? 'border-slate-200 text-slate-700 hover:bg-slate-50' : 'border-white/20 text-white/80 hover:bg-white/10'
+                className={`hidden sm:inline-flex items-center gap-1.5 px-4 py-2 rounded-lg border text-sm font-semibold transition-all duration-200 ${
+                  scrolled
+                    ? 'border-slate-200 text-slate-700 hover:border-violet-300 hover:text-violet-700 hover:bg-violet-50'
+                    : 'border-white/15 text-white/80 hover:border-white/30 hover:text-white hover:bg-white/8'
                 }`}
               >
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                </svg>
                 Enroll
               </Link>
 
+              {/* Portal Login / User menu */}
               {user ? (
                 <div className="relative">
                   <button
                     onClick={() => setShowProfileMenu(!showProfileMenu)}
-                    className="flex items-center gap-2 px-3 py-2 rounded-lg bg-violet-600 text-white text-sm font-semibold hover:bg-violet-700 transition-colors"
+                    className="flex items-center gap-2 px-3.5 py-2 rounded-lg bg-violet-600 text-white text-sm font-semibold hover:bg-violet-500 transition-colors shadow-sm shadow-violet-900/20"
                   >
+                    <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center text-[10px] font-black">
+                      {(user.first_name || user.username || '?').charAt(0).toUpperCase()}
+                    </div>
                     <span className="hidden sm:inline">{user.first_name || user.username}</span>
-                    <svg className={`w-4 h-4 transition-transform ${showProfileMenu ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className={`w-3.5 h-3.5 transition-transform duration-200 ${showProfileMenu ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                     </svg>
                   </button>
                   {showProfileMenu && (
-                    <div className="absolute right-0 mt-2 w-52 rounded-xl border border-slate-100 bg-white shadow-xl py-1 z-50">
-                      <div className="px-4 py-3 border-b border-slate-100">
-                        <p className="text-xs text-slate-400 font-medium">Signed in as</p>
-                        <p className="text-sm font-semibold text-slate-800 truncate">{user.email}</p>
+                    <div className="absolute right-0 mt-2 w-56 rounded-2xl border border-slate-100 bg-white shadow-2xl shadow-slate-900/10 overflow-hidden z-50">
+                      <div className="px-4 py-3.5 bg-slate-50 border-b border-slate-100">
+                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Signed in as</p>
+                        <p className="text-sm font-bold text-slate-800 truncate mt-0.5">{user.email}</p>
                       </div>
-                      <Link to="/dashboard" className="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
-                        <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
-                        Portal Dashboard
-                      </Link>
-                      <button onClick={handleLogout} className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1m0-11V7" /></svg>
-                        Sign Out
-                      </button>
+                      <div className="p-1.5">
+                        <Link to="/dashboard" onClick={() => setShowProfileMenu(false)} className="flex items-center gap-3 px-3 py-2.5 text-sm text-slate-700 hover:bg-violet-50 hover:text-violet-700 rounded-xl transition-colors">
+                          <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
+                          <span className="font-semibold">Portal Dashboard</span>
+                        </Link>
+                        <button onClick={handleLogout} className="flex items-center gap-3 w-full px-3 py-2.5 text-sm text-red-600 hover:bg-red-50 rounded-xl transition-colors">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1m0-11V7" /></svg>
+                          <span className="font-semibold">Sign Out</span>
+                        </button>
+                      </div>
                     </div>
                   )}
                 </div>
               ) : (
                 <Link
                   to="/login"
-                  className="px-4 py-2 rounded-lg bg-violet-600 text-white text-sm font-semibold hover:bg-violet-700 transition-colors"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-violet-600 text-white text-sm font-semibold hover:bg-violet-500 transition-colors shadow-sm shadow-violet-900/20"
                 >
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                  </svg>
                   Portal Login
                 </Link>
               )}
@@ -132,7 +175,9 @@ const PublicLayout = () => {
               {/* Mobile hamburger */}
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className={`md:hidden p-2 rounded-lg transition-colors ${scrolled ? 'text-slate-500 hover:bg-slate-100' : 'text-white/70 hover:bg-white/10'}`}
+                className={`md:hidden p-2 rounded-lg transition-colors ${
+                  scrolled ? 'text-slate-500 hover:bg-slate-100' : 'text-white/70 hover:bg-white/10'
+                }`}
                 aria-label="Toggle menu"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -145,28 +190,44 @@ const PublicLayout = () => {
           </div>
         </div>
 
-        {/* Mobile menu */}
+        {/* ── Mobile drawer ── */}
         {mobileMenuOpen && (
-          <div className="md:hidden border-t border-slate-100 bg-white">
-            <div className="px-4 py-3 space-y-1">
+          <div className="md:hidden bg-white border-t border-slate-100 shadow-xl">
+            {/* Nav links */}
+            <div className="px-4 pt-3 pb-2 space-y-0.5">
               {navLinks.map((link) => (
                 <Link
                   key={link.path}
                   to={link.path}
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`block px-3 py-2.5 rounded-lg text-sm font-semibold transition-colors ${
-                    isActive(link.path) ? 'bg-violet-50 text-violet-700' : 'text-slate-600 hover:bg-slate-50'
+                  className={`flex items-center justify-between px-4 py-3 rounded-xl text-sm font-semibold transition-colors ${
+                    isActive(link.path)
+                      ? 'bg-violet-50 text-violet-700'
+                      : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
                   }`}
                 >
                   {link.name}
+                  {isActive(link.path) && (
+                    <span className="w-1.5 h-1.5 rounded-full bg-violet-600" />
+                  )}
                 </Link>
               ))}
+            </div>
+            {/* CTA row */}
+            <div className="px-4 pb-4 pt-2 border-t border-slate-100 flex gap-2">
               <Link
                 to="/enroll"
                 onClick={() => setMobileMenuOpen(false)}
-                className="block px-3 py-2.5 rounded-lg text-sm font-semibold text-slate-700 border border-slate-200 text-center mt-2"
+                className="flex-1 py-2.5 rounded-xl text-sm font-bold text-slate-700 border border-slate-200 text-center hover:bg-slate-50 transition-colors"
               >
                 Enroll Now
+              </Link>
+              <Link
+                to="/login"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white bg-violet-600 text-center hover:bg-violet-500 transition-colors"
+              >
+                Portal Login
               </Link>
             </div>
           </div>
