@@ -250,9 +250,13 @@ class SubjectSerializer(serializers.ModelSerializer):
 class SimplifiedStudentSerializer(serializers.ModelSerializer):
     full_name = serializers.SerializerMethodField()
     student_sex = serializers.CharField(source='profile.sex', read_only=True)
+    grade_level = serializers.CharField(source='profile.grade_level', read_only=True)
+    registration_number = serializers.CharField(source='profile.registration_number', read_only=True)
+    
     class Meta:
         model = User
-        fields = ['id', 'username', 'full_name', 'email', 'role', 'student_sex']
+        fields = ['id', 'username', 'first_name', 'last_name', 'full_name', 'email', 'role', 
+                  'student_sex', 'grade_level', 'registration_number']
     def get_full_name(self, obj): return full_name(obj)
 
 class ClassroomSubjectSerializer(serializers.ModelSerializer):
