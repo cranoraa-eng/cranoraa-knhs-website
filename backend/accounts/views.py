@@ -2272,6 +2272,7 @@ def grade_distribution_stats(request):
     # 2. Summary Stats
     student_averages = base_grades.values('student').annotate(avg=Avg('transmuted_score'))
     total_students = student_averages.count()
+    total_entries = base_grades.count()
     overall_avg = base_grades.aggregate(avg=Avg('transmuted_score'))['avg']
     
     categories = {
@@ -2300,6 +2301,8 @@ def grade_distribution_stats(request):
             elif score >= 80: categories['Satisfactory (80-84)'] += 1
             elif score >= 75: categories['Fairly Satisfactory (75-79)'] += 1
             else: categories['Did Not Meet Expectations (<75)'] += 1
+
+    category_counts = [{'name': k, 'value': v} for k, v in categories.items()]
 
     # 3. Dynamic Comparison Chart (By Level or By Classroom)
     by_level = []

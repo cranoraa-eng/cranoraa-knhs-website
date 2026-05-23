@@ -258,9 +258,9 @@ const AdminView = () => {
                 />
               </PieChart>
             </ResponsiveContainer>
-            <div className="absolute top-[40%] left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center justify-center pointer-events-none">
+            <div className="absolute top-[50%] left-1/2 -translate-x-1/2 -translate-y-[calc(50%+10px)] flex flex-col items-center justify-center pointer-events-none">
               <p className="text-xl font-black text-slate-900 leading-none">{dist?.total_count || 0}</p>
-              <p className="text-[7px] font-black text-slate-400 uppercase tracking-widest mt-1">
+              <p className="text-[7px] font-black text-slate-500 uppercase tracking-widest mt-1">
                 {distView === 'general_average' ? 'Students' : 'Entries'}
               </p>
             </div>

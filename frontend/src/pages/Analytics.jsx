@@ -427,7 +427,7 @@ const GradeDistributionPieSection = ({ data, total, label }) => (
     <div className="h-72 relative">
       <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
         <PieChart margin={{ top: -20, bottom: 0 }}>
-          <Pie data={data} cx="50%" cy="45%" innerRadius={60} outerRadius={80} paddingAngle={6} dataKey="value">
+          <Pie data={data} cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={6} dataKey="value">
             {data.map((entry, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} strokeWidth={0} />)}
           </Pie>
           <Tooltip content={<CustomPieTooltip />} />
@@ -436,14 +436,14 @@ const GradeDistributionPieSection = ({ data, total, label }) => (
               const item = data.find(d => d.name === value);
               const totalSum = data.reduce((sum, d) => sum + d.value, 0);
               const percentage = totalSum > 0 ? ((item.value / totalSum) * 100).toFixed(1) : 0;
-              return <span className="text-[7px] font-black text-slate-400 uppercase tracking-tighter">{value}: {item.value} ({percentage}%)</span>;
+              return <span className="text-[7px] font-black text-slate-600 uppercase tracking-tighter">{value}: {item.value} ({percentage}%)</span>;
             }}
           />
         </PieChart>
       </ResponsiveContainer>
-      <div className="absolute top-[45%] left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center justify-center pointer-events-none">
+      <div className="absolute top-[50%] left-1/2 -translate-x-1/2 -translate-y-[calc(50%+10px)] flex flex-col items-center justify-center pointer-events-none">
         <p className="text-2xl font-black text-slate-900 leading-none">{total}</p>
-        <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mt-1">{label}</p>
+        <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest mt-1">{label}</p>
       </div>
     </div>
   </div>
