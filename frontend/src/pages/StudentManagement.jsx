@@ -331,71 +331,145 @@ const StudentManagement = () => {
 
   const handleExportPDF = () => {
     const doc = new jsPDF();
-    doc.setFontSize(18);
-    doc.text('Student Directory', 14, 20);
-    doc.setFontSize(8);
-    doc.setTextColor(100);
-    doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 28);
-
-    const headers = user?.role === 'admin' 
-      ? ['Name', 'LRN', 'Grade', 'Classroom', 'Status']
-      : ['Name', 'LRN', 'Classroom', 'Status'];
+    const timestamp = new Date().toLocaleString();
+    const dateStr = new Date().toISOString().split('T')[0];
     
-    const colWidths = user?.role === 'admin'
-       ? [55, 37, 25, 40, 25]
-       : [65, 40, 52, 25];
-    
-    let y = 40;
-
-    // Header background
+    // School Header
     doc.setFillColor(45, 27, 77); // #2D1B4D
-    doc.rect(14, y - 5, 182, 7, 'F');
+    doc.rect(0, 0, 210, 40, 'F');
+    
     doc.setTextColor(255);
     doc.setFont("helvetica", "bold");
+    doc.setFontSize(22);
+    doc.text('KASIGUYAN NATIONAL HIGH SCHOOL', 105, 15, { align: 'center' });
     
-    let x = 14;
-    headers.forEach((h, i) => {
-      doc.text(h, x, y);
-      x += colWidths[i];
-    });
-
-    y += 10;
-    doc.setTextColor(0);
+    doc.setFontSize(10);
     doc.setFont("helvetica", "normal");
+    doc.text('OFFICIAL STUDENT DIRECTORY & CLASS LIST', 105, 22, { align: 'center' });
+    
+    doc.setFontSize(8);
+    doc.setTextColor(200);
+    doc.text(`Generated on: ${timestamp} | Authorized Personnel Only`, 105, 30, { align: 'center' });
 
-    students.forEach((s, index) => {
-      if (y > 280) {
-        doc.addPage();
-        y = 20;
-      }
-      
-      const name = `${s.last_name}, ${s.first_name}`.toUpperCase();
-      const lrn = s.profile?.registration_number || s.username || '—';
-      const grade = s.profile?.grade_level || 'N/A';
-      const classroom = s.profile?.classroom_name || 'N/A';
-      const status = s.account_status;
+    let y = 50;
 
-      let cx = 14;
-      doc.text(name.substring(0, 35), cx, y); cx += colWidths[0];
-      doc.text(String(lrn), cx, y); cx += colWidths[1];
+    // Process organized data for the PDF
+    organizedData.forEach((gradeGroup) => {
+      // Grade Header
+      if (y > 250) { doc.addPage(); y = 20; }
       
-      if (user?.role === 'admin') {
-        doc.text(String(grade), cx, y); cx += colWidths[2];
-      }
-      
-      doc.text(String(classroom).substring(0, 20), cx, y); cx += colWidths[3];
-      doc.text(String(status), cx, y);
+      doc.setFillColor(243, 244, 246);
+      doc.rect(14, y, 182, 10, 'F');
+      doc.setTextColor(31, 41, 55);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(12);
+      doc.text(gradeGroup.grade.toUpperCase(), 16, y + 7);
+      y += 15;
 
-      y += 7;
-      // Zebra striping
-      if (index % 2 === 0) {
-        doc.setFillColor(245, 245, 245);
-        doc.rect(14, y - 5, 182, 7, 'F');
-      }
+      gradeGroup.classrooms.forEach((cls) => {
+        // Classroom Header
+        if (y > 250) { doc.addPage(); y = 20; }
+        
+        doc.setTextColor(79, 70, 229);
+        doc.setFontSize(10);
+        doc.text(`SECTION: ${cls.name.toUpperCase()}`, 14, y);
+        doc.setTextColor(107, 114, 128);
+        doc.setFontSize(8);
+        doc.text(`Total: ${cls.totalCount} Students`, 196, y, { align: 'right' });
+        y += 5;
+
+        const headers = ['#', 'STUDENT NAME', 'SEX', 'STUDENT ID / LRN', 'STATUS'];
+        const colWidths = [12, 80, 20, 45, 25];
+        
+        const drawTable = (studentsList, title, color) => {
+          if (studentsList.length === 0) return;
+          
+          if (y > 250) { doc.addPage(); y = 20; }
+          
+          // Gender Sub-header
+          doc.setFillColor(color[0], color[1], color[2], 0.1);
+          doc.rect(14, y, 182, 6, 'F');
+          doc.setTextColor(color[0], color[1], color[2]);
+          doc.setFontSize(8);
+          doc.text(title, 16, y + 4.5);
+          y += 6;
+
+          // Table Header
+          doc.setFillColor(45, 27, 77);
+          doc.rect(14, y, 182, 7, 'F');
+          doc.setTextColor(255);
+          doc.setFont("helvetica", "bold");
+          
+          let x = 14;
+          headers.forEach((h, i) => {
+            doc.text(h, x + 2, y + 5);
+            x += colWidths[i];
+          });
+          y += 7;
+
+          // Rows
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(8);
+          studentsList.forEach((s, idx) => {
+            if (y > 275) {
+              doc.addPage();
+              y = 20;
+              // Redraw header on new page
+              doc.setFillColor(45, 27, 77);
+              doc.rect(14, y, 182, 7, 'F');
+              doc.setTextColor(255);
+              let rx = 14;
+              headers.forEach((h, i) => { doc.text(h, rx + 2, y + 5); rx += colWidths[i]; });
+              y += 7;
+            }
+
+            doc.setTextColor(0);
+            if (idx % 2 === 0) {
+              doc.setFillColor(249, 250, 251);
+              doc.rect(14, y, 182, 7, 'F');
+            }
+
+            const name = `${s.last_name}, ${s.first_name}`.toUpperCase();
+            const lrn = s.profile?.registration_number || s.username || '—';
+            const sex = (s.profile?.sex || 'N/A').toUpperCase();
+            const status = s.account_status.toUpperCase();
+
+            let cx = 14;
+            doc.text(String(idx + 1), cx + 2, y + 5); cx += colWidths[0];
+            doc.text(name.substring(0, 45), cx + 2, y + 5); cx += colWidths[1];
+            doc.text(sex, cx + 2, y + 5); cx += colWidths[2];
+            doc.text(String(lrn), cx + 2, y + 5); cx += colWidths[3];
+            
+            if (status === 'ACTIVE') doc.setTextColor(16, 185, 129);
+            else if (status === 'SUSPENDED') doc.setTextColor(239, 68, 68);
+            else doc.setTextColor(107, 114, 128);
+            
+            doc.text(status, cx + 2, y + 5);
+            
+            y += 7;
+          });
+          y += 5; // Space after gender block
+        };
+
+        drawTable(cls.male, `MALE STUDENTS (${cls.male.length})`, [59, 130, 246]);
+        drawTable(cls.female, `FEMALE STUDENTS (${cls.female.length})`, [236, 72, 153]);
+        
+        y += 10; // Space after classroom
+      });
     });
 
-    doc.save(`students_export_${new Date().toISOString().split('T')[0]}.pdf`);
-    toast.success('PDF exported successfully');
+    // Footer on all pages
+    const pageCount = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFontSize(7);
+      doc.setTextColor(150);
+      doc.text(`Page ${i} of ${pageCount}`, 105, 290, { align: 'center' });
+      doc.text('KASIGUYAN NATIONAL HIGH SCHOOL - SYSTEM GENERATED REPORT', 20, 290);
+    }
+
+    doc.save(`KNHS_Student_Directory_${dateStr}.pdf`);
+    toast.success('Professional PDF directory generated');
   };
 
   const organizedData = useMemo(() => {
