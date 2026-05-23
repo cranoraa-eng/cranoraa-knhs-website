@@ -6,7 +6,9 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      registerType: 'autoUpdate',
+      // 'prompt' = new SW installs but waits; our UpdateModal controls when it activates.
+      // This prevents silent mid-session reloads and gives users control.
+      registerType: 'prompt',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'icons/*.png'],
       manifest: {
         name: 'Kiwalan National High School Portal',
@@ -58,10 +60,12 @@ export default defineConfig({
         categories: ['education', 'productivity'],
       },
       workbox: {
-        // Cache name versioning
-        cacheId: 'knhs-portal-v1',
+        // Bump this version string on every deploy to bust old caches.
+        // vite-plugin-pwa auto-versions the precache manifest, but this
+        // ensures runtime caches are also invalidated cleanly.
+        cacheId: 'knhs-portal-v2',
 
-        // Pre-cache all Vite build assets
+        // Pre-cache all Vite build assets (hashed filenames = safe forever)
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
 
         // Runtime caching strategies
@@ -86,7 +90,7 @@ export default defineConfig({
             },
           },
 
-          // ── External images (logos, avatars from CDN) ─────────────────────
+          // ── External images (school logo CDN) ─────────────────────────────
           {
             urlPattern: /^https:\/\/plain-apac-prod-public\.komododecks\.com\/.*/i,
             handler: 'CacheFirst',
@@ -97,7 +101,7 @@ export default defineConfig({
             },
           },
 
-          // ── Public announcements (safe to cache, stale-while-revalidate) ──
+          // ── Public announcements (safe, stale-while-revalidate) ───────────
           {
             urlPattern: ({ url }) =>
               url.pathname.includes('/api/') &&
@@ -134,7 +138,26 @@ export default defineConfig({
             },
           },
 
-          // ── All other API calls: NetworkFirst (never serve stale auth/data) ─
+          // ── NEVER cache these — always live data ──────────────────────────
+          // grades, attendance, messages, notifications, analytics, realtime
+          {
+            urlPattern: ({ url }) =>
+              url.pathname.includes('/api/') && (
+                url.pathname.includes('/grades/') ||
+                url.pathname.includes('/grade-reports/') ||
+                url.pathname.includes('/attendance/') ||
+                url.pathname.includes('/chat/') ||
+                url.pathname.includes('/notifications/') ||
+                url.pathname.includes('/analytics') ||
+                url.pathname.includes('/token/') ||
+                url.pathname.includes('/login/') ||
+                url.pathname.includes('/admin/')
+              ),
+            handler: 'NetworkOnly',
+            options: { cacheName: 'never-cache' },
+          },
+
+          // ── All other API calls: NetworkFirst ─────────────────────────────
           {
             urlPattern: ({ url }) => url.pathname.startsWith('/api/'),
             handler: 'NetworkFirst',
@@ -147,15 +170,15 @@ export default defineConfig({
           },
         ],
 
-        // Don't cache API errors or auth endpoints
         navigateFallback: '/index.html',
         navigateFallbackDenylist: [/^\/api\//, /^\/admin\//],
 
-        // Clean up old caches automatically
+        // Clean up caches from previous versions automatically
         cleanupOutdatedCaches: true,
 
-        // Skip waiting so new SW activates immediately
-        skipWaiting: true,
+        // With registerType: 'prompt', the SW waits for our explicit signal.
+        // skipWaiting is called by updateServiceWorker(true) in useSWUpdate.
+        skipWaiting: false,
         clientsClaim: true,
       },
       devOptions: {

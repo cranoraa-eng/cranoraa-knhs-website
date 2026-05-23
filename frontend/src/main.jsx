@@ -6,7 +6,7 @@ import { Toaster } from 'react-hot-toast'
 import Swal from 'sweetalert2'
 import OfflineBanner from './components/OfflineBanner.jsx'
 import PWAInstallBanner from './components/PWAInstallBanner.jsx'
-import SWUpdateBanner from './components/SWUpdateBanner.jsx'
+import UpdateModal from './components/UpdateModal.jsx'
 
 // Configure SweetAlert2 with professional styling
 Swal.mixin({
@@ -27,7 +27,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     {/* Global offline/PWA overlays — outside App so they always render */}
     <OfflineBanner />
     <PWAInstallBanner />
-    <SWUpdateBanner />
+    <UpdateModal />
     <App />
     <Toaster
       position="top-right"
