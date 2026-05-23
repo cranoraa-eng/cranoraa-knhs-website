@@ -237,10 +237,10 @@ const Moderation = () => {
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
                             </svg>
                           </button>
-                          {report.status !== 'pending' && report.sender_is_suspended && (
+                          {report.sender_is_suspended && (
                             <button
                               onClick={() => handleAction(report.id, 'unsuspend-user', 'Unsuspend User')}
-                              className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"
+                              className="p-2 text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors border border-emerald-100"
                               title="Unsuspend User"
                             >
                               <div className="flex items-center gap-1 px-1">
@@ -279,6 +279,18 @@ const Moderation = () => {
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
                               </svg>
                               Unmute
+                            </button>
+                          )}
+                          {report.sender_is_suspended && (
+                            <button
+                              onClick={() => handleAction(report.id, 'unsuspend-user', 'Unsuspend User')}
+                              className="px-3 py-1 bg-emerald-50 text-emerald-600 rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-emerald-100 transition-colors border border-emerald-100 flex items-center gap-1"
+                              title="Unsuspend User"
+                            >
+                              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              </svg>
+                              Unsuspend
                             </button>
                           )}
                         </div>
