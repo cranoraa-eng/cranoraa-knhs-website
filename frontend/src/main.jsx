@@ -4,6 +4,9 @@ import App from './App.jsx'
 import './index.css'
 import { Toaster } from 'react-hot-toast'
 import Swal from 'sweetalert2'
+import OfflineBanner from './components/OfflineBanner.jsx'
+import PWAInstallBanner from './components/PWAInstallBanner.jsx'
+import SWUpdateBanner from './components/SWUpdateBanner.jsx'
 
 // Configure SweetAlert2 with professional styling
 Swal.mixin({
@@ -21,7 +24,21 @@ Swal.mixin({
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
+    {/* Global offline/PWA overlays — outside App so they always render */}
+    <OfflineBanner />
+    <PWAInstallBanner />
+    <SWUpdateBanner />
     <App />
-    <Toaster position="top-right" />
+    <Toaster
+      position="top-right"
+      toastOptions={{
+        duration: 4000,
+        style: {
+          borderRadius: '12px',
+          fontFamily: 'Inter, sans-serif',
+          fontSize: '14px',
+        },
+      }}
+    />
   </React.StrictMode>,
 )

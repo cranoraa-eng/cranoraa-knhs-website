@@ -19,6 +19,8 @@ export const NotificationProvider = ({ children }) => {
   const reconnectTimeoutRef = useRef(null);
   const pollingIntervalRef = useRef(null);
   const lastFetchedRef = useRef(0);
+  // Track if we were offline so we can resync on reconnect
+  const wasOfflineRef = useRef(false);
 
   const startPolling = useCallback(() => {
     if (pollingIntervalRef.current) return;
@@ -33,10 +35,6 @@ export const NotificationProvider = ({ children }) => {
       try {
         const r = await api.get('/notifications/polling/');
         setUnreadCount(r.data.unread_count);
-        
-        // Only update notifications if they've changed to avoid unnecessary re-renders
-        // and potential duplicate toast logic (though polling usually doesn't trigger toasts 
-        // to avoid annoyance, we'll keep it simple here)
         setNotifications(r.data.notifications);
         lastFetchedRef.current = Date.now();
       } catch (err) {
@@ -47,7 +45,7 @@ export const NotificationProvider = ({ children }) => {
     // Initial poll
     poll();
     
-    // Set interval (30 seconds as requested)
+    // Set interval (30 seconds)
     pollingIntervalRef.current = setInterval(poll, 30000);
   }, []);
 
@@ -80,6 +78,12 @@ export const NotificationProvider = ({ children }) => {
       if (reconnectTimeoutRef.current) {
         clearTimeout(reconnectTimeoutRef.current);
         reconnectTimeoutRef.current = null;
+      }
+
+      // If we were offline, force a fresh fetch to resync missed notifications
+      if (wasOfflineRef.current) {
+        wasOfflineRef.current = false;
+        lastFetchedRef.current = 0; // reset debounce so poll fires immediately
       }
     };
 
@@ -121,7 +125,8 @@ export const NotificationProvider = ({ children }) => {
       // Only reconnect if not closed normally (1000 = Normal Closure, 1001 = Going Away)
       if (e.code !== 1000 && e.code !== 1001) {
         if (reconnectTimeoutRef.current) clearTimeout(reconnectTimeoutRef.current);
-        reconnectTimeoutRef.current = setTimeout(connect, 10000); // Wait 10s before retry
+        // Exponential-ish backoff: 10s first, then browser online event will also trigger
+        reconnectTimeoutRef.current = setTimeout(connect, 10000);
       }
     };
 
@@ -129,10 +134,23 @@ export const NotificationProvider = ({ children }) => {
       console.error('Notification WS error', err);
       setRealtimeConnected(false);
       startPolling();
+      wasOfflineRef.current = true;
     };
 
     setSocket(ws);
   }, [userId, socket, startPolling, stopPolling]);
+
+  // Reconnect when browser comes back online
+  useEffect(() => {
+    const handleOnline = () => {
+      wasOfflineRef.current = true;
+      if (!socket || socket.readyState > 1) {
+        connect();
+      }
+    };
+    window.addEventListener('online', handleOnline);
+    return () => window.removeEventListener('online', handleOnline);
+  }, [connect, socket]);
 
   useEffect(() => {
     if (userId) {
@@ -149,9 +167,6 @@ export const NotificationProvider = ({ children }) => {
     
     return () => {
       if (reconnectTimeoutRef.current) clearTimeout(reconnectTimeoutRef.current);
-      // We don't close socket here because this effect might run on re-renders
-      // but the provider unmount cleanup is handled elsewhere or not needed 
-      // if it's the root provider.
     };
   }, [userId]); // Only depend on userId to avoid reconnection loops
 

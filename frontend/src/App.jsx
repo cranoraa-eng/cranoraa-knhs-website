@@ -4,50 +4,64 @@ import { NotificationProvider } from './context/NotificationContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Layout from './components/Layout';
 import PublicLayout from './components/PublicLayout';
+import { lazy, Suspense } from 'react';
+import { useState, useEffect } from 'react';
+import api from './utils/api';
+import { getStoredUser } from './utils/auth';
+import { SkeletonDashboard } from './components/Skeleton';
+
+// ── Eagerly loaded (auth + critical path) ────────────────────────────────────
 import Login from './pages/Login';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import ForcePasswordChange from './pages/ForcePasswordChange';
 import Dashboard from './pages/Dashboard';
-import Announcements from './pages/Announcements';
-import Grades from './pages/Grades';
-import Attendance from './pages/Attendance';
-import Materials from './pages/Materials';
-import Subjects from './pages/Subjects';
-import Teachers from './pages/Teachers';
-import Profile from './pages/Profile';
-import RegisterSubjects from './pages/RegisterSubjects';
-import ClassMembers from './pages/ClassMembers';
-import Calendar from './pages/Calendar';
-import PasswordReset from './pages/PasswordReset';
-import ClassManagement from './pages/ClassManagement';
-import MyClasses from './pages/MyClasses';
-import SubjectAssignment from './pages/SubjectAssignment';
-import StudentEnrollment from './pages/StudentEnrollment';
-import StudentManagement from './pages/StudentManagement';
-import AuditLogs from './pages/AuditLogs';
-import Backups from './pages/Backups';
-import Home from './pages/Home';
-import About from './pages/About';
-import Programs from './pages/Programs';
-import Contact from './pages/Contact';
-import Enrollment from './pages/Enrollment';
-import WebsiteContentManagement from './pages/WebsiteContentManagement';
-import AnnouncementDetails from './pages/AnnouncementDetails';
-import EnrollmentManagement from './pages/EnrollmentManagement';
-import Settings from './pages/Settings';
-import GradeInput from './pages/GradeInput';
-import GradeManagement from './pages/GradeManagement';
-import StudentGradeView from './pages/StudentGradeView';
-import Moderation from './pages/Moderation';
-import Analytics from './pages/Analytics';
-import Notifications from './pages/Notifications';
-
-import Messages from './pages/Messages';
 import Maintenance from './pages/Maintenance';
-import { useState, useEffect } from 'react';
-import api from './utils/api';
-import { getStoredUser } from './utils/auth';
+
+// ── Public website pages ──────────────────────────────────────────────────────
+const Home = lazy(() => import('./pages/Home'));
+const About = lazy(() => import('./pages/About'));
+const Programs = lazy(() => import('./pages/Programs'));
+const Contact = lazy(() => import('./pages/Contact'));
+const Enrollment = lazy(() => import('./pages/Enrollment'));
+const AnnouncementDetails = lazy(() => import('./pages/AnnouncementDetails'));
+const Calendar = lazy(() => import('./pages/Calendar'));
+
+// ── Portal pages (lazy loaded for better initial bundle) ──────────────────────
+const Announcements = lazy(() => import('./pages/Announcements'));
+const Grades = lazy(() => import('./pages/Grades'));
+const Attendance = lazy(() => import('./pages/Attendance'));
+const Materials = lazy(() => import('./pages/Materials'));
+const Subjects = lazy(() => import('./pages/Subjects'));
+const Teachers = lazy(() => import('./pages/Teachers'));
+const Profile = lazy(() => import('./pages/Profile'));
+const RegisterSubjects = lazy(() => import('./pages/RegisterSubjects'));
+const ClassMembers = lazy(() => import('./pages/ClassMembers'));
+const PasswordReset = lazy(() => import('./pages/PasswordReset'));
+const ClassManagement = lazy(() => import('./pages/ClassManagement'));
+const MyClasses = lazy(() => import('./pages/MyClasses'));
+const SubjectAssignment = lazy(() => import('./pages/SubjectAssignment'));
+const StudentEnrollment = lazy(() => import('./pages/StudentEnrollment'));
+const StudentManagement = lazy(() => import('./pages/StudentManagement'));
+const AuditLogs = lazy(() => import('./pages/AuditLogs'));
+const Backups = lazy(() => import('./pages/Backups'));
+const WebsiteContentManagement = lazy(() => import('./pages/WebsiteContentManagement'));
+const EnrollmentManagement = lazy(() => import('./pages/EnrollmentManagement'));
+const Settings = lazy(() => import('./pages/Settings'));
+const GradeInput = lazy(() => import('./pages/GradeInput'));
+const GradeManagement = lazy(() => import('./pages/GradeManagement'));
+const StudentGradeView = lazy(() => import('./pages/StudentGradeView'));
+const Moderation = lazy(() => import('./pages/Moderation'));
+const Analytics = lazy(() => import('./pages/Analytics'));
+const Notifications = lazy(() => import('./pages/Notifications'));
+const Messages = lazy(() => import('./pages/Messages'));
+
+// Fallback while lazy pages load
+const PageLoader = () => (
+  <div className="p-4 lg:p-8">
+    <SkeletonDashboard />
+  </div>
+);
 
 function App() {
   const [maintenanceMode, setMaintenanceMode] = useState(false);
@@ -70,7 +84,7 @@ function App() {
         setMaintenanceMode(false);
       }
     } catch {
-      // Silently fail
+      // Silently fail — don't block the app if this endpoint is unreachable
     }
   };
 
@@ -88,65 +102,67 @@ function App() {
     <AuthProvider>
       <NotificationProvider>
         <BrowserRouter>
-          <Routes>
-        {/* Auth Routes - Moved up for higher priority */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
-        <Route path="/force-password-change" element={<ForcePasswordChange />} />
+          <Suspense fallback={<PageLoader />}>
+            <Routes>
+              {/* Auth Routes */}
+              <Route path="/login" element={<Login />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
+              <Route path="/force-password-change" element={<ForcePasswordChange />} />
 
-        {/* Public Website Routes */}
-        <Route path="/" element={<PublicLayout />}>
-          <Route index element={<Home />} />
-          <Route path="about" element={<About />} />
-          <Route path="programs" element={<Programs />} />
-          <Route path="contact" element={<Contact />} />
-          <Route path="enroll" element={<Enrollment />} />
-          <Route path="announcement" element={<AnnouncementDetails />} />
-          <Route path="calendar" element={<Calendar />} />
-        </Route>
+              {/* Public Website Routes */}
+              <Route path="/" element={<PublicLayout />}>
+                <Route index element={<Home />} />
+                <Route path="about" element={<About />} />
+                <Route path="programs" element={<Programs />} />
+                <Route path="contact" element={<Contact />} />
+                <Route path="enroll" element={<Enrollment />} />
+                <Route path="announcement" element={<AnnouncementDetails />} />
+                <Route path="calendar" element={<Calendar />} />
+              </Route>
 
-        {/* Protected Portal Routes */}
-        <Route
-          element={
-            <ProtectedRoute>
-              <Layout />
-            </ProtectedRoute>
-          }
-        >
-          <Route path="dashboard" element={<Dashboard />} />
-          <Route path="announcements" element={<Announcements />} />
-          <Route path="grades" element={<Grades />} />
-          <Route path="attendance" element={<Attendance />} />
-          <Route path="materials" element={<Materials />} />
-          <Route path="messages" element={<Messages />} />
-          <Route path="subjects" element={<Subjects />} />
-          <Route path="teachers" element={<Teachers />} />
-          <Route path="profile" element={<Profile />} />
-          <Route path="register-subjects" element={<RegisterSubjects />} />
-          <Route path="class-members" element={<ClassMembers />} />
-          <Route path="portal-calendar" element={<Calendar mode="portal" />} />
-          <Route path="password-reset" element={<PasswordReset />} />
-          <Route path="class-management" element={<ClassManagement />} />
-          <Route path="my-classes" element={<MyClasses />} />
-          <Route path="subject-assignment" element={<SubjectAssignment />} />
-          <Route path="student-enrollment" element={<StudentEnrollment />} />
-          <Route path="student-management" element={<StudentManagement />} />
-          <Route path="classroom-management" element={<ClassManagement />} />
-          <Route path="audit-logs" element={<AuditLogs />} />
-          <Route path="backups" element={<Backups />} />
-          <Route path="website-content" element={<WebsiteContentManagement />} />
-          <Route path="enrollment-management" element={<EnrollmentManagement />} />
-          <Route path="settings" element={<Settings />} />
-          <Route path="grade-input" element={<GradeInput />} />
-          <Route path="grade-management" element={<GradeManagement />} />
-          <Route path="student-grades" element={<StudentGradeView />} />
-          <Route path="moderation" element={<Moderation />} />
-          <Route path="analytics" element={<Analytics />} />
-          <Route path="notifications" element={<Notifications />} />
-        </Route>
-      </Routes>
-      </BrowserRouter>
+              {/* Protected Portal Routes */}
+              <Route
+                element={
+                  <ProtectedRoute>
+                    <Layout />
+                  </ProtectedRoute>
+                }
+              >
+                <Route path="dashboard" element={<Dashboard />} />
+                <Route path="announcements" element={<Announcements />} />
+                <Route path="grades" element={<Grades />} />
+                <Route path="attendance" element={<Attendance />} />
+                <Route path="materials" element={<Materials />} />
+                <Route path="messages" element={<Messages />} />
+                <Route path="subjects" element={<Subjects />} />
+                <Route path="teachers" element={<Teachers />} />
+                <Route path="profile" element={<Profile />} />
+                <Route path="register-subjects" element={<RegisterSubjects />} />
+                <Route path="class-members" element={<ClassMembers />} />
+                <Route path="portal-calendar" element={<Calendar mode="portal" />} />
+                <Route path="password-reset" element={<PasswordReset />} />
+                <Route path="class-management" element={<ClassManagement />} />
+                <Route path="my-classes" element={<MyClasses />} />
+                <Route path="subject-assignment" element={<SubjectAssignment />} />
+                <Route path="student-enrollment" element={<StudentEnrollment />} />
+                <Route path="student-management" element={<StudentManagement />} />
+                <Route path="classroom-management" element={<ClassManagement />} />
+                <Route path="audit-logs" element={<AuditLogs />} />
+                <Route path="backups" element={<Backups />} />
+                <Route path="website-content" element={<WebsiteContentManagement />} />
+                <Route path="enrollment-management" element={<EnrollmentManagement />} />
+                <Route path="settings" element={<Settings />} />
+                <Route path="grade-input" element={<GradeInput />} />
+                <Route path="grade-management" element={<GradeManagement />} />
+                <Route path="student-grades" element={<StudentGradeView />} />
+                <Route path="moderation" element={<Moderation />} />
+                <Route path="analytics" element={<Analytics />} />
+                <Route path="notifications" element={<Notifications />} />
+              </Route>
+            </Routes>
+          </Suspense>
+        </BrowserRouter>
       </NotificationProvider>
     </AuthProvider>
   );

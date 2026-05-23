@@ -6,10 +6,12 @@ import { useState, useEffect } from 'react';
 import api from '../utils/api';
 import Swal from 'sweetalert2';
 import toast from 'react-hot-toast';
+import { useNetworkStatus } from '../hooks/useNetworkStatus';
 
-const NavItem = ({ to, label, isActive, icon }) => (
+const NavItem = ({ to, label, isActive, icon, onClick }) => (
   <Link 
-    to={to} 
+    to={to}
+    onClick={onClick}
     className={`flex items-center px-3 py-2.5 rounded-lg transition-all duration-150 mb-0.5 text-sm group ${
       isActive(to) 
         ? 'bg-violet-600 text-white font-semibold shadow-md shadow-violet-200' 
@@ -41,8 +43,14 @@ const Layout = () => {
   const { notifications, setNotifications, unreadCount, setUnreadCount, realtimeConnected, isPolling } = useNotifications();
   const [showNotifications, setShowNotifications] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { isOnline } = useNetworkStatus();
 
   const isActive = (path) => location.pathname === path;
+
+  // Close sidebar on route change (mobile)
+  useEffect(() => {
+    setSidebarOpen(false);
+  }, [location.pathname]);
 
   const handleLogout = async () => {
     const result = await Swal.fire({
@@ -328,7 +336,8 @@ const Layout = () => {
                       to={item.to} 
                       label={item.label} 
                       isActive={isActive} 
-                      icon={item.icon} 
+                      icon={item.icon}
+                      onClick={() => setSidebarOpen(false)}
                     />
                   ))}
                 </div>
@@ -515,13 +524,94 @@ const Layout = () => {
           </header>
 
           {/* Main Viewport */}
-          <div className="flex-1 overflow-y-auto p-4 lg:p-8 relative z-10 scroll-smooth">
+          <div className="flex-1 overflow-y-auto p-4 lg:p-8 relative z-10 scroll-smooth pb-20 lg:pb-8">
             <div className="mx-auto w-full max-w-[1440px]">
               <Outlet />
             </div>
           </div>
         </main>
       </div>
+
+      {/* ── Mobile Bottom Navigation Bar ── */}
+      {/* Only shown on small screens as a quick-access nav */}
+      <nav
+        aria-label="Mobile navigation"
+        className="fixed bottom-0 inset-x-0 z-40 lg:hidden bg-white/95 backdrop-blur-xl border-t border-slate-200 shadow-2xl shadow-slate-900/10"
+        style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+      >
+        <div className="flex items-center justify-around px-2 py-1">
+          {/* Dashboard */}
+          <Link
+            to="/dashboard"
+            className={`flex flex-col items-center gap-0.5 px-3 py-2 rounded-xl transition-all active:scale-90 min-w-[56px] ${
+              isActive('/dashboard') ? 'text-violet-600' : 'text-slate-400'
+            }`}
+          >
+            <svg className="w-5 h-5" fill={isActive('/dashboard') ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={isActive('/dashboard') ? 0 : 2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+            </svg>
+            <span className={`text-[9px] font-bold uppercase tracking-wide ${isActive('/dashboard') ? 'text-violet-600' : 'text-slate-400'}`}>Home</span>
+          </Link>
+
+          {/* Announcements */}
+          <Link
+            to="/announcements"
+            className={`flex flex-col items-center gap-0.5 px-3 py-2 rounded-xl transition-all active:scale-90 min-w-[56px] ${
+              isActive('/announcements') ? 'text-violet-600' : 'text-slate-400'
+            }`}
+          >
+            <svg className="w-5 h-5" fill={isActive('/announcements') ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={isActive('/announcements') ? 0 : 2} d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
+            </svg>
+            <span className={`text-[9px] font-bold uppercase tracking-wide ${isActive('/announcements') ? 'text-violet-600' : 'text-slate-400'}`}>News</span>
+          </Link>
+
+          {/* Messages */}
+          <Link
+            to="/messages"
+            className={`flex flex-col items-center gap-0.5 px-3 py-2 rounded-xl transition-all active:scale-90 min-w-[56px] ${
+              isActive('/messages') ? 'text-violet-600' : 'text-slate-400'
+            }`}
+          >
+            <svg className="w-5 h-5" fill={isActive('/messages') ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={isActive('/messages') ? 0 : 2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+            </svg>
+            <span className={`text-[9px] font-bold uppercase tracking-wide ${isActive('/messages') ? 'text-violet-600' : 'text-slate-400'}`}>Chat</span>
+          </Link>
+
+          {/* Notifications */}
+          <Link
+            to="/notifications"
+            className={`relative flex flex-col items-center gap-0.5 px-3 py-2 rounded-xl transition-all active:scale-90 min-w-[56px] ${
+              isActive('/notifications') ? 'text-violet-600' : 'text-slate-400'
+            }`}
+          >
+            <div className="relative">
+              <svg className="w-5 h-5" fill={isActive('/notifications') ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={isActive('/notifications') ? 0 : 2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+              </svg>
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[9px] font-black text-white border border-white">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
+              )}
+            </div>
+            <span className={`text-[9px] font-bold uppercase tracking-wide ${isActive('/notifications') ? 'text-violet-600' : 'text-slate-400'}`}>Alerts</span>
+          </Link>
+
+          {/* Menu (opens sidebar) */}
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="flex flex-col items-center gap-0.5 px-3 py-2 rounded-xl transition-all active:scale-90 text-slate-400 min-w-[56px]"
+            aria-label="Open menu"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+            <span className="text-[9px] font-bold uppercase tracking-wide">Menu</span>
+          </button>
+        </div>
+      </nav>
     </div>
   );
 };

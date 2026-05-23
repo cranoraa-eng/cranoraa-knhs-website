@@ -7,16 +7,25 @@
 @layer base {
   :root {
     color-scheme: light;
+    /* Safe area insets for notched phones / PWA standalone mode */
+    --sat: env(safe-area-inset-top);
+    --sar: env(safe-area-inset-right);
+    --sab: env(safe-area-inset-bottom);
+    --sal: env(safe-area-inset-left);
   }
 
   * {
     scroll-behavior: smooth;
+    /* Improve touch responsiveness */
+    -webkit-tap-highlight-color: transparent;
   }
 
   body {
     font-family: 'Inter', sans-serif;
     @apply text-slate-700 antialiased;
     overflow-x: hidden;
+    /* Prevent overscroll bounce on iOS PWA */
+    overscroll-behavior: none;
   }
 
   /* Prevent double scrollbars */
@@ -27,6 +36,7 @@
 
   #root {
     min-height: 100vh;
+    min-height: 100dvh; /* dynamic viewport height for mobile browsers */
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -47,6 +57,18 @@
   select:focus-visible,
   textarea:focus-visible {
     @apply outline-none ring-2 ring-violet-400 ring-offset-2 ring-offset-white;
+  }
+
+  /* Better touch targets on mobile */
+  button, a, [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Exception for inline/icon-only elements */
+  button.no-min, a.no-min {
+    min-height: unset;
+    min-width: unset;
   }
 }
 
@@ -107,6 +129,12 @@
 
   .ui-table tbody tr:hover {
     @apply bg-violet-50/60;
+  }
+
+  /* Responsive table wrapper — horizontal scroll on mobile */
+  .ui-table-wrapper {
+    @apply w-full overflow-x-auto -mx-0 rounded-xl;
+    -webkit-overflow-scrolling: touch;
   }
 
   /* Form Input Styles */
