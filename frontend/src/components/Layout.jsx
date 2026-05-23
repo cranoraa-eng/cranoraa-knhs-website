@@ -347,15 +347,21 @@ const Layout = () => {
 
           {/* Bottom actions */}
           <div className="flex-shrink-0 border-t border-white/5 p-4 space-y-2 bg-[#140824]/50">
-            <Link 
-              to="/" 
+            <button
+              onClick={() => {
+                // Always open in the system browser, not inside the PWA.
+                // Derive the public site URL from the API base (strip /api suffix).
+                const siteUrl = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api')
+                  .replace('/api', '');
+                window.open(siteUrl, '_blank', 'noopener,noreferrer');
+              }}
               className="flex w-full items-center justify-center rounded-xl bg-white/5 border border-white/10 px-4 py-2.5 text-xs font-bold uppercase tracking-widest text-white hover:bg-white/10 transition-all active:scale-95"
             >
               <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
               </svg>
               Visit Website
-            </Link>
+            </button>
             <button 
               onClick={handleLogout} 
               className="flex w-full items-center justify-center rounded-xl bg-rose-500/10 border border-rose-500/20 px-4 py-2.5 text-xs font-bold uppercase tracking-widest text-rose-400 hover:bg-rose-500 hover:text-white transition-all active:scale-95"

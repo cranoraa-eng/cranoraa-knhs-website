@@ -18,7 +18,8 @@ import ForcePasswordChange from './pages/ForcePasswordChange';
 import Dashboard from './pages/Dashboard';
 import Maintenance from './pages/Maintenance';
 
-// Detect if running as installed PWA (standalone mode)
+// Detect if running as installed PWA (standalone mode).
+// Called once at module level — safe because display-mode doesn't change at runtime.
 const isPWA = () =>
   window.matchMedia('(display-mode: standalone)').matches ||
   window.navigator.standalone === true;
@@ -116,15 +117,28 @@ function App() {
               <Route path="/force-password-change" element={<ForcePasswordChange />} />
 
               {/* Public Website Routes — skipped in PWA standalone mode */}
-              <Route path="/" element={isPWA() ? <Navigate to="/login" replace /> : <PublicLayout />}>
-                <Route index element={<Home />} />
-                <Route path="about" element={<About />} />
-                <Route path="programs" element={<Programs />} />
-                <Route path="contact" element={<Contact />} />
-                <Route path="enroll" element={<Enrollment />} />
-                <Route path="announcement" element={<AnnouncementDetails />} />
-                <Route path="calendar" element={<Calendar />} />
-              </Route>
+              {isPWA() ? (
+                // In PWA: redirect every public route to /login
+                <>
+                  <Route path="/" element={<Navigate to="/login" replace />} />
+                  <Route path="/about" element={<Navigate to="/login" replace />} />
+                  <Route path="/programs" element={<Navigate to="/login" replace />} />
+                  <Route path="/contact" element={<Navigate to="/login" replace />} />
+                  <Route path="/enroll" element={<Navigate to="/login" replace />} />
+                  <Route path="/announcement" element={<Navigate to="/login" replace />} />
+                  <Route path="/calendar" element={<Navigate to="/login" replace />} />
+                </>
+              ) : (
+                <Route path="/" element={<PublicLayout />}>
+                  <Route index element={<Home />} />
+                  <Route path="about" element={<About />} />
+                  <Route path="programs" element={<Programs />} />
+                  <Route path="contact" element={<Contact />} />
+                  <Route path="enroll" element={<Enrollment />} />
+                  <Route path="announcement" element={<AnnouncementDetails />} />
+                  <Route path="calendar" element={<Calendar />} />
+                </Route>
+              )}
 
               {/* Protected Portal Routes */}
               <Route
