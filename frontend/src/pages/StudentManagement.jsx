@@ -20,6 +20,7 @@ const StudentManagement = () => {
   const [showImportModal, setShowImportModal] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedIds, setSelectedIds] = useState([]);
   const [newStudent, setNewStudent] = useState({
     username: '',
     email: '',
@@ -217,6 +218,39 @@ const StudentManagement = () => {
         console.error('Failed to delete student:', err);
         toast.error('Failed to delete student');
       }
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedIds.length === 0) return;
+
+    const result = await Swal.fire({
+      title: `Delete ${selectedIds.length} students?`,
+      text: "This action cannot be undone. All associated data will be permanently removed.",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: `Yes, delete ${selectedIds.length} accounts`
+    });
+
+    if (result.isConfirmed) {
+      try {
+        await api.post('/users/bulk-delete/', { user_ids: selectedIds });
+        setSelectedIds([]);
+        fetchData();
+        toast.success(`Successfully deleted ${selectedIds.length} students`);
+      } catch (err) {
+        toast.error(err.response?.data?.error || 'Failed to perform bulk delete');
+      }
+    }
+  };
+
+  const handleSelectAll = (ids, isChecked) => {
+    if (isChecked) {
+      setSelectedIds(prev => [...new Set([...prev, ...ids])]);
+    } else {
+      setSelectedIds(prev => prev.filter(id => !ids.includes(id)));
     }
   };
 
@@ -445,8 +479,21 @@ const StudentManagement = () => {
   );
 
   const StudentRow = ({ student, idx }) => (
-    <tr key={student.id} className="group hover:bg-gray-50/80 transition-all duration-200">
-      <td className="px-3 py-1.5 md:px-6 md:py-4 text-[8px] md:text-xs font-black text-gray-400">{idx + 1}</td>
+    <tr key={student.id} className={`group transition-all duration-200 ${selectedIds.includes(student.id) ? 'bg-purple-50/50' : 'hover:bg-gray-50/80'}`}>
+      <td className="px-3 py-1.5 md:px-6 md:py-4">
+        <div className="flex items-center gap-3">
+          <input 
+            type="checkbox" 
+            checked={selectedIds.includes(student.id)}
+            onChange={(e) => {
+              if (e.target.checked) setSelectedIds(prev => [...prev, student.id]);
+              else setSelectedIds(prev => prev.filter(id => id !== student.id));
+            }}
+            className="w-3.5 h-3.5 md:w-4 md:h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500 cursor-pointer"
+          />
+          <span className="text-[8px] md:text-xs font-black text-gray-400">{idx + 1}</span>
+        </div>
+      </td>
       <td className="px-3 py-1.5 md:px-6 md:py-4">
         <div className="flex items-center gap-2 md:gap-3">
           <div className="w-6 h-6 md:w-10 md:h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg md:rounded-xl flex items-center justify-center text-white font-black text-[10px] md:text-sm shadow-sm">
@@ -659,8 +706,8 @@ const StudentManagement = () => {
       </div>
 
       {/* Search Bar */}
-      <div className="bg-white p-1.5 md:p-4 rounded-xl md:rounded-2xl border border-gray-100 shadow-sm">
-        <div className="relative group max-w-xl mx-auto">
+      <div className="bg-white p-1.5 md:p-4 rounded-xl md:rounded-2xl border border-gray-100 shadow-sm flex flex-col md:flex-row gap-4 items-center">
+        <div className="relative group flex-1 w-full">
           <svg className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 md:w-5 md:h-5 text-gray-400 group-focus-within:text-purple-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
@@ -672,6 +719,27 @@ const StudentManagement = () => {
             className="w-full pl-9 md:pl-12 pr-3 md:pr-4 py-1.5 md:py-3 bg-gray-50 border border-gray-200 rounded-lg md:rounded-xl focus:outline-none focus:ring-1 focus:ring-purple-500 focus:bg-white text-[10px] md:text-sm font-bold transition-all shadow-inner uppercase tracking-wider" 
           />
         </div>
+
+        {selectedIds.length > 0 && (
+          <div className="flex items-center gap-3 animate-in slide-in-from-right-4 duration-300">
+            <span className="text-[10px] font-black text-purple-600 uppercase tracking-widest bg-purple-50 px-3 py-1.5 rounded-lg border border-purple-100">
+              {selectedIds.length} Selected
+            </span>
+            <button 
+              onClick={handleBulkDelete}
+              className="bg-rose-500 text-white px-4 py-2 rounded-xl border border-rose-600 shadow-md hover:bg-rose-600 flex items-center gap-2 transition-all active:scale-95"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+              <span className="text-xs font-bold uppercase tracking-wider">Bulk Delete</span>
+            </button>
+            <button 
+              onClick={() => setSelectedIds([])}
+              className="text-gray-400 hover:text-gray-600 text-[10px] font-black uppercase tracking-widest"
+            >
+              Clear
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Organized List */}
@@ -717,7 +785,17 @@ const StudentManagement = () => {
                       <table className="w-full text-left min-w-[400px] md:min-w-full">
                         <thead>
                           <tr className="text-[7px] md:text-[10px] font-black text-white uppercase tracking-widest border-b border-gray-50 bg-[#2D1B4D]">
-                            <th className="px-3 py-1.5 md:px-6 md:py-4 w-10 md:w-16">#</th>
+                            <th className="px-3 py-1.5 md:px-6 md:py-4 w-10 md:w-16">
+                              <div className="flex items-center gap-3">
+                                <input 
+                                  type="checkbox" 
+                                  checked={cls.male.concat(cls.female).every(s => selectedIds.includes(s.id)) && (cls.male.length + cls.female.length) > 0}
+                                  onChange={(e) => handleSelectAll(cls.male.concat(cls.female).map(s => s.id), e.target.checked)}
+                                  className="w-3.5 h-3.5 md:w-4 md:h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500 cursor-pointer"
+                                />
+                                <span>#</span>
+                              </div>
+                            </th>
                             <th className="px-3 py-1.5 md:px-6 md:py-4">Student</th>
                             <th className="hidden md:table-cell px-6 py-4">Sex</th>
                             <th className="hidden md:table-cell px-6 py-4">Email</th>

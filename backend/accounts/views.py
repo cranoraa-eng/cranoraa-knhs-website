@@ -862,6 +862,7 @@ class UserViewSet(viewsets.ModelViewSet):
         
         role = request.query_params.get('role')
         queryset = self.get_queryset()
+        
         if role:
             queryset = queryset.filter(role=role)
             
@@ -887,6 +888,34 @@ class UserViewSet(viewsets.ModelViewSet):
             ])
             
         return response
+
+    @action(detail=False, methods=['post'], url_path='bulk-delete')
+    def bulk_delete(self, request):
+        """Bulk delete users (admin or advisory teacher)"""
+        user_ids = request.data.get('user_ids', [])
+        if not user_ids:
+            return Response({'error': 'No users selected'}, status=400)
+        
+        # Filter queryset based on user permissions
+        queryset = self.get_queryset().filter(id__in=user_ids)
+        count = queryset.count()
+        
+        if count == 0:
+            return Response({'error': 'No valid users found to delete'}, status=404)
+            
+        from portal.views import log_audit_action
+        log_audit_action(
+            user=self.request.user,
+            action='delete',
+            model_name='User',
+            object_id=None,
+            object_repr=f'Bulk delete {count} users',
+            description=f'{self.request.user.role.capitalize()} performed bulk delete on {count} user accounts: {list(queryset.values_list("username", flat=True))}',
+            request=self.request
+        )
+        
+        queryset.delete()
+        return Response({'status': f'Successfully deleted {count} users'})
 
     @action(detail=True, methods=['post'])
     def update_status(self, request, pk=None):
