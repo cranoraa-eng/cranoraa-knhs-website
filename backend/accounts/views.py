@@ -1663,9 +1663,9 @@ class AttendanceViewSet(viewsets.ModelViewSet):
         today = now.date()
         classroom_id = request.query_params.get('classroom')
         
-        # Daily trends (last 30 days)
+        # Daily trends (last 30 days) - Exclude weekends
         last_30_days = today - datetime.timedelta(days=30)
-        daily_trends = Attendance.objects.filter(date__gte=last_30_days)
+        daily_trends = Attendance.objects.filter(date__gte=last_30_days).exclude(date__week_day__in=[1, 7])
         if classroom_id:
             daily_trends = daily_trends.filter(classroom_id=classroom_id)
         
@@ -1675,19 +1675,19 @@ class AttendanceViewSet(viewsets.ModelViewSet):
             late=Count(Case(When(status='late', then=1), output_field=IntegerField())),
         ).order_by('date')
         
-        # Monthly trends
+        # Monthly trends - Exclude weekends
         monthly_data = daily_trends.values('date__month').annotate(
             present=Count(Case(When(status='present', then=1), output_field=IntegerField())),
             absent=Count(Case(When(status='absent', then=1), output_field=IntegerField())),
             late=Count(Case(When(status='late', then=1), output_field=IntegerField())),
         ).order_by('date__month')
         
-        # Section Rankings (Overall Attendance Rate)
+        # Section Rankings (Overall Attendance Rate) - Exclude weekends
         rankings = []
         if request.user.role == 'admin':
             classrooms = Classroom.objects.all()
             for cls in classrooms:
-                att = Attendance.objects.filter(classroom=cls)
+                att = Attendance.objects.filter(classroom=cls).exclude(date__week_day__in=[1, 7])
                 total = att.count()
                 present = att.filter(status__in=['present', 'late']).count()
                 rate = round(present / total * 100, 1) if total > 0 else 0

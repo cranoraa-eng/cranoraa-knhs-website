@@ -200,7 +200,12 @@ const Attendance = () => {
   );
 
   // Student filter
-  const filteredMyAttendance = myAttendance.filter(r => r.date?.startsWith(filterMonth));
+  const filteredMyAttendance = myAttendance.filter(r => {
+    const isDateMatch = r.date?.startsWith(filterMonth);
+    const day = new Date(r.date + 'T00:00:00').getDay();
+    const isWeekend = day === 0 || day === 6;
+    return isDateMatch && !isWeekend;
+  });
   const myStats = filteredMyAttendance.reduce((acc, r) => {
     acc[r.status] = (acc[r.status] || 0) + 1; return acc;
   }, {});
