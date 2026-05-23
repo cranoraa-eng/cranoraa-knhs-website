@@ -154,7 +154,15 @@ const Moderation = () => {
                       </p>
                     </td>
                     <td className="px-6 py-4 truncate">
-                      <span className="text-xs font-bold text-slate-700 block truncate" title={`@${report.message_sender}`}>@{report.message_sender}</span>
+                      <div className="flex flex-col">
+                        <span className="text-xs font-bold text-slate-700 block truncate" title={`@${report.message_sender}`}>@{report.message_sender}</span>
+                        {report.sender_is_muted && (
+                          <span className="inline-flex items-center gap-1 mt-1 text-[8px] font-black text-amber-600 uppercase tracking-widest bg-amber-50 px-1.5 py-0.5 rounded-md border border-amber-100 w-fit">
+                            <span className="w-1 h-1 rounded-full bg-amber-500 animate-pulse"></span>
+                            Currently Muted
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td className="px-6 py-4">
                       <p className="text-xs text-slate-500 italic line-clamp-3 break-words" title={report.reason}>
@@ -209,12 +217,15 @@ const Moderation = () => {
                           {report.sender_is_muted && (
                             <button
                               onClick={() => handleAction(report.id, 'unmute-user', 'Unmute User')}
-                              className="p-2 text-violet-500 hover:bg-violet-50 rounded-lg transition-colors"
+                              className="p-2 text-violet-600 bg-violet-50 hover:bg-violet-100 rounded-lg transition-colors border border-violet-100"
                               title="Unmute User"
                             >
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
-                              </svg>
+                              <div className="flex items-center gap-1 px-1">
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                                </svg>
+                                <span className="text-[9px] font-black uppercase tracking-tighter">Unmute</span>
+                              </div>
                             </button>
                           )}
                           <button
@@ -237,11 +248,25 @@ const Moderation = () => {
                           </button>
                         </div>
                       ) : (
-                        <div className="flex flex-col items-center gap-0.5">
-                           <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tight">Resolved by</span>
-                           <span className="text-[10px] font-black text-slate-600 truncate max-w-[80px]" title={report.resolved_by_name}>
-                             {report.resolved_by_name || 'Admin'}
-                           </span>
+                        <div className="flex flex-col items-center gap-1.5">
+                          <div className="flex flex-col items-center gap-0.5">
+                            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tight">Resolved by</span>
+                            <span className="text-[10px] font-black text-slate-600 truncate max-w-[80px]" title={report.resolved_by_name}>
+                              {report.resolved_by_name || 'Admin'}
+                            </span>
+                          </div>
+                          {report.sender_is_muted && (
+                            <button
+                              onClick={() => handleAction(report.id, 'unmute-user', 'Unmute User')}
+                              className="px-3 py-1 bg-violet-50 text-violet-600 rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-violet-100 transition-colors border border-violet-100 flex items-center gap-1"
+                              title="Unmute User"
+                            >
+                              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                              </svg>
+                              Unmute
+                            </button>
+                          )}
                         </div>
                       )}
                     </td>

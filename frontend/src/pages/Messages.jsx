@@ -547,7 +547,17 @@ const Messages = () => {
         const data = JSON.parse(e.data);
 
         if (data.type === 'error') {
-          toast.error(data.message, { icon: '🚫', duration: 4000 });
+          Swal.fire({
+            title: 'Action Restricted',
+            text: data.message,
+            icon: 'error',
+            confirmButtonColor: '#9333ea',
+            customClass: {
+              popup: 'rounded-[2rem]',
+              title: 'text-lg font-black uppercase tracking-tight',
+              htmlContainer: 'text-sm font-medium text-slate-500'
+            }
+          });
           return;
         }
 
