@@ -214,6 +214,17 @@ const Attendance = () => {
     });
   }, [classrooms]);
 
+  const isWeekend = (dateStr) => {
+    if (!dateStr) return false;
+    const day = new Date(dateStr + 'T00:00:00').getDay();
+    return day === 0 || day === 6; // 0 is Sunday, 6 is Saturday
+  };
+
+  const getDayName = (dateStr) => {
+    if (!dateStr) return '';
+    return new Date(dateStr + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long' });
+  };
+
   // ── STUDENT VIEW ──────────────────────────────────────────────
   if (isStudent) {
     const total = filteredMyAttendance.length;
@@ -298,11 +309,18 @@ const Attendance = () => {
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 mb-4">
         <div className="text-center lg:text-left min-w-0">
           <h1 className="text-xl md:text-3xl font-black text-gray-800 tracking-tight uppercase truncate">Attendance Tracker</h1>
-          <p className="text-[9px] md:text-sm text-gray-500 font-medium mt-0.5 uppercase tracking-widest truncate">
-            {view === 'mark'
-              ? `Marking: ${new Date(selectedDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
-              : 'Attendance History'}
-          </p>
+          <div className="flex items-center justify-center lg:justify-start gap-2 mt-0.5">
+            <p className="text-[9px] md:text-sm text-gray-500 font-medium uppercase tracking-widest truncate">
+              {view === 'mark'
+                ? `Marking: ${new Date(selectedDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
+                : 'Attendance History'}
+            </p>
+            {view === 'mark' && (
+              <span className={`px-2 py-0.5 rounded text-[8px] md:text-[10px] font-black uppercase tracking-widest ${isWeekend(selectedDate) ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-500'}`}>
+                {getDayName(selectedDate)}
+              </span>
+            )}
+          </div>
         </div>
         <div className="flex rounded-lg md:rounded-xl border border-gray-300 overflow-hidden text-[10px] md:text-sm shadow-sm w-full lg:w-auto shrink-0">
           {[
@@ -320,6 +338,17 @@ const Attendance = () => {
 
       {/* Controls */}
       <div className="bg-white border border-gray-200 rounded-lg md:rounded-xl shadow-sm p-1.5 md:p-5 mb-2 md:mb-4">
+        {view === 'mark' && isWeekend(selectedDate) && (
+          <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-center gap-3 animate-pulse">
+            <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center text-amber-600 flex-shrink-0">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+            </div>
+            <div>
+              <p className="text-[10px] md:text-xs font-black text-amber-800 uppercase tracking-tight">Weekend Detected ({getDayName(selectedDate)})</p>
+              <p className="text-[8px] md:text-[10px] font-bold text-amber-600 uppercase tracking-widest">Marking attendance on weekends is usually not required. Proceed if this is a special class session.</p>
+            </div>
+          </div>
+        )}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-1.5 md:gap-4">
           <div className="min-w-0">
             <label className="block text-[7px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Classroom</label>
