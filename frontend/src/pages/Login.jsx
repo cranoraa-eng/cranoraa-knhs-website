@@ -104,9 +104,11 @@ const Login = () => {
     <div className="min-h-screen bg-slate-50 flex">
 
       {/* ── Left panel (branding) — hidden on mobile ── */}
-      <div className="hidden lg:flex lg:w-1/2 bg-slate-900 flex-col justify-between p-12 relative overflow-hidden">
-        {/* Subtle accent */}
-        <div className="absolute top-0 right-0 w-96 h-96 bg-violet-600/10 rounded-full translate-x-1/2 -translate-y-1/2 blur-3xl pointer-events-none" />
+      <div className="hidden lg:flex lg:w-1/2 bg-[#0f0720] flex-col justify-between p-12 relative overflow-hidden">
+        {/* Grid texture */}
+        <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '50px 50px' }} />
+        {/* Glow accents */}
+        <div className="absolute top-0 right-0 w-80 h-80 bg-violet-600/15 rounded-full translate-x-1/2 -translate-y-1/2 blur-3xl pointer-events-none" />
         <div className="absolute bottom-0 left-0 w-64 h-64 bg-indigo-600/10 rounded-full -translate-x-1/2 translate-y-1/2 blur-3xl pointer-events-none" />
 
         {/* Logo */}
@@ -115,29 +117,39 @@ const Login = () => {
             <img src="https://plain-apac-prod-public.komododecks.com/202605/18/u3t1lOolacFscP6v1Bq8/image.png" alt="KNHS" className="h-8 w-8 object-contain" />
           </div>
           <div>
-            <p className="text-sm font-black text-white leading-none">KIWALAN NHS</p>
-            <p className="text-[10px] text-slate-400 font-medium mt-0.5 uppercase tracking-widest">Student Portal</p>
+            <p className="text-sm font-black text-white leading-none tracking-tight">KIWALAN NHS</p>
+            <p className="text-[10px] text-violet-400 font-bold mt-0.5 uppercase tracking-widest">Student Portal</p>
           </div>
         </div>
 
         {/* Center content */}
-        <div className="relative space-y-6">
-          <h2 className="text-4xl font-black text-white leading-tight">
-            Your academic journey,<br />all in one place.
-          </h2>
-          <p className="text-slate-400 leading-relaxed">
-            Access grades, attendance, announcements, messages, and more — all from your personalized portal.
-          </p>
-          <div className="grid grid-cols-2 gap-4 pt-4">
-            {[
-              { label: 'Students', val: '1,200+' },
-              { label: 'Faculty', val: '80+' },
-              { label: 'Graduates', val: '5,000+' },
-              { label: 'Years', val: '20+' },
-            ].map((s, i) => (
-              <div key={i} className="bg-white/5 border border-white/10 rounded-xl p-4">
-                <p className="text-2xl font-black text-white">{s.val}</p>
-                <p className="text-xs text-slate-400 font-semibold uppercase tracking-widest mt-0.5">{s.label}</p>
+        <div className="relative space-y-8">
+          <div>
+            <p className="text-xs font-bold text-violet-400 uppercase tracking-widest mb-4">Welcome Back</p>
+            <h2 className="text-4xl font-black text-white leading-tight mb-4">
+              Your academic<br />journey, all in<br />one place.
+            </h2>
+            <p className="text-slate-400 leading-relaxed text-sm">
+              Access grades, attendance, announcements, messages, and more — all from your personalized portal.
+            </p>
+          </div>
+          {/* Feature list */}
+          <div className="space-y-3">
+            {['Real-time grade tracking', 'Attendance monitoring', 'Direct teacher messaging', 'Instant announcements', 'Learning materials access'].map((f, i) => (
+              <div key={i} className="flex items-center gap-3">
+                <div className="w-5 h-5 rounded-full bg-violet-500/20 border border-violet-500/30 flex items-center justify-center flex-shrink-0">
+                  <svg className="w-3 h-3 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
+                </div>
+                <span className="text-sm text-slate-400">{f}</span>
+              </div>
+            ))}
+          </div>
+          {/* Stats */}
+          <div className="grid grid-cols-2 gap-3 pt-2">
+            {[{ val: '1,200+', label: 'Students' }, { val: '80+', label: 'Faculty' }, { val: '5,000+', label: 'Graduates' }, { val: '20+', label: 'Years' }].map((s, i) => (
+              <div key={i} className="bg-white/5 border border-white/10 rounded-xl p-3">
+                <p className="text-lg font-black text-white">{s.val}</p>
+                <p className="text-[10px] text-slate-500 font-semibold uppercase tracking-widest mt-0.5">{s.label}</p>
               </div>
             ))}
           </div>
@@ -145,20 +157,15 @@ const Login = () => {
 
         {/* Bottom link */}
         <div className="relative">
-          <button
-            onClick={() => { window.location.href = '/'; }}
-            className="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-colors font-medium"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
+          <button onClick={() => { window.location.href = '/'; }} className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-white transition-colors font-medium">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
             Back to Website
           </button>
         </div>
       </div>
 
       {/* ── Right panel (form) ── */}
-      <div className="flex-1 flex flex-col items-center justify-center px-4 py-12 sm:px-8">
+      <div className="flex-1 flex flex-col items-center justify-center px-4 py-12 sm:px-8 bg-slate-50">
 
         {/* Mobile back link */}
         <div className="w-full max-w-sm mb-6 lg:hidden">

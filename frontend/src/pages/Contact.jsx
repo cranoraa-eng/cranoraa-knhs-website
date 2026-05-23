@@ -49,14 +49,18 @@ const Contact = () => {
     <div className="bg-white">
 
       {/* ── Hero ── */}
-      <section className="py-20 md:py-28 bg-white border-b border-slate-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="bg-[#0f0720] py-20 md:py-24 relative overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-violet-600/10 rounded-full blur-3xl -translate-x-1/3 -translate-y-1/3" />
+          <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '60px 60px' }} />
+        </div>
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-2xl">
-            <p className="text-xs font-bold text-violet-600 uppercase tracking-widest mb-4">Contact Us</p>
-            <h1 className="text-4xl md:text-5xl font-black text-slate-900 leading-tight mb-5">
+            <p className="text-xs font-bold text-violet-400 uppercase tracking-widest mb-4">Contact Us</p>
+            <h1 className="text-4xl md:text-5xl font-black text-white leading-tight mb-5">
               {content.contact_title?.content || 'Get in Touch'}
             </h1>
-            <p className="text-slate-500 leading-relaxed text-lg">
+            <p className="text-slate-400 leading-relaxed text-lg">
               {content.contact_subtitle?.content || 'Have questions about enrollment or our programs? We are here to help.'}
             </p>
           </div>
@@ -71,9 +75,9 @@ const Contact = () => {
             {/* Info cards */}
             <div className="lg:col-span-2 space-y-4">
               {infoItems.map((item, i) => (
-                <div key={i} className="bg-white rounded-2xl border border-slate-100 p-6 flex items-start gap-4 hover:shadow-sm transition-shadow">
-                  <div className="w-10 h-10 rounded-xl bg-violet-50 flex items-center justify-center flex-shrink-0">
-                    <svg className="w-5 h-5 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div key={i} className="bg-white rounded-2xl border border-slate-100 p-6 flex items-start gap-4 hover:shadow-md hover:border-violet-100 transition-all group">
+                  <div className="w-11 h-11 rounded-xl bg-violet-50 border border-violet-100 flex items-center justify-center flex-shrink-0 group-hover:bg-violet-600 transition-colors">
+                    <svg className="w-5 h-5 text-violet-600 group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={item.icon} />
                     </svg>
                   </div>
@@ -83,37 +87,50 @@ const Contact = () => {
                   </div>
                 </div>
               ))}
+
+              {/* Quick CTA */}
+              <div className="bg-violet-600 rounded-2xl p-6 text-white">
+                <p className="text-sm font-black mb-1">Ready to enroll?</p>
+                <p className="text-xs text-violet-200 mb-4">Applications are open for SY 2026–2027.</p>
+                <a href="/enroll" className="inline-flex items-center gap-1.5 text-xs font-bold bg-white text-violet-700 px-4 py-2 rounded-lg hover:bg-violet-50 transition-colors">
+                  Apply Now
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4 4H3" /></svg>
+                </a>
+              </div>
             </div>
 
             {/* Map */}
             <div className="lg:col-span-3">
-              <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden h-full min-h-[400px] relative">
+              <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden h-full min-h-[480px] relative shadow-sm">
                 {content.contact_map_url?.content ? (
                   <iframe
                     src={content.contact_map_url.content}
                     width="100%"
                     height="100%"
-                    style={{ border: 0, minHeight: '400px' }}
+                    style={{ border: 0, minHeight: '480px' }}
                     allowFullScreen=""
                     loading="lazy"
                     title="School Location"
                   />
                 ) : (
-                  <div className="flex flex-col items-center justify-center h-full min-h-[400px] text-slate-300 gap-3">
-                    <svg className="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
-                    </svg>
-                    <p className="text-sm font-medium text-slate-400">Map not yet configured</p>
+                  <div className="flex flex-col items-center justify-center h-full min-h-[480px] text-slate-300 gap-3 bg-slate-50">
+                    <div className="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center">
+                      <svg className="w-8 h-8 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                      </svg>
+                    </div>
+                    <p className="text-sm font-semibold text-slate-400">Map not yet configured</p>
+                    <p className="text-xs text-slate-400">Add a Google Maps embed URL in the admin panel</p>
                   </div>
                 )}
 
                 {/* Floating label */}
                 <div className="absolute bottom-4 left-4 right-4 bg-slate-900/90 backdrop-blur-sm rounded-xl p-4 hidden sm:flex items-center justify-between gap-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-violet-600 rounded-lg flex items-center justify-center text-white text-xs font-black flex-shrink-0">KN</div>
+                    <div className="w-9 h-9 bg-violet-600 rounded-lg flex items-center justify-center text-white text-xs font-black flex-shrink-0">KN</div>
                     <div>
                       <p className="text-white text-sm font-bold leading-none">Kiwalan National High School</p>
-                      <p className="text-slate-400 text-xs mt-0.5">Main Campus</p>
+                      <p className="text-slate-400 text-xs mt-0.5">Main Campus · Kiwalan, Philippines</p>
                     </div>
                   </div>
                   <button className="px-4 py-1.5 bg-white text-slate-900 rounded-lg text-xs font-bold hover:bg-slate-100 transition-colors flex-shrink-0">

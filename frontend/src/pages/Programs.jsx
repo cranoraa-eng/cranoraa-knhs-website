@@ -83,53 +83,58 @@ const Programs = () => {
     <div className="bg-white">
 
       {/* ── Hero ── */}
-      <section className="py-20 md:py-28 bg-white border-b border-slate-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <p className="text-xs font-bold text-violet-600 uppercase tracking-widest mb-4">Curriculum</p>
-          <h1 className="text-4xl md:text-5xl font-black text-slate-900 leading-tight mb-5">
+      <section className="bg-[#0f0720] py-20 md:py-28 relative overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-violet-600/10 rounded-full blur-3xl translate-x-1/3 -translate-y-1/3" />
+          <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-indigo-600/10 rounded-full blur-3xl -translate-x-1/3 translate-y-1/3" />
+          <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '60px 60px' }} />
+        </div>
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <p className="text-xs font-bold text-violet-400 uppercase tracking-widest mb-4">Curriculum</p>
+          <h1 className="text-4xl md:text-5xl font-black text-white leading-tight mb-5">
             {content.programs_title?.content || 'Our Programs'}
           </h1>
-          <p className="text-slate-500 leading-relaxed text-lg max-w-2xl mx-auto">
+          <p className="text-slate-400 leading-relaxed text-lg max-w-2xl mx-auto">
             {content.programs_subtitle?.content || 'Discover the diverse educational opportunities we offer, designed to prepare students for a bright future.'}
           </p>
         </div>
       </section>
 
       {/* ── Programs Grid ── */}
-      <section className="py-20 md:py-28 bg-slate-50">
+      <section className="py-20 md:py-28 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {programList.map((program, i) => (
-              <div key={i} className="group bg-white rounded-2xl border border-slate-100 overflow-hidden hover:shadow-md transition-all flex flex-col">
+              <div key={i} className="group bg-white rounded-2xl border border-slate-100 overflow-hidden hover:shadow-xl hover:border-violet-100 transition-all duration-300 flex flex-col">
                 {/* Image */}
-                <div className="relative h-52 overflow-hidden">
-                  <img
-                    src={program.image}
-                    alt={program.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-900/50 to-transparent" />
-                  <div className="absolute bottom-4 left-4">
+                <div className="relative h-56 overflow-hidden">
+                  <img src={program.image} alt={program.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-900/70 via-slate-900/20 to-transparent" />
+                  {/* Number badge */}
+                  <div className="absolute top-4 left-4 w-8 h-8 rounded-xl bg-white/10 border border-white/20 backdrop-blur-sm flex items-center justify-center">
+                    <span className="text-xs font-black text-white">0{i + 1}</span>
+                  </div>
+                  {/* Icon */}
+                  <div className="absolute bottom-4 left-4 flex items-center gap-3">
                     <div className="w-9 h-9 rounded-xl bg-violet-600 flex items-center justify-center shadow-lg">
                       <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={program.icon} />
                       </svg>
                     </div>
+                    <h3 className="text-base font-black text-white drop-shadow">{program.title}</h3>
                   </div>
                 </div>
-
                 {/* Content */}
                 <div className="p-6 flex-1 flex flex-col">
-                  <h3 className="text-base font-black text-slate-900 mb-2">{program.title}</h3>
                   <p className="text-sm text-slate-500 leading-relaxed flex-1">{program.content}</p>
                   <div className="mt-5 pt-4 border-t border-slate-100 flex items-center justify-between">
-                    <span className="text-[10px] font-bold text-violet-600 uppercase tracking-widest">Core Curriculum</span>
+                    <span className="text-[10px] font-bold text-violet-600 uppercase tracking-widest">DepEd Curriculum</span>
                     <button
                       onClick={() => handleViewDetails(program)}
-                      className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-700 hover:text-violet-600 transition-colors"
+                      className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-700 hover:text-violet-600 transition-colors group/btn"
                     >
                       View Details
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-4 h-4 group-hover/btn:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4 4H3" />
                       </svg>
                     </button>
@@ -142,25 +147,27 @@ const Programs = () => {
       </section>
 
       {/* ── CTA ── */}
-      <section className="py-20 md:py-28 bg-white">
+      <section className="py-20 md:py-28 bg-slate-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-slate-900 rounded-3xl px-8 py-14 md:px-16 md:py-20 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-violet-600/20 rounded-full translate-x-1/3 -translate-y-1/3 blur-3xl pointer-events-none" />
+          <div className="bg-[#0f0720] rounded-3xl px-8 py-14 md:px-16 md:py-20 relative overflow-hidden">
+            <div className="absolute inset-0 pointer-events-none">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-violet-600/20 rounded-full translate-x-1/3 -translate-y-1/3 blur-3xl" />
+              <div className="absolute bottom-0 left-0 w-64 h-64 bg-indigo-600/10 rounded-full -translate-x-1/3 translate-y-1/3 blur-3xl" />
+              <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '60px 60px' }} />
+            </div>
             <div className="relative grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
               <div>
-                <h2 className="text-3xl md:text-4xl font-black text-white mb-4">Ready to start your journey?</h2>
-                <p className="text-slate-400 leading-relaxed">Our comprehensive curriculum is designed to challenge and inspire students at every level.</p>
-                <div className="flex flex-wrap gap-2 mt-6">
+                <p className="text-xs font-bold text-violet-400 uppercase tracking-widest mb-3">Get Started</p>
+                <h2 className="text-3xl md:text-4xl font-black text-white mb-4 leading-tight">Ready to start your journey?</h2>
+                <p className="text-slate-400 leading-relaxed mb-6">Our comprehensive curriculum is designed to challenge and inspire students at every level.</p>
+                <div className="flex flex-wrap gap-2">
                   {['Science & Tech', 'Liberal Arts', 'Engineering', 'Vocational'].map(tag => (
-                    <span key={tag} className="px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-white text-xs font-semibold">{tag}</span>
+                    <span key={tag} className="px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-white text-xs font-semibold">{tag}</span>
                   ))}
                 </div>
               </div>
               <div className="lg:text-right">
-                <Link
-                  to="/enroll"
-                  className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-white text-slate-900 font-bold text-sm hover:bg-slate-100 transition-colors shadow-sm"
-                >
+                <Link to="/enroll" className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-violet-600 text-white font-bold text-sm hover:bg-violet-500 transition-colors shadow-lg shadow-violet-900/40">
                   Apply for Admission
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4 4H3" /></svg>
                 </Link>
