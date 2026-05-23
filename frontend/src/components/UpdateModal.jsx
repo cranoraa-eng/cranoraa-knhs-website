@@ -16,11 +16,10 @@ const UpdateModal = () => {
   const [visible, setVisible] = useState(false);
   const [updating, setUpdating] = useState(false);
 
-  // Delay mount slightly so the entrance animation plays cleanly
+  // Show immediately — no delay
   useEffect(() => {
     if (needRefresh) {
-      const t = setTimeout(() => setVisible(true), 300);
-      return () => clearTimeout(t);
+      setVisible(true);
     } else {
       setVisible(false);
       setUpdating(false);
@@ -37,8 +36,7 @@ const UpdateModal = () => {
 
   const handleLater = () => {
     setVisible(false);
-    // Wait for exit animation before dismissing in hook state
-    setTimeout(() => dismissUpdate(), 300);
+    setTimeout(() => dismissUpdate(), 200);
   };
 
   if (!needRefresh) return null;
