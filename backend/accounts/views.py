@@ -4088,6 +4088,7 @@ class ReportedMessageViewSet(viewsets.ModelViewSet):
         )
 
         # Notify the suspended user
+        Notification.objects.create(
             recipient=user_to_suspend,
             notification_type='system',
             title='Account Suspended',
