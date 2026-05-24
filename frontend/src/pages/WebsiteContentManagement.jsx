@@ -1,7 +1,5 @@
 import { useState, useEffect } from 'react';
 import api from '../utils/api';
-import Swal from 'sweetalert2';
-
 const WebsiteContentManagement = () => {
   const [content, setContent] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -157,7 +155,7 @@ const WebsiteContentManagement = () => {
         <div className="flex flex-row gap-1 shrink-0">
           <button
             onClick={() => setShowAddModal(true)}
-            className="flex-1 sm:flex-none flex items-center justify-center bg-violet-600 hover:bg-violet-700 text-white font-bold py-1.5 md:py-2.5 px-2.5 md:px-5 rounded-lg md:rounded-xl transition-all shadow-md md:shadow-lg shadow-purple-200 active:scale-95 text-[9px] md:text-base whitespace-nowrap"
+            className="flex-1 sm:flex-none flex items-center justify-center bg-violet-600 hover:bg-violet-700 text-white font-bold py-1.5 md:py-2.5 px-2.5 md:px-5 rounded-lg md:rounded-xl transition-all shadow-md md:shadow-lg shadow-violet-200 active:scale-95 text-[9px] md:text-base whitespace-nowrap"
           >
             <svg className="w-2.5 h-2.5 md:w-5 md:h-5 mr-1 md:mr-2 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
