@@ -88,17 +88,24 @@ const AttendanceTooltip = ({ active, payload, label }) => {
 };
 
 const AttendanceTrendsSection = ({ data }) => (
-  <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm min-h-[350px] w-full">
+  <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm h-[400px] w-full flex flex-col">
     <div className="flex items-center justify-between mb-6">
       <div>
         <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Presence Trends</h3>
         <p className="text-sm font-black text-slate-900 uppercase tracking-tight">30-Day Activity Monitor</p>
       </div>
-      <div className="flex gap-1.5"><div className="px-2 py-0.5 bg-emerald-50 border border-emerald-100 rounded text-[7px] font-black text-emerald-600 uppercase tracking-widest">Live</div></div>
+      <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-emerald-500" /><span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Present</span></div>
+          <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-amber-500" /><span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Late</span></div>
+          <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-purple-500" /><span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Excused</span></div>
+        </div>
+        <div className="px-2 py-0.5 bg-emerald-50 border border-emerald-100 rounded text-[7px] font-black text-emerald-600 uppercase tracking-widest">Live</div>
+      </div>
     </div>
-    <div className="h-64">
+    <div className="flex-1">
       {!data || data.length === 0 ? (
-        <div className="h-full flex items-center justify-center text-[10px] font-black text-slate-300 uppercase tracking-widest italic">Insufficient data for trends</div>
+        <div className="h-full flex items-center justify-center text-[10px] font-black text-slate-300 uppercase tracking-widest italic">No trend activity detected</div>
       ) : (
         <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
           <AreaChart data={data}>
@@ -131,12 +138,12 @@ const AttendanceStatusPieSection = ({ data }) => {
   const hasData = data && data.some(d => d.value > 0);
   
   return (
-    <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm min-h-[350px] w-full">
+    <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm h-[400px] w-full flex flex-col">
       <div className="mb-6">
         <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Presence Distribution</h3>
         <p className="text-sm font-black text-slate-900 uppercase tracking-tight">Overall Status Summary</p>
       </div>
-      <div className="h-64 flex items-center gap-4">
+      <div className="flex-1 flex items-center gap-4">
         {!hasData ? (
           <div className="w-full flex items-center justify-center text-[10px] font-black text-slate-300 uppercase tracking-widest italic text-center">No status distribution records</div>
         ) : (
@@ -179,12 +186,12 @@ const AttendanceStatusPieSection = ({ data }) => {
 };
 
 const AttendanceByLevelBarSection = ({ data }) => (
-  <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm min-h-[350px] w-full">
+  <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm h-[400px] w-full flex flex-col">
     <div className="mb-6">
       <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Level Engagement</h3>
       <p className="text-sm font-black text-slate-900 uppercase tracking-tight">Attendance Rate by Grade Level</p>
     </div>
-    <div className="h-64">
+    <div className="flex-1">
       {!data || data.length === 0 ? (
         <div className="h-full flex items-center justify-center text-[10px] font-black text-slate-300 uppercase tracking-widest italic">No level-wise data available</div>
       ) : (
@@ -205,7 +212,7 @@ const AttendanceByLevelBarSection = ({ data }) => (
 );
 
 const AttendanceRankingsSection = ({ rankings, period }) => (
-  <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm overflow-hidden flex flex-col min-h-[350px] w-full">
+  <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm overflow-hidden flex flex-col h-[400px] w-full">
     <div className="mb-6">
       <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Rankings — {period}</h3>
       <p className="text-sm font-black text-slate-900 uppercase tracking-tight">Section Performance Index</p>
@@ -417,7 +424,7 @@ const GradeRankingSection = ({ data, filterSubject, meta, timeframe }) => (
 const FilterSelect = ({ label, value, onChange, options }) => (
   <div className="relative min-w-[140px]">
     <label className="absolute -top-2 left-2 px-1 bg-slate-900 text-[8px] font-black text-slate-500 uppercase tracking-widest z-10">{label}</label>
-    <select value={value} onChange={onChange} className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-[10px] font-black text-white uppercase tracking-tight focus:border-indigo-500 outline-none transition-all appearance-none pr-8 cursor-pointer">
+    <select value={value} onChange={onChange} className="w-full h-[38px] px-3 bg-slate-800 border border-slate-700 rounded-lg text-[10px] font-black text-white uppercase tracking-tight focus:border-indigo-500 outline-none transition-all appearance-none pr-8 cursor-pointer">
       {options.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
     </select>
     <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500"><svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 9l-7 7-7-7" /></svg></div>
@@ -450,7 +457,7 @@ const SubjectFilterSelect = ({ value, onChange, filterLevel, gradeData }) => {
 const YearSelector = ({ academicYear, onYearChange }) => (
   <div className="relative min-w-[140px]">
     <label className="absolute -top-2 left-2 px-1 bg-slate-900 text-[8px] font-black text-slate-500 uppercase tracking-widest z-10">Academic Year</label>
-    <div className="flex items-center bg-slate-800 border border-slate-700 rounded-lg overflow-hidden h-[34px]">
+    <div className="flex items-center bg-slate-800 border border-slate-700 rounded-lg overflow-hidden h-[38px]">
       <button onClick={() => onYearChange('prev')} className="px-2 h-full hover:bg-slate-700 text-slate-400 border-r border-slate-700 transition-colors">
         <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M15 19l-7-7 7-7" /></svg>
       </button>
