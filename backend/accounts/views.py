@@ -2168,6 +2168,7 @@ def admin_dashboard_stats(request):
         now = timezone.localtime(timezone.now())
         today = now.date()
         five_mins_ago = now - datetime.timedelta(minutes=5)
+        this_week_start = today - datetime.timedelta(days=today.weekday())
         
         # Safe model imports
         try:
