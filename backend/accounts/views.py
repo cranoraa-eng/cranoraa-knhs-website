@@ -2185,6 +2185,7 @@ def admin_dashboard_stats(request):
         total_students = User.objects.filter(role='student', is_approved=True).count()
         total_teachers = User.objects.filter(role='teacher', is_approved=True).count()
         total_classes  = Classroom.objects.count()
+        total_subjects = Subject.objects.count()
         pending_approvals = User.objects.filter(is_approved=False, is_verified=True).count()
         
         active_users = User.objects.filter(last_activity__gte=five_mins_ago).count()
