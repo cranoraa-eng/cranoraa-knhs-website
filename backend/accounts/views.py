@@ -1745,11 +1745,11 @@ class AttendanceViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(date=date)
         if status:
             queryset = queryset.filter(status=status)
-        # Filter by academic year — include classrooms with no year assigned
+        # Strict academic year filter — only show records for classrooms in that year.
+        # No isnull fallback here: unassigned classrooms bleed into every year otherwise.
         if academic_year:
             queryset = queryset.filter(
-                Q(classroom__academic_year__name=academic_year) |
-                Q(classroom__academic_year__isnull=True)
+                classroom__academic_year__name=academic_year
             )
         return queryset
 
@@ -1773,13 +1773,11 @@ class AttendanceViewSet(viewsets.ModelViewSet):
         
         # Base queryset
         base_att = Attendance.objects.all()
-        
-        # Filter by Academic Year if provided — include classrooms with no year assigned
+
+        # Strict academic year filter — no isnull fallback to prevent year bleed-through
         if academic_year_name:
-            from django.db.models import Q
             base_att = base_att.filter(
-                Q(classroom__academic_year__name=academic_year_name) |
-                Q(classroom__academic_year__isnull=True)
+                classroom__academic_year__name=academic_year_name
             )
         
         # Apply timeframe filter
@@ -2219,8 +2217,7 @@ def admin_dashboard_stats(request):
         if academic_year_name:
             try:
                 att_qs = att_qs.filter(
-                    Q(classroom__academic_year__name=academic_year_name) |
-                    Q(classroom__academic_year__isnull=True)
+                    classroom__academic_year__name=academic_year_name
                 )
             except Exception as e:
                 logger.error(f"Error filtering attendance by year: {str(e)}")
@@ -2274,11 +2271,10 @@ def admin_dashboard_stats(request):
         # Grades - only count final grades
         grades = Grade.objects.filter(transmuted_score__isnull=False, grade_type='final_grade')
         if academic_year_name:
-            # Include grades matching the year directly, via classroom, or with no year set
+            # Strict year filter — Grade.academic_year field OR classroom year, no isnull fallback
             grades = grades.filter(
                 Q(academic_year=academic_year_name) |
-                Q(classroom__academic_year__name=academic_year_name) |
-                Q(classroom__academic_year__isnull=True)
+                Q(classroom__academic_year__name=academic_year_name)
             )
         
         total_grades = grades.count()
@@ -2540,9 +2536,9 @@ def grade_distribution_stats(request):
         grade_type='final_grade',
         transmuted_score__isnull=False
     ).filter(
+        # Strict year filter — no isnull fallback to prevent year bleed-through
         Q(academic_year=academic_year) |
-        Q(classroom__academic_year__name=academic_year) |
-        Q(classroom__academic_year__isnull=True)
+        Q(classroom__academic_year__name=academic_year)
     )
     
     # Filter by Timeframe (submission date)
