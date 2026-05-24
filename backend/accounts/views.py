@@ -1762,7 +1762,11 @@ class AttendanceViewSet(viewsets.ModelViewSet):
         
         # Filter by Academic Year if provided
         if academic_year_name:
-            base_att = base_att.filter(classroom__academic_year__name=academic_year_name)
+            from django.db.models import Q
+            base_att = base_att.filter(
+                Q(classroom__academic_year__name=academic_year_name) | 
+                Q(classroom__academic_year__isnull=True)
+            )
         
         # Apply timeframe filter
         # If 'today' is selected, we show data even if it's a weekend (e.g. for makeup classes)
@@ -2177,7 +2181,10 @@ def admin_dashboard_stats(request):
         # Base Attendance Filter
         att_qs = Attendance.objects.all()
         if academic_year_name:
-            att_qs = att_qs.filter(classroom__academic_year__name=academic_year_name)
+            att_qs = att_qs.filter(
+                Q(classroom__academic_year__name=academic_year_name) |
+                Q(classroom__academic_year__isnull=True)
+            )
 
         # Attendance today (Local Time)
         today_attendance = att_qs.filter(date=today)
@@ -2191,7 +2198,10 @@ def admin_dashboard_stats(request):
         
         classes_qs = Classroom.objects.all()
         if academic_year_name:
-            classes_qs = classes_qs.filter(academic_year__name=academic_year_name)
+            classes_qs = classes_qs.filter(
+                Q(academic_year__name=academic_year_name) |
+                Q(academic_year__isnull=True)
+            )
         total_classes  = classes_qs.count()
         
         total_subjects = Subject.objects.count()
@@ -2220,7 +2230,10 @@ def admin_dashboard_stats(request):
         # Grades - only count final grades
         grades = Grade.objects.filter(transmuted_score__isnull=False, grade_type='final_grade')
         if academic_year_name:
-            grades = grades.filter(enrollment__classroom__academic_year__name=academic_year_name)
+            grades = grades.filter(
+                Q(enrollment__classroom__academic_year__name=academic_year_name) |
+                Q(enrollment__classroom__academic_year__isnull=True)
+            )
         
         total_grades = grades.count()
         avg_grade = grades.aggregate(avg=Avg('transmuted_score'))['avg']
