@@ -1773,8 +1773,7 @@ class AttendanceViewSet(viewsets.ModelViewSet):
         if academic_year_name:
             from django.db.models import Q
             base_att = base_att.filter(
-                Q(classroom__academic_year__name=academic_year_name) | 
-                Q(classroom__academic_year__isnull=True)
+                Q(classroom__academic_year__name=academic_year_name)
             )
         
         # Apply timeframe filter
@@ -2213,8 +2212,7 @@ def admin_dashboard_stats(request):
         if academic_year_name:
             try:
                 att_qs = att_qs.filter(
-                    Q(classroom__academic_year__name=academic_year_name) |
-                    Q(classroom__academic_year__isnull=True)
+                    Q(classroom__academic_year__name=academic_year_name)
                 )
             except Exception as e:
                 logger.error(f"Error filtering attendance by year: {str(e)}")
@@ -2235,8 +2233,7 @@ def admin_dashboard_stats(request):
         if academic_year_name:
             try:
                 classes_qs = classes_qs.filter(
-                    Q(academic_year__name=academic_year_name) |
-                    Q(academic_year__isnull=True)
+                    Q(academic_year__name=academic_year_name)
                 )
             except Exception as e:
                 logger.error(f"Error filtering classrooms by year: {str(e)}")
@@ -2270,8 +2267,7 @@ def admin_dashboard_stats(request):
             # Filter by the Grade's own academic_year field or via its classroom
             grades = grades.filter(
                 Q(academic_year=academic_year_name) |
-                Q(classroom__academic_year__name=academic_year_name) |
-                Q(classroom__academic_year__isnull=True)
+                Q(classroom__academic_year__name=academic_year_name)
             )
         
         total_grades = grades.count()
