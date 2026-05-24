@@ -845,7 +845,7 @@ const Messages = () => {
 
   // ── JSX ───────────────────────────────────────────────────────────────────
   return (
-    <div className="flex h-[calc(100dvh-11rem)] md:h-[600px] lg:h-[700px] md:max-h-[calc(100vh-12rem)] bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-200 relative">
+    <div className="flex h-[calc(100dvh-11rem)] md:h-[750px] lg:h-[850px] md:max-h-[calc(100vh-9rem)] bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-200 relative">
 
       {/* ── Sidebar (Room List) ── */}
       <div className={`${selectedRoom ? 'hidden md:flex' : 'flex'} w-full md:w-64 border-r border-slate-100 flex-col bg-slate-50/30 min-w-0 overflow-hidden`}>
