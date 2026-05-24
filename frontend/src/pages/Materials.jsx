@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+﻿import { useState, useEffect, useMemo } from 'react';
 import api from '../utils/api';
 import { getUser } from '../utils/auth';
 import toast from 'react-hot-toast';
@@ -320,7 +320,7 @@ const Materials = () => {
                       href={getFileUrl(material.file)}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-1.5 bg-violet-600 hover:bg-violet-700 text-white text-[11px] font-bold py-1.5 px-3 rounded-lg transition-all shadow-sm shadow-purple-200"
+                      className="flex items-center gap-1.5 bg-violet-600 hover:bg-violet-700 text-white text-[11px] font-bold py-1.5 px-3 rounded-lg transition-all shadow-sm shadow-violet-200"
                     >
                       <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+﻿import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../utils/api';
 import { getUser } from '../utils/auth';
@@ -1078,7 +1078,7 @@ const StudentManagement = () => {
               </div>
               <div className="flex justify-end gap-3 pt-4">
                 <button type="button" onClick={() => setShowAddModal(false)} className="px-6 py-2 bg-slate-100 text-slate-600 rounded-xl font-bold text-sm">Cancel</button>
-                <button type="submit" disabled={isSubmitting} className="px-6 py-2 bg-violet-600 text-white rounded-xl font-bold text-sm shadow-lg shadow-purple-200">
+                <button type="submit" disabled={isSubmitting} className="px-6 py-2 bg-violet-600 text-white rounded-xl font-bold text-sm shadow-lg shadow-violet-200">
                   {isSubmitting ? 'Creating...' : 'Create Account'}
                 </button>
               </div>

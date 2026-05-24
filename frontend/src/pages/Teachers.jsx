@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+﻿import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../utils/api';
 import { getUser } from '../utils/auth';
@@ -783,7 +783,7 @@ const Teachers = () => {
                 </button>
                 <button type="submit"
                   disabled={isSubmitting}
-                  className="px-8 py-2.5 bg-violet-600 text-white rounded-xl hover:bg-violet-700 font-bold text-sm shadow-lg shadow-purple-200 transition-all active:scale-95 disabled:opacity-50 flex items-center gap-2">
+                  className="px-8 py-2.5 bg-violet-600 text-white rounded-xl hover:bg-violet-700 font-bold text-sm shadow-lg shadow-violet-200 transition-all active:scale-95 disabled:opacity-50 flex items-center gap-2">
                   {isSubmitting ? (
                     <>
                       <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">

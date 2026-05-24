@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../utils/api';
 import toast from 'react-hot-toast';
@@ -29,7 +29,7 @@ const ForgotPassword = () => {
   return (
     <div className="min-h-screen relative overflow-hidden flex items-center justify-center px-4 py-8">
       {/* Mesh Gradient Background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-purple-900 to-indigo-900">
+      <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-violet-900 to-indigo-900">
         <div className="absolute inset-0 opacity-20">
           <div className="absolute top-0 left-0 w-96 h-96 bg-violet-500 rounded-full mix-blend-multiply filter blur-3xl" />
           <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-500 rounded-full mix-blend-multiply filter blur-3xl" />
@@ -77,7 +77,7 @@ const ForgotPassword = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-violet-600 hover:bg-violet-700 text-white font-black py-3 rounded-xl transition-all shadow-lg shadow-purple-100 active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2 text-[11px] uppercase tracking-[0.2em]"
+            className="w-full bg-violet-600 hover:bg-violet-700 text-white font-black py-3 rounded-xl transition-all shadow-lg shadow-violet-100 active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2 text-[11px] uppercase tracking-[0.2em]"
           >
             {loading ? (
               <svg className="animate-spin h-4 w-4 text-white" viewBox="0 0 24 24">

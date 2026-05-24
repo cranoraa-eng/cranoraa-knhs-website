@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+﻿import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import api from '../utils/api';
 import toast from 'react-hot-toast';
@@ -110,7 +110,7 @@ const ResetPassword = () => {
   return (
     <div className="min-h-screen relative overflow-hidden flex items-center justify-center px-4 py-10">
       {/* Background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900">
+      <div className="absolute inset-0 bg-gradient-to-br from-violet-900 via-violet-800 to-indigo-900">
         <div className="absolute inset-0 opacity-30">
           <div className="absolute top-0 left-0 w-96 h-96 bg-violet-500 rounded-full mix-blend-multiply filter blur-3xl" />
           <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-500 rounded-full mix-blend-multiply filter blur-3xl animation-delay-2000" />
@@ -218,7 +218,7 @@ const ResetPassword = () => {
           <button
             type="submit"
             disabled={loading || !isComplete}
-            className="w-full bg-violet-600 hover:bg-violet-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-4 rounded-xl transition-all shadow-lg shadow-purple-200 flex items-center justify-center gap-2"
+            className="w-full bg-violet-600 hover:bg-violet-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-4 rounded-xl transition-all shadow-lg shadow-violet-200 flex items-center justify-center gap-2"
           >
             {loading ? 'Updating Password...' : 'Reset Password'}
           </button>

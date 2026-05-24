@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { updateStoredUser, updateTokens } from '../utils/auth';
@@ -47,7 +47,7 @@ const ForcePasswordChange = () => {
 
   return (
     <div className="min-h-screen relative overflow-hidden flex items-center justify-center px-4 py-8">
-      <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-purple-900 to-indigo-900">
+      <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-violet-900 to-indigo-900">
         <div className="absolute inset-0 opacity-20">
           <div className="absolute top-0 left-0 w-96 h-96 bg-violet-500 rounded-full mix-blend-multiply filter blur-3xl animate-blob" />
           <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-500 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-2000" />
@@ -92,7 +92,7 @@ const ForcePasswordChange = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-violet-600 hover:bg-violet-700 text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-purple-100 active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2 text-sm"
+            className="w-full bg-violet-600 hover:bg-violet-700 text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-violet-100 active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2 text-sm"
           >
             {loading ? 'Updating...' : 'Update Password'}
           </button>
