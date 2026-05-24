@@ -7,7 +7,8 @@ from django.contrib.auth import authenticate
 from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
 from datetime import timedelta
-from django.db.models import Q
+import datetime
+from django.db.models import Q, Avg, Count, Max, Min, Sum
 from .serializers import (UserSerializer, ClassroomSerializer, StudentClassEnrollmentSerializer,
     AnnouncementSerializer, AttendanceSerializer, LearningMaterialSerializer,
     SubjectSerializer, ClassroomSubjectSerializer, ScratchCardSerializer, FeeSerializer,
@@ -2205,7 +2206,8 @@ def admin_dashboard_stats(request):
         total_classes  = classes_qs.count()
         
         total_subjects = Subject.objects.count()
-        pending_approvals = User.objects.filter(is_approved=False, is_verified=True).count()
+        # Pending approvals should include all unapproved users, regardless of verification per school requirements
+        pending_approvals = User.objects.filter(is_approved=False).exclude(role='admin').count()
         
         active_users = User.objects.filter(last_activity__gte=five_mins_ago).count()
 
@@ -2276,62 +2278,85 @@ def admin_dashboard_stats(request):
         active_users_trends = []
         if AuditLog:
             try:
-                last_24h_start = now - datetime.timedelta(hours=24)
+                last_24h_start = now - timedelta(hours=24)
                 recent_login_logs = list(AuditLog.objects.filter(
                     action='login',
                     timestamp__gte=last_24h_start
                 ).values('user', 'timestamp'))
 
                 for i in range(23, -1, -1):
-                    hour_start = now - datetime.timedelta(hours=i+1)
-                    hour_end = now - datetime.timedelta(hours=i)
-                    users_in_hour = {log['user'] for log in recent_login_logs if hour_start <= log['timestamp'] <= hour_end}
+                    hour_start = now - timedelta(hours=i+1)
+                    hour_end = now - timedelta(hours=i)
+                    # Comparison between offset-aware datetimes
+                    users_in_hour = {
+                        log['user'] for log in recent_login_logs 
+                        if log['timestamp'] and hour_start <= log['timestamp'] <= hour_end
+                    }
                     active_users_trends.append({
                         'time': hour_end.strftime('%H:00'),
                         'users': len(users_in_hour)
                     })
-            except:
-                pass
+            except Exception as e:
+                logger.error(f"Error calculating active users trends: {str(e)}")
+                active_users_trends = []
 
         # --- SUBJECT PERFORMANCE INDEX (Top 10) ---
-        subject_stats = Grade.objects.filter(
-            grade_type='final_grade', 
-            transmuted_score__isnull=False
-        ).values('subject__name').annotate(
-            avg_grade=Avg('transmuted_score')
-        ).order_by('-avg_grade')[:10]
-        
-        for s in subject_stats:
-            s['avg_grade'] = round(float(s['avg_grade']), 1)
+        subject_perf = []
+        try:
+            subject_stats = Grade.objects.filter(
+                grade_type='final_grade', 
+                transmuted_score__isnull=False
+            ).values('subject__name').annotate(
+                avg_grade=Avg('transmuted_score')
+            ).order_by('-avg_grade')[:10]
+            
+            for s in subject_stats:
+                subject_perf.append({
+                    'name': s['subject__name'],
+                    'avg_grade': round(float(s['avg_grade']), 1) if s['avg_grade'] else 0
+                })
+        except Exception as e:
+            logger.error(f"Error fetching subject stats: {str(e)}")
 
         # Prepare announcements
-        recent_announcements = list(
-            Announcement.objects.filter(status='live')
-            .order_by('-created_at')[:5]
-            .values('id', 'title', 'content', 'priority', 'is_pinned', 'created_at', 'author__username')
-        )
-        for a in recent_announcements:
-            a['author_name'] = a.pop('author__username', 'Unknown')
+        announcements_data = []
+        try:
+            recent_announcements = Announcement.objects.filter(status='live').select_related('author').order_by('-created_at')[:5]
+            for a in recent_announcements:
+                announcements_data.append({
+                    'id': a.id,
+                    'title': a.title,
+                    'content': a.content,
+                    'priority': a.priority,
+                    'is_pinned': a.is_pinned,
+                    'created_at': a.created_at,
+                    'author_name': a.author.get_full_name() or a.author.username
+                })
+        except Exception as e:
+            logger.error(f"Error fetching announcements: {str(e)}")
 
         # Latest messages for this admin (exclude self, unique senders)
         latest_messages = []
-        msg_objs = ChatMessage.objects.filter(
-            room__participants=request.user
-        ).exclude(sender=request.user).order_by('-timestamp')
-        
-        seen_senders = set()
-        for m in msg_objs:
-            if m.sender_id not in seen_senders:
-                latest_messages.append({
-                    'id': m.id,
-                    'content': m.content,
-                    'timestamp': m.timestamp.isoformat(),
-                    'sender': m.sender.get_full_name() or m.sender.username,
-                    'is_read': m.is_read
-                })
-                seen_senders.add(m.sender_id)
-            if len(latest_messages) >= 5:
-                break
+        try:
+            msg_objs = ChatMessage.objects.filter(
+                room__participants=request.user
+            ).exclude(sender=request.user).select_related('sender').order_by('-timestamp')
+            
+            seen_senders = set()
+            for m in msg_objs:
+                if m.sender_id not in seen_senders:
+                    latest_messages.append({
+                        'id': m.id,
+                        'content': m.content,
+                        'timestamp': m.timestamp.isoformat(),
+                        'sender': m.sender.get_full_name() or m.sender.username,
+                        'is_read': m.is_read
+                    })
+                    seen_senders.add(m.sender_id)
+                if len(latest_messages) >= 5:
+                    break
+        except Exception as e:
+            logger.error(f"Error fetching latest messages: {str(e)}")
 
         # Prepare response data
         res_data = {
@@ -2340,7 +2365,7 @@ def admin_dashboard_stats(request):
             'total_classes': total_classes,
             'total_subjects': total_subjects,
             'pending_approvals': pending_approvals,
-            'pending_enrollments': EnrollmentApplication.objects.filter(status='pending').count(),
+            'pending_enrollments': EnrollmentApplication.objects.filter(status='pending').count() if EnrollmentApplication else 0,
             'active_users': active_users,
             'today_rate': today_rate,
             'average_grade': average_grade,
@@ -2353,7 +2378,7 @@ def admin_dashboard_stats(request):
             'grades': {
                 'average': average_grade,
                 'total': total_grades,
-                'subject_stats': list(subject_stats)
+                'subject_stats': subject_perf
             },
             'dashboard': {
                 'active_users': active_users,
@@ -2385,16 +2410,19 @@ def admin_dashboard_stats(request):
                 'attendance_rate': today_rate,
             },
             'widgets': {
-                'recent_announcements': recent_announcements,
+                'recent_announcements': announcements_data,
                 'recent_activity': [
                     {
                         'id': log.id,
-                        'user': log.user.username if log.user else 'System',
+                        'user': log.user.get_full_name() or log.user.username if log.user else 'System',
                         'timestamp': log.timestamp,
                         'description': log.description,
                         'action': log.action
-                    } for log in recent_activity
+                    } for log in (recent_activity if 'recent_activity' in locals() else [])
                 ],
+                'latest_messages': latest_messages,
+                'active_users_trends': active_users_trends,
+                'subject_performance': subject_perf
             },
             'all_subjects': {
                 'counts': [
@@ -2427,16 +2455,18 @@ def admin_dashboard_stats(request):
                  'total_count': total_students_graded
              },
             
-            'system_settings': SystemSettingSerializer(SystemSetting.get_settings()).data,
+            'system_settings': SystemSettingSerializer(SystemSetting.get_settings()).data if SystemSetting else None,
             'recent_grades_count': Grade.objects.filter(submitted_at__date__gte=this_week_start).count(),
             'total_announcements': Announcement.objects.filter(status='live').count(),
-            'recent_announcements': recent_announcements,
+            'recent_announcements': announcements_data,
             'latest_messages': latest_messages,
         }
         
         return Response(res_data)
     except Exception as e:
-        logger.error(f"Admin stats error: {str(e)}", exc_info=True)
+        import traceback
+        logger.error(f"Admin stats error: {str(e)}")
+        logger.error(traceback.format_exc())
         return Response({'error': f'Server error: {str(e)}'}, status=500)
 
 
