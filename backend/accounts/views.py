@@ -1761,24 +1761,45 @@ class AttendanceViewSet(viewsets.ModelViewSet):
         
         daily_data = []
         for day_dict in daily_trends.values('date').annotate(
-            present_count=Count(Case(When(status__in=['present', 'late'], then=1), output_field=IntegerField())),
+            present=Count(Case(When(status='present', then=1), output_field=IntegerField())),
+            late=Count(Case(When(status='late', then=1), output_field=IntegerField())),
             total_count=Count('id')
         ).order_by('date'):
             day_total = day_dict['total_count']
-            day_present = day_dict['present_count']
             daily_data.append({
                 'date': day_dict['date'].strftime('%Y-%m-%d'),
-                'rate': round((day_present / day_total * 100), 1) if day_total > 0 else 0,
+                'present': day_dict['present'],
+                'late': day_dict['late'],
+                'rate': round(((day_dict['present'] + day_dict['late']) / day_total * 100), 1) if day_total > 0 else 0,
                 'total': day_total
             })
         
-        # Monthly trends - Exclude weekends
-        monthly_data = daily_trends.values('date__month').annotate(
+        # Overall status for Pie Chart
+        overall_status = daily_trends.aggregate(
             present=Count(Case(When(status='present', then=1), output_field=IntegerField())),
             absent=Count(Case(When(status='absent', then=1), output_field=IntegerField())),
             late=Count(Case(When(status='late', then=1), output_field=IntegerField())),
-        ).order_by('date__month')
+        )
+        pie_data = [
+            {'name': 'Present', 'value': overall_status['present']},
+            {'name': 'Late', 'value': overall_status['late']},
+            {'name': 'Absent', 'value': overall_status['absent']},
+        ]
+
+        # Attendance by Grade for Bar Chart
+        grade_data = []
+        grade_levels = daily_trends.values('student__profile__grade_level').annotate(
+            present=Count(Case(When(status__in=['present', 'late'], then=1), output_field=IntegerField())),
+            total=Count('id')
+        ).order_by('student__profile__grade_level')
         
+        for g in grade_levels:
+            if g['student__profile__grade_level']:
+                grade_data.append({
+                    'level': g['student__profile__grade_level'],
+                    'rate': round(g['present'] / g['total'] * 100, 1) if g['total'] > 0 else 0
+                })
+
         # Section Rankings (Overall Attendance Rate) - Exclude weekends
         # Now supporting today, weekly, and all-time (default) rankings
         timeframe = request.query_params.get('timeframe', 'all')
@@ -1811,7 +1832,8 @@ class AttendanceViewSet(viewsets.ModelViewSet):
 
         return Response({
             'daily_trends': daily_data,
-            'monthly_trends': monthly_data,
+            'pie_data': pie_data,
+            'grade_trends': grade_data,
             'section_rankings': rankings,
             'period': timeframe.capitalize()
         })

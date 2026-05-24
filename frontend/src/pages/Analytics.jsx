@@ -274,6 +274,8 @@ const Analytics = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
                   <AttendanceTrendsSection data={attendanceAnalytics.daily_trends} />
                   <AttendanceRankingsSection rankings={attendanceAnalytics.section_rankings} period={attendanceAnalytics.period} />
+                  <AttendanceStatusPieSection data={attendanceAnalytics.pie_data} />
+                  <AttendanceByLevelBarSection data={attendanceAnalytics.grade_trends} />
                 </div>
               )}
             </>
@@ -497,6 +499,74 @@ const AttendanceTrendsSection = ({ data }) => (
           <Area type="monotone" dataKey="present" stroke="#10b981" strokeWidth={2} fillOpacity={1} fill="url(#colorPresent)" name="Present" />
           <Area type="monotone" dataKey="late" stroke="#f59e0b" strokeWidth={2} fillOpacity={1} fill="url(#colorLate)" name="Late" />
         </AreaChart>
+      </ResponsiveContainer>
+    </div>
+  </div>
+);
+
+const AttendanceStatusPieSection = ({ data }) => {
+  const total = data?.reduce((sum, d) => sum + d.value, 0) || 0;
+  const pieColors = ['#10b981', '#f59e0b', '#ef4444'];
+  
+  return (
+    <div className="lg:col-span-4 bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+      <div className="mb-6">
+        <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Presence Distribution</h3>
+        <p className="text-sm font-black text-slate-900 uppercase tracking-tight">Overall Status Summary</p>
+      </div>
+      <div className="h-64 flex items-center gap-4">
+        <div className="w-1/2 h-full relative">
+          <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
+            <PieChart>
+              <Pie data={data} cx="50%" cy="50%" innerRadius={50} outerRadius={70} paddingAngle={6} dataKey="value">
+                {data?.map((entry, index) => <Cell key={`cell-${index}`} fill={pieColors[index % pieColors.length]} strokeWidth={0} />)}
+              </Pie>
+              <Tooltip content={<CustomPieTooltip />} />
+            </PieChart>
+          </ResponsiveContainer>
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center justify-center pointer-events-none">
+            <p className="text-xl font-black text-slate-900 leading-none">{total}</p>
+            <p className="text-[7px] font-black text-slate-500 uppercase tracking-widest mt-0.5">Records</p>
+          </div>
+        </div>
+        <div className="w-1/2 flex flex-col justify-center space-y-3">
+          {data?.map((item, index) => {
+            const percentage = total > 0 ? ((item.value / total) * 100).toFixed(1) : 0;
+            return (
+              <div key={item.name} className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: pieColors[index % pieColors.length] }} />
+                  <span className="text-[8px] font-black text-slate-500 uppercase tracking-tighter leading-none">{item.name}</span>
+                </div>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-[10px] font-black text-slate-900 leading-none">{percentage}%</span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const AttendanceByLevelBarSection = ({ data }) => (
+  <div className="lg:col-span-8 bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+    <div className="mb-6">
+      <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Level Engagement</h3>
+      <p className="text-sm font-black text-slate-900 uppercase tracking-tight">Attendance Rate by Grade Level</p>
+    </div>
+    <div className="h-64">
+      <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
+        <BarChart data={data}>
+          <CartesianGrid strokeDasharray="2 2" vertical={false} stroke="#f1f5f9" />
+          <XAxis dataKey="level" tick={{fontSize: 8, fontWeight: 900, fill: '#64748b'}} axisLine={false} tickLine={false} />
+          <YAxis domain={[0, 100]} tick={{fontSize: 8, fontWeight: 900, fill: '#64748b'}} axisLine={false} tickLine={false} />
+          <Tooltip content={<CustomTooltip unit="%" />} />
+          <Bar dataKey="rate" fill="#3b82f6" radius={[2, 2, 0, 0]} barSize={32} label={renderCustomBarLabel}>
+            {data?.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.rate >= 90 ? '#10b981' : entry.rate >= 75 ? '#3b82f6' : '#ef4444'} />)}
+          </Bar>
+        </BarChart>
       </ResponsiveContainer>
     </div>
   </div>
