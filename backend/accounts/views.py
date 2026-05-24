@@ -2226,37 +2226,12 @@ def admin_dashboard_stats(request):
         today_total   = today_attendance.count()
         today_rate    = round((today_present / today_total * 100), 1) if today_total > 0 else 0
 
-        # Core counts - Filter by academic year if provided
-        if academic_year_name:
-            try:
-                # Count students enrolled in any classroom for this academic year
-                total_students = User.objects.filter(
-                    role='student', 
-                    is_approved=True,
-                    enrollments__classroom__academic_year__name=academic_year_name
-                ).distinct().count()
-                
-                # Count teachers assigned to any classroom/subject for this academic year
-                total_teachers = User.objects.filter(
-                    role='teacher', 
-                    is_approved=True,
-                    assigned_classroom_subjects__classroom__academic_year__name=academic_year_name
-                ).distinct().count()
-                
-                # Total subjects offered in this academic year (via ClassroomSubject)
-                total_subjects = Subject.objects.filter(
-                    classroom_subjects__classroom__academic_year__name=academic_year_name
-                ).distinct().count()
-            except Exception as e:
-                logger.error(f"Error calculating core stats for {academic_year_name}: {str(e)}")
-                total_students = User.objects.filter(role='student', is_approved=True).count()
-                total_teachers = User.objects.filter(role='teacher', is_approved=True).count()
-                total_subjects = Subject.objects.count()
-        else:
-            total_students = User.objects.filter(role='student', is_approved=True).count()
-            total_teachers = User.objects.filter(role='teacher', is_approved=True).count()
-            total_subjects = Subject.objects.count()
+        # Core counts - Global Population (Independent of year for overview cards)
+        total_students = User.objects.filter(role='student', is_approved=True).count()
+        total_teachers = User.objects.filter(role='teacher', is_approved=True).count()
+        total_subjects = Subject.objects.count()
         
+        # Classes are always year-specific or unassigned
         classes_qs = Classroom.objects.all()
         if academic_year_name:
             try:
