@@ -480,9 +480,12 @@ const Analytics = () => {
   const fetchAttendanceAnalytics = async () => {
     setAttendanceLoading(true);
     try {
-      const res = await api.get(`/attendance/summary/?timeframe=${attendanceTimeframe}&academic_year=${academicYear}`);
+      const res = await api.get(`/attendance/summary/?timeframe=${attendanceTimeframe}`);
       setAttendanceAnalytics(res.data);
-    } catch (err) { console.error(err); }
+    } catch (err) { 
+      console.error(err); 
+      setAttendanceAnalytics(null);
+    }
     finally { setAttendanceLoading(false); }
   };
 
@@ -690,8 +693,8 @@ const Analytics = () => {
 
               {!hasAttendanceData ? (
                 <EmptyState 
-                  message="No Attendance Data" 
-                  submessage={attendanceTimeframe === 'all' ? "Start encoding attendance to see live analytics" : `No records found for the "${attendanceTimeframe}" period`} 
+                  message="No Attendance Recorded" 
+                  submessage={attendanceTimeframe === 'all' ? "Start encoding attendance in the Attendance module to see live analytics" : `No records found for the "${attendanceTimeframe.toUpperCase()}" period. Try switching to "All-Time Aggregate"`} 
                 />
               ) : (
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">

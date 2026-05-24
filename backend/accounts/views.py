@@ -1755,29 +1755,16 @@ class AttendanceViewSet(viewsets.ModelViewSet):
         
         classroom_id = request.query_params.get('classroom')
         timeframe = request.query_params.get('timeframe', 'all')
-        academic_year_name = request.query_params.get('academic_year')
         
         # Base queryset excluding weekends
         base_att = Attendance.objects.exclude(date__week_day__in=[1, 7])
         
-        # Filter by Academic Year if provided
-        if academic_year_name:
-            from portal.models import AcademicYear
-            try:
-                ay = AcademicYear.objects.get(name=academic_year_name)
-                base_att = base_att.filter(classroom__academic_year=ay)
-            except AcademicYear.DoesNotExist:
-                pass
-
         # Apply timeframe filter to ALL analytics sections
         if timeframe == 'today':
             base_att = base_att.filter(date=today)
         elif timeframe == 'weekly':
             week_ago = today - datetime.timedelta(days=7)
             base_att = base_att.filter(date__gte=week_ago)
-        else:
-            # Default for 'all' or other timeframes
-            pass
 
         # Sections: Trends, Pie, Grade
         # For charts, we usually want a 30-day window if 'all' is selected
