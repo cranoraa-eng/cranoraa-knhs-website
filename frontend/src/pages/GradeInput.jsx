@@ -512,18 +512,18 @@ const GradeInput = () => {
 
                 {/* Summary row */}
                 <tr className="sticky bottom-0 z-20 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
-                  <td className="bg-[#2D1B4D] border-r border-[#3D2B5D]" />
-                  <td className="bg-[#2D1B4D] text-purple-200 border-r border-[#3D2B5D] px-1.5 md:px-4 py-1.5 md:py-3 font-black text-[7px] md:text-[10px] uppercase tracking-widest sticky left-8 md:left-12 z-20">
+                  <th className="bg-[#2D1B4D] border-r border-[#3D2B5D]" />
+                  <th className="bg-[#2D1B4D] text-purple-200 border-r border-[#3D2B5D] px-1.5 md:px-4 py-1.5 md:py-3 font-black text-[7px] md:text-[10px] uppercase tracking-widest sticky left-8 md:left-12 z-20 text-left">
                     <div className="flex items-center gap-1 md:gap-2">
                       <span className="text-white">Summary</span>
                       <span className="text-violet-400 hidden sm:inline">/</span>
                       <span className="text-purple-100 hidden sm:inline">{filled.length} of {students.length} encoded</span>
                     </div>
-                  </td>
-                  <td className="bg-slate-50 border-b border-slate-200 text-slate-500 border-r border-[#3D2B5D] text-center py-1 md:py-2">
+                  </th>
+                  <td className="bg-[#2D1B4D] border-b border-[#3D2B5D] text-white border-r border-[#3D2B5D] text-center py-1 md:py-2">
                     {avg != null ? (
                       <div className="animate-in fade-in zoom-in duration-300">
-                        <div className="font-black text-xs md:text-lg text-purple-100 leading-none">{avg}</div>
+                        <div className="font-black text-xs md:text-lg text-white leading-none">{avg}</div>
                         <div className="text-[6px] md:text-[9px] text-violet-400 font-bold uppercase tracking-tighter mt-0.5">Avg</div>
                       </div>
                     ) : <span className="text-violet-500 font-black tracking-widest">—</span>}

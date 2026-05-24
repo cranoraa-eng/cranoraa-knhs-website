@@ -50,6 +50,13 @@ const ClassMembers = () => {
     }
   };
 
+  const formatName = (fullName = '') => {
+    const parts = fullName.trim().split(/\s+/);
+    if (parts.length < 2) return fullName.toUpperCase();
+    const last = parts.pop();
+    return `${last.toUpperCase()}, ${parts.join(' ').toUpperCase()}`;
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -88,14 +95,14 @@ const ClassMembers = () => {
       {/* Classroom selector if enrolled in multiple */}
       {enrollments.length > 1 && (
         <div className="mb-5">
-          <label className="block text-sm font-semibold text-white mb-1.5">Select Classroom</label>
+          <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Select Classroom</label>
           <select
             value={selectedClassroom?.classroom}
             onChange={e => setSelectedClassroom(enrollments.find(en => String(en.classroom) === e.target.value))}
-            className="px-4 py-2.5 border border-slate-200 rounded-xl bg-white text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-400 transition-all text-white"
+            className="px-4 py-2.5 border border-slate-200 rounded-xl bg-white text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-400 transition-all"
           >
             {enrollments.map(en => (
-              <option key={en.classroom} value={en.classroom} className="text-white">{en.classroom_name || `Classroom ${en.classroom}`}</option>
+              <option key={en.classroom} value={en.classroom} className="text-slate-800">{en.classroom_name || `Classroom ${en.classroom}`}</option>
             ))}
           </select>
         </div>
@@ -182,17 +189,27 @@ const ClassMembers = () => {
             <div className="text-center py-10 text-slate-400 text-sm">No classmates found.</div>
           ) : (
             <div className="divide-y divide-slate-100 max-h-[420px] overflow-y-auto">
-              {classmates.map((m, i) => {
-                const name = m.student_name || `Student ${m.student}`;
-                const initials = name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+              {classmates.sort((a, b) => {
+                const sexOrder = { 'female': 1, 'male': 2, 'other': 3 };
+                const sexA = sexOrder[a.student_sex?.toLowerCase()] || 4;
+                const sexB = sexOrder[b.student_sex?.toLowerCase()] || 4;
+                if (sexA !== sexB) return sexA - sexB;
+                return formatName(a.student_name).localeCompare(formatName(b.student_name));
+              }).map((m, i) => {
+                const name = formatName(m.student_name || `Student ${m.student}`);
+                const initials = name.split(', ').reverse().join(' ').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
                 return (
                   <div key={m.id} className="flex items-center gap-3 px-5 py-3 hover:bg-violet-50 transition-colors">
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#9F7AEA] to-[#6B46C1] flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-xs flex-shrink-0 shadow-sm ${
+                      m.student_sex?.toLowerCase() === 'female' 
+                        ? 'bg-gradient-to-br from-rose-400 to-purple-500' 
+                        : 'bg-gradient-to-br from-blue-400 to-indigo-500'
+                    }`}>
                       {initials}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="font-semibold text-slate-800 text-sm">{name}</div>
-                      <div className="text-xs text-slate-400">{m.student_email}</div>
+                      <div className="font-bold text-slate-800 text-xs md:text-sm uppercase tracking-tight">{name}</div>
+                      <div className="text-[10px] text-slate-400 font-medium">{m.student_email}</div>
                     </div>
                     {user?.id !== m.student && (
                       <button 
