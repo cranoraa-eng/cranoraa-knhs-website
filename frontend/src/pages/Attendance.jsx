@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import api from '../utils/api';
 import { getUser } from '../utils/auth';
+import { getCurrentAcademicYear, getLocalDate } from '../utils/dateHelpers';
 import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
 import { 
@@ -24,11 +25,6 @@ const STAT_CONFIG = [
   { key: 'unmarked', label: 'Unmarked', color: 'text-slate-500',   bg: 'bg-slate-50 border-slate-200' },
 ];
 
-const getLocalDate = () => {
-  const d = new Date();
-  return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().split('T')[0];
-};
-
 const Attendance = () => {
   const user = getUser();
   const navigate = useNavigate();
@@ -36,7 +32,7 @@ const Attendance = () => {
   const isStudent = user?.role === 'student';
 
   // Global Academic Year context
-  const currentAcademicYear = localStorage.getItem('knhs_academic_year') || '2025-2026';
+  const currentAcademicYear = localStorage.getItem('knhs_academic_year') || getCurrentAcademicYear();
 
   // Teacher/admin state
   const [classrooms, setClassrooms]             = useState([]);

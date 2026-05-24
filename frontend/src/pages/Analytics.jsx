@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import api from '../utils/api';
+import { getCurrentAcademicYear } from '../utils/dateHelpers';
 import { 
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, 
   PieChart, Pie, Cell, BarChart, Bar, Legend 
@@ -489,7 +490,7 @@ const Analytics = () => {
   // Grade specific filters
   const [gradeData, setGradeData] = useState(null);
   const [gradeLoading, setGradeLoading] = useState(false);
-  const [academicYear, setAcademicYear] = useState(localStorage.getItem('knhs_academic_year') || '2025-2026');
+  const [academicYear, setAcademicYear] = useState(localStorage.getItem('knhs_academic_year') || getCurrentAcademicYear());
   const [filterLevel, setFilterLevel] = useState('all');
   const [filterSubject, setFilterSubject] = useState('all');
   const [filterQuarter, setFilterQuarter] = useState('all');

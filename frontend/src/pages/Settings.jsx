@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import api from '../utils/api';
 import { getUser } from '../utils/auth';
+import { getCurrentAcademicYear } from '../utils/dateHelpers';
 import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
 
@@ -27,7 +28,7 @@ const Settings = () => {
   // Admin System State
   const [systemSettings, setSystemSettings] = useState({
     current_quarter: '1',
-    academic_year: '2025-2026',
+    academic_year: getCurrentAcademicYear(),
     enrollment_open: true,
     maintenance_mode: false,
     maintenance_message: 'The portal is currently undergoing maintenance. Please check back later.'
