@@ -71,7 +71,11 @@ const Settings = () => {
     setLoading(true);
     try {
       await api.patch('/system/settings/', dataToSave);
-      if (!updatedSettings) toast.success('System settings saved');
+      if (!updatedSettings) {
+        toast.success('System settings saved');
+        // Update local storage to match the new global default
+        localStorage.setItem('knhs_academic_year', dataToSave.academic_year);
+      }
     } catch (err) {
       console.error('System settings save error:', err);
       const msg = err.response?.data?.error || err.response?.data?.message || 'Failed to save system settings';
@@ -282,12 +286,22 @@ const Settings = () => {
                       </div>
                       <div className="space-y-1.5">
                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Academic Year</label>
-                        <input
-                          type="text"
-                          value={systemSettings.academic_year}
-                          onChange={e => setSystemSettings({...systemSettings, academic_year: e.target.value})}
-                          className="w-full px-5 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none font-bold text-slate-700"
-                        />
+                        <div className="relative group">
+                          <input
+                            type="text"
+                            placeholder="e.g. 2026-2027"
+                            value={systemSettings.academic_year}
+                            onChange={e => {
+                              const val = e.target.value.replace(/[^0-9-]/g, '');
+                              setSystemSettings({...systemSettings, academic_year: val});
+                            }}
+                            className="w-full px-5 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none font-bold text-slate-700 transition-all focus:border-violet-400 focus:bg-white"
+                          />
+                          <div className="absolute right-4 top-1/2 -translate-y-1/2 flex gap-1 pointer-events-none opacity-0 group-focus-within:opacity-100 transition-opacity">
+                            <span className="text-[8px] font-black text-slate-300 uppercase tracking-widest">&lt; FORMAT: YYYY-YYYY &gt;</span>
+                          </div>
+                        </div>
+                        <p className="text-[9px] font-bold text-slate-400 mt-1 ml-1 uppercase tracking-tighter italic">This defines the global default for all data storage and analytics</p>
                       </div>
                     </div>
 

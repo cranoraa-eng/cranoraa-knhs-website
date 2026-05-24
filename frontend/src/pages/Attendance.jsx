@@ -35,6 +35,9 @@ const Attendance = () => {
   const location = useLocation();
   const isStudent = user?.role === 'student';
 
+  // Global Academic Year context
+  const currentAcademicYear = localStorage.getItem('knhs_academic_year') || '2025-2026';
+
   // Teacher/admin state
   const [classrooms, setClassrooms]             = useState([]);
   const [selectedClassroom, setSelectedClassroom] = useState(location.state?.classroomId || '');
@@ -61,22 +64,24 @@ const Attendance = () => {
 
   useEffect(() => {
     if (!isStudent) {
-      api.get('/classrooms/').then(r => setClassrooms(r.data)).catch(() => toast.error('Failed to load classrooms'));
+      api.get(`/classrooms/?academic_year=${currentAcademicYear}`).then(r => setClassrooms(r.data)).catch(() => toast.error('Failed to load classrooms'));
     } else {
       api.get('/attendance/').then(r => setMyAttendance(r.data)).catch(() => toast.error('Failed to load attendance'));
     }
-  }, [isStudent]);
+  }, [isStudent, currentAcademicYear]);
 
   const fetchAnalytics = useCallback(async () => {
     setLoadingAnalytics(true);
     try {
-      const params = {};
+      const params = {
+        academic_year: currentAcademicYear
+      };
       if (selectedClassroom) params.classroom = selectedClassroom;
       const res = await api.get('/attendance/summary/', { params });
       setAnalytics(res.data);
     } catch { toast.error('Failed to load analytics'); }
     finally { setLoadingAnalytics(false); }
-  }, [selectedClassroom]);
+  }, [selectedClassroom, currentAcademicYear]);
 
   useEffect(() => {
     if (view === 'analytics') fetchAnalytics();

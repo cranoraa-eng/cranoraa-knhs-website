@@ -545,6 +545,9 @@ const Analytics = () => {
     const newYear = dir === 'next' ? `${start + 1}-${end + 1}` : `${start - 1}-${end - 1}`;
     setAcademicYear(newYear);
     localStorage.setItem('knhs_academic_year', newYear);
+    
+    // Check if user is admin and update global system setting if they want to persist this as the system default
+    // For now, we just update local storage which affects the current session's default view
   };
 
   const tabs = [
