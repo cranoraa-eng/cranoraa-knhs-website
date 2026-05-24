@@ -1724,7 +1724,8 @@ class AttendanceViewSet(viewsets.ModelViewSet):
         classroom_id = self.request.query_params.get('classroom')
         date = self.request.query_params.get('date')
         status = self.request.query_params.get('status')
-        
+        academic_year = self.request.query_params.get('academic_year')
+
         # RBAC: Students can only see their own attendance
         if user.role == 'student':
             queryset = queryset.filter(student=user)
@@ -1735,16 +1736,21 @@ class AttendanceViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(student_id__in=linked_student_ids)
         # Teachers can only see attendance for their classrooms
         elif user.role == 'teacher':
-            from django.db.models import Q
             assigned_classrooms = ClassroomSubject.objects.filter(teacher=user).values_list('classroom_id', flat=True)
             queryset = queryset.filter(Q(classroom__teacher=user) | Q(classroom_id__in=assigned_classrooms))
-        
+
         if classroom_id:
             queryset = queryset.filter(classroom_id=classroom_id)
         if date:
             queryset = queryset.filter(date=date)
         if status:
             queryset = queryset.filter(status=status)
+        # Filter by academic year — include classrooms with no year assigned
+        if academic_year:
+            queryset = queryset.filter(
+                Q(classroom__academic_year__name=academic_year) |
+                Q(classroom__academic_year__isnull=True)
+            )
         return queryset
 
     @action(detail=False, methods=['get'])

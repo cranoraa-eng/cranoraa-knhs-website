@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import api from '../utils/api';
-import { getUser } from '../utils/auth';
+import { useAuth } from '../context/AuthContext';
 import { getCurrentAcademicYear, getLocalDate } from '../utils/dateHelpers';
 import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
@@ -26,7 +26,7 @@ const STAT_CONFIG = [
 ];
 
 const Attendance = () => {
-  const user = getUser();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const isStudent = user?.role === 'student';
@@ -71,14 +71,21 @@ const Attendance = () => {
     const newYear = dir === 'next' ? `${start + 1}-${end + 1}` : `${start - 1}-${end - 1}`;
     setAcademicYear(newYear);
     localStorage.setItem('knhs_academic_year', newYear);
+    // Reset classroom so the new year's classroom list is used cleanly
+    setSelectedClassroom('');
+    // Clear stale data immediately so old year's data doesn't flash
+    setHistory([]);
+    setAnalytics(null);
+    setStudents([]);
+    setSavedAttendance({});
+    setDraftAttendance({});
   };
 
   const fetchAnalytics = useCallback(async () => {
     setLoadingAnalytics(true);
+    setAnalytics(null); // clear stale data immediately
     try {
-      const params = {
-        academic_year: academicYear
-      };
+      const params = { academic_year: academicYear };
       if (selectedClassroom) params.classroom = selectedClassroom;
       const res = await api.get('/attendance/summary/', { params });
       setAnalytics(res.data);
@@ -117,14 +124,18 @@ const Attendance = () => {
   const fetchHistory = useCallback(async () => {
     if (!selectedClassroom) return;
     setLoadingHistory(true);
+    setHistory([]); // clear stale data immediately
     try {
-      const params = new URLSearchParams({ classroom: selectedClassroom });
+      const params = new URLSearchParams({
+        classroom: selectedClassroom,
+        academic_year: academicYear,
+      });
       if (historyDate) params.append('date', historyDate);
       const res = await api.get(`/attendance/?${params}`);
       setHistory(res.data);
     } catch { toast.error('Failed to load history'); }
     finally { setLoadingHistory(false); }
-  }, [selectedClassroom, historyDate]);
+  }, [selectedClassroom, historyDate, academicYear]);
 
   useEffect(() => {
     if (view === 'history' && selectedClassroom) fetchHistory();
