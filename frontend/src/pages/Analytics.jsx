@@ -457,15 +457,23 @@ const SubjectFilterSelect = ({ value, onChange, filterLevel, gradeData }) => {
 const YearSelector = ({ academicYear, onYearChange }) => (
   <div className="relative min-w-[140px]">
     <label className="absolute -top-2 left-2 px-1 bg-slate-900 text-[8px] font-black text-slate-500 uppercase tracking-widest z-10">Academic Year</label>
-    <div className="flex items-center bg-slate-800 border border-slate-700 rounded-lg overflow-hidden h-[38px]">
-      <button onClick={() => onYearChange('prev')} className="px-2 h-full hover:bg-slate-700 text-slate-400 border-r border-slate-700 transition-colors">
-        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M15 19l-7-7 7-7" /></svg>
+    <div className="flex items-center bg-slate-800 border border-slate-700 rounded-lg overflow-hidden h-[38px] group/selector">
+      <button 
+        type="button"
+        onClick={() => onYearChange('prev')} 
+        className="px-2 h-full hover:bg-slate-700 text-slate-400 border-r border-slate-700 transition-all active:scale-95 active:bg-slate-900 flex items-center justify-center group-hover/selector:text-white"
+      >
+        <svg className="w-3 h-3 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M15 19l-7-7 7-7" /></svg>
       </button>
-      <div className="flex-1 px-3 text-[10px] font-black text-white uppercase tracking-widest text-center">
+      <div className="flex-1 px-3 text-[10px] font-black text-white uppercase tracking-widest text-center select-none tabular-nums">
         {academicYear}
       </div>
-      <button onClick={() => onYearChange('next')} className="px-2 h-full hover:bg-slate-700 text-slate-400 border-l border-slate-700 transition-colors">
-        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" /></svg>
+      <button 
+        type="button"
+        onClick={() => onYearChange('next')} 
+        className="px-2 h-full hover:bg-slate-700 text-slate-400 border-l border-slate-700 transition-all active:scale-95 active:bg-slate-900 flex items-center justify-center group-hover/selector:text-white"
+      >
+        <svg className="w-3 h-3 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" /></svg>
       </button>
     </div>
   </div>

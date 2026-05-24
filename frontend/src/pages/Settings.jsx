@@ -99,14 +99,18 @@ const Settings = () => {
   };
 
   const handleYearChange = (dir) => {
-    const currentYear = systemSettings.academic_year || '2025-2026';
-    const [start, end] = currentYear.split('-').map(Number);
-    if (isNaN(start) || isNaN(end)) {
-      setSystemSettings({ ...systemSettings, academic_year: '2025-2026' });
-      return;
-    }
-    const newYear = dir === 'next' ? `${start + 1}-${end + 1}` : `${start - 1}-${end - 1}`;
-    setSystemSettings({ ...systemSettings, academic_year: newYear });
+    setSystemSettings(prev => {
+      const currentYear = prev.academic_year || '2025-2026';
+      const parts = currentYear.split('-');
+      const start = parseInt(parts[0]);
+      const end = parseInt(parts[1]);
+      
+      if (isNaN(start) || isNaN(end)) return { ...prev, academic_year: '2025-2026' };
+      
+      const newStart = dir === 'next' ? start + 1 : start - 1;
+      const newEnd = dir === 'next' ? end + 1 : end - 1;
+      return { ...prev, academic_year: `${newStart}-${newEnd}` };
+    });
   };
 
   const handlePasswordChange = async (e) => {
@@ -300,27 +304,27 @@ const Settings = () => {
                       </div>
                       <div className="space-y-1.5">
                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Academic Year</label>
-                        <div className="flex items-center bg-slate-50 border border-slate-200 rounded-xl overflow-hidden h-[52px]">
+                        <div className="flex items-center bg-slate-50 border border-slate-200 rounded-xl overflow-hidden h-[52px] group/selector">
                           <button 
                             type="button"
                             onClick={() => handleYearChange('prev')}
-                            className="px-4 h-full hover:bg-slate-100 text-slate-400 border-r border-slate-200 transition-colors active:bg-slate-200"
+                            className="px-4 h-full hover:bg-slate-100 text-slate-400 border-r border-slate-200 transition-all active:scale-95 active:bg-slate-200 flex items-center justify-center group-hover/selector:text-violet-500"
                           >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-4 h-4 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M15 19l-7-7 7-7" />
                             </svg>
                           </button>
                           
-                          <div className="flex-1 text-center font-black text-slate-700 tracking-widest">
+                          <div className="flex-1 text-center font-black text-slate-700 tracking-widest select-none tabular-nums">
                             {systemSettings.academic_year}
                           </div>
 
                           <button 
                             type="button"
                             onClick={() => handleYearChange('next')}
-                            className="px-4 h-full hover:bg-slate-100 text-slate-400 border-l border-slate-200 transition-colors active:bg-slate-200"
+                            className="px-4 h-full hover:bg-slate-100 text-slate-400 border-l border-slate-200 transition-all active:scale-95 active:bg-slate-200 flex items-center justify-center group-hover/selector:text-violet-500"
                           >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-4 h-4 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" />
                             </svg>
                           </button>
