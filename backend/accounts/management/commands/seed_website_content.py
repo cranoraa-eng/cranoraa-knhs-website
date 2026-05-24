@@ -11,15 +11,29 @@ class Command(BaseCommand):
         # Get or create admin user for updated_by field
         admin_user = User.objects.filter(role='admin').first()
         if not admin_user:
-            self.stdout.write(self.style.WARNING('No admin user found. Creating one...'))
+            import os, secrets
+            # Use env var if set, otherwise generate a strong random password
+            # NEVER use a hardcoded default password in production
+            admin_password = os.environ.get('DJANGO_ADMIN_PASSWORD') or secrets.token_urlsafe(20)
+            self.stdout.write(self.style.WARNING(
+                f'No admin user found. Creating one with a generated password. '
+                f'Set DJANGO_ADMIN_PASSWORD env var to control this.'
+            ))
             admin_user = User.objects.create_superuser(
                 email='admin@kiwalan-nhs.edu.ph',
                 username='admin',
-                password='admin123',
+                password=admin_password,
                 role='admin',
                 first_name='Admin',
                 last_name='User'
             )
+            admin_user.is_approved = True
+            admin_user.is_verified = True
+            admin_user.account_status = 'active'
+            admin_user.save()
+            self.stdout.write(self.style.SUCCESS(
+                f'Admin created. Password: {admin_password} — save this immediately!'
+            ))
 
         # Content with categories
         content_data = [
@@ -68,16 +82,16 @@ class Command(BaseCommand):
             ('programs', 'programs_arts_details', 'The Arts and Culture Program is a haven for creative minds. Our offerings include:\n\n• Visual Arts and Design\n• Music Theory and Performance\n• Contemporary and Traditional Dance\n• Theater Arts and Creative Writing\n\nStudents are encouraged to express their unique perspectives and contribute to the rich cultural heritage of our community.'),
         ]
 
-        # Create or update content items
+        # Create or update content items — only create if missing, never overwrite existing edits
         created_count = 0
-        updated_count = 0
+        skipped_count = 0
 
         # Remove old sections that are no longer in choices
         valid_sections = [item[1] for item in content_data]
         WebsiteContent.objects.exclude(section__in=valid_sections).delete()
 
         for category, section, content in content_data:
-            obj, created = WebsiteContent.objects.update_or_create(
+            obj, created = WebsiteContent.objects.get_or_create(
                 section=section,
                 defaults={
                     'category': category,
@@ -85,15 +99,18 @@ class Command(BaseCommand):
                     'updated_by': admin_user
                 }
             )
-            
+            # Always ensure category is set correctly even on existing records
+            if not created and obj.category != category:
+                obj.category = category
+                obj.save(update_fields=['category'])
+
             if created:
                 created_count += 1
                 self.stdout.write(f'Created: {section}')
             else:
-                updated_count += 1
-                self.stdout.write(f'Updated: {section}')
+                skipped_count += 1
 
         self.stdout.write(self.style.SUCCESS(
             f'Successfully seeded website content! '
-            f'Created: {created_count}, Updated: {updated_count}'
+            f'Created: {created_count}, Skipped (already exist): {skipped_count}'
         ))

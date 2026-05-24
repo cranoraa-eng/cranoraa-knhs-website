@@ -96,22 +96,26 @@ def create_otp(user, otp_type='signup', expiry_minutes=10):
     return code
 
 def verify_otp_code(user, code, otp_type='signup'):
-    """Verify an OTP code for a user."""
+    """Verify an OTP code for a user. Returns (success: bool, message: str)."""
     otp = OTP.objects.filter(
         user=user,
         otp_type=otp_type,
         is_used=False,
         expires_at__gt=timezone.now()
     ).last()
-    
+
     if not otp:
-        return False
-        
+        # Check if there is an expired OTP to give a better message
+        expired = OTP.objects.filter(user=user, otp_type=otp_type, is_used=False).last()
+        if expired:
+            return False, "Verification code has expired. Please request a new one."
+        return False, "No active verification code found. Please request a new one."
+
     if check_password(code, otp.hashed_code):
         otp.is_used = True
         otp.save()
-        return True
-    return False
+        return True, "Verification successful."
+    return False, "Invalid verification code. Please try again."
 
 def check_user_moderation(user):
     """

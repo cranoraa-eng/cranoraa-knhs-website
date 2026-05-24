@@ -54,10 +54,9 @@ def login_view(request):
         if user is None:
             # Check if user exists but is suspended/inactive
             try:
-                potential_user = User.objects.filter(models.Q(username=login_id) | models.Q(email=login_id)).first()
+                potential_user = User.objects.filter(Q(username=login_id) | Q(email=login_id)).first()
                 if potential_user:
                     if potential_user.account_status == 'suspended' or not potential_user.is_active:
-                        # Double check if it's actually suspended vs just wrong password
                         if potential_user.check_password(password):
                             return Response(
                                 {'error': 'This account has been suspended. Please contact the administrator.'},
@@ -537,8 +536,8 @@ def student_dashboard_stats(request):
         from .models import Notification
         from django.utils import timezone
         
-        unread_notifications = Notification.objects.filter(user=user, is_read=False).count()
-        recent_notifications = Notification.objects.filter(user=user).order_by('-created_at')[:5]
+        unread_notifications = Notification.objects.filter(recipient=user, is_read=False).count()
+        recent_notifications = Notification.objects.filter(recipient=user).order_by('-created_at')[:5]
         
         recent_notif_data = []
         for n in recent_notifications:
@@ -2192,6 +2191,7 @@ def admin_dashboard_stats(request):
         from django.db.models import Count, Avg, Q
         from django.utils import timezone
         import datetime
+        from datetime import timedelta
         
         # Use local Manila time for accurate daily stats
         now = timezone.localtime(timezone.now())
@@ -2281,18 +2281,21 @@ def admin_dashboard_stats(request):
         fairly_satisfactory = grades.filter(transmuted_score__gte=75, transmuted_score__lt=80).count()
         below_75 = grades.filter(transmuted_score__lt=75).count()
 
-        # --- GENERAL AVERAGE DISTRIBUTION (Student-wise) ---
+        # --- GENERAL AVERAGE DISTRIBUTION (Student-wise, via DB aggregation) ---
+        from django.db.models import Count, Case, When, IntegerField as IF2
         student_averages = grades.values('student').annotate(avg=Avg('transmuted_score'))
         total_students_graded = student_averages.count()
-        
+
         ga_outstanding = 0
         ga_very_satisfactory = 0
         ga_satisfactory = 0
         ga_fairly_satisfactory = 0
         ga_below_75 = 0
-        
+
         for sa in student_averages:
             score = sa['avg']
+            if score is None:
+                continue
             if score >= 90: ga_outstanding += 1
             elif score >= 85: ga_very_satisfactory += 1
             elif score >= 80: ga_satisfactory += 1
@@ -2594,14 +2597,20 @@ def grade_distribution_stats(request):
             elif score >= 75: categories['Fairly Satisfactory (75-79)'] += 1
             else: categories['Did Not Meet Expectations (<75)'] += 1
     else:
-        # Calculate distribution based on every individual grade entry (Cumulative)
-        for g in base_grades:
-            score = g.transmuted_score
-            if score >= 90: categories['Outstanding (90-100)'] += 1
-            elif score >= 85: categories['Very Satisfactory (85-89)'] += 1
-            elif score >= 80: categories['Satisfactory (80-84)'] += 1
-            elif score >= 75: categories['Fairly Satisfactory (75-79)'] += 1
-            else: categories['Did Not Meet Expectations (<75)'] += 1
+        # Calculate distribution based on every individual grade entry using DB aggregation
+        from django.db.models import Count, Case, When, IntegerField as IF
+        agg = base_grades.aggregate(
+            outstanding=Count(Case(When(transmuted_score__gte=90, then=1), output_field=IF())),
+            very_sat=Count(Case(When(transmuted_score__gte=85, transmuted_score__lt=90, then=1), output_field=IF())),
+            sat=Count(Case(When(transmuted_score__gte=80, transmuted_score__lt=85, then=1), output_field=IF())),
+            fairly_sat=Count(Case(When(transmuted_score__gte=75, transmuted_score__lt=80, then=1), output_field=IF())),
+            dnm=Count(Case(When(transmuted_score__lt=75, then=1), output_field=IF())),
+        )
+        categories['Outstanding (90-100)'] = agg['outstanding']
+        categories['Very Satisfactory (85-89)'] = agg['very_sat']
+        categories['Satisfactory (80-84)'] = agg['sat']
+        categories['Fairly Satisfactory (75-79)'] = agg['fairly_sat']
+        categories['Did Not Meet Expectations (<75)'] = agg['dnm']
 
     category_counts = [{'name': k, 'value': v} for k, v in categories.items()]
 
@@ -3023,17 +3032,22 @@ def system_metrics_view(request):
     from django.utils import timezone
     from datetime import datetime, timedelta
     from portal.models import APIRequestLog
-    
+
     try:
-        # Get database size
+        # Get database size — works for both SQLite and PostgreSQL
         with connection.cursor() as cursor:
-            cursor.execute("SELECT page_count * page_size as size FROM pragma_page_count, pragma_page_size")
-            result = cursor.fetchone()
-            db_size = result[0] if result else 0
-            db_size_mb = db_size / (1024 * 1024) if db_size else 0
-            storage_used = min(int((db_size_mb / 10240) * 100), 100)  # Assume 10GB max
-    except Exception as e:
-        storage_used = 67  # Fallback
+            if 'sqlite' in connection.settings_dict['ENGINE']:
+                cursor.execute("SELECT page_count * page_size as size FROM pragma_page_count(), pragma_page_size()")
+                result = cursor.fetchone()
+                db_size_mb = (result[0] / (1024 * 1024)) if result and result[0] else 0
+            else:
+                # PostgreSQL
+                cursor.execute("SELECT pg_database_size(current_database())")
+                result = cursor.fetchone()
+                db_size_mb = (result[0] / (1024 * 1024)) if result and result[0] else 0
+        storage_used = min(int((db_size_mb / 10240) * 100), 100)  # Assume 10GB max
+    except Exception:
+        storage_used = 0
     
     # Get system uptime (mock for now, would need actual server uptime tracking)
     uptime = "99.8%"

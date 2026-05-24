@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api, { WS_ROOT } from '../utils/api';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
@@ -7,6 +8,7 @@ import { playSound } from '../utils/sounds';
 
 const Messages = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   // ── Refs ──────────────────────────────────────────────────────────────────
   const messagesEndRef       = useRef(null);

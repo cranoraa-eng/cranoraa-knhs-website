@@ -14,6 +14,8 @@ export const NotificationProvider = ({ children }) => {
   const [socket, setSocket] = useState(null);
   const [realtimeConnected, setRealtimeConnected] = useState(false);
   const [isPolling, setIsPolling] = useState(false);
+
+  const socketRef = useRef(null); // always-current ref for guards inside callbacks
   
   const user = getStoredUser();
   const userId = user?.id;
@@ -67,15 +69,16 @@ export const NotificationProvider = ({ children }) => {
     if (!token) return;
 
     // Ensure we don't have multiple connections
-    if (socket && socket.readyState <= 1) return;
+    if (socketRef.current && socketRef.current.readyState <= 1) return;
 
     const ws = new WebSocket(`${WS_ROOT}/ws/notifications/?token=${token}`);
+    socketRef.current = ws;
 
     ws.onopen = () => {
       console.log('Notification WS connected');
       setRealtimeConnected(true);
       stopPolling(); // Real-time is back, stop polling
-      
+
       if (reconnectTimeoutRef.current) {
         clearTimeout(reconnectTimeoutRef.current);
         reconnectTimeoutRef.current = null;
@@ -120,10 +123,11 @@ export const NotificationProvider = ({ children }) => {
     ws.onclose = (e) => {
       console.log('Notification WS disconnected', e.code, e.reason);
       setRealtimeConnected(false);
-      
+      socketRef.current = null;
+
       // Start polling as fallback
       startPolling();
-      
+
       // Only reconnect if not closed normally (1000 = Normal Closure, 1001 = Going Away)
       if (e.code !== 1000 && e.code !== 1001) {
         if (reconnectTimeoutRef.current) clearTimeout(reconnectTimeoutRef.current);
@@ -146,27 +150,30 @@ export const NotificationProvider = ({ children }) => {
   useEffect(() => {
     const handleOnline = () => {
       wasOfflineRef.current = true;
-      if (!socket || socket.readyState > 1) {
+      // Use a ref snapshot to avoid stale closure issues
+      const currentSocket = socket;
+      if (!currentSocket || currentSocket.readyState > 1) {
         connect();
       }
     };
     window.addEventListener('online', handleOnline);
     return () => window.removeEventListener('online', handleOnline);
-  }, [connect, socket]);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps — intentionally runs once
 
   useEffect(() => {
     if (userId) {
       connect();
     } else {
       // Cleanup on logout
-      if (socket) {
-        socket.close();
-        setSocket(null);
+      if (socketRef.current) {
+        socketRef.current.close(1000, 'User logged out');
+        socketRef.current = null;
       }
+      setSocket(null);
       setRealtimeConnected(false);
       stopPolling();
     }
-    
+
     return () => {
       if (reconnectTimeoutRef.current) clearTimeout(reconnectTimeoutRef.current);
     };

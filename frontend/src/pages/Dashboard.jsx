@@ -1,10 +1,12 @@
 import { getUser } from '../utils/auth';
+import { useAuth } from '../context/AuthContext';
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../utils/api';
-import { 
-  ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, 
-  PieChart, Pie, Cell, BarChart, Bar, Legend 
+import { getCurrentAcademicYear } from '../utils/dateHelpers';
+import {
+  ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
+  PieChart, Pie, Cell, BarChart, Bar, Legend
 } from 'recharts';
 import Spinner from '../components/Spinner';
 
@@ -124,13 +126,14 @@ const LatestMessagesWidget = ({ messages, onOpenChat }) => {
 
 const AdminView = () => {
   const navigate = useNavigate();
-  const user = getUser();
+  const { user } = useAuth();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [distView, setDistView] = useState('general_average');
 
   useEffect(() => {
-    api.get('/admin/stats/')
+    const academicYear = localStorage.getItem('knhs_academic_year') || getCurrentAcademicYear();
+    api.get(`/admin/stats/?academic_year=${academicYear}`)
       .then(r => setData(r.data))
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -395,7 +398,7 @@ const AdminView = () => {
 
 const TeacherView = () => {
   const navigate = useNavigate();
-  const user = getUser();
+  const { user } = useAuth();
   const [data, setData] = useState(null);
   const [classrooms, setClassrooms] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -608,7 +611,7 @@ const TeacherView = () => {
 
 const StudentView = () => {
   const navigate = useNavigate();
-  const user = getUser();
+  const { user } = useAuth();
   const [grades, setGrades] = useState([]);
   const [attendance, setAttendance] = useState([]);
   const [stats, setStats] = useState(null);
@@ -809,7 +812,7 @@ const StudentView = () => {
 // ─── ROOT COMPONENT ───────────────────────────────────────────────────────────
 
 const Dashboard = () => {
-  const user = getUser();
+  const { user } = useAuth();
   
   if (user?.role === 'admin')   return <AdminView />;
   if (user?.role === 'teacher') return <TeacherView />;

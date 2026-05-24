@@ -63,8 +63,8 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'email', 'username', 'first_name', 'last_name', 'full_name',
-                  'role', 'is_verified', 'is_approved', 'is_online', 'profile', 
-                  'must_change_password', 'temp_password_storage', 'account_status',
+                  'role', 'is_verified', 'is_approved', 'is_online', 'profile',
+                  'must_change_password', 'account_status',
                   'is_adviser']
 
     def get_full_name(self, obj):

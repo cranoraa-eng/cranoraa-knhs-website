@@ -201,17 +201,27 @@ SIMPLE_JWT = {
 }
 
 # CORS Configuration
-CORS_ALLOW_ALL_ORIGINS = True  # More permissive for production debugging
+# In production, only allow the known frontend origin.
+# CORS_ALLOW_ALL_ORIGINS is kept as a fallback for local dev only.
+_frontend_url = os.environ.get('FRONTEND_URL', 'http://localhost:5173')
+_extra_cors = os.environ.get('EXTRA_CORS_ORIGINS', '')  # comma-separated extra origins
+
+CORS_ALLOWED_ORIGINS = [o.strip() for o in [_frontend_url] + (_extra_cors.split(',') if _extra_cors else []) if o.strip()]
+CORS_ALLOW_ALL_ORIGINS = DEBUG  # Only allow all origins in local dev mode
 CORS_ALLOW_CREDENTIALS = True
 
 CORS_ALLOW_HEADERS = list(default_headers) + [
     'authorization',
 ]
 
-CSRF_TRUSTED_ORIGINS = os.environ.get(
+CSRF_TRUSTED_ORIGINS = [o.strip() for o in os.environ.get(
     'CSRF_TRUSTED_ORIGINS',
-    'http://localhost:5173,http://127.0.0.1:5173' # Default for local development
-).split(',')
+    'http://localhost:5173,http://127.0.0.1:5173'
+).split(',') if o.strip()]
+
+# Ensure the frontend URL is always in CSRF trusted origins
+if _frontend_url and _frontend_url not in CSRF_TRUSTED_ORIGINS:
+    CSRF_TRUSTED_ORIGINS.append(_frontend_url)
 
 # Email Configuration (Mailjet API)
 MAILJET_API_KEY = os.environ.get('MAILJET_API_KEY')
@@ -267,3 +277,6 @@ FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:5173')
 SUPABASE_URL = os.environ.get('SUPABASE_URL')
 SUPABASE_KEY = os.environ.get('SUPABASE_SERVICE_ROLE_KEY') or os.environ.get('SUPABASE_KEY')
 SUPABASE_BUCKET = os.environ.get('SUPABASE_STORAGE_BUCKET', 'profile-pictures')
+
+if not SUPABASE_URL or not SUPABASE_KEY:
+    print("WARNING: SUPABASE_URL or SUPABASE_KEY not set — file uploads will fail.")

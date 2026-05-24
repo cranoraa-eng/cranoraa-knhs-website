@@ -14,43 +14,44 @@ class APIRequestLoggingMiddleware(MiddlewareMixin):
         # Only log API requests (not static files, admin, etc.)
         if not request.path.startswith('/api/'):
             return response
-        
+
+        # Skip high-frequency or sensitive endpoints to prevent table bloat
+        skip_paths = ('/api/token/', '/api/token/refresh/', '/api/system/maintenance-status/')
+        if request.path.startswith(skip_paths):
+            return response
+
         # Calculate response time
         if hasattr(request, 'start_time'):
-            response_time = (time.time() - request.start_time) * 1000  # Convert to ms
+            response_time = (time.time() - request.start_time) * 1000
         else:
             response_time = 0
-        
-        # Get IP address
+
         ip_address = self.get_client_ip(request)
-        
-        # Get user if authenticated
         user = request.user if request.user.is_authenticated else None
-        
+
         # Update last activity for authenticated users
-        if user and user.is_authenticated:
+        if user:
             from django.utils import timezone
             try:
-                # Update without triggering signals to avoid recursion or overhead
-                from accounts.models import User
-                User.objects.filter(id=user.id).update(last_activity=timezone.now())
+                from accounts.models import User as UserModel
+                UserModel.objects.filter(id=user.id).update(last_activity=timezone.now())
             except Exception:
                 pass
 
-        # Log the request
-        try:
-            APIRequestLog.objects.create(
-                endpoint=request.path,
-                method=request.method,
-                status_code=response.status_code,
-                response_time_ms=response_time,
-                ip_address=ip_address,
-                user=user
-            )
-        except Exception:
-            # Don't break the request if logging fails
-            pass
-        
+        # Log the request — skip 2xx GET requests to reduce noise
+        if not (request.method == 'GET' and 200 <= response.status_code < 300):
+            try:
+                APIRequestLog.objects.create(
+                    endpoint=request.path[:255],
+                    method=request.method,
+                    status_code=response.status_code,
+                    response_time_ms=round(response_time, 2),
+                    ip_address=ip_address,
+                    user=user
+                )
+            except Exception:
+                pass
+
         return response
     
     def get_client_ip(self, request):

@@ -70,21 +70,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     async def broadcast_presence(self, is_online):
         """Notify all friends of the user's online/offline status."""
-        from .models import Friendship
-        from django.db.models import Q
-
-        @database_sync_to_async
-        def get_friend_ids():
-            friendships = Friendship.objects.filter(
-                (Q(from_user=self.user) | Q(to_user=self.user)),
-                status='accepted'
-            )
-            ids = []
-            for f in friendships:
-                ids.append(f.to_user_id if f.from_user_id == self.user.id else f.from_user_id)
-            return ids
-
-        friend_ids = await get_friend_ids()
+        friend_ids = await self.get_friend_ids()
         for friend_id in friend_ids:
             await self.channel_layer.group_send(
                 f'user_{friend_id}',
@@ -94,6 +80,19 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     'is_online': is_online,
                 }
             )
+
+    @database_sync_to_async
+    def get_friend_ids(self):
+        from .models import Friendship
+        from django.db.models import Q
+        friendships = Friendship.objects.filter(
+            (Q(from_user=self.user) | Q(to_user=self.user)),
+            status='accepted'
+        )
+        ids = []
+        for f in friendships:
+            ids.append(f.to_user_id if f.from_user_id == self.user.id else f.from_user_id)
+        return ids
 
     async def peer_presence(self, event):
         """Receive presence update from a friend."""
@@ -357,11 +356,14 @@ class ChatConsumer(AsyncWebsocketConsumer):
     @database_sync_to_async
     def mark_messages_read(self, room_id, user_id, last_msg_id):
         # Mark all messages in this room up to this ID as read
-        last_msg = ChatMessage.objects.get(id=last_msg_id)
-        ChatMessage.objects.filter(
-            room_id=room_id, 
-            timestamp__lte=last_msg.timestamp
-        ).exclude(sender_id=user_id).update(is_read=True, is_delivered=True)
+        try:
+            last_msg = ChatMessage.objects.get(id=last_msg_id)
+            ChatMessage.objects.filter(
+                room_id=room_id,
+                timestamp__lte=last_msg.timestamp
+            ).exclude(sender_id=user_id).update(is_read=True, is_delivered=True)
+        except ChatMessage.DoesNotExist:
+            pass
 
     @database_sync_to_async
     def toggle_reaction(self, message_id, user_id, emoji):

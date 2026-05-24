@@ -504,9 +504,15 @@ const Analytics = () => {
 
   useEffect(() => {
     if (activeTab === 'system') fetchAnalytics();
+  }, [activeTab, academicYear]);
+
+  useEffect(() => {
     if (activeTab === 'grades') fetchGradeStats();
+  }, [activeTab, academicYear, filterLevel, filterSubject, filterQuarter, distributionMode, gradeTimeframe]);
+
+  useEffect(() => {
     if (activeTab === 'attendance') fetchAttendanceAnalytics();
-  }, [activeTab, academicYear, filterLevel, filterSubject, filterQuarter, distributionMode, gradeTimeframe, attendanceTimeframe]);
+  }, [activeTab, academicYear, attendanceTimeframe]);
 
   const fetchAnalytics = async () => {
     setLoading(true);
@@ -554,9 +560,17 @@ const Analytics = () => {
     const newYear = dir === 'next' ? `${start + 1}-${end + 1}` : `${start - 1}-${end - 1}`;
     setAcademicYear(newYear);
     localStorage.setItem('knhs_academic_year', newYear);
-    
-    // Check if user is admin and update global system setting if they want to persist this as the system default
-    // For now, we just update local storage which affects the current session's default view
+
+    // Reset all dependent filters so stale data from the previous year is cleared
+    setFilterLevel('all');
+    setFilterSubject('all');
+    setFilterQuarter('all');
+    setGradeTimeframe('all');
+    setAttendanceTimeframe('all');
+    // Clear existing data immediately so charts don't show old year's data while loading
+    setData(null);
+    setGradeData(null);
+    setAttendanceAnalytics(null);
   };
 
   const tabs = [

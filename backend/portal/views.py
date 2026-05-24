@@ -21,21 +21,32 @@ def log_audit_action(user, action, model_name, object_id=None, object_repr='', d
     """Helper function to log audit actions"""
     ip_address = None
     user_agent = ''
-    
+
     if request:
         ip_address = get_client_ip(request)
-        user_agent = request.META.get('HTTP_USER_AGENT', '')[:500]  # Limit to 500 chars
-    
-    AuditLog.objects.create(
-        user=user,
-        action=action,
-        model_name=model_name,
-        object_id=object_id,
-        object_repr=object_repr[:255],  # Limit to 255 chars
-        description=description[:1000],  # Limit to 1000 chars
-        ip_address=ip_address,
-        user_agent=user_agent
-    )
+        user_agent = request.META.get('HTTP_USER_AGENT', '')[:500]
+
+    # Safely coerce object_id to int — AuditLog.object_id is PositiveIntegerField
+    safe_object_id = None
+    if object_id is not None:
+        try:
+            safe_object_id = int(object_id)
+        except (TypeError, ValueError):
+            safe_object_id = None
+
+    try:
+        AuditLog.objects.create(
+            user=user,
+            action=action,
+            model_name=model_name,
+            object_id=safe_object_id,
+            object_repr=str(object_repr)[:255],
+            description=str(description)[:1000],
+            ip_address=ip_address,
+            user_agent=user_agent
+        )
+    except Exception as e:
+        logger.error(f"Failed to write audit log: {e}")
 
 def get_client_ip(request):
     """Helper function to get client IP address"""
@@ -50,8 +61,14 @@ def get_client_ip(request):
 class AnnouncementViewSet(viewsets.ModelViewSet):
     queryset = Announcement.objects.filter(is_active=True)
     serializer_class = AnnouncementSerializer
-    permission_classes = [AllowAny]  # Public access for announcements
-    
+    permission_classes = [IsAuthenticated]
+
+    def get_permissions(self):
+        # Allow unauthenticated GET for public portal announcements
+        if self.action in ('list', 'retrieve'):
+            return [AllowAny()]
+        return [IsAuthenticated()]
+
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
 
@@ -265,7 +282,9 @@ class DatabaseBackupViewSet(viewsets.ModelViewSet):
         return super().get_queryset()
     
     def create(self, request):
-        """Create a new database backup"""
+        """Create a new database backup (Admin only)"""
+        if request.user.role != 'admin':
+            return Response({'error': 'Admin access required'}, status=403)
         try:
             from django.conf import settings
             import os
@@ -338,7 +357,9 @@ class DatabaseBackupViewSet(viewsets.ModelViewSet):
     
     @action(detail=True, methods=['post'])
     def restore(self, request, pk=None):
-        """Restore from a backup"""
+        """Restore from a backup (Admin only)"""
+        if request.user.role != 'admin':
+            return Response({'error': 'Admin access required'}, status=403)
         try:
             from django.conf import settings
             import os

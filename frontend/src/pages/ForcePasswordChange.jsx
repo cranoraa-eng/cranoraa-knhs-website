@@ -4,7 +4,6 @@ import { useAuth } from '../context/AuthContext';
 import { updateStoredUser, updateTokens } from '../utils/auth';
 import api from '../utils/api';
 import toast from 'react-hot-toast';
-import Swal from 'sweetalert2';
 
 const ForcePasswordChange = () => {
   const { user, signIn } = useAuth();
@@ -27,21 +26,22 @@ const ForcePasswordChange = () => {
     setLoading(true);
     try {
       const response = await api.post('/force-password-change/', { password });
-      
+
       // Update local storage with new tokens if returned
       if (response.data.access) {
         updateTokens(response.data.access, response.data.refresh);
       }
-      
+
       // Update user state and localStorage (must_change_password is now false)
       const updatedUser = updateStoredUser({ ...user, must_change_password: false });
       signIn(updatedUser);
-      
+
       toast.success('Password updated successfully!');
       navigate('/dashboard', { replace: true });
     } catch (err) {
-      setLoading(false);
       toast.error(err.response?.data?.error || 'Failed to update password');
+    } finally {
+      setLoading(false);
     }
   };
 

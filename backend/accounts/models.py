@@ -680,79 +680,93 @@ from asgiref.sync import async_to_sync
 
 @receiver(post_save, sender=Announcement)
 def send_announcement_email(sender, instance, created, **kwargs):
-    """Send email to all users when a live announcement is created."""
-    if created and instance.status == 'live':
+    """Send email to users when a live announcement is created (only on first creation)."""
+    if not created or instance.status != 'live':
+        return
+
+    # Only email for critical priority to avoid spamming users on every announcement
+    if instance.priority != 'critical':
+        return
+
+    try:
         from .utils import broadcast_mailjet_email
-        
+
         subject = f'New Announcement: {instance.title}'
-        message_text = f"""A new announcement has been posted on the KNHS Portal:
+        message_text = (
+            f"A new announcement has been posted on the KNHS Portal:\n\n"
+            f"Title: {instance.title}\n"
+            f"Category: {instance.get_category_display()}\n"
+            f"Priority: {instance.get_priority_display()}\n\n"
+            f"Content:\n{instance.content}\n\n"
+            f"Log in to the portal to see more details:\n{settings.FRONTEND_URL}\n\n"
+            f"— KNHS School Portal"
+        )
+        message_html = (
+            f"<h3>New Announcement: {instance.title}</h3>"
+            f"<p><strong>Category:</strong> {instance.get_category_display()}</p>"
+            f"<p><strong>Priority:</strong> {instance.get_priority_display()}</p>"
+            f"<hr/><p>{instance.content}</p><hr/>"
+            f'<p>Log in to the portal: <a href="{settings.FRONTEND_URL}">{settings.FRONTEND_URL}</a></p>'
+            f"<p>— KNHS School Portal</p>"
+        )
 
-Title: {instance.title}
-Category: {instance.get_category_display()}
-Priority: {instance.get_priority_display()}
-
-Content:
-{instance.content}
-
-Log in to the portal to see more details:
-{settings.FRONTEND_URL}
-
-— KNHS School Portal
-"""
-        message_html = f"""
-        <h3>New Announcement: {instance.title}</h3>
-        <p><strong>Category:</strong> {instance.get_category_display()}</p>
-        <p><strong>Priority:</strong> {instance.get_priority_display()}</p>
-        <hr/>
-        <p>{instance.content}</p>
-        <hr/>
-        <p>Log in to the portal to see more details: <a href="{settings.FRONTEND_URL}">{settings.FRONTEND_URL}</a></p>
-        <p>— KNHS School Portal</p>
-        """
-        
-        # Determine target audience
+        # Determine target audience — only users with verified emails
         if instance.target_audience == 'all':
-            recipients = User.objects.filter(is_active=True, is_verified=True).values_list('email', flat=True)
+            recipients = list(
+                User.objects.filter(is_active=True, is_verified=True)
+                .exclude(email__isnull=True).exclude(email='')
+                .values_list('email', flat=True)
+            )
         else:
-            recipients = User.objects.filter(role=instance.target_audience, is_active=True, is_verified=True).values_list('email', flat=True)
-        
+            role = instance.target_audience.rstrip('s')  # 'students' -> 'student'
+            recipients = list(
+                User.objects.filter(role=role, is_active=True, is_verified=True)
+                .exclude(email__isnull=True).exclude(email='')
+                .values_list('email', flat=True)
+            )
+
         if recipients:
-            try:
-                broadcast_mailjet_email(
-                    emails=list(recipients),
-                    subject=subject,
-                    message_html=message_html,
-                    message_text=message_text
-                )
-            except Exception as e:
-                # We don't want to crash the save process if email fails
-                logger.error(f"Failed to broadcast announcement email: {e}")
+            broadcast_mailjet_email(
+                emails=recipients,
+                subject=subject,
+                message_html=message_html,
+                message_text=message_text
+            )
+    except Exception as e:
+        logger.error(f"Failed to broadcast announcement email for id={instance.id}: {e}")
 
 @receiver(post_save, sender=Notification)
 def broadcast_notification(sender, instance, created, **kwargs):
     if created:
-        channel_layer = get_channel_layer()
-        group_name = f'notifications_{instance.recipient.id}'
-        
-        # Get unread count
-        unread_count = Notification.objects.filter(recipient=instance.recipient, is_read=False).count()
-        
-        async_to_sync(channel_layer.group_send)(
-            group_name,
-            {
-                'type': 'notification_message',
-                'data': {
-                    'type': 'notification',
-                    'id': instance.id,
-                    'title': instance.title,
-                    'message': instance.message,
-                    'notification_type': instance.notification_type,
-                    'link': instance.link,
-                    'created_at': instance.created_at.isoformat(),
-                    'unread_count': unread_count
+        try:
+            channel_layer = get_channel_layer()
+            if channel_layer is None:
+                return
+
+            group_name = f'notifications_{instance.recipient.id}'
+
+            # Get unread count
+            unread_count = Notification.objects.filter(recipient=instance.recipient, is_read=False).count()
+
+            async_to_sync(channel_layer.group_send)(
+                group_name,
+                {
+                    'type': 'notification_message',
+                    'data': {
+                        'type': 'notification',
+                        'id': instance.id,
+                        'title': instance.title,
+                        'message': instance.message,
+                        'notification_type': instance.notification_type,
+                        'link': instance.link,
+                        'created_at': instance.created_at.isoformat(),
+                        'unread_count': unread_count
+                    }
                 }
-            }
-        )
+            )
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).error(f"Failed to broadcast notification {instance.id}: {e}")
 
 
 class EnrollmentApplication(models.Model):
