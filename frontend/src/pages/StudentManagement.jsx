@@ -1,4 +1,4 @@
-﻿﻿import { useState, useEffect, useMemo } from 'react';
+﻿﻿﻿﻿﻿﻿import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../utils/api';
 import { getUser } from '../utils/auth';
@@ -6,6 +6,7 @@ import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
 import { jsPDF } from 'jspdf';
 import * as XLSX from 'xlsx';
+import { useScrollLock } from '../hooks/useScrollLock';
 
 const StudentManagement = () => {
   const user = getUser();
@@ -30,6 +31,8 @@ const StudentManagement = () => {
     password: '',
     sex: ''
   });
+
+  useScrollLock(showProfileModal || showAddModal || showImportModal);
 
   const GRADE_ORDER = ['Grade 7', 'Grade 8', 'Grade 9', 'Grade 10', 'Grade 11', 'Grade 12'];
 
@@ -921,7 +924,7 @@ const StudentManagement = () => {
 
       {/* Profile Modal */}
       {showProfileModal && selectedStudent && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[100] p-4 animate-in fade-in duration-300">
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-[100] p-4 animate-in fade-in duration-300">
           <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-4 duration-300">
             <div className="p-8 bg-gradient-to-br from-indigo-600 to-purple-700 text-white relative">
               <div className="flex items-center gap-4">
@@ -992,7 +995,7 @@ const StudentManagement = () => {
 
       {/* Add Student Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[100] p-4">
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-[100] p-4">
           <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden">
             <div className="p-6 bg-violet-600 text-white">
               <h2 className="text-xl font-black uppercase tracking-tight">Create Student Account</h2>
@@ -1089,7 +1092,7 @@ const StudentManagement = () => {
 
       {/* Import Modal */}
       {showImportModal && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[100] p-4">
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-[100] p-4">
           <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden p-8 text-center">
             <div className="w-20 h-20 bg-indigo-50 rounded-full flex items-center justify-center mx-auto mb-6">
               <svg className="w-10 h-10 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>

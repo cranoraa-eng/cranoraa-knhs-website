@@ -1,7 +1,8 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import api from '../utils/api';
 import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
+import { useScrollLock } from '../hooks/useScrollLock';
 
 const GRADE_LEVELS = [
   'Grade 7', 'Grade 8', 'Grade 9', 'Grade 10',
@@ -19,6 +20,8 @@ const Subjects = () => {
   const [form, setForm] = useState(EMPTY_FORM);
   const [search, setSearch] = useState('');
   const [filterLevel, setFilterLevel] = useState('');
+
+  useScrollLock(showModal);
 
   useEffect(() => { fetchSubjects(); }, []);
 
@@ -246,10 +249,10 @@ const Subjects = () => {
         </p>
       )}
 
-      {/* Create / Edit Modal */}
+      {/* Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
-          <div className="bg-white rounded-2xl md:rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden border border-slate-100 animate-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-[100] p-4 animate-fade-in">
+          <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden animate-scale-in">
             <div className="flex items-center justify-between p-5 md:p-6 border-b border-slate-100 bg-slate-50/50">
               <div>
                 <h2 className="text-sm md:text-xl font-black text-slate-800 uppercase tracking-widest">

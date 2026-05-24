@@ -3,6 +3,7 @@ import api, { MEDIA_ROOT } from '../utils/api';
 import { getUser } from '../utils/auth';
 import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
+import { useScrollLock } from '../hooks/useScrollLock';
 
 const CATEGORY_CONFIG = {
   general:       { label: 'General',       color: 'bg-violet-100 text-violet-700 border-violet-200' },
@@ -44,6 +45,8 @@ const Announcements = () => {
 
   const [selectedIds, setSelectedIds]     = useState([]);
   const [processing, setProcessing]       = useState(false);
+
+  useScrollLock(showModal || showView || zoomedImage);
 
   useEffect(() => { 
     fetchAnnouncements(); 
@@ -519,8 +522,8 @@ const Announcements = () => {
 
       {/* ── Create / Edit Modal ── */}
       {showModal && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4 animate-in fade-in duration-300">
-          <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-4 duration-300 border border-white/20">
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-[100] p-4 animate-in fade-in duration-300">
+          <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-300 border border-white/20">
             <div className="px-5 py-4 bg-gradient-to-br from-indigo-600 via-indigo-700 to-purple-800 text-white relative">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center">
@@ -708,8 +711,8 @@ const Announcements = () => {
 
       {/* ── View Modal ── */}
       {showView && selected && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col border border-slate-200/50">
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-[100] p-4 animate-in fade-in duration-300">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col border border-slate-200/50 animate-in zoom-in-95 duration-300">
             <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 flex-shrink-0">
               <div className="flex flex-wrap items-center gap-2">
                 <span className={`inline-flex items-center px-2 py-0.5 rounded-full border text-[10px] font-bold uppercase tracking-wider ${(CATEGORY_CONFIG[selected.category] || CATEGORY_CONFIG.general).color}`}>

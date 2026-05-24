@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../utils/api';
 import { getUser } from '../utils/auth';
@@ -6,6 +6,7 @@ import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
 import { jsPDF } from 'jspdf';
 import * as XLSX from 'xlsx';
+import { useScrollLock } from '../hooks/useScrollLock';
 
 const Teachers = () => {
   const user = getUser();
@@ -27,6 +28,8 @@ const Teachers = () => {
     email: '',
     sex: ''
   });
+
+  useScrollLock(showAddModal || showEditModal || showImportModal);
 
   useEffect(() => {
     fetchTeachers();
@@ -728,10 +731,10 @@ const Teachers = () => {
         )}
       </div>
 
-      {/* Add Modal */}
+      {/* Add Teacher Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[100] p-4 animate-in fade-in duration-300">
-          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-4 duration-300">
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-[100] p-4 animate-in fade-in duration-300">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-300">
             <div className="p-8 bg-gradient-to-br from-purple-600 to-indigo-700 text-white relative">
               <h2 className="text-2xl font-black tracking-tight">Add New Teacher</h2>
               <p className="text-purple-100 text-sm mt-1 font-medium opacity-90">Create a new teacher account and profile.</p>
@@ -800,10 +803,10 @@ const Teachers = () => {
         </div>
       )}
 
-      {/* Edit Modal */}
-      {showEditModal && editingTeacher && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[100] p-4 animate-in fade-in duration-300">
-          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-4 duration-300">
+      {/* Edit Teacher Modal */}
+      {showEditModal && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-[100] p-4 animate-in fade-in duration-300">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-300">
             <div className="p-8 bg-gradient-to-br from-blue-600 to-indigo-700 text-white relative">
               <h2 className="text-2xl font-black tracking-tight">Edit Teacher Details</h2>
               <p className="text-blue-100 text-sm mt-1 font-medium opacity-90">Update profile information for {editingTeacher.first_name}.</p>
@@ -865,8 +868,8 @@ const Teachers = () => {
 
       {/* Import Modal */}
       {showImportModal && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-[100] p-4 animate-in fade-in duration-300">
-          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-300">
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-[100] p-4 animate-in fade-in duration-300">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden p-8 text-center animate-in zoom-in-95 duration-300">
             <div className="p-6 bg-slate-50 border-b border-slate-200 text-slate-500">
               <h2 className="text-xl font-black uppercase tracking-tight">Bulk Import Teachers</h2>
               <p className="text-purple-200 text-[10px] font-bold uppercase tracking-widest mt-1">Upload CSV or Excel file</p>

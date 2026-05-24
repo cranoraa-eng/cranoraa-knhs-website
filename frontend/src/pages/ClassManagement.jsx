@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import api from '../utils/api';
 import Swal from 'sweetalert2';
 import toast from 'react-hot-toast';
+import { useScrollLock } from '../hooks/useScrollLock';
 
 const GRADE_LEVELS = ['Grade 7', 'Grade 8', 'Grade 9', 'Grade 10', 'Grade 11', 'Grade 12'];
 
@@ -20,6 +21,8 @@ const ClassManagement = () => {
   const [search, setSearch] = useState('');
   const [filterLevel, setFilterLevel] = useState('');
   const [formData, setFormData] = useState({ name: '', teacher: '', grade_level: '' });
+
+  useScrollLock(showModal);
 
   useEffect(() => { fetchAll(); }, []);
 
@@ -263,8 +266,8 @@ const ClassManagement = () => {
 
       {/* Create / Edit Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4 animate-fade-in">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md border border-slate-200/50 animate-scale-in">
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-[100] p-4 animate-fade-in">
+          <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden animate-scale-in">
             <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
               <h2 className="text-base font-black text-slate-900 tracking-tight">
                 {editingClass ? 'Edit Class' : 'Add New Class'}
