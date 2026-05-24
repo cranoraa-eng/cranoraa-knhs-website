@@ -88,7 +88,7 @@ const AttendanceTooltip = ({ active, payload, label }) => {
 };
 
 const AttendanceTrendsSection = ({ data }) => (
-  <div className="lg:col-span-8 bg-white border border-slate-200 rounded-xl p-4 shadow-sm min-h-[350px]">
+  <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm min-h-[350px] w-full">
     <div className="flex items-center justify-between mb-6">
       <div>
         <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Presence Trends</h3>
@@ -129,7 +129,7 @@ const AttendanceStatusPieSection = ({ data }) => {
   const hasData = data && data.some(d => d.value > 0);
   
   return (
-    <div className="lg:col-span-4 bg-white border border-slate-200 rounded-xl p-4 shadow-sm min-h-[350px]">
+    <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm min-h-[350px] w-full">
       <div className="mb-6">
         <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Presence Distribution</h3>
         <p className="text-sm font-black text-slate-900 uppercase tracking-tight">Overall Status Summary</p>
@@ -177,7 +177,7 @@ const AttendanceStatusPieSection = ({ data }) => {
 };
 
 const AttendanceByLevelBarSection = ({ data }) => (
-  <div className="lg:col-span-8 bg-white border border-slate-200 rounded-xl p-4 shadow-sm min-h-[350px]">
+  <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm min-h-[350px] w-full">
     <div className="mb-6">
       <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Level Engagement</h3>
       <p className="text-sm font-black text-slate-900 uppercase tracking-tight">Attendance Rate by Grade Level</p>
@@ -203,7 +203,7 @@ const AttendanceByLevelBarSection = ({ data }) => (
 );
 
 const AttendanceRankingsSection = ({ rankings, period }) => (
-  <div className="lg:col-span-4 bg-white border border-slate-200 rounded-xl p-4 shadow-sm overflow-hidden flex flex-col min-h-[350px]">
+  <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm overflow-hidden flex flex-col min-h-[350px] w-full">
     <div className="mb-6">
       <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Rankings — {period}</h3>
       <p className="text-sm font-black text-slate-900 uppercase tracking-tight">Section Performance Index</p>
@@ -230,7 +230,7 @@ const AttendanceRankingsSection = ({ rankings, period }) => (
 );
 
 const SubjectPerformanceSection = ({ data }) => (
-  <div className="lg:col-span-7 bg-white border border-slate-200 rounded-xl p-4 shadow-sm min-h-[350px]">
+  <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm min-h-[350px] w-full">
     <div className="flex items-center justify-between mb-6">
       <div>
         <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Academic Benchmarking</h3>
@@ -245,12 +245,21 @@ const SubjectPerformanceSection = ({ data }) => (
         <div className="h-full flex items-center justify-center text-[10px] font-black text-slate-300 uppercase tracking-widest italic">No subject metrics tracked</div>
       ) : (
         <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
-          <BarChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+          <BarChart data={data} margin={{ top: 20, right: 30, left: -10, bottom: 20 }}>
             <CartesianGrid strokeDasharray="2 2" vertical={false} stroke="#f1f5f9" />
-            <XAxis dataKey="subject__name" tick={{fontSize: 8, fontWeight: 900, fill: '#64748b'}} axisLine={false} tickLine={false} />
-            <YAxis tick={{fontSize: 8, fontWeight: 900, fill: '#64748b'}} axisLine={false} tickLine={false} domain={[70, 100]} />
+            <XAxis 
+              dataKey="name" 
+              tick={{fontSize: 8, fontWeight: 900, fill: '#64748b'}} 
+              axisLine={false} 
+              tickLine={false}
+              interval={0}
+              angle={-45}
+              textAnchor="end"
+              height={60}
+            />
+            <YAxis tick={{fontSize: 8, fontWeight: 900, fill: '#64748b'}} axisLine={false} tickLine={false} domain={[0, 100]} />
             <Tooltip content={<CustomTooltip unit="%" />} />
-            <Bar dataKey="avg_grade" fill="#6366f1" radius={[2, 2, 0, 0]} barSize={24} label={renderCustomBarLabel} />
+            <Bar dataKey="avg_grade" fill="#6366f1" radius={[4, 4, 0, 0]} barSize={32} label={renderCustomBarLabel} />
           </BarChart>
         </ResponsiveContainer>
       )}
@@ -259,7 +268,7 @@ const SubjectPerformanceSection = ({ data }) => (
 );
 
 const TrafficIntelligenceSection = ({ data }) => (
-  <div className="lg:col-span-5 bg-white border border-slate-200 rounded-xl p-4 shadow-sm min-h-[350px]">
+  <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm min-h-[350px] w-full">
     <div className="mb-6">
       <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Traffic Intelligence</h3>
       <p className="text-sm font-black text-slate-900 uppercase tracking-tight">24H Active Engagement</p>
@@ -291,7 +300,7 @@ const GradeDistributionPieSection = ({ data, total, label }) => {
   const totalSum = data.reduce((sum, d) => sum + d.value, 0);
   
   return (
-    <div className="lg:col-span-4 bg-white border border-slate-200 rounded-xl p-4 shadow-sm min-h-[350px]">
+    <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm min-h-[350px] w-full">
       <div className="mb-6">
         <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Achievement Spread</h3>
         <p className="text-sm font-black text-slate-900 uppercase tracking-tight">Performance Tier Distribution</p>
@@ -339,7 +348,7 @@ const GradeDistributionPieSection = ({ data, total, label }) => {
 };
 
 const GradeDistributionBarSection = ({ data, filterLevel }) => (
-  <div className="lg:col-span-8 bg-white border border-slate-200 rounded-xl p-4 shadow-sm min-h-[350px]">
+  <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm min-h-[350px] w-full">
     <div className="flex items-center justify-between mb-6">
       <div>
         <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Cross-Group Comparison</h3>
@@ -364,7 +373,7 @@ const GradeDistributionBarSection = ({ data, filterLevel }) => (
 );
 
 const GradeRankingSection = ({ data, filterSubject, meta, timeframe }) => (
-  <div className="lg:col-span-12 bg-white border border-slate-200 rounded-xl p-4 shadow-sm min-h-[350px]">
+  <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm min-h-[350px] w-full">
     <div className="flex items-center justify-between mb-8">
       <div>
         <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Competitive Ranking — {timeframe === 'all' ? 'Annual' : timeframe === 'today' ? 'Today' : 'Weekly'}</h3>
@@ -570,9 +579,15 @@ const Analytics = () => {
                 <EmptyState message="Failed to load systems engine" submessage="Check server connection and permissions" />
               ) : (
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-                  <AttendanceTrendsSection data={data?.attendance?.daily_trends} />
-                  <SubjectPerformanceSection data={data?.grades?.subject_stats} />
-                  <TrafficIntelligenceSection data={data?.dashboard?.charts?.active_users_trends} />
+                  <div className="lg:col-span-12">
+                    <AttendanceTrendsSection data={data?.attendance?.daily_trends} />
+                  </div>
+                  <div className="lg:col-span-7">
+                    <SubjectPerformanceSection data={data?.grades?.subject_stats} />
+                  </div>
+                  <div className="lg:col-span-5">
+                    <TrafficIntelligenceSection data={data?.dashboard?.charts?.active_users_trends} />
+                  </div>
                 </div>
               )}
             </>
@@ -650,14 +665,20 @@ const Analytics = () => {
               {!gradeData || gradeData.total_students === 0 ? (
                 <EmptyState message="No Data Mapped" submessage="Adjust filters to synthesize academic performance data" />
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-4">
-                  <GradeDistributionPieSection 
-                    data={gradeData.category_counts} 
-                    total={distributionMode === 'student' ? gradeData.total_students : gradeData.total_entries} 
-                    label={distributionMode === 'student' ? 'Students' : 'Entries'}
-                  />
-                  <GradeDistributionBarSection data={gradeData.by_level} filterLevel={filterLevel} />
-                  <GradeRankingSection data={gradeData.by_group} filterSubject={filterSubject} meta={gradeData.meta} timeframe={gradeTimeframe} />
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+                  <div className="lg:col-span-4">
+                    <GradeDistributionPieSection 
+                      data={gradeData.category_counts} 
+                      total={distributionMode === 'student' ? gradeData.total_students : gradeData.total_entries} 
+                      label={distributionMode === 'student' ? 'Students' : 'Entries'}
+                    />
+                  </div>
+                  <div className="lg:col-span-8">
+                    <GradeDistributionBarSection data={gradeData.by_level} filterLevel={filterLevel} />
+                  </div>
+                  <div className="lg:col-span-12">
+                    <GradeRankingSection data={gradeData.by_group} filterSubject={filterSubject} meta={gradeData.meta} timeframe={gradeTimeframe} />
+                  </div>
                 </div>
               )}
             </>
@@ -699,10 +720,18 @@ const Analytics = () => {
                 />
               ) : (
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-                  <AttendanceTrendsSection data={attendanceAnalytics.daily_trends} />
-                  <AttendanceRankingsSection rankings={attendanceAnalytics.section_rankings} period={attendanceAnalytics.period} />
-                  <AttendanceStatusPieSection data={attendanceAnalytics.pie_data} />
-                  <AttendanceByLevelBarSection data={attendanceAnalytics.grade_trends} />
+                  <div className="lg:col-span-8">
+                    <AttendanceTrendsSection data={attendanceAnalytics.daily_trends} />
+                  </div>
+                  <div className="lg:col-span-4">
+                    <AttendanceStatusPieSection data={attendanceAnalytics.pie_data} />
+                  </div>
+                  <div className="lg:col-span-4">
+                    <AttendanceRankingsSection rankings={attendanceAnalytics.section_rankings} period={attendanceAnalytics.period} />
+                  </div>
+                  <div className="lg:col-span-8">
+                    <AttendanceByLevelBarSection data={attendanceAnalytics.grade_trends} />
+                  </div>
                 </div>
               )}
             </>
