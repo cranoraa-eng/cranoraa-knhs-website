@@ -1810,17 +1810,19 @@ class AttendanceViewSet(viewsets.ModelViewSet):
             present=Count(Case(When(status='present', then=1), output_field=IntegerField())),
             absent=Count(Case(When(status='absent', then=1), output_field=IntegerField())),
             late=Count(Case(When(status='late', then=1), output_field=IntegerField())),
+            excused=Count(Case(When(status='excused', then=1), output_field=IntegerField())),
         )
         pie_data = [
             {'name': 'Present', 'value': overall_status['present'] or 0},
             {'name': 'Late', 'value': overall_status['late'] or 0},
             {'name': 'Absent', 'value': overall_status['absent'] or 0},
+            {'name': 'Excused', 'value': overall_status['excused'] or 0},
         ]
 
         # Attendance by Grade for Bar Chart
         grade_data = []
         grade_levels = chart_att.values('student__profile__grade_level').annotate(
-            present=Count(Case(When(status__in=['present', 'late'], then=1), output_field=IntegerField())),
+            present=Count(Case(When(status__in=['present', 'late', 'excused'], then=1), output_field=IntegerField())),
             total=Count('id')
         ).order_by('student__profile__grade_level')
         
@@ -1834,21 +1836,32 @@ class AttendanceViewSet(viewsets.ModelViewSet):
         # Section Rankings (Overall Attendance Rate)
         rankings = []
         if request.user.role in ['admin', 'teacher']:
-            classroom_stats = base_att.values('classroom__id', 'classroom__name').annotate(
+            # Get all classrooms for the academic year
+            classrooms = Classroom.objects.all()
+            if academic_year_name:
+                classrooms = classrooms.filter(
+                    Q(academic_year__name=academic_year_name) |
+                    Q(academic_year__isnull=True)
+                )
+            
+            # Aggregate stats from base_att (filtered by academic year and timeframe)
+            classroom_stats = base_att.values('classroom__id').annotate(
                 total=Count('id'),
-                present=Count(Case(When(status__in=['present', 'late'], then=1), output_field=IntegerField()))
-            ).order_by('-total')
+                present=Count(Case(When(status__in=['present', 'late', 'excused'], then=1), output_field=IntegerField()))
+            )
+            stats_map = {r['classroom__id']: r for r in classroom_stats}
 
-            for r in classroom_stats:
-                if r['classroom__id']:
-                    rate = round(r['present'] / r['total'] * 100, 1) if r['total'] > 0 else 0
-                    rankings.append({
-                        'id': r['classroom__id'],
-                        'name': r['classroom__name'],
-                        'rate': rate,
-                        'total_records': r['total']
-                    })
-            rankings = sorted(rankings, key=lambda x: x['rate'], reverse=True)
+            for c in classrooms:
+                r = stats_map.get(c.id, {'total': 0, 'present': 0})
+                rate = round(r['present'] / r['total'] * 100, 1) if r['total'] > 0 else 0
+                rankings.append({
+                    'id': c.id,
+                    'name': c.name,
+                    'rate': rate,
+                    'total_records': r['total']
+                })
+            # Sort by rate descending, then by name
+            rankings = sorted(rankings, key=lambda x: (-x['rate'], x['name']))
 
         return Response({
             'daily_trends': daily_data,

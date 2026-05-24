@@ -125,7 +125,7 @@ const AttendanceTrendsSection = ({ data }) => (
 
 const AttendanceStatusPieSection = ({ data }) => {
   const total = data?.reduce((sum, d) => sum + d.value, 0) || 0;
-  const pieColors = ['#10b981', '#f59e0b', '#ef4444'];
+  const pieColors = ['#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
   const hasData = data && data.some(d => d.value > 0);
   
   return (
@@ -215,12 +215,25 @@ const AttendanceRankingsSection = ({ rankings, period }) => (
         rankings?.map((rank, idx) => (
           <div key={rank.id} className="group flex items-center justify-between p-2.5 bg-slate-50/50 rounded-lg border border-slate-100 hover:border-indigo-200 hover:bg-white transition-all">
             <div className="flex items-center gap-3">
-              <span className={`w-5 h-5 flex items-center justify-center rounded-md font-black text-[9px] ${idx === 0 ? 'bg-amber-100 text-amber-600 shadow-sm' : idx === 1 ? 'bg-slate-200 text-slate-600' : idx === 2 ? 'bg-orange-100 text-orange-600' : 'bg-slate-100 text-slate-400'}`}>{idx + 1}</span>
-              <div className="flex flex-col"><span className="text-[10px] font-black text-slate-700 uppercase tracking-tight leading-none mb-1">{rank.name}</span><span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest leading-none">{rank.total_records} records</span></div>
+              <span className={`w-5 h-5 flex items-center justify-center rounded-md font-black text-[9px] ${rank.total_records > 0 ? (idx === 0 ? 'bg-amber-100 text-amber-600 shadow-sm' : idx === 1 ? 'bg-slate-200 text-slate-600' : idx === 2 ? 'bg-orange-100 text-orange-600' : 'bg-slate-100 text-slate-400') : 'bg-slate-50 text-slate-300'}`}>
+                {idx + 1}
+              </span>
+              <div className="flex flex-col">
+                <span className="text-[10px] font-black text-slate-700 uppercase tracking-tight leading-none mb-1">{rank.name}</span>
+                <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest leading-none">
+                  {rank.total_records > 0 ? `${rank.total_records} records` : 'No attendance yet'}
+                </span>
+              </div>
             </div>
             <div className="text-right">
-              <div className={`text-xs font-black leading-none mb-1 ${rank.rate >= 90 ? 'text-emerald-600' : rank.rate >= 75 ? 'text-blue-600' : 'text-rose-600'}`}>{rank.rate}%</div>
-              <div className="w-12 h-1 bg-slate-200 rounded-full overflow-hidden"><div className={`h-full rounded-full ${rank.rate >= 90 ? 'bg-emerald-500' : rank.rate >= 75 ? 'bg-blue-500' : 'bg-rose-500'}`} style={{ width: `${rank.rate}%` }} /></div>
+              {rank.total_records > 0 ? (
+                <>
+                  <div className={`text-xs font-black leading-none mb-1 ${rank.rate >= 90 ? 'text-emerald-600' : rank.rate >= 75 ? 'text-blue-600' : 'text-rose-600'}`}>{rank.rate}%</div>
+                  <div className="w-12 h-1 bg-slate-200 rounded-full overflow-hidden"><div className={`h-full rounded-full ${rank.rate >= 90 ? 'bg-emerald-500' : rank.rate >= 75 ? 'bg-blue-500' : 'bg-rose-500'}`} style={{ width: `${rank.rate}%` }} /></div>
+                </>
+              ) : (
+                <div className="text-[8px] font-black text-slate-300 uppercase tracking-widest italic">N/A</div>
+              )}
             </div>
           </div>
         ))
@@ -433,10 +446,19 @@ const SubjectFilterSelect = ({ value, onChange, filterLevel, gradeData }) => {
 };
 
 const YearSelector = ({ academicYear, onYearChange }) => (
-  <div className="flex items-center bg-slate-800 border border-slate-700 rounded-lg overflow-hidden">
-    <button onClick={() => onYearChange('prev')} className="p-2 hover:bg-slate-700 text-slate-400 border-r border-slate-700 transition-colors"><svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M15 19l-7-7 7-7" /></svg></button>
-    <div className="px-3 text-[10px] font-black text-white uppercase tracking-widest min-w-[90px] text-center">{academicYear}</div>
-    <button onClick={() => onYearChange('next')} className="p-2 hover:bg-slate-700 text-slate-400 border-l border-slate-700 transition-colors"><svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" /></svg></button>
+  <div className="relative min-w-[140px]">
+    <label className="absolute -top-2 left-2 px-1 bg-slate-900 text-[8px] font-black text-slate-500 uppercase tracking-widest z-10">Academic Year</label>
+    <div className="flex items-center bg-slate-800 border border-slate-700 rounded-lg overflow-hidden h-[34px]">
+      <button onClick={() => onYearChange('prev')} className="px-2 h-full hover:bg-slate-700 text-slate-400 border-r border-slate-700 transition-colors">
+        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M15 19l-7-7 7-7" /></svg>
+      </button>
+      <div className="flex-1 px-3 text-[10px] font-black text-white uppercase tracking-widest text-center">
+        {academicYear}
+      </div>
+      <button onClick={() => onYearChange('next')} className="px-2 h-full hover:bg-slate-700 text-slate-400 border-l border-slate-700 transition-colors">
+        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" /></svg>
+      </button>
+    </div>
   </div>
 );
 
