@@ -81,13 +81,12 @@ const ClassManagement = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.name.trim()) return toast.error('Class name is required');
-    if (!formData.teacher) return toast.error('Please select a teacher');
     setSaving(true);
     try {
-      // Send only the fields the backend expects
-      const payload = { 
-        name: formData.name.trim(), 
-        teacher: formData.teacher,
+      const payload = {
+        name: formData.name.trim(),
+        // Send null explicitly when no teacher selected so backend clears the field
+        teacher: formData.teacher || null,
         grade_level: formData.grade_level
       };
       if (editingClass) {
@@ -100,7 +99,7 @@ const ClassManagement = () => {
       setShowModal(false);
       fetchAll();
     } catch (err) {
-      toast.error(err.response?.data?.detail || 'Failed to save class');
+      toast.error(err.response?.data?.detail || err.response?.data?.teacher?.[0] || 'Failed to save class');
     } finally {
       setSaving(false);
     }
@@ -317,28 +316,26 @@ const ClassManagement = () => {
               </div>
               <div className="space-y-1.5">
                 <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider">
-                  Adviser / Teacher <span className="text-red-500">*</span>
+                  Adviser / Teacher <span className="text-slate-400 font-medium normal-case tracking-normal">(optional)</span>
                 </label>
                 <select
-                  value={formData.teacher}
+                  value={formData.teacher || ''}
                   onChange={e => setFormData({ ...formData, teacher: e.target.value })}
                   className="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-white text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-400 transition-all"
-                  required
                 >
-                  <option value="">Select a teacher</option>
+                  <option value="">— No Adviser —</option>
                   {teachers.map(t => {
-                    // Check if this teacher is already an advisor for ANOTHER classroom
                     const otherClass = classes.find(c => c.teacher === t.id && c.id !== editingClass?.id);
                     const isAssigned = !!otherClass;
-                    
                     return (
                       <option key={t.id} value={t.id} disabled={isAssigned}>
-                        {t.first_name && t.last_name ? `${t.first_name} ${t.last_name}` : t.username} 
-                        {isAssigned ? ` (Already advisor for ${otherClass.name})` : ` (${t.email})`}
+                        {t.first_name && t.last_name ? `${t.first_name} ${t.last_name}` : t.username}
+                        {isAssigned ? ` (Adviser of ${otherClass.name})` : ` (${t.email})`}
                       </option>
                     );
                   })}
                 </select>
+                <p className="text-xs text-slate-400">Leave empty to assign an adviser later.</p>
               </div>
               <div className="flex gap-3 pt-2">
                 <button type="submit" disabled={saving}

@@ -108,8 +108,12 @@ class ClassroomSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'grade_level', 'teacher', 'teacher_name', 'student_count',
                   'average_gpa', 'created_at', 'updated_at']
         read_only_fields = ['id', 'created_at', 'updated_at']
+        extra_kwargs = {
+            # teacher is optional — classrooms can exist without an assigned adviser
+            'teacher': {'required': False, 'allow_null': True},
+        }
 
-    def get_teacher_name(self, obj): return full_name(obj.teacher)
+    def get_teacher_name(self, obj): return full_name(obj.teacher) if obj.teacher else 'No Adviser'
     def get_student_count(self, obj): return obj.enrollments.count()
     def get_average_gpa(self, obj): return obj.get_average_gpa()
 
@@ -119,10 +123,11 @@ class ClassroomSerializer(serializers.ModelSerializer):
             existing = Classroom.objects.filter(teacher=value)
             if self.instance:
                 existing = existing.exclude(id=self.instance.id)
-            
             if existing.exists():
                 other_class = existing.first()
-                raise serializers.ValidationError(f"This teacher is already the advisor for {other_class.name}.")
+                raise serializers.ValidationError(
+                    f"This teacher is already the adviser for {other_class.name}."
+                )
         return value
 
 

@@ -1768,11 +1768,12 @@ class AttendanceViewSet(viewsets.ModelViewSet):
         # Base queryset
         base_att = Attendance.objects.all()
         
-        # Filter by Academic Year if provided
+        # Filter by Academic Year if provided — include classrooms with no year assigned
         if academic_year_name:
             from django.db.models import Q
             base_att = base_att.filter(
-                Q(classroom__academic_year__name=academic_year_name)
+                Q(classroom__academic_year__name=academic_year_name) |
+                Q(classroom__academic_year__isnull=True)
             )
         
         # Apply timeframe filter
@@ -2212,7 +2213,8 @@ def admin_dashboard_stats(request):
         if academic_year_name:
             try:
                 att_qs = att_qs.filter(
-                    Q(classroom__academic_year__name=academic_year_name)
+                    Q(classroom__academic_year__name=academic_year_name) |
+                    Q(classroom__academic_year__isnull=True)
                 )
             except Exception as e:
                 logger.error(f"Error filtering attendance by year: {str(e)}")
@@ -2232,12 +2234,14 @@ def admin_dashboard_stats(request):
         classes_qs = Classroom.objects.all()
         if academic_year_name:
             try:
+                # Include classrooms for the selected year AND classrooms with no year assigned
                 classes_qs = classes_qs.filter(
-                    Q(academic_year__name=academic_year_name)
+                    Q(academic_year__name=academic_year_name) |
+                    Q(academic_year__isnull=True)
                 )
             except Exception as e:
                 logger.error(f"Error filtering classrooms by year: {str(e)}")
-        total_classes  = classes_qs.count()
+        total_classes = classes_qs.count()
         # Pending approvals should include all unapproved users, regardless of verification per school requirements
         pending_approvals = User.objects.filter(is_approved=False).exclude(role='admin').count()
         
@@ -2264,10 +2268,11 @@ def admin_dashboard_stats(request):
         # Grades - only count final grades
         grades = Grade.objects.filter(transmuted_score__isnull=False, grade_type='final_grade')
         if academic_year_name:
-            # Filter by the Grade's own academic_year field or via its classroom
+            # Include grades matching the year directly, via classroom, or with no year set
             grades = grades.filter(
                 Q(academic_year=academic_year_name) |
-                Q(classroom__academic_year__name=academic_year_name)
+                Q(classroom__academic_year__name=academic_year_name) |
+                Q(classroom__academic_year__isnull=True)
             )
         
         total_grades = grades.count()
