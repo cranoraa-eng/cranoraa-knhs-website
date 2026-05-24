@@ -2182,10 +2182,13 @@ def admin_dashboard_stats(request):
         # Base Attendance Filter
         att_qs = Attendance.objects.all()
         if academic_year_name:
-            att_qs = att_qs.filter(
-                Q(classroom__academic_year__name=academic_year_name) |
-                Q(classroom__academic_year__isnull=True)
-            )
+            try:
+                att_qs = att_qs.filter(
+                    Q(classroom__academic_year__name=academic_year_name) |
+                    Q(classroom__academic_year__isnull=True)
+                )
+            except Exception as e:
+                logger.error(f"Error filtering attendance by year: {str(e)}")
 
         # Attendance today (Local Time)
         today_attendance = att_qs.filter(date=today)
@@ -2199,10 +2202,13 @@ def admin_dashboard_stats(request):
         
         classes_qs = Classroom.objects.all()
         if academic_year_name:
-            classes_qs = classes_qs.filter(
-                Q(academic_year__name=academic_year_name) |
-                Q(academic_year__isnull=True)
-            )
+            try:
+                classes_qs = classes_qs.filter(
+                    Q(academic_year__name=academic_year_name) |
+                    Q(academic_year__isnull=True)
+                )
+            except Exception as e:
+                logger.error(f"Error filtering classrooms by year: {str(e)}")
         total_classes  = classes_qs.count()
         
         total_subjects = Subject.objects.count()
@@ -2232,9 +2238,11 @@ def admin_dashboard_stats(request):
         # Grades - only count final grades
         grades = Grade.objects.filter(transmuted_score__isnull=False, grade_type='final_grade')
         if academic_year_name:
+            # Filter by the Grade's own academic_year field or via its classroom
             grades = grades.filter(
-                Q(enrollment__classroom__academic_year__name=academic_year_name) |
-                Q(enrollment__classroom__academic_year__isnull=True)
+                Q(academic_year=academic_year_name) |
+                Q(classroom__academic_year__name=academic_year_name) |
+                Q(classroom__academic_year__isnull=True)
             )
         
         total_grades = grades.count()
