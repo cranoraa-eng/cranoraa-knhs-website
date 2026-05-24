@@ -2213,24 +2213,30 @@ def admin_dashboard_stats(request):
 
         # Core counts - Filter by academic year if provided
         if academic_year_name:
-            # Count students enrolled in any classroom for this academic year
-            total_students = User.objects.filter(
-                role='student', 
-                is_approved=True,
-                enrollments__classroom__academic_year__name=academic_year_name
-            ).distinct().count()
-            
-            # Count teachers assigned to any classroom/subject for this academic year
-            total_teachers = User.objects.filter(
-                role='teacher', 
-                is_approved=True,
-                classroom_subjects__classroom__academic_year__name=academic_year_name
-            ).distinct().count()
-            
-            # Total subjects offered in this academic year (via ClassroomSubject)
-            total_subjects = Subject.objects.filter(
-                classroom_subjects__classroom__academic_year__name=academic_year_name
-            ).distinct().count()
+            try:
+                # Count students enrolled in any classroom for this academic year
+                total_students = User.objects.filter(
+                    role='student', 
+                    is_approved=True,
+                    enrollments__classroom__academic_year__name=academic_year_name
+                ).distinct().count()
+                
+                # Count teachers assigned to any classroom/subject for this academic year
+                total_teachers = User.objects.filter(
+                    role='teacher', 
+                    is_approved=True,
+                    assigned_classroom_subjects__classroom__academic_year__name=academic_year_name
+                ).distinct().count()
+                
+                # Total subjects offered in this academic year (via ClassroomSubject)
+                total_subjects = Subject.objects.filter(
+                    classroom_subjects__classroom__academic_year__name=academic_year_name
+                ).distinct().count()
+            except Exception as e:
+                logger.error(f"Error calculating core stats for {academic_year_name}: {str(e)}")
+                total_students = User.objects.filter(role='student', is_approved=True).count()
+                total_teachers = User.objects.filter(role='teacher', is_approved=True).count()
+                total_subjects = Subject.objects.count()
         else:
             total_students = User.objects.filter(role='student', is_approved=True).count()
             total_teachers = User.objects.filter(role='teacher', is_approved=True).count()
