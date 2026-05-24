@@ -845,7 +845,7 @@ const Messages = () => {
 
   // ── JSX ───────────────────────────────────────────────────────────────────
   return (
-    <div className="flex h-[calc(100vh-8rem)] bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-200 relative">
+    <div className="flex h-[calc(100dvh-11rem)] md:h-[calc(100vh-8rem)] bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-200 relative">
 
       {/* ── Sidebar (Room List) ── */}
       <div className={`${selectedRoom ? 'hidden md:flex' : 'flex'} w-full md:w-64 border-r border-slate-100 flex-col bg-slate-50/30 min-w-0 overflow-hidden`}>
@@ -879,7 +879,7 @@ const Messages = () => {
               placeholder={activeTab === 'search' ? 'Search users...' : 'Search...'}
               value={activeTab === 'search' ? userSearchQuery : searchQuery}
               onChange={e => activeTab === 'search' ? setUserSearchQuery(e.target.value) : setSearchQuery(e.target.value)}
-              className="w-full pl-8 pr-3 py-1 md:py-1.5 bg-slate-100 border-transparent rounded-lg text-[10px] md:text-xs focus:bg-white focus:ring-2 focus:ring-violet-500/10 transition-all outline-none" />
+              className="w-full pl-8 pr-3 py-1.5 md:py-1.5 bg-slate-100 border-transparent rounded-lg text-base md:text-xs focus:bg-white focus:ring-2 focus:ring-violet-500/10 transition-all outline-none" />
             <svg className="w-3 h-3 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
@@ -1269,7 +1269,7 @@ const Messages = () => {
                                 if (e.key === 'Enter') handleEditMessage(msg.id);
                                 if (e.key === 'Escape') { setEditingMessage(null); setEditContent(''); }
                               }}
-                              className="px-3 py-1.5 md:py-2 rounded-xl border border-violet-300 text-xs md:text-sm outline-none focus:ring-2 focus:ring-violet-400 bg-white"
+                              className="px-3 py-2 rounded-xl border border-violet-300 text-base md:text-sm outline-none focus:ring-2 focus:ring-violet-400 bg-white"
                             />
                             <div className="flex gap-2 justify-end">
                               <button onClick={() => { setEditingMessage(null); setEditContent(''); }}
@@ -1437,7 +1437,7 @@ const Messages = () => {
                   placeholder="Type a message..."
                   value={newMessage}
                   onChange={handleTyping}
-                  className="flex-1 px-3 py-1.5 md:px-4 md:py-2.5 bg-slate-100 border-transparent rounded-xl md:rounded-2xl text-[11px] md:text-sm focus:bg-white focus:ring-4 focus:ring-violet-500/5 transition-all outline-none"
+                  className="flex-1 px-3 py-2 md:px-4 md:py-2.5 bg-slate-100 border-transparent rounded-xl md:rounded-2xl text-base md:text-sm focus:bg-white focus:ring-4 focus:ring-violet-500/5 transition-all outline-none"
                 />
                 <button
                   type="submit"
