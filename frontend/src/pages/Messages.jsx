@@ -845,7 +845,7 @@ const Messages = () => {
 
   // ── JSX ───────────────────────────────────────────────────────────────────
   return (
-    <div className="flex h-[calc(100dvh-11rem)] md:h-[calc(100vh-8rem)] bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-200 relative">
+    <div className="flex h-[calc(100dvh-11rem)] md:h-[600px] lg:h-[700px] md:max-h-[calc(100vh-12rem)] bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-200 relative">
 
       {/* ── Sidebar (Room List) ── */}
       <div className={`${selectedRoom ? 'hidden md:flex' : 'flex'} w-full md:w-64 border-r border-slate-100 flex-col bg-slate-50/30 min-w-0 overflow-hidden`}>
@@ -1252,7 +1252,7 @@ const Messages = () => {
             </div>
 
             {/* Messages List */}
-            <div className="flex-1 overflow-y-auto px-4 py-4 md:px-6 md:py-5 space-y-1 scrollbar-thin scrollbar-thumb-slate-200 bg-slate-50/20">
+            <div className="flex-1 overflow-y-auto px-4 py-4 md:px-6 md:py-3 space-y-1 scrollbar-thin scrollbar-thumb-slate-200 bg-slate-50/20">
               {loadingMessages ? (
                 <div className="flex items-center justify-center h-full">
                   <div className="w-8 h-8 border-2 border-violet-500 border-t-transparent rounded-full animate-spin" />
@@ -1461,7 +1461,7 @@ const Messages = () => {
                 </div>
               )}
               {/* Input row */}
-              <form onSubmit={handleSendMessage} className="flex items-center gap-2 px-3 py-2.5 md:px-4 md:py-3">
+              <form onSubmit={handleSendMessage} className="flex items-center gap-2 px-3 py-2.5 md:px-4 md:py-2.5">
                 <input
                   type="text"
                   placeholder="Type a message..."
