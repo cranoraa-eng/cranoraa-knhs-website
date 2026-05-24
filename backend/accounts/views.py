@@ -1794,6 +1794,7 @@ class AttendanceViewSet(viewsets.ModelViewSet):
         for day_dict in chart_att.values('date').annotate(
             present=Count(Case(When(status='present', then=1), output_field=IntegerField())),
             late=Count(Case(When(status='late', then=1), output_field=IntegerField())),
+            excused=Count(Case(When(status='excused', then=1), output_field=IntegerField())),
             total_count=Count('id')
         ).order_by('date'):
             day_total = day_dict['total_count']
@@ -1801,7 +1802,8 @@ class AttendanceViewSet(viewsets.ModelViewSet):
                 'date': day_dict['date'].strftime('%Y-%m-%d'),
                 'present': day_dict['present'],
                 'late': day_dict['late'],
-                'rate': round(((day_dict['present'] + day_dict['late']) / day_total * 100), 1) if day_total > 0 else 0,
+                'excused': day_dict['excused'],
+                'rate': round(((day_dict['present'] + day_dict['late'] + day_dict['excused']) / day_total * 100), 1) if day_total > 0 else 0,
                 'total': day_total
             })
         

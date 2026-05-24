@@ -105,6 +105,7 @@ const AttendanceTrendsSection = ({ data }) => (
             <defs>
               <linearGradient id="colorPresent" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#10b981" stopOpacity={0.1}/><stop offset="95%" stopColor="#10b981" stopOpacity={0}/></linearGradient>
               <linearGradient id="colorLate" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#f59e0b" stopOpacity={0.1}/><stop offset="95%" stopColor="#f59e0b" stopOpacity={0}/></linearGradient>
+              <linearGradient id="colorExcused" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.1}/><stop offset="95%" stopColor="#8b5cf6" stopOpacity={0}/></linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="2 2" vertical={false} stroke="#f1f5f9" />
             <XAxis dataKey="date" tick={{fontSize: 8, fontWeight: 900, fill: '#64748b'}} axisLine={false} tickLine={false} tickFormatter={(str) => {
@@ -116,6 +117,7 @@ const AttendanceTrendsSection = ({ data }) => (
             <Tooltip content={<AttendanceTooltip />} cursor={{stroke: '#cbd5e1', strokeWidth: 1}} />
             <Area type="monotone" dataKey="present" stroke="#10b981" strokeWidth={2} fillOpacity={1} fill="url(#colorPresent)" name="Present" />
             <Area type="monotone" dataKey="late" stroke="#f59e0b" strokeWidth={2} fillOpacity={1} fill="url(#colorLate)" name="Late" />
+            <Area type="monotone" dataKey="excused" stroke="#8b5cf6" strokeWidth={2} fillOpacity={1} fill="url(#colorExcused)" name="Excused" />
           </AreaChart>
         </ResponsiveContainer>
       )}
