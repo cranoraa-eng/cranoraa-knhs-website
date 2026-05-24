@@ -1304,13 +1304,18 @@ const Messages = () => {
                           </div>
                         ) : (
                           <div className="relative">
-                            {/* Reply info if this message is a reply */}
+                            {/* Reply quote — attached to top of bubble, no gap */}
                             {msg.parent_message_details && (
-                              <button 
+                              <button
                                 onClick={() => scrollToMessage(msg.parent_message_details.id)}
-                                className={`mb-1 flex flex-col group/reply transition-all active:scale-95 ${isMine ? 'items-end' : 'items-start'}`}>
-                                <div className="px-2.5 py-1 bg-slate-100 rounded-t-xl text-[9px] md:text-[10px] text-slate-500 border-l-2 border-slate-300 max-w-full truncate group-hover/reply:bg-slate-200">
-                                  <span className="font-bold">Replying to {msg.parent_message_details.sender_name}:</span> {msg.parent_message_details.content}
+                                className={`w-full flex ${isMine ? 'justify-end' : 'justify-start'} active:opacity-70 transition-opacity`}>
+                                <div className={`max-w-full px-3 py-1.5 text-[10px] rounded-t-xl rounded-b-none border-l-2 truncate hover:opacity-80 transition-opacity ${
+                                  isMine
+                                    ? 'bg-violet-700/40 text-violet-100 border-violet-300/60'
+                                    : 'bg-slate-100 text-slate-500 border-slate-300'
+                                }`}>
+                                  <span className="font-bold">↩ {msg.parent_message_details.sender_name}:</span>{' '}
+                                  <span className="opacity-80">{msg.parent_message_details.content}</span>
                                 </div>
                               </button>
                             )}
@@ -1356,10 +1361,12 @@ const Messages = () => {
                                   setActiveMoreMenu(activeMoreMenu === msg.id ? null : msg.id);
                                 }
                               }}
-                              className={`px-3 py-2 md:px-4 md:py-2.5 rounded-2xl text-sm font-medium shadow-sm relative transition-all duration-200 break-words whitespace-pre-wrap max-w-full select-none md:select-text cursor-pointer md:cursor-default ${
+                              className={`px-3 py-2 md:px-4 md:py-2.5 text-sm font-medium shadow-sm relative transition-all duration-200 break-words whitespace-pre-wrap max-w-full select-none md:select-text cursor-pointer md:cursor-default ${
+                                msg.parent_message_details ? 'rounded-b-2xl rounded-t-none' : 'rounded-2xl'
+                              } ${
                                 isMine
-                                  ? 'bg-violet-600 text-white rounded-br-none'
-                                  : 'bg-white text-slate-700 border border-slate-100 rounded-bl-none'
+                                  ? `bg-violet-600 text-white ${msg.parent_message_details ? '' : 'rounded-br-none'}`
+                                  : `bg-white text-slate-700 border border-slate-100 ${msg.parent_message_details ? '' : 'rounded-bl-none'}`
                               } ${msg.is_pinned ? 'ring-2 ring-amber-400 ring-offset-1' : ''}`}>
                               {msg.is_pinned && (
                                 <span className="block text-[8px] md:text-[9px] font-black uppercase tracking-widest mb-1 opacity-60">📌 Pinned</span>
