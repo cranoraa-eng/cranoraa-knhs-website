@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import api from '../utils/api';
 import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
@@ -115,130 +115,118 @@ const Subjects = () => {
   }, {});
 
   return (
-    <div className="p-4 md:p-8 space-y-6">
+    <div className="space-y-5 animate-fade-in">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-        <div className="text-center md:text-left">
-          <h1 className="text-xl md:text-3xl font-black text-slate-800 uppercase tracking-widest">Subject Management</h1>
-          <p className="text-[10px] md:text-sm text-slate-400 font-bold uppercase tracking-widest mt-1">
-            {subjects.length} subjects in the curriculum
-          </p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-black text-slate-900 tracking-tight">Subject Management</h1>
+          <p className="text-sm text-slate-500 mt-0.5">{subjects.length} subjects in the curriculum</p>
         </div>
-        <button
-          onClick={openCreate}
-          className="flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] md:text-sm font-black py-2.5 md:py-2 px-6 md:px-4 rounded-lg md:rounded-xl transition-all hover:scale-105 active:scale-95 shadow-sm w-full md:w-auto uppercase tracking-widest"
-        >
-          <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 4v16m8-8H4" />
+        <button onClick={openCreate}
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-violet-600 text-white text-sm font-bold hover:bg-violet-700 active:scale-95 transition-all shadow-sm">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
           </svg>
           Add Subject
         </button>
       </div>
 
       {/* Filters */}
-      <div className="flex flex-col md:flex-row gap-3 mb-5">
-        <div className="relative flex-1 md:max-w-sm">
-          <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-          <input
-            type="text"
-            placeholder="SEARCH BY NAME OR CODE..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-[10px] md:text-xs font-bold uppercase tracking-widest transition-all"
-          />
+      <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-4">
+        <div className="flex flex-col sm:flex-row gap-3">
+          <div className="relative flex-1">
+            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <input type="text" placeholder="Search by name or code…" value={search}
+              onChange={e => setSearch(e.target.value)}
+              className="w-full pl-9 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-400 focus:bg-white transition-all" />
+          </div>
+          <select value={filterLevel} onChange={e => setFilterLevel(e.target.value)}
+            className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-400 transition-all">
+            <option value="">All Grade Levels</option>
+            {gradeLevels.map(l => <option key={l} value={l}>{l}</option>)}
+          </select>
         </div>
-        <select
-          value={filterLevel}
-          onChange={e => setFilterLevel(e.target.value)}
-          className="w-full md:w-auto px-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-[10px] md:text-xs font-bold uppercase tracking-widest transition-all cursor-pointer appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%236B7280%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E')] bg-[length:1.25rem] bg-[right_0.5rem_center] bg-no-repeat pr-10 shadow-sm"
-        >
-          <option value="">ALL GRADE LEVELS</option>
-          {gradeLevels.map(l => <option key={l} value={l}>{l.toUpperCase()}</option>)}
-        </select>
       </div>
 
       {/* Content */}
       {loading ? (
-        <div className="flex items-center justify-center h-48">
-          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600" />
+        <div className="flex flex-col items-center justify-center h-48 gap-4">
+          <div className="relative w-10 h-10">
+            <div className="absolute inset-0 rounded-full border-2 border-slate-100" />
+            <div className="absolute inset-0 rounded-full border-2 border-violet-600 border-t-transparent animate-spin" />
+          </div>
         </div>
       ) : filtered.length === 0 ? (
-        <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-12 md:p-16 text-center">
-          <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg className="w-8 h-8 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-            </svg>
+        <div className="bg-white border border-slate-200 rounded-2xl shadow-sm">
+          <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
+            <div className="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center mb-4">
+              <svg className="w-7 h-7 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+              </svg>
+            </div>
+            <h3 className="text-base font-bold text-slate-700 mb-1">No subjects found</h3>
+            <p className="text-sm text-slate-400">
+              {search || filterLevel ? 'Try adjusting your filters.' : 'Add your first subject to get started.'}
+            </p>
           </div>
-          <h3 className="text-sm md:text-xl font-black text-slate-700 uppercase tracking-widest mb-2">No Subjects Found</h3>
-          <p className="text-[10px] md:text-sm text-slate-400 font-bold uppercase tracking-widest max-w-xs mx-auto leading-relaxed">
-            {search || filterLevel ? 'Adjust your search or level filters.' : 'Final subjects will appear here once added.'}
-          </p>
         </div>
       ) : (
-        <div className="space-y-4 md:space-y-6">
+        <div className="space-y-4">
           {Object.entries(grouped).sort(([a], [b]) => {
             const numA = parseInt(a.replace(/\D/g, '')) || 999;
             const numB = parseInt(b.replace(/\D/g, '')) || 999;
             return numA - numB;
           }).map(([level, items]) => (
-            <div key={level} className="bg-white border border-slate-200 rounded-xl md:rounded-2xl shadow-sm overflow-hidden">
+            <div key={level} className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
               {/* Group header */}
-              <div className="flex items-center justify-between px-4 md:px-6 py-2.5 md:py-3.5 bg-slate-50 border-b border-slate-100">
-                <div className="flex items-center gap-2 md:gap-3">
-                  <div className="w-6 h-6 md:w-8 md:h-8 rounded-lg bg-indigo-50 flex items-center justify-center font-black text-[9px] md:text-xs text-indigo-600 border border-indigo-100">
-                    {(parseInt(level.replace(/\D/g, '')) || level.charAt(0))}
+              <div className="flex items-center justify-between px-5 py-3 bg-slate-50 border-b border-slate-200">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-xl bg-violet-100 flex items-center justify-center font-black text-xs text-violet-700">
+                    {parseInt(level.replace(/\D/g, '')) || level.charAt(0)}
                   </div>
-                  <div className="text-left">
-                    <span className="font-black text-xs md:text-base text-slate-800 uppercase tracking-widest">{level}</span>
-                    <div className="text-[7px] md:text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em]">{items.length} Subjects</div>
+                  <div>
+                    <span className="font-black text-sm text-slate-800">{level}</span>
+                    <span className="ml-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">{items.length} subjects</span>
                   </div>
                 </div>
               </div>
 
               {/* Table */}
-              <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-slate-200">
-                <table className="w-full text-[10px] md:text-sm">
-                  <thead className="bg-gray-50/50">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left">
+                  <thead className="bg-slate-50/50 border-b border-slate-100">
                     <tr>
-                      <th className="text-left px-4 py-2 md:py-3 text-[8px] md:text-xs font-black text-slate-400 uppercase tracking-widest w-1/4">Code</th>
-                      <th className="text-left px-4 py-2 md:py-3 text-[8px] md:text-xs font-black text-slate-400 uppercase tracking-widest w-1/2">Subject Name</th>
-                      <th className="hidden md:table-cell text-center px-6 py-3 text-xs font-black text-slate-400 uppercase tracking-widest">Description</th>
-                      <th className="text-center px-4 py-2 md:py-3 text-[8px] md:text-xs font-black text-slate-400 uppercase tracking-widest">Actions</th>
+                      <th className="px-5 py-3 text-[10px] font-black text-slate-500 uppercase tracking-[0.15em] w-32">Code</th>
+                      <th className="px-5 py-3 text-[10px] font-black text-slate-500 uppercase tracking-[0.15em]">Subject Name</th>
+                      <th className="hidden md:table-cell px-5 py-3 text-[10px] font-black text-slate-500 uppercase tracking-[0.15em]">Description</th>
+                      <th className="px-5 py-3 text-[10px] font-black text-slate-500 uppercase tracking-[0.15em] text-center w-28">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
                     {items.map(s => (
-                      <tr key={s.id} className="hover:bg-indigo-50/30 transition-colors group/row">
-                        <td className="px-4 py-2.5 md:py-4">
-                          <span className="font-mono text-[9px] md:text-sm font-black text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded uppercase tracking-tighter">
+                      <tr key={s.id} className="hover:bg-violet-50/40 transition-colors group">
+                        <td className="px-5 py-3.5">
+                          <span className="font-mono text-xs font-black text-violet-700 bg-violet-50 px-2 py-0.5 rounded-lg border border-violet-100">
                             {s.code}
                           </span>
                         </td>
-                        <td className="px-4 py-2.5 md:py-4">
-                          <div className="font-black text-slate-700 uppercase tracking-tight text-[9px] md:text-sm truncate max-w-[120px] md:max-w-none" title={s.name}>{s.name}</div>
+                        <td className="px-5 py-3.5">
+                          <span className="text-sm font-bold text-slate-800">{s.name}</span>
                         </td>
-                        <td className="hidden md:table-cell px-6 py-4 text-sm text-slate-500 max-w-xs">
-                          <span className="line-clamp-1">{s.description || <span className="italic text-slate-300">No description</span>}</span>
+                        <td className="hidden md:table-cell px-5 py-3.5 text-sm text-slate-500 max-w-xs">
+                          <span className="line-clamp-1">{s.description || <span className="italic text-slate-300 text-xs">No description</span>}</span>
                         </td>
-                        <td className="px-4 py-2.5 md:py-4 text-center">
-                          <div className="flex items-center justify-center gap-1.5 md:gap-2">
-                            <button
-                              onClick={() => openEdit(s)}
-                              className="p-1.5 md:px-3 md:py-1.5 text-indigo-600 bg-indigo-50 hover:bg-indigo-600 hover:text-white rounded-lg transition-all active:scale-95 shadow-sm"
-                              title="Edit Subject"
-                            >
-                              <svg className="w-3 h-3 md:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
-                              <span className="hidden md:inline font-black text-[10px] uppercase tracking-widest">Edit</span>
+                        <td className="px-5 py-3.5 text-center">
+                          <div className="flex items-center justify-center gap-1.5">
+                            <button onClick={() => openEdit(s)} title="Edit"
+                              className="px-3 py-1.5 text-xs font-bold text-violet-700 bg-violet-100 hover:bg-violet-600 hover:text-white rounded-lg transition-all active:scale-90 no-min">
+                              Edit
                             </button>
-                            <button
-                              onClick={() => handleDelete(s)}
-                              className="p-1.5 md:px-3 md:py-1.5 text-rose-600 bg-rose-50 hover:bg-rose-600 hover:text-white rounded-lg transition-all active:scale-95 shadow-sm"
-                              title="Delete Subject"
-                            >
-                              <svg className="w-3 h-3 md:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                              <span className="hidden md:inline font-black text-[10px] uppercase tracking-widest">Delete</span>
+                            <button onClick={() => handleDelete(s)} title="Delete"
+                              className="px-3 py-1.5 text-xs font-bold text-red-600 bg-red-50 hover:bg-red-500 hover:text-white rounded-lg transition-all active:scale-90 no-min">
+                              Delete
                             </button>
                           </div>
                         </td>

@@ -140,24 +140,24 @@ const WebsiteContentManagement = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+        <div className="w-10 h-10 rounded-full border-2 border-slate-100 border-t-violet-600 animate-spin"></div>
       </div>
     );
   }
 
   return (
-    <div className="p-1.5 md:p-6 bg-gray-50 min-h-full max-w-full overflow-x-hidden">
+    <div className="p-1.5 md:p-6 bg-slate-50 min-h-full max-w-full overflow-x-hidden">
       {/* Header */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-3 md:mb-8 gap-2 md:gap-6 min-w-0">
         <div className="text-left min-w-0">
-          <h1 className="text-lg md:text-3xl font-extrabold text-gray-900 tracking-tight truncate">Mini Website Editor</h1>
-          <p className="text-[8px] md:text-base text-gray-500 mt-0.5 truncate uppercase tracking-wider font-medium">Customize your public portal's content</p>
+          <h1 className="text-lg md:text-3xl font-extrabold text-slate-900 tracking-tight truncate">Mini Website Editor</h1>
+          <p className="text-[8px] md:text-base text-slate-500 mt-0.5 truncate uppercase tracking-wider font-medium">Customize your public portal's content</p>
         </div>
         
         <div className="flex flex-row gap-1 shrink-0">
           <button
             onClick={() => setShowAddModal(true)}
-            className="flex-1 sm:flex-none flex items-center justify-center bg-purple-600 hover:bg-purple-700 text-white font-bold py-1.5 md:py-2.5 px-2.5 md:px-5 rounded-lg md:rounded-xl transition-all shadow-md md:shadow-lg shadow-purple-200 active:scale-95 text-[9px] md:text-base whitespace-nowrap"
+            className="flex-1 sm:flex-none flex items-center justify-center bg-violet-600 hover:bg-violet-700 text-white font-bold py-1.5 md:py-2.5 px-2.5 md:px-5 rounded-lg md:rounded-xl transition-all shadow-md md:shadow-lg shadow-purple-200 active:scale-95 text-[9px] md:text-base whitespace-nowrap"
           >
             <svg className="w-2.5 h-2.5 md:w-5 md:h-5 mr-1 md:mr-2 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
@@ -168,7 +168,7 @@ const WebsiteContentManagement = () => {
             href="/"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex-1 sm:flex-none flex items-center justify-center bg-white border border-gray-200 text-gray-700 font-bold py-1.5 md:py-2.5 px-2.5 md:px-5 rounded-lg md:rounded-xl hover:bg-gray-50 transition-all shadow-sm active:scale-95 text-[9px] md:text-base whitespace-nowrap"
+            className="flex-1 sm:flex-none flex items-center justify-center bg-white border border-slate-200 text-slate-700 font-bold py-1.5 md:py-2.5 px-2.5 md:px-5 rounded-lg md:rounded-xl hover:bg-slate-50 transition-all shadow-sm active:scale-95 text-[9px] md:text-base whitespace-nowrap"
           >
             <svg className="w-2.5 h-2.5 md:w-5 md:h-5 mr-1 md:mr-2 text-blue-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -180,10 +180,10 @@ const WebsiteContentManagement = () => {
       </div>
 
       {/* Search and Filters */}
-      <div className="bg-white p-1.5 md:p-4 rounded-xl md:rounded-2xl shadow-sm border border-gray-100 mb-4 md:mb-8 flex flex-col gap-2 md:gap-4 min-w-0">
+      <div className="bg-white p-1.5 md:p-4 rounded-xl md:rounded-2xl shadow-sm border border-slate-100 mb-4 md:mb-8 flex flex-col gap-2 md:gap-4 min-w-0">
         <div className="relative w-full">
           <span className="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
-            <svg className="h-3 w-3 md:h-5 md:w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="h-3 w-3 md:h-5 md:w-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
           </span>
@@ -192,7 +192,7 @@ const WebsiteContentManagement = () => {
             placeholder="Search sections..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="block w-full pl-7 pr-3 py-1.5 md:py-2.5 border border-gray-200 rounded-lg md:rounded-xl bg-gray-50 focus:bg-white focus:ring-2 focus:ring-purple-500 transition-all text-[10px] md:text-sm"
+            className="block w-full pl-7 pr-3 py-1.5 md:py-2.5 border border-slate-200 rounded-lg md:rounded-xl bg-slate-50 focus:bg-white focus:ring-2 focus:ring-violet-500 transition-all text-[10px] md:text-sm"
           />
         </div>
         <div className="flex overflow-x-auto gap-1 scrollbar-none pb-0.5 -mx-0.5 px-0.5 min-w-0">
@@ -201,7 +201,7 @@ const WebsiteContentManagement = () => {
               key={cat.id}
               onClick={() => setActiveCategory(cat.id)}
               className={`flex items-center whitespace-nowrap px-2 py-1 md:px-4 md:py-2 rounded-lg md:rounded-xl text-[9px] md:text-sm font-bold transition-all shrink-0 ${
-                activeCategory === cat.id ? 'bg-purple-100 text-purple-700 ring-1 ring-purple-300' : 'bg-white text-gray-500 hover:bg-gray-50 border border-gray-100'
+                activeCategory === cat.id ? 'bg-violet-100 text-violet-700 ring-1 ring-violet-300' : 'bg-white text-slate-500 hover:bg-slate-50 border border-slate-100'
               }`}
             >
               {cat.label}
@@ -216,17 +216,17 @@ const WebsiteContentManagement = () => {
           Object.entries(groupedContent).map(([categoryName, items]) => (
             <div key={categoryName} className="animate-fadeIn">
               <div className="flex items-center mb-3 md:mb-6">
-                <div className="h-px bg-gray-200 flex-grow"></div>
-                <h2 className="px-2 md:px-4 text-[9px] md:text-sm font-black text-gray-400 uppercase tracking-widest">{categoryName}</h2>
-                <div className="h-px bg-gray-200 flex-grow"></div>
+                <div className="h-px bg-slate-200 flex-grow"></div>
+                <h2 className="px-2 md:px-4 text-[9px] md:text-sm font-black text-slate-400 uppercase tracking-widest">{categoryName}</h2>
+                <div className="h-px bg-slate-200 flex-grow"></div>
               </div>
               
               <div className="grid grid-cols-1 xl:grid-cols-2 gap-2.5 md:gap-6">
                 {items.map((item) => (
-                  <div key={item.id} className="group bg-white rounded-xl md:rounded-3xl shadow-sm border border-gray-100 hover:shadow-lg md:hover:shadow-xl hover:border-purple-100 transition-all duration-300 overflow-hidden flex flex-col">
-                    <div className="px-2 py-1 md:px-6 md:py-4 bg-gray-50/50 border-b border-gray-100 flex justify-between items-center group-hover:bg-purple-50/30 transition-colors">
+                  <div key={item.id} className="group bg-white rounded-xl md:rounded-3xl shadow-sm border border-slate-100 hover:shadow-lg md:hover:shadow-xl hover:border-violet-100 transition-all duration-300 overflow-hidden flex flex-col">
+                    <div className="px-2 py-1 md:px-6 md:py-4 bg-slate-50/50 border-b border-slate-100 flex justify-between items-center group-hover:bg-violet-50/30 transition-colors">
                       <div className="flex items-center min-w-0">
-                        <h3 className="font-bold text-gray-800 text-[8px] md:text-sm truncate uppercase tracking-tight">{item.section_display || item.section}</h3>
+                        <h3 className="font-bold text-slate-800 text-[8px] md:text-sm truncate uppercase tracking-tight">{item.section_display || item.section}</h3>
                       </div>
                       <div className="flex gap-1 md:opacity-0 md:group-hover:opacity-100 transition-opacity shrink-0 ml-1.5">
                         {editingId === item.id ? (
@@ -234,13 +234,13 @@ const WebsiteContentManagement = () => {
                             <button onClick={() => handleSave(item.id)} className="p-0.5 md:p-2 text-green-600 hover:bg-green-100 rounded-lg md:rounded-xl transition-colors">
                               <svg className="w-2.5 h-2.5 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
                             </button>
-                            <button onClick={handleCancel} className="p-0.5 md:p-2 text-gray-400 hover:bg-gray-100 rounded-lg md:rounded-xl transition-colors">
+                            <button onClick={handleCancel} className="p-0.5 md:p-2 text-slate-400 hover:bg-slate-100 rounded-lg md:rounded-xl transition-colors">
                               <svg className="w-2.5 h-2.5 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" /></svg>
                             </button>
                           </>
                         ) : (
                           <>
-                            <button onClick={() => handleEdit(item)} className="p-0.5 md:p-2 text-purple-600 hover:bg-purple-100 rounded-lg md:rounded-xl transition-colors">
+                            <button onClick={() => handleEdit(item)} className="p-0.5 md:p-2 text-violet-600 hover:bg-violet-100 rounded-lg md:rounded-xl transition-colors">
                               <svg className="w-2.5 h-2.5 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
                             </button>
                             <button onClick={() => handleDelete(item.id, item.section)} className="p-0.5 md:p-2 text-red-400 hover:bg-red-50 rounded-lg md:rounded-xl transition-colors">
@@ -253,20 +253,20 @@ const WebsiteContentManagement = () => {
                     
                     <div className="p-2 md:p-6 flex-grow min-w-0">
                       <div className="space-y-1 md:space-y-4 min-w-0">
-                        <label className="block text-[7px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest">Text Content</label>
+                        <label className="block text-[7px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest">Text Content</label>
                         {editingId === item.id ? (
                           <textarea
                             value={editValue}
                             onChange={(e) => setEditValue(e.target.value)}
-                            className="w-full px-1.5 py-1 md:px-4 md:py-3 border-2 border-purple-100 rounded-lg md:rounded-2xl focus:ring-2 focus:ring-purple-500 outline-none bg-purple-50/20 text-[9px] md:text-sm"
+                            className="w-full px-1.5 py-1 md:px-4 md:py-3 border-2 border-violet-100 rounded-lg md:rounded-2xl focus:ring-2 focus:ring-violet-500 outline-none bg-violet-50/20 text-[9px] md:text-sm"
                             rows={3}
                           />
                         ) : (
-                          <p className="text-gray-600 text-[9px] md:text-sm whitespace-pre-wrap break-words leading-relaxed min-h-[30px] md:min-h-[80px]">{item.content || <span className="text-gray-300 italic">No text</span>}</p>
+                          <p className="text-slate-600 text-[9px] md:text-sm whitespace-pre-wrap break-words leading-relaxed min-h-[30px] md:min-h-[80px]">{item.content || <span className="text-slate-300 italic">No text</span>}</p>
                         )}
                       </div>
                     </div>
-                    <div className="px-2 py-1 md:px-6 md:py-3 bg-gray-50/30 border-t border-gray-50 flex items-center text-[6px] md:text-[10px] font-bold text-gray-400 uppercase">
+                    <div className="px-2 py-1 md:px-6 md:py-3 bg-slate-50/30 border-t border-slate-50 flex items-center text-[6px] md:text-[10px] font-bold text-slate-400 uppercase">
                       <span className="mr-auto truncate pr-2">{item.section}</span>
                       {item.updated_by_name && <span className="shrink-0">{item.updated_by_name}</span>}
                     </div>
@@ -276,8 +276,8 @@ const WebsiteContentManagement = () => {
             </div>
           ))
         ) : (
-          <div className="text-center py-10 md:py-20 bg-white rounded-2xl md:rounded-3xl border-2 border-dashed border-gray-100">
-            <h3 className="text-sm md:text-xl font-bold text-gray-800">No content found</h3>
+          <div className="text-center py-10 md:py-20 bg-white rounded-2xl md:rounded-3xl border-2 border-dashed border-slate-100">
+            <h3 className="text-sm md:text-base font-black text-slate-900 tracking-tight">No content found</h3>
           </div>
         )}
       </div>
@@ -286,31 +286,31 @@ const WebsiteContentManagement = () => {
       {showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-black/60 backdrop-blur-sm animate-fadeIn">
           <div className="bg-white rounded-2xl md:rounded-[2rem] shadow-2xl w-full max-w-xl overflow-hidden animate-slideUp max-h-[90vh] flex flex-col">
-            <div className="p-4 md:p-8 border-b border-gray-100 flex justify-between items-center bg-purple-50/30 shrink-0">
-              <h2 className="text-lg md:text-2xl font-black text-gray-900">Add New Section</h2>
-              <button onClick={() => setShowAddModal(false)} className="p-1.5 hover:bg-white rounded-full transition-colors"><svg className="w-4 h-4 md:w-6 md:h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg></button>
+            <div className="p-4 md:p-8 border-b border-slate-100 flex justify-between items-center bg-violet-50/30 shrink-0">
+              <h2 className="text-lg md:text-2xl font-black text-slate-900">Add New Section</h2>
+              <button onClick={() => setShowAddModal(false)} className="p-1.5 hover:bg-white rounded-full transition-colors"><svg className="w-4 h-4 md:w-6 md:h-6 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg></button>
             </div>
             
             <form onSubmit={handleAddSection} className="p-4 md:p-8 space-y-3 md:space-y-6 overflow-y-auto">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
                 <div>
-                  <label className="block text-[9px] md:text-[10px] font-black text-gray-400 uppercase mb-1 md:mb-2 tracking-widest">Category</label>
+                  <label className="block text-[9px] md:text-[10px] font-black text-slate-400 uppercase mb-1 md:mb-2 tracking-widest">Category</label>
                   <select
                     value={newSection.category}
                     onChange={(e) => setNewSection({ ...newSection, category: e.target.value })}
-                    className="w-full px-3 py-2 md:px-4 md:py-3 bg-gray-50 border border-gray-200 rounded-xl font-bold text-gray-700 outline-none focus:ring-2 focus:ring-purple-500 text-xs md:text-base"
+                    className="w-full px-3 py-2 md:px-4 md:py-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:ring-2 focus:ring-violet-500 text-xs md:text-base"
                   >
                     {categories.filter(c => c.id !== 'all').map(cat => (<option key={cat.id} value={cat.id}>{cat.label}</option>))}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-[9px] md:text-[10px] font-black text-gray-400 uppercase mb-1 md:mb-2 tracking-widest">Section Key</label>
+                  <label className="block text-[9px] md:text-[10px] font-black text-slate-400 uppercase mb-1 md:mb-2 tracking-widest">Section Key</label>
                   <input
                     list="section-suggestions"
                     placeholder="e.g. programs_academic_details"
                     value={newSection.section}
                     onChange={(e) => setNewSection({ ...newSection, section: e.target.value })}
-                    className="w-full px-3 py-2 md:px-4 md:py-3 bg-gray-50 border border-gray-200 rounded-xl font-bold text-gray-700 outline-none focus:ring-2 focus:ring-purple-500 text-xs md:text-base"
+                    className="w-full px-3 py-2 md:px-4 md:py-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:ring-2 focus:ring-violet-500 text-xs md:text-base"
                   />
                   <datalist id="section-suggestions">
                     {sectionSuggestions[newSection.category]?.map(s => (<option key={s} value={s} />))}
@@ -319,19 +319,19 @@ const WebsiteContentManagement = () => {
               </div>
 
               <div>
-                <label className="block text-[9px] md:text-[10px] font-black text-gray-400 uppercase mb-1 md:mb-2 tracking-widest">Text Content</label>
+                <label className="block text-[9px] md:text-[10px] font-black text-slate-400 uppercase mb-1 md:mb-2 tracking-widest">Text Content</label>
                 <textarea
                   placeholder="Enter content..."
                   value={newSection.content}
                   onChange={(e) => setNewSection({ ...newSection, content: e.target.value })}
-                  className="w-full px-3 py-2 md:px-4 md:py-3 bg-gray-50 border border-gray-200 rounded-xl font-bold text-gray-700 outline-none focus:ring-2 focus:ring-purple-500 text-xs md:text-base"
+                  className="w-full px-3 py-2 md:px-4 md:py-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:ring-2 focus:ring-violet-500 text-xs md:text-base"
                   rows={3}
                 />
               </div>
 
               <div className="flex flex-col sm:flex-row gap-2 pt-1 md:pt-4">
-                <button type="button" onClick={() => setShowAddModal(false)} className="order-2 sm:order-1 flex-grow py-2.5 md:py-3 bg-gray-100 text-gray-600 font-bold rounded-xl md:rounded-2xl text-xs md:text-base">Cancel</button>
-                <button type="submit" className="order-1 sm:order-2 flex-grow py-2.5 md:py-3 bg-purple-600 text-white font-bold rounded-xl md:rounded-2xl shadow-lg active:scale-95 text-xs md:text-base">Create Section</button>
+                <button type="button" onClick={() => setShowAddModal(false)} className="order-2 sm:order-1 flex-grow py-2.5 md:py-3 bg-slate-100 text-slate-600 font-bold rounded-xl md:rounded-2xl text-xs md:text-base">Cancel</button>
+                <button type="submit" className="order-1 sm:order-2 flex-grow py-2.5 md:py-3 bg-violet-600 text-white font-bold rounded-xl md:rounded-2xl shadow-lg active:scale-95 text-xs md:text-base">Create Section</button>
               </div>
             </form>
           </div>

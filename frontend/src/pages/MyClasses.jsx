@@ -63,44 +63,44 @@ const MyClasses = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-purple-600" />
+        <div className="w-10 h-10 rounded-full border-2 border-slate-100 border-t-violet-600 animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="p-1.5 md:p-4 space-y-3 md:space-y-4 bg-gray-50/50">
+    <div className="p-1.5 md:p-4 space-y-3 md:space-y-4 bg-slate-50/50">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 animate-fade-in-up">
         <div>
-          <h1 className="text-lg md:text-2xl font-black text-gray-800 tracking-tight uppercase">My Assigned Classes</h1>
-          <p className="text-gray-500 text-[8px] md:text-[10px] font-bold uppercase tracking-[0.2em] mt-0.5">Classrooms and subjects you handle</p>
+          <h1 className="text-lg md:text-2xl font-black text-slate-800 tracking-tight uppercase">My Assigned Classes</h1>
+          <p className="text-slate-500 text-[8px] md:text-[10px] font-bold uppercase tracking-[0.2em] mt-0.5">Classrooms and subjects you handle</p>
         </div>
       </div>
 
       {groupedAssignments.length === 0 ? (
-        <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-8 md:p-12 text-center animate-fade-in-up">
-          <div className="w-12 h-12 md:w-16 md:h-16 bg-purple-50 rounded-full flex items-center justify-center mx-auto mb-4">
+        <div className="bg-white border border-slate-200 rounded-xl shadow-sm p-8 md:p-12 text-center animate-fade-in-up">
+          <div className="w-12 h-12 md:w-16 md:h-16 bg-violet-50 rounded-full flex items-center justify-center mx-auto mb-4">
             <svg className="w-8 h-8 md:w-10 md:h-10 text-purple-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
             </svg>
           </div>
-          <h3 className="text-sm md:text-base font-black text-gray-700 mb-1 uppercase tracking-tight">No Classes Assigned</h3>
-          <p className="text-[8px] md:text-[10px] text-gray-400 font-bold uppercase tracking-widest leading-relaxed">
+          <h3 className="text-sm md:text-base font-black text-slate-700 mb-1 uppercase tracking-tight">No Classes Assigned</h3>
+          <p className="text-[8px] md:text-[10px] text-slate-400 font-bold uppercase tracking-widest leading-relaxed">
             You haven't been assigned to any classrooms yet.<br/>Please coordinate with the school administration.
           </p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-3 md:gap-4 animate-fade-in-up">
           {groupedAssignments.map((classroom) => (
-            <div key={classroom.id} className="bg-white border border-gray-200 rounded-xl p-3 md:p-4 hover:shadow-lg transition-all duration-300 group relative border-t-2 border-t-indigo-600 overflow-hidden flex flex-col h-full">
+            <div key={classroom.id} className="bg-white border border-slate-200 rounded-xl p-3 md:p-4 hover:shadow-lg transition-all duration-300 group relative border-t-2 border-t-indigo-600 overflow-hidden flex flex-col h-full">
               {/* Classroom Info */}
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center text-white font-black text-sm md:text-lg shadow-md flex-shrink-0">
                   {classroom.name?.match(/\d+/)?.[0] || 'C'}
                 </div>
                 <div className="min-w-0">
-                  <h3 className="text-xs md:text-base font-black text-gray-800 leading-tight uppercase truncate">
+                  <h3 className="text-xs md:text-base font-black text-slate-800 leading-tight uppercase truncate">
                     {classroom.name}
                   </h3>
                   <p className="text-[7px] md:text-[8px] font-black text-indigo-500 uppercase tracking-[0.2em] mt-0.5">{classroom.subjects.length} Subjects Handled</p>

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+﻿import { useState, useEffect, useMemo } from 'react';
 import api from '../utils/api';
 import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
@@ -161,187 +161,155 @@ const AuditLogs = () => {
     if (type.includes('create') || type.includes('mark')) return 'bg-emerald-100 text-emerald-700 border-emerald-200';
     if (type.includes('update') || type.includes('edit')) return 'bg-blue-100 text-blue-700 border-blue-200';
     if (type.includes('delete') || type.includes('clear')) return 'bg-red-100 text-red-700 border-red-200';
-    if (type.includes('login') || type.includes('auth')) return 'bg-purple-100 text-purple-700 border-purple-200';
+    if (type.includes('login') || type.includes('auth')) return 'bg-violet-100 text-violet-700 border-violet-200';
     if (type.includes('approve')) return 'bg-indigo-100 text-indigo-700 border-indigo-200';
     if (type.includes('reject') || type.includes('suspend') || type.includes('mute')) return 'bg-orange-100 text-orange-700 border-orange-200';
     if (type.includes('export') || type.includes('import')) return 'bg-amber-100 text-amber-700 border-amber-200';
-    return 'bg-gray-100 text-gray-700 border-gray-200';
+    return 'bg-slate-100 text-slate-700 border-slate-200';
   };
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center h-[60vh]">
-        <div className="animate-spin rounded-full h-12 w-12 border-4 border-purple-200 border-t-purple-600 mb-4"></div>
-        <p className="text-gray-500 font-medium">Loading audit logs...</p>
+      <div className="flex flex-col items-center justify-center h-[60vh] gap-4">
+        <div className="relative w-10 h-10">
+          <div className="absolute inset-0 rounded-full border-2 border-slate-100" />
+          <div className="absolute inset-0 rounded-full border-2 border-violet-600 border-t-transparent animate-spin" />
+        </div>
+        <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">Loading audit logs…</p>
       </div>
     );
   }
 
   return (
-    <div className="p-1 md:p-4 space-y-1.5 md:space-y-4 max-w-full overflow-x-hidden min-h-full bg-gray-50/30">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-1.5 md:gap-4 min-w-0">
-        <div className="min-w-0">
-          <h1 className="text-sm md:text-2xl font-black text-gray-800 tracking-tight truncate uppercase">Audit Logs</h1>
-          <p className="text-gray-500 text-[7px] md:text-[10px] font-bold mt-0.5 truncate uppercase tracking-widest">System Activities</p>
-          
-          <div className="mt-1 flex items-center gap-2 md:gap-4 min-w-0">
-            <div className="flex flex-col min-w-0">
-              <div className="flex items-center gap-1.5 mb-0.5 min-w-0">
-                <span className="text-[6px] md:text-[9px] font-black text-gray-400 uppercase tracking-widest shrink-0">Storage</span>
-                <span className={`text-[6px] md:text-[9px] font-bold px-1 py-0 rounded shrink-0 ${
-                  (stats.size_mb / stats.max_mb) > 0.8 ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600'
-                }`}>
-                  {stats.size_mb}MB / {stats.max_mb}MB
-                </span>
-              </div>
-              <div className="w-20 md:w-40 h-0.5 md:h-1 bg-gray-100 rounded-full overflow-hidden border border-gray-200 shrink-0">
-                <div 
-                  className={`h-full transition-all duration-500 ${
-                    (stats.size_mb / stats.max_mb) > 0.8 ? 'bg-red-500' : 'bg-blue-500'
-                  }`}
-                  style={{ width: `${Math.min((stats.size_mb / stats.max_mb) * 100, 100)}%` }}
-                />
-              </div>
+    <div className="space-y-5 animate-fade-in">
+      {/* ── Page Header ── */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-black text-slate-900 tracking-tight">Audit Logs</h1>
+          <div className="flex items-center gap-3 mt-1 flex-wrap">
+            <p className="text-sm text-slate-500">{totalCount} total entries</p>
+            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+              (stats.size_mb / stats.max_mb) > 0.8 ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600'
+            }`}>{stats.size_mb}MB / {stats.max_mb}MB</span>
+            <div className="w-24 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+              <div className={`h-full rounded-full transition-all duration-500 ${
+                (stats.size_mb / stats.max_mb) > 0.8 ? 'bg-red-500' : 'bg-blue-500'
+              }`} style={{ width: `${Math.min((stats.size_mb / stats.max_mb) * 100, 100)}%` }} />
             </div>
           </div>
         </div>
-        
-        <div className="flex items-center gap-1 shrink-0">
+        <div className="flex items-center gap-2">
           {selectedIds.length > 0 && (
-            <button
-              onClick={handleBulkDelete}
-              disabled={deleting}
-              className="flex-1 md:flex-none flex items-center justify-center gap-1 bg-red-50 text-red-600 hover:bg-red-100 font-black py-1 md:py-1.5 px-2 md:px-4 rounded md:rounded-lg transition-all border border-red-100 active:scale-95 text-[8px] md:text-xs whitespace-nowrap uppercase tracking-widest"
-            >
-              <svg className="w-2.5 h-2.5 md:w-3 md:h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            <button onClick={handleBulkDelete} disabled={deleting}
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-red-50 text-red-600 border border-red-200 text-sm font-bold hover:bg-red-100 transition-all disabled:opacity-50">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
               </svg>
-              DEL ({selectedIds.length})
+              Delete ({selectedIds.length})
             </button>
           )}
-          
-          <button
-            onClick={handleClearAll}
-            disabled={deleting || !logs || logs.length === 0}
-            className="flex-1 md:flex-none flex items-center justify-center gap-1 bg-white text-gray-700 hover:bg-gray-50 font-black py-1 md:py-1.5 px-2 md:px-4 rounded md:rounded-lg transition-all border border-gray-200 shadow-sm active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed text-[8px] md:text-xs whitespace-nowrap uppercase tracking-widest"
-          >
-            <svg className="w-2.5 h-2.5 md:w-3 md:h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-            </svg>
-            CLEAR ALL
+          <button onClick={handleClearAll} disabled={deleting || !logs || logs.length === 0}
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-slate-200 text-sm font-bold text-slate-600 hover:bg-slate-50 transition-all disabled:opacity-40 shadow-sm">
+            Clear all
           </button>
         </div>
       </div>
 
-      <div className="bg-white border border-gray-200 rounded-lg md:rounded-xl shadow-sm overflow-hidden min-w-0">
-        <div className="p-1 md:p-2 border-b border-gray-100 bg-gray-50/50 min-w-0">
-          <div className="flex flex-col md:flex-row gap-2 md:gap-4 items-stretch md:items-center min-w-0">
-            <div className="relative flex-1 min-w-0">
-              <input
-                type="text"
-                placeholder="Search by user, model, or description..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-8 md:pl-10 pr-4 py-1.5 md:py-2.5 bg-white border border-gray-200 rounded md:rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-[8px] md:text-xs font-black placeholder:text-gray-300 shadow-sm transition-all uppercase tracking-widest"
-              />
-              <svg className="absolute left-2.5 md:left-4 top-1/2 -translate-y-1/2 w-3 h-3 md:w-4 md:h-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+      {/* ── Filters ── */}
+      <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-4">
+        <div className="flex flex-col sm:flex-row gap-3">
+          <div className="relative flex-1">
+            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <input type="text" placeholder="Search by user, model, or description…" value={search}
+              onChange={e => setSearch(e.target.value)}
+              className="w-full pl-9 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-400 focus:bg-white transition-all" />
+          </div>
+          <select value={actionFilter} onChange={e => setActionFilter(e.target.value)}
+            className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-400 transition-all">
+            <option value="">All Actions</option>
+            <option value="create">Create</option>
+            <option value="update">Update</option>
+            <option value="delete">Delete</option>
+            <option value="login">Login</option>
+            <option value="grade_create">Grade Create</option>
+            <option value="attendance_mark">Attendance Mark</option>
+          </select>
+        </div>
+      </div>
+        
+      {/* ── Table ── */}
+      <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+        {logs.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
+            <div className="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center mb-4">
+              <svg className="w-7 h-7 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
             </div>
-
-            <select
-              value={actionFilter}
-              onChange={(e) => setActionFilter(e.target.value)}
-              className="bg-white border border-gray-200 rounded md:rounded-xl px-2 md:px-4 py-1.5 md:py-2.5 text-[8px] md:text-xs font-black focus:outline-none focus:ring-2 focus:ring-purple-500 shadow-sm transition-all uppercase tracking-widest min-w-[80px] md:min-w-[150px]"
-            >
-              <option value="">All Actions</option>
-              <option value="create">Create</option>
-              <option value="update">Update</option>
-              <option value="delete">Delete</option>
-              <option value="login">Login</option>
-              <option value="grade_create">Grade Create</option>
-              <option value="attendance_mark">Attendance Mark</option>
-            </select>
-          </div>
-        </div>
-        
-        {logs.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-6 md:py-12 text-gray-400">
-            <svg className="w-8 h-8 md:w-12 md:h-12 mb-2 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
-            <p className="text-xs md:text-sm font-bold uppercase tracking-widest">No results</p>
+            <h3 className="text-base font-bold text-slate-700 mb-1">No log entries</h3>
+            <p className="text-sm text-slate-400">System activity will appear here.</p>
           </div>
         ) : (
-          <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent">
-            <table className="w-full min-w-[450px] md:min-w-full text-[7px] md:text-[11px] text-left">
-              <thead className="bg-[#2D1B4D] text-white uppercase text-[6px] md:text-[9px] font-black tracking-widest sticky top-0">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead className="bg-slate-50 border-b border-slate-200 sticky top-0 z-10">
                 <tr>
-                  <th className="px-1.5 py-1 md:px-4 md:py-2.5 w-6 md:w-8">
-                    <input
-                      type="checkbox"
-                      checked={logs?.length > 0 && selectedIds.length === logs.length}
+                  <th className="px-5 py-3.5 w-10">
+                    <input type="checkbox" checked={logs?.length > 0 && selectedIds.length === logs.length}
                       onChange={handleSelectAll}
-                      className="rounded border-gray-300 text-purple-600 focus:ring-purple-500 w-2 h-2 md:w-3.5 md:h-3.5 cursor-pointer"
-                    />
+                      className="w-4 h-4 rounded border-slate-300 text-violet-600 focus:ring-violet-500 cursor-pointer" />
                   </th>
-                  <th className="px-1.5 py-1 md:px-4 md:py-2.5">TIME</th>
-                  <th className="px-1.5 py-1 md:px-4 md:py-2.5">USER</th>
-                  <th className="px-1.5 py-1 md:px-4 md:py-2.5">ACTION</th>
-                  <th className="px-1.5 py-1 md:px-4 md:py-2.5">DESC</th>
-                  <th className="hidden md:table-cell px-1.5 py-1 md:px-4 md:py-2.5">MODEL</th>
-                  <th className="px-1.5 py-1 md:px-4 md:py-2.5 text-center">OPT</th>
+                  <th className="px-5 py-3.5 text-[10px] font-black text-slate-500 uppercase tracking-[0.15em] whitespace-nowrap">Time</th>
+                  <th className="px-5 py-3.5 text-[10px] font-black text-slate-500 uppercase tracking-[0.15em] whitespace-nowrap">User</th>
+                  <th className="px-5 py-3.5 text-[10px] font-black text-slate-500 uppercase tracking-[0.15em] whitespace-nowrap">Action</th>
+                  <th className="px-5 py-3.5 text-[10px] font-black text-slate-500 uppercase tracking-[0.15em]">Description</th>
+                  <th className="hidden md:table-cell px-5 py-3.5 text-[10px] font-black text-slate-500 uppercase tracking-[0.15em] whitespace-nowrap">Model</th>
+                  <th className="px-5 py-3.5 text-[10px] font-black text-slate-500 uppercase tracking-[0.15em] text-center w-16"></th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-slate-100">
                 {logs.map((log) => (
-                  <tr key={log.id} className={`group hover:bg-purple-50 transition-colors ${selectedIds.includes(log.id) ? 'bg-purple-50/50' : ''}`}>
-                    <td className="px-1.5 py-0.5 md:px-4 md:py-2">
-                      <input
-                        type="checkbox"
-                        checked={selectedIds.includes(log.id)}
+                  <tr key={log.id} className={`group hover:bg-violet-50/40 transition-colors ${selectedIds.includes(log.id) ? 'bg-violet-50/30' : ''}`}>
+                    <td className="px-5 py-3.5">
+                      <input type="checkbox" checked={selectedIds.includes(log.id)}
                         onChange={() => handleSelectLog(log.id)}
-                        className="rounded border-gray-300 text-purple-600 focus:ring-purple-500 w-2 h-2 md:w-3.5 md:h-3.5 cursor-pointer"
-                      />
+                        className="w-4 h-4 rounded border-slate-300 text-violet-600 focus:ring-violet-500 cursor-pointer" />
                     </td>
-                    <td className="px-1.5 py-0.5 md:px-4 md:py-2 font-bold text-gray-500 whitespace-nowrap">
-                      <div className="flex flex-col leading-tight">
-                        <span>{new Date(log.timestamp).toLocaleDateString()}</span>
-                        <span className="text-[6px] md:text-[8px] font-black text-gray-400">{new Date(log.timestamp).toLocaleTimeString()}</span>
-                      </div>
+                    <td className="px-5 py-3.5 whitespace-nowrap">
+                      <p className="text-xs font-bold text-slate-700">{new Date(log.timestamp).toLocaleDateString()}</p>
+                      <p className="text-[10px] font-bold text-slate-400">{new Date(log.timestamp).toLocaleTimeString()}</p>
                     </td>
-                    <td className="px-1.5 py-0.5 md:px-4 md:py-2">
-                      <div className="flex items-center gap-1 md:gap-2">
-                        <div className="w-3.5 h-3.5 md:w-6 md:h-6 rounded bg-purple-100 flex items-center justify-center text-purple-700 font-black text-[6px] md:text-[9px] flex-shrink-0">
+                    <td className="px-5 py-3.5">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-7 h-7 rounded-lg bg-violet-100 flex items-center justify-center text-violet-700 font-black text-[10px] flex-shrink-0">
                           {log.user_name?.charAt(0).toUpperCase() || 'S'}
                         </div>
-                        <div className="flex flex-col min-w-0 leading-tight">
-                          <span className="font-black text-gray-800 truncate text-[7px] md:text-[11px] uppercase tracking-tighter">{log.user_name}</span>
-                          <span className="text-[5px] md:text-[8px] text-gray-400 truncate tracking-tight font-bold">{log.user_email}</span>
+                        <div className="min-w-0">
+                          <p className="text-xs font-bold text-slate-800 truncate">{log.user_name}</p>
+                          <p className="text-[10px] text-slate-400 truncate">{log.user_email}</p>
                         </div>
                       </div>
                     </td>
-                    <td className="px-3 py-1 md:px-6 md:py-4">
-                      <span className={`px-2 py-0.5 rounded text-[7px] md:text-[9px] font-black border uppercase tracking-widest ${getActionColor(log.action_type || log.action)}`}>
+                    <td className="px-5 py-3.5">
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full border text-[10px] font-bold uppercase tracking-wider ${getActionColor(log.action_type || log.action)}`}>
                         {log.action}
                       </span>
                     </td>
-                    <td className="px-1.5 py-0.5 md:px-4 md:py-2 font-bold text-gray-600 max-w-[60px] md:max-w-xs truncate text-[7px] md:text-[11px] uppercase tracking-tight" title={log.description}>
+                    <td className="px-5 py-3.5 text-sm text-slate-600 max-w-xs truncate" title={log.description}>
                       {log.description}
                     </td>
-                    <td className="hidden md:table-cell px-1.5 py-0.5 md:px-4 md:py-2">
-                      <span className="text-[5px] md:text-[8px] font-black text-gray-400 bg-gray-50 px-1 py-0 rounded uppercase tracking-widest border border-gray-100">
-                        {log.model_name || 'Sys'}
+                    <td className="hidden md:table-cell px-5 py-3.5">
+                      <span className="text-[10px] font-bold text-slate-400 bg-slate-50 px-2 py-0.5 rounded-full border border-slate-200 uppercase tracking-wider">
+                        {log.model_name || 'System'}
                       </span>
                     </td>
-                    <td className="px-1.5 py-0.5 md:px-4 md:py-2 text-center">
-                      <button
-                        onClick={() => handleDelete(log.id)}
-                        className="p-0.5 md:p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-all md:opacity-0 md:group-hover:opacity-100 active:scale-90"
-                        title="Delete"
-                      >
-                        <svg className="w-2.5 h-2.5 md:w-3.5 md:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    <td className="px-5 py-3.5 text-center">
+                      <button onClick={() => handleDelete(log.id)}
+                        className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all opacity-0 group-hover:opacity-100 no-min" title="Delete">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                         </svg>
                       </button>
                     </td>
@@ -351,35 +319,29 @@ const AuditLogs = () => {
             </table>
           </div>
         )}
+
+        {/* Pagination */}
+        {!loading && logs.length > 0 && totalPages > 1 && (
+          <div className="flex items-center justify-between px-5 py-3.5 border-t border-slate-100 bg-slate-50/50">
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">
+              Page {page} of {totalPages} · {totalCount} entries
+              {selectedIds.length > 0 && <span className="ml-3 text-violet-600">{selectedIds.length} selected</span>}
+            </span>
+            <div className="flex items-center gap-2">
+              <button disabled={page === 1} onClick={() => setPage(p => Math.max(1, p - 1))}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-600 hover:bg-slate-50 transition-all disabled:opacity-40 disabled:cursor-not-allowed">
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" /></svg>
+                Previous
+              </button>
+              <button disabled={page === totalPages} onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-600 hover:bg-slate-50 transition-all disabled:opacity-40 disabled:cursor-not-allowed">
+                Next
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" /></svg>
+              </button>
+            </div>
+          </div>
+        )}
       </div>
-      
-      {!loading && logs.length > 0 && (
-        <div className="flex items-center justify-between text-[6px] md:text-[9px] font-black text-gray-400 uppercase tracking-widest px-1 py-4">
-          <div className="flex items-center gap-4">
-            <span>{totalCount} total entries (Page {page} of {totalPages})</span>
-            {selectedIds.length > 0 && (
-              <span className="text-purple-600 bg-purple-50 px-2 py-1 rounded-full">{selectedIds.length} selected</span>
-            )}
-          </div>
-          
-          <div className="flex items-center gap-2">
-            <button
-              disabled={page === 1}
-              onClick={() => setPage(p => Math.max(1, p - 1))}
-              className="p-1 md:p-2 rounded-lg border border-gray-200 disabled:opacity-50 hover:bg-gray-50 transition-all active:scale-95"
-            >
-              <svg className="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" /></svg>
-            </button>
-            <button
-              disabled={page === totalPages}
-              onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-              className="p-1 md:p-2 rounded-lg border border-gray-200 disabled:opacity-50 hover:bg-gray-50 transition-all active:scale-95"
-            >
-              <svg className="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" /></svg>
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

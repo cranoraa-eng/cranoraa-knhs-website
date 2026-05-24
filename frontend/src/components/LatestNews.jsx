@@ -27,12 +27,12 @@ const LatestNews = () => {
 
   const getCategoryColor = (category) => {
     const colors = {
-      'academic': 'bg-purple-100 text-purple-800',
+      'academic': 'bg-violet-100 text-purple-800',
       'events': 'bg-green-100 text-green-800',
       'emergency': 'bg-red-100 text-red-800',
       'holiday': 'bg-blue-100 text-blue-800',
     };
-    return colors[category] || 'bg-gray-100 text-gray-800';
+    return colors[category] || 'bg-slate-100 text-slate-800';
   };
 
   const formatDate = (dateString) => {
@@ -58,7 +58,7 @@ const LatestNews = () => {
     return (
       <div className="py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-center text-gray-800 mb-12">Latest News</h2>
+          <h2 className="text-3xl font-bold text-center text-slate-800 mb-12">Latest News</h2>
           <div className="flex justify-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
           </div>

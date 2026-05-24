@@ -184,28 +184,18 @@ const GradeManagement = () => {
   if (classroomsByLevel['Other']) sortedLevels.push('Other');
 
   return (
-    <div className="animate-in fade-in duration-700">
-      <style>{`
-        @keyframes fadeInUp {
-          from { opacity: 0; transform: translateY(10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-fade-in-up {
-          animation: fadeInUp 0.5s ease-out forwards;
-        }
-      `}</style>
-
+    <div className="space-y-5 animate-fade-in">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4 animate-fade-in-up">
-        <div className="text-center md:text-left">
-          <h1 className="text-xl md:text-2xl font-black text-slate-800 uppercase tracking-widest">Grade Management</h1>
-          <p className="text-[10px] md:text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">Final grades organized by Student (Q1–Q4)</p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-black text-slate-900 tracking-tight">Grade Management</h1>
+          <p className="text-sm text-slate-500 mt-0.5">Final grades organized by student (Q1–Q4)</p>
         </div>
         {(user?.role === 'admin' || user?.role === 'teacher') && (
           <button onClick={() => navigate('/grade-input')}
-            className="flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] md:text-xs font-black py-2 md:py-2.5 px-4 md:px-6 rounded-lg md:rounded-xl transition-all hover:scale-105 active:scale-95 shadow-sm w-full md:w-auto uppercase tracking-[0.2em]">
-            <svg className="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 4v16m8-8H4" />
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-violet-600 text-white text-sm font-bold hover:bg-violet-700 active:scale-95 transition-all shadow-sm">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
             </svg>
             Input Grades
           </button>
@@ -213,44 +203,36 @@ const GradeManagement = () => {
       </div>
 
       {/* Filters */}
-      <div className="bg-white border border-slate-200 rounded-xl shadow-sm p-3 md:p-4 mb-4 animate-fade-in-up [animation-delay:100ms]">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-3">
-          <div className="relative group w-full">
-            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 group-focus-within:text-indigo-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+      <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div className="relative">
+            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
-            <input type="text" placeholder="SEARCH STUDENT OR SUBJECT..."
+            <input type="text" placeholder="Search student or subject…"
               value={search} onChange={e => setSearch(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 md:py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-[10px] md:text-xs font-bold uppercase tracking-widest transition-all shadow-sm" />
+              className="w-full pl-9 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-400 focus:bg-white transition-all" />
           </div>
-          <div className="relative w-full">
-            <select value={filterQuarter} onChange={e => setFilterQuarter(e.target.value)}
-              className="w-full px-3 py-2 md:py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-[10px] md:text-xs font-bold uppercase tracking-widest transition-all hover:border-indigo-300 hover:shadow-sm cursor-pointer appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%236B7280%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E')] bg-[length:1.25rem] bg-[right_0.5rem_center] bg-no-repeat pr-10 shadow-sm">
-              <option value="">ALL QUARTERS</option>
-              <option value="1">Q1 — FIRST QUARTER</option>
-              <option value="2">Q2 — SECOND QUARTER</option>
-              <option value="3">Q3 — THIRD QUARTER</option>
-              <option value="4">Q4 — FOURTH QUARTER</option>
-            </select>
-          </div>
-          <div className="flex items-center border border-slate-200 rounded-lg overflow-hidden bg-white transition-all focus-within:ring-2 focus-within:ring-indigo-500 shadow-sm w-full">
-            <button 
-              onClick={() => handleYearChange('prev')}
-              className="px-3 md:px-4 py-2 md:py-2.5 hover:bg-slate-50 text-slate-500 border-r border-slate-200 transition-colors active:bg-slate-100 flex-shrink-0"
-            >
-              <svg className="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M15 19l-7-7 7-7" />
+          <select value={filterQuarter} onChange={e => setFilterQuarter(e.target.value)}
+            className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-400 transition-all">
+            <option value="">All Quarters</option>
+            <option value="1">Q1 — First Quarter</option>
+            <option value="2">Q2 — Second Quarter</option>
+            <option value="3">Q3 — Third Quarter</option>
+            <option value="4">Q4 — Fourth Quarter</option>
+          </select>
+          <div className="flex items-center border border-slate-200 rounded-xl overflow-hidden bg-white shadow-sm">
+            <button onClick={() => handleYearChange('prev')}
+              className="px-4 py-2.5 hover:bg-slate-50 text-slate-500 border-r border-slate-200 transition-colors no-min">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
               </svg>
             </button>
-            <div className="flex-1 text-center text-[10px] md:text-xs font-black text-slate-700 select-none min-w-[70px] md:min-w-[80px] uppercase tracking-widest">
-              {filterYear}
-            </div>
-            <button 
-              onClick={() => handleYearChange('next')}
-              className="px-3 md:px-4 py-2 md:py-2.5 hover:bg-slate-50 text-slate-500 border-l border-slate-200 transition-colors active:bg-slate-100 flex-shrink-0"
-            >
-              <svg className="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" />
+            <div className="flex-1 text-center text-sm font-black text-slate-700 select-none">{filterYear}</div>
+            <button onClick={() => handleYearChange('next')}
+              className="px-4 py-2.5 hover:bg-slate-50 text-slate-500 border-l border-slate-200 transition-colors no-min">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
               </svg>
             </button>
           </div>
@@ -259,21 +241,26 @@ const GradeManagement = () => {
 
       {/* Content */}
       {loading ? (
-        <div className="flex items-center justify-center h-48">
-          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-purple-600" />
+        <div className="flex flex-col items-center justify-center h-48 gap-4">
+          <div className="relative w-10 h-10">
+            <div className="absolute inset-0 rounded-full border-2 border-slate-100" />
+            <div className="absolute inset-0 rounded-full border-2 border-violet-600 border-t-transparent animate-spin" />
+          </div>
         </div>
       ) : sortedLevels.length === 0 ? (
-        <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-12 md:p-20 text-center animate-fade-in-up [animation-delay:200ms]">
-          <div className="w-16 h-16 md:w-20 md:h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6">
-            <svg className="w-8 h-8 md:w-10 md:h-10 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        <div className="bg-white border border-slate-200 rounded-2xl shadow-sm">
+          <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
+            <div className="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center mb-4">
+              <svg className="w-7 h-7 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
+            </div>
+            <h3 className="text-base font-bold text-slate-700 mb-1">No grade records</h3>
+            <p className="text-sm text-slate-400">Final grades will appear here once encoded.</p>
           </div>
-          <h3 className="text-sm md:text-xl font-black text-slate-700 uppercase tracking-widest mb-2">No Grade Records</h3>
-          <p className="text-[10px] md:text-sm text-slate-400 font-bold uppercase tracking-widest max-w-xs mx-auto leading-relaxed">Final grades will appear here once encoded in the system.</p>
         </div>
       ) : (
-        <div className="space-y-3 animate-fade-in-up [animation-delay:200ms]">
+        <div className="space-y-4">
           {sortedLevels.map((level, lIdx) => {
             const levelClassrooms = (classroomsByLevel[level] || []).filter(c => subjectsByClassroom[c.id]);
             if (!levelClassrooms.length) return null;
@@ -281,25 +268,25 @@ const GradeManagement = () => {
             const levelCount = levelClassrooms.reduce((sum, c) => sum + filteredGrades.filter(g => g.classroom === c.id).length, 0);
 
             return (
-              <div key={level} className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden transition-all hover:shadow-md">
+              <div key={level} className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden transition-all hover:shadow-md">
 
                 {/* Level 1: Grade Level */}
                 <button onClick={() => setOpenLevel(levelOpen ? null : level)}
-                  className="w-full flex items-center justify-between px-4 md:px-6 py-3 md:py-4 bg-gradient-to-r from-slate-900 to-slate-800 text-white hover:from-slate-800 hover:to-slate-700 transition-all group">
-                  <div className="flex items-center gap-2 md:gap-3 transition-transform group-hover:translate-x-1">
-                    <div className="w-7 h-7 md:w-9 md:h-9 rounded-lg bg-white/10 flex items-center justify-center font-black text-xs md:text-sm uppercase tracking-widest border border-white/5">
+                  className="w-full flex items-center justify-between px-5 py-4 bg-[#1A0B2E] text-white hover:bg-[#2D1452] transition-all group">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center font-black text-sm border border-white/10">
                       {gradeNum(level) !== 999 ? gradeNum(level) : level.charAt(0)}
                     </div>
                     <div className="text-left">
-                      <div className="font-black text-sm md:text-lg uppercase tracking-widest">{level}</div>
-                      <div className="text-slate-400 text-[8px] md:text-xs font-bold uppercase tracking-[0.2em]">{levelClassrooms.length} Rooms · {levelCount} Entries</div>
+                      <div className="font-black text-sm uppercase tracking-widest">{level}</div>
+                      <div className="text-violet-300/70 text-[10px] font-bold uppercase tracking-widest">{levelClassrooms.length} Rooms · {levelCount} Entries</div>
                     </div>
                   </div>
                   <ChevronIcon open={levelOpen} />
                 </button>
 
                 {levelOpen && (
-                  <div className="divide-y divide-gray-100 animate-in slide-in-from-top duration-300">
+                  <div className="divide-y divide-slate-100">
                     {levelClassrooms.map(classroom => {
                       const classroomOpen = openClassroom === classroom.id;
                       const subjects = Object.values(subjectsByClassroom[classroom.id] || {});
@@ -371,25 +358,25 @@ const GradeManagement = () => {
                                     {/* Level 4: Students Horizontal Table */}
                                     {subjectOpen && (
                                       <div className="px-1 md:px-8 pb-4 pt-2 animate-in fade-in slide-in-from-top-2 duration-300">
-                                        <div className="overflow-x-auto rounded-lg md:rounded-xl border border-gray-200 shadow-sm scrollbar-thin scrollbar-thumb-gray-300">
+                                        <div className="overflow-x-auto rounded-lg md:rounded-xl border border-slate-200 shadow-sm scrollbar-thin scrollbar-thumb-slate-300">
                                           <table className="w-full text-[10px] md:text-sm">
-                                            <thead className="bg-gray-50 border-b border-gray-200">
+                                            <thead className="bg-slate-50 border-b border-slate-200">
                                               <tr>
-                                                <th className="text-left px-2 md:px-4 py-2 md:py-3 text-[8px] md:text-xs font-black text-slate-400 uppercase tracking-[0.2em] sticky left-0 bg-gray-50 z-10 w-8 md:w-12 border-r border-gray-100">#</th>
-                                                <th className="text-left px-2 md:px-4 py-2 md:py-3 text-[8px] md:text-xs font-black text-slate-400 uppercase tracking-[0.2em] sticky left-8 md:left-12 bg-gray-50 z-10 border-r border-gray-200">Student</th>
+                                                <th className="text-left px-2 md:px-4 py-2 md:py-3 text-[8px] md:text-xs font-black text-slate-400 uppercase tracking-[0.2em] sticky left-0 bg-slate-50 z-10 w-8 md:w-12 border-r border-slate-100">#</th>
+                                                <th className="text-left px-2 md:px-4 py-2 md:py-3 text-[8px] md:text-xs font-black text-slate-400 uppercase tracking-[0.2em] sticky left-8 md:left-12 bg-slate-50 z-10 border-r border-slate-200">Student</th>
                                                 <th className="text-center px-1 md:px-4 py-2 md:py-3 text-[8px] md:text-xs font-black text-slate-400 uppercase tracking-[0.2em] bg-blue-50/30">Q1</th>
                                                 <th className="text-center px-1 md:px-4 py-2 md:py-3 text-[8px] md:text-xs font-black text-slate-400 uppercase tracking-[0.2em] bg-blue-50/30">Q2</th>
                                                 <th className="text-center px-1 md:px-4 py-2 md:py-3 text-[8px] md:text-xs font-black text-slate-400 uppercase tracking-[0.2em] bg-blue-50/30">Q3</th>
                                                 <th className="text-center px-1 md:px-4 py-2 md:py-3 text-[8px] md:text-xs font-black text-slate-400 uppercase tracking-[0.2em] bg-blue-50/30">Q4</th>
-                                                <th className="hidden md:table-cell text-center px-1 md:px-4 py-2 md:py-3 text-[8px] md:text-xs font-black text-purple-600 uppercase tracking-[0.2em] border-l border-gray-200 bg-purple-50/30">Final</th>
+                                                <th className="hidden md:table-cell text-center px-1 md:px-4 py-2 md:py-3 text-[8px] md:text-xs font-black text-violet-600 uppercase tracking-[0.2em] border-l border-slate-200 bg-violet-50/30">Final</th>
                                                 <th className="text-center px-1 md:px-4 py-2 md:py-3 text-[8px] md:text-xs font-black text-indigo-600 uppercase tracking-[0.2em] bg-indigo-50/30">Round</th>
-                                                <th className="text-center px-1 md:px-4 py-2 md:py-3 text-[8px] md:text-xs font-black text-slate-400 uppercase tracking-[0.2em] bg-purple-50/30">Remarks</th>
+                                                <th className="text-center px-1 md:px-4 py-2 md:py-3 text-[8px] md:text-xs font-black text-slate-400 uppercase tracking-[0.2em] bg-violet-50/30">Remarks</th>
                                                 {(user?.role === 'admin' || user?.role === 'teacher') && (
                                                   <th className="text-center px-2 md:px-4 py-2 md:py-3 text-[8px] md:text-xs font-black text-slate-400 uppercase tracking-[0.2em]">Actions</th>
                                                 )}
                                               </tr>
                                             </thead>
-                                            <tbody className="divide-y divide-gray-100">
+                                            <tbody className="divide-y divide-slate-100">
                                               {(() => {
                                                 let lastSex = null;
                                                 let maleIdx = 0;
@@ -422,9 +409,9 @@ const GradeManagement = () => {
                                                           </td>
                                                         </tr>
                                                       )}
-                                                      <tr className="hover:bg-purple-50 transition-colors group/row text-center">
-                                                        <td className="px-1 md:px-4 py-2 md:py-3 text-slate-400 text-[8px] md:text-xs font-black sticky left-0 bg-white group-hover/row:bg-purple-50 z-10 w-8 md:w-12 border-r border-gray-100">{displayIdx}</td>
-                                                        <td className="px-1 md:px-4 py-2 md:py-3 sticky left-8 md:left-12 bg-white group-hover/row:bg-purple-50 z-10 border-r border-gray-200">
+                                                      <tr className="hover:bg-violet-50 transition-colors group/row text-center">
+                                                        <td className="px-1 md:px-4 py-2 md:py-3 text-slate-400 text-[8px] md:text-xs font-black sticky left-0 bg-white group-hover/row:bg-violet-50 z-10 w-8 md:w-12 border-r border-slate-100">{displayIdx}</td>
+                                                        <td className="px-1 md:px-4 py-2 md:py-3 sticky left-8 md:left-12 bg-white group-hover/row:bg-violet-50 z-10 border-r border-slate-200">
                                                           <div className="flex items-center gap-1.5 md:gap-2 min-w-[70px] md:min-w-[180px] text-left">
                                                             <div className={`hidden sm:flex w-5 h-5 md:w-8 md:h-8 rounded-lg items-center justify-center text-white font-black text-[9px] md:text-xs flex-shrink-0 shadow-sm ${currentSex === 'male' ? 'bg-gradient-to-br from-blue-500 to-indigo-500' : currentSex === 'female' ? 'bg-gradient-to-br from-rose-500 to-purple-500' : 'bg-gradient-to-br from-slate-500 to-slate-700'}`}>
                                                               {s.name?.charAt(0).toUpperCase()}
@@ -439,20 +426,20 @@ const GradeManagement = () => {
                                                           </div>
                                                         </td>
                                                     {[1, 2, 3, 4].map(qNum => (
-                                                      <td key={qNum} className="px-1 md:px-2 py-2 md:py-3 text-center border-l border-gray-50">
+                                                      <td key={qNum} className="px-1 md:px-2 py-2 md:py-3 text-center border-l border-slate-50">
                                                         <div className="flex flex-col items-center gap-0.5">
                                                           <ScoreBadge score={s.quarters[qNum]?.raw_score} />
                                                           {s.quarters[qNum]?.is_locked && <span className="text-[7px] md:text-[10px]" title="Locked">🔒</span>}
                                                         </div>
                                                       </td>
                                                     ))}
-                                                    <td className="hidden md:table-cell px-1.5 md:px-4 py-2 md:py-3 text-center border-l border-gray-200 bg-purple-50/10">
+                                                    <td className="hidden md:table-cell px-1.5 md:px-4 py-2 md:py-3 text-center border-l border-slate-200 bg-violet-50/10">
                                                       <ScoreBadge score={final} />
                                                     </td>
                                                     <td className="px-1.5 md:px-4 py-2 md:py-3 text-center md:border-l border-indigo-50/10 bg-indigo-50/10">
                                                       <ScoreBadge score={rounded} />
                                                     </td>
-                                                    <td className="px-2 md:px-4 py-2 md:py-3 text-center bg-purple-50/10">
+                                                    <td className="px-2 md:px-4 py-2 md:py-3 text-center bg-violet-50/10">
                                                       {remarks ? (
                                                         <span className={`text-[7px] md:text-[9px] font-black px-1.5 py-0.5 rounded-full border whitespace-nowrap transition-all group-hover/row:scale-105 uppercase tracking-widest ${REMARKS_STYLE[remarks]}`}>
                                                           {remarks}
@@ -468,7 +455,7 @@ const GradeManagement = () => {
                                                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
                                                         </button>
                                                         <button onClick={() => window.open(`/student-grades?student_id=${s.id}`, '_blank')}
-                                                          className="p-1.5 text-purple-700 bg-purple-100 hover:bg-purple-200 rounded-lg transition-all active:scale-95" title="View Grade Details">
+                                                          className="p-1.5 text-violet-700 bg-violet-100 hover:bg-violet-200 rounded-lg transition-all active:scale-95" title="View Grade Details">
                                                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
                                                         </button>
                                                         <button onClick={() => handleLockAll(s)}
@@ -505,7 +492,7 @@ const GradeManagement = () => {
                                                                     <span class="text-[10px] font-black uppercase tracking-widest text-slate-600">View Profile</span>
                                                                   </button>
                                                                   <button id="view-details" class="flex items-center gap-3 w-full p-3 rounded-xl hover:bg-slate-50 transition-all group">
-                                                                    <div class="w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center text-purple-600 group-hover:bg-purple-600 group-hover:text-white transition-colors">
+                                                                    <div class="w-8 h-8 rounded-lg bg-violet-50 flex items-center justify-center text-violet-600 group-hover:bg-violet-600 group-hover:text-white transition-colors">
                                                                       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
                                                                     </div>
                                                                     <span class="text-[10px] font-black uppercase tracking-widest text-slate-600">Grade Details</span>

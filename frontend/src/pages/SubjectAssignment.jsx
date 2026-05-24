@@ -162,25 +162,25 @@ const SubjectAssignment = () => {
     <div className="p-4 md:p-6 space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 animate-fade-in-up">
         <div className="text-center md:text-left">
-          <h1 className="text-2xl md:text-3xl font-black text-gray-800 tracking-tight">Subject Assignment</h1>
-          <p className="text-gray-500 text-sm md:text-base mt-1 font-medium">Assign subjects and teachers to classrooms</p>
+          <h1 className="text-2xl md:text-3xl font-black text-slate-800 tracking-tight">Subject Assignment</h1>
+          <p className="text-slate-500 text-sm md:text-base mt-1 font-medium">Assign subjects and teachers to classrooms</p>
         </div>
       </div>
 
       {/* Classroom picker */}
-      <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-4 animate-fade-in-up [animation-delay:100ms]">
+      <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-4 animate-fade-in-up [animation-delay:100ms]">
         <div className="relative group max-w-xl">
           <select
             value={selectedClassroom}
             onChange={e => setSelectedClassroom(e.target.value)}
-            className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:bg-white text-sm font-bold transition-all shadow-inner appearance-none cursor-pointer pr-10"
+            className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 focus:bg-white text-sm font-bold transition-all shadow-inner appearance-none cursor-pointer pr-10"
           >
             <option value="">— Select Classroom —</option>
             {sortedClassrooms.map(c => (
               <option key={c.id} value={c.id}>{c.name}</option>
             ))}
           </select>
-          <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 group-hover:text-purple-500 transition-colors">
+          <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 group-hover:text-violet-500 transition-colors">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" /></svg>
           </div>
         </div>
@@ -188,12 +188,12 @@ const SubjectAssignment = () => {
 
       {/* Assignments table */}
       {selectedClassroom && (
-        <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden animate-fade-in-up [animation-delay:200ms]">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between px-6 py-4 border-b border-gray-100 bg-gray-50/50 gap-4">
+        <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden animate-fade-in-up [animation-delay:200ms]">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/50 gap-4">
             <div>
-              <h2 className="text-lg font-black text-gray-800 tracking-tight flex items-center gap-2">
+              <h2 className="text-lg font-black text-slate-800 tracking-tight flex items-center gap-2">
                 Assigned Subjects
-                <span className="px-2 py-0.5 bg-purple-100 text-purple-600 text-[10px] font-black rounded-full uppercase tracking-wider">{assignments.length}</span>
+                <span className="px-2 py-0.5 bg-violet-100 text-violet-600 text-[10px] font-black rounded-full uppercase tracking-wider">{assignments.length}</span>
               </h2>
             </div>
             <button
@@ -209,19 +209,19 @@ const SubjectAssignment = () => {
 
           {assignments.length === 0 ? (
             <div className="text-center py-20 animate-in zoom-in-95 duration-500">
-              <div className="w-20 h-20 mx-auto mb-6 bg-purple-50 rounded-full flex items-center justify-center text-purple-200">
+              <div className="w-20 h-20 mx-auto mb-6 bg-violet-50 rounded-full flex items-center justify-center text-purple-200">
                 <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                 </svg>
               </div>
-              <p className="text-gray-500 font-bold tracking-tight text-lg">No Subjects Assigned</p>
-              <p className="text-gray-400 text-sm font-medium mt-1">This classroom doesn't have any subjects yet.</p>
+              <p className="text-slate-500 font-bold tracking-tight text-lg">No Subjects Assigned</p>
+              <p className="text-slate-400 text-sm font-medium mt-1">This classroom doesn't have any subjects yet.</p>
             </div>
           ) : (
-            <div className="divide-y divide-gray-100">
+            <div className="divide-y divide-slate-100">
               {assignments.map((a, idx) => {
                 return (
-                  <div key={a.id} className={`p-5 hover:bg-purple-50/50 transition-all group ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50/20'}`}>
+                  <div key={a.id} className={`p-5 hover:bg-violet-50/50 transition-all group ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/20'}`}>
                     <div className="flex items-center gap-5">
                       {/* Subject icon/card */}
                       <div className="flex-shrink-0 w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white font-black text-lg shadow-lg transition-transform group-hover:scale-105">
@@ -232,8 +232,8 @@ const SubjectAssignment = () => {
                       <div className="flex-1 min-w-0">
                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                           <div>
-                            <h3 className="text-base font-black text-gray-800 tracking-tight leading-none">{a.subject_name}</h3>
-                            <p className="text-[10px] font-black text-purple-500 uppercase tracking-widest mt-1.5">{a.subject_code}</p>
+                            <h3 className="text-base font-black text-slate-800 tracking-tight leading-none">{a.subject_name}</h3>
+                            <p className="text-[10px] font-black text-violet-500 uppercase tracking-widest mt-1.5">{a.subject_code}</p>
                             
                             {/* Grade level mismatch warning */}
                             {(() => {
@@ -307,10 +307,10 @@ const SubjectAssignment = () => {
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
             </div>
-            <form onSubmit={handleSubmit} className="p-8 space-y-6 max-h-[70vh] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-200">
+            <form onSubmit={handleSubmit} className="p-8 space-y-6 max-h-[70vh] overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200">
               <div className="space-y-2">
                 <div className="flex items-center justify-between ml-1">
-                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Select Subject</label>
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Select Subject</label>
                   {(() => {
                     const cls = classrooms.find(c => String(c.id) === String(selectedClassroom));
                     const level = cls?.name
@@ -318,7 +318,7 @@ const SubjectAssignment = () => {
                           .find(l => cls.name.toLowerCase().includes(l.toLowerCase())))
                       : null;
                     return level ? (
-                      <span className="text-[9px] font-black text-purple-600 bg-purple-50 px-2 py-0.5 rounded-full uppercase tracking-wider">
+                      <span className="text-[9px] font-black text-violet-600 bg-violet-50 px-2 py-0.5 rounded-full uppercase tracking-wider">
                         {level} Only
                       </span>
                     ) : null;
@@ -328,7 +328,7 @@ const SubjectAssignment = () => {
                 {/* Search box */}
                 {!selectedAssignment ? (
                   <div className="relative group">
-                    <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-purple-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-violet-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
                     <input
@@ -336,21 +336,21 @@ const SubjectAssignment = () => {
                       placeholder="Quick search by name or code..."
                       value={subjectSearch}
                       onChange={e => setSubjectSearch(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:bg-white text-sm font-bold transition-all shadow-inner"
+                      className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 focus:bg-white text-sm font-bold transition-all shadow-inner"
                     />
                     {subjectSearch && (
                       <button
                         type="button"
                         onClick={() => setSubjectSearch('')}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" /></svg>
                       </button>
                     )}
                   </div>
                 ) : (
-                  <div className="px-4 py-3 bg-purple-50 border border-purple-100 rounded-xl text-sm font-black text-purple-700 uppercase tracking-widest flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-purple-600 text-white flex items-center justify-center">
+                  <div className="px-4 py-3 bg-violet-50 border border-violet-100 rounded-xl text-sm font-black text-violet-700 uppercase tracking-widest flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-violet-600 text-white flex items-center justify-center">
                       {selectedAssignment.subject_code?.charAt(0)}
                     </div>
                     {selectedAssignment.subject_name}
@@ -359,16 +359,16 @@ const SubjectAssignment = () => {
 
                 {/* Subject card list */}
                 {!selectedAssignment && (
-                <div className="border border-gray-100 rounded-2xl overflow-hidden shadow-sm bg-gray-50/50">
+                <div className="border border-slate-100 rounded-2xl overflow-hidden shadow-sm bg-slate-50/50">
                   {filteredSubjects.length === 0 ? (
-                    <div className="py-12 text-center text-gray-400">
+                    <div className="py-12 text-center text-slate-400">
                       <svg className="w-10 h-10 mx-auto mb-3 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                       </svg>
                       <p className="text-xs font-bold uppercase tracking-widest opacity-60">No subjects match filters</p>
                     </div>
                   ) : (
-                    <div className="max-h-60 overflow-y-auto divide-y divide-gray-100 scrollbar-thin scrollbar-thumb-gray-200">
+                    <div className="max-h-60 overflow-y-auto divide-y divide-slate-100 scrollbar-thin scrollbar-thumb-slate-200">
                       {filteredSubjects.map(s => {
                         const isAssigned = assignedSubjectIds.has(s.id);
                         const isSelected = String(formData.subject) === String(s.id);
@@ -380,26 +380,26 @@ const SubjectAssignment = () => {
                             onClick={() => !isAssigned && setFormData({ ...formData, subject: String(s.id) })}
                             className={`w-full flex items-center gap-4 px-5 py-4 text-left transition-all ${
                               isAssigned
-                                ? 'opacity-40 cursor-not-allowed grayscale bg-gray-100/50'
+                                ? 'opacity-40 cursor-not-allowed grayscale bg-slate-100/50'
                                 : isSelected
-                                  ? 'bg-purple-600 text-white shadow-lg shadow-purple-200 z-10'
+                                  ? 'bg-violet-600 text-white shadow-lg shadow-purple-200 z-10'
                                   : 'hover:bg-white bg-transparent'
                             }`}
                           >
                             {/* Code badge */}
                             <span className={`flex-shrink-0 font-mono text-[10px] font-black px-2 py-1 rounded-lg uppercase tracking-tight shadow-sm ${
-                              isSelected ? 'bg-white text-purple-600' : 'bg-gray-200 text-gray-600'
+                              isSelected ? 'bg-white text-violet-600' : 'bg-slate-200 text-slate-600'
                             }`}>
                               {s.code}
                             </span>
 
                             {/* Name */}
                             <div className="flex-1 min-w-0">
-                              <div className={`text-sm font-black tracking-tight truncate ${isSelected ? 'text-white' : 'text-gray-800'}`}>
+                              <div className={`text-sm font-black tracking-tight truncate ${isSelected ? 'text-white' : 'text-slate-800'}`}>
                                 {s.name}
                               </div>
                               {s.grade_level && (
-                                <div className={`text-[9px] font-bold uppercase tracking-widest mt-0.5 ${isSelected ? 'text-purple-200' : 'text-gray-400'}`}>
+                                <div className={`text-[9px] font-bold uppercase tracking-widest mt-0.5 ${isSelected ? 'text-purple-200' : 'text-slate-400'}`}>
                                   {s.grade_level}
                                 </div>
                               )}
@@ -407,12 +407,12 @@ const SubjectAssignment = () => {
 
                             {/* Status */}
                             {isAssigned ? (
-                              <span className="flex-shrink-0 text-[8px] font-black uppercase tracking-widest bg-gray-200 text-gray-500 px-2 py-1 rounded-full border border-gray-300">
+                              <span className="flex-shrink-0 text-[8px] font-black uppercase tracking-widest bg-slate-200 text-slate-500 px-2 py-1 rounded-full border border-slate-300">
                                 Assigned
                               </span>
                             ) : isSelected ? (
                               <div className="w-6 h-6 rounded-full bg-white flex items-center justify-center shadow-sm">
-                                <svg className="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="w-4 h-4 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                                 </svg>
                               </div>
@@ -427,12 +427,12 @@ const SubjectAssignment = () => {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Assigned Teacher</label>
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Assigned Teacher</label>
                 <div className="relative group">
                   <select
                     value={formData.teacher}
                     onChange={e => setFormData({ ...formData, teacher: e.target.value })}
-                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:bg-white text-sm font-bold transition-all shadow-inner appearance-none cursor-pointer pr-10"
+                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 focus:bg-white text-sm font-bold transition-all shadow-inner appearance-none cursor-pointer pr-10"
                     required
                   >
                     <option value="">Select a teacher for this subject</option>
@@ -442,19 +442,19 @@ const SubjectAssignment = () => {
                       </option>
                     ))}
                   </select>
-                  <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 group-hover:text-purple-500 transition-colors">
+                  <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 group-hover:text-violet-500 transition-colors">
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" /></svg>
                   </div>
                 </div>
               </div>
 
-              <div className="flex gap-4 pt-4 border-t border-gray-100">
+              <div className="flex gap-4 pt-4 border-t border-slate-100">
                 <button type="button" onClick={() => setShowModal(false)}
-                  className="flex-1 px-6 py-3 text-gray-500 hover:text-gray-700 font-bold text-sm transition-colors">
+                  className="flex-1 px-6 py-3 text-slate-500 hover:text-slate-700 font-bold text-sm transition-colors">
                   Cancel
                 </button>
                 <button type="submit" disabled={saving || !formData.subject || !formData.teacher}
-                  className="flex-[2] bg-purple-600 hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3 rounded-2xl transition-all shadow-lg shadow-purple-200 active:scale-95 text-sm">
+                  className="flex-[2] bg-violet-600 hover:bg-violet-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3 rounded-2xl transition-all shadow-lg shadow-purple-200 active:scale-95 text-sm">
                   {saving ? (
                     <div className="flex items-center justify-center gap-2">
                       <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
