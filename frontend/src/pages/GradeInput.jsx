@@ -62,8 +62,8 @@ const GradeInput = () => {
   }, []);
 
   useEffect(() => {
-    api.get('/classrooms/').then(r => setClassrooms(r.data)).catch(() => toast.error('Failed to load classrooms'));
-  }, []);
+    api.get(`/classrooms/?academic_year=${academicYear}`).then(r => setClassrooms(r.data)).catch(() => toast.error('Failed to load classrooms'));
+  }, [academicYear]);
 
   useEffect(() => {
     if (!selClassroom) { setSubjects([]); setStudents([]); setCells({}); setExistingGrades({}); return; }

@@ -58,18 +58,18 @@ const GradeManagement = () => {
   };
 
   useEffect(() => {
-    Promise.all([api.get('/grades/'), api.get('/classrooms/')])
+    Promise.all([api.get(`/grades/?academic_year=${filterYear}`), api.get(`/classrooms/?academic_year=${filterYear}`)])
       .then(([gRes, cRes]) => {
         setGrades(gRes.data.filter(g => g.grade_type === 'final_grade'));
         setClassrooms(cRes.data);
       })
       .catch(() => toast.error('Failed to load data'))
       .finally(() => setLoading(false));
-  }, []);
+  }, [filterYear]);
 
   const refresh = async () => {
     try {
-      const [gRes, cRes] = await Promise.all([api.get('/grades/'), api.get('/classrooms/')]);
+      const [gRes, cRes] = await Promise.all([api.get(`/grades/?academic_year=${filterYear}`), api.get(`/classrooms/?academic_year=${filterYear}`)]);
       setGrades(gRes.data.filter(g => g.grade_type === 'final_grade'));
       setClassrooms(cRes.data);
     } catch { toast.error('Failed to refresh'); }

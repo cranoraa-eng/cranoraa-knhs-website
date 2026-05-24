@@ -57,7 +57,7 @@ const StudentGradeView = () => {
   useEffect(() => {
     if (studentIdParam) {
       Promise.all([
-        api.get(`/grades/?student=${studentIdParam}`),
+        api.get(`/grades/?student=${studentIdParam}&academic_year=${filterYear}`),
         api.get(`/users/${studentIdParam}/`),
       ]).then(([gRes, uRes]) => {
         // Only final grades
@@ -66,12 +66,12 @@ const StudentGradeView = () => {
       }).catch(() => toast.error('Failed to load student grades'))
         .finally(() => setLoading(false));
     } else {
-      api.get('/grades/my_grades/')
+      api.get(`/grades/my_grades/?academic_year=${filterYear}`)
         .then(r => setGrades(r.data.filter(g => g.grade_type === 'final_grade')))
         .catch(() => toast.error('Failed to load grades'))
         .finally(() => setLoading(false));
     }
-  }, [studentIdParam]);
+  }, [studentIdParam, filterYear]);
 
   const filtered = grades.filter(g => {
     const matchQ = !filterQuarter || String(g.quarter) === filterQuarter;
