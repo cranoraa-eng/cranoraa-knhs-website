@@ -24,6 +24,11 @@ const STAT_CONFIG = [
   { key: 'unmarked', label: 'Unmarked', color: 'text-slate-500',   bg: 'bg-slate-50 border-slate-200' },
 ];
 
+const getLocalDate = () => {
+  const d = new Date();
+  return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().split('T')[0];
+};
+
 const Attendance = () => {
   const user = getUser();
   const navigate = useNavigate();
@@ -33,7 +38,7 @@ const Attendance = () => {
   // Teacher/admin state
   const [classrooms, setClassrooms]             = useState([]);
   const [selectedClassroom, setSelectedClassroom] = useState(location.state?.classroomId || '');
-  const [selectedDate, setSelectedDate]         = useState(new Date().toISOString().split('T')[0]);
+  const [selectedDate, setSelectedDate]         = useState(getLocalDate());
   const [students, setStudents]                 = useState([]);
   const [savedAttendance, setSavedAttendance]   = useState({}); // { studentId: { id, status } }
   const [savedRemarks, setSavedRemarks]         = useState({}); // { studentId: remarks }
@@ -44,13 +49,13 @@ const Attendance = () => {
 
   // Student state
   const [myAttendance, setMyAttendance] = useState([]);
-  const [filterMonth, setFilterMonth]   = useState(new Date().toISOString().slice(0, 7));
+  const [filterMonth, setFilterMonth]   = useState(getLocalDate().slice(0, 7));
 
   // History view
   const [view, setView]               = useState('mark');
   const [history, setHistory]         = useState([]);
   const [analytics, setAnalytics]     = useState(null);
-  const [historyDate, setHistoryDate] = useState(new Date().toISOString().split('T')[0]);
+  const [historyDate, setHistoryDate] = useState(getLocalDate());
   const [loadingHistory, setLoadingHistory] = useState(false);
   const [loadingAnalytics, setLoadingAnalytics] = useState(false);
 
@@ -369,7 +374,7 @@ const Attendance = () => {
               <input type="date"
                 value={view === 'mark' ? selectedDate : historyDate}
                 onChange={e => view === 'mark' ? setSelectedDate(e.target.value) : setHistoryDate(e.target.value)}
-                max={new Date().toISOString().split('T')[0]}
+                max={getLocalDate()}
                 className="flex-1 px-1.5 py-1 md:px-3 md:py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-1 focus:ring-violet-500 text-[9px] md:text-sm font-bold shadow-sm transition-all hover:border-violet-300" />
               {view === 'history' && historyDate && (
                 <button onClick={() => setHistoryDate('')}

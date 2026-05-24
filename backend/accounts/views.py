@@ -1756,15 +1756,19 @@ class AttendanceViewSet(viewsets.ModelViewSet):
         classroom_id = request.query_params.get('classroom')
         timeframe = request.query_params.get('timeframe', 'all')
         
-        # Base queryset excluding weekends
-        base_att = Attendance.objects.exclude(date__week_day__in=[1, 7])
+        # Base queryset
+        base_att = Attendance.objects.all()
         
-        # Apply timeframe filter to ALL analytics sections
+        # Apply timeframe filter
+        # If 'today' is selected, we show data even if it's a weekend (e.g. for makeup classes)
+        # For 'weekly' and 'all', we strictly exclude weekends as per project requirements
         if timeframe == 'today':
             base_att = base_att.filter(date=today)
         elif timeframe == 'weekly':
             week_ago = today - datetime.timedelta(days=7)
-            base_att = base_att.filter(date__gte=week_ago)
+            base_att = base_att.filter(date__gte=week_ago).exclude(date__week_day__in=[1, 7])
+        else:
+            base_att = base_att.exclude(date__week_day__in=[1, 7])
 
         # Sections: Trends, Pie, Grade
         # For charts, we usually want a 30-day window if 'all' is selected

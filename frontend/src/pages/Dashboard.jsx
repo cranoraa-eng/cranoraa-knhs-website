@@ -628,7 +628,12 @@ const StudentView = () => {
 
   if (loading) return <Spinner />;
 
-  const thisMonth = new Date().toISOString().slice(0, 7);
+  const getLocalDate = () => {
+    const d = new Date();
+    return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().split('T')[0];
+  };
+
+  const thisMonth = getLocalDate().slice(0, 7);
   const monthAtt = Array.isArray(attendance) ? attendance.filter(r => {
     const isThisMonth = r.date?.startsWith(thisMonth);
     const day = new Date(r.date + 'T00:00:00').getDay();
