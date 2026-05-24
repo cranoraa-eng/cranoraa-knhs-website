@@ -3,6 +3,7 @@ import api from '../utils/api';
 import Swal from 'sweetalert2';
 import toast from 'react-hot-toast';
 import { useScrollLock } from '../hooks/useScrollLock';
+import { getCurrentAcademicYear } from '../utils/dateHelpers';
 
 const GRADE_LEVELS = ['Grade 7', 'Grade 8', 'Grade 9', 'Grade 10', 'Grade 11', 'Grade 12'];
 
@@ -14,13 +15,16 @@ const gradeNum = (name = '') => {
 const ClassManagement = () => {
   const [classes, setClasses] = useState([]);
   const [teachers, setTeachers] = useState([]);
+  const [academicYears, setAcademicYears] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingClass, setEditingClass] = useState(null);
   const [saving, setSaving] = useState(false);
   const [search, setSearch] = useState('');
   const [filterLevel, setFilterLevel] = useState('');
-  const [formData, setFormData] = useState({ name: '', teacher: '', grade_level: '' });
+  const [formData, setFormData] = useState({
+    name: '', teacher: '', grade_level: '', academic_year: ''
+  });
 
   useScrollLock(showModal);
 
@@ -29,12 +33,16 @@ const ClassManagement = () => {
   const fetchAll = async () => {
     setLoading(true);
     try {
-      const [classRes, teacherRes] = await Promise.all([
+      const [classRes, teacherRes, yearRes] = await Promise.all([
         api.get('/classrooms/'),
         api.get('/users/?role=teacher'),
+        api.get('/admin/academic-years/'),
       ]);
       setClasses(classRes.data);
       setTeachers(teacherRes.data);
+      // Sort years newest first
+      const years = [...yearRes.data].sort((a, b) => b.name.localeCompare(a.name));
+      setAcademicYears(years);
     } catch {
       toast.error('Failed to load data');
     } finally {
@@ -44,16 +52,24 @@ const ClassManagement = () => {
 
   const openCreate = () => {
     setEditingClass(null);
-    setFormData({ name: '', teacher: '', grade_level: '' });
+    // Default to the active academic year or current year
+    const activeYear = academicYears.find(y => y.is_active);
+    setFormData({
+      name: '',
+      teacher: '',
+      grade_level: '',
+      academic_year: activeYear?.id || ''
+    });
     setShowModal(true);
   };
 
   const openEdit = (cls) => {
     setEditingClass(cls);
-    setFormData({ 
-      name: cls.name, 
-      teacher: cls.teacher, 
-      grade_level: cls.grade_level || '' 
+    setFormData({
+      name: cls.name,
+      teacher: cls.teacher || '',
+      grade_level: cls.grade_level || '',
+      academic_year: cls.academic_year || ''
     });
     setShowModal(true);
   };
@@ -85,9 +101,9 @@ const ClassManagement = () => {
     try {
       const payload = {
         name: formData.name.trim(),
-        // Send null explicitly when no teacher selected so backend clears the field
         teacher: formData.teacher || null,
-        grade_level: formData.grade_level
+        grade_level: formData.grade_level,
+        academic_year: formData.academic_year || null,
       };
       if (editingClass) {
         await api.patch(`/classrooms/${editingClass.id}/`, payload);
@@ -212,6 +228,7 @@ const ClassManagement = () => {
                     <tr>
                       <th className="text-left px-5 py-3 text-[10px] font-black text-slate-500 uppercase tracking-[0.15em]">Class</th>
                       <th className="hidden md:table-cell text-left px-5 py-3 text-[10px] font-black text-slate-500 uppercase tracking-[0.15em]">Adviser</th>
+                      <th className="hidden lg:table-cell text-left px-5 py-3 text-[10px] font-black text-slate-500 uppercase tracking-[0.15em]">School Year</th>
                       <th className="text-center px-5 py-3 text-[10px] font-black text-slate-500 uppercase tracking-[0.15em]">Students</th>
                       <th className="text-center px-5 py-3 text-[10px] font-black text-slate-500 uppercase tracking-[0.15em]">Actions</th>
                     </tr>
@@ -229,6 +246,12 @@ const ClassManagement = () => {
                         </td>
                         <td className="hidden md:table-cell px-5 py-3.5 text-sm font-medium text-slate-600">
                           {cls.teacher_name || <span className="text-slate-400 italic text-xs">Not assigned</span>}
+                        </td>
+                        <td className="hidden lg:table-cell px-5 py-3.5">
+                          {cls.academic_year_name
+                            ? <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-violet-50 border border-violet-100 text-violet-700 text-xs font-black tracking-tight">{cls.academic_year_name}</span>
+                            : <span className="text-slate-400 italic text-xs">Not set</span>
+                          }
                         </td>
                         <td className="px-5 py-3.5 text-center">
                           <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-violet-100 text-violet-700 font-black text-sm">
@@ -299,6 +322,24 @@ const ClassManagement = () => {
                   <option value="">Select grade level</option>
                   {GRADE_LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
                 </select>
+              </div>
+              <div className="space-y-1.5">
+                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider">
+                  Academic Year <span className="text-slate-400 font-medium normal-case tracking-normal">(optional)</span>
+                </label>
+                <select
+                  value={formData.academic_year || ''}
+                  onChange={e => setFormData({ ...formData, academic_year: e.target.value })}
+                  className="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-white text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-400 transition-all"
+                >
+                  <option value="">— No Year Assigned —</option>
+                  {academicYears.map(y => (
+                    <option key={y.id} value={y.id}>
+                      {y.name}{y.is_active ? ' (Active)' : ''}
+                    </option>
+                  ))}
+                </select>
+                <p className="text-xs text-slate-400">Required for year-based filtering in attendance and analytics.</p>
               </div>
               <div className="space-y-1.5">
                 <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider">

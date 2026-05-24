@@ -102,15 +102,18 @@ class ClassroomSerializer(serializers.ModelSerializer):
     teacher_name = serializers.SerializerMethodField()
     student_count = serializers.SerializerMethodField()
     average_gpa = serializers.SerializerMethodField()
+    academic_year_name = serializers.CharField(source='academic_year.name', read_only=True)
 
     class Meta:
         model = Classroom
         fields = ['id', 'name', 'grade_level', 'teacher', 'teacher_name', 'student_count',
-                  'average_gpa', 'created_at', 'updated_at']
+                  'average_gpa', 'academic_year', 'academic_year_name', 'created_at', 'updated_at']
         read_only_fields = ['id', 'created_at', 'updated_at']
         extra_kwargs = {
             # teacher is optional — classrooms can exist without an assigned adviser
             'teacher': {'required': False, 'allow_null': True},
+            # academic_year is optional
+            'academic_year': {'required': False, 'allow_null': True},
         }
 
     def get_teacher_name(self, obj): return full_name(obj.teacher) if obj.teacher else 'No Adviser'
