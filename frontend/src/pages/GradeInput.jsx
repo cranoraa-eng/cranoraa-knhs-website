@@ -56,9 +56,9 @@ const GradeInput = () => {
 
   const formatName = useCallback((fullName = '') => {
     const parts = fullName.trim().split(/\s+/);
-    if (parts.length < 2) return fullName;
+    if (parts.length < 2) return fullName.toUpperCase();
     const last = parts.pop();
-    return `${last}, ${parts.join(' ')}`;
+    return `${last.toUpperCase()}, ${parts.join(' ').toUpperCase()}`;
   }, []);
 
   useEffect(() => {
@@ -183,7 +183,7 @@ const GradeInput = () => {
       confirmIcon = 'warning';
       confirmHtml = `
         <div class="text-left space-y-2">
-          <p class="font-bold text-amber-600 mb-2">You are about to overwrite grades for ${overwriting.length} student(s):</p>
+          <p class="font-bold text-amber-600 mb-2">You are about to overwrite grades for ${overwriting.length} student${overwriting.length === 1 ? '' : 's'} — Q${selQuarter}:</p>
           <div class="max-h-32 overflow-y-auto border border-amber-100 rounded-lg p-2 bg-amber-50/50 text-[10px] md:text-xs">
             ${overwriting.map(s => {
               const ex = existingGrades[s.student];
@@ -192,7 +192,7 @@ const GradeInput = () => {
               </div>`;
             }).join('')}
           </div>
-          <p class="text-[10px] md:text-xs text-slate-500 mt-2 italic">Total to submit: ${toSubmit.length} students.</p>
+          <p class="text-[10px] md:text-xs text-slate-500 mt-2 italic">Total to submit: ${toSubmit.length} student${toSubmit.length === 1 ? '' : 's'}.</p>
         </div>
       `;
     }
@@ -254,10 +254,10 @@ const GradeInput = () => {
         icon: errors.length < toSubmit.length ? 'warning' : 'error',
         title: allDuplicates ? 'Grades Already Submitted' : (errors.length < toSubmit.length ? 'Partial Success' : 'Submission Failed'),
         html: `
-          <div className="text-sm text-slate-600 mb-2">
+          <div class="text-sm text-slate-600 mb-2">
             ${allDuplicates ? 'All selected students already have grades recorded for this quarter/year.' : 'There were issues submitting some grades:'}
           </div>
-          <div className="max-h-48 overflow-y-auto border border-slate-100 rounded-lg p-2 bg-slate-50">
+          <div class="max-h-48 overflow-y-auto border border-slate-100 rounded-lg p-2 bg-slate-50">
             ${errors.map(e => `<div class="text-xs text-left py-1 border-b border-slate-200 last:border-0">${e}</div>`).join('')}
           </div>
         `,
@@ -548,7 +548,7 @@ const GradeInput = () => {
       <div className="flex-shrink-0 bg-[#2D1B4D] border-t border-[#3D2B5D] px-2 md:px-4 py-1 md:py-1.5 flex flex-wrap items-center justify-center gap-3 md:gap-8 text-[8px] md:text-[10px] font-bold text-purple-300 uppercase tracking-widest">
         <div className="flex items-center gap-1">STU: <span className="text-white">{students.length}</span></div>
         <div className="flex items-center gap-1">ENC: <span className="text-white">{filled.length}</span></div>
-        {avg     && <div className="flex items-center gap-1">AVG: <span className="text-purple-100">{avg}</span></div>}
+        {avg     && <div className="flex items-center gap-1">AVG: <span className="text-white">{avg}</span></div>}
         {highest && <div className="flex items-center gap-1 md:hidden">HI: <span className="text-emerald-400">{highest}</span></div>}
         {highest && <div className="hidden md:flex items-center gap-2">Highest: <span className="text-emerald-400">{highest}</span></div>}
         {lowest  && <div className="hidden md:flex items-center gap-2">Lowest: <span className="text-red-400">{lowest}</span></div>}
