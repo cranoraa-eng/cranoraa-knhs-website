@@ -2211,9 +2211,30 @@ def admin_dashboard_stats(request):
         today_total   = today_attendance.count()
         today_rate    = round((today_present / today_total * 100), 1) if today_total > 0 else 0
 
-        # Core counts
-        total_students = User.objects.filter(role='student', is_approved=True).count()
-        total_teachers = User.objects.filter(role='teacher', is_approved=True).count()
+        # Core counts - Filter by academic year if provided
+        if academic_year_name:
+            # Count students enrolled in any classroom for this academic year
+            total_students = User.objects.filter(
+                role='student', 
+                is_approved=True,
+                enrollments__classroom__academic_year__name=academic_year_name
+            ).distinct().count()
+            
+            # Count teachers assigned to any classroom/subject for this academic year
+            total_teachers = User.objects.filter(
+                role='teacher', 
+                is_approved=True,
+                classroom_subjects__classroom__academic_year__name=academic_year_name
+            ).distinct().count()
+            
+            # Total subjects offered in this academic year (via ClassroomSubject)
+            total_subjects = Subject.objects.filter(
+                classroom_subjects__classroom__academic_year__name=academic_year_name
+            ).distinct().count()
+        else:
+            total_students = User.objects.filter(role='student', is_approved=True).count()
+            total_teachers = User.objects.filter(role='teacher', is_approved=True).count()
+            total_subjects = Subject.objects.count()
         
         classes_qs = Classroom.objects.all()
         if academic_year_name:
@@ -2225,8 +2246,6 @@ def admin_dashboard_stats(request):
             except Exception as e:
                 logger.error(f"Error filtering classrooms by year: {str(e)}")
         total_classes  = classes_qs.count()
-        
-        total_subjects = Subject.objects.count()
         # Pending approvals should include all unapproved users, regardless of verification per school requirements
         pending_approvals = User.objects.filter(is_approved=False).exclude(role='admin').count()
         
@@ -2326,10 +2345,8 @@ def admin_dashboard_stats(request):
         # --- SUBJECT PERFORMANCE INDEX (Top 10) ---
         subject_perf = []
         try:
-            subject_stats = Grade.objects.filter(
-                grade_type='final_grade', 
-                transmuted_score__isnull=False
-            ).values('subject__name').annotate(
+            # Use the already year-filtered 'grades' queryset
+            subject_stats = grades.values('subject__name').annotate(
                 avg_grade=Avg('transmuted_score')
             ).order_by('-avg_grade')[:10]
             
@@ -2541,6 +2558,11 @@ def grade_distribution_stats(request):
         base_grades = base_grades.filter(subject_id=subject_id)
 
     if not base_grades.exists():
+        # Get subjects offered in this academic year for the meta section
+        subjects_in_year = Subject.objects.filter(
+            classroom_subjects__classroom__academic_year__name=academic_year
+        ).distinct().values('id', 'name', 'code')
+        
         return Response({
             'total_students': 0,
             'overall_average': 0,
@@ -2549,7 +2571,7 @@ def grade_distribution_stats(request):
             'by_group': [],
             'mode': mode,
             'meta': {
-                'subjects': list(Subject.objects.values('id', 'name', 'code')),
+                'subjects': list(subjects_in_year) if subjects_in_year.exists() else list(Subject.objects.values('id', 'name', 'code')[:20]),
                 'grade_levels': ["Grade 7", "Grade 8", "Grade 9", "Grade 10", "Grade 11", "Grade 12"]
             }
         })

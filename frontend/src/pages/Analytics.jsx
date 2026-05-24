@@ -501,6 +501,7 @@ const Analytics = () => {
 
   const fetchAnalytics = async () => {
     setLoading(true);
+    setData(null); // Clear stale data
     try {
       const res = await api.get(`/admin/stats/?academic_year=${academicYear}`);
       setData(res.data);
@@ -510,6 +511,7 @@ const Analytics = () => {
 
   const fetchGradeStats = async () => {
     setGradeLoading(true);
+    setGradeData(null); // Clear stale data
     try {
       const res = await api.get(`/admin/grade-distribution/?academic_year=${academicYear}&grade_level=${filterLevel}&subject_id=${filterSubject}&quarter=${filterQuarter}&mode=${distributionMode}&timeframe=${gradeTimeframe}`);
       setGradeData(res.data);
@@ -519,12 +521,12 @@ const Analytics = () => {
 
   const fetchAttendanceAnalytics = async () => {
     setAttendanceLoading(true);
+    setAttendanceAnalytics(null); // Clear stale data
     try {
       const res = await api.get(`/attendance/summary/?timeframe=${attendanceTimeframe}&academic_year=${academicYear}`);
       setAttendanceAnalytics(res.data);
     } catch (err) { 
       console.error(err); 
-      setAttendanceAnalytics(null);
     }
     finally { setAttendanceLoading(false); }
   };
@@ -592,10 +594,13 @@ const Analytics = () => {
                     Live Portal Performance Metrics
                   </p>
                 </div>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-2 items-end">
                   <StatChip label="Users" value={data?.dashboard?.active_users || 0} color="emerald" />
                   <StatChip label="Avg Grade" value={`${data?.dashboard?.average_grade?.toFixed(1) || 0}%`} color="purple" />
                   <StatChip label="Attendance" value={`${data?.dashboard?.today_rate || 0}%`} color="blue" />
+                  <div className="ml-2">
+                    <YearSelector academicYear={academicYear} onYearChange={handleYearChange} />
+                  </div>
                 </div>
               </div>
 
