@@ -95,6 +95,17 @@ const Settings = () => {
     toast.success(`Maintenance mode ${val ? 'enabled' : 'disabled'}`);
   };
 
+  const handleYearChange = (dir) => {
+    const currentYear = systemSettings.academic_year || '2025-2026';
+    const [start, end] = currentYear.split('-').map(Number);
+    if (isNaN(start) || isNaN(end)) {
+      setSystemSettings({ ...systemSettings, academic_year: '2025-2026' });
+      return;
+    }
+    const newYear = dir === 'next' ? `${start + 1}-${end + 1}` : `${start - 1}-${end - 1}`;
+    setSystemSettings({ ...systemSettings, academic_year: newYear });
+  };
+
   const handlePasswordChange = async (e) => {
     e.preventDefault();
     if (securityData.newPassword !== securityData.confirmPassword) {
@@ -286,22 +297,30 @@ const Settings = () => {
                       </div>
                       <div className="space-y-1.5">
                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Academic Year</label>
-                        <div className="relative group">
-                          <input
-                            type="text"
-                            placeholder="e.g. 2026-2027"
-                            value={systemSettings.academic_year}
-                            onChange={e => {
-                              const val = e.target.value.replace(/[^0-9-]/g, '');
-                              setSystemSettings({...systemSettings, academic_year: val});
-                            }}
-                            className="w-full px-5 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none font-bold text-slate-700 transition-all focus:border-violet-400 focus:bg-white"
-                          />
-                          <div className="absolute right-4 top-1/2 -translate-y-1/2 flex gap-1 pointer-events-none opacity-0 group-focus-within:opacity-100 transition-opacity">
-                            <span className="text-[8px] font-black text-slate-300 uppercase tracking-widest">&lt; FORMAT: YYYY-YYYY &gt;</span>
+                        <div className="flex items-center bg-slate-50 border border-slate-200 rounded-xl overflow-hidden h-[52px]">
+                          <button 
+                            onClick={() => handleYearChange('prev')}
+                            className="px-4 h-full hover:bg-slate-100 text-slate-400 border-r border-slate-200 transition-colors active:bg-slate-200"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M15 19l-7-7 7-7" />
+                            </svg>
+                          </button>
+                          
+                          <div className="flex-1 text-center font-black text-slate-700 tracking-widest">
+                            {systemSettings.academic_year}
                           </div>
+
+                          <button 
+                            onClick={() => handleYearChange('next')}
+                            className="px-4 h-full hover:bg-slate-100 text-slate-400 border-l border-slate-200 transition-colors active:bg-slate-200"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" />
+                            </svg>
+                          </button>
                         </div>
-                        <p className="text-[9px] font-bold text-slate-400 mt-1 ml-1 uppercase tracking-tighter italic">This defines the global default for all data storage and analytics</p>
+                        <p className="text-[9px] font-bold text-slate-400 mt-1 ml-1 uppercase tracking-tighter italic">Defines the global default for all data storage and analytics</p>
                       </div>
                     </div>
 
