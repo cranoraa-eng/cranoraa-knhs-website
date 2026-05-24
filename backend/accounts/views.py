@@ -2513,7 +2513,7 @@ def grade_distribution_stats(request):
     Detailed statistics for grade distribution across the school.
     Supports filtering by academic_year, grade_level, and subject.
     """
-    from django.db.models import Avg, Count
+    from django.db.models import Avg, Count, Q
     from .models import Grade, Classroom, Subject
     
     academic_year = request.query_params.get('academic_year', '2025-2026')
@@ -2528,9 +2528,12 @@ def grade_distribution_stats(request):
     
     # 1. Base filtering
     base_grades = Grade.objects.filter(
-        grade_type='final_grade', 
-        academic_year=academic_year,
+        grade_type='final_grade',
         transmuted_score__isnull=False
+    ).filter(
+        Q(academic_year=academic_year) |
+        Q(classroom__academic_year__name=academic_year) |
+        Q(classroom__academic_year__isnull=True)
     )
     
     # Filter by Timeframe (submission date)
