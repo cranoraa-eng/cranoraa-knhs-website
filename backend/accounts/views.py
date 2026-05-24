@@ -1755,9 +1755,14 @@ class AttendanceViewSet(viewsets.ModelViewSet):
         
         classroom_id = request.query_params.get('classroom')
         timeframe = request.query_params.get('timeframe', 'all')
+        academic_year_name = request.query_params.get('academic_year')
         
         # Base queryset
         base_att = Attendance.objects.all()
+        
+        # Filter by Academic Year if provided
+        if academic_year_name:
+            base_att = base_att.filter(classroom__academic_year__name=academic_year_name)
         
         # Apply timeframe filter
         # If 'today' is selected, we show data even if it's a weekend (e.g. for makeup classes)
@@ -2161,14 +2166,21 @@ def admin_dashboard_stats(request):
         five_mins_ago = now - datetime.timedelta(minutes=5)
         this_week_start = today - datetime.timedelta(days=today.weekday())
         
+        academic_year_name = request.query_params.get('academic_year')
+        
         # Safe model imports
         try:
             from portal.models import AuditLog
         except ImportError:
             AuditLog = None
 
+        # Base Attendance Filter
+        att_qs = Attendance.objects.all()
+        if academic_year_name:
+            att_qs = att_qs.filter(classroom__academic_year__name=academic_year_name)
+
         # Attendance today (Local Time)
-        today_attendance = Attendance.objects.filter(date=today)
+        today_attendance = att_qs.filter(date=today)
         today_present = today_attendance.filter(status__in=['present', 'late']).count()
         today_total   = today_attendance.count()
         today_rate    = round((today_present / today_total * 100), 1) if today_total > 0 else 0
@@ -2176,7 +2188,12 @@ def admin_dashboard_stats(request):
         # Core counts
         total_students = User.objects.filter(role='student', is_approved=True).count()
         total_teachers = User.objects.filter(role='teacher', is_approved=True).count()
-        total_classes  = Classroom.objects.count()
+        
+        classes_qs = Classroom.objects.all()
+        if academic_year_name:
+            classes_qs = classes_qs.filter(academic_year__name=academic_year_name)
+        total_classes  = classes_qs.count()
+        
         total_subjects = Subject.objects.count()
         pending_approvals = User.objects.filter(is_approved=False, is_verified=True).count()
         
@@ -2189,7 +2206,7 @@ def admin_dashboard_stats(request):
             # Skip weekends in trends calculation
             if day.weekday() in [5, 6]: continue
             
-            day_records = Attendance.objects.filter(date=day)
+            day_records = att_qs.filter(date=day)
             day_total = day_records.count()
             day_present = day_records.filter(status='present').count()
             day_late    = day_records.filter(status='late').count()
@@ -2202,6 +2219,9 @@ def admin_dashboard_stats(request):
 
         # Grades - only count final grades
         grades = Grade.objects.filter(transmuted_score__isnull=False, grade_type='final_grade')
+        if academic_year_name:
+            grades = grades.filter(enrollment__classroom__academic_year__name=academic_year_name)
+        
         total_grades = grades.count()
         avg_grade = grades.aggregate(avg=Avg('transmuted_score'))['avg']
         average_grade = round(float(avg_grade), 2) if avg_grade else None

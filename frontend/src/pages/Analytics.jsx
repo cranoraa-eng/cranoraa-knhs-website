@@ -480,7 +480,7 @@ const Analytics = () => {
   const fetchAttendanceAnalytics = async () => {
     setAttendanceLoading(true);
     try {
-      const res = await api.get(`/attendance/summary/?timeframe=${attendanceTimeframe}`);
+      const res = await api.get(`/attendance/summary/?timeframe=${attendanceTimeframe}&academic_year=${academicYear}`);
       setAttendanceAnalytics(res.data);
     } catch (err) { 
       console.error(err); 
@@ -674,7 +674,7 @@ const Analytics = () => {
                   <h1 className="text-xl md:text-3xl font-black text-slate-50 tracking-tighter uppercase leading-none">Attendance Dynamics</h1>
                   <p className="text-slate-300 text-[10px] font-bold uppercase tracking-[0.2em] mt-3 flex items-center gap-2">
                     <span className="w-2.5 h-2.5 rounded-full bg-blue-500 animate-pulse shadow-[0_0_10px_rgba(59,130,246,0.5)]" />
-                    Student Presence & Engagement Analytics
+                    Student Presence & Engagement Analytics — {academicYear}
                   </p>
                 </div>
                 <div className="flex flex-wrap gap-3">
@@ -688,6 +688,7 @@ const Analytics = () => {
                       { value: 'weekly', label: 'Past 7 Days' }
                     ]}
                   />
+                  <YearSelector academicYear={academicYear} onYearChange={handleYearChange} />
                 </div>
               </div>
 
