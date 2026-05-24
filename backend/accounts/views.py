@@ -1800,14 +1800,11 @@ class AttendanceViewSet(viewsets.ModelViewSet):
                     'rate': round(g['present'] / g['total'] * 100, 1) if g['total'] > 0 else 0
                 })
 
-        # Section Rankings (Overall Attendance Rate) - Exclude weekends
-        # Now supporting today, weekly, and all-time (default) rankings
+        # Optimized Section Rankings (Overall Attendance Rate) - Exclude weekends
         timeframe = request.query_params.get('timeframe', 'all')
         rankings = []
         
-        if request.user.role == 'admin' or request.user.role == 'teacher':
-            classrooms = Classroom.objects.all()
-            
+        if request.user.role in ['admin', 'teacher']:
             # Base filter for rankings
             rank_att = Attendance.objects.exclude(date__week_day__in=[1, 7])
             
@@ -1817,17 +1814,23 @@ class AttendanceViewSet(viewsets.ModelViewSet):
                 week_ago = today - datetime.timedelta(days=7)
                 rank_att = rank_att.filter(date__gte=week_ago)
             
-            for cls in classrooms:
-                cls_att = rank_att.filter(classroom=cls)
-                total = cls_att.count()
-                present = cls_att.filter(status__in=['present', 'late']).count()
-                rate = round(present / total * 100, 1) if total > 0 else 0
-                rankings.append({
-                    'id': cls.id,
-                    'name': cls.name,
-                    'rate': rate,
-                    'total_records': total
-                })
+            # Efficient aggregation by classroom
+            classroom_stats = rank_att.values('classroom__id', 'classroom__name').annotate(
+                total=Count('id'),
+                present=Count(Case(When(status__in=['present', 'late'], then=1), output_field=IntegerField()))
+            ).order_by('-total')
+
+            for r in classroom_stats:
+                if r['classroom__id']: # Guard against records without classrooms
+                    rate = round(r['present'] / r['total'] * 100, 1) if r['total'] > 0 else 0
+                    rankings.append({
+                        'id': r['classroom__id'],
+                        'name': r['classroom__name'],
+                        'rate': rate,
+                        'total_records': r['total']
+                    })
+            
+            # Final sort by rate
             rankings = sorted(rankings, key=lambda x: x['rate'], reverse=True)
 
         return Response({

@@ -288,41 +288,6 @@ const Analytics = () => {
 
 // --- Sub-components to keep Analytics.jsx clean ---
 
-const AttendanceSection = ({ data }) => (
-  <div className="lg:col-span-12 bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
-    <div className="flex items-center justify-between mb-6">
-      <div>
-        <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Attendance Dynamics</h3>
-        <p className="text-sm font-black text-slate-900 uppercase tracking-tight">30-Day Presence Analytics</p>
-      </div>
-      <div className="px-2 py-1 bg-slate-50 border border-slate-100 rounded text-[8px] font-black text-slate-500 uppercase tracking-widest">Historical Data</div>
-    </div>
-    <div className="h-64">
-      <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
-        <AreaChart data={data}>
-          <defs>
-            <linearGradient id="colorAtt" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#6366f1" stopOpacity={0.1}/>
-              <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
-            </linearGradient>
-          </defs>
-          <CartesianGrid strokeDasharray="2 2" vertical={false} stroke="#f1f5f9" />
-          <XAxis 
-            dataKey="date" 
-            tick={{fontSize: 8, fontWeight: 900, fill: '#64748b'}} 
-            axisLine={false} 
-            tickLine={false} 
-            tickFormatter={(str) => str ? new Date(str).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : ''} 
-          />
-          <YAxis tick={{fontSize: 8, fontWeight: 900, fill: '#64748b'}} axisLine={false} tickLine={false} />
-          <Tooltip content={<CustomTooltip />} cursor={{stroke: '#6366f1', strokeWidth: 1, strokeDasharray: '4 4'}} />
-          <Area type="monotone" dataKey="rate" stroke="#6366f1" strokeWidth={2} fillOpacity={1} fill="url(#colorAtt)" name="Presence Rate" />
-        </AreaChart>
-      </ResponsiveContainer>
-    </div>
-  </div>
-);
-
 const SubjectPerformanceSection = ({ data }) => (
   <div className="lg:col-span-7 bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
     <div className="flex items-center justify-between mb-6">
@@ -493,7 +458,11 @@ const AttendanceTrendsSection = ({ data }) => (
             <linearGradient id="colorLate" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#f59e0b" stopOpacity={0.1}/><stop offset="95%" stopColor="#f59e0b" stopOpacity={0}/></linearGradient>
           </defs>
           <CartesianGrid strokeDasharray="2 2" vertical={false} stroke="#f1f5f9" />
-          <XAxis dataKey="date" tick={{fontSize: 8, fontWeight: 900, fill: '#64748b'}} axisLine={false} tickLine={false} tickFormatter={(str) => new Date(str).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} />
+          <XAxis dataKey="date" tick={{fontSize: 8, fontWeight: 900, fill: '#64748b'}} axisLine={false} tickLine={false} tickFormatter={(str) => {
+            if (!str) return '';
+            const d = new Date(str);
+            return isNaN(d.getTime()) ? str : d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+          }} />
           <YAxis tick={{fontSize: 8, fontWeight: 900, fill: '#64748b'}} axisLine={false} tickLine={false} />
           <Tooltip content={<AttendanceTooltip />} cursor={{stroke: '#cbd5e1', strokeWidth: 1}} />
           <Area type="monotone" dataKey="present" stroke="#10b981" strokeWidth={2} fillOpacity={1} fill="url(#colorPresent)" name="Present" />
