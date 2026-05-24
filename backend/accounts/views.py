@@ -2139,21 +2139,27 @@ class FeeViewSet(viewsets.ModelViewSet):
         return queryset
 
 
+@csrf_exempt
 @api_view(['GET', 'POST', 'PATCH'])
 @permission_classes([IsAuthenticated])
 def system_settings_view(request):
     """View to get or update global system settings (Admin only for updates)"""
+    logger.info(f"System settings request: {request.method} by {request.user.username}")
     settings = SystemSetting.get_settings()
     
     if request.method in ['POST', 'PATCH']:
-        if request.user.role != 'admin':
-            return Response({'error': 'Only administrators can update system settings'}, status=status.HTTP_403_FORBIDDEN)
-        
-        serializer = SystemSettingSerializer(settings, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            if request.user.role != 'admin':
+                return Response({'error': 'Only administrators can update system settings'}, status=status.HTTP_403_FORBIDDEN)
+            
+            serializer = SystemSettingSerializer(settings, data=request.data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            logger.error(f"Error updating system settings: {str(e)}", exc_info=True)
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
     # GET
     serializer = SystemSettingSerializer(settings)

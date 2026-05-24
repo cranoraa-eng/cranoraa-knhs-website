@@ -67,10 +67,13 @@ const Settings = () => {
   };
 
   const handleSystemSave = async (updatedSettings = null) => {
+    if (loading) return;
     const dataToSave = updatedSettings || systemSettings;
     setLoading(true);
     try {
-      await api.patch('/system/settings/', dataToSave);
+      console.log('Saving system settings:', dataToSave);
+      const res = await api.patch('/system/settings/', dataToSave);
+      console.log('System settings saved successfully:', res.data);
       if (!updatedSettings) {
         toast.success('System settings saved');
         // Update local storage to match the new global default
@@ -81,7 +84,7 @@ const Settings = () => {
       const msg = err.response?.data?.error || err.response?.data?.message || 'Failed to save system settings';
       toast.error(msg);
       // Revert local state on failure
-      if (updatedSettings) fetchSystemSettings();
+      fetchSystemSettings();
     } finally {
       setLoading(false);
     }
@@ -299,6 +302,7 @@ const Settings = () => {
                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Academic Year</label>
                         <div className="flex items-center bg-slate-50 border border-slate-200 rounded-xl overflow-hidden h-[52px]">
                           <button 
+                            type="button"
                             onClick={() => handleYearChange('prev')}
                             className="px-4 h-full hover:bg-slate-100 text-slate-400 border-r border-slate-200 transition-colors active:bg-slate-200"
                           >
@@ -312,6 +316,7 @@ const Settings = () => {
                           </div>
 
                           <button 
+                            type="button"
                             onClick={() => handleYearChange('next')}
                             className="px-4 h-full hover:bg-slate-100 text-slate-400 border-l border-slate-200 transition-colors active:bg-slate-200"
                           >
@@ -374,6 +379,7 @@ const Settings = () => {
 
                     <div className="pt-4">
                       <button
+                        type="button"
                         onClick={() => handleSystemSave()}
                         disabled={loading}
                         className="w-full md:w-auto px-10 py-4 bg-violet-600 text-white font-black text-sm rounded-2xl hover:bg-violet-700 shadow-xl shadow-violet-100 transition-all active:scale-95"
