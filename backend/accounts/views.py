@@ -586,6 +586,7 @@ class ClassroomViewSet(viewsets.ModelViewSet):
     
     def get_queryset(self):
         try:
+            from django.db.models import Q
             user = self.request.user
             academic_year = self.request.query_params.get('academic_year')
             
@@ -599,8 +600,6 @@ class ClassroomViewSet(viewsets.ModelViewSet):
             # Role-based filtering
             if user.role == 'admin':
                 return qs
-            
-            from django.db.models import Q
             # Teachers see classrooms where they are the adviser OR have assigned subjects
             if user.role == 'teacher':
                 assigned_classrooms = ClassroomSubject.objects.filter(teacher=user).values_list('classroom_id', flat=True)
