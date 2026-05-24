@@ -10,10 +10,10 @@ import {
 } from 'recharts';
 
 const STATUS_CONFIG = {
-  present: { label: 'Present', short: 'P', active: 'bg-green-500 text-white border-green-500',   inactive: 'bg-white text-gray-500 border-gray-300 hover:border-green-400 hover:text-green-600' },
-  absent:  { label: 'Absent',  short: 'A', active: 'bg-red-500 text-white border-red-500',      inactive: 'bg-white text-gray-500 border-gray-300 hover:border-red-400 hover:text-red-600' },
-  late:    { label: 'Late',    short: 'L', active: 'bg-yellow-500 text-white border-yellow-500', inactive: 'bg-white text-gray-500 border-gray-300 hover:border-yellow-400 hover:text-yellow-600' },
-  excused: { label: 'Excused', short: 'E', active: 'bg-blue-500 text-white border-blue-500',    inactive: 'bg-white text-gray-500 border-gray-300 hover:border-blue-400 hover:text-blue-600' },
+  present: { label: 'Present', short: 'P', active: 'bg-green-500 text-white border-green-500',   inactive: 'bg-white text-slate-500 border-slate-300 hover:border-green-400 hover:text-green-600' },
+  absent:  { label: 'Absent',  short: 'A', active: 'bg-red-500 text-white border-red-500',      inactive: 'bg-white text-slate-500 border-slate-300 hover:border-red-400 hover:text-red-600' },
+  late:    { label: 'Late',    short: 'L', active: 'bg-yellow-500 text-white border-yellow-500', inactive: 'bg-white text-slate-500 border-slate-300 hover:border-yellow-400 hover:text-yellow-600' },
+  excused: { label: 'Excused', short: 'E', active: 'bg-blue-500 text-white border-blue-500',    inactive: 'bg-white text-slate-500 border-slate-300 hover:border-blue-400 hover:text-blue-600' },
 };
 
 const STAT_CONFIG = [
@@ -21,7 +21,7 @@ const STAT_CONFIG = [
   { key: 'absent',   label: 'Absent',   color: 'text-red-600',    bg: 'bg-red-50 border-red-200' },
   { key: 'late',     label: 'Late',     color: 'text-yellow-600', bg: 'bg-yellow-50 border-yellow-200' },
   { key: 'excused',  label: 'Excused',  color: 'text-blue-600',   bg: 'bg-blue-50 border-blue-200' },
-  { key: 'unmarked', label: 'Unmarked', color: 'text-gray-500',   bg: 'bg-gray-50 border-gray-200' },
+  { key: 'unmarked', label: 'Unmarked', color: 'text-slate-500',   bg: 'bg-slate-50 border-slate-200' },
 ];
 
 const Attendance = () => {
@@ -237,13 +237,13 @@ const Attendance = () => {
     return (
       <div className="p-2 md:p-6 max-w-full overflow-x-hidden">
         <div className="mb-3 md:mb-6">
-          <h1 className="text-xl md:text-3xl font-black text-gray-800 tracking-tight uppercase">My Attendance</h1>
-          <p className="text-gray-500 text-[9px] md:text-sm font-medium mt-0.5 uppercase tracking-widest">Attendance record by month</p>
+          <h1 className="text-xl md:text-3xl font-black text-slate-800 tracking-tight uppercase">My Attendance</h1>
+          <p className="text-slate-500 text-[9px] md:text-sm font-medium mt-0.5 uppercase tracking-widest">Attendance record by month</p>
         </div>
         <div className="flex items-center gap-2 mb-4">
-          <label className="text-[10px] md:text-sm font-bold text-gray-400 uppercase tracking-widest">Month</label>
+          <label className="text-[10px] md:text-sm font-bold text-slate-400 uppercase tracking-widest">Month</label>
           <input type="month" value={filterMonth} onChange={e => setFilterMonth(e.target.value)}
-            className="px-2 py-1 md:px-3 md:py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-[10px] md:text-sm font-bold shadow-sm" />
+            className="px-2 py-1 md:px-3 md:py-2 border border-slate-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-400 transition-all text-[10px] md:text-sm font-bold shadow-sm" />
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 md:gap-3 mb-4">
           {STAT_CONFIG.filter(s => s.key !== 'unmarked').map(s => (
@@ -254,24 +254,24 @@ const Attendance = () => {
           ))}
         </div>
         {attRate !== null && (
-          <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-3 md:p-4 mb-4">
+          <div className="bg-white border border-slate-200 rounded-xl shadow-sm p-3 md:p-4 mb-4">
             <div className="flex items-center justify-between mb-1.5 md:mb-2">
-              <span className="text-[10px] md:text-sm font-bold text-gray-600 uppercase tracking-widest">Monthly Rate</span>
+              <span className="text-[10px] md:text-sm font-bold text-slate-600 uppercase tracking-widest">Monthly Rate</span>
               <span className={`text-[10px] md:text-sm font-black ${attRate >= 75 ? 'text-green-600' : 'text-red-600'}`}>{attRate}%</span>
             </div>
-            <div className="w-full bg-gray-100 rounded-full h-1.5 md:h-3">
+            <div className="w-full bg-slate-100 rounded-full h-1.5 md:h-3">
               <div className={`h-1.5 md:h-3 rounded-full transition-all ${attRate >= 75 ? 'bg-green-500' : 'bg-red-500'}`} style={{ width: `${attRate}%` }} />
             </div>
             {attRate < 75 && <p className="text-[8px] md:text-xs text-red-500 mt-1.5 md:mt-2 font-black uppercase tracking-widest">⚠️ Attendance below 75%</p>}
           </div>
         )}
-        <div className="bg-white border border-gray-200 rounded-lg md:rounded-xl shadow-sm overflow-hidden min-w-0">
+        <div className="bg-white border border-slate-200 rounded-lg md:rounded-xl shadow-sm overflow-hidden min-w-0">
           {filteredMyAttendance.length === 0 ? (
-            <div className="text-center py-10 md:py-12 text-gray-400 font-bold text-[10px] md:text-sm uppercase tracking-widest">No records found.</div>
+            <div className="text-center py-10 md:py-12 text-slate-400 font-bold text-[10px] md:text-sm uppercase tracking-widest">No records found.</div>
           ) : (
-            <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-200 max-w-full">
+            <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-slate-200 max-w-full">
               <table className="w-full text-[9px] md:text-sm text-left min-w-[450px] md:min-w-full">
-                <thead className="bg-[#2D1B4D] text-white">
+                <thead className="bg-slate-50 border-b border-slate-200 text-slate-500">
                   <tr>
                     <th className="px-3 py-2 md:px-6 md:py-3 font-bold uppercase tracking-widest text-[8px] md:text-xs">Date</th>
                     <th className="px-3 py-2 md:px-6 md:py-3 font-bold uppercase tracking-widest text-[8px] md:text-xs">Day</th>
@@ -280,21 +280,21 @@ const Attendance = () => {
                     <th className="hidden md:table-cell px-3 py-2 md:px-6 md:py-3 font-bold uppercase tracking-widest text-[8px] md:text-xs">Remarks</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-100">
+                <tbody className="divide-y divide-slate-100">
                   {filteredMyAttendance.map((r, idx) => {
                     const cfg = STATUS_CONFIG[r.status];
                     const date = new Date(r.date + 'T00:00:00');
                     return (
-                      <tr key={r.id} className={`hover:bg-purple-50 transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}`}>
-                        <td className="px-3 py-2 md:px-6 md:py-3 font-bold text-gray-700">{date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</td>
-                        <td className="px-3 py-2 md:px-6 md:py-3 font-medium text-gray-400 uppercase text-[8px] md:text-xs tracking-tighter">{date.toLocaleDateString('en-US', { weekday: 'long' })}</td>
-                        <td className="px-3 py-2 md:px-6 md:py-3 font-bold text-gray-600 truncate max-w-[80px] md:max-w-none">{r.classroom_name}</td>
+                      <tr key={r.id} className={`hover:bg-violet-50 transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'}`}>
+                        <td className="px-3 py-2 md:px-6 md:py-3 font-bold text-slate-700">{date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</td>
+                        <td className="px-3 py-2 md:px-6 md:py-3 font-medium text-slate-400 uppercase text-[8px] md:text-xs tracking-tighter">{date.toLocaleDateString('en-US', { weekday: 'long' })}</td>
+                        <td className="px-3 py-2 md:px-6 md:py-3 font-bold text-slate-600 truncate max-w-[80px] md:max-w-none">{r.classroom_name}</td>
                         <td className="px-3 py-2 md:px-6 md:py-3 text-center">
-                          <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[7px] md:text-xs font-black uppercase tracking-widest border ${cfg?.active || 'bg-gray-100 text-gray-600 border-gray-200'}`}>
+                          <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[7px] md:text-xs font-black uppercase tracking-widest border ${cfg?.active || 'bg-slate-100 text-slate-600 border-slate-200'}`}>
                             {cfg?.label || r.status}
                           </span>
                         </td>
-                        <td className="hidden md:table-cell px-3 py-2 md:px-6 md:py-3 font-medium text-gray-400 truncate max-w-[100px] md:max-w-none">{r.remarks || '—'}</td>
+                        <td className="hidden md:table-cell px-3 py-2 md:px-6 md:py-3 font-medium text-slate-400 truncate max-w-[100px] md:max-w-none">{r.remarks || '—'}</td>
                       </tr>
                     );
                   })}
@@ -303,19 +303,19 @@ const Attendance = () => {
             </div>
           )}
         </div>
-        {total > 0 && <p className="text-[8px] md:text-sm text-gray-400 mt-2 font-bold uppercase tracking-widest">{total} records in {new Date(filterMonth + '-01').toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</p>}
+        {total > 0 && <p className="text-[8px] md:text-sm text-slate-400 mt-2 font-bold uppercase tracking-widest">{total} records in {new Date(filterMonth + '-01').toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</p>}
       </div>
     );
   }
 
   // ── TEACHER / ADMIN VIEW ──────────────────────────────────────
   return (
-    <div className="p-2 md:p-6 scrollbar-thin scrollbar-thumb-gray-300 max-w-full overflow-x-hidden">
+    <div className="p-2 md:p-6 scrollbar-thin scrollbar-thumb-slate-300 max-w-full overflow-x-hidden">
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 mb-4">
         <div className="text-center lg:text-left min-w-0">
-          <h1 className="text-xl md:text-3xl font-black text-gray-800 tracking-tight uppercase truncate">Attendance Tracker</h1>
+          <h1 className="text-xl md:text-3xl font-black text-slate-800 tracking-tight uppercase truncate">Attendance Tracker</h1>
           <div className="flex items-center justify-center lg:justify-start gap-2 mt-0.5">
-            <p className="text-[9px] md:text-sm text-gray-500 font-medium uppercase tracking-widest truncate">
+            <p className="text-[9px] md:text-sm text-slate-500 font-medium uppercase tracking-widest truncate">
               {view === 'mark'
                 ? `Marking: ${new Date(selectedDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
                 : 'Attendance History'}
@@ -327,14 +327,14 @@ const Attendance = () => {
             )}
           </div>
         </div>
-        <div className="flex rounded-lg md:rounded-xl border border-gray-300 overflow-hidden text-[10px] md:text-sm shadow-sm w-full lg:w-auto shrink-0">
+        <div className="flex rounded-lg md:rounded-xl border border-slate-300 overflow-hidden text-[10px] md:text-sm shadow-sm w-full lg:w-auto shrink-0">
           {[
             { key: 'mark', label: '✏️ MARK' }, 
             { key: 'history', label: '📋 HISTORY' },
             { key: 'analytics', label: '📊 ANALYTICS' }
           ].map(v => (
             <button key={v.key} onClick={() => setView(v.key)}
-              className={`flex-1 lg:px-6 py-2 md:py-2.5 font-black transition-all uppercase tracking-widest ${view === v.key ? 'bg-[#2D1B4D] text-white shadow-inner' : 'bg-white text-gray-600 hover:bg-gray-50'}`}>
+              className={`flex-1 lg:px-6 py-2 md:py-2.5 font-black transition-all uppercase tracking-widest ${view === v.key ? 'bg-slate-50 border-b border-slate-200 text-slate-500 shadow-inner' : 'bg-white text-slate-600 hover:bg-slate-50'}`}>
               {v.label}
             </button>
           ))}
@@ -342,7 +342,7 @@ const Attendance = () => {
       </div>
 
       {/* Controls */}
-      <div className="bg-white border border-gray-200 rounded-lg md:rounded-xl shadow-sm p-1.5 md:p-5 mb-2 md:mb-4">
+      <div className="bg-white border border-slate-200 rounded-lg md:rounded-xl shadow-sm p-1.5 md:p-5 mb-2 md:mb-4">
         {view === 'mark' && isWeekend(selectedDate) && (
           <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-center gap-3 animate-pulse">
             <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center text-amber-600 flex-shrink-0">
@@ -356,30 +356,30 @@ const Attendance = () => {
         )}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-1.5 md:gap-4">
           <div className="min-w-0">
-            <label className="block text-[7px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Classroom</label>
+            <label className="block text-[7px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Classroom</label>
             <select value={selectedClassroom} onChange={e => setSelectedClassroom(e.target.value)}
-              className="w-full px-1.5 py-1 md:px-3 md:py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-purple-500 text-[9px] md:text-sm font-bold shadow-sm transition-all hover:border-purple-300 truncate">
+              className="w-full px-1.5 py-1 md:px-3 md:py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-1 focus:ring-violet-500 text-[9px] md:text-sm font-bold shadow-sm transition-all hover:border-violet-300 truncate">
               <option value="">Select classroom</option>
               {sortedClassrooms.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
           </div>
           <div className="min-w-0">
-            <label className="block text-[7px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Date</label>
+            <label className="block text-[7px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Date</label>
             <div className="flex gap-1">
               <input type="date"
                 value={view === 'mark' ? selectedDate : historyDate}
                 onChange={e => view === 'mark' ? setSelectedDate(e.target.value) : setHistoryDate(e.target.value)}
                 max={new Date().toISOString().split('T')[0]}
-                className="flex-1 px-1.5 py-1 md:px-3 md:py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-purple-500 text-[9px] md:text-sm font-bold shadow-sm transition-all hover:border-purple-300" />
+                className="flex-1 px-1.5 py-1 md:px-3 md:py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-1 focus:ring-violet-500 text-[9px] md:text-sm font-bold shadow-sm transition-all hover:border-violet-300" />
               {view === 'history' && historyDate && (
                 <button onClick={() => setHistoryDate('')}
-                  className="px-1.5 md:px-4 py-1 md:py-2.5 border border-gray-300 rounded-lg text-gray-500 hover:text-purple-600 font-black text-[9px] transition-all hover:bg-purple-50 uppercase tracking-tighter">All</button>
+                  className="px-1.5 md:px-4 py-1 md:py-2.5 border border-slate-200 rounded-xl text-slate-500 hover:text-violet-600 font-black text-[9px] transition-all hover:bg-violet-50 uppercase tracking-tighter">All</button>
               )}
             </div>
           </div>
           {view === 'mark' && selectedClassroom && students.length > 0 && (
             <div className="min-w-0">
-              <label className="block text-[7px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Quick Actions</label>
+              <label className="block text-[7px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Quick Actions</label>
               <div className="flex gap-1">
                 <button onClick={() => markAllDraft('present')}
                   className="flex-1 px-1.5 py-1 md:px-3 md:py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-[8px] md:text-[10px] font-black uppercase tracking-widest rounded-lg transition-all shadow-sm active:scale-95 whitespace-nowrap">✓ PRESENT</button>
@@ -395,11 +395,11 @@ const Attendance = () => {
       {view === 'mark' && (
         <>
           {!selectedClassroom ? (
-            <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-8 md:p-16 text-center text-gray-400 font-bold text-[9px] md:text-sm uppercase tracking-widest">Select a classroom to start marking.</div>
+            <div className="bg-white border border-slate-200 rounded-xl shadow-sm p-8 md:p-16 text-center text-slate-400 font-bold text-[9px] md:text-sm uppercase tracking-widest">Select a classroom to start marking.</div>
           ) : loadingStudents ? (
-            <div className="flex items-center justify-center h-32 md:h-48"><div className="animate-spin rounded-full h-6 w-6 md:h-10 md:w-10 border-b-2 border-purple-600" /></div>
+            <div className="flex items-center justify-center h-32 md:h-48"><div className="animate-spin rounded-full h-6 w-6 md:h-10 md:w-10 border-b-2 border-violet-600" /></div>
           ) : students.length === 0 ? (
-            <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-8 md:p-16 text-center text-gray-400 font-bold text-[9px] md:text-sm uppercase tracking-widest">No students enrolled.</div>
+            <div className="bg-white border border-slate-200 rounded-xl shadow-sm p-8 md:p-16 text-center text-slate-400 font-bold text-[9px] md:text-sm uppercase tracking-widest">No students enrolled.</div>
           ) : (
             <>
               {/* Stats */}
@@ -414,33 +414,33 @@ const Attendance = () => {
 
               {/* Rate bar */}
               {attendanceRate !== null && (
-                <div className="mb-2 md:mb-4 bg-white border border-gray-200 rounded-lg md:rounded-xl shadow-sm p-1.5 md:p-4 flex items-center gap-2 md:gap-4">
+                <div className="mb-2 md:mb-4 bg-white border border-slate-200 rounded-lg md:rounded-xl shadow-sm p-1.5 md:p-4 flex items-center gap-2 md:gap-4">
                   <div className="flex-1">
                     <div className="flex justify-between mb-0.5 text-[8px] md:text-xs">
-                      <span className="font-black text-gray-600 uppercase tracking-widest">Rate</span>
+                      <span className="font-black text-slate-600 uppercase tracking-widest">Rate</span>
                       <span className={`font-black ${attendanceRate >= 75 ? 'text-green-600' : 'text-red-600'}`}>{attendanceRate}%</span>
                     </div>
-                    <div className="w-full bg-gray-100 rounded-full h-1 md:h-2">
+                    <div className="w-full bg-slate-100 rounded-full h-1 md:h-2">
                       <div className={`h-1 md:h-2 rounded-full transition-all ${attendanceRate >= 75 ? 'bg-green-500' : 'bg-red-500'}`} style={{ width: `${attendanceRate}%` }} />
                     </div>
                   </div>
-                  <span className="text-[7px] md:text-xs font-bold text-gray-400 flex-shrink-0 uppercase tracking-tighter">{stats.present + stats.late}/{students.length}</span>
+                  <span className="text-[7px] md:text-xs font-bold text-slate-400 flex-shrink-0 uppercase tracking-tighter">{stats.present + stats.late}/{students.length}</span>
                 </div>
               )}
 
               {/* Student table */}
-              <div className="bg-white border border-gray-200 rounded-lg md:rounded-xl shadow-sm overflow-hidden min-w-0">
-                <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 max-w-full">
+              <div className="bg-white border border-slate-200 rounded-lg md:rounded-xl shadow-sm overflow-hidden min-w-0">
+                <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-slate-300 max-w-full">
                   <table className="w-full text-[8px] md:text-sm text-left min-w-[450px] md:min-w-full">
                     <thead>
-                      <tr className="bg-[#2D1B4D] text-white">
+                      <tr className="bg-slate-50 border-b border-slate-200 text-slate-500">
                         <th className="px-2 py-1 md:px-5 md:py-3 text-[7px] md:text-[10px] font-black uppercase tracking-widest w-6 md:w-10">#</th>
                         <th className="px-2 py-1 md:px-5 md:py-3 text-[7px] md:text-[10px] font-black uppercase tracking-widest min-w-[100px]">Student</th>
                         <th className="text-center px-2 py-1 md:px-5 md:py-3 text-[7px] md:text-[10px] font-black uppercase tracking-widest min-w-[140px] md:min-w-[200px]">Status</th>
                         <th className="hidden md:table-cell px-2 py-1 md:px-5 md:py-3 text-[7px] md:text-[10px] font-black uppercase tracking-widest min-w-[100px] md:min-w-[150px]">Note</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-100">
+                    <tbody className="divide-y divide-slate-100">
                       {students.map((s, i) => {
                         const status = draftAttendance[s.student]?.status;
                         const savedStatus = savedAttendance[s.student]?.status;
@@ -449,27 +449,27 @@ const Attendance = () => {
                           : status === 'late' ? 'bg-yellow-50/40'
                           : status === 'excused' ? 'bg-blue-50/40'
                           : status === 'present' ? 'bg-green-50/20'
-                          : i % 2 === 0 ? 'bg-white' : 'bg-gray-50/30';
+                          : i % 2 === 0 ? 'bg-white' : 'bg-slate-50/30';
                         return (
                           <tr key={s.student} className={`transition-colors ${rowBg} group`}>
-                            <td className="px-2 py-1.5 md:px-5 md:py-3.5 text-[7px] md:text-xs font-black text-gray-400">{i + 1}</td>
+                            <td className="px-2 py-1.5 md:px-5 md:py-3.5 text-[7px] md:text-xs font-black text-slate-400">{i + 1}</td>
                             <td className="px-2 py-1.5 md:px-5 md:py-3.5">
                               <div className="flex items-center gap-1.5 md:gap-3">
                                 <div className="w-5 h-5 md:w-9 md:h-9 rounded-lg bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white font-black text-[8px] md:text-xs flex-shrink-0 shadow-sm transition-transform group-hover:scale-110">
                                   {s.student_name?.charAt(0).toUpperCase()}
                                 </div>
                                 <div className="min-w-0">
-                                  <div className="font-black text-gray-800 text-[8px] md:text-sm flex items-center gap-0.5 leading-tight truncate uppercase tracking-tighter">
+                                  <div className="font-black text-slate-800 text-[8px] md:text-sm flex items-center gap-0.5 leading-tight truncate uppercase tracking-tighter">
                                     <button 
                                       onClick={() => navigate(`/profile?student_id=${s.student}`)}
-                                      className="hover:text-purple-600 transition-colors truncate"
+                                      className="hover:text-violet-600 transition-colors truncate"
                                       title="View Profile"
                                     >
                                       {s.student_name}
                                     </button>
                                     {changed && <span className="w-1 h-1 rounded-full bg-amber-500 shrink-0 shadow-sm animate-pulse" title="Unsaved change" />}
                                   </div>
-                                  <div className="text-[6px] md:text-[10px] text-gray-400 font-bold truncate tracking-tight">{s.student_email}</div>
+                                  <div className="text-[6px] md:text-[10px] text-slate-400 font-bold truncate tracking-tight">{s.student_email}</div>
                                 </div>
                               </div>
                             </td>
@@ -487,7 +487,7 @@ const Attendance = () => {
                               <input type="text" placeholder="..."
                                 value={draftRemarks[s.student] || ''}
                                 onChange={e => setDraftRemarks(prev => ({ ...prev, [s.student]: e.target.value }))}
-                                className="w-full px-1.5 py-1 md:px-3 md:py-2 border border-gray-200 rounded-md text-[7px] md:text-[11px] font-bold focus:outline-none focus:ring-1 focus:ring-purple-400 bg-white/50 focus:bg-white transition-all shadow-inner uppercase tracking-tighter" />
+                                className="w-full px-1.5 py-1 md:px-3 md:py-2 border border-slate-200 rounded-md text-[7px] md:text-[11px] font-bold focus:outline-none focus:ring-1 focus:ring-violet-400 bg-white/50 focus:bg-white transition-all shadow-inner uppercase tracking-tighter" />
                             </td>
                           </tr>
                         );
@@ -497,8 +497,8 @@ const Attendance = () => {
                 </div>
 
                 {/* Save bar */}
-                <div className="px-2 py-2 md:px-5 md:py-4 bg-gray-50 border-t border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-2 md:gap-3">
-                  <div className="text-[6px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest flex flex-wrap gap-x-2 gap-y-0.5">
+                <div className="px-2 py-2 md:px-5 md:py-4 bg-slate-50 border-t border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-2 md:gap-3">
+                  <div className="text-[6px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest flex flex-wrap gap-x-2 gap-y-0.5">
                     <span>P:PRESENT</span>
                     <span>A:ABSENT</span>
                     <span>L:LATE</span>
@@ -508,8 +508,8 @@ const Attendance = () => {
                   <button onClick={saveAttendance} disabled={submitting || !hasChanges}
                     className={`flex items-center justify-center gap-1 px-4 py-1.5 md:px-8 md:py-2.5 rounded-lg md:rounded-xl text-[9px] md:text-sm font-black transition-all shadow-md active:scale-95 w-full md:w-auto uppercase tracking-widest ${
                       hasChanges
-                        ? 'bg-purple-600 hover:bg-purple-700 text-white'
-                        : 'bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200'
+                        ? 'bg-violet-600 hover:bg-violet-700 text-white'
+                        : 'bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200'
                     } disabled:opacity-60`}>
                     {submitting ? (
                       <><svg className="animate-spin h-2.5 w-2.5 md:h-4 md:w-4" fill="none" viewBox="0 0 24 24">
@@ -533,17 +533,17 @@ const Attendance = () => {
       {view === 'history' && (
         <>
           {!selectedClassroom ? (
-            <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-4 md:p-16 text-center text-gray-400 font-bold text-[8px] md:text-sm uppercase tracking-widest">Select a classroom to view history.</div>
+            <div className="bg-white border border-slate-200 rounded-xl shadow-sm p-4 md:p-16 text-center text-slate-400 font-bold text-[8px] md:text-sm uppercase tracking-widest">Select a classroom to view history.</div>
           ) : loadingHistory ? (
-            <div className="flex items-center justify-center h-24 md:h-48"><div className="animate-spin rounded-full h-5 w-5 md:h-10 md:w-10 border-b-2 border-purple-600" /></div>
+            <div className="flex items-center justify-center h-24 md:h-48"><div className="animate-spin rounded-full h-5 w-5 md:h-10 md:w-10 border-b-2 border-violet-600" /></div>
           ) : history.length === 0 ? (
-            <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-4 md:p-16 text-center text-gray-400 font-bold text-[8px] md:text-sm uppercase tracking-widest">No records found.</div>
+            <div className="bg-white border border-slate-200 rounded-xl shadow-sm p-4 md:p-16 text-center text-slate-400 font-bold text-[8px] md:text-sm uppercase tracking-widest">No records found.</div>
           ) : (
-            <div className="bg-white border border-gray-200 rounded-lg md:rounded-xl shadow-sm overflow-hidden min-w-0">
-              <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 max-w-full">
+            <div className="bg-white border border-slate-200 rounded-lg md:rounded-xl shadow-sm overflow-hidden min-w-0">
+              <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-slate-300 max-w-full">
                 <table className="w-full text-[7px] md:text-sm text-left min-w-[350px] md:min-w-full">
                   <thead>
-                    <tr className="bg-[#2D1B4D] text-white">
+                    <tr className="bg-slate-50 border-b border-slate-200 text-slate-500">
                       <th className="px-1.5 py-1 md:px-6 md:py-3 text-[6px] md:text-[10px] font-black uppercase tracking-widest">Date</th>
                       <th className="px-1.5 py-1 md:px-6 md:py-3 text-[6px] md:text-[10px] font-black uppercase tracking-widest">Student</th>
                       <th className="text-center px-1.5 py-1 md:px-6 md:py-3 text-[6px] md:text-[10px] font-black uppercase tracking-widest">Status</th>
@@ -552,31 +552,31 @@ const Attendance = () => {
                       <th className="text-center px-1.5 py-1 md:px-6 md:py-3 text-[6px] md:text-[10px] font-black uppercase tracking-widest">Opt</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-100">
+                  <tbody className="divide-y divide-slate-100">
                     {history.map((r, idx) => {
                       const cfg = STATUS_CONFIG[r.status];
                       return (
-                        <tr key={r.id} className={`hover:bg-purple-50 transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'} group`}>
-                          <td className="px-1.5 py-1 md:px-6 md:py-3 font-bold text-gray-700 whitespace-nowrap">{new Date(r.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</td>
+                        <tr key={r.id} className={`hover:bg-violet-50 transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'} group`}>
+                          <td className="px-1.5 py-1 md:px-6 md:py-3 font-bold text-slate-700 whitespace-nowrap">{new Date(r.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</td>
                           <td className="px-1.5 py-1 md:px-6 md:py-3">
                             <div className="min-w-0">
                               <button 
                                 onClick={() => navigate(`/profile?student_id=${r.student}`)}
-                                className="font-black text-gray-800 hover:text-purple-600 transition-colors text-left truncate uppercase tracking-tighter"
+                                className="font-black text-slate-800 hover:text-violet-600 transition-colors text-left truncate uppercase tracking-tighter"
                                 title="View Profile"
                               >
                                 {r.student_name}
                               </button>
-                              <div className="text-[5px] md:text-xs text-gray-400 font-bold truncate">{r.student_email}</div>
+                              <div className="text-[5px] md:text-xs text-slate-400 font-bold truncate">{r.student_email}</div>
                             </div>
                           </td>
                           <td className="px-1.5 py-1 md:px-6 md:py-3 text-center">
-                            <span className={`inline-flex items-center gap-1 px-1 py-0 rounded-full text-[5px] md:text-xs font-black uppercase tracking-widest border ${cfg?.active || 'bg-gray-100 text-gray-600 border-gray-200'}`}>
+                            <span className={`inline-flex items-center gap-1 px-1 py-0 rounded-full text-[5px] md:text-xs font-black uppercase tracking-widest border ${cfg?.active || 'bg-slate-100 text-slate-600 border-slate-200'}`}>
                               {cfg?.short || r.status}
                             </span>
                           </td>
-                          <td className="hidden md:table-cell px-2 py-1.5 md:px-6 md:py-3 font-bold text-gray-400 uppercase text-[7px] md:text-sm truncate max-w-[50px] md:max-w-none">{r.marked_by_name || '—'}</td>
-                          <td className="hidden md:table-cell px-2 py-1.5 md:px-6 md:py-3 font-medium text-gray-500 truncate max-w-[60px] md:max-w-none">{r.remarks || '—'}</td>
+                          <td className="hidden md:table-cell px-2 py-1.5 md:px-6 md:py-3 font-bold text-slate-400 uppercase text-[7px] md:text-sm truncate max-w-[50px] md:max-w-none">{r.marked_by_name || '—'}</td>
+                          <td className="hidden md:table-cell px-2 py-1.5 md:px-6 md:py-3 font-medium text-slate-500 truncate max-w-[60px] md:max-w-none">{r.remarks || '—'}</td>
                           <td className="px-1.5 py-1 md:px-6 md:py-3 text-center">
                             <button onClick={() => deleteAttendance(r)}
                               className="p-0.5 md:p-2 text-red-600 bg-red-50 hover:bg-red-100 rounded transition-all md:opacity-0 md:group-hover:opacity-100">
@@ -591,7 +591,7 @@ const Attendance = () => {
                   </tbody>
                 </table>
               </div>
-              <div className="px-1.5 py-0.5 md:px-6 md:py-2.5 bg-gray-50 border-t border-gray-100 text-[5px] md:text-xs font-black text-gray-400 uppercase tracking-widest">
+              <div className="px-1.5 py-0.5 md:px-6 md:py-2.5 bg-slate-50 border-t border-slate-100 text-[5px] md:text-xs font-black text-slate-400 uppercase tracking-widest">
                 {history.length} records found
               </div>
             </div>
@@ -603,17 +603,17 @@ const Attendance = () => {
       {view === 'analytics' && (
         <div className="space-y-6 animate-fade-in">
           {loadingAnalytics ? (
-            <div className="flex items-center justify-center h-48"><div className="animate-spin rounded-full h-10 w-10 border-b-2 border-purple-600" /></div>
+            <div className="flex items-center justify-center h-48"><div className="w-10 h-10 rounded-full border-2 border-slate-100 border-t-violet-600 animate-spin" /></div>
           ) : !analytics ? (
-            <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-16 text-center text-gray-400 font-bold text-sm uppercase tracking-widest">Failed to load analytics.</div>
+            <div className="bg-white border border-slate-200 rounded-xl shadow-sm p-16 text-center text-slate-400 font-bold text-sm uppercase tracking-widest">Failed to load analytics.</div>
           ) : (
             <>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Daily Trends Chart */}
-                <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+                <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
                   <div className="mb-6">
-                    <h3 className="text-lg font-bold text-gray-800">Daily Presence Trends</h3>
-                    <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest">Last 30 Days</p>
+                    <h3 className="text-lg font-bold text-slate-800">Daily Presence Trends</h3>
+                    <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest">Last 30 Days</p>
                   </div>
                   <div className="h-64">
                     <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
@@ -637,23 +637,23 @@ const Attendance = () => {
 
                 {/* Section Rankings */}
                 {user.role === 'admin' && (
-                  <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm overflow-hidden flex flex-col">
+                  <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm overflow-hidden flex flex-col">
                     <div className="mb-6">
-                      <h3 className="text-lg font-bold text-gray-800">Section Rankings</h3>
-                      <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest">Top Performing Classrooms</p>
+                      <h3 className="text-lg font-bold text-slate-800">Section Rankings</h3>
+                      <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest">Top Performing Classrooms</p>
                     </div>
                     <div className="flex-1 overflow-y-auto space-y-3 pr-2">
                       {analytics.section_rankings?.map((rank, idx) => (
-                        <div key={rank.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-100 hover:border-purple-200 transition-all">
+                        <div key={rank.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-100 hover:border-violet-200 transition-all">
                           <div className="flex items-center gap-3">
-                            <span className={`w-6 h-6 flex items-center justify-center rounded-lg font-black text-[10px] ${idx === 0 ? 'bg-amber-100 text-amber-600' : idx === 1 ? 'bg-slate-200 text-slate-600' : idx === 2 ? 'bg-orange-100 text-orange-600' : 'bg-gray-100 text-gray-400'}`}>
+                            <span className={`w-6 h-6 flex items-center justify-center rounded-lg font-black text-[10px] ${idx === 0 ? 'bg-amber-100 text-amber-600' : idx === 1 ? 'bg-slate-200 text-slate-600' : idx === 2 ? 'bg-orange-100 text-orange-600' : 'bg-slate-100 text-slate-400'}`}>
                               {idx + 1}
                             </span>
-                            <span className="text-xs font-black text-gray-700 uppercase tracking-tight">{rank.name}</span>
+                            <span className="text-xs font-black text-slate-700 uppercase tracking-tight">{rank.name}</span>
                           </div>
                           <div className="text-right">
                             <div className={`text-sm font-black ${rank.rate >= 90 ? 'text-emerald-600' : rank.rate >= 75 ? 'text-blue-600' : 'text-rose-600'}`}>{rank.rate}%</div>
-                            <div className="text-[8px] font-bold text-gray-400 uppercase tracking-widest">{rank.total_records} records</div>
+                            <div className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">{rank.total_records} records</div>
                           </div>
                         </div>
                       ))}

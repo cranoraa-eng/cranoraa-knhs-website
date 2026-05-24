@@ -93,7 +93,7 @@ const Calendar = ({ mode = 'public' }) => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+        <div className="w-10 h-10 rounded-full border-2 border-slate-100 border-t-violet-600 animate-spin"></div>
       </div>
     );
   }

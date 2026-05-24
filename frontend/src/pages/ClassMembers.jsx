@@ -53,7 +53,7 @@ const ClassMembers = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-purple-600" />
+        <div className="w-10 h-10 rounded-full border-2 border-slate-100 border-t-violet-600 animate-spin" />
       </div>
     );
   }
@@ -61,15 +61,15 @@ const ClassMembers = () => {
   if (enrollments.length === 0) {
     return (
       <div className="overflow-y-auto h-[calc(100vh-4rem)] p-6">
-        <h1 className="text-3xl font-bold text-gray-800 mb-6">My Classroom</h1>
-        <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-16 text-center">
-          <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg className="w-8 h-8 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <h1 className="text-3xl font-bold text-slate-800 mb-6">My Classroom</h1>
+        <div className="bg-white border border-slate-200 rounded-xl shadow-sm p-16 text-center">
+          <div className="w-16 h-16 bg-violet-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg className="w-8 h-8 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
             </svg>
           </div>
-          <h3 className="text-lg font-semibold text-gray-700 mb-1">Not Enrolled</h3>
-          <p className="text-gray-400 text-sm">You are not enrolled in any classroom yet. Contact your school administrator.</p>
+          <h3 className="text-lg font-semibold text-slate-700 mb-1">Not Enrolled</h3>
+          <p className="text-slate-400 text-sm">You are not enrolled in any classroom yet. Contact your school administrator.</p>
         </div>
       </div>
     );
@@ -81,8 +81,8 @@ const ClassMembers = () => {
     <div className="p-4 md:p-8 space-y-6">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-800">My Classroom</h1>
-        <p className="text-gray-500 mt-1">Your class information, subjects, and classmates</p>
+        <h1 className="text-3xl font-bold text-slate-800">My Classroom</h1>
+        <p className="text-slate-500 mt-1">Your class information, subjects, and classmates</p>
       </div>
 
       {/* Classroom selector if enrolled in multiple */}
@@ -92,7 +92,7 @@ const ClassMembers = () => {
           <select
             value={selectedClassroom?.classroom}
             onChange={e => setSelectedClassroom(enrollments.find(en => String(en.classroom) === e.target.value))}
-            className="px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm text-white"
+            className="px-4 py-2.5 border border-slate-200 rounded-xl bg-white text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-400 transition-all text-white"
           >
             {enrollments.map(en => (
               <option key={en.classroom} value={en.classroom} className="text-white">{en.classroom_name || `Classroom ${en.classroom}`}</option>
@@ -135,32 +135,32 @@ const ClassMembers = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Subjects */}
-        <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
-          <div className="px-5 py-4 border-b border-gray-100 bg-gradient-to-r from-purple-50 to-indigo-50">
-            <h3 className="font-semibold text-gray-800">Subjects & Teachers</h3>
-            <p className="text-xs text-gray-400 mt-0.5">{subjects.length} subject{subjects.length !== 1 ? 's' : ''} this year</p>
+        <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+          <div className="px-5 py-4 border-b border-slate-100 bg-gradient-to-r from-purple-50 to-indigo-50">
+            <h3 className="font-semibold text-slate-800">Subjects & Teachers</h3>
+            <p className="text-xs text-slate-400 mt-0.5">{subjects.length} subject{subjects.length !== 1 ? 's' : ''} this year</p>
           </div>
           {subjects.length === 0 ? (
-            <div className="text-center py-10 text-gray-400 text-sm">No subjects assigned yet.</div>
+            <div className="text-center py-10 text-slate-400 text-sm">No subjects assigned yet.</div>
           ) : (
-            <div className="divide-y divide-gray-100">
+            <div className="divide-y divide-slate-100">
               {subjects.map((s, i) => (
-                <div key={s.id} className="flex items-center gap-3 px-5 py-3.5 hover:bg-purple-50 transition-colors">
+                <div key={s.id} className="flex items-center gap-3 px-5 py-3.5 hover:bg-violet-50 transition-colors">
                   <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-indigo-500 flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
                     {i + 1}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="font-semibold text-gray-800 text-sm">{s.subject_name}</div>
-                    <div className="text-xs text-gray-400">{s.subject_code}</div>
+                    <div className="font-semibold text-slate-800 text-sm">{s.subject_name}</div>
+                    <div className="text-xs text-slate-400">{s.subject_code}</div>
                   </div>
                   <div className="flex-1">
-                    <div className="text-xs font-medium text-gray-600">{s.teacher_name}</div>
-                    <div className="text-xs text-gray-400">Teacher</div>
+                    <div className="text-xs font-medium text-slate-600">{s.teacher_name}</div>
+                    <div className="text-xs text-slate-400">Teacher</div>
                   </div>
                   {s.teacher && user?.id !== s.teacher && (
                     <button 
                       onClick={() => handleStartChat(s.teacher)}
-                      className="p-1.5 text-purple-600 hover:bg-purple-100 rounded-lg transition-all active:scale-95"
+                      className="p-1.5 text-violet-600 hover:bg-violet-100 rounded-lg transition-all active:scale-95"
                       title="Send Message"
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" /></svg>
@@ -173,37 +173,37 @@ const ClassMembers = () => {
         </div>
 
         {/* Classmates */}
-        <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
-          <div className="px-5 py-4 border-b border-gray-100 bg-gradient-to-r from-purple-50 to-indigo-50">
-            <h3 className="font-semibold text-gray-800">Classmates</h3>
-            <p className="text-xs text-gray-400 mt-0.5">{classmates.length} student{classmates.length !== 1 ? 's' : ''} enrolled</p>
+        <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+          <div className="px-5 py-4 border-b border-slate-100 bg-gradient-to-r from-purple-50 to-indigo-50">
+            <h3 className="font-semibold text-slate-800">Classmates</h3>
+            <p className="text-xs text-slate-400 mt-0.5">{classmates.length} student{classmates.length !== 1 ? 's' : ''} enrolled</p>
           </div>
           {classmates.length === 0 ? (
-            <div className="text-center py-10 text-gray-400 text-sm">No classmates found.</div>
+            <div className="text-center py-10 text-slate-400 text-sm">No classmates found.</div>
           ) : (
-            <div className="divide-y divide-gray-100 max-h-[420px] overflow-y-auto">
+            <div className="divide-y divide-slate-100 max-h-[420px] overflow-y-auto">
               {classmates.map((m, i) => {
                 const name = m.student_name || `Student ${m.student}`;
                 const initials = name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
                 return (
-                  <div key={m.id} className="flex items-center gap-3 px-5 py-3 hover:bg-purple-50 transition-colors">
+                  <div key={m.id} className="flex items-center gap-3 px-5 py-3 hover:bg-violet-50 transition-colors">
                     <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#9F7AEA] to-[#6B46C1] flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
                       {initials}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="font-semibold text-gray-800 text-sm">{name}</div>
-                      <div className="text-xs text-gray-400">{m.student_email}</div>
+                      <div className="font-semibold text-slate-800 text-sm">{name}</div>
+                      <div className="text-xs text-slate-400">{m.student_email}</div>
                     </div>
                     {user?.id !== m.student && (
                       <button 
                         onClick={() => handleStartChat(m.student)}
-                        className="p-1.5 text-purple-600 hover:bg-purple-100 rounded-lg transition-all active:scale-95"
+                        className="p-1.5 text-violet-600 hover:bg-violet-100 rounded-lg transition-all active:scale-95"
                         title="Send Message"
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" /></svg>
                       </button>
                     )}
-                    <span className="text-xs text-gray-400 ml-2">#{i + 1}</span>
+                    <span className="text-xs text-slate-400 ml-2">#{i + 1}</span>
                   </div>
                 );
               })}

@@ -4,16 +4,24 @@ import { useAuth } from '../context/AuthContext';
 const ProtectedRoute = ({ children }) => {
   const { user, ready } = useAuth();
 
-  // Wait until the context has read localStorage before deciding
   if (!ready) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-900 to-indigo-900">
-        <div className="flex flex-col items-center gap-3">
-          <svg className="animate-spin h-10 w-10 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-          </svg>
-          <p className="text-white text-sm">Loading...</p>
+      <div className="min-h-screen flex items-center justify-center bg-[#1A0B2E]">
+        <div className="flex flex-col items-center gap-4">
+          {/* Logo */}
+          <div className="w-14 h-14 rounded-2xl bg-white/10 border border-white/10 flex items-center justify-center mb-2">
+            <img
+              src="https://plain-apac-prod-public.komododecks.com/202605/18/u3t1lOolacFscP6v1Bq8/image.png"
+              alt="KNHS"
+              className="w-9 h-9 object-contain"
+            />
+          </div>
+          {/* Spinner */}
+          <div className="relative w-8 h-8">
+            <div className="absolute inset-0 rounded-full border-2 border-white/10" />
+            <div className="absolute inset-0 rounded-full border-2 border-violet-400 border-t-transparent animate-spin" />
+          </div>
+          <p className="text-white/50 text-xs font-bold uppercase tracking-widest">Loading portal…</p>
         </div>
       </div>
     );
@@ -23,7 +31,6 @@ const ProtectedRoute = ({ children }) => {
     return <Navigate to="/login" replace />;
   }
 
-  // Force password change if required
   if (user.must_change_password && window.location.pathname !== '/force-password-change') {
     return <Navigate to="/force-password-change" replace />;
   }

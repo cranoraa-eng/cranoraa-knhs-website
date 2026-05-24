@@ -561,7 +561,7 @@ const SubjectFilterSelect = ({ value, onChange, filterLevel, gradeData }) => {
 const StatChip = ({ label, value, color }) => {
   const colors = {
     emerald: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
-    purple: 'bg-purple-500/10 text-purple-500 border-purple-500/20',
+    purple: 'bg-violet-500/10 text-violet-500 border-violet-500/20',
     blue: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
     indigo: 'bg-indigo-500/10 text-indigo-500 border-indigo-500/20',
   };

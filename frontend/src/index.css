@@ -1,9 +1,10 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@500;600;700;800;900&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* ─── CSS Variables ──────────────────────────────────────────────────────── */
 @layer base {
   :root {
     color-scheme: light;
@@ -12,21 +13,32 @@
     --sar: env(safe-area-inset-right);
     --sab: env(safe-area-inset-bottom);
     --sal: env(safe-area-inset-left);
+
+    /* Design tokens */
+    --color-primary:       #7c3aed; /* violet-600 */
+    --color-primary-dark:  #6d28d9; /* violet-700 */
+    --color-primary-light: #ede9fe; /* violet-100 */
+    --color-sidebar-bg:    #1A0B2E;
+    --color-page-bg:       #F8FAFC;
+    --radius-card:         1rem;    /* 16px */
+    --radius-btn:          0.75rem; /* 12px */
+    --shadow-card:         0 1px 3px 0 rgb(0 0 0 / 0.07), 0 1px 2px -1px rgb(0 0 0 / 0.07);
+    --shadow-card-hover:   0 10px 25px -5px rgb(0 0 0 / 0.08), 0 4px 10px -5px rgb(0 0 0 / 0.05);
   }
 
   * {
     scroll-behavior: smooth;
-    /* Improve touch responsiveness */
     -webkit-tap-highlight-color: transparent;
+    box-sizing: border-box;
   }
 
   body {
     font-family: 'Inter', sans-serif;
     @apply text-slate-700 antialiased;
     overflow-x: hidden;
+    background-color: var(--color-page-bg);
   }
 
-  /* Prevent double scrollbars */
   html {
     overflow-y: auto;
     overflow-x: hidden;
@@ -34,21 +46,24 @@
 
   #root {
     min-height: 100vh;
-    min-height: 100dvh; /* dynamic viewport height for mobile browsers */
+    min-height: 100dvh;
   }
 
   h1, h2, h3, h4, h5, h6 {
     font-family: 'Montserrat', sans-serif;
+    @apply tracking-tight;
   }
 
   ::selection {
     @apply bg-violet-200 text-violet-900;
   }
 
+  /* Smooth transitions on interactive elements */
   a, button, input, select, textarea {
     @apply transition-all duration-200 ease-out;
   }
 
+  /* Accessible focus rings */
   button:focus-visible,
   a:focus-visible,
   input:focus-visible,
@@ -57,237 +72,233 @@
     @apply outline-none ring-2 ring-violet-400 ring-offset-2 ring-offset-white;
   }
 
-  /* Better touch targets on mobile */
+  /* Touch-friendly minimum tap targets */
   button, a, [role="button"] {
     min-height: 44px;
     min-width: 44px;
   }
 
   /* Exception for inline/icon-only elements */
-  button.no-min, a.no-min {
+  button.no-min, a.no-min, .no-min {
     min-height: unset;
     min-width: unset;
   }
 }
 
+/* ─── Component Layer ────────────────────────────────────────────────────── */
 @layer components {
-  /* Surface Components */
-  .ui-surface {
-    @apply bg-white/90 backdrop-blur-sm border border-slate-200/80 rounded-xl shadow-sm;
-  }
 
-  .ui-surface-strong {
-    @apply bg-white border border-slate-200 rounded-2xl shadow-lg shadow-slate-900/5;
+  /* ── Surface / Card ── */
+  .ui-surface {
+    @apply bg-white border border-slate-200 rounded-2xl shadow-sm;
   }
 
   .ui-card {
-    @apply bg-white border border-slate-200 rounded-xl shadow-sm hover:shadow-md transition-shadow;
+    @apply bg-white border border-slate-200 rounded-2xl shadow-sm hover:shadow-md transition-shadow;
   }
 
   .ui-card-elevated {
-    @apply bg-white border border-slate-200 rounded-xl shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5;
+    @apply bg-white border border-slate-200 rounded-2xl shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5;
   }
 
-  /* Page Type Styles */
-  .public-page,
-  .portal-page,
-  .auth-page {
-    @apply text-slate-700;
-  }
-
-  .public-page h1,
-  .public-page h2,
-  .public-page h3,
-  .portal-page h1,
-  .portal-page h2,
-  .portal-page h3,
-  .auth-page h1,
-  .auth-page h2,
-  .auth-page h3 {
-    @apply tracking-tight text-slate-800;
-  }
-
-  /* Table Styles */
-  .ui-table {
-    @apply w-full overflow-hidden rounded-xl border border-slate-200 bg-white;
-  }
-
-  .ui-table thead tr {
-    @apply bg-slate-50;
-  }
-
-  .ui-table th,
-  .ui-table td {
-    @apply px-4 py-3 text-sm border-b border-slate-100;
-  }
-
-  .ui-table th {
-    @apply font-semibold text-slate-600 uppercase tracking-wide text-xs;
-  }
-
-  .ui-table tbody tr:hover {
-    @apply bg-violet-50/60;
-  }
-
-  /* Responsive table wrapper — horizontal scroll on mobile */
+  /* ── Table ── */
   .ui-table-wrapper {
-    @apply w-full overflow-x-auto -mx-0 rounded-xl;
+    @apply w-full overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm;
     -webkit-overflow-scrolling: touch;
   }
 
-  /* Form Input Styles */
-  .ui-input {
-    @apply w-full rounded-lg border-slate-300 shadow-sm px-4 py-2.5 text-sm transition-all;
+  .ui-table {
+    @apply w-full text-left;
   }
 
-  .ui-input:focus {
-    @apply border-violet-400 ring-violet-300;
+  .ui-table thead tr {
+    @apply bg-slate-50 border-b border-slate-200;
+  }
+
+  .ui-table th {
+    @apply px-5 py-3.5 text-[10px] font-black text-slate-500 uppercase tracking-[0.15em] whitespace-nowrap;
+  }
+
+  .ui-table td {
+    @apply px-5 py-3.5 text-sm text-slate-700 border-b border-slate-100;
+  }
+
+  .ui-table tbody tr:last-child td {
+    @apply border-b-0;
+  }
+
+  .ui-table tbody tr {
+    @apply hover:bg-violet-50/40 transition-colors;
+  }
+
+  /* ── Form Inputs ── */
+  .ui-input {
+    @apply w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-sm text-slate-800
+           placeholder-slate-400 transition-all
+           focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-400
+           disabled:bg-slate-50 disabled:text-slate-400 disabled:cursor-not-allowed;
+  }
+
+  .ui-input-error {
+    @apply border-red-400 bg-red-50 focus:border-red-400 focus:ring-red-400/20;
   }
 
   .ui-select {
-    @apply w-full rounded-lg border-slate-300 shadow-sm px-4 py-2.5 text-sm transition-all;
-  }
-
-  .ui-select:focus {
-    @apply border-violet-400 ring-violet-300;
+    @apply ui-input cursor-pointer;
   }
 
   .ui-textarea {
-    @apply w-full rounded-lg border-slate-300 shadow-sm px-4 py-2.5 text-sm transition-all resize-none;
+    @apply ui-input resize-none;
   }
 
-  .ui-textarea:focus {
-    @apply border-violet-400 ring-violet-300;
+  /* ── Buttons ── */
+  .ui-btn {
+    @apply inline-flex items-center justify-center gap-2 font-bold rounded-xl transition-all
+           active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed;
   }
 
-  /* Button Styles */
-  .ui-button {
-    @apply rounded-lg font-medium transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed;
+  .ui-btn-sm  { @apply px-3 py-1.5 text-xs; }
+  .ui-btn-md  { @apply px-5 py-2.5 text-sm; }
+  .ui-btn-lg  { @apply px-8 py-3.5 text-sm; }
+
+  .ui-btn-primary {
+    @apply bg-violet-600 text-white hover:bg-violet-700 shadow-sm;
   }
 
-  .ui-button-primary {
-    @apply bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-md shadow-violet-700/30 hover:from-violet-700 hover:to-indigo-700;
+  .ui-btn-secondary {
+    @apply bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300;
   }
 
-  .ui-button-secondary {
-    @apply border border-slate-300 bg-white text-slate-700 hover:bg-slate-50;
+  .ui-btn-danger {
+    @apply bg-red-500 text-white hover:bg-red-600;
   }
 
-  .ui-button-ghost {
-    @apply text-slate-600 hover:bg-slate-100;
+  .ui-btn-ghost {
+    @apply text-slate-600 hover:bg-slate-100 hover:text-slate-800;
   }
 
-  /* Badge Styles */
+  /* ── Badges ── */
   .ui-badge {
-    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium;
+    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[10px] font-bold uppercase tracking-wider;
   }
 
-  .ui-badge-primary {
-    @apply bg-violet-100 text-violet-700;
+  .ui-badge-violet { @apply bg-violet-100 text-violet-700 border-violet-200; }
+  .ui-badge-blue   { @apply bg-blue-100 text-blue-700 border-blue-200; }
+  .ui-badge-green  { @apply bg-emerald-100 text-emerald-700 border-emerald-200; }
+  .ui-badge-amber  { @apply bg-amber-100 text-amber-700 border-amber-200; }
+  .ui-badge-red    { @apply bg-red-100 text-red-700 border-red-200; }
+  .ui-badge-slate  { @apply bg-slate-100 text-slate-600 border-slate-200; }
+  .ui-badge-indigo { @apply bg-indigo-100 text-indigo-700 border-indigo-200; }
+
+  /* ── Page Header ── */
+  .ui-page-header {
+    @apply flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6;
   }
 
-  .ui-badge-success {
-    @apply bg-green-100 text-green-700;
+  .ui-page-title {
+    @apply text-2xl font-black text-slate-900 tracking-tight;
   }
 
-  .ui-badge-warning {
-    @apply bg-amber-100 text-amber-700;
+  .ui-page-subtitle {
+    @apply text-sm text-slate-500 mt-0.5;
   }
 
-  .ui-badge-danger {
-    @apply bg-red-100 text-red-700;
+  /* ── Section Card ── */
+  .ui-section-card {
+    @apply bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden;
   }
 
-  /* Animation Utilities */
-  .animate-fade-in {
-    animation: fadeIn 0.6s ease-out;
+  .ui-section-header {
+    @apply flex items-center justify-between px-6 py-4 border-b border-slate-100;
   }
 
-  .animate-fade-in-up {
-    animation: fadeInUp 0.6s ease-out;
+  .ui-section-title {
+    @apply text-sm font-bold text-slate-900;
   }
 
-  .animate-fade-in-down {
-    animation: fadeInDown 0.6s ease-out;
+  /* ── Pagination ── */
+  .ui-pagination {
+    @apply flex items-center justify-between px-5 py-3.5 border-t border-slate-100 bg-slate-50/50;
   }
 
-  .animate-scale-in {
-    animation: scaleIn 0.5s ease-out;
+  .ui-pagination-btn {
+    @apply px-4 py-2 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-600
+           hover:bg-slate-50 hover:border-slate-300 transition-all disabled:opacity-40 disabled:cursor-not-allowed;
   }
+
+  .ui-pagination-info {
+    @apply text-xs font-bold text-slate-500 uppercase tracking-widest;
+  }
+
+  /* ── Animations ── */
+  .animate-fade-in      { animation: fadeIn 0.4s ease-out; }
+  .animate-fade-in-up   { animation: fadeInUp 0.4s ease-out; }
+  .animate-fade-in-down { animation: fadeInDown 0.4s ease-out; }
+  .animate-scale-in     { animation: scaleIn 0.25s ease-out; }
+  .animate-slide-up     { animation: slideUp 0.3s ease-out; }
 
   @keyframes fadeIn {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
+    from { opacity: 0; }
+    to   { opacity: 1; }
   }
 
   @keyframes fadeInUp {
-    from {
-      opacity: 0;
-      transform: translateY(20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
   }
 
   @keyframes fadeInDown {
-    from {
-      opacity: 0;
-      transform: translateY(-20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(-16px); }
+    to   { opacity: 1; transform: translateY(0); }
   }
 
   @keyframes scaleIn {
-    from {
-      opacity: 0;
-      transform: scale(0.9);
-    }
-    to {
-      opacity: 1;
-      transform: scale(1);
-    }
+    from { opacity: 0; transform: scale(0.95); }
+    to   { opacity: 1; transform: scale(1); }
   }
 
-  /* Custom Scrollbar Styles */
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── Scrollbars ── */
   ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 6px;
+    height: 6px;
   }
 
   ::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 4px;
+    background: transparent;
   }
 
   ::-webkit-scrollbar-thumb {
-    background: rgba(159, 122, 234, 0.5);
-    border-radius: 4px;
+    background: #e2e8f0;
+    border-radius: 99px;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: rgba(159, 122, 234, 0.7);
+    background: #cbd5e1;
   }
 
-  /* Light scrollbar for light backgrounds */
-  .light-scrollbar::-webkit-scrollbar-track {
-    background: #f3f4f6;
+  /* Dark surface scrollbar (sidebar) */
+  .scrollbar-dark::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.12);
   }
 
-  .light-scrollbar::-webkit-scrollbar-thumb {
-    background: #d1d5db;
+  .scrollbar-dark::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.2);
   }
 
-  .light-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: #9ca3af;
+  /* ── Utility: no-scrollbar ── */
+  .scrollbar-none {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
   }
+  .scrollbar-none::-webkit-scrollbar { display: none; }
+
+  /* ── Utility: line-clamp ── */
+  .line-clamp-1 { overflow: hidden; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; }
+  .line-clamp-2 { overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+  .line-clamp-3 { overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; }
 }
-

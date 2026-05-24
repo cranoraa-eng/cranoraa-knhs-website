@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+﻿import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import api from '../utils/api';
 import toast from 'react-hot-toast';
@@ -110,9 +110,9 @@ const ResetPassword = () => {
   return (
     <div className="min-h-screen relative overflow-hidden flex items-center justify-center px-4 py-10">
       {/* Background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900">
+      <div className="absolute inset-0 bg-gradient-to-br from-violet-900 via-violet-800 to-indigo-900">
         <div className="absolute inset-0 opacity-30">
-          <div className="absolute top-0 left-0 w-96 h-96 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl" />
+          <div className="absolute top-0 left-0 w-96 h-96 bg-violet-500 rounded-full mix-blend-multiply filter blur-3xl" />
           <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-500 rounded-full mix-blend-multiply filter blur-3xl animation-delay-2000" />
           <div className="absolute bottom-0 left-1/2 w-96 h-96 bg-violet-500 rounded-full mix-blend-multiply filter blur-3xl animation-delay-4000" />
         </div>
@@ -120,14 +120,14 @@ const ResetPassword = () => {
 
       <div className="relative w-full max-w-md rounded-2xl border border-violet-100 bg-white p-8 shadow-2xl shadow-violet-900/20">
         <div className="text-center mb-6">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-purple-100 rounded-full mb-4">
-            <svg className="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-violet-100 rounded-full mb-4">
+            <svg className="w-8 h-8 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
             </svg>
           </div>
-          <h1 className="text-2xl font-bold text-gray-800">Reset Password</h1>
-          <p className="text-gray-500 text-sm mt-1">
-            Enter the code sent to <span className="font-semibold text-gray-700">{email}</span> and your new password.
+          <h1 className="text-2xl font-bold text-slate-800">Reset Password</h1>
+          <p className="text-slate-500 text-sm mt-1">
+            Enter the code sent to <span className="font-semibold text-slate-700">{email}</span> and your new password.
           </p>
           <p className="mt-3 text-[10px] text-amber-600 font-bold bg-amber-50 py-1 px-3 rounded-full inline-block uppercase tracking-wider">
             ⚠️ Check your Spam folder if code is missing
@@ -137,7 +137,7 @@ const ResetPassword = () => {
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* OTP inputs */}
           <div>
-            <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-3 ml-1">Verification Code</label>
+            <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 ml-1">Verification Code</label>
             <div className="flex justify-center gap-2" onPaste={handlePaste}>
               {otp.map((digit, index) => (
                 <input
@@ -151,16 +151,16 @@ const ResetPassword = () => {
                   onKeyDown={e => handleKeyDown(e, index)}
                   className={`w-11 h-12 text-center text-xl font-bold border-2 rounded-xl focus:outline-none transition-all ${
                     digit
-                      ? 'border-purple-500 bg-purple-50 text-purple-700'
-                      : 'border-gray-200 text-gray-800 focus:border-purple-400'
+                      ? 'border-violet-500 bg-violet-50 text-violet-700'
+                      : 'border-slate-200 text-slate-800 focus:border-violet-400'
                   }`}
                 />
               ))}
             </div>
             <div className="flex items-center justify-between mt-2 px-1">
               <div className="flex items-center gap-1">
-                <div className={`w-1.5 h-1.5 rounded-full ${timer > 0 ? 'bg-green-400 animate-pulse' : 'bg-gray-300'}`} />
-                <span className="text-[10px] text-gray-400">
+                <div className={`w-1.5 h-1.5 rounded-full ${timer > 0 ? 'bg-green-400 animate-pulse' : 'bg-slate-300'}`} />
+                <span className="text-[10px] text-slate-400">
                   {timer > 0 ? `Expires in ${timer}s` : 'Code expired'}
                 </span>
               </div>
@@ -170,8 +170,8 @@ const ResetPassword = () => {
                 disabled={timer > 0 || resending}
                 className={`text-[10px] font-bold uppercase tracking-wider transition-colors ${
                   timer > 0 || resending
-                    ? 'text-gray-300 cursor-not-allowed'
-                    : 'text-purple-600 hover:text-purple-700'
+                    ? 'text-slate-300 cursor-not-allowed'
+                    : 'text-violet-600 hover:text-violet-700'
                 }`}
               >
                 {resending ? 'Sending...' : 'Resend Code'}
@@ -181,7 +181,7 @@ const ResetPassword = () => {
 
           <div className="space-y-4">
             <div>
-              <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-1.5 ml-1">New Password</label>
+              <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">New Password</label>
               <div className="relative">
                 <input
                   type={showPassword ? 'text' : 'password'}
@@ -189,28 +189,28 @@ const ResetPassword = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="At least 8 characters"
-                  className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-100 rounded-xl focus:outline-none focus:border-purple-500 transition-all text-sm"
+                  className="w-full px-4 py-3 bg-slate-50 border-2 border-slate-100 rounded-xl focus:outline-none focus:border-violet-500 transition-all text-sm"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-purple-600 transition-colors"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-violet-600 transition-colors"
                 >
                   {showPassword ? '👁️' : '👁️‍🗨️'}
                 </button>
               </div>
-              <p className="text-[10px] text-gray-400 mt-1 ml-1 font-medium">Password must be at least 8 characters long</p>
+              <p className="text-[10px] text-slate-400 mt-1 ml-1 font-medium">Password must be at least 8 characters long</p>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Confirm Password</label>
+              <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Confirm Password</label>
               <input
                 type={showPassword ? 'text' : 'password'}
                 required
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="Repeat new password"
-                className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-100 rounded-xl focus:outline-none focus:border-purple-500 transition-all text-sm"
+                className="w-full px-4 py-3 bg-slate-50 border-2 border-slate-100 rounded-xl focus:outline-none focus:border-violet-500 transition-all text-sm"
               />
             </div>
           </div>
@@ -218,7 +218,7 @@ const ResetPassword = () => {
           <button
             type="submit"
             disabled={loading || !isComplete}
-            className="w-full bg-purple-600 hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-4 rounded-xl transition-all shadow-lg shadow-purple-200 flex items-center justify-center gap-2"
+            className="w-full bg-violet-600 hover:bg-violet-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-4 rounded-xl transition-all shadow-lg shadow-violet-200 flex items-center justify-center gap-2"
           >
             {loading ? 'Updating Password...' : 'Reset Password'}
           </button>
@@ -226,7 +226,7 @@ const ResetPassword = () => {
 
         <Link
           to="/login"
-          className="block text-center mt-6 text-sm font-bold text-gray-400 hover:text-purple-600 transition-colors"
+          className="block text-center mt-6 text-sm font-bold text-slate-400 hover:text-violet-600 transition-colors"
         >
           ← Back to login
         </Link>

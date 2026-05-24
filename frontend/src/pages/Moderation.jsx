@@ -133,7 +133,7 @@ const Moderation = () => {
               {loading ? (
                 <tr>
                   <td colSpan="6" className="px-6 py-12 text-center">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600 mx-auto" />
+                    <div className="w-10 h-10 rounded-full border-2 border-slate-100 border-t-violet-600 animate-spin mx-auto" />
                   </td>
                 </tr>
               ) : reports.length === 0 ? (

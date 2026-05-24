@@ -1,155 +1,221 @@
 import { useState, useEffect } from 'react';
 import api from '../utils/api';
+import toast from 'react-hot-toast';
+import Swal from 'sweetalert2';
 
 const Backups = () => {
   const [backups, setBackups] = useState([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
 
-  useEffect(() => {
-    fetchBackups();
-  }, []);
+  useEffect(() => { fetchBackups(); }, []);
 
   const fetchBackups = async () => {
     try {
-      const response = await api.get('/admin/backups/');
-      setBackups(response.data);
-    } catch (error) {
-      console.error('Error fetching backups:', error);
-    } finally {
-      setLoading(false);
-    }
+      const r = await api.get('/admin/backups/');
+      setBackups(r.data);
+    } catch { /* silently fail */ }
+    finally { setLoading(false); }
   };
 
   const handleCreateBackup = async () => {
-    if (!window.confirm('Are you sure you want to create a new backup? This may take a few minutes.')) return;
-    
+    const result = await Swal.fire({
+      title: 'Create new backup?',
+      text: 'This may take a few minutes.',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, create it',
+      confirmButtonColor: '#7c3aed',
+      customClass: { popup: 'rounded-2xl' },
+    });
+    if (!result.isConfirmed) return;
     setCreating(true);
     try {
       await api.post('/admin/backups/');
-      alert('Backup created successfully!');
+      toast.success('Backup created successfully');
       fetchBackups();
-    } catch (error) {
-      console.error('Error creating backup:', error);
-      alert('Failed to create backup: ' + (error.response?.data?.error || error.message));
-    } finally {
-      setCreating(false);
-    }
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed to create backup');
+    } finally { setCreating(false); }
   };
 
   const handleRestore = async (id) => {
-    if (!window.confirm('Are you sure you want to restore this backup? This will overwrite current data.')) return;
-    
+    const result = await Swal.fire({
+      title: 'Restore this backup?',
+      text: 'This will overwrite all current data. This cannot be undone.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, restore',
+      confirmButtonColor: '#ef4444',
+      customClass: { popup: 'rounded-2xl' },
+    });
+    if (!result.isConfirmed) return;
     try {
       await api.post(`/admin/backups/${id}/restore/`);
-      alert('Backup restored successfully! The page will reload.');
-      window.location.reload();
-    } catch (error) {
-      console.error('Error restoring backup:', error);
-      alert('Failed to restore backup: ' + (error.response?.data?.error || error.message));
+      toast.success('Backup restored. Reloading…');
+      setTimeout(() => window.location.reload(), 1500);
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed to restore backup');
     }
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this backup?')) return;
-    
+    const result = await Swal.fire({
+      title: 'Delete this backup?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Delete',
+      confirmButtonColor: '#ef4444',
+      customClass: { popup: 'rounded-2xl' },
+    });
+    if (!result.isConfirmed) return;
     try {
       await api.delete(`/admin/backups/${id}/`);
-      fetchBackups();
-    } catch (error) {
-      console.error('Error deleting backup:', error);
-      alert('Failed to delete backup');
-    }
+      setBackups(prev => prev.filter(b => b.id !== id));
+      toast.success('Backup deleted');
+    } catch { toast.error('Failed to delete backup'); }
   };
 
   const handleDownload = async (id, filename) => {
     try {
-      const response = await api.get(`/admin/backups/${id}/download/`, {
-        responseType: 'blob',
-      });
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', filename);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-    } catch (error) {
-      console.error('Error downloading backup:', error);
-      alert('Failed to download backup: ' + (error.response?.data?.error || error.message));
+      const r = await api.get(`/admin/backups/${id}/download/`, { responseType: 'blob' });
+      const url = window.URL.createObjectURL(new Blob([r.data]));
+      const a = document.createElement('a');
+      a.href = url;
+      a.setAttribute('download', filename);
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed to download backup');
     }
   };
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+      <div className="flex flex-col items-center justify-center h-64 gap-4">
+        <div className="relative w-10 h-10">
+          <div className="absolute inset-0 rounded-full border-2 border-slate-100" />
+          <div className="absolute inset-0 rounded-full border-2 border-violet-600 border-t-transparent animate-spin" />
+        </div>
+        <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">Loading backups…</p>
       </div>
     );
   }
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-gray-800">Database Backups</h1>
+    <div className="space-y-5 animate-fade-in">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-black text-slate-900 tracking-tight">Database Backups</h1>
+          <p className="text-sm text-slate-500 mt-0.5">Manage and restore database snapshots.</p>
+        </div>
         <button
           onClick={handleCreateBackup}
           disabled={creating}
-          className="bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-violet-600 text-white text-sm font-bold hover:bg-violet-700 active:scale-95 transition-all disabled:opacity-50 shadow-sm"
         >
-          {creating ? 'Creating Backup...' : '+ Create Backup'}
+          {creating ? (
+            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+          ) : (
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
+            </svg>
+          )}
+          {creating ? 'Creating…' : 'Create Backup'}
         </button>
       </div>
-      
-      <div className="bg-white border border-gray-300 rounded-lg p-6 shadow-sm">
-        <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-          <h3 className="text-sm font-semibold text-yellow-800 mb-2">Backup Information</h3>
-          <p className="text-xs text-yellow-700">
-            Backups are created as SQL dumps of the entire database. Regular backups are recommended before major changes.
-            Restoring a backup will overwrite all current data.
+
+      {/* Info banner */}
+      <div className="flex items-start gap-3 p-4 bg-amber-50 border border-amber-200 rounded-2xl">
+        <svg className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+        </svg>
+        <div>
+          <p className="text-sm font-bold text-amber-800">Important</p>
+          <p className="text-xs text-amber-700 mt-0.5">
+            Backups are SQL dumps of the entire database. Create backups before major changes.
+            Restoring will overwrite all current data — this cannot be undone.
           </p>
         </div>
+      </div>
 
+      {/* Table */}
+      <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
         {backups.length === 0 ? (
-          <p className="text-gray-500 text-center py-8">No backups found. Create your first backup.</p>
+          <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
+            <div className="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center mb-4">
+              <svg className="w-7 h-7 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+              </svg>
+            </div>
+            <h3 className="text-base font-bold text-slate-700 mb-1">No backups yet</h3>
+            <p className="text-sm text-slate-400">Create your first backup to get started.</p>
+          </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b-2 border-gray-300">
-                  <th className="text-left py-3 text-sm font-semibold text-gray-600">Filename</th>
-                  <th className="text-left py-3 text-sm font-semibold text-gray-600">Created At</th>
-                  <th className="text-left py-3 text-sm font-semibold text-gray-600">Size</th>
-                  <th className="text-center py-3 text-sm font-semibold text-gray-600">Actions</th>
+            <table className="w-full text-left">
+              <thead className="bg-slate-50 border-b border-slate-200">
+                <tr>
+                  <th className="px-5 py-3.5 text-[10px] font-black text-slate-500 uppercase tracking-[0.15em]">Filename</th>
+                  <th className="px-5 py-3.5 text-[10px] font-black text-slate-500 uppercase tracking-[0.15em] whitespace-nowrap">Created At</th>
+                  <th className="px-5 py-3.5 text-[10px] font-black text-slate-500 uppercase tracking-[0.15em]">Size</th>
+                  <th className="px-5 py-3.5 text-[10px] font-black text-slate-500 uppercase tracking-[0.15em] text-center">Actions</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-slate-100">
                 {backups.map((backup) => (
-                  <tr key={backup.id} className="border-b hover:bg-gray-50">
-                    <td className="py-3 text-sm font-semibold text-gray-800">{backup.filename}</td>
-                    <td className="py-3 text-sm text-gray-800">
+                  <tr key={backup.id} className="hover:bg-slate-50 transition-colors group">
+                    <td className="px-5 py-3.5">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-lg bg-violet-50 flex items-center justify-center flex-shrink-0">
+                          <svg className="w-4 h-4 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                          </svg>
+                        </div>
+                        <span className="text-sm font-bold text-slate-800 font-mono">{backup.filename}</span>
+                      </div>
+                    </td>
+                    <td className="px-5 py-3.5 text-sm text-slate-600 whitespace-nowrap">
                       {new Date(backup.created_at).toLocaleString()}
                     </td>
-                    <td className="py-3 text-sm text-gray-800">{backup.size}</td>
-                    <td className="py-3 text-sm text-gray-800 text-center">
-                      <div className="flex justify-center space-x-2">
+                    <td className="px-5 py-3.5">
+                      <span className="text-xs font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
+                        {backup.size}
+                      </span>
+                    </td>
+                    <td className="px-5 py-3.5">
+                      <div className="flex items-center justify-center gap-1">
                         <button
                           onClick={() => handleDownload(backup.id, backup.filename)}
-                          className="text-blue-600 hover:text-blue-700 text-sm"
+                          title="Download"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-50 text-blue-600 text-xs font-bold hover:bg-blue-100 transition-all no-min"
                         >
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                          </svg>
                           Download
                         </button>
                         <button
                           onClick={() => handleRestore(backup.id)}
-                          className="text-green-600 hover:text-green-700 text-sm"
+                          title="Restore"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-600 text-xs font-bold hover:bg-emerald-100 transition-all no-min"
                         >
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                          </svg>
                           Restore
                         </button>
                         <button
                           onClick={() => handleDelete(backup.id)}
-                          className="text-red-600 hover:text-red-700 text-sm"
+                          title="Delete"
+                          className="p-1.5 rounded-lg text-slate-400 hover:bg-red-50 hover:text-red-500 transition-all opacity-0 group-hover:opacity-100 no-min"
                         >
-                          Delete
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
                         </button>
                       </div>
                     </td>

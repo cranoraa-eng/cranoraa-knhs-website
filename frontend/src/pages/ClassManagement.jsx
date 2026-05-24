@@ -122,20 +122,18 @@ const ClassManagement = () => {
   const sortedGroups = Object.entries(grouped).sort(([a], [b]) => gradeNum(a) - gradeNum(b));
 
   return (
-    <div className="p-4 md:p-8 space-y-6">
+    <div className="space-y-5 animate-fade-in">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 md:gap-4 mb-2 md:mb-6">
-        <div className="text-center md:text-left">
-          <h1 className="text-lg md:text-3xl font-black text-gray-800 tracking-tight uppercase">Class Management</h1>
-          <p className="text-gray-500 text-[8px] md:text-base mt-0.5 font-medium uppercase tracking-widest">
-            {classes.length} classrooms total
-          </p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-black text-slate-900 tracking-tight">Class Management</h1>
+          <p className="text-sm text-slate-500 mt-0.5">{classes.length} classrooms total</p>
         </div>
         <button
           onClick={openCreate}
-          className="flex items-center justify-center gap-1.5 bg-purple-600 hover:bg-purple-700 text-white font-black py-1.5 md:py-2.5 px-3 md:px-6 rounded-lg md:rounded-xl transition-all shadow-md active:scale-95 text-[10px] md:text-sm uppercase tracking-widest w-full sm:w-auto"
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-violet-600 text-white text-sm font-bold hover:bg-violet-700 active:scale-95 transition-all shadow-sm"
         >
-          <svg className="w-3.5 h-3.5 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
           </svg>
           Add Class
@@ -143,101 +141,107 @@ const ClassManagement = () => {
       </div>
 
       {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-1.5 md:gap-3 mb-2 md:mb-5 bg-white p-1.5 md:p-4 rounded-xl border border-gray-100 shadow-sm">
-        <div className="relative flex-1">
-          <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 md:w-4 md:h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-          <input
-            type="text"
-            placeholder="Search..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            className="w-full pl-9 pr-4 py-1.5 md:py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-purple-500 text-[10px] md:text-sm font-bold shadow-inner uppercase tracking-wider"
-          />
+      <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-4">
+        <div className="flex flex-col sm:flex-row gap-3">
+          <div className="relative flex-1">
+            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <input
+              type="text"
+              placeholder="Search by name or teacher…"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              className="w-full pl-9 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-400 focus:bg-white transition-all"
+            />
+          </div>
+          <select
+            value={filterLevel}
+            onChange={e => setFilterLevel(e.target.value)}
+            className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-400 transition-all"
+          >
+            <option value="">All Levels</option>
+            {GRADE_LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
+          </select>
         </div>
-        <select
-          value={filterLevel}
-          onChange={e => setFilterLevel(e.target.value)}
-          className="px-3 py-1.5 md:px-4 md:py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-purple-500 text-[10px] md:text-sm font-bold shadow-sm uppercase tracking-wider"
-        >
-          <option value="">All Levels</option>
-          {GRADE_LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
-        </select>
       </div>
 
       {/* Content */}
       {loading ? (
-        <div className="flex items-center justify-center h-48">
-          <div className="animate-spin rounded-full h-8 w-8 md:h-10 md:w-10 border-b-2 border-purple-600" />
+        <div className="flex flex-col items-center justify-center h-48 gap-4">
+          <div className="relative w-10 h-10">
+            <div className="absolute inset-0 rounded-full border-2 border-slate-100" />
+            <div className="absolute inset-0 rounded-full border-2 border-violet-600 border-t-transparent animate-spin" />
+          </div>
         </div>
       ) : filtered.length === 0 ? (
-        <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-10 md:p-16 text-center">
-          <div className="w-12 h-12 md:w-16 md:h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3 md:mb-4">
-            <svg className="w-6 h-6 md:w-8 md:h-8 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-            </svg>
+        <div className="bg-white border border-slate-200 rounded-2xl shadow-sm">
+          <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
+            <div className="w-14 h-14 rounded-2xl bg-violet-50 flex items-center justify-center mb-4">
+              <svg className="w-7 h-7 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+              </svg>
+            </div>
+            <h3 className="text-base font-bold text-slate-700 mb-1">
+              {search || filterLevel ? 'No results found' : 'No classes yet'}
+            </h3>
+            <p className="text-sm text-slate-400">
+              {search || filterLevel ? 'Try adjusting your filters.' : 'Create your first classroom to get started.'}
+            </p>
           </div>
-          <p className="text-[10px] md:text-base text-gray-500 font-bold uppercase tracking-widest">
-            {search || filterLevel ? 'No results found.' : 'No classes yet.'}
-          </p>
         </div>
       ) : (
-        <div className="space-y-3 md:space-y-6">
+        <div className="space-y-4">
           {sortedGroups.map(([level, items]) => (
-            <div key={level} className="bg-white border border-gray-200 rounded-lg md:rounded-xl shadow-sm overflow-hidden">
+            <div key={level} className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
               {/* Group header */}
-              <div className="flex items-center justify-between px-3 py-1.5 md:px-6 md:py-3 bg-[#2D1B4D] text-white border-b border-gray-100">
-                <div className="flex items-center gap-2">
-                  <span className="font-black text-[10px] md:text-base uppercase tracking-tight">{level}</span>
-                  <span className="text-[7px] md:text-xs font-black bg-white/10 px-2 py-0.5 rounded-full uppercase tracking-widest">
+              <div className="flex items-center justify-between px-5 py-3 bg-slate-50 border-b border-slate-200">
+                <div className="flex items-center gap-2.5">
+                  <span className="text-sm font-black text-slate-800 uppercase tracking-tight">{level}</span>
+                  <span className="text-[10px] font-black text-slate-500 bg-slate-200 px-2 py-0.5 rounded-full uppercase tracking-widest">
                     {items.length}
                   </span>
                 </div>
               </div>
 
-              <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-200 max-w-full">
-                <table className="w-full min-w-[350px] md:min-w-full">
-                  <thead className="bg-gray-50">
-                    <tr className="text-[7px] md:text-xs font-black text-gray-400 uppercase tracking-widest border-b border-gray-100">
-                      <th className="text-left px-3 py-1.5 md:px-6 md:py-3">Class</th>
-                      <th className="hidden md:table-cell text-left px-6 py-3">Adviser</th>
-                      <th className="text-center px-3 py-1.5 md:px-6 md:py-3">Students</th>
-                      <th className="text-center px-3 py-1.5 md:px-6 md:py-3">Opt</th>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-slate-50 border-b border-slate-200">
+                    <tr>
+                      <th className="text-left px-5 py-3 text-[10px] font-black text-slate-500 uppercase tracking-[0.15em]">Class</th>
+                      <th className="hidden md:table-cell text-left px-5 py-3 text-[10px] font-black text-slate-500 uppercase tracking-[0.15em]">Adviser</th>
+                      <th className="text-center px-5 py-3 text-[10px] font-black text-slate-500 uppercase tracking-[0.15em]">Students</th>
+                      <th className="text-center px-5 py-3 text-[10px] font-black text-slate-500 uppercase tracking-[0.15em]">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-100">
+                  <tbody className="divide-y divide-slate-100">
                     {items.map(cls => (
-                      <tr key={cls.id} className="hover:bg-purple-50 transition-colors">
-                        <td className="px-3 py-2 md:px-6 md:py-4">
-                          <div className="flex items-center gap-1.5 md:gap-3">
-                            <div className="w-7 h-7 md:w-9 md:h-9 rounded md:rounded-lg bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white font-black text-[9px] md:text-sm flex-shrink-0 shadow-sm">
+                      <tr key={cls.id} className="hover:bg-violet-50/40 transition-colors group">
+                        <td className="px-5 py-3.5">
+                          <div className="flex items-center gap-3">
+                            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-white font-black text-sm flex-shrink-0 shadow-sm">
                               {gradeNum(cls.name) !== 999 ? gradeNum(cls.name) : cls.name.charAt(0).toUpperCase()}
                             </div>
-                            <span className="font-black text-gray-800 text-[9px] md:text-sm uppercase tracking-tighter truncate">{cls.name}</span>
+                            <span className="font-bold text-slate-800 text-sm">{cls.name}</span>
                           </div>
                         </td>
-                        <td className="hidden md:table-cell px-6 py-4 text-sm font-bold text-gray-600">
-                          {cls.teacher_name || <span className="text-gray-400 italic">Not assigned</span>}
+                        <td className="hidden md:table-cell px-5 py-3.5 text-sm font-medium text-slate-600">
+                          {cls.teacher_name || <span className="text-slate-400 italic text-xs">Not assigned</span>}
                         </td>
-                        <td className="px-3 py-2 md:px-6 md:py-4 text-center">
-                          <span className="inline-flex items-center justify-center w-6 h-6 md:w-8 md:h-8 rounded-full bg-purple-100 text-purple-700 font-black text-[8px] md:text-sm shadow-inner">
+                        <td className="px-5 py-3.5 text-center">
+                          <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-violet-100 text-violet-700 font-black text-sm">
                             {cls.student_count ?? 0}
                           </span>
                         </td>
-                        <td className="px-3 py-2 md:px-6 md:py-4 text-center">
-                          <div className="flex items-center justify-center gap-1 md:gap-2">
-                            <button
-                              onClick={() => openEdit(cls)}
-                              className="p-1 md:px-3 md:py-1.5 text-[8px] md:text-xs font-black text-purple-700 bg-purple-100 hover:bg-purple-200 rounded md:rounded-lg transition-all active:scale-90 uppercase tracking-widest"
-                            >
+                        <td className="px-5 py-3.5 text-center">
+                          <div className="flex items-center justify-center gap-1.5">
+                            <button onClick={() => openEdit(cls)}
+                              className="px-3 py-1.5 text-xs font-bold text-violet-700 bg-violet-100 hover:bg-violet-200 rounded-lg transition-all active:scale-90 no-min">
                               Edit
                             </button>
-                            <button
-                              onClick={() => handleDelete(cls)}
-                              className="p-1 md:px-3 md:py-1.5 text-[8px] md:text-xs font-black text-red-700 bg-red-100 hover:bg-red-200 rounded md:rounded-lg transition-all active:scale-90 uppercase tracking-widest"
-                            >
-                              Del
+                            <button onClick={() => handleDelete(cls)}
+                              className="px-3 py-1.5 text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-all active:scale-90 no-min">
+                              Delete
                             </button>
                           </div>
                         </td>
@@ -252,50 +256,50 @@ const ClassManagement = () => {
       )}
 
       {!loading && classes.length > 0 && (
-        <p className="text-sm text-gray-400 mt-4">
+        <p className="text-sm text-slate-400 mt-4">
           Showing {filtered.length} of {classes.length} classes
         </p>
       )}
 
       {/* Create / Edit Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md">
-            <div className="flex items-center justify-between p-6 border-b border-gray-100">
-              <h2 className="text-xl font-bold text-gray-800">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4 animate-fade-in">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md border border-slate-200/50 animate-scale-in">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+              <h2 className="text-base font-black text-slate-900 tracking-tight">
                 {editingClass ? 'Edit Class' : 'Add New Class'}
               </h2>
-              <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-gray-600">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              <button onClick={() => setShowModal(false)}
+                className="p-2 rounded-xl text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-all no-min">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             </div>
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+              <div className="space-y-1.5">
+                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider">
                   Grade Level <span className="text-red-500">*</span>
                 </label>
                 <select
                   value={formData.grade_level}
                   onChange={e => {
                     const level = e.target.value;
-                    // Auto-fill name prefix if name is empty
                     setFormData(prev => ({
                       ...prev,
                       grade_level: level,
                       name: prev.name || level + ' - ',
                     }));
                   }}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm"
+                  className="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-white text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-400 transition-all"
                   required
                 >
                   <option value="">Select grade level</option>
                   {GRADE_LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
                 </select>
               </div>
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+              <div className="space-y-1.5">
+                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider">
                   Class Name <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -303,19 +307,19 @@ const ClassManagement = () => {
                   value={formData.name}
                   onChange={e => setFormData({ ...formData, name: e.target.value })}
                   placeholder="e.g. Grade 7 - Rizal"
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm"
+                  className="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-white text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-400 transition-all"
                   required
                 />
-                <p className="text-xs text-gray-400 mt-1">Include the grade level in the name so it groups correctly, e.g. "Grade 7 - Rizal"</p>
+                <p className="text-xs text-slate-400">Include the grade level, e.g. "Grade 7 - Rizal"</p>
               </div>
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+              <div className="space-y-1.5">
+                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider">
                   Adviser / Teacher <span className="text-red-500">*</span>
                 </label>
                 <select
                   value={formData.teacher}
                   onChange={e => setFormData({ ...formData, teacher: e.target.value })}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm"
+                  className="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-white text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-400 transition-all"
                   required
                 >
                   <option value="">Select a teacher</option>
@@ -334,18 +338,13 @@ const ClassManagement = () => {
                 </select>
               </div>
               <div className="flex gap-3 pt-2">
-                <button
-                  type="submit"
-                  disabled={saving}
-                  className="flex-1 bg-purple-600 hover:bg-purple-700 disabled:opacity-60 text-white font-medium py-2.5 rounded-lg transition-colors text-sm"
-                >
-                  {saving ? 'Saving...' : editingClass ? 'Update Class' : 'Create Class'}
+                <button type="submit" disabled={saving}
+                  className="flex-1 inline-flex items-center justify-center gap-2 py-2.5 rounded-xl bg-violet-600 text-white text-sm font-bold hover:bg-violet-700 active:scale-95 transition-all disabled:opacity-50">
+                  {saving && <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
+                  {saving ? 'Saving…' : editingClass ? 'Update Class' : 'Create Class'}
                 </button>
-                <button
-                  type="button"
-                  onClick={() => setShowModal(false)}
-                  className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2.5 rounded-lg transition-colors text-sm"
-                >
+                <button type="button" onClick={() => setShowModal(false)}
+                  className="flex-1 py-2.5 rounded-xl bg-slate-100 text-slate-700 text-sm font-bold hover:bg-slate-200 active:scale-95 transition-all">
                   Cancel
                 </button>
               </div>
