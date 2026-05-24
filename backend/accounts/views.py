@@ -1749,18 +1749,48 @@ class AttendanceViewSet(viewsets.ModelViewSet):
         from django.utils import timezone
         import datetime
         
-        now = timezone.now()
+        # Use localtime for accurate daily filtering in GMT+8
+        now = timezone.localtime(timezone.now())
         today = now.date()
-        classroom_id = request.query_params.get('classroom')
         
-        # Daily trends (last 30 days) - Exclude weekends
-        last_30_days = today - datetime.timedelta(days=30)
-        daily_trends = Attendance.objects.filter(date__gte=last_30_days).exclude(date__week_day__in=[1, 7])
+        classroom_id = request.query_params.get('classroom')
+        timeframe = request.query_params.get('timeframe', 'all')
+        academic_year_name = request.query_params.get('academic_year')
+        
+        # Base queryset excluding weekends
+        base_att = Attendance.objects.exclude(date__week_day__in=[1, 7])
+        
+        # Filter by Academic Year if provided
+        if academic_year_name:
+            from portal.models import AcademicYear
+            try:
+                ay = AcademicYear.objects.get(name=academic_year_name)
+                base_att = base_att.filter(classroom__academic_year=ay)
+            except AcademicYear.DoesNotExist:
+                pass
+
+        # Apply timeframe filter to ALL analytics sections
+        if timeframe == 'today':
+            base_att = base_att.filter(date=today)
+        elif timeframe == 'weekly':
+            week_ago = today - datetime.timedelta(days=7)
+            base_att = base_att.filter(date__gte=week_ago)
+        else:
+            # Default for 'all' or other timeframes
+            pass
+
+        # Sections: Trends, Pie, Grade
+        # For charts, we usually want a 30-day window if 'all' is selected
+        chart_att = base_att
+        if timeframe == 'all':
+            last_30_days = today - datetime.timedelta(days=30)
+            chart_att = chart_att.filter(date__gte=last_30_days)
+            
         if classroom_id:
-            daily_trends = daily_trends.filter(classroom_id=classroom_id)
+            chart_att = chart_att.filter(classroom_id=classroom_id)
         
         daily_data = []
-        for day_dict in daily_trends.values('date').annotate(
+        for day_dict in chart_att.values('date').annotate(
             present=Count(Case(When(status='present', then=1), output_field=IntegerField())),
             late=Count(Case(When(status='late', then=1), output_field=IntegerField())),
             total_count=Count('id')
@@ -1775,53 +1805,41 @@ class AttendanceViewSet(viewsets.ModelViewSet):
             })
         
         # Overall status for Pie Chart
-        overall_status = daily_trends.aggregate(
+        overall_status = chart_att.aggregate(
             present=Count(Case(When(status='present', then=1), output_field=IntegerField())),
             absent=Count(Case(When(status='absent', then=1), output_field=IntegerField())),
             late=Count(Case(When(status='late', then=1), output_field=IntegerField())),
         )
         pie_data = [
-            {'name': 'Present', 'value': overall_status['present']},
-            {'name': 'Late', 'value': overall_status['late']},
-            {'name': 'Absent', 'value': overall_status['absent']},
+            {'name': 'Present', 'value': overall_status['present'] or 0},
+            {'name': 'Late', 'value': overall_status['late'] or 0},
+            {'name': 'Absent', 'value': overall_status['absent'] or 0},
         ]
 
         # Attendance by Grade for Bar Chart
         grade_data = []
-        grade_levels = daily_trends.values('student__profile__grade_level').annotate(
+        grade_levels = chart_att.values('student__profile__grade_level').annotate(
             present=Count(Case(When(status__in=['present', 'late'], then=1), output_field=IntegerField())),
             total=Count('id')
         ).order_by('student__profile__grade_level')
         
         for g in grade_levels:
-            if g['student__profile__grade_level']:
-                grade_data.append({
-                    'level': g['student__profile__grade_level'],
-                    'rate': round(g['present'] / g['total'] * 100, 1) if g['total'] > 0 else 0
-                })
+            level = g['student__profile__grade_level'] or 'Unassigned'
+            grade_data.append({
+                'level': level,
+                'rate': round(g['present'] / g['total'] * 100, 1) if g['total'] > 0 else 0
+            })
 
-        # Optimized Section Rankings (Overall Attendance Rate) - Exclude weekends
-        timeframe = request.query_params.get('timeframe', 'all')
+        # Section Rankings (Overall Attendance Rate)
         rankings = []
-        
         if request.user.role in ['admin', 'teacher']:
-            # Base filter for rankings
-            rank_att = Attendance.objects.exclude(date__week_day__in=[1, 7])
-            
-            if timeframe == 'today':
-                rank_att = rank_att.filter(date=today)
-            elif timeframe == 'weekly':
-                week_ago = today - datetime.timedelta(days=7)
-                rank_att = rank_att.filter(date__gte=week_ago)
-            
-            # Efficient aggregation by classroom
-            classroom_stats = rank_att.values('classroom__id', 'classroom__name').annotate(
+            classroom_stats = base_att.values('classroom__id', 'classroom__name').annotate(
                 total=Count('id'),
                 present=Count(Case(When(status__in=['present', 'late'], then=1), output_field=IntegerField()))
             ).order_by('-total')
 
             for r in classroom_stats:
-                if r['classroom__id']: # Guard against records without classrooms
+                if r['classroom__id']:
                     rate = round(r['present'] / r['total'] * 100, 1) if r['total'] > 0 else 0
                     rankings.append({
                         'id': r['classroom__id'],
@@ -1829,8 +1847,6 @@ class AttendanceViewSet(viewsets.ModelViewSet):
                         'rate': rate,
                         'total_records': r['total']
                     })
-            
-            # Final sort by rate
             rankings = sorted(rankings, key=lambda x: x['rate'], reverse=True)
 
         return Response({
@@ -2144,9 +2160,14 @@ def admin_dashboard_stats(request):
         if request.user.role not in ['admin', 'teacher']:
             return Response({'error': 'Unauthorized access'}, status=403)
 
-        from django.db.models import Count, Avg
+        from django.db.models import Count, Avg, Q
         from django.utils import timezone
         import datetime
+        
+        # Use local Manila time for accurate daily stats
+        now = timezone.localtime(timezone.now())
+        today = now.date()
+        five_mins_ago = now - datetime.timedelta(minutes=5)
         
         # Safe model imports
         try:
@@ -2154,32 +2175,27 @@ def admin_dashboard_stats(request):
         except ImportError:
             AuditLog = None
 
-        now = timezone.now()
-        today = now.date()
-        five_mins_ago = now - datetime.timedelta(minutes=5)
-        this_week_start = today - datetime.timedelta(days=today.weekday())
-        last_30_days_list = [today - datetime.timedelta(days=i) for i in range(29, -1, -1)]
+        # Attendance today (Local Time)
+        today_attendance = Attendance.objects.filter(date=today)
+        today_present = today_attendance.filter(status__in=['present', 'late']).count()
+        today_total   = today_attendance.count()
+        today_rate    = round((today_present / today_total * 100), 1) if today_total > 0 else 0
 
         # Core counts
         total_students = User.objects.filter(role='student', is_approved=True).count()
         total_teachers = User.objects.filter(role='teacher', is_approved=True).count()
         total_classes  = Classroom.objects.count()
-        total_subjects = Subject.objects.count()
         pending_approvals = User.objects.filter(is_approved=False, is_verified=True).count()
         
-        # Use safe getattr for last_activity in case column doesn't exist yet (migration delay)
         active_users = User.objects.filter(last_activity__gte=five_mins_ago).count()
 
-        # Attendance today
-        today_attendance = Attendance.objects.filter(date=today)
-        today_present = today_attendance.filter(status__in=['present', 'late']).count()
-        today_absent  = today_attendance.filter(status='absent').count()
-        today_total   = today_attendance.count()
-        today_rate    = round((today_present / today_total * 100), 1) if today_total > 0 else 0
-
-        # Attendance Trends (Last 30 Days)
+        # Attendance Trends (Last 30 Days) - Filtered for charts
+        last_30_days_list = [today - datetime.timedelta(days=i) for i in range(29, -1, -1)]
         attendance_trends = []
         for day in last_30_days_list:
+            # Skip weekends in trends calculation
+            if day.weekday() in [5, 6]: continue
+            
             day_records = Attendance.objects.filter(date=day)
             day_total = day_records.count()
             day_present = day_records.filter(status='present').count()

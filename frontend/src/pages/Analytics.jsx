@@ -480,7 +480,7 @@ const Analytics = () => {
   const fetchAttendanceAnalytics = async () => {
     setAttendanceLoading(true);
     try {
-      const res = await api.get(`/attendance/summary/?timeframe=${attendanceTimeframe}`);
+      const res = await api.get(`/attendance/summary/?timeframe=${attendanceTimeframe}&academic_year=${academicYear}`);
       setAttendanceAnalytics(res.data);
     } catch (err) { console.error(err); }
     finally { setAttendanceLoading(false); }
