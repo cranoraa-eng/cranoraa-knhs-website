@@ -8,6 +8,8 @@ import { Spinner } from '../components/Spinner';
 
 const COLORS = ['#8b5cf6', '#10b981', '#3b82f6', '#f59e0b', '#ef4444'];
 
+// --- Sub-components (Moved to top to avoid ReferenceErrors) ---
+
 const renderCustomBarLabel = ({ x, y, width, value }) => (
   <text x={x + width / 2} y={y - 6} fill="#64748b" textAnchor="middle" className="text-[8px] font-black">
     {value}%
@@ -19,6 +21,417 @@ const renderHorizontalBarLabel = ({ x, y, width, height, value }) => (
     {value}%
   </text>
 );
+
+const EmptyState = ({ message, submessage }) => (
+  <div className="bg-white border border-slate-200 rounded-2xl p-24 text-center shadow-sm w-full">
+    <svg className="w-16 h-16 mx-auto mb-6 text-slate-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+    <p className="text-[12px] font-black text-slate-400 uppercase tracking-[0.3em]">{message}</p>
+    {submessage && <p className="text-[10px] font-bold text-slate-400 mt-2 uppercase tracking-widest opacity-60">{submessage}</p>}
+  </div>
+);
+
+const StatChip = ({ label, value, color }) => {
+  const colors = {
+    emerald: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
+    purple: 'bg-violet-500/10 text-violet-500 border-violet-500/20',
+    blue: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
+    indigo: 'bg-indigo-500/10 text-indigo-500 border-indigo-500/20',
+  };
+  return (
+    <div className={`px-3 py-1.5 rounded-lg border ${colors[color]} flex flex-col items-center min-w-[80px]`}>
+      <span className="text-[8px] font-black uppercase tracking-widest leading-none mb-1 opacity-70">{label}</span>
+      <span className="text-sm font-black leading-none">{value}</span>
+    </div>
+  );
+};
+
+const MiniCard = ({ title, value, icon, alert }) => (
+  <div className={`bg-white border ${alert ? 'border-rose-200 bg-rose-50/30' : 'border-slate-200'} rounded-xl p-5 shadow-sm flex items-center gap-5 min-h-[90px]`}>
+    <div className={`p-3 rounded-lg ${alert ? 'bg-rose-100 text-rose-600' : 'bg-slate-100 text-slate-600'} flex items-center justify-center`}><svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d={icon} /></svg></div>
+    <div className="flex flex-col justify-center"><h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-2">{title}</h4><p className={`text-2xl font-black tracking-tight leading-none ${alert ? 'text-rose-600' : 'text-slate-900'}`}>{value || 0}</p></div>
+  </div>
+);
+
+const CustomTooltip = ({ active, payload, label, unit = '' }) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-slate-900 border border-slate-800 p-2.5 rounded-lg shadow-2xl backdrop-blur-md bg-opacity-95">
+        <p className="text-[8px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">{label}</p>
+        <p className="text-xs font-black text-white flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-indigo-500" />{payload[0].value}{unit}<span className="text-[8px] font-bold text-slate-500 uppercase tracking-widest ml-1">{payload[0].name}</span></p>
+      </div>
+    );
+  }
+  return null;
+};
+
+const CustomPieTooltip = ({ active, payload }) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-slate-900 border border-slate-800 p-2.5 rounded-lg shadow-2xl backdrop-blur-md bg-opacity-95">
+        <p className="text-xs font-black text-white flex items-center gap-2"><span className="w-2 h-2 rounded-full" style={{ backgroundColor: payload[0].payload.fill }} />{payload[0].value}<span className="text-[8px] font-bold text-slate-500 uppercase tracking-widest ml-1">{payload[0].name}</span></p>
+      </div>
+    );
+  }
+  return null;
+};
+
+const AttendanceTooltip = ({ active, payload, label }) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-slate-900 border border-slate-800 p-2 rounded-lg shadow-2xl backdrop-blur-md bg-opacity-95">
+        <p className="text-[8px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1.5">{label}</p>
+        <div className="space-y-1">{payload.map((entry, index) => (<div key={index} className="flex items-center justify-between gap-4"><div className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: entry.color }} /><span className="text-[8px] font-bold text-slate-500 uppercase tracking-widest">{entry.name}</span></div><span className="text-[10px] font-black text-white">{entry.value}</span></div>))}</div>
+      </div>
+    );
+  }
+  return null;
+};
+
+const AttendanceTrendsSection = ({ data }) => (
+  <div className="lg:col-span-8 bg-white border border-slate-200 rounded-xl p-4 shadow-sm min-h-[350px]">
+    <div className="flex items-center justify-between mb-6">
+      <div>
+        <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Presence Trends</h3>
+        <p className="text-sm font-black text-slate-900 uppercase tracking-tight">30-Day Activity Monitor</p>
+      </div>
+      <div className="flex gap-1.5"><div className="px-2 py-0.5 bg-emerald-50 border border-emerald-100 rounded text-[7px] font-black text-emerald-600 uppercase tracking-widest">Live</div></div>
+    </div>
+    <div className="h-64">
+      {!data || data.length === 0 ? (
+        <div className="h-full flex items-center justify-center text-[10px] font-black text-slate-300 uppercase tracking-widest italic">Insufficient data for trends</div>
+      ) : (
+        <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
+          <AreaChart data={data}>
+            <defs>
+              <linearGradient id="colorPresent" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#10b981" stopOpacity={0.1}/><stop offset="95%" stopColor="#10b981" stopOpacity={0}/></linearGradient>
+              <linearGradient id="colorLate" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#f59e0b" stopOpacity={0.1}/><stop offset="95%" stopColor="#f59e0b" stopOpacity={0}/></linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray="2 2" vertical={false} stroke="#f1f5f9" />
+            <XAxis dataKey="date" tick={{fontSize: 8, fontWeight: 900, fill: '#64748b'}} axisLine={false} tickLine={false} tickFormatter={(str) => {
+              if (!str) return '';
+              const d = new Date(str);
+              return isNaN(d.getTime()) ? str : d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            }} />
+            <YAxis tick={{fontSize: 8, fontWeight: 900, fill: '#64748b'}} axisLine={false} tickLine={false} />
+            <Tooltip content={<AttendanceTooltip />} cursor={{stroke: '#cbd5e1', strokeWidth: 1}} />
+            <Area type="monotone" dataKey="present" stroke="#10b981" strokeWidth={2} fillOpacity={1} fill="url(#colorPresent)" name="Present" />
+            <Area type="monotone" dataKey="late" stroke="#f59e0b" strokeWidth={2} fillOpacity={1} fill="url(#colorLate)" name="Late" />
+          </AreaChart>
+        </ResponsiveContainer>
+      )}
+    </div>
+  </div>
+);
+
+const AttendanceStatusPieSection = ({ data }) => {
+  const total = data?.reduce((sum, d) => sum + d.value, 0) || 0;
+  const pieColors = ['#10b981', '#f59e0b', '#ef4444'];
+  const hasData = data && data.some(d => d.value > 0);
+  
+  return (
+    <div className="lg:col-span-4 bg-white border border-slate-200 rounded-xl p-4 shadow-sm min-h-[350px]">
+      <div className="mb-6">
+        <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Presence Distribution</h3>
+        <p className="text-sm font-black text-slate-900 uppercase tracking-tight">Overall Status Summary</p>
+      </div>
+      <div className="h-64 flex items-center gap-4">
+        {!hasData ? (
+          <div className="w-full flex items-center justify-center text-[10px] font-black text-slate-300 uppercase tracking-widest italic text-center">No status distribution records</div>
+        ) : (
+          <>
+            <div className="w-1/2 h-full relative">
+              <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
+                <PieChart>
+                  <Pie data={data} cx="50%" cy="50%" innerRadius={50} outerRadius={70} paddingAngle={6} dataKey="value">
+                    {data?.map((entry, index) => <Cell key={`cell-${index}`} fill={pieColors[index % pieColors.length]} strokeWidth={0} />)}
+                  </Pie>
+                  <Tooltip content={<CustomPieTooltip />} />
+                </PieChart>
+              </ResponsiveContainer>
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center justify-center pointer-events-none">
+                <p className="text-xl font-black text-slate-900 leading-none">{total}</p>
+                <p className="text-[7px] font-black text-slate-500 uppercase tracking-widest mt-0.5">Records</p>
+              </div>
+            </div>
+            <div className="w-1/2 flex flex-col justify-center space-y-3">
+              {data?.map((item, index) => {
+                const percentage = total > 0 ? ((item.value / total) * 100).toFixed(1) : 0;
+                return (
+                  <div key={item.name} className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: pieColors[index % pieColors.length] }} />
+                      <span className="text-[8px] font-black text-slate-500 uppercase tracking-tighter leading-none">{item.name}</span>
+                    </div>
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-[10px] font-black text-slate-900 leading-none">{percentage}%</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+};
+
+const AttendanceByLevelBarSection = ({ data }) => (
+  <div className="lg:col-span-8 bg-white border border-slate-200 rounded-xl p-4 shadow-sm min-h-[350px]">
+    <div className="mb-6">
+      <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Level Engagement</h3>
+      <p className="text-sm font-black text-slate-900 uppercase tracking-tight">Attendance Rate by Grade Level</p>
+    </div>
+    <div className="h-64">
+      {!data || data.length === 0 ? (
+        <div className="h-full flex items-center justify-center text-[10px] font-black text-slate-300 uppercase tracking-widest italic">No level-wise data available</div>
+      ) : (
+        <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
+          <BarChart data={data}>
+            <CartesianGrid strokeDasharray="2 2" vertical={false} stroke="#f1f5f9" />
+            <XAxis dataKey="level" tick={{fontSize: 8, fontWeight: 900, fill: '#64748b'}} axisLine={false} tickLine={false} />
+            <YAxis domain={[0, 100]} tick={{fontSize: 8, fontWeight: 900, fill: '#64748b'}} axisLine={false} tickLine={false} />
+            <Tooltip content={<CustomTooltip unit="%" />} />
+            <Bar dataKey="rate" fill="#3b82f6" radius={[2, 2, 0, 0]} barSize={32} label={renderCustomBarLabel}>
+              {data?.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.rate >= 90 ? '#10b981' : entry.rate >= 75 ? '#3b82f6' : '#ef4444'} />)}
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      )}
+    </div>
+  </div>
+);
+
+const AttendanceRankingsSection = ({ rankings, period }) => (
+  <div className="lg:col-span-4 bg-white border border-slate-200 rounded-xl p-4 shadow-sm overflow-hidden flex flex-col min-h-[350px]">
+    <div className="mb-6">
+      <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Rankings — {period}</h3>
+      <p className="text-sm font-black text-slate-900 uppercase tracking-tight">Section Performance Index</p>
+    </div>
+    <div className="flex-1 overflow-y-auto space-y-2 pr-1 scrollbar-thin scrollbar-thumb-slate-200">
+      {!rankings || rankings.length === 0 ? (
+        <div className="h-full flex items-center justify-center text-[10px] font-black text-slate-300 uppercase tracking-widest italic text-center py-10">No rankings established for this period</div>
+      ) : (
+        rankings?.map((rank, idx) => (
+          <div key={rank.id} className="group flex items-center justify-between p-2.5 bg-slate-50/50 rounded-lg border border-slate-100 hover:border-indigo-200 hover:bg-white transition-all">
+            <div className="flex items-center gap-3">
+              <span className={`w-5 h-5 flex items-center justify-center rounded-md font-black text-[9px] ${idx === 0 ? 'bg-amber-100 text-amber-600 shadow-sm' : idx === 1 ? 'bg-slate-200 text-slate-600' : idx === 2 ? 'bg-orange-100 text-orange-600' : 'bg-slate-100 text-slate-400'}`}>{idx + 1}</span>
+              <div className="flex flex-col"><span className="text-[10px] font-black text-slate-700 uppercase tracking-tight leading-none mb-1">{rank.name}</span><span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest leading-none">{rank.total_records} records</span></div>
+            </div>
+            <div className="text-right">
+              <div className={`text-xs font-black leading-none mb-1 ${rank.rate >= 90 ? 'text-emerald-600' : rank.rate >= 75 ? 'text-blue-600' : 'text-rose-600'}`}>{rank.rate}%</div>
+              <div className="w-12 h-1 bg-slate-200 rounded-full overflow-hidden"><div className={`h-full rounded-full ${rank.rate >= 90 ? 'bg-emerald-500' : rank.rate >= 75 ? 'bg-blue-500' : 'bg-rose-500'}`} style={{ width: `${rank.rate}%` }} /></div>
+            </div>
+          </div>
+        ))
+      )}
+    </div>
+  </div>
+);
+
+const SubjectPerformanceSection = ({ data }) => (
+  <div className="lg:col-span-7 bg-white border border-slate-200 rounded-xl p-4 shadow-sm min-h-[350px]">
+    <div className="flex items-center justify-between mb-6">
+      <div>
+        <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Academic Benchmarking</h3>
+        <p className="text-sm font-black text-slate-900 uppercase tracking-tight">Subject Performance Index</p>
+      </div>
+      <div className="flex gap-1">
+        <div className="w-1.5 h-1.5 rounded-full bg-indigo-500" /><div className="w-1.5 h-1.5 rounded-full bg-indigo-300" /><div className="w-1.5 h-1.5 rounded-full bg-indigo-100" />
+      </div>
+    </div>
+    <div className="h-72">
+      {!data || data.length === 0 ? (
+        <div className="h-full flex items-center justify-center text-[10px] font-black text-slate-300 uppercase tracking-widest italic">No subject metrics tracked</div>
+      ) : (
+        <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
+          <BarChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+            <CartesianGrid strokeDasharray="2 2" vertical={false} stroke="#f1f5f9" />
+            <XAxis dataKey="subject__name" tick={{fontSize: 8, fontWeight: 900, fill: '#64748b'}} axisLine={false} tickLine={false} />
+            <YAxis tick={{fontSize: 8, fontWeight: 900, fill: '#64748b'}} axisLine={false} tickLine={false} domain={[70, 100]} />
+            <Tooltip content={<CustomTooltip unit="%" />} />
+            <Bar dataKey="avg_grade" fill="#6366f1" radius={[2, 2, 0, 0]} barSize={24} label={renderCustomBarLabel} />
+          </BarChart>
+        </ResponsiveContainer>
+      )}
+    </div>
+  </div>
+);
+
+const TrafficIntelligenceSection = ({ data }) => (
+  <div className="lg:col-span-5 bg-white border border-slate-200 rounded-xl p-4 shadow-sm min-h-[350px]">
+    <div className="mb-6">
+      <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Traffic Intelligence</h3>
+      <p className="text-sm font-black text-slate-900 uppercase tracking-tight">24H Active Engagement</p>
+    </div>
+    <div className="h-72">
+      {!data || data.length === 0 ? (
+        <div className="h-full flex items-center justify-center text-[10px] font-black text-slate-300 uppercase tracking-widest italic">No traffic logs detected</div>
+      ) : (
+        <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
+          <AreaChart data={data} margin={{ top: 10, right: 30, left: -20, bottom: 0 }}>
+            <defs>
+              <linearGradient id="colorUsers" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#10b981" stopOpacity={0.1}/><stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+              </linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray="2 2" vertical={false} stroke="#f1f5f9" />
+            <XAxis dataKey="time" tick={{fontSize: 8, fontWeight: 900, fill: '#64748b'}} axisLine={false} tickLine={false} />
+            <YAxis tick={{fontSize: 8, fontWeight: 900, fill: '#64748b'}} axisLine={false} tickLine={false} />
+            <Tooltip content={<CustomTooltip />} />
+            <Area type="stepAfter" dataKey="users" stroke="#10b981" strokeWidth={2} fillOpacity={1} fill="url(#colorUsers)" />
+          </AreaChart>
+        </ResponsiveContainer>
+      )}
+    </div>
+  </div>
+);
+
+const GradeDistributionPieSection = ({ data, total, label }) => {
+  const totalSum = data.reduce((sum, d) => sum + d.value, 0);
+  
+  return (
+    <div className="lg:col-span-4 bg-white border border-slate-200 rounded-xl p-4 shadow-sm min-h-[350px]">
+      <div className="mb-6">
+        <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Achievement Spread</h3>
+        <p className="text-sm font-black text-slate-900 uppercase tracking-tight">Performance Tier Distribution</p>
+      </div>
+      <div className="h-64 flex items-center gap-4">
+        {/* Left Side: Chart */}
+        <div className="w-1/2 h-full relative">
+          <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
+            <PieChart>
+              <Pie data={data} cx="50%" cy="50%" innerRadius={50} outerRadius={70} paddingAngle={6} dataKey="value">
+                {data.map((entry, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} strokeWidth={0} />)}
+              </Pie>
+              <Tooltip content={<CustomPieTooltip />} />
+            </PieChart>
+          </ResponsiveContainer>
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center justify-center pointer-events-none">
+            <p className="text-xl font-black text-slate-900 leading-none">{total}</p>
+            <p className="text-[7px] font-black text-slate-500 uppercase tracking-widest mt-0.5">{label}</p>
+          </div>
+        </div>
+
+        {/* Right Side: Legends & Highlighted Percentages */}
+        <div className="w-1/2 flex flex-col justify-center space-y-3">
+          {data.map((item, index) => {
+            const percentage = totalSum > 0 ? ((item.value / totalSum) * 100).toFixed(1) : 0;
+            return (
+              <div key={item.name} className="flex items-center justify-between gap-2 group">
+                <div className="flex items-center gap-2 min-w-0">
+                  <div className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
+                  <span className="text-[8px] font-black text-slate-500 uppercase tracking-tighter truncate leading-none" title={item.name}>
+                    {item.name.split(' (')[0]}
+                  </span>
+                </div>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-[10px] font-black text-slate-900 leading-none">{percentage}%</span>
+                  <span className="text-[7px] font-bold text-slate-400 leading-none">({item.value})</span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const GradeDistributionBarSection = ({ data, filterLevel }) => (
+  <div className="lg:col-span-8 bg-white border border-slate-200 rounded-xl p-4 shadow-sm min-h-[350px]">
+    <div className="flex items-center justify-between mb-6">
+      <div>
+        <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Cross-Group Comparison</h3>
+        <p className="text-sm font-black text-slate-900 uppercase tracking-tight">Performance Index by {filterLevel === 'all' ? 'Grade Level' : 'Classroom'}</p>
+      </div>
+      <div className="flex gap-1"><div className="w-1.5 h-1.5 rounded-full bg-indigo-500" /><div className="w-1.5 h-1.5 rounded-full bg-indigo-300" /></div>
+    </div>
+    <div className="h-72">
+      <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
+        <BarChart data={data} margin={{ bottom: 30 }}>
+          <CartesianGrid strokeDasharray="2 2" vertical={false} stroke="#f1f5f9" />
+          <XAxis dataKey="label" tick={{fontSize: 8, fontWeight: 900, fill: '#64748b'}} axisLine={false} tickLine={false} angle={-25} textAnchor="end" padding={{ left: 20, right: 20 }} />
+          <YAxis domain={[70, 100]} tick={{fontSize: 8, fontWeight: 900, fill: '#64748b'}} axisLine={false} tickLine={false} />
+          <Tooltip content={<CustomTooltip unit="%" />} />
+          <Bar dataKey="average" fill="#6366f1" radius={[2, 2, 0, 0]} barSize={data.length === 1 ? 60 : 32} label={renderCustomBarLabel}>
+            {data.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.average >= 90 ? '#10b981' : entry.average >= 75 ? '#6366f1' : '#ef4444'} fillOpacity={0.8} />)}
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  </div>
+);
+
+const GradeRankingSection = ({ data, filterSubject, meta, timeframe }) => (
+  <div className="lg:col-span-12 bg-white border border-slate-200 rounded-xl p-4 shadow-sm min-h-[350px]">
+    <div className="flex items-center justify-between mb-8">
+      <div>
+        <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Competitive Ranking — {timeframe === 'all' ? 'Annual' : timeframe === 'today' ? 'Today' : 'Weekly'}</h3>
+        <p className="text-sm font-black text-slate-900 uppercase tracking-tight">
+          {filterSubject === 'all' ? 'Top 10 Performing Subjects' : `Top 10 Classrooms — ${meta.subjects.find(s => String(s.id) === String(filterSubject))?.name || ''}`}
+        </p>
+      </div>
+      <div className="px-2 py-1 bg-slate-900 rounded text-[8px] font-black text-white uppercase tracking-[0.2em]">Efficiency Leaderboard</div>
+    </div>
+    <div className="h-96">
+      <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
+        <BarChart data={data} layout="vertical" margin={{ left: 40, right: 60 }}>
+          <CartesianGrid strokeDasharray="2 2" horizontal={true} vertical={false} stroke="#f1f5f9" />
+          <XAxis type="number" domain={[0, 100]} hide />
+          <YAxis type="category" dataKey="code" width={80} tick={{fontSize: 8, fontWeight: 900, fill: '#475569'}} axisLine={false} tickLine={false} />
+          <Tooltip content={<CustomTooltip unit="%" />} />
+          <Bar dataKey="average" fill="#4f46e5" radius={[0, 2, 2, 0]} barSize={20} label={renderHorizontalBarLabel}>
+            {data.map((entry, index) => <Cell key={`cell-${index}`} fill="#4f46e5" opacity={1 - (index * 0.05)} />)}
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  </div>
+);
+
+const FilterSelect = ({ label, value, onChange, options }) => (
+  <div className="relative min-w-[140px]">
+    <label className="absolute -top-2 left-2 px-1 bg-slate-900 text-[8px] font-black text-slate-500 uppercase tracking-widest z-10">{label}</label>
+    <select value={value} onChange={onChange} className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-[10px] font-black text-white uppercase tracking-tight focus:border-indigo-500 outline-none transition-all appearance-none pr-8 cursor-pointer">
+      {options.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+    </select>
+    <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500"><svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 9l-7 7-7-7" /></svg></div>
+  </div>
+);
+
+const SubjectFilterSelect = ({ value, onChange, filterLevel, gradeData }) => {
+  const meta = gradeData?.meta || { subjects: [] };
+  const subjectsByLevel = meta.subjects.reduce((acc, s) => {
+    const level = s.grade_level || 'Other';
+    if (!acc[level]) acc[level] = [];
+    acc[level].push(s);
+    return acc;
+  }, {});
+
+  return (
+    <div className="relative min-w-[140px]">
+      <label className="absolute -top-2 left-2 px-1 bg-slate-900 text-[8px] font-black text-slate-500 uppercase tracking-widest z-10">Subject Focus</label>
+      <select value={value} onChange={onChange} className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-[10px] font-black text-white uppercase tracking-tight focus:border-indigo-500 outline-none transition-all appearance-none pr-8 cursor-pointer disabled:opacity-50" disabled={filterLevel === 'all'}>
+        <option value="all">{filterLevel === 'all' ? 'Select Level First' : 'Cumulative (All Subjects)'}</option>
+        {filterLevel !== 'all' && Object.keys(subjectsByLevel).filter(level => level === filterLevel).map(level => (
+          <optgroup key={level} label={level}>{subjectsByLevel[level].map(s => <option key={s.id} value={s.id}>{s.name}</option>)}</optgroup>
+        ))}
+      </select>
+      <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500"><svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 9l-7 7-7-7" /></svg></div>
+    </div>
+  );
+};
+
+const YearSelector = ({ academicYear, onYearChange }) => (
+  <div className="flex items-center bg-slate-800 border border-slate-700 rounded-lg overflow-hidden">
+    <button onClick={() => onYearChange('prev')} className="p-2 hover:bg-slate-700 text-slate-400 border-r border-slate-700 transition-colors"><svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M15 19l-7-7 7-7" /></svg></button>
+    <div className="px-3 text-[10px] font-black text-white uppercase tracking-widest min-w-[90px] text-center">{academicYear}</div>
+    <button onClick={() => onYearChange('next')} className="p-2 hover:bg-slate-700 text-slate-400 border-l border-slate-700 transition-colors"><svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" /></svg></button>
+  </div>
+);
+
+// --- Main Component ---
 
 const Analytics = () => {
   const [activeTab, setActiveTab] = useState('system');
@@ -94,6 +507,13 @@ const Analytics = () => {
     { id: 'grades', label: 'Academic Performance', icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z' },
     { id: 'attendance', label: 'Attendance Dynamics', icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z' },
   ];
+
+  const hasAttendanceData = attendanceAnalytics && (
+    (attendanceAnalytics.daily_trends?.length > 0) ||
+    (attendanceAnalytics.section_rankings?.length > 0) ||
+    (attendanceAnalytics.pie_data?.some(d => d.value > 0)) ||
+    (attendanceAnalytics.grade_trends?.length > 0)
+  );
 
   return (
     <div className="space-y-4 pb-8 animate-fade-in max-w-full overflow-hidden">
@@ -268,8 +688,11 @@ const Analytics = () => {
                 </div>
               </div>
 
-              {!attendanceAnalytics ? (
-                <EmptyState message="Failed to load attendance engine" />
+              {!hasAttendanceData ? (
+                <EmptyState 
+                  message="No Attendance Data" 
+                  submessage={attendanceTimeframe === 'all' ? "Start encoding attendance to see live analytics" : `No records found for the "${attendanceTimeframe}" period`} 
+                />
               ) : (
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
                   <AttendanceTrendsSection data={attendanceAnalytics.daily_trends} />
@@ -285,389 +708,5 @@ const Analytics = () => {
     </div>
   );
 };
-
-// --- Sub-components to keep Analytics.jsx clean ---
-
-const SubjectPerformanceSection = ({ data }) => (
-  <div className="lg:col-span-7 bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
-    <div className="flex items-center justify-between mb-6">
-      <div>
-        <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Academic Benchmarking</h3>
-        <p className="text-sm font-black text-slate-900 uppercase tracking-tight">Subject Performance Index</p>
-      </div>
-      <div className="flex gap-1">
-        <div className="w-1.5 h-1.5 rounded-full bg-indigo-500" /><div className="w-1.5 h-1.5 rounded-full bg-indigo-300" /><div className="w-1.5 h-1.5 rounded-full bg-indigo-100" />
-      </div>
-    </div>
-    <div className="h-72">
-      <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
-        <BarChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-          <CartesianGrid strokeDasharray="2 2" vertical={false} stroke="#f1f5f9" />
-          <XAxis dataKey="subject__name" tick={{fontSize: 8, fontWeight: 900, fill: '#64748b'}} axisLine={false} tickLine={false} />
-          <YAxis tick={{fontSize: 8, fontWeight: 900, fill: '#64748b'}} axisLine={false} tickLine={false} domain={[70, 100]} />
-          <Tooltip content={<CustomTooltip unit="%" />} />
-          <Bar dataKey="avg_grade" fill="#6366f1" radius={[2, 2, 0, 0]} barSize={24} label={renderCustomBarLabel} />
-        </BarChart>
-      </ResponsiveContainer>
-    </div>
-  </div>
-);
-
-const TrafficIntelligenceSection = ({ data }) => (
-  <div className="lg:col-span-5 bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
-    <div className="mb-6">
-      <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Traffic Intelligence</h3>
-      <p className="text-sm font-black text-slate-900 uppercase tracking-tight">24H Active Engagement</p>
-    </div>
-    <div className="h-72">
-      <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
-        <AreaChart data={data} margin={{ top: 10, right: 30, left: -20, bottom: 0 }}>
-          <defs>
-            <linearGradient id="colorUsers" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#10b981" stopOpacity={0.1}/><stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
-            </linearGradient>
-          </defs>
-          <CartesianGrid strokeDasharray="2 2" vertical={false} stroke="#f1f5f9" />
-          <XAxis dataKey="time" tick={{fontSize: 8, fontWeight: 900, fill: '#64748b'}} axisLine={false} tickLine={false} />
-          <YAxis tick={{fontSize: 8, fontWeight: 900, fill: '#64748b'}} axisLine={false} tickLine={false} />
-          <Tooltip content={<CustomTooltip />} />
-          <Area type="stepAfter" dataKey="users" stroke="#10b981" strokeWidth={2} fillOpacity={1} fill="url(#colorUsers)" />
-        </AreaChart>
-      </ResponsiveContainer>
-    </div>
-  </div>
-);
-
-const GradeDistributionPieSection = ({ data, total, label }) => {
-  const totalSum = data.reduce((sum, d) => sum + d.value, 0);
-  
-  return (
-    <div className="lg:col-span-4 bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
-      <div className="mb-6">
-        <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Achievement Spread</h3>
-        <p className="text-sm font-black text-slate-900 uppercase tracking-tight">Performance Tier Distribution</p>
-      </div>
-      <div className="h-64 flex items-center gap-4">
-        {/* Left Side: Chart */}
-        <div className="w-1/2 h-full relative">
-          <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
-            <PieChart>
-              <Pie data={data} cx="50%" cy="50%" innerRadius={50} outerRadius={70} paddingAngle={6} dataKey="value">
-                {data.map((entry, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} strokeWidth={0} />)}
-              </Pie>
-              <Tooltip content={<CustomPieTooltip />} />
-            </PieChart>
-          </ResponsiveContainer>
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center justify-center pointer-events-none">
-            <p className="text-xl font-black text-slate-900 leading-none">{total}</p>
-            <p className="text-[7px] font-black text-slate-500 uppercase tracking-widest mt-0.5">{label}</p>
-          </div>
-        </div>
-
-        {/* Right Side: Legends & Highlighted Percentages */}
-        <div className="w-1/2 flex flex-col justify-center space-y-3">
-          {data.map((item, index) => {
-            const percentage = totalSum > 0 ? ((item.value / totalSum) * 100).toFixed(1) : 0;
-            return (
-              <div key={item.name} className="flex items-center justify-between gap-2 group">
-                <div className="flex items-center gap-2 min-w-0">
-                  <div className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
-                  <span className="text-[8px] font-black text-slate-500 uppercase tracking-tighter truncate leading-none" title={item.name}>
-                    {item.name.split(' (')[0]}
-                  </span>
-                </div>
-                <div className="flex items-baseline gap-1">
-                  <span className="text-[10px] font-black text-slate-900 leading-none">{percentage}%</span>
-                  <span className="text-[7px] font-bold text-slate-400 leading-none">({item.value})</span>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    </div>
-  );
-};
-
-const GradeDistributionBarSection = ({ data, filterLevel }) => (
-  <div className="lg:col-span-8 bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
-    <div className="flex items-center justify-between mb-6">
-      <div>
-        <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Cross-Group Comparison</h3>
-        <p className="text-sm font-black text-slate-900 uppercase tracking-tight">Performance Index by {filterLevel === 'all' ? 'Grade Level' : 'Classroom'}</p>
-      </div>
-      <div className="flex gap-1"><div className="w-1.5 h-1.5 rounded-full bg-indigo-500" /><div className="w-1.5 h-1.5 rounded-full bg-indigo-300" /></div>
-    </div>
-    <div className="h-72">
-      <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
-        <BarChart data={data} margin={{ bottom: 30 }}>
-          <CartesianGrid strokeDasharray="2 2" vertical={false} stroke="#f1f5f9" />
-          <XAxis dataKey="label" tick={{fontSize: 8, fontWeight: 900, fill: '#64748b'}} axisLine={false} tickLine={false} angle={-25} textAnchor="end" padding={{ left: 20, right: 20 }} />
-          <YAxis domain={[70, 100]} tick={{fontSize: 8, fontWeight: 900, fill: '#64748b'}} axisLine={false} tickLine={false} />
-          <Tooltip content={<CustomTooltip unit="%" />} />
-          <Bar dataKey="average" fill="#6366f1" radius={[2, 2, 0, 0]} barSize={data.length === 1 ? 60 : 32} label={renderCustomBarLabel}>
-            {data.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.average >= 90 ? '#10b981' : entry.average >= 75 ? '#6366f1' : '#ef4444'} fillOpacity={0.8} />)}
-          </Bar>
-        </BarChart>
-      </ResponsiveContainer>
-    </div>
-  </div>
-);
-
-const GradeRankingSection = ({ data, filterSubject, meta, timeframe }) => (
-  <div className="lg:col-span-12 bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
-    <div className="flex items-center justify-between mb-8">
-      <div>
-        <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Competitive Ranking — {timeframe === 'all' ? 'Annual' : timeframe === 'today' ? 'Today' : 'Weekly'}</h3>
-        <p className="text-sm font-black text-slate-900 uppercase tracking-tight">
-          {filterSubject === 'all' ? 'Top 10 Performing Subjects' : `Top 10 Classrooms — ${meta.subjects.find(s => String(s.id) === String(filterSubject))?.name || ''}`}
-        </p>
-      </div>
-      <div className="px-2 py-1 bg-slate-900 rounded text-[8px] font-black text-white uppercase tracking-[0.2em]">Efficiency Leaderboard</div>
-    </div>
-    <div className="h-96">
-      <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
-        <BarChart data={data} layout="vertical" margin={{ left: 40, right: 60 }}>
-          <CartesianGrid strokeDasharray="2 2" horizontal={true} vertical={false} stroke="#f1f5f9" />
-          <XAxis type="number" domain={[0, 100]} hide />
-          <YAxis type="category" dataKey="code" width={80} tick={{fontSize: 8, fontWeight: 900, fill: '#475569'}} axisLine={false} tickLine={false} />
-          <Tooltip content={<CustomTooltip unit="%" />} />
-          <Bar dataKey="average" fill="#4f46e5" radius={[0, 2, 2, 0]} barSize={20} label={renderHorizontalBarLabel}>
-            {data.map((entry, index) => <Cell key={`cell-${index}`} fill="#4f46e5" opacity={1 - (index * 0.05)} />)}
-          </Bar>
-        </BarChart>
-      </ResponsiveContainer>
-    </div>
-  </div>
-);
-
-const AttendanceTrendsSection = ({ data }) => (
-  <div className="lg:col-span-8 bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
-    <div className="flex items-center justify-between mb-6">
-      <div>
-        <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Presence Trends</h3>
-        <p className="text-sm font-black text-slate-900 uppercase tracking-tight">30-Day Activity Monitor</p>
-      </div>
-      <div className="flex gap-1.5"><div className="px-2 py-0.5 bg-emerald-50 border border-emerald-100 rounded text-[7px] font-black text-emerald-600 uppercase tracking-widest">Live</div></div>
-    </div>
-    <div className="h-64">
-      <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
-        <AreaChart data={data}>
-          <defs>
-            <linearGradient id="colorPresent" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#10b981" stopOpacity={0.1}/><stop offset="95%" stopColor="#10b981" stopOpacity={0}/></linearGradient>
-            <linearGradient id="colorLate" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#f59e0b" stopOpacity={0.1}/><stop offset="95%" stopColor="#f59e0b" stopOpacity={0}/></linearGradient>
-          </defs>
-          <CartesianGrid strokeDasharray="2 2" vertical={false} stroke="#f1f5f9" />
-          <XAxis dataKey="date" tick={{fontSize: 8, fontWeight: 900, fill: '#64748b'}} axisLine={false} tickLine={false} tickFormatter={(str) => {
-            if (!str) return '';
-            const d = new Date(str);
-            return isNaN(d.getTime()) ? str : d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-          }} />
-          <YAxis tick={{fontSize: 8, fontWeight: 900, fill: '#64748b'}} axisLine={false} tickLine={false} />
-          <Tooltip content={<AttendanceTooltip />} cursor={{stroke: '#cbd5e1', strokeWidth: 1}} />
-          <Area type="monotone" dataKey="present" stroke="#10b981" strokeWidth={2} fillOpacity={1} fill="url(#colorPresent)" name="Present" />
-          <Area type="monotone" dataKey="late" stroke="#f59e0b" strokeWidth={2} fillOpacity={1} fill="url(#colorLate)" name="Late" />
-        </AreaChart>
-      </ResponsiveContainer>
-    </div>
-  </div>
-);
-
-const AttendanceStatusPieSection = ({ data }) => {
-  const total = data?.reduce((sum, d) => sum + d.value, 0) || 0;
-  const pieColors = ['#10b981', '#f59e0b', '#ef4444'];
-  
-  return (
-    <div className="lg:col-span-4 bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
-      <div className="mb-6">
-        <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Presence Distribution</h3>
-        <p className="text-sm font-black text-slate-900 uppercase tracking-tight">Overall Status Summary</p>
-      </div>
-      <div className="h-64 flex items-center gap-4">
-        <div className="w-1/2 h-full relative">
-          <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
-            <PieChart>
-              <Pie data={data} cx="50%" cy="50%" innerRadius={50} outerRadius={70} paddingAngle={6} dataKey="value">
-                {data?.map((entry, index) => <Cell key={`cell-${index}`} fill={pieColors[index % pieColors.length]} strokeWidth={0} />)}
-              </Pie>
-              <Tooltip content={<CustomPieTooltip />} />
-            </PieChart>
-          </ResponsiveContainer>
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center justify-center pointer-events-none">
-            <p className="text-xl font-black text-slate-900 leading-none">{total}</p>
-            <p className="text-[7px] font-black text-slate-500 uppercase tracking-widest mt-0.5">Records</p>
-          </div>
-        </div>
-        <div className="w-1/2 flex flex-col justify-center space-y-3">
-          {data?.map((item, index) => {
-            const percentage = total > 0 ? ((item.value / total) * 100).toFixed(1) : 0;
-            return (
-              <div key={item.name} className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: pieColors[index % pieColors.length] }} />
-                  <span className="text-[8px] font-black text-slate-500 uppercase tracking-tighter leading-none">{item.name}</span>
-                </div>
-                <div className="flex items-baseline gap-1">
-                  <span className="text-[10px] font-black text-slate-900 leading-none">{percentage}%</span>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    </div>
-  );
-};
-
-const AttendanceByLevelBarSection = ({ data }) => (
-  <div className="lg:col-span-8 bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
-    <div className="mb-6">
-      <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Level Engagement</h3>
-      <p className="text-sm font-black text-slate-900 uppercase tracking-tight">Attendance Rate by Grade Level</p>
-    </div>
-    <div className="h-64">
-      <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
-        <BarChart data={data}>
-          <CartesianGrid strokeDasharray="2 2" vertical={false} stroke="#f1f5f9" />
-          <XAxis dataKey="level" tick={{fontSize: 8, fontWeight: 900, fill: '#64748b'}} axisLine={false} tickLine={false} />
-          <YAxis domain={[0, 100]} tick={{fontSize: 8, fontWeight: 900, fill: '#64748b'}} axisLine={false} tickLine={false} />
-          <Tooltip content={<CustomTooltip unit="%" />} />
-          <Bar dataKey="rate" fill="#3b82f6" radius={[2, 2, 0, 0]} barSize={32} label={renderCustomBarLabel}>
-            {data?.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.rate >= 90 ? '#10b981' : entry.rate >= 75 ? '#3b82f6' : '#ef4444'} />)}
-          </Bar>
-        </BarChart>
-      </ResponsiveContainer>
-    </div>
-  </div>
-);
-
-const AttendanceRankingsSection = ({ rankings, period }) => (
-  <div className="lg:col-span-4 bg-white border border-slate-200 rounded-xl p-4 shadow-sm overflow-hidden flex flex-col">
-    <div className="mb-6">
-      <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Rankings — {period}</h3>
-      <p className="text-sm font-black text-slate-900 uppercase tracking-tight">Section Performance Index</p>
-    </div>
-    <div className="flex-1 overflow-y-auto space-y-2 pr-1 scrollbar-thin scrollbar-thumb-slate-200">
-      {rankings?.map((rank, idx) => (
-        <div key={rank.id} className="group flex items-center justify-between p-2.5 bg-slate-50/50 rounded-lg border border-slate-100 hover:border-indigo-200 hover:bg-white transition-all">
-          <div className="flex items-center gap-3">
-            <span className={`w-5 h-5 flex items-center justify-center rounded-md font-black text-[9px] ${idx === 0 ? 'bg-amber-100 text-amber-600 shadow-sm' : idx === 1 ? 'bg-slate-200 text-slate-600' : idx === 2 ? 'bg-orange-100 text-orange-600' : 'bg-slate-100 text-slate-400'}`}>{idx + 1}</span>
-            <div className="flex flex-col"><span className="text-[10px] font-black text-slate-700 uppercase tracking-tight leading-none mb-1">{rank.name}</span><span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest leading-none">{rank.total_records} records</span></div>
-          </div>
-          <div className="text-right">
-            <div className={`text-xs font-black leading-none mb-1 ${rank.rate >= 90 ? 'text-emerald-600' : rank.rate >= 75 ? 'text-blue-600' : 'text-rose-600'}`}>{rank.rate}%</div>
-            <div className="w-12 h-1 bg-slate-200 rounded-full overflow-hidden"><div className={`h-full rounded-full ${rank.rate >= 90 ? 'bg-emerald-500' : rank.rate >= 75 ? 'bg-blue-500' : 'bg-rose-500'}`} style={{ width: `${rank.rate}%` }} /></div>
-          </div>
-        </div>
-      ))}
-    </div>
-  </div>
-);
-
-const FilterSelect = ({ label, value, onChange, options }) => (
-  <div className="relative min-w-[140px]">
-    <label className="absolute -top-2 left-2 px-1 bg-slate-900 text-[8px] font-black text-slate-500 uppercase tracking-widest z-10">{label}</label>
-    <select value={value} onChange={onChange} className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-[10px] font-black text-white uppercase tracking-tight focus:border-indigo-500 outline-none transition-all appearance-none pr-8 cursor-pointer">
-      {options.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
-    </select>
-    <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500"><svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 9l-7 7-7-7" /></svg></div>
-  </div>
-);
-
-const SubjectFilterSelect = ({ value, onChange, filterLevel, gradeData }) => {
-  const meta = gradeData?.meta || { subjects: [] };
-  const subjectsByLevel = meta.subjects.reduce((acc, s) => {
-    const level = s.grade_level || 'Other';
-    if (!acc[level]) acc[level] = [];
-    acc[level].push(s);
-    return acc;
-  }, {});
-
-  return (
-    <div className="relative min-w-[140px]">
-      <label className="absolute -top-2 left-2 px-1 bg-slate-900 text-[8px] font-black text-slate-500 uppercase tracking-widest z-10">Subject Focus</label>
-      <select value={value} onChange={onChange} className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-[10px] font-black text-white uppercase tracking-tight focus:border-indigo-500 outline-none transition-all appearance-none pr-8 cursor-pointer disabled:opacity-50" disabled={filterLevel === 'all'}>
-        <option value="all">{filterLevel === 'all' ? 'Select Level First' : 'Cumulative (All Subjects)'}</option>
-        {filterLevel !== 'all' && Object.keys(subjectsByLevel).filter(level => level === filterLevel).map(level => (
-          <optgroup key={level} label={level}>{subjectsByLevel[level].map(s => <option key={s.id} value={s.id}>{s.name}</option>)}</optgroup>
-        ))}
-      </select>
-      <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500"><svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 9l-7 7-7-7" /></svg></div>
-    </div>
-  );
-};
-
-const StatChip = ({ label, value, color }) => {
-  const colors = {
-    emerald: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
-    purple: 'bg-violet-500/10 text-violet-500 border-violet-500/20',
-    blue: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
-    indigo: 'bg-indigo-500/10 text-indigo-500 border-indigo-500/20',
-  };
-  return (
-    <div className={`px-3 py-1.5 rounded-lg border ${colors[color]} flex flex-col items-center min-w-[80px]`}>
-      <span className="text-[8px] font-black uppercase tracking-widest leading-none mb-1 opacity-70">{label}</span>
-      <span className="text-sm font-black leading-none">{value}</span>
-    </div>
-  );
-};
-
-const MiniCard = ({ title, value, icon, alert }) => (
-  <div className={`bg-white border ${alert ? 'border-rose-200 bg-rose-50/30' : 'border-slate-200'} rounded-xl p-5 shadow-sm flex items-center gap-5 min-h-[90px]`}>
-    <div className={`p-3 rounded-lg ${alert ? 'bg-rose-100 text-rose-600' : 'bg-slate-100 text-slate-600'} flex items-center justify-center`}><svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d={icon} /></svg></div>
-    <div className="flex flex-col justify-center"><h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-2">{title}</h4><p className={`text-2xl font-black tracking-tight leading-none ${alert ? 'text-rose-600' : 'text-slate-900'}`}>{value || 0}</p></div>
-  </div>
-);
-
-const CustomTooltip = ({ active, payload, label, unit = '' }) => {
-  if (active && payload && payload.length) {
-    return (
-      <div className="bg-slate-900 border border-slate-800 p-2.5 rounded-lg shadow-2xl backdrop-blur-md bg-opacity-95">
-        <p className="text-[8px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">{label}</p>
-        <p className="text-xs font-black text-white flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-indigo-500" />{payload[0].value}{unit}<span className="text-[8px] font-bold text-slate-500 uppercase tracking-widest ml-1">{payload[0].name}</span></p>
-      </div>
-    );
-  }
-  return null;
-};
-
-const CustomPieTooltip = ({ active, payload }) => {
-  if (active && payload && payload.length) {
-    return (
-      <div className="bg-slate-900 border border-slate-800 p-2.5 rounded-lg shadow-2xl backdrop-blur-md bg-opacity-95">
-        <p className="text-xs font-black text-white flex items-center gap-2"><span className="w-2 h-2 rounded-full" style={{ backgroundColor: payload[0].payload.fill }} />{payload[0].value}<span className="text-[8px] font-bold text-slate-500 uppercase tracking-widest ml-1">{payload[0].name}</span></p>
-      </div>
-    );
-  }
-  return null;
-};
-
-const AttendanceTooltip = ({ active, payload, label }) => {
-  if (active && payload && payload.length) {
-    return (
-      <div className="bg-slate-900 border border-slate-800 p-2 rounded-lg shadow-2xl backdrop-blur-md bg-opacity-95">
-        <p className="text-[8px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1.5">{label}</p>
-        <div className="space-y-1">{payload.map((entry, index) => (<div key={index} className="flex items-center justify-between gap-4"><div className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: entry.color }} /><span className="text-[8px] font-bold text-slate-500 uppercase tracking-widest">{entry.name}</span></div><span className="text-[10px] font-black text-white">{entry.value}</span></div>))}</div>
-      </div>
-    );
-  }
-  return null;
-};
-
-const EmptyState = ({ message, submessage }) => (
-  <div className="bg-white border border-slate-200 rounded-2xl p-24 text-center shadow-sm">
-    <svg className="w-16 h-16 mx-auto mb-6 text-slate-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
-    <p className="text-[12px] font-black text-slate-400 uppercase tracking-[0.3em]">{message}</p>
-    {submessage && <p className="text-[10px] font-bold text-slate-400 mt-2 uppercase tracking-widest opacity-60">{submessage}</p>}
-  </div>
-);
-
-const YearSelector = ({ academicYear, onYearChange }) => (
-  <div className="flex items-center bg-slate-800 border border-slate-700 rounded-lg overflow-hidden">
-    <button onClick={() => onYearChange('prev')} className="p-2 hover:bg-slate-700 text-slate-400 border-r border-slate-700 transition-colors"><svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M15 19l-7-7 7-7" /></svg></button>
-    <div className="px-3 text-[10px] font-black text-white uppercase tracking-widest min-w-[90px] text-center">{academicYear}</div>
-    <button onClick={() => onYearChange('next')} className="p-2 hover:bg-slate-700 text-slate-400 border-l border-slate-700 transition-colors"><svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" /></svg></button>
-  </div>
-);
 
 export default Analytics;
