@@ -198,7 +198,7 @@ const AuditLogs = () => {
             </div>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           {selectedIds.length > 0 && (
             <button onClick={handleBulkDelete} disabled={deleting}
               className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-red-50 text-red-600 border border-red-200 text-sm font-bold hover:bg-red-100 transition-all disabled:opacity-50">
@@ -239,7 +239,7 @@ const AuditLogs = () => {
         </div>
       </div>
         
-      {/* ── Table ── */}
+      {/* ── Table / Card List ── */}
       <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
         {logs.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
@@ -252,90 +252,167 @@ const AuditLogs = () => {
             <p className="text-sm text-slate-400">System activity will appear here.</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left">
-              <thead className="bg-slate-50 border-b border-slate-200 sticky top-0 z-10">
-                <tr>
-                  <th className="px-5 py-3.5 w-10">
-                    <input type="checkbox" checked={logs?.length > 0 && selectedIds.length === logs.length}
-                      onChange={handleSelectAll}
-                      className="w-4 h-4 rounded border-slate-300 text-violet-600 focus:ring-violet-500 cursor-pointer" />
-                  </th>
-                  <th className="px-5 py-3.5 text-[10px] font-black text-slate-500 uppercase tracking-[0.15em] whitespace-nowrap">Time</th>
-                  <th className="px-5 py-3.5 text-[10px] font-black text-slate-500 uppercase tracking-[0.15em] whitespace-nowrap">User</th>
-                  <th className="px-5 py-3.5 text-[10px] font-black text-slate-500 uppercase tracking-[0.15em] whitespace-nowrap">Action</th>
-                  <th className="px-5 py-3.5 text-[10px] font-black text-slate-500 uppercase tracking-[0.15em]">Description</th>
-                  <th className="hidden md:table-cell px-5 py-3.5 text-[10px] font-black text-slate-500 uppercase tracking-[0.15em] whitespace-nowrap">Model</th>
-                  <th className="px-5 py-3.5 text-[10px] font-black text-slate-500 uppercase tracking-[0.15em] text-center w-16"></th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {logs.map((log) => (
-                  <tr key={log.id} className={`group hover:bg-violet-50/40 transition-colors ${selectedIds.includes(log.id) ? 'bg-violet-50/30' : ''}`}>
-                    <td className="px-5 py-3.5">
-                      <input type="checkbox" checked={selectedIds.includes(log.id)}
+          <>
+            {/* ── Mobile card list (< md) ── */}
+            <div className="md:hidden divide-y divide-slate-100">
+              {/* Select-all bar */}
+              <div className="flex items-center gap-3 px-4 py-3 bg-slate-50 border-b border-slate-200">
+                <label className="flex items-center gap-2 cursor-pointer no-min">
+                  <input type="checkbox"
+                    checked={logs.length > 0 && selectedIds.length === logs.length}
+                    onChange={handleSelectAll}
+                    className="w-4 h-4 rounded border-slate-300 text-violet-600 focus:ring-violet-500 cursor-pointer" />
+                  <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
+                    {selectedIds.length > 0 ? `${selectedIds.length} selected` : 'Select all'}
+                  </span>
+                </label>
+              </div>
+
+              {logs.map((log) => (
+                <div key={log.id}
+                  className={`px-4 py-3.5 transition-colors ${selectedIds.includes(log.id) ? 'bg-violet-50/40' : ''}`}>
+                  <div className="flex items-start gap-3">
+                    {/* Checkbox */}
+                    <label className="flex-shrink-0 mt-0.5 cursor-pointer no-min">
+                      <input type="checkbox"
+                        checked={selectedIds.includes(log.id)}
                         onChange={() => handleSelectLog(log.id)}
                         className="w-4 h-4 rounded border-slate-300 text-violet-600 focus:ring-violet-500 cursor-pointer" />
-                    </td>
-                    <td className="px-5 py-3.5 whitespace-nowrap">
-                      <p className="text-xs font-bold text-slate-700">{new Date(log.timestamp).toLocaleDateString()}</p>
-                      <p className="text-[10px] font-bold text-slate-400">{new Date(log.timestamp).toLocaleTimeString()}</p>
-                    </td>
-                    <td className="px-5 py-3.5">
-                      <div className="flex items-center gap-2.5">
-                        <div className="w-7 h-7 rounded-lg bg-violet-100 flex items-center justify-center text-violet-700 font-black text-[10px] flex-shrink-0">
-                          {log.user_name?.charAt(0).toUpperCase() || 'S'}
-                        </div>
-                        <div className="min-w-0">
-                          <p className="text-xs font-bold text-slate-800 truncate">{log.user_name}</p>
-                          <p className="text-[10px] text-slate-400 truncate">{log.user_email}</p>
-                        </div>
+                    </label>
+
+                    {/* Avatar */}
+                    <div className="w-8 h-8 rounded-lg bg-violet-100 flex items-center justify-center text-violet-700 font-black text-xs flex-shrink-0">
+                      {log.user_name?.charAt(0).toUpperCase() || 'S'}
+                    </div>
+
+                    {/* Content */}
+                    <div className="flex-1 min-w-0">
+                      {/* Top row: user + time */}
+                      <div className="flex items-center justify-between gap-2 mb-1">
+                        <p className="text-sm font-bold text-slate-800 truncate">{log.user_name}</p>
+                        <p className="text-[10px] font-bold text-slate-400 flex-shrink-0">
+                          {new Date(log.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                          {' · '}
+                          {new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </p>
                       </div>
-                    </td>
-                    <td className="px-5 py-3.5">
-                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full border text-[10px] font-bold uppercase tracking-wider ${getActionColor(log.action_type || log.action)}`}>
-                        {log.action}
-                      </span>
-                    </td>
-                    <td className="px-5 py-3.5 text-sm text-slate-600 max-w-xs truncate" title={log.description}>
-                      {log.description}
-                    </td>
-                    <td className="hidden md:table-cell px-5 py-3.5">
-                      <span className="text-[10px] font-bold text-slate-400 bg-slate-50 px-2 py-0.5 rounded-full border border-slate-200 uppercase tracking-wider">
-                        {log.model_name || 'System'}
-                      </span>
-                    </td>
-                    <td className="px-5 py-3.5 text-center">
-                      <button onClick={() => handleDelete(log.id)}
-                        className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all opacity-0 group-hover:opacity-100 no-min" title="Delete">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
-                      </button>
-                    </td>
+
+                      {/* Action badge + model */}
+                      <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full border text-[10px] font-bold uppercase tracking-wider ${getActionColor(log.action_type || log.action)}`}>
+                          {log.action}
+                        </span>
+                        {log.model_name && (
+                          <span className="text-[10px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200 uppercase tracking-wider">
+                            {log.model_name}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Description */}
+                      <p className="text-xs text-slate-500 leading-relaxed line-clamp-2">{log.description}</p>
+                    </div>
+
+                    {/* Delete button */}
+                    <button onClick={() => handleDelete(log.id)}
+                      className="flex-shrink-0 p-1.5 rounded-lg text-slate-300 hover:text-red-500 hover:bg-red-50 transition-all no-min" title="Delete">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* ── Desktop table (md+) ── */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-left">
+                <thead className="bg-slate-50 border-b border-slate-200 sticky top-0 z-10">
+                  <tr>
+                    <th className="px-5 py-3.5 w-10">
+                      <input type="checkbox" checked={logs?.length > 0 && selectedIds.length === logs.length}
+                        onChange={handleSelectAll}
+                        className="w-4 h-4 rounded border-slate-300 text-violet-600 focus:ring-violet-500 cursor-pointer" />
+                    </th>
+                    <th className="px-5 py-3.5 text-[10px] font-black text-slate-500 uppercase tracking-[0.15em] whitespace-nowrap">Time</th>
+                    <th className="px-5 py-3.5 text-[10px] font-black text-slate-500 uppercase tracking-[0.15em] whitespace-nowrap">User</th>
+                    <th className="px-5 py-3.5 text-[10px] font-black text-slate-500 uppercase tracking-[0.15em] whitespace-nowrap">Action</th>
+                    <th className="px-5 py-3.5 text-[10px] font-black text-slate-500 uppercase tracking-[0.15em]">Description</th>
+                    <th className="px-5 py-3.5 text-[10px] font-black text-slate-500 uppercase tracking-[0.15em] whitespace-nowrap">Model</th>
+                    <th className="px-5 py-3.5 w-16"></th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {logs.map((log) => (
+                    <tr key={log.id} className={`group hover:bg-violet-50/40 transition-colors ${selectedIds.includes(log.id) ? 'bg-violet-50/30' : ''}`}>
+                      <td className="px-5 py-3.5">
+                        <input type="checkbox" checked={selectedIds.includes(log.id)}
+                          onChange={() => handleSelectLog(log.id)}
+                          className="w-4 h-4 rounded border-slate-300 text-violet-600 focus:ring-violet-500 cursor-pointer" />
+                      </td>
+                      <td className="px-5 py-3.5 whitespace-nowrap">
+                        <p className="text-xs font-bold text-slate-700">{new Date(log.timestamp).toLocaleDateString()}</p>
+                        <p className="text-[10px] font-bold text-slate-400">{new Date(log.timestamp).toLocaleTimeString()}</p>
+                      </td>
+                      <td className="px-5 py-3.5">
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-7 h-7 rounded-lg bg-violet-100 flex items-center justify-center text-violet-700 font-black text-[10px] flex-shrink-0">
+                            {log.user_name?.charAt(0).toUpperCase() || 'S'}
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-xs font-bold text-slate-800 truncate">{log.user_name}</p>
+                            <p className="text-[10px] text-slate-400 truncate">{log.user_email}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-5 py-3.5">
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full border text-[10px] font-bold uppercase tracking-wider ${getActionColor(log.action_type || log.action)}`}>
+                          {log.action}
+                        </span>
+                      </td>
+                      <td className="px-5 py-3.5 text-sm text-slate-600 max-w-xs truncate" title={log.description}>
+                        {log.description}
+                      </td>
+                      <td className="px-5 py-3.5">
+                        <span className="text-[10px] font-bold text-slate-400 bg-slate-50 px-2 py-0.5 rounded-full border border-slate-200 uppercase tracking-wider">
+                          {log.model_name || 'System'}
+                        </span>
+                      </td>
+                      <td className="px-5 py-3.5 text-center">
+                        <button onClick={() => handleDelete(log.id)}
+                          className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all opacity-0 group-hover:opacity-100 no-min" title="Delete">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
 
         {/* Pagination */}
         {!loading && logs.length > 0 && totalPages > 1 && (
-          <div className="flex items-center justify-between px-5 py-3.5 border-t border-slate-100 bg-slate-50/50">
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">
-              Page {page} of {totalPages} · {totalCount} entries
-              {selectedIds.length > 0 && <span className="ml-3 text-violet-600">{selectedIds.length} selected</span>}
+          <div className="flex items-center justify-between px-4 py-3.5 border-t border-slate-100 bg-slate-50/50 gap-3 flex-wrap">
+            <span className="text-xs font-bold text-slate-500">
+              Page {page} of {totalPages}
+              <span className="hidden sm:inline"> · {totalCount} entries</span>
+              {selectedIds.length > 0 && <span className="ml-2 text-violet-600">{selectedIds.length} selected</span>}
             </span>
             <div className="flex items-center gap-2">
               <button disabled={page === 1} onClick={() => setPage(p => Math.max(1, p - 1))}
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-600 hover:bg-slate-50 transition-all disabled:opacity-40 disabled:cursor-not-allowed">
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-600 hover:bg-slate-50 transition-all disabled:opacity-40 disabled:cursor-not-allowed">
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" /></svg>
-                Previous
+                <span className="hidden sm:inline">Previous</span>
               </button>
+              <span className="text-xs font-bold text-slate-500 px-1">{page} / {totalPages}</span>
               <button disabled={page === totalPages} onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-600 hover:bg-slate-50 transition-all disabled:opacity-40 disabled:cursor-not-allowed">
-                Next
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-600 hover:bg-slate-50 transition-all disabled:opacity-40 disabled:cursor-not-allowed">
+                <span className="hidden sm:inline">Next</span>
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" /></svg>
               </button>
             </div>
