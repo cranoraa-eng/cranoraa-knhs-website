@@ -620,23 +620,30 @@ const Attendance = () => {
                     <h3 className="text-lg font-bold text-slate-800">Daily Presence Trends</h3>
                     <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest">Last 30 Days</p>
                   </div>
-                  <div className="h-64">
-                    <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
-                      <AreaChart data={analytics.daily_trends}>
-                        <defs>
-                          <linearGradient id="colorPresent" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#10b981" stopOpacity={0.1}/>
-                            <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
-                          </linearGradient>
-                        </defs>
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                        <XAxis dataKey="date" tick={{fontSize: 10, fontWeight: 700}} axisLine={false} tickLine={false} tickFormatter={(str) => new Date(str).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} />
-                        <YAxis tick={{fontSize: 10, fontWeight: 700}} axisLine={false} tickLine={false} />
-                        <Tooltip contentStyle={{borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)'}} />
-                        <Area type="monotone" dataKey="present" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorPresent)" name="Present" />
-                        <Area type="monotone" dataKey="late" stroke="#f59e0b" strokeWidth={3} fill="none" name="Late" />
-                      </AreaChart>
-                    </ResponsiveContainer>
+                  <div className="h-64 relative">
+                    {analytics.daily_trends?.length > 0 ? (
+                      <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
+                        <AreaChart data={analytics.daily_trends}>
+                          <defs>
+                            <linearGradient id="colorPresent" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="#10b981" stopOpacity={0.1}/>
+                              <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                            </linearGradient>
+                          </defs>
+                          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                          <XAxis dataKey="date" tick={{fontSize: 10, fontWeight: 700}} axisLine={false} tickLine={false} tickFormatter={(str) => new Date(str).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} />
+                          <YAxis tick={{fontSize: 10, fontWeight: 700}} axisLine={false} tickLine={false} />
+                          <Tooltip contentStyle={{borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)'}} />
+                          <Area type="monotone" dataKey="present" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorPresent)" name="Present" />
+                          <Area type="monotone" dataKey="late" stroke="#f59e0b" strokeWidth={3} fill="none" name="Late" />
+                        </AreaChart>
+                      </ResponsiveContainer>
+                    ) : (
+                      <div className="flex flex-col items-center justify-center h-full bg-slate-50/50 rounded-xl border border-dashed border-slate-200 text-slate-400">
+                        <svg className="w-8 h-8 mb-2 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+                        <p className="text-[10px] font-black uppercase tracking-widest">No trend data available</p>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -647,21 +654,28 @@ const Attendance = () => {
                       <h3 className="text-lg font-bold text-slate-800">Section Rankings</h3>
                       <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest">Top Performing Classrooms</p>
                     </div>
-                    <div className="flex-1 overflow-y-auto space-y-3 pr-2">
-                      {analytics.section_rankings?.map((rank, idx) => (
-                        <div key={rank.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-100 hover:border-violet-200 transition-all">
-                          <div className="flex items-center gap-3">
-                            <span className={`w-6 h-6 flex items-center justify-center rounded-lg font-black text-[10px] ${idx === 0 ? 'bg-amber-100 text-amber-600' : idx === 1 ? 'bg-slate-200 text-slate-600' : idx === 2 ? 'bg-orange-100 text-orange-600' : 'bg-slate-100 text-slate-400'}`}>
-                              {idx + 1}
-                            </span>
-                            <span className="text-xs font-black text-slate-700 uppercase tracking-tight">{rank.name}</span>
+                    <div className="flex-1 overflow-y-auto space-y-3 pr-2 min-h-[200px]">
+                      {analytics.section_rankings?.length > 0 ? (
+                        analytics.section_rankings.map((rank, idx) => (
+                          <div key={rank.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-100 hover:border-violet-200 transition-all">
+                            <div className="flex items-center gap-3">
+                              <span className={`w-6 h-6 flex items-center justify-center rounded-lg font-black text-[10px] ${idx === 0 ? 'bg-amber-100 text-amber-600' : idx === 1 ? 'bg-slate-200 text-slate-600' : idx === 2 ? 'bg-orange-100 text-orange-600' : 'bg-slate-100 text-slate-400'}`}>
+                                {idx + 1}
+                              </span>
+                              <span className="text-xs font-black text-slate-700 uppercase tracking-tight">{rank.name}</span>
+                            </div>
+                            <div className="text-right">
+                              <div className={`text-sm font-black ${rank.rate >= 90 ? 'text-emerald-600' : rank.rate >= 75 ? 'text-blue-600' : 'text-rose-600'}`}>{rank.rate}%</div>
+                              <div className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">{rank.total_records} records</div>
+                            </div>
                           </div>
-                          <div className="text-right">
-                            <div className={`text-sm font-black ${rank.rate >= 90 ? 'text-emerald-600' : rank.rate >= 75 ? 'text-blue-600' : 'text-rose-600'}`}>{rank.rate}%</div>
-                            <div className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">{rank.total_records} records</div>
-                          </div>
+                        ))
+                      ) : (
+                        <div className="flex flex-col items-center justify-center h-full text-slate-400 py-8">
+                          <svg className="w-8 h-8 mb-2 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>
+                          <p className="text-[10px] font-black uppercase tracking-widest">No ranking data</p>
                         </div>
-                      ))}
+                      )}
                     </div>
                   </div>
                 )}
