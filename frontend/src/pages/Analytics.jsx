@@ -147,7 +147,7 @@ const Analytics = () => {
                 <EmptyState message="Failed to load systems engine" submessage="Check server connection and permissions" />
               ) : (
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-                  <AttendanceSection data={data?.attendance?.daily_trends} />
+                  <AttendanceTrendsSection data={data?.attendance?.daily_trends} />
                   <SubjectPerformanceSection data={data?.grades?.subject_stats} />
                   <TrafficIntelligenceSection data={data?.dashboard?.charts?.active_users_trends} />
                 </div>

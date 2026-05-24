@@ -2182,10 +2182,13 @@ def admin_dashboard_stats(request):
         for day in last_30_days_list:
             day_records = Attendance.objects.filter(date=day)
             day_total = day_records.count()
-            day_present = day_records.filter(status__in=['present', 'late']).count()
+            day_present = day_records.filter(status='present').count()
+            day_late    = day_records.filter(status='late').count()
             attendance_trends.append({
                 'date': day.strftime('%Y-%m-%d'),
-                'rate': round((day_present / day_total * 100), 1) if day_total > 0 else 0
+                'present': day_present,
+                'late': day_late,
+                'rate': round(((day_present + day_late) / day_total * 100), 1) if day_total > 0 else 0
             })
 
         # Grades - only count final grades
