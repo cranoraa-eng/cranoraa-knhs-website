@@ -737,64 +737,63 @@ const Teachers = () => {
         open={showAddModal}
         onClose={() => setShowAddModal(false)}
         title="Add New Teacher"
-        subtitle="Create a new teacher account and profile"
+        subtitle="Staff Registration"
         size="md"
-        className="bg-gradient-to-br from-purple-600 to-indigo-700"
       >
         <form onSubmit={handleAddTeacher} className="space-y-5">
           <div className="grid grid-cols-3 gap-4">
             <div className="space-y-1.5">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Title</label>
+              <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Title</label>
               <select required value={newTeacher.title} onChange={(e) => setNewTeacher({ ...newTeacher, title: e.target.value })}
-                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 focus:bg-white text-sm font-bold transition-all">
-                <option value="">Title</option>
-                {TITLES.map(t => <option key={t} value={t}>{t}</option>)}
+                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-violet-500 focus:bg-white text-xs font-black uppercase tracking-widest transition-all appearance-none cursor-pointer">
+                <option value="">TITLE</option>
+                {TITLES.map(t => <option key={t} value={t}>{t.toUpperCase()}</option>)}
               </select>
             </div>
             <div className="space-y-1.5">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">First Name</label>
+              <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">First Name</label>
               <input type="text" required value={newTeacher.first_name} onChange={(e) => setNewTeacher({ ...newTeacher, first_name: e.target.value })}
-                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 focus:bg-white text-sm font-bold transition-all" />
+                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-violet-500 focus:bg-white text-xs font-black uppercase tracking-widest transition-all" />
             </div>
             <div className="space-y-1.5">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Last Name</label>
+              <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Last Name</label>
               <input type="text" required value={newTeacher.last_name} onChange={(e) => setNewTeacher({ ...newTeacher, last_name: e.target.value })}
-                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 focus:bg-white text-sm font-bold transition-all" />
+                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-violet-500 focus:bg-white text-xs font-black uppercase tracking-widest transition-all" />
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Email Address</label>
+              <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Email Address</label>
               <input type="email" required value={newTeacher.email} onChange={(e) => setNewTeacher({ ...newTeacher, email: e.target.value })}
-                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 focus:bg-white text-sm font-bold transition-all" />
+                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-violet-500 focus:bg-white text-xs font-black uppercase tracking-widest transition-all" />
             </div>
             <div className="space-y-1.5">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Sex</label>
+              <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Sex</label>
               <select required value={newTeacher.sex} onChange={(e) => setNewTeacher({ ...newTeacher, sex: e.target.value })}
-                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 focus:bg-white text-sm font-bold transition-all">
-                <option value="">Select Sex</option>
-                <option value="male">Male</option>
-                <option value="female">Female</option>
+                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-violet-500 focus:bg-white text-xs font-black uppercase tracking-widest transition-all appearance-none cursor-pointer">
+                <option value="">SELECT SEX</option>
+                <option value="male">MALE</option>
+                <option value="female">FEMALE</option>
               </select>
             </div>
           </div>
           <div className="flex justify-end gap-3 pt-6 border-t border-slate-100">
             <button type="button" onClick={() => setShowAddModal(false)}
-              className="px-6 py-2.5 text-slate-500 hover:text-slate-700 font-bold text-sm transition-colors">
-              Cancel
+              className="px-6 py-3 text-slate-500 hover:text-slate-700 font-black text-[10px] uppercase tracking-widest transition-colors">
+              CANCEL
             </button>
             <button type="submit"
               disabled={isSubmitting}
-              className="px-8 py-2.5 bg-violet-600 text-white rounded-xl hover:bg-violet-700 font-bold text-sm shadow-lg shadow-violet-200 transition-all active:scale-95 disabled:opacity-50 flex items-center gap-2">
+              className="px-8 py-3 bg-violet-600 text-white rounded-2xl hover:bg-violet-700 font-black text-[10px] uppercase tracking-widest shadow-xl shadow-violet-100 transition-all active:scale-95 disabled:opacity-50 flex items-center gap-2">
               {isSubmitting ? (
                 <>
                   <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                   </svg>
-                  Creating...
+                  CREATING...
                 </>
-              ) : 'Create Teacher Account'}
+              ) : 'CREATE TEACHER ACCOUNT'}
             </button>
           </div>
         </form>
@@ -805,56 +804,55 @@ const Teachers = () => {
         open={showEditModal}
         onClose={() => setShowEditModal(false)}
         title="Edit Teacher Details"
-        subtitle={editingTeacher ? `Update profile information for ${editingTeacher.first_name}` : ''}
+        subtitle="Update Personnel Profile"
         size="md"
-        className="bg-gradient-to-br from-blue-600 to-indigo-700"
       >
         {editingTeacher && (
           <form onSubmit={handleEditTeacher} className="space-y-5">
             <div className="grid grid-cols-3 gap-4">
               <div className="space-y-1.5">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Title</label>
+                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Title</label>
                 <select required value={editingTeacher.profile?.title || ''} onChange={(e) => setEditingTeacher({ ...editingTeacher, profile: { ...editingTeacher.profile, title: e.target.value } })}
-                  className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white text-sm font-bold transition-all">
-                  <option value="">Title</option>
-                  {TITLES.map(t => <option key={t} value={t}>{t}</option>)}
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white text-xs font-black uppercase tracking-widest transition-all appearance-none cursor-pointer">
+                  <option value="">TITLE</option>
+                  {TITLES.map(t => <option key={t} value={t}>{t.toUpperCase()}</option>)}
                 </select>
               </div>
               <div className="space-y-1.5">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">First Name</label>
+                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">First Name</label>
                 <input type="text" required value={editingTeacher.first_name} onChange={(e) => setEditingTeacher({ ...editingTeacher, first_name: e.target.value })}
-                  className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white text-sm font-bold transition-all" />
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white text-xs font-black uppercase tracking-widest transition-all" />
               </div>
               <div className="space-y-1.5">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Last Name</label>
+                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Last Name</label>
                 <input type="text" required value={editingTeacher.last_name} onChange={(e) => setEditingTeacher({ ...editingTeacher, last_name: e.target.value })}
-                  className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white text-sm font-bold transition-all" />
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white text-xs font-black uppercase tracking-widest transition-all" />
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Email Address</label>
+                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Email Address</label>
                 <input type="email" required value={editingTeacher.email} onChange={(e) => setEditingTeacher({ ...editingTeacher, email: e.target.value })}
-                  className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white text-sm font-bold transition-all" />
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white text-xs font-black uppercase tracking-widest transition-all" />
               </div>
               <div className="space-y-1.5">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Sex</label>
+                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Sex</label>
                 <select required value={editingTeacher.profile?.sex || ''} onChange={(e) => setEditingTeacher({ ...editingTeacher, profile: { ...editingTeacher.profile, sex: e.target.value } })}
-                  className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white text-sm font-bold transition-all">
-                  <option value="">Select Sex</option>
-                  <option value="male">Male</option>
-                  <option value="female">Female</option>
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white text-xs font-black uppercase tracking-widest transition-all appearance-none cursor-pointer">
+                  <option value="">SELECT SEX</option>
+                  <option value="male">MALE</option>
+                  <option value="female">FEMALE</option>
                 </select>
               </div>
             </div>
             <div className="flex justify-end gap-3 pt-6 border-t border-slate-100">
               <button type="button" onClick={() => setShowEditModal(false)}
-                className="px-6 py-2.5 text-slate-500 hover:text-slate-700 font-bold text-sm transition-colors">
-                Cancel
+                className="px-6 py-3 text-slate-500 hover:text-slate-700 font-black text-[10px] uppercase tracking-widest transition-colors">
+                CANCEL
               </button>
               <button type="submit"
-                className="px-8 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 font-bold text-sm shadow-lg shadow-blue-200 transition-all active:scale-95">
-                Save Changes
+                className="px-8 py-3 bg-blue-600 text-white rounded-2xl hover:bg-blue-700 font-black text-[10px] uppercase tracking-widest shadow-xl shadow-blue-100 transition-all active:scale-95">
+                SAVE CHANGES
               </button>
             </div>
           </form>

@@ -255,28 +255,34 @@ const Subjects = () => {
         open={showModal}
         onClose={() => setShowModal(false)}
         title={editing ? 'Update Subject' : 'New Subject'}
-        subtitle="Subject Curriculum Details"
+        subtitle="Curriculum Configuration"
         size="md"
       >
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="col-span-2 md:col-span-1">
-              <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Subject Code <span className="text-rose-500">*</span></label>
-              <input
-                type="text"
-                value={form.code}
-                onChange={e => setForm({ ...form, code: e.target.value.toUpperCase() })}
-                placeholder="E.G. MATH7"
-                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-[11px] md:text-sm font-black uppercase tracking-widest transition-all"
-                required
-              />
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="grid grid-cols-2 gap-5">
+            <div className="col-span-2 md:col-span-1 space-y-1.5">
+              <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">
+                Subject Code <span className="text-rose-500">*</span>
+              </label>
+              <div className="relative group">
+                <input
+                  type="text"
+                  value={form.code}
+                  onChange={e => setForm({ ...form, code: e.target.value.toUpperCase() })}
+                  placeholder="E.G. MATH7"
+                  className="w-full pl-4 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:bg-white text-xs font-black uppercase tracking-widest transition-all"
+                  required
+                />
+              </div>
             </div>
-            <div className="col-span-2 md:col-span-1">
-              <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Grade Level <span className="text-rose-500">*</span></label>
+            <div className="col-span-2 md:col-span-1 space-y-1.5">
+              <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">
+                Grade Level <span className="text-rose-500">*</span>
+              </label>
               <select
                 value={form.grade_level}
                 onChange={e => setForm({ ...form, grade_level: e.target.value })}
-                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-[11px] md:text-sm font-black uppercase tracking-widest transition-all cursor-pointer"
+                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:bg-white text-xs font-black uppercase tracking-widest transition-all cursor-pointer appearance-none"
                 required
               >
                 <option value="">SELECT LEVEL</option>
@@ -284,39 +290,53 @@ const Subjects = () => {
               </select>
             </div>
           </div>
-          <div>
-            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Subject Name <span className="text-rose-500">*</span></label>
+
+          <div className="space-y-1.5">
+            <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">
+              Subject Name <span className="text-rose-500">*</span>
+            </label>
             <input
               type="text"
               value={form.name}
               onChange={e => setForm({ ...form, name: e.target.value })}
               placeholder="E.G. MATHEMATICS"
-              className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-[11px] md:text-sm font-black uppercase tracking-widest transition-all"
+              className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:bg-white text-xs font-black uppercase tracking-widest transition-all"
               required
             />
           </div>
-          <div>
-            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Description <span className="text-slate-300 font-normal tracking-normal">(OPTIONAL)</span></label>
+
+          <div className="space-y-1.5">
+            <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">
+              Description <span className="text-slate-400 font-bold lowercase tracking-normal">(Optional)</span>
+            </label>
             <textarea
-              rows={2}
+              rows={3}
               value={form.description}
               onChange={e => setForm({ ...form, description: e.target.value })}
               placeholder="BRIEF SUBJECT OVERVIEW..."
-              className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-[11px] md:text-sm font-bold transition-all resize-none"
+              className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:bg-white text-xs font-bold transition-all resize-none leading-relaxed"
             />
           </div>
+
           <div className="flex gap-3 pt-2">
             <button
               type="submit"
               disabled={saving}
-              className="flex-1 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white text-[11px] md:text-sm font-black py-3 rounded-xl transition-all hover:scale-[1.02] active:scale-[0.98] uppercase tracking-widest shadow-lg shadow-indigo-200"
+              className="flex-[2] bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white text-[11px] font-black py-3.5 rounded-2xl transition-all hover:scale-[1.02] active:scale-[0.98] uppercase tracking-[0.2em] shadow-xl shadow-indigo-200 flex items-center justify-center gap-2"
             >
+              {saving ? (
+                <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+              ) : (
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                </svg>
+              )}
               {saving ? 'PROCESSING...' : editing ? 'SAVE CHANGES' : 'CREATE SUBJECT'}
             </button>
             <button
               type="button"
               onClick={() => setShowModal(false)}
-              className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-600 text-[11px] md:text-sm font-black py-3 rounded-xl transition-all uppercase tracking-widest"
+              className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-500 text-[11px] font-black py-3.5 rounded-2xl transition-all uppercase tracking-[0.2em] active:scale-95"
             >
               CANCEL
             </button>

@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿import { useState, useEffect, useMemo } from 'react';
+﻿﻿﻿﻿﻿﻿﻿import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../utils/api';
 import { getUser } from '../utils/auth';
@@ -927,47 +927,52 @@ const StudentManagement = () => {
       <Modal
         open={showProfileModal}
         onClose={() => setShowProfileModal(false)}
-        title={selectedStudent ? `${selectedStudent.last_name}, ${selectedStudent.first_name}` : ''}
-        subtitle={selectedStudent?.email}
+        title={selectedStudent ? `${selectedStudent.last_name}, ${selectedStudent.first_name}`.toUpperCase() : ''}
+        subtitle="Learner Profile Registry"
         size="lg"
-        className="bg-gradient-to-br from-indigo-600 to-purple-700"
       >
         {selectedStudent && (
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1">
-              <div className="md:col-span-2 mb-4">
-                <h3 className="text-xs font-black text-indigo-500 uppercase tracking-[0.2em] pb-2 border-b-2 border-indigo-50">Personal Information</h3>
+          <div className="space-y-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-6">
+              <div className="md:col-span-2">
+                <h3 className="text-[10px] font-black text-indigo-500 uppercase tracking-[0.3em] pb-2 border-b-2 border-slate-100 flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full" />
+                  Personal Information
+                </h3>
               </div>
               <ProfileField label="LRN (Learner Reference Number)" value={selectedStudent.profile?.registration_number} />
-              <ProfileField label="Grade Level" value={selectedStudent.profile?.grade_level} />
-              <ProfileField label="Sex" value={selectedStudent.profile?.sex} />
+              <ProfileField label="Grade Level" value={selectedStudent.profile?.grade_level?.toUpperCase()} />
+              <ProfileField label="Sex" value={selectedStudent.profile?.sex?.toUpperCase()} />
               <ProfileField label="Date of Birth" value={selectedStudent.profile?.date_of_birth} />
-              <ProfileField label="Nationality" value={selectedStudent.profile?.nationality} />
-              <ProfileField label="Province / State" value={selectedStudent.profile?.state} />
+              <ProfileField label="Nationality" value={selectedStudent.profile?.nationality?.toUpperCase()} />
+              <ProfileField label="Province / State" value={selectedStudent.profile?.state?.toUpperCase()} />
               
-              <div className="md:col-span-2 mt-6 mb-4">
-                <h3 className="text-xs font-black text-indigo-500 uppercase tracking-[0.2em] pb-2 border-b-2 border-indigo-50">Family & Contact</h3>
+              <div className="md:col-span-2 mt-4">
+                <h3 className="text-[10px] font-black text-indigo-500 uppercase tracking-[0.3em] pb-2 border-b-2 border-slate-100 flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full" />
+                  Family & Contact
+                </h3>
               </div>
-              <ProfileField label="Father's Name" value={selectedStudent.profile?.father_name} />
-              <ProfileField label="Mother's Name" value={selectedStudent.profile?.mother_name} />
+              <ProfileField label="Father's Name" value={selectedStudent.profile?.father_name?.toUpperCase()} />
+              <ProfileField label="Mother's Name" value={selectedStudent.profile?.mother_name?.toUpperCase()} />
               <ProfileField label="Phone Number" value={selectedStudent.profile?.phone_number} />
-              <ProfileField label="Home Address" value={selectedStudent.profile?.address} />
+              <ProfileField label="Home Address" value={selectedStudent.profile?.address?.toUpperCase()} />
               <div className="md:col-span-2">
-                <ProfileField label="Emergency Contact Info" value={selectedStudent.profile?.contact_information} />
+                <ProfileField label="Emergency Contact Info" value={selectedStudent.profile?.contact_information?.toUpperCase()} />
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-3 pt-6 border-t border-slate-100">
+            <div className="flex items-center justify-end gap-3 pt-8 border-t border-slate-100">
               <button
                 onClick={() => handleStartChat(selectedStudent.id)}
-                className="px-6 py-2.5 bg-violet-600 text-white rounded-xl font-bold text-sm shadow-lg shadow-violet-200 hover:bg-violet-700 transition-all active:scale-95 flex items-center gap-2"
+                className="px-8 py-3 bg-violet-600 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-violet-100 hover:bg-violet-700 transition-all active:scale-95 flex items-center gap-2"
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" /></svg>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" /></svg>
                 Message Student
               </button>
               <button
                 onClick={() => setShowProfileModal(false)}
-                className="px-6 py-2.5 bg-slate-100 text-slate-700 rounded-xl font-bold text-sm hover:bg-slate-200 transition-all active:scale-95"
+                className="px-8 py-3 bg-slate-100 text-slate-500 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-200 transition-all active:scale-95"
               >
                 Close Profile
               </button>
@@ -980,93 +985,97 @@ const StudentManagement = () => {
       <Modal
         open={showAddModal}
         onClose={() => setShowAddModal(false)}
-        title="Create Student Account"
+        title="Register New Student"
+        subtitle="Individual Account Creation"
         size="md"
-        className="bg-violet-600"
       >
-        <form onSubmit={handleAddStudent} className="space-y-4">
-          <div>
-            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Student ID / LRN</label>
-            <input 
-              type="text" 
-              value={newStudent.username}
-              onChange={e => setNewStudent({...newStudent, username: e.target.value})}
-              className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:ring-2 focus:ring-violet-500 outline-none"
-              required
-            />
+        <form onSubmit={handleAddStudent} className="space-y-5">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Student ID / LRN</label>
+              <input 
+                type="text" 
+                value={newStudent.username}
+                onChange={e => setNewStudent({...newStudent, username: e.target.value})}
+                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-black uppercase tracking-widest focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 outline-none transition-all"
+                required
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Grade Level</label>
+              <select 
+                value={newStudent.grade_level}
+                onChange={e => setNewStudent({...newStudent, grade_level: e.target.value})}
+                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-black uppercase tracking-widest focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 outline-none transition-all appearance-none cursor-pointer"
+                required
+              >
+                <option value="">SELECT LEVEL</option>
+                {GRADE_ORDER.map(g => <option key={g} value={g}>{g.toUpperCase()}</option>)}
+              </select>
+            </div>
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">First Name</label>
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">First Name</label>
               <input 
                 type="text" 
                 value={newStudent.first_name}
                 onChange={e => setNewStudent({...newStudent, first_name: e.target.value})}
-                className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:ring-2 focus:ring-violet-500 outline-none"
+                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-black uppercase tracking-widest focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 outline-none transition-all"
                 required
               />
             </div>
-            <div>
-              <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Last Name</label>
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Last Name</label>
               <input 
                 type="text" 
                 value={newStudent.last_name}
                 onChange={e => setNewStudent({...newStudent, last_name: e.target.value})}
-                className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:ring-2 focus:ring-violet-500 outline-none"
+                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-black uppercase tracking-widest focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 outline-none transition-all"
                 required
               />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Grade Level</label>
-              <select 
-                value={newStudent.grade_level}
-                onChange={e => setNewStudent({...newStudent, grade_level: e.target.value})}
-                className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:ring-2 focus:ring-violet-500 outline-none"
-                required
-              >
-                <option value="">Select Grade</option>
-                {GRADE_ORDER.map(g => <option key={g} value={g}>{g}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Sex</label>
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Sex</label>
               <select 
                 value={newStudent.sex}
                 onChange={e => setNewStudent({...newStudent, sex: e.target.value})}
-                className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:ring-2 focus:ring-violet-500 outline-none"
+                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-black uppercase tracking-widest focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 outline-none transition-all appearance-none cursor-pointer"
                 required
               >
-                <option value="">Select Sex</option>
-                <option value="male">Male</option>
-                <option value="female">Female</option>
+                <option value="">SELECT SEX</option>
+                <option value="male">MALE</option>
+                <option value="female">FEMALE</option>
               </select>
             </div>
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Temporary Password</label>
+              <input 
+                type="text" 
+                value={newStudent.password}
+                onChange={e => setNewStudent({...newStudent, password: e.target.value})}
+                placeholder="AUTO-GENERATE"
+                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-black uppercase tracking-widest focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 outline-none transition-all placeholder:text-slate-300"
+              />
+            </div>
           </div>
-          <div>
-            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Email (Optional)</label>
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Email (Optional)</label>
             <input 
               type="email" 
               value={newStudent.email}
               onChange={e => setNewStudent({...newStudent, email: e.target.value})}
-              className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:ring-2 focus:ring-violet-500 outline-none"
+              className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-black uppercase tracking-widest focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 outline-none transition-all"
             />
           </div>
-          <div>
-            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Temporary Password</label>
-            <input 
-              type="text" 
-              value={newStudent.password}
-              onChange={e => setNewStudent({...newStudent, password: e.target.value})}
-              placeholder="Leave blank for auto-gen"
-              className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:ring-2 focus:ring-violet-500 outline-none"
-            />
-          </div>
-          <div className="flex justify-end gap-3 pt-4">
-            <button type="button" onClick={() => setShowAddModal(false)} className="px-6 py-2 bg-slate-100 text-slate-600 rounded-xl font-bold text-sm">Cancel</button>
-            <button type="submit" disabled={isSubmitting} className="px-6 py-2 bg-violet-600 text-white rounded-xl font-bold text-sm shadow-lg shadow-violet-200">
-              {isSubmitting ? 'Creating...' : 'Create Account'}
+          <div className="flex gap-3 pt-6 border-t border-slate-100">
+            <button type="submit" disabled={isSubmitting} className="flex-[2] bg-violet-600 text-white py-3.5 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-violet-700 disabled:opacity-50 transition-all shadow-xl shadow-violet-100 active:scale-95">
+              {isSubmitting ? 'PROCESSING...' : 'CREATE ACCOUNT'}
+            </button>
+            <button type="button" onClick={() => setShowAddModal(false)} className="flex-1 bg-slate-100 text-slate-500 py-3.5 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-200 transition-all active:scale-95">
+              CANCEL
             </button>
           </div>
         </form>

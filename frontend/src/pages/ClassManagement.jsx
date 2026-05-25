@@ -350,77 +350,86 @@ const ClassManagement = () => {
         open={showModal}
         onClose={() => setShowModal(false)}
         title={editingClass ? 'Edit Class' : 'Add New Class'}
-        subtitle={selectedYearName}
+        subtitle="Classroom Configuration"
         size="md"
       >
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-1.5">
-            <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider">
-              Grade Level <span className="text-red-500">*</span>
-            </label>
-            <select
-              value={formData.grade_level}
-              onChange={e => {
-                const level = e.target.value;
-                setFormData(prev => ({
-                  ...prev,
-                  grade_level: level,
-                  name: prev.name || level + ' - ',
-                }));
-              }}
-              className="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-white text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-400 transition-all"
-              required
-            >
-              <option value="">Select grade level</option>
-              {GRADE_LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
-            </select>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="grid grid-cols-2 gap-5">
+            <div className="col-span-2 md:col-span-1 space-y-1.5">
+              <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">
+                Grade Level <span className="text-rose-500">*</span>
+              </label>
+              <select
+                value={formData.grade_level}
+                onChange={e => {
+                  const level = e.target.value;
+                  setFormData(prev => ({
+                    ...prev,
+                    grade_level: level,
+                    name: prev.name || level + ' - ',
+                  }));
+                }}
+                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 focus:bg-white text-xs font-black uppercase tracking-widest transition-all cursor-pointer appearance-none"
+                required
+              >
+                <option value="">SELECT LEVEL</option>
+                {GRADE_LEVELS.map(l => <option key={l} value={l}>{l.toUpperCase()}</option>)}
+              </select>
+            </div>
+            <div className="col-span-2 md:col-span-1 space-y-1.5">
+              <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">
+                Class Name <span className="text-rose-500">*</span>
+              </label>
+              <input
+                type="text"
+                value={formData.name}
+                onChange={e => setFormData({ ...formData, name: e.target.value })}
+                placeholder="E.G. GRADE 7 - RIZAL"
+                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 focus:bg-white text-xs font-black uppercase tracking-widest transition-all"
+                required
+              />
+            </div>
           </div>
+
           <div className="space-y-1.5">
-            <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider">
-              Class Name <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              value={formData.name}
-              onChange={e => setFormData({ ...formData, name: e.target.value })}
-              placeholder="e.g. Grade 7 - Rizal"
-              className="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-white text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-400 transition-all"
-              required
-            />
-            <p className="text-xs text-slate-400">Include the grade level, e.g. "Grade 7 - Rizal"</p>
-          </div>
-          <div className="space-y-1.5">
-            <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider">
-              Adviser / Teacher <span className="text-slate-400 font-medium normal-case tracking-normal">(optional)</span>
+            <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">
+              Adviser / Teacher <span className="text-slate-400 font-bold lowercase tracking-normal">(Optional)</span>
             </label>
             <select
               value={formData.teacher || ''}
               onChange={e => setFormData({ ...formData, teacher: e.target.value })}
-              className="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-white text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-400 transition-all"
+              className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 focus:bg-white text-xs font-black uppercase tracking-widest transition-all cursor-pointer appearance-none"
             >
-              <option value="">— No Adviser —</option>
+              <option value="">— NO ADVISER ASSIGNED —</option>
               {teachers.map(t => {
                 const otherClass = classes.find(c => c.teacher === t.id && c.id !== editingClass?.id);
                 const isAssigned = !!otherClass;
                 return (
                   <option key={t.id} value={t.id} disabled={isAssigned}>
-                    {t.first_name && t.last_name ? `${t.first_name} ${t.last_name}` : t.username}
-                    {isAssigned ? ` (Adviser of ${otherClass.name})` : ` (${t.email})`}
+                    {t.first_name && t.last_name ? `${t.first_name} ${t.last_name}`.toUpperCase() : t.username.toUpperCase()}
+                    {isAssigned ? ` (ADVISER OF ${otherClass.name.toUpperCase()})` : ` (${t.email.toUpperCase()})`}
                   </option>
                 );
               })}
             </select>
-            <p className="text-xs text-slate-400">Leave empty to assign an adviser later.</p>
+            <p className="text-[10px] text-slate-400 font-medium ml-1">Assign a primary adviser for this section.</p>
           </div>
+
           <div className="flex gap-3 pt-2">
             <button type="submit" disabled={saving}
-              className="flex-1 inline-flex items-center justify-center gap-2 py-2.5 rounded-xl bg-violet-600 text-white text-sm font-bold hover:bg-violet-700 active:scale-95 transition-all disabled:opacity-50">
-              {saving && <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
-              {saving ? 'Saving…' : editingClass ? 'Update Class' : 'Create Class'}
+              className="flex-[2] bg-violet-600 hover:bg-violet-700 disabled:opacity-60 text-white text-[11px] font-black py-3.5 rounded-2xl transition-all hover:scale-[1.02] active:scale-[0.98] uppercase tracking-[0.2em] shadow-xl shadow-violet-200 flex items-center justify-center gap-2">
+              {saving ? (
+                <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+              ) : (
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                </svg>
+              )}
+              {saving ? 'PROCESSING...' : editingClass ? 'UPDATE CLASS' : 'CREATE CLASS'}
             </button>
             <button type="button" onClick={() => setShowModal(false)}
-              className="flex-1 py-2.5 rounded-xl bg-slate-100 text-slate-700 text-sm font-bold hover:bg-slate-200 active:scale-95 transition-all">
-              Cancel
+              className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-500 text-[11px] font-black py-3.5 rounded-2xl transition-all uppercase tracking-[0.2em] active:scale-95">
+              CANCEL
             </button>
           </div>
         </form>
