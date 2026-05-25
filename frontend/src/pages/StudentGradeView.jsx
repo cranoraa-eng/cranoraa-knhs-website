@@ -371,128 +371,19 @@ const StudentGradeView = () => {
         </div>
       ) : (
         <>
-          <div className="space-y-4 md:hidden">
-            {subjectEntries.map((s) => {
-              const scores = [1,2,3,4].map(q => s.quarters[q] ? parseFloat(s.quarters[q].raw_score) : null).filter(v => v !== null);
-              const avg = scores.length ? (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(2) : null;
-              const rounded = avg ? Math.round(parseFloat(avg)) : null;
-              const remarks = rounded != null ? remarksFor(rounded) : null;
-
-              return (
-                <div key={s.subject_code} className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-                  <div className="border-b border-slate-100 px-4 py-4">
-                    <div className="text-sm font-black leading-tight text-slate-800">{s.subject_name}</div>
-                    <div className="mt-1 text-[10px] font-bold uppercase tracking-[0.24em] text-slate-400">{s.subject_code}</div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-2 p-3">
-                    {[1,2,3,4].map(q => {
-                      const g = s.quarters[q];
-                      const score = g ? parseFloat(g.raw_score) : null;
-
-                      return (
-                        <div key={q} className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-3 text-center">
-                          <div className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Q{q}</div>
-                          <div className="mt-2 flex justify-center">
-                            {score != null ? (
-                              <span className={`inline-flex h-9 min-w-[3rem] items-center justify-center rounded-lg border-2 px-3 text-sm font-black shadow-sm ${scoreColor(score)}`}>
-                                {score}
-                              </span>
-                            ) : (
-                              <span className="inline-flex h-9 min-w-[3rem] items-center justify-center text-sm font-bold text-slate-300">—</span>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-
-                  <div className="grid grid-cols-1 gap-2 border-t border-slate-100 bg-slate-50/70 p-3 sm:grid-cols-3">
-                    <div className="rounded-xl border border-slate-200 bg-white px-3 py-3 text-center">
-                      <div className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Average</div>
-                      <div className="mt-2 flex justify-center">
-                        {avg ? (
-                          <span className={`inline-flex min-h-9 items-center justify-center rounded-lg border-2 px-3 py-1 text-sm font-black shadow-sm ${scoreColor(parseFloat(avg))}`}>
-                            {avg}
-                          </span>
-                        ) : (
-                          <span className="inline-flex min-h-9 items-center justify-center text-sm font-bold text-slate-300">—</span>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="rounded-xl border border-slate-200 bg-white px-3 py-3 text-center">
-                      <div className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Rounded</div>
-                      <div className="mt-2 flex justify-center">
-                        {rounded != null ? (
-                          <span className={`inline-flex min-h-9 items-center justify-center rounded-lg border-2 px-3 py-1 text-sm font-black shadow-sm ${scoreColor(rounded)}`}>
-                            {rounded}
-                          </span>
-                        ) : (
-                          <span className="inline-flex min-h-9 items-center justify-center text-sm font-bold text-slate-300">—</span>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="rounded-xl border border-slate-200 bg-white px-3 py-3 text-center sm:text-left">
-                      <div className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Remarks</div>
-                      <div className="mt-2 flex justify-center sm:justify-start">
-                        {remarks ? (
-                          <span className={`inline-flex min-h-9 items-center justify-center rounded-full border px-3 py-1 text-[10px] font-black uppercase tracking-[0.14em] shadow-sm ${REMARKS_STYLE[remarks] || 'bg-slate-100 text-slate-600 border-slate-200'}`}>
-                            {remarks}
-                          </span>
-                        ) : (
-                          <span className="inline-flex min-h-9 items-center justify-center text-sm font-bold text-slate-300">—</span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-
-            {overallAvg && (
-              <div className="overflow-hidden rounded-2xl border border-slate-200 bg-gradient-to-r from-[#2D1B4D] to-[#4B2D7F] shadow-md">
-                <div className="px-4 py-4">
-                  <span className="text-[11px] font-black uppercase tracking-[0.22em] text-purple-200">General Average</span>
-                  <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
-                    <div className="rounded-xl border border-white/10 bg-white/10 px-4 py-3 backdrop-blur-md">
-                      <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-purple-200">Exact Average</div>
-                      <div className="mt-2 text-3xl font-black leading-none text-white">{overallAvg}</div>
-                    </div>
-                    <div className="rounded-xl border border-white/10 bg-white/10 px-4 py-3 backdrop-blur-md">
-                      <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-purple-200">Rounded Score</div>
-                      <div className="mt-2 text-3xl font-black leading-none text-white">{overallRounded}</div>
-                    </div>
-                    <div className="rounded-xl border border-white/10 bg-white/10 px-4 py-3 backdrop-blur-md">
-                      <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-purple-200">Remarks</div>
-                      <div className="mt-2">
-                        {overallRemarks && (
-                          <span className="inline-flex rounded-xl border border-white/10 bg-white/10 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.16em] text-white shadow-lg">
-                            {overallRemarks}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-
-          <div className="hidden overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-md md:block">
+          <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-md">
             <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-slate-300">
-              <table className="w-full min-w-[880px]">
+              <table className="w-full min-w-[640px] sm:min-w-[820px]">
                 <thead>
                   <tr className="bg-slate-50 border-b border-slate-200 text-slate-500">
-                    <th className="text-left px-6 py-4 text-[10px] font-bold uppercase tracking-widest min-w-[200px]">Subject Details</th>
-                    <th className="text-center px-4 py-4 text-[10px] font-bold uppercase tracking-widest">Q1</th>
-                    <th className="text-center px-4 py-4 text-[10px] font-bold uppercase tracking-widest">Q2</th>
-                    <th className="text-center px-4 py-4 text-[10px] font-bold uppercase tracking-widest">Q3</th>
-                    <th className="text-center px-4 py-4 text-[10px] font-bold uppercase tracking-widest">Q4</th>
-                    <th className="text-center px-4 py-4 text-[10px] font-bold uppercase tracking-widest">Average</th>
-                    <th className="text-center px-4 py-4 text-[10px] font-bold uppercase tracking-widest">Rounded</th>
-                    <th className="text-center px-4 py-4 text-[10px] font-bold uppercase tracking-widest min-w-[140px]">Remarks</th>
+                    <th className="min-w-[180px] px-4 py-4 text-left text-[10px] font-bold uppercase tracking-widest sm:min-w-[200px] sm:px-6">Subject Details</th>
+                    <th className="px-3 py-4 text-center text-[10px] font-bold uppercase tracking-widest sm:px-4">Q1</th>
+                    <th className="px-3 py-4 text-center text-[10px] font-bold uppercase tracking-widest sm:px-4">Q2</th>
+                    <th className="px-3 py-4 text-center text-[10px] font-bold uppercase tracking-widest sm:px-4">Q3</th>
+                    <th className="px-3 py-4 text-center text-[10px] font-bold uppercase tracking-widest sm:px-4">Q4</th>
+                    <th className="hidden px-4 py-4 text-center text-[10px] font-bold uppercase tracking-widest sm:table-cell">Average</th>
+                    <th className="px-3 py-4 text-center text-[10px] font-bold uppercase tracking-widest sm:px-4">Rounded</th>
+                    <th className="hidden min-w-[140px] px-4 py-4 text-center text-[10px] font-bold uppercase tracking-widest sm:table-cell">Remarks</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -503,7 +394,7 @@ const StudentGradeView = () => {
                     const remarks = rounded != null ? remarksFor(rounded) : null;
                     return (
                       <tr key={s.subject_code} className={`hover:bg-violet-50/50 transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'}`}>
-                        <td className="px-6 py-4">
+                        <td className="px-4 py-4 sm:px-6">
                           <div className="font-bold text-slate-800 text-sm leading-tight">{s.subject_name}</div>
                           <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">{s.subject_code}</div>
                         </td>
@@ -511,7 +402,7 @@ const StudentGradeView = () => {
                           const g = s.quarters[q];
                           const score = g ? parseFloat(g.raw_score) : null;
                           return (
-                            <td key={q} className="px-4 py-4 text-center">
+                            <td key={q} className="px-3 py-4 text-center sm:px-4">
                               {score != null ? (
                                 <span className={`inline-flex items-center justify-center w-11 h-8 rounded-lg border-2 text-[13px] font-black shadow-sm ${scoreColor(score)}`}>
                                   {score}
@@ -522,21 +413,21 @@ const StudentGradeView = () => {
                             </td>
                           );
                         })}
-                        <td className="px-4 py-4 text-center">
+                        <td className="hidden px-4 py-4 text-center sm:table-cell">
                           {avg ? (
                             <span className={`inline-flex items-center justify-center px-3 py-1 rounded-lg border-2 text-[13px] font-black shadow-sm ${scoreColor(parseFloat(avg))}`}>
                               {avg}
                             </span>
                           ) : <span className="text-slate-300 text-xs font-bold">—</span>}
                         </td>
-                        <td className="px-4 py-4 text-center">
+                        <td className="px-3 py-4 text-center sm:px-4">
                           {rounded ? (
                             <span className={`inline-flex items-center justify-center px-3 py-1 rounded-lg border-2 text-[13px] font-black shadow-sm ${scoreColor(rounded)}`}>
                               {rounded}
                             </span>
                           ) : <span className="text-slate-300 text-xs font-bold">—</span>}
                         </td>
-                        <td className="px-4 py-4 text-center">
+                        <td className="hidden px-4 py-4 text-center sm:table-cell">
                           {remarks ? (
                             <span className={`text-[10px] font-black px-3 py-1 rounded-full border shadow-sm uppercase tracking-wider ${REMARKS_STYLE[remarks] || 'bg-slate-100 text-slate-600 border-slate-200'}`}>
                               {remarks}
@@ -552,10 +443,10 @@ const StudentGradeView = () => {
 
             {/* Overall average footer */}
             {overallAvg && (
-              <div className="px-6 py-5 bg-gradient-to-r from-[#2D1B4D] to-[#4B2D7F] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex flex-col justify-between gap-4 bg-gradient-to-r from-[#2D1B4D] to-[#4B2D7F] px-4 py-5 sm:flex-row sm:items-center sm:px-6">
                 <span className="text-white font-black text-sm uppercase tracking-widest">General Average</span>
                 <div className="flex flex-wrap items-center gap-4 sm:gap-6">
-                  <div className="flex flex-col sm:items-end">
+                  <div className="hidden flex-col sm:flex sm:items-end">
                     <div className="text-2xl md:text-3xl font-black text-white leading-none">{overallAvg}</div>
                     <div className="text-[10px] text-purple-300 font-bold uppercase tracking-tighter mt-1">Exact Average</div>
                   </div>
@@ -565,7 +456,7 @@ const StudentGradeView = () => {
                     <div className="text-[10px] text-purple-300 font-bold uppercase tracking-tighter mt-1">Rounded Score</div>
                   </div>
                   {overallRemarks && (
-                    <span className="px-4 py-1.5 bg-white/10 backdrop-blur-md rounded-xl text-[11px] font-black text-white uppercase tracking-widest border border-white/10 shadow-lg">
+                    <span className="hidden rounded-xl border border-white/10 bg-white/10 px-4 py-1.5 text-[11px] font-black uppercase tracking-widest text-white shadow-lg backdrop-blur-md sm:inline-flex">
                       {overallRemarks}
                     </span>
                   )}
