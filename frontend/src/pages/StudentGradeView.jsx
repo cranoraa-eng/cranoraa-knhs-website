@@ -294,7 +294,7 @@ const StudentGradeView = () => {
     <div className="animate-in fade-in duration-700 p-2.5 sm:p-4 md:p-6">
 
       {/* Header */}
-      <div className="mb-4 flex flex-col gap-3 sm:mb-6 md:flex-row md:items-center md:justify-between md:gap-6">
+      <div className="mb-4 flex flex-row items-start justify-between gap-3 sm:mb-6 sm:items-center md:gap-6">
         <div className="flex items-start gap-2.5 sm:items-center sm:gap-3">
           {isViewingOther && (
             <button onClick={() => navigate(-1)}
@@ -305,10 +305,10 @@ const StudentGradeView = () => {
             </button>
           )}
           <div className="min-w-0 text-left">
-            <h1 className="text-lg font-black tracking-tight text-slate-800 sm:text-2xl md:text-3xl">
+            <h1 className="truncate text-lg font-black tracking-tight text-slate-800 sm:text-2xl md:text-3xl">
               {isViewingOther ? `${displayName}'s Grades` : 'My Grades'}
             </h1>
-            <p className="mt-0.5 max-w-2xl text-[11px] font-medium leading-snug text-slate-500 sm:mt-1 sm:text-sm md:text-base">
+            <p className="mt-0.5 line-clamp-1 text-[11px] font-medium leading-snug text-slate-500 sm:mt-1 sm:text-sm md:text-base">
               {isViewingOther
                 ? `Final grades for ${displayName}`
                 : 'Your final grades by subject and quarter'}
@@ -316,12 +316,12 @@ const StudentGradeView = () => {
           </div>
         </div>
         {grades.length > 0 && (
-          <button onClick={downloadPDF}
-            className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-[#2D1B4D] px-3.5 py-2 text-[13px] font-bold text-white shadow-md transition-all hover:bg-[#3D2B5D] active:scale-95 sm:w-auto sm:gap-2 sm:rounded-xl sm:px-6 sm:py-2.5 sm:text-sm">
-            <svg className="h-4.5 w-4.5 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <button onClick={downloadPDF} title="Download PDF"
+            className="flex shrink-0 items-center justify-center gap-1.5 rounded-lg bg-[#2D1B4D] p-2 text-[13px] font-bold text-white shadow-md transition-all hover:bg-[#3D2B5D] active:scale-95 sm:w-auto sm:gap-2 sm:rounded-xl sm:px-6 sm:py-2.5 sm:text-sm">
+            <svg className="h-5 w-5 sm:h-5 sm:w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
-            Download PDF
+            <span className="hidden sm:inline">Download PDF</span>
           </button>
         )}
       </div>
