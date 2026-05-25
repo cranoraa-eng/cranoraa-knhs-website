@@ -504,8 +504,14 @@ const TeacherView = () => {
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex flex-col">
-                          <span className="text-xs font-bold text-slate-700">{c.subject_name || 'General'}</span>
-                          <span className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">{c.subject_code || 'GEN-101'}</span>
+                          <span className={`text-xs font-bold ${c.subject_name ? 'text-slate-700' : 'text-slate-400 italic'}`}>
+                            {c.subject_name || 'N/A'}
+                          </span>
+                          {c.subject_code && (
+                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">
+                              {c.subject_code}
+                            </span>
+                          )}
                         </div>
                       </td>
                       <td className="px-6 py-4">
