@@ -87,9 +87,13 @@ class UserSerializer(serializers.ModelSerializer):
         # Update profile fields
         if profile_data:
             profile, created = Profile.objects.get_or_create(user=instance)
+            # Handle M2M linked_students separately
+            linked_students = profile_data.pop('linked_students', None)
             for attr, value in profile_data.items():
                 setattr(profile, attr, value)
             profile.save()
+            if linked_students is not None:
+                profile.linked_students.set(linked_students)
 
         return instance
 

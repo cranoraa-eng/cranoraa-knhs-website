@@ -79,6 +79,7 @@ const Messages = lazy(() => import('./pages/Messages'));
 const ScheduleManagement = lazy(() => import('./pages/ScheduleManagement'));
 const MySchedule = lazy(() => import('./pages/MySchedule'));
 const ParentDashboard = lazy(() => import('./pages/ParentDashboard'));
+const ParentManagement = lazy(() => import('./pages/ParentManagement'));
 
 // Fallback while lazy pages load
 const PageLoader = () => (
@@ -203,6 +204,7 @@ function App() {
                 <Route path="schedule-management" element={<ScheduleManagement />} />
                 <Route path="schedule" element={<MySchedule />} />
                 <Route path="parent-dashboard" element={<ParentDashboard />} />
+                <Route path="parent-management" element={<ParentManagement />} />
               </Route>
             </Routes>
           </Suspense>
