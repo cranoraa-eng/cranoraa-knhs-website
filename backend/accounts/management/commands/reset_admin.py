@@ -12,11 +12,11 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         username = options['username']
-        password = options['password'] or os.environ.get('DJANGO_ADMIN_PASSWORD')
-        email = options['email']
+        password = options['password'] or os.environ.get('DJANGO_SUPERUSER_PASSWORD')
+        email = options['email'] or os.environ.get('DJANGO_SUPERUSER_EMAIL') or 'admin@kiwalan-nhs.edu.ph'
 
         if not password:
-            self.stdout.write(self.style.ERROR('Error: You must provide a password via --password or set DJANGO_ADMIN_PASSWORD env var.'))
+            self.stdout.write(self.style.ERROR('Error: You must provide a password via --password or set DJANGO_SUPERUSER_PASSWORD env var.'))
             return
 
         user = User.objects.filter(username=username).first()
