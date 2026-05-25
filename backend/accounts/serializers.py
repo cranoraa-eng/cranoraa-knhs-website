@@ -103,11 +103,14 @@ class ClassroomSerializer(serializers.ModelSerializer):
     student_count = serializers.SerializerMethodField()
     average_gpa = serializers.SerializerMethodField()
     academic_year_name = serializers.CharField(source='academic_year.name', read_only=True)
+    subject_name = serializers.SerializerMethodField()
+    subject_code = serializers.SerializerMethodField()
 
     class Meta:
         model = Classroom
         fields = ['id', 'name', 'grade_level', 'teacher', 'teacher_name', 'student_count',
-                  'average_gpa', 'academic_year', 'academic_year_name', 'created_at', 'updated_at']
+                  'average_gpa', 'academic_year', 'academic_year_name', 'subject_name', 'subject_code',
+                  'created_at', 'updated_at']
         read_only_fields = ['id', 'created_at', 'updated_at']
         extra_kwargs = {
             # teacher is optional — classrooms can exist without an assigned adviser
@@ -119,6 +122,24 @@ class ClassroomSerializer(serializers.ModelSerializer):
     def get_teacher_name(self, obj): return full_name(obj.teacher) if obj.teacher else 'No Adviser'
     def get_student_count(self, obj): return obj.enrollments.count()
     def get_average_gpa(self, obj): return obj.get_average_gpa()
+
+    def get_subject_name(self, obj):
+        request = self.context.get('request')
+        if request and request.user.is_authenticated and request.user.role == 'teacher':
+            # Find the subject assigned to THIS teacher in THIS classroom
+            assignment = obj.classroom_subjects.filter(teacher=request.user).select_related('subject').first()
+            if assignment:
+                return assignment.subject.name
+        return None
+
+    def get_subject_code(self, obj):
+        request = self.context.get('request')
+        if request and request.user.is_authenticated and request.user.role == 'teacher':
+            # Find the subject assigned to THIS teacher in THIS classroom
+            assignment = obj.classroom_subjects.filter(teacher=request.user).select_related('subject').first()
+            if assignment:
+                return assignment.subject.code
+        return None
 
     def validate_teacher(self, value):
         if value:
