@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from .models import User, Profile, WebsiteContent
+from .models import User, Profile, WebsiteContent, Room, TimeSlot, Schedule
 
 
 class ProfileInline(admin.StackedInline):
@@ -50,3 +50,25 @@ class WebsiteContentAdmin(admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
         obj.updated_by = request.user
         super().save_model(request, obj, form, change)
+
+
+@admin.register(Room)
+class RoomAdmin(admin.ModelAdmin):
+    list_display = ('name', 'building', 'room_type', 'capacity', 'is_active')
+    list_filter = ('room_type', 'is_active')
+    search_fields = ('name', 'building')
+
+
+@admin.register(TimeSlot)
+class TimeSlotAdmin(admin.ModelAdmin):
+    list_display = ('day', 'start_time', 'end_time', 'label')
+    list_filter = ('day',)
+    ordering = ('day', 'start_time')
+
+
+@admin.register(Schedule)
+class ScheduleAdmin(admin.ModelAdmin):
+    list_display = ('classroom', 'subject', 'teacher', 'room', 'time_slot', 'academic_year', 'is_active')
+    list_filter = ('is_active', 'academic_year', 'time_slot__day')
+    search_fields = ('classroom__name', 'subject__name', 'teacher__first_name', 'teacher__last_name')
+    raw_id_fields = ('classroom', 'subject', 'teacher', 'room', 'time_slot', 'academic_year', 'semester')

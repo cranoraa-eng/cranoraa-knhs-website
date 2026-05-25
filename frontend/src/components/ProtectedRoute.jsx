@@ -35,6 +35,14 @@ const ProtectedRoute = ({ children }) => {
     return <Navigate to="/force-password-change" replace />;
   }
 
+  // Parents have their own dedicated dashboard
+  if (
+    user.role === 'parent' &&
+    window.location.pathname === '/dashboard'
+  ) {
+    return <Navigate to="/parent-dashboard" replace />;
+  }
+
   return children;
 };
 

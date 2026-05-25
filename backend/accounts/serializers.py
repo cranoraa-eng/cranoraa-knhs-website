@@ -6,7 +6,8 @@ from .models import (Profile, Classroom, StudentClassEnrollment, Announcement,
     Subject, ClassroomSubject, ScratchCard, Fee,
     Notification, EnrollmentApplication, WebsiteContent, Grade, GradeReport,
     ChatRoom, ChatMessage, MessageReaction, Friendship, SystemSetting,
-    Assignment, Submission, ReportedMessage)
+    Assignment, Submission, ReportedMessage,
+    Room, TimeSlot, Schedule)
 
 User = get_user_model()
 
@@ -113,9 +114,7 @@ class ClassroomSerializer(serializers.ModelSerializer):
                   'created_at', 'updated_at']
         read_only_fields = ['id', 'created_at', 'updated_at']
         extra_kwargs = {
-            # teacher is optional — classrooms can exist without an assigned adviser
             'teacher': {'required': False, 'allow_null': True},
-            # academic_year is optional
             'academic_year': {'required': False, 'allow_null': True},
         }
 
@@ -126,7 +125,6 @@ class ClassroomSerializer(serializers.ModelSerializer):
     def get_subject_name(self, obj):
         request = self.context.get('request')
         if request and request.user.is_authenticated and request.user.role == 'teacher':
-            # Find the subject assigned to THIS teacher in THIS classroom
             assignment = obj.classroom_subjects.filter(teacher=request.user).select_related('subject').first()
             if assignment:
                 return assignment.subject.name
@@ -135,7 +133,6 @@ class ClassroomSerializer(serializers.ModelSerializer):
     def get_subject_code(self, obj):
         request = self.context.get('request')
         if request and request.user.is_authenticated and request.user.role == 'teacher':
-            # Find the subject assigned to THIS teacher in THIS classroom
             assignment = obj.classroom_subjects.filter(teacher=request.user).select_related('subject').first()
             if assignment:
                 return assignment.subject.code
@@ -143,7 +140,6 @@ class ClassroomSerializer(serializers.ModelSerializer):
 
     def validate_teacher(self, value):
         if value:
-            # Check if this teacher is already assigned to a DIFFERENT classroom
             existing = Classroom.objects.filter(teacher=value)
             if self.instance:
                 existing = existing.exclude(id=self.instance.id)
@@ -618,3 +614,143 @@ class FriendshipSerializer(serializers.ModelSerializer):
             if obj.to_user == request.user:
                 return obj.is_pinned_by_to
         return False
+
+
+# ─── Schedule / Timetable Serializers ────────────────────────────────────────
+
+class RoomSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Room
+        fields = ['id', 'name', 'building', 'capacity', 'room_type', 'is_active', 'created_at']
+
+
+class TimeSlotSerializer(serializers.ModelSerializer):
+    day_display = serializers.CharField(source='get_day_display', read_only=True)
+    start_time_display = serializers.SerializerMethodField()
+    end_time_display = serializers.SerializerMethodField()
+
+    class Meta:
+        model = TimeSlot
+        fields = ['id', 'day', 'day_display', 'start_time', 'end_time',
+                  'start_time_display', 'end_time_display', 'label']
+
+    def get_start_time_display(self, obj):
+        return obj.start_time.strftime('%I:%M %p')
+
+    def get_end_time_display(self, obj):
+        return obj.end_time.strftime('%I:%M %p')
+
+
+class ScheduleSerializer(serializers.ModelSerializer):
+    classroom_name = serializers.CharField(source='classroom.name', read_only=True)
+    subject_name = serializers.CharField(source='subject.name', read_only=True)
+    subject_code = serializers.CharField(source='subject.code', read_only=True)
+    teacher_name = serializers.SerializerMethodField()
+    teacher_email = serializers.CharField(source='teacher.email', read_only=True)
+    room_name = serializers.CharField(source='room.name', read_only=True)
+    room_building = serializers.CharField(source='room.building', read_only=True)
+    academic_year_name = serializers.CharField(source='academic_year.name', read_only=True)
+    semester_display = serializers.CharField(source='semester.get_semester_type_display', read_only=True)
+    time_slot_detail = TimeSlotSerializer(source='time_slot', read_only=True)
+
+    class Meta:
+        model = Schedule
+        fields = [
+            'id', 'classroom', 'classroom_name', 'subject', 'subject_name', 'subject_code',
+            'teacher', 'teacher_name', 'teacher_email', 'room', 'room_name', 'room_building',
+            'time_slot', 'time_slot_detail', 'academic_year', 'academic_year_name',
+            'semester', 'semester_display', 'is_active', 'notes', 'created_at', 'updated_at'
+        ]
+        read_only_fields = ['created_at', 'updated_at']
+
+    def get_teacher_name(self, obj):
+        return full_name(obj.teacher)
+
+    def validate(self, data):
+        """Check for scheduling conflicts."""
+        time_slot = data.get('time_slot', getattr(self.instance, 'time_slot', None))
+        academic_year = data.get('academic_year', getattr(self.instance, 'academic_year', None))
+        teacher = data.get('teacher', getattr(self.instance, 'teacher', None))
+        classroom = data.get('classroom', getattr(self.instance, 'classroom', None))
+        room = data.get('room', getattr(self.instance, 'room', None))
+
+        if not all([time_slot, academic_year, teacher, classroom]):
+            return data
+
+        exclude_id = self.instance.id if self.instance else None
+        qs = Schedule.objects.filter(time_slot=time_slot, academic_year=academic_year)
+        if exclude_id:
+            qs = qs.exclude(id=exclude_id)
+
+        # Teacher conflict
+        if qs.filter(teacher=teacher).exists():
+            raise serializers.ValidationError(
+                f"Teacher already has a class scheduled at this time slot."
+            )
+        # Classroom conflict
+        if qs.filter(classroom=classroom).exists():
+            raise serializers.ValidationError(
+                f"This classroom section already has a subject scheduled at this time slot."
+            )
+        # Room conflict
+        if room and qs.filter(room=room).exists():
+            raise serializers.ValidationError(
+                f"Room '{room.name}' is already booked at this time slot."
+            )
+        return data
+
+
+# ─── Parent Dashboard Serializers ────────────────────────────────────────────
+
+class ParentChildSummarySerializer(serializers.ModelSerializer):
+    """Lightweight summary of a linked student for the parent dashboard."""
+    full_name = serializers.SerializerMethodField()
+    profile_picture = serializers.CharField(source='profile.profile_picture', read_only=True)
+    grade_level = serializers.CharField(source='profile.grade_level', read_only=True)
+    classroom_name = serializers.SerializerMethodField()
+    adviser_name = serializers.SerializerMethodField()
+    attendance_rate = serializers.SerializerMethodField()
+    general_average = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = [
+            'id', 'username', 'first_name', 'last_name', 'full_name',
+            'profile_picture', 'grade_level', 'classroom_name',
+            'adviser_name', 'attendance_rate', 'general_average',
+        ]
+
+    def get_full_name(self, obj):
+        return full_name(obj)
+
+    def get_classroom_name(self, obj):
+        enrollment = StudentClassEnrollment.objects.filter(student=obj).select_related('classroom').first()
+        return enrollment.classroom.name if enrollment else None
+
+    def get_adviser_name(self, obj):
+        enrollment = StudentClassEnrollment.objects.filter(student=obj).select_related('classroom__teacher').first()
+        if enrollment and enrollment.classroom.teacher:
+            return full_name(enrollment.classroom.teacher)
+        return None
+
+    def get_attendance_rate(self, obj):
+        from django.utils import timezone
+        import datetime
+        today = timezone.now().date()
+        month_start = today.replace(day=1)
+        records = Attendance.objects.filter(student=obj, date__gte=month_start, date__lte=today)
+        # Exclude weekends
+        records = [r for r in records if r.date.weekday() < 5]
+        if not records:
+            return None
+        present = sum(1 for r in records if r.status in ['present', 'late'])
+        return round(present / len(records) * 100, 1)
+
+    def get_general_average(self, obj):
+        grades = Grade.objects.filter(
+            student=obj, grade_type='final_grade', transmuted_score__isnull=False
+        )
+        if not grades.exists():
+            return None
+        total = sum(float(g.transmuted_score) for g in grades)
+        return round(total / grades.count(), 2)

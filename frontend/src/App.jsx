@@ -76,6 +76,9 @@ const Moderation = lazy(() => import('./pages/Moderation'));
 const Analytics = lazy(() => import('./pages/Analytics'));
 const Notifications = lazy(() => import('./pages/Notifications'));
 const Messages = lazy(() => import('./pages/Messages'));
+const ScheduleManagement = lazy(() => import('./pages/ScheduleManagement'));
+const MySchedule = lazy(() => import('./pages/MySchedule'));
+const ParentDashboard = lazy(() => import('./pages/ParentDashboard'));
 
 // Fallback while lazy pages load
 const PageLoader = () => (
@@ -197,6 +200,9 @@ function App() {
                 <Route path="moderation" element={<Moderation />} />
                 <Route path="analytics" element={<Analytics />} />
                 <Route path="notifications" element={<Notifications />} />
+                <Route path="schedule-management" element={<ScheduleManagement />} />
+                <Route path="schedule" element={<MySchedule />} />
+                <Route path="parent-dashboard" element={<ParentDashboard />} />
               </Route>
             </Routes>
           </Suspense>

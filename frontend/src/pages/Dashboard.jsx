@@ -122,6 +122,78 @@ const LatestMessagesWidget = ({ messages, onOpenChat }) => {
   );
 };
 
+// ─── TODAY'S SCHEDULE WIDGET ─────────────────────────────────────────────────
+
+const TodayScheduleWidget = ({ role }) => {
+  const navigate = useNavigate();
+  const [schedule, setSchedule] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    api.get('/schedules/today/')
+      .then(r => setSchedule(r.data || []))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  const todayLabel = new Date().toLocaleDateString('en-US', { weekday: 'long' });
+
+  return (
+    <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <h3 className="text-md font-bold text-slate-900">Today's Schedule</h3>
+          <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest">{todayLabel}</p>
+        </div>
+        <button
+          onClick={() => navigate('/schedule')}
+          className="text-[10px] font-black text-violet-600 uppercase tracking-widest hover:underline"
+        >
+          Full Schedule
+        </button>
+      </div>
+
+      {loading ? (
+        <div className="space-y-2">
+          {[1,2,3].map(i => (
+            <div key={i} className="h-12 rounded-xl bg-slate-100 animate-pulse" />
+          ))}
+        </div>
+      ) : schedule.length === 0 ? (
+        <div className="py-8 text-center">
+          <p className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em]">No classes today</p>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {schedule.map(s => (
+            <div key={s.id} className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 hover:bg-violet-50 transition-colors group">
+              <div className="text-center min-w-[52px]">
+                <p className="text-[10px] font-black text-violet-600 leading-none">
+                  {s.time_slot_detail?.start_time_display}
+                </p>
+                <p className="text-[9px] text-slate-400 mt-0.5">
+                  {s.time_slot_detail?.end_time_display}
+                </p>
+              </div>
+              <div className="w-px h-8 bg-slate-200 group-hover:bg-violet-200 transition-colors" />
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-bold text-slate-800 truncate">{s.subject_name}</p>
+                <p className="text-[10px] text-slate-500 truncate">
+                  {role === 'teacher' ? s.classroom_name : s.teacher_name}
+                  {s.room_name ? ` · 📍 ${s.room_name}` : ''}
+                </p>
+              </div>
+              <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest flex-shrink-0">
+                {s.subject_code}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
 // ─── ADMIN DASHBOARD ──────────────────────────────────────────────────────────
 
 const AdminView = () => {
@@ -504,14 +576,8 @@ const TeacherView = () => {
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex flex-col">
-                          <span className={`text-xs font-bold ${c.subject_name ? 'text-slate-700' : 'text-slate-400 italic'}`}>
-                            {c.subject_name || 'N/A'}
-                          </span>
-                          {c.subject_code && (
-                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">
-                              {c.subject_code}
-                            </span>
-                          )}
+                          <span className="text-xs font-bold text-slate-700">{c.subject_name || 'General'}</span>
+                          <span className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">{c.subject_code || 'GEN-101'}</span>
                         </div>
                       </td>
                       <td className="px-6 py-4">
@@ -607,13 +673,12 @@ const TeacherView = () => {
             messages={data?.latest_messages} 
             onOpenChat={() => navigate('/messages')} 
           />
+          <TodayScheduleWidget role="teacher" />
         </div>
       </div>
     </div>
   );
 };
-
-// ─── STUDENT DASHBOARD ────────────────────────────────────────────────────────
 
 const StudentView = () => {
   const navigate = useNavigate();
@@ -764,7 +829,7 @@ const StudentView = () => {
             <div className="grid grid-cols-2 gap-3 relative z-10">
               {[
                 { label: 'My Grades',    path: '/student-grades',    icon: '📊' },
-                { label: 'Calendar',     path: '/portal-calendar',   icon: '📅' },
+                { label: 'Schedule',     path: '/schedule',          icon: '🗓️' },
                 { label: 'Materials',    path: '/materials',         icon: '📚' },
                 { label: 'Messages',     path: '/messages',          icon: '💬' },
               ].map(a => (
@@ -809,6 +874,7 @@ const StudentView = () => {
             messages={stats?.latest_messages} 
             onOpenChat={() => navigate('/messages')} 
           />
+          <TodayScheduleWidget role="student" />
         </div>
       </div>
     </div>
@@ -822,7 +888,15 @@ const Dashboard = () => {
   
   if (user?.role === 'admin')   return <AdminView />;
   if (user?.role === 'teacher') return <TeacherView />;
+  if (user?.role === 'parent')  return <ParentRedirect />;
   return <StudentView />;
+};
+
+// Parents are redirected by ProtectedRoute, but handle the edge case here too
+const ParentRedirect = () => {
+  const navigate = useNavigate();
+  useEffect(() => { navigate('/parent-dashboard', { replace: true }); }, [navigate]);
+  return null;
 };
 
 export default Dashboard;

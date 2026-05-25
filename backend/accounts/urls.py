@@ -11,7 +11,9 @@ from .views import (
     student_calendar_view, notifications_polling_view, system_metrics_view, 
     maintenance_feed_view, maintenance_mode_view, force_sync_view, run_backup_view, clear_cache_view,
     system_settings_view, maintenance_status_view,
-    password_reset_request_view, password_reset_confirm_view
+    password_reset_request_view, password_reset_confirm_view,
+    RoomViewSet, TimeSlotViewSet, ScheduleViewSet,
+    parent_dashboard_view, parent_child_detail_view,
 )
 
 router = DefaultRouter()
@@ -36,6 +38,9 @@ router.register(r'chat/rooms', ChatRoomViewSet, basename='chat-room')
 router.register(r'chat/messages', ChatMessageViewSet, basename='chat-message')
 router.register(r'chat/reports', ReportedMessageViewSet, basename='chat-report')
 router.register(r'friendships', FriendshipViewSet, basename='friendship')
+router.register(r'rooms', RoomViewSet, basename='room')
+router.register(r'time-slots', TimeSlotViewSet, basename='time-slot')
+router.register(r'schedules', ScheduleViewSet, basename='schedule')
 
 urlpatterns = [
     path('login/', login_view, name='login'),
@@ -67,5 +72,7 @@ urlpatterns = [
     path('admin/clear-cache/', clear_cache_view, name='clear_cache'),
     path('system/settings/', system_settings_view, name='system_settings'),
     path('system/maintenance-status/', maintenance_status_view, name='maintenance_status'),
+    path('parent/dashboard/', parent_dashboard_view, name='parent_dashboard'),
+    path('parent/child/<int:student_id>/', parent_child_detail_view, name='parent_child_detail'),
     path('', include(router.urls)),
 ]

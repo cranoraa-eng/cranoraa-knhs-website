@@ -14,8 +14,10 @@ from .serializers import (UserSerializer, ClassroomSerializer, StudentClassEnrol
     SubjectSerializer, ClassroomSubjectSerializer, ScratchCardSerializer, FeeSerializer,
     NotificationSerializer, EnrollmentApplicationSerializer, WebsiteContentSerializer,
     GradeSerializer, GradeReportSerializer, ChatRoomSerializer, ChatMessageSerializer, FriendshipSerializer,
-    SystemSettingSerializer, AssignmentSerializer, SubmissionSerializer, ReportedMessageSerializer)
-from .models import User, Classroom, StudentClassEnrollment, Announcement, AnnouncementAttachment, Attendance, LearningMaterial, Subject, ClassroomSubject, ScratchCard, Fee, Notification, EnrollmentApplication, WebsiteContent, Grade, GradeReport, ChatRoom, ChatMessage, MessageReaction, Friendship, SystemSetting, Assignment, Submission, ReportedMessage
+    SystemSettingSerializer, AssignmentSerializer, SubmissionSerializer, ReportedMessageSerializer,
+    RoomSerializer, TimeSlotSerializer, ScheduleSerializer, ParentChildSummarySerializer,
+    full_name)
+from .models import User, Classroom, StudentClassEnrollment, Announcement, AnnouncementAttachment, Attendance, LearningMaterial, Subject, ClassroomSubject, ScratchCard, Fee, Notification, EnrollmentApplication, WebsiteContent, Grade, GradeReport, ChatRoom, ChatMessage, MessageReaction, Friendship, SystemSetting, Assignment, Submission, ReportedMessage, Room, TimeSlot, Schedule
 from .permissions import IsAdmin, IsTeacher, IsStudent, IsParent, IsAdminOrTeacher, IsAdminOrReadOnly
 # Moved portal imports inside functions to avoid circular dependencies
 import logging
@@ -4613,4 +4615,551 @@ def notifications_polling_view(request):
         'announcements': announcements_data,
         'timestamp': timezone.now().isoformat(),
         'realtime_status': 'polling_active'
+    })
+
+
+# ─── Schedule / Timetable ViewSets ───────────────────────────────────────────
+
+class RoomViewSet(viewsets.ModelViewSet):
+    """Manage physical rooms/locations. Admin-only writes; all authenticated users can read."""
+    serializer_class = RoomSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['name', 'building', 'room_type']
+
+    def get_queryset(self):
+        qs = Room.objects.all()
+        active_only = self.request.query_params.get('active_only')
+        if active_only and active_only.lower() == 'true':
+            qs = qs.filter(is_active=True)
+        return qs
+
+    def perform_create(self, serializer):
+        if self.request.user.role != 'admin':
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("Only admins can create rooms.")
+        serializer.save()
+
+    def perform_update(self, serializer):
+        if self.request.user.role != 'admin':
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("Only admins can update rooms.")
+        serializer.save()
+
+    def perform_destroy(self, instance):
+        if self.request.user.role != 'admin':
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("Only admins can delete rooms.")
+        instance.delete()
+
+
+class TimeSlotViewSet(viewsets.ModelViewSet):
+    """Manage reusable time slots. Admin-only writes."""
+    serializer_class = TimeSlotSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        qs = TimeSlot.objects.all()
+        day = self.request.query_params.get('day')
+        if day:
+            qs = qs.filter(day=day)
+        return qs
+
+    def perform_create(self, serializer):
+        if self.request.user.role != 'admin':
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("Only admins can create time slots.")
+        serializer.save()
+
+    def perform_update(self, serializer):
+        if self.request.user.role != 'admin':
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("Only admins can update time slots.")
+        serializer.save()
+
+    def perform_destroy(self, instance):
+        if self.request.user.role != 'admin':
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("Only admins can delete time slots.")
+        instance.delete()
+
+
+class ScheduleViewSet(viewsets.ModelViewSet):
+    """
+    Full schedule management.
+    - Admin: full CRUD
+    - Teacher: read own schedules
+    - Student/Parent: read schedules for their classroom(s)
+    """
+    serializer_class = ScheduleSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ['classroom__name', 'subject__name', 'teacher__first_name', 'teacher__last_name', 'room__name']
+    ordering_fields = ['time_slot__day', 'time_slot__start_time', 'classroom__name']
+    ordering = ['time_slot__day', 'time_slot__start_time']
+
+    def get_queryset(self):
+        user = self.request.user
+        qs = Schedule.objects.select_related(
+            'classroom', 'subject', 'teacher', 'room', 'time_slot', 'academic_year', 'semester'
+        ).filter(is_active=True)
+
+        # Filter params
+        classroom_id = self.request.query_params.get('classroom')
+        teacher_id = self.request.query_params.get('teacher')
+        academic_year_id = self.request.query_params.get('academic_year')
+        semester_id = self.request.query_params.get('semester')
+        day = self.request.query_params.get('day')
+        student_id = self.request.query_params.get('student')
+
+        if user.role == 'teacher':
+            qs = qs.filter(teacher=user)
+        elif user.role == 'student':
+            enrolled = StudentClassEnrollment.objects.filter(student=user).values_list('classroom_id', flat=True)
+            qs = qs.filter(classroom_id__in=enrolled)
+        elif user.role == 'parent':
+            profile = getattr(user, 'profile', None)
+            linked_ids = profile.linked_students.values_list('id', flat=True) if profile else []
+            # If a specific student is requested, verify they are linked
+            if student_id:
+                if int(student_id) not in list(linked_ids):
+                    return Schedule.objects.none()
+                enrolled = StudentClassEnrollment.objects.filter(student_id=student_id).values_list('classroom_id', flat=True)
+            else:
+                enrolled = StudentClassEnrollment.objects.filter(student_id__in=linked_ids).values_list('classroom_id', flat=True)
+            qs = qs.filter(classroom_id__in=enrolled)
+        # admin sees all
+
+        if classroom_id:
+            qs = qs.filter(classroom_id=classroom_id)
+        if teacher_id and user.role == 'admin':
+            qs = qs.filter(teacher_id=teacher_id)
+        if academic_year_id:
+            qs = qs.filter(academic_year_id=academic_year_id)
+        if semester_id:
+            qs = qs.filter(semester_id=semester_id)
+        if day:
+            qs = qs.filter(time_slot__day=day)
+
+        return qs
+
+    def perform_create(self, serializer):
+        if self.request.user.role != 'admin':
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("Only admins can create schedules.")
+        schedule = serializer.save()
+        from portal.views import log_audit_action
+        log_audit_action(
+            user=self.request.user,
+            action='create',
+            model_name='Schedule',
+            object_id=schedule.id,
+            object_repr=str(schedule),
+            description=f'Created schedule: {schedule}',
+            request=self.request
+        )
+        # Notify teacher of new schedule
+        Notification.objects.create(
+            recipient=schedule.teacher,
+            notification_type='system',
+            title='New Schedule Assigned',
+            message=(
+                f'You have been assigned to teach {schedule.subject.name} '
+                f'for {schedule.classroom.name} on '
+                f'{schedule.time_slot.get_day_display()} '
+                f'{schedule.time_slot.start_time.strftime("%I:%M %p")}.'
+            ),
+            link='/schedule'
+        )
+
+    def perform_update(self, serializer):
+        if self.request.user.role != 'admin':
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("Only admins can update schedules.")
+        schedule = serializer.save()
+        from portal.views import log_audit_action
+        log_audit_action(
+            user=self.request.user,
+            action='update',
+            model_name='Schedule',
+            object_id=schedule.id,
+            object_repr=str(schedule),
+            description=f'Updated schedule: {schedule}',
+            request=self.request
+        )
+
+    def perform_destroy(self, instance):
+        if self.request.user.role != 'admin':
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("Only admins can delete schedules.")
+        from portal.views import log_audit_action
+        log_audit_action(
+            user=self.request.user,
+            action='delete',
+            model_name='Schedule',
+            object_id=instance.id,
+            object_repr=str(instance),
+            description=f'Deleted schedule: {instance}',
+            request=self.request
+        )
+        instance.delete()
+
+    @action(detail=False, methods=['get'])
+    def my_schedule(self, request):
+        """Returns the current user's schedule (teacher or student view)."""
+        user = request.user
+        if user.role == 'teacher':
+            qs = Schedule.objects.filter(teacher=user, is_active=True).select_related(
+                'classroom', 'subject', 'room', 'time_slot', 'academic_year'
+            ).order_by('time_slot__day', 'time_slot__start_time')
+        elif user.role == 'student':
+            enrolled = StudentClassEnrollment.objects.filter(student=user).values_list('classroom_id', flat=True)
+            qs = Schedule.objects.filter(classroom_id__in=enrolled, is_active=True).select_related(
+                'classroom', 'subject', 'teacher', 'room', 'time_slot', 'academic_year'
+            ).order_by('time_slot__day', 'time_slot__start_time')
+        else:
+            return Response({'error': 'This endpoint is for teachers and students only.'}, status=403)
+
+        serializer = self.get_serializer(qs, many=True)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['get'])
+    def today(self, request):
+        """Returns today's schedule for the current user."""
+        import datetime
+        today_name = datetime.date.today().strftime('%A').lower()
+        user = request.user
+
+        if user.role == 'teacher':
+            qs = Schedule.objects.filter(
+                teacher=user, is_active=True, time_slot__day=today_name
+            ).select_related('classroom', 'subject', 'room', 'time_slot').order_by('time_slot__start_time')
+        elif user.role == 'student':
+            enrolled = StudentClassEnrollment.objects.filter(student=user).values_list('classroom_id', flat=True)
+            qs = Schedule.objects.filter(
+                classroom_id__in=enrolled, is_active=True, time_slot__day=today_name
+            ).select_related('classroom', 'subject', 'teacher', 'room', 'time_slot').order_by('time_slot__start_time')
+        elif user.role == 'parent':
+            profile = getattr(user, 'profile', None)
+            linked_ids = profile.linked_students.values_list('id', flat=True) if profile else []
+            student_id = request.query_params.get('student')
+            if student_id and int(student_id) in list(linked_ids):
+                enrolled = StudentClassEnrollment.objects.filter(student_id=student_id).values_list('classroom_id', flat=True)
+            else:
+                enrolled = StudentClassEnrollment.objects.filter(student_id__in=linked_ids).values_list('classroom_id', flat=True)
+            qs = Schedule.objects.filter(
+                classroom_id__in=enrolled, is_active=True, time_slot__day=today_name
+            ).select_related('classroom', 'subject', 'teacher', 'room', 'time_slot').order_by('time_slot__start_time')
+        else:
+            return Response({'error': 'Unauthorized'}, status=403)
+
+        serializer = self.get_serializer(qs, many=True)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['get'])
+    def conflict_check(self, request):
+        """Admin utility: check for scheduling conflicts in a given academic year."""
+        if request.user.role != 'admin':
+            return Response({'error': 'Unauthorized'}, status=403)
+
+        academic_year_id = request.query_params.get('academic_year')
+        if not academic_year_id:
+            return Response({'error': 'academic_year parameter required'}, status=400)
+
+        from django.db.models import Count
+        conflicts = []
+
+        # Teacher double-booking
+        teacher_conflicts = (
+            Schedule.objects.filter(academic_year_id=academic_year_id, is_active=True)
+            .values('teacher', 'time_slot')
+            .annotate(count=Count('id'))
+            .filter(count__gt=1)
+        )
+        for c in teacher_conflicts:
+            teacher = User.objects.filter(id=c['teacher']).first()
+            ts = TimeSlot.objects.filter(id=c['time_slot']).first()
+            conflicts.append({
+                'type': 'teacher_conflict',
+                'description': f"Teacher {full_name(teacher)} has {c['count']} classes at {ts}",
+                'teacher_id': c['teacher'],
+                'time_slot_id': c['time_slot'],
+            })
+
+        # Room double-booking
+        room_conflicts = (
+            Schedule.objects.filter(academic_year_id=academic_year_id, is_active=True, room__isnull=False)
+            .values('room', 'time_slot')
+            .annotate(count=Count('id'))
+            .filter(count__gt=1)
+        )
+        for c in room_conflicts:
+            room = Room.objects.filter(id=c['room']).first()
+            ts = TimeSlot.objects.filter(id=c['time_slot']).first()
+            conflicts.append({
+                'type': 'room_conflict',
+                'description': f"Room {room.name} has {c['count']} classes at {ts}",
+                'room_id': c['room'],
+                'time_slot_id': c['time_slot'],
+            })
+
+        return Response({'conflicts': conflicts, 'total': len(conflicts)})
+
+
+# ─── Parent Dashboard Views ───────────────────────────────────────────────────
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def parent_dashboard_view(request):
+    """
+    Returns a comprehensive dashboard summary for a parent user.
+    Includes all linked children with their attendance, grades, and upcoming schedules.
+    """
+    user = request.user
+    if user.role != 'parent':
+        return Response({'error': 'This endpoint is for parents only.'}, status=403)
+
+    profile = getattr(user, 'profile', None)
+    if not profile:
+        return Response({'error': 'Parent profile not found.'}, status=404)
+
+    linked_students = profile.linked_students.filter(role='student', is_approved=True)
+
+    children_data = []
+    for student in linked_students:
+        # Attendance this month
+        from django.utils import timezone as tz
+        import datetime
+        today = tz.now().date()
+        month_start = today.replace(day=1)
+        att_records = list(Attendance.objects.filter(
+            student=student, date__gte=month_start, date__lte=today
+        ))
+        weekday_records = [r for r in att_records if r.date.weekday() < 5]
+        present_count = sum(1 for r in weekday_records if r.status in ['present', 'late'])
+        att_rate = round(present_count / len(weekday_records) * 100, 1) if weekday_records else None
+
+        # Recent attendance (last 7 days)
+        week_ago = today - datetime.timedelta(days=7)
+        recent_att = Attendance.objects.filter(
+            student=student, date__gte=week_ago
+        ).order_by('-date')[:7]
+        recent_att_data = [
+            {'date': r.date.isoformat(), 'status': r.status}
+            for r in recent_att
+        ]
+
+        # Grades (final grades only)
+        grades = Grade.objects.filter(
+            student=student, grade_type='final_grade', transmuted_score__isnull=False
+        ).select_related('subject').order_by('-quarter', 'subject__name')
+        grades_data = [
+            {
+                'subject_name': g.subject.name,
+                'subject_code': g.subject.code,
+                'quarter': g.quarter,
+                'score': float(g.transmuted_score),
+                'remarks': g.computed_remarks,
+            }
+            for g in grades[:20]
+        ]
+        general_avg = None
+        if grades.exists():
+            general_avg = round(sum(float(g.transmuted_score) for g in grades) / grades.count(), 2)
+
+        # Classroom info
+        enrollment = StudentClassEnrollment.objects.filter(student=student).select_related(
+            'classroom__teacher'
+        ).first()
+        classroom_name = enrollment.classroom.name if enrollment else None
+        adviser_name = full_name(enrollment.classroom.teacher) if enrollment and enrollment.classroom.teacher else None
+
+        # Today's schedule
+        today_name = today.strftime('%A').lower()
+        if enrollment:
+            today_schedule = Schedule.objects.filter(
+                classroom=enrollment.classroom,
+                is_active=True,
+                time_slot__day=today_name
+            ).select_related('subject', 'teacher', 'room', 'time_slot').order_by('time_slot__start_time')
+            schedule_data = [
+                {
+                    'subject': s.subject.name,
+                    'teacher': full_name(s.teacher),
+                    'room': s.room.name if s.room else None,
+                    'start_time': s.time_slot.start_time.strftime('%I:%M %p'),
+                    'end_time': s.time_slot.end_time.strftime('%I:%M %p'),
+                }
+                for s in today_schedule
+            ]
+        else:
+            schedule_data = []
+
+        # Unread notifications for this student (parent can see system/grade/attendance)
+        recent_notifs = Notification.objects.filter(
+            recipient=student,
+            notification_type__in=['grade', 'attendance', 'announcement', 'system'],
+            is_read=False
+        ).order_by('-created_at')[:5]
+        notif_data = [
+            {
+                'title': n.title,
+                'message': n.message,
+                'type': n.notification_type,
+                'created_at': n.created_at.isoformat(),
+            }
+            for n in recent_notifs
+        ]
+
+        children_data.append({
+            'id': student.id,
+            'username': student.username,
+            'first_name': student.first_name,
+            'last_name': student.last_name,
+            'full_name': full_name(student),
+            'profile_picture': getattr(getattr(student, 'profile', None), 'profile_picture', None),
+            'grade_level': getattr(getattr(student, 'profile', None), 'grade_level', None),
+            'classroom_name': classroom_name,
+            'adviser_name': adviser_name,
+            'attendance_rate': att_rate,
+            'attendance_present': present_count,
+            'attendance_total': len(weekday_records),
+            'recent_attendance': recent_att_data,
+            'general_average': general_avg,
+            'grades': grades_data,
+            'today_schedule': schedule_data,
+            'recent_notifications': notif_data,
+        })
+
+    # School-wide announcements for parents
+    from django.db.models import Q as DQ
+    announcements = Announcement.objects.filter(
+        status='live'
+    ).filter(
+        DQ(target_audience__in=['all', 'parents'])
+    ).order_by('-is_pinned', '-created_at')[:5]
+    announcements_data = [
+        {
+            'id': a.id,
+            'title': a.title,
+            'content': a.content[:200],
+            'category': a.category,
+            'priority': a.priority,
+            'created_at': a.created_at.isoformat(),
+            'author_name': full_name(a.author),
+        }
+        for a in announcements
+    ]
+
+    return Response({
+        'children': children_data,
+        'total_children': len(children_data),
+        'announcements': announcements_data,
+    })
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def parent_child_detail_view(request, student_id):
+    """
+    Returns detailed data for a specific linked child.
+    Parents can only access their own linked students.
+    """
+    user = request.user
+    if user.role != 'parent':
+        return Response({'error': 'This endpoint is for parents only.'}, status=403)
+
+    profile = getattr(user, 'profile', None)
+    if not profile:
+        return Response({'error': 'Parent profile not found.'}, status=404)
+
+    # Security: verify the student is actually linked to this parent
+    linked_ids = list(profile.linked_students.values_list('id', flat=True))
+    if int(student_id) not in linked_ids:
+        return Response({'error': 'You do not have access to this student.'}, status=403)
+
+    try:
+        student = User.objects.get(id=student_id, role='student')
+    except User.DoesNotExist:
+        return Response({'error': 'Student not found.'}, status=404)
+
+    # Full attendance history
+    attendance = Attendance.objects.filter(student=student).order_by('-date')[:60]
+    att_data = [
+        {'date': r.date.isoformat(), 'status': r.status, 'remarks': r.remarks}
+        for r in attendance
+    ]
+
+    # All grades
+    grades = Grade.objects.filter(
+        student=student, grade_type='final_grade', transmuted_score__isnull=False
+    ).select_related('subject').order_by('-academic_year', '-quarter', 'subject__name')
+    grades_data = [
+        {
+            'subject_name': g.subject.name,
+            'subject_code': g.subject.code,
+            'quarter': g.quarter,
+            'academic_year': g.academic_year,
+            'score': float(g.transmuted_score),
+            'remarks': g.computed_remarks,
+        }
+        for g in grades
+    ]
+
+    # Full weekly schedule
+    enrollment = StudentClassEnrollment.objects.filter(student=student).select_related(
+        'classroom__teacher'
+    ).first()
+    weekly_schedule = []
+    if enrollment:
+        schedules = Schedule.objects.filter(
+            classroom=enrollment.classroom, is_active=True
+        ).select_related('subject', 'teacher', 'room', 'time_slot').order_by(
+            'time_slot__day', 'time_slot__start_time'
+        )
+        weekly_schedule = [
+            {
+                'day': s.time_slot.day,
+                'day_display': s.time_slot.get_day_display(),
+                'subject': s.subject.name,
+                'teacher': full_name(s.teacher),
+                'room': s.room.name if s.room else None,
+                'start_time': s.time_slot.start_time.strftime('%I:%M %p'),
+                'end_time': s.time_slot.end_time.strftime('%I:%M %p'),
+            }
+            for s in schedules
+        ]
+
+    # Assignments
+    if enrollment:
+        assignments = Assignment.objects.filter(
+            classroom=enrollment.classroom
+        ).order_by('-due_date')[:10]
+        assignments_data = [
+            {
+                'id': a.id,
+                'title': a.title,
+                'subject': a.subject.name,
+                'due_date': a.due_date.isoformat(),
+                'points': a.points,
+            }
+            for a in assignments
+        ]
+    else:
+        assignments_data = []
+
+    return Response({
+        'student': {
+            'id': student.id,
+            'full_name': full_name(student),
+            'username': student.username,
+            'profile_picture': getattr(getattr(student, 'profile', None), 'profile_picture', None),
+            'grade_level': getattr(getattr(student, 'profile', None), 'grade_level', None),
+            'classroom_name': enrollment.classroom.name if enrollment else None,
+            'adviser_name': full_name(enrollment.classroom.teacher) if enrollment and enrollment.classroom.teacher else None,
+        },
+        'attendance': att_data,
+        'grades': grades_data,
+        'weekly_schedule': weekly_schedule,
+        'assignments': assignments_data,
     })
