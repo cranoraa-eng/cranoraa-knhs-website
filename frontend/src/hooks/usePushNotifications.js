@@ -1,30 +1,15 @@
-/**
- * usePushNotifications
- *
- * Handles the full FCM lifecycle for a logged-in user:
- *   1. Registers the service worker
- *   2. Requests notification permission (once)
- *   3. Gets the FCM token
- *   4. Saves the token to the backend (POST /api/fcm-tokens/)
- *   5. Listens for foreground messages and shows an in-app toast
- *   6. Deletes the token from the backend on logout
- *
- * Usage: call this hook once inside Layout (or any always-mounted
- * authenticated component). It is safe to call multiple times — it
- * de-dupes via a ref.
- */
-
 import { useEffect, useRef, useCallback } from 'react';
 import toast from 'react-hot-toast';
 import api from '../utils/api';
-import { requestFCMToken, onForegroundMessage } from '../utils/firebase';
+import { requestFCMToken, onForegroundMessage, getMessagingInstance } from '../utils/firebase';
 
 const SW_PATH = '/firebase-messaging-sw.js';
+const STORAGE_KEY = 'fcm_token';
 
 export function usePushNotifications(user) {
-  const tokenRef        = useRef(null);   // current FCM token
-  const registeredRef   = useRef(false);  // prevent double-registration
-  const unsubscribeRef  = useRef(null);   // foreground message unsubscribe fn
+  const tokenRef       = useRef(null);
+  const registeredRef  = useRef(false);
+  const unsubscribeRef = useRef(null);
 
   // ── Register service worker ──────────────────────────────────────────────
   const registerSW = useCallback(async () => {
@@ -43,31 +28,27 @@ export function usePushNotifications(user) {
   const saveToken = useCallback(async (token) => {
     try {
       await api.post('/fcm-tokens/', { token, device_type: 'web' });
+      localStorage.setItem(STORAGE_KEY, token);
     } catch (err) {
-      // Non-fatal — push just won't work until next page load
       console.warn('FCM: failed to save token to backend:', err);
     }
   }, []);
 
   // ── Delete token from backend (called on logout) ─────────────────────────
   const deleteToken = useCallback(async () => {
-    if (!tokenRef.current) return;
+    const token = tokenRef.current || localStorage.getItem(STORAGE_KEY);
+    if (!token) return;
     try {
-      await api.delete('/fcm-tokens/delete/', { data: { token: tokenRef.current } });
-    } catch {
-      // Ignore — token will expire naturally
-    }
+      await api.delete('/fcm-tokens/delete/', { data: { token } });
+    } catch { /* ignore */ }
     tokenRef.current = null;
+    localStorage.removeItem(STORAGE_KEY);
   }, []);
 
   // ── Main setup effect ────────────────────────────────────────────────────
   useEffect(() => {
     if (!user || registeredRef.current) return;
-
-    // Only run in browsers that support the Notifications API
     if (!('Notification' in window)) return;
-
-    // Don't nag if already denied
     if (Notification.permission === 'denied') return;
 
     let cancelled = false;
@@ -83,32 +64,71 @@ export function usePushNotifications(user) {
 
       await saveToken(token);
 
-      // Listen for foreground messages and show an in-app toast
-      const unsub = await onForegroundMessage((payload) => {
+      // ── Token refresh listener ─────────────────────────────────────────
+      // Firebase can rotate the token; listen and re-save when it does
+      try {
+        const { onTokenRefresh } = await import('firebase/messaging');
+        const messaging = await getMessagingInstance();
+        if (messaging) {
+          const unsubRefresh = onTokenRefresh(messaging, async () => {
+            const newToken = await requestFCMToken();
+            if (newToken && newToken !== tokenRef.current) {
+              // Deactivate old token
+              if (tokenRef.current) {
+                try {
+                  await api.delete('/fcm-tokens/delete/', { data: { token: tokenRef.current } });
+                } catch { /* ignore */ }
+              }
+              tokenRef.current = newToken;
+              await saveToken(newToken);
+            }
+          });
+          // Store for cleanup
+          const prevUnsub = unsubscribeRef.current;
+          unsubscribeRef.current = () => {
+            if (prevUnsub) prevUnsub();
+            unsubRefresh();
+          };
+        }
+      } catch { /* onTokenRefresh not available in all SDK versions */ }
+
+      // ── Foreground message handler ─────────────────────────────────────
+      const unsubMsg = await onForegroundMessage((payload) => {
         const { title, body } = payload.notification || {};
         const notifTitle = title || 'KNHS Portal';
         const notifBody  = body  || payload.data?.message || '';
         const link       = payload.data?.link;
 
-        toast(
+        const toastId = toast(
           `🔔 ${notifTitle}${notifBody ? ` — ${notifBody}` : ''}`,
-          {
-            duration: 6000,
-            style: { maxWidth: '360px' },
-            onClick: link ? () => { window.location.href = link; } : undefined,
-          }
+          { duration: 6000, style: { maxWidth: '360px', cursor: link ? 'pointer' : 'default' } }
         );
+
+        // Navigate on click by listening for the toast dismiss
+        if (link) {
+          const handler = (e) => {
+            // react-hot-toast renders toasts in a portal; check if click is on this toast
+            const toastEl = document.querySelector(`[data-toast-id="${toastId}"]`);
+            if (toastEl && toastEl.contains(e.target)) {
+              window.location.href = link;
+            }
+          };
+          document.addEventListener('click', handler, { once: true });
+        }
       });
 
-      unsubscribeRef.current = unsub;
+      // Merge foreground unsub with any existing unsub
+      const existingUnsub = unsubscribeRef.current;
+      unsubscribeRef.current = () => {
+        if (existingUnsub) existingUnsub();
+        if (unsubMsg) unsubMsg();
+      };
     })();
 
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [user, registerSW, saveToken]);
 
-  // ── Cleanup on logout (user becomes null) ────────────────────────────────
+  // ── Cleanup on logout ────────────────────────────────────────────────────
   useEffect(() => {
     if (!user && registeredRef.current) {
       deleteToken();

@@ -4,60 +4,39 @@ import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
 import { useNotifications } from '../context/NotificationContext';
 import { useNavigate } from 'react-router-dom';
+import { getNotifConfig, formatNotifTime, TYPE_CONFIG } from '../utils/notificationConfig';
 
-// ── Type config ───────────────────────────────────────────────────────────────
-const TYPE_CONFIG = {
-  announcement: { label: 'Announcement', badge: 'ui-badge-violet',  dot: 'bg-violet-500' },
-  grade:        { label: 'Grade',        badge: 'ui-badge-green',   dot: 'bg-emerald-500' },
-  attendance:   { label: 'Attendance',   badge: 'ui-badge-amber',   dot: 'bg-amber-500' },
-  fee:          { label: 'Fee',          badge: 'ui-badge-red',     dot: 'bg-red-500' },
-  system:       { label: 'System',       badge: 'ui-badge-indigo',  dot: 'bg-indigo-500' },
-  message:      { label: 'Message',      badge: 'ui-badge-blue',    dot: 'bg-blue-500' },
+// ── Type config (local badge/dot colours, extends shared config) ──────────────
+const TYPE_BADGE = {
+  announcement: { label: 'Announcement', dot: 'bg-violet-500' },
+  grade:        { label: 'Grade',        dot: 'bg-emerald-500' },
+  attendance:   { label: 'Attendance',   dot: 'bg-amber-500' },
+  fee:          { label: 'Fee',          dot: 'bg-red-500' },
+  system:       { label: 'System',       dot: 'bg-indigo-500' },
+  message:      { label: 'Message',      dot: 'bg-blue-500' },
 };
+const getTypeConfig = (type) => TYPE_BADGE[type] || { label: type, dot: 'bg-slate-400' };
 
-const getTypeConfig = (type) => TYPE_CONFIG[type] || { label: type, badge: 'ui-badge-slate', dot: 'bg-slate-400' };
-
-// ── Notification row icon ─────────────────────────────────────────────────────
+// ── Notification row icon (uses shared config) ────────────────────────────────
 const NotifIcon = ({ type }) => {
-  const icons = {
-    grade:        'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z',
-    attendance:   'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 8l2 2 4-4',
-    announcement: 'M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z',
-    message:      'M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z',
-    fee:          'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z',
-    system:       'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z',
-  };
-  const bgMap = {
-    grade: 'bg-emerald-50 text-emerald-600', attendance: 'bg-amber-50 text-amber-600',
-    announcement: 'bg-violet-50 text-violet-600', message: 'bg-blue-50 text-blue-600',
-    fee: 'bg-red-50 text-red-600', system: 'bg-indigo-50 text-indigo-600',
-  };
-  const path = icons[type] || 'M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z';
-  const bg   = bgMap[type] || 'bg-slate-50 text-slate-500';
+  const cfg = getNotifConfig(type);
   return (
-    <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${bg}`}>
+    <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${cfg.bg} ${cfg.color}`}>
       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={path} />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={cfg.icon} />
       </svg>
     </div>
   );
 };
 
-// ── Format relative time ──────────────────────────────────────────────────────
-const formatTime = (dateStr) => {
-  const d = new Date(dateStr);
-  const diff = (Date.now() - d) / 1000;
-  if (diff < 60)    return 'Just now';
-  if (diff < 3600)  return `${Math.floor(diff / 60)}m ago`;
-  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-};
+// Use shared formatNotifTime — no local duplicate
+const formatTime = formatNotifTime;
 
 // ─────────────────────────────────────────────────────────────────────────────
 
 const Notifications = () => {
   const navigate = useNavigate();
-  const { setUnreadCount } = useNotifications();
+  const { setUnreadCount, unreadCount } = useNotifications();
 
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading]             = useState(true);
@@ -117,10 +96,23 @@ const Notifications = () => {
 
   const markRead = async (id) => {
     try {
-      await api.post(`/notifications/${id}/mark-read/`);
+      const r = await api.post(`/notifications/${id}/mark-read/`);
       setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n));
-      const r = await api.get('/notifications/unread-count/');
-      setUnreadCount(r.data.unread_count);
+      // Server returns unread_count — no extra round-trip needed
+      if (r.data.unread_count !== undefined) setUnreadCount(r.data.unread_count);
+    } catch { toast.error('Failed to mark as read'); }
+  };
+
+  const markSelectedRead = async () => {
+    if (!selectedIds.length) return;
+    try {
+      const r = await api.post('/notifications/mark-selected-read/', { ids: selectedIds });
+      setNotifications(prev =>
+        prev.map(n => selectedIds.includes(n.id) ? { ...n, is_read: true } : n)
+      );
+      setSelectedIds([]);
+      if (r.data.unread_count !== undefined) setUnreadCount(r.data.unread_count);
+      toast.success(`${selectedIds.length} marked as read`);
     } catch { toast.error('Failed to mark as read'); }
   };
 
@@ -146,11 +138,11 @@ const Notifications = () => {
 
   const handleDelete = async (id) => {
     try {
-      await api.delete(`/notifications/${id}/`);
+      const r = await api.delete(`/notifications/${id}/`);
       setNotifications(prev => prev.filter(n => n.id !== id));
+      setTotalCount(prev => Math.max(0, prev - 1));
       toast.success('Notification deleted');
-      const r = await api.get('/notifications/unread-count/');
-      setUnreadCount(r.data.unread_count);
+      if (r.data.unread_count !== undefined) setUnreadCount(r.data.unread_count);
     } catch { toast.error('Failed to delete notification'); }
   };
 
@@ -166,16 +158,22 @@ const Notifications = () => {
       customClass: { popup: 'rounded-2xl' },
     });
     if (!result.isConfirmed) return;
+    setProcessing(true);
     try {
-      await Promise.all(selectedIds.map(id => api.delete(`/notifications/${id}/`)));
+      // Single bulk-delete request instead of N parallel requests
+      const r = await api.post('/notifications/bulk-delete/', { ids: selectedIds });
       setNotifications(prev => prev.filter(n => !selectedIds.includes(n.id)));
+      setTotalCount(prev => Math.max(0, prev - selectedIds.length));
       setSelectedIds([]);
+      if (r.data.unread_count !== undefined) setUnreadCount(r.data.unread_count);
       toast.success('Deleted successfully');
-    } catch { toast.error('Failed to delete some notifications'); }
+    } catch { toast.error('Failed to delete notifications'); }
+    finally { setProcessing(false); }
   };
 
   const unreadInView = notifications.filter(n => !n.is_read).length;
   const allSelected  = notifications.length > 0 && selectedIds.length === notifications.length;
+  const hasUnread    = unreadCount > 0; // use global count, not just current page
 
   return (
     <div className="space-y-5 animate-fade-in">
@@ -186,16 +184,16 @@ const Notifications = () => {
           <h1 className="text-2xl font-black text-slate-900 tracking-tight">Notifications</h1>
           <p className="text-sm text-slate-500 mt-0.5">
             {totalCount > 0 ? `${totalCount} total` : 'Your activity feed'}
-            {unreadInView > 0 && (
+            {unreadCount > 0 && (
               <span className="ml-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-violet-100 text-violet-700 text-[10px] font-black uppercase tracking-wider">
-                {unreadInView} unread
+                {unreadCount} unread
               </span>
             )}
           </p>
         </div>
         <button
           onClick={markAllRead}
-          disabled={processing || loading || unreadInView === 0}
+          disabled={processing || loading || !hasUnread}
           className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-slate-200 text-sm font-bold text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-sm"
         >
           <svg className="w-4 h-4 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -253,20 +251,33 @@ const Notifications = () => {
 
         {/* Bulk actions bar */}
         {selectedIds.length > 0 && (
-          <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between animate-fade-in">
+          <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between gap-3 animate-fade-in flex-wrap">
             <span className="text-xs font-bold text-slate-600">
               {selectedIds.length} selected
             </span>
-            <button
-              onClick={handleBulkDelete}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-50 text-red-600 text-xs font-bold hover:bg-red-100 transition-all"
-            >
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-              </svg>
-              Delete selected
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={markSelectedRead}
+                disabled={processing}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-violet-50 text-violet-600 text-xs font-bold hover:bg-violet-100 transition-all disabled:opacity-40"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                </svg>
+                Mark read
+              </button>
+              <button
+                onClick={handleBulkDelete}
+                disabled={processing}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-50 text-red-600 text-xs font-bold hover:bg-red-100 transition-all disabled:opacity-40"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+                Delete selected
+              </button>
+            </div>
           </div>
         )}
       </div>

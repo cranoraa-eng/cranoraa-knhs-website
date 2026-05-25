@@ -2,7 +2,7 @@ import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { getStoredUser } from '../utils/auth';
 import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import api from '../utils/api';
 import Swal from 'sweetalert2';
 import toast from 'react-hot-toast';
@@ -11,6 +11,9 @@ import { getMuted, toggleMute, playSound } from '../utils/sounds';
 import PullToRefresh from './PullToRefresh';
 import { useScrollLock } from '../hooks/useScrollLock';
 import { usePushNotifications } from '../hooks/usePushNotifications';
+import { getNotifConfig, formatNotifTime } from '../utils/notificationConfig';
+
+const PUSH_DISMISSED_KEY = 'push_prompt_dismissed';
 
 const NavItem = ({ to, label, isActive, icon, onClick }) => (
   <Link 
@@ -80,20 +83,32 @@ const Layout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showPushPrompt, setShowPushPrompt] = useState(false);
   const { isOnline } = useNetworkStatus();
+  const notifDropdownRef = useRef(null);
 
-  // FCM Web Push — registers SW, gets token, saves to backend
+  // FCM Web Push
   usePushNotifications(user);
 
-  // Show a subtle permission prompt if the user hasn't decided yet
+  // Show push prompt once if permission not yet decided and not previously dismissed
   useEffect(() => {
     if (!user) return;
     if (!('Notification' in window)) return;
-    if (Notification.permission === 'default') {
-      // Delay slightly so it doesn't appear on every page load immediately
-      const t = setTimeout(() => setShowPushPrompt(true), 4000);
-      return () => clearTimeout(t);
-    }
+    if (Notification.permission !== 'default') return;
+    if (localStorage.getItem(PUSH_DISMISSED_KEY)) return;
+    const t = setTimeout(() => setShowPushPrompt(true), 4000);
+    return () => clearTimeout(t);
   }, [user]);
+
+  // Close notification dropdown on outside click
+  useEffect(() => {
+    if (!showNotifications) return;
+    const handler = (e) => {
+      if (notifDropdownRef.current && !notifDropdownRef.current.contains(e.target)) {
+        setShowNotifications(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [showNotifications]);
 
   const isActive = (path) => location.pathname === path;
 
@@ -143,33 +158,18 @@ const Layout = () => {
   const markAsRead = async (id) => {
     playSound('click');
     try {
-      await api.post(`/notifications/${id}/mark-read/`);
-      setUnreadCount(prev => Math.max(0, prev - 1));
+      const r = await api.post(`/notifications/${id}/mark-read/`);
+      // Use the count returned by the server — no extra round-trip needed
+      if (r.data.unread_count !== undefined) setUnreadCount(r.data.unread_count);
+      else setUnreadCount(prev => Math.max(0, prev - 1));
       setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n));
     } catch (err) {
       console.error(err);
     }
   };
 
-  const getNotifConfig = (type) => {
-    switch (type) {
-      case 'grade': return { icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10', bg: 'bg-green-100', color: 'text-green-600' };
-      case 'attendance': return { icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 8l2 2 4-4', bg: 'bg-amber-100', color: 'text-amber-600' };
-      case 'announcement': return { icon: 'M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z', bg: 'bg-violet-100', color: 'text-violet-600' };
-      case 'message': return { icon: 'M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z', bg: 'bg-blue-100', color: 'text-blue-600' };
-      default: return { icon: 'M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z', bg: 'bg-slate-100', color: 'text-slate-600' };
-    }
-  };
-
-  const formatTime = (dateStr) => {
-    const d = new Date(dateStr);
-    const now = new Date();
-    const diff = (now - d) / 1000;
-    if (diff < 60) return 'Just now';
-    if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
-    if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
-    return d.toLocaleDateString();
-  };
+  // Use shared utility — no local duplicate
+  const formatTime = formatNotifTime;
 
   const pageTitle = (() => {
     const path = location.pathname;
@@ -480,7 +480,7 @@ const Layout = () => {
 
             <div className="flex items-center space-x-2 lg:space-x-4">
               {/* Notification bell */}
-              <div className="relative" data-notif-dropdown>
+              <div className="relative" data-notif-dropdown ref={notifDropdownRef}>
                 <button 
                   onClick={() => { playSound('click'); setShowNotifications(!showNotifications); }} 
                   className={`relative rounded-xl p-2.5 transition-all duration-200 ${showNotifications ? 'bg-violet-100 text-violet-700 shadow-inner scale-95' : 'text-slate-400 hover:bg-slate-100 hover:text-slate-600'}`}
@@ -624,6 +624,7 @@ const Layout = () => {
                   <button
                     onClick={async () => {
                       setShowPushPrompt(false);
+                      localStorage.setItem(PUSH_DISMISSED_KEY, '1');
                       const { requestFCMToken } = await import('../utils/firebase');
                       const token = await requestFCMToken();
                       if (token) {
@@ -638,7 +639,10 @@ const Layout = () => {
                     Enable
                   </button>
                   <button
-                    onClick={() => setShowPushPrompt(false)}
+                    onClick={() => {
+                      setShowPushPrompt(false);
+                      localStorage.setItem(PUSH_DISMISSED_KEY, '1');
+                    }}
                     className="p-1.5 rounded-xl text-violet-400 hover:bg-violet-100 transition-all"
                     aria-label="Dismiss"
                   >

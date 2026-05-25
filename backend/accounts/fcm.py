@@ -147,7 +147,7 @@ def send_push_notification(user, title: str, body: str, data: dict = None) -> No
             elif status_code in (400, 404):
                 # Token is invalid / unregistered — deactivate it
                 error_code = (
-                    response.get('error', {}).get('details', [{}])[0].get('errorCode', '')
+                    (response.get('error', {}).get('details') or [{}])[0].get('errorCode', '')
                     or response.get('error', {}).get('status', '')
                 )
                 if error_code in ('UNREGISTERED', 'INVALID_ARGUMENT', 'NOT_FOUND'):

@@ -654,6 +654,7 @@ class Notification(models.Model):
         ('grade', 'Grade Update'),
         ('attendance', 'Attendance'),
         ('fee', 'Fee Reminder'),
+        ('message', 'Message'),
         ('system', 'System'),
     ]
     
@@ -662,7 +663,7 @@ class Notification(models.Model):
     title = models.CharField(max_length=200)
     message = models.TextField()
     is_read = models.BooleanField(default=False)
-    link = models.URLField(blank=True, null=True, help_text="Optional link to redirect user when clicked")
+    link = models.CharField(max_length=500, blank=True, null=True, help_text="Relative or absolute URL to redirect user when clicked")
     created_at = models.DateTimeField(auto_now_add=True)
     
     class Meta:

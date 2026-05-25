@@ -11,182 +11,179 @@ export const useNotifications = () => useContext(NotificationContext);
 export const NotificationProvider = ({ children }) => {
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
-  const [socket, setSocket] = useState(null);
   const [realtimeConnected, setRealtimeConnected] = useState(false);
   const [isPolling, setIsPolling] = useState(false);
 
-  const socketRef = useRef(null); // always-current ref for guards inside callbacks
-  
-  const user = getStoredUser();
+  // Use refs for everything that shouldn't trigger re-renders or cause stale closures
+  const socketRef         = useRef(null);
+  const reconnectTimerRef = useRef(null);
+  const pollingTimerRef   = useRef(null);
+  const lastFetchedRef    = useRef(0);
+  const wasOfflineRef     = useRef(false);
+  const userIdRef         = useRef(null);
+
+  const user   = getStoredUser();
   const userId = user?.id;
-  const reconnectTimeoutRef = useRef(null);
-  const pollingIntervalRef = useRef(null);
-  const lastFetchedRef = useRef(0);
-  // Track if we were offline so we can resync on reconnect
-  const wasOfflineRef = useRef(false);
 
-  const startPolling = useCallback(() => {
-    if (pollingIntervalRef.current) return;
-    
-    console.log('Starting notification fallback polling...');
-    setIsPolling(true);
-    
-    const poll = async () => {
-      // Don't poll if already fetched very recently (debounce)
-      if (Date.now() - lastFetchedRef.current < 10000) return;
-      
-      try {
-        const r = await api.get('/notifications/polling/');
-        setUnreadCount(r.data.unread_count);
-        setNotifications(r.data.notifications);
-        lastFetchedRef.current = Date.now();
-      } catch (err) {
-        console.warn('Polling failed', err);
-      }
-    };
+  // Keep userIdRef in sync
+  useEffect(() => { userIdRef.current = userId; }, [userId]);
 
-    // Initial poll
-    poll();
-    
-    // Set interval (30 seconds)
-    pollingIntervalRef.current = setInterval(poll, 30000);
-  }, []);
-
+  // ── Polling fallback ────────────────────────────────────────────────────
   const stopPolling = useCallback(() => {
-    if (pollingIntervalRef.current) {
-      console.log('Stopping notification fallback polling...');
-      clearInterval(pollingIntervalRef.current);
-      pollingIntervalRef.current = null;
+    if (pollingTimerRef.current) {
+      clearInterval(pollingTimerRef.current);
+      pollingTimerRef.current = null;
     }
     setIsPolling(false);
   }, []);
 
-  const connect = useCallback(() => {
-    const currentUser = getStoredUser();
-    if (!currentUser) return;
+  const poll = useCallback(async () => {
+    if (Date.now() - lastFetchedRef.current < 10000) return;
+    try {
+      const r = await api.get('/notifications/polling/');
+      setUnreadCount(r.data.unread_count);
+      setNotifications(r.data.notifications);
+      lastFetchedRef.current = Date.now();
+    } catch (err) {
+      console.warn('Polling failed', err);
+    }
+  }, []);
 
+  const startPolling = useCallback(() => {
+    if (pollingTimerRef.current) return;
+    setIsPolling(true);
+    poll(); // immediate first poll
+    pollingTimerRef.current = setInterval(poll, 30000);
+  }, [poll]);
+
+  // ── WebSocket connection ─────────────────────────────────────────────────
+  const connect = useCallback(() => {
+    if (!userIdRef.current) return;
     const token = localStorage.getItem('access_token');
     if (!token) return;
 
-    // Ensure we don't have multiple connections
-    if (socketRef.current && socketRef.current.readyState <= 1) return;
+    // Guard: don't open a second connection
+    if (socketRef.current && socketRef.current.readyState <= WebSocket.OPEN) return;
 
     const ws = new WebSocket(`${WS_ROOT}/ws/notifications/?token=${token}`);
     socketRef.current = ws;
 
     ws.onopen = () => {
-      console.log('Notification WS connected');
       setRealtimeConnected(true);
-      stopPolling(); // Real-time is back, stop polling
-
-      if (reconnectTimeoutRef.current) {
-        clearTimeout(reconnectTimeoutRef.current);
-        reconnectTimeoutRef.current = null;
+      stopPolling();
+      if (reconnectTimerRef.current) {
+        clearTimeout(reconnectTimerRef.current);
+        reconnectTimerRef.current = null;
       }
-
-      // If we were offline, force a fresh fetch to resync missed notifications
+      // If we were offline, force a fresh poll to catch missed notifications
       if (wasOfflineRef.current) {
         wasOfflineRef.current = false;
-        lastFetchedRef.current = 0; // reset debounce so poll fires immediately
+        lastFetchedRef.current = 0;
+        poll();
       }
     };
 
     ws.onmessage = (e) => {
       try {
         const data = JSON.parse(e.data);
+
         if (data.type === 'unread_count') {
           setUnreadCount(data.count);
+
         } else if (data.type === 'notification') {
           setNotifications(prev => {
-            // Prevent duplicate notifications
             if (prev.some(n => n.id === data.id)) return prev;
             return [data, ...prev].slice(0, 20);
           });
           setUnreadCount(data.unread_count);
           playSound(data.notification_type === 'announcement' ? 'announcement' : 'notification');
-          toast.success(data.title, {
-            description: data.message,
-            duration: 5000,
-          });
+          toast.success(data.title, { duration: 5000 });
+
+        } else if (data.type === 'notification_read') {
+          // Server confirmed a mark-read via WS
+          setNotifications(prev =>
+            prev.map(n => n.id === data.id ? { ...n, is_read: true } : n)
+          );
+          setUnreadCount(data.unread_count);
+
         } else if (data.type === 'moderation_alert') {
           playSound('error');
-          toast.error(`NEW REPORT: ${data.data.reason}`, {
-            icon: '⚠️',
-            duration: 10000,
-          });
+          toast.error(`NEW REPORT: ${data.data.reason}`, { icon: '⚠️', duration: 10000 });
         }
       } catch (err) {
-        console.error('Error parsing notification message', err);
+        console.error('Error parsing notification WS message', err);
       }
     };
 
     ws.onclose = (e) => {
-      console.log('Notification WS disconnected', e.code, e.reason);
       setRealtimeConnected(false);
       socketRef.current = null;
-
-      // Start polling as fallback
       startPolling();
-
-      // Only reconnect if not closed normally (1000 = Normal Closure, 1001 = Going Away)
-      if (e.code !== 1000 && e.code !== 1001) {
-        if (reconnectTimeoutRef.current) clearTimeout(reconnectTimeoutRef.current);
-        // Exponential-ish backoff: 10s first, then browser online event will also trigger
-        reconnectTimeoutRef.current = setTimeout(connect, 10000);
+      // Reconnect on abnormal closure
+      if (e.code !== 1000 && e.code !== 1001 && userIdRef.current) {
+        if (reconnectTimerRef.current) clearTimeout(reconnectTimerRef.current);
+        reconnectTimerRef.current = setTimeout(connect, 10000);
       }
     };
 
-    ws.onerror = (err) => {
-      console.error('Notification WS error', err);
+    ws.onerror = () => {
       setRealtimeConnected(false);
-      startPolling();
       wasOfflineRef.current = true;
+      startPolling();
     };
+  }, [poll, startPolling, stopPolling]); // no socket/userId in deps — use refs
 
-    setSocket(ws);
-  }, [userId, socket, startPolling, stopPolling]);
+  // ── Send a WS action (mark read, etc.) ──────────────────────────────────
+  const sendWS = useCallback((payload) => {
+    if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
+      socketRef.current.send(JSON.stringify(payload));
+      return true;
+    }
+    return false;
+  }, []);
 
-  // Reconnect when browser comes back online
+  // ── Reconnect on browser coming back online ──────────────────────────────
   useEffect(() => {
     const handleOnline = () => {
       wasOfflineRef.current = true;
-      // Use a ref snapshot to avoid stale closure issues
-      const currentSocket = socket;
-      if (!currentSocket || currentSocket.readyState > 1) {
+      if (!socketRef.current || socketRef.current.readyState > WebSocket.OPEN) {
         connect();
       }
     };
     window.addEventListener('online', handleOnline);
     return () => window.removeEventListener('online', handleOnline);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps — intentionally runs once
+  }, [connect]);
 
+  // ── Connect / disconnect on login / logout ───────────────────────────────
   useEffect(() => {
     if (userId) {
       connect();
     } else {
-      // Cleanup on logout
+      // Logout cleanup
       if (socketRef.current) {
         socketRef.current.close(1000, 'User logged out');
         socketRef.current = null;
       }
-      setSocket(null);
       setRealtimeConnected(false);
+      setNotifications([]);
+      setUnreadCount(0);
       stopPolling();
     }
-
     return () => {
-      if (reconnectTimeoutRef.current) clearTimeout(reconnectTimeoutRef.current);
+      if (reconnectTimerRef.current) clearTimeout(reconnectTimerRef.current);
     };
-  }, [userId]); // Only depend on userId to avoid reconnection loops
+  }, [userId, connect, stopPolling]);
 
   const value = {
     notifications,
     setNotifications,
     unreadCount,
     setUnreadCount,
-    socket,
     realtimeConnected,
-    isPolling
+    isPolling,
+    sendWS,
+    // Expose socket for legacy consumers that check it
+    socket: socketRef.current,
   };
 
   return (
