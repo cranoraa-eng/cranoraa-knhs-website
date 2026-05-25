@@ -373,16 +373,16 @@ const StudentGradeView = () => {
         <>
           <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-md sm:rounded-2xl">
             <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-slate-300">
-              <table className="w-full min-w-[580px] sm:min-w-[820px]">
+              <table className="w-full min-w-[480px] sm:min-w-[820px]">
                 <thead>
                   <tr className="bg-slate-50 border-b border-slate-200 text-slate-500">
-                    <th className="min-w-[160px] px-3 py-3 text-left text-[9px] font-bold uppercase tracking-[0.18em] sm:min-w-[200px] sm:px-6 sm:py-4 sm:text-[10px] sm:tracking-widest">Subject Details</th>
-                    <th className="px-2 py-3 text-center text-[9px] font-bold uppercase tracking-[0.18em] sm:px-4 sm:py-4 sm:text-[10px] sm:tracking-widest">Q1</th>
-                    <th className="px-2 py-3 text-center text-[9px] font-bold uppercase tracking-[0.18em] sm:px-4 sm:py-4 sm:text-[10px] sm:tracking-widest">Q2</th>
-                    <th className="px-2 py-3 text-center text-[9px] font-bold uppercase tracking-[0.18em] sm:px-4 sm:py-4 sm:text-[10px] sm:tracking-widest">Q3</th>
-                    <th className="px-2 py-3 text-center text-[9px] font-bold uppercase tracking-[0.18em] sm:px-4 sm:py-4 sm:text-[10px] sm:tracking-widest">Q4</th>
+                    <th className="min-w-[120px] px-3 py-3 text-left text-[9px] font-bold uppercase tracking-[0.18em] sm:min-w-[200px] sm:px-6 sm:py-4 sm:text-[10px] sm:tracking-widest">Subject Details</th>
+                    <th className="px-1.5 py-3 text-center text-[9px] font-bold uppercase tracking-[0.18em] sm:px-4 sm:py-4 sm:text-[10px] sm:tracking-widest">Q1</th>
+                    <th className="px-1.5 py-3 text-center text-[9px] font-bold uppercase tracking-[0.18em] sm:px-4 sm:py-4 sm:text-[10px] sm:tracking-widest">Q2</th>
+                    <th className="px-1.5 py-3 text-center text-[9px] font-bold uppercase tracking-[0.18em] sm:px-4 sm:py-4 sm:text-[10px] sm:tracking-widest">Q3</th>
+                    <th className="px-1.5 py-3 text-center text-[9px] font-bold uppercase tracking-[0.18em] sm:px-4 sm:py-4 sm:text-[10px] sm:tracking-widest">Q4</th>
                     <th className="hidden px-4 py-4 text-center text-[10px] font-bold uppercase tracking-widest sm:table-cell">Average</th>
-                    <th className="px-2 py-3 text-center text-[9px] font-bold uppercase tracking-[0.18em] sm:px-4 sm:py-4 sm:text-[10px] sm:tracking-widest">Rounded</th>
+                    <th className="px-1.5 py-3 text-center text-[9px] font-bold uppercase tracking-[0.18em] sm:px-4 sm:py-4 sm:text-[10px] sm:tracking-widest">Rounded</th>
                     <th className="hidden min-w-[140px] px-4 py-4 text-center text-[10px] font-bold uppercase tracking-widest sm:table-cell">Remarks</th>
                   </tr>
                 </thead>
@@ -395,20 +395,20 @@ const StudentGradeView = () => {
                     return (
                       <tr key={s.subject_code} className={`hover:bg-violet-50/50 transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'}`}>
                         <td className="px-3 py-3 sm:px-6 sm:py-4">
-                          <div className="text-[13px] font-bold leading-tight text-slate-800 sm:text-sm">{s.subject_name}</div>
-                          <div className="mt-0.5 text-[9px] font-bold uppercase tracking-[0.18em] text-slate-400 sm:mt-1 sm:text-[10px] sm:tracking-widest">{s.subject_code}</div>
+                          <div className="text-[12px] font-bold leading-tight text-slate-800 sm:text-sm">{s.subject_name}</div>
+                          <div className="mt-0.5 text-[8px] font-bold uppercase tracking-[0.18em] text-slate-400 sm:mt-1 sm:text-[10px] sm:tracking-widest">{s.subject_code}</div>
                         </td>
                         {[1,2,3,4].map(q => {
                           const g = s.quarters[q];
                           const score = g ? parseFloat(g.raw_score) : null;
                           return (
-                            <td key={q} className="px-2 py-3 text-center sm:px-4 sm:py-4">
+                            <td key={q} className="px-1.5 py-3 text-center sm:px-4 sm:py-4">
                               {score != null ? (
-                                <span className={`inline-flex h-7 w-9 items-center justify-center rounded-md border-2 text-[11px] font-black shadow-sm sm:h-8 sm:w-11 sm:rounded-lg sm:text-[13px] ${scoreColor(score)}`}>
+                                <span className={`inline-flex h-6.5 w-8.5 items-center justify-center rounded-md border-2 text-[10px] font-black shadow-sm sm:h-8 sm:w-11 sm:rounded-lg sm:text-[13px] ${scoreColor(score)}`}>
                                   {score}
                                 </span>
                               ) : (
-                                <span className="text-[11px] font-bold text-slate-300 sm:text-xs">—</span>
+                                <span className="text-[10px] font-bold text-slate-300 sm:text-xs">—</span>
                               )}
                             </td>
                           );
@@ -420,12 +420,12 @@ const StudentGradeView = () => {
                             </span>
                           ) : <span className="text-slate-300 text-xs font-bold">—</span>}
                         </td>
-                        <td className="px-2 py-3 text-center sm:px-4 sm:py-4">
+                        <td className="px-1.5 py-3 text-center sm:px-4 sm:py-4">
                           {rounded ? (
-                            <span className={`inline-flex min-w-[2.25rem] items-center justify-center rounded-md border-2 px-2 py-0.5 text-[11px] font-black shadow-sm sm:rounded-lg sm:px-3 sm:py-1 sm:text-[13px] ${scoreColor(rounded)}`}>
+                            <span className={`inline-flex min-w-[2rem] items-center justify-center rounded-md border-2 px-1.5 py-0.5 text-[10px] font-black shadow-sm sm:rounded-lg sm:px-3 sm:py-1 sm:text-[13px] ${scoreColor(rounded)}`}>
                               {rounded}
                             </span>
-                          ) : <span className="text-[11px] font-bold text-slate-300 sm:text-xs">—</span>}
+                          ) : <span className="text-[10px] font-bold text-slate-300 sm:text-xs">—</span>}
                         </td>
                         <td className="hidden px-4 py-4 text-center sm:table-cell">
                           {remarks ? (
@@ -443,17 +443,17 @@ const StudentGradeView = () => {
 
             {/* Overall average footer */}
             {overallAvg && (
-              <div className="flex flex-col justify-between gap-3 bg-gradient-to-r from-[#2D1B4D] to-[#4B2D7F] px-3.5 py-4 sm:flex-row sm:items-center sm:gap-4 sm:px-6 sm:py-5">
-                <span className="text-[11px] font-black uppercase tracking-[0.18em] text-white sm:text-sm sm:tracking-widest">General Average</span>
-                <div className="flex flex-wrap items-center gap-3 sm:gap-6">
+              <div className="flex flex-col justify-between gap-3 bg-gradient-to-r from-[#2D1B4D] to-[#4B2D7F] px-3 py-3.5 sm:flex-row sm:items-center sm:gap-4 sm:px-6 sm:py-5">
+                <span className="text-[10px] font-black uppercase tracking-[0.18em] text-white sm:text-sm sm:tracking-widest">General Average</span>
+                <div className="flex flex-wrap items-center gap-2.5 sm:gap-6">
                   <div className="hidden flex-col sm:flex sm:items-end">
                     <div className="text-2xl md:text-3xl font-black text-white leading-none">{overallAvg}</div>
                     <div className="text-[10px] text-purple-300 font-bold uppercase tracking-tighter mt-1">Exact Average</div>
                   </div>
                   <div className="hidden sm:block w-px h-10 bg-white/20" />
                   <div className="flex flex-col sm:items-end">
-                    <div className="text-xl font-black leading-none text-white sm:text-2xl md:text-3xl">{overallRounded}</div>
-                    <div className="mt-1 text-[9px] font-bold uppercase tracking-[0.16em] text-purple-300 sm:text-[10px] sm:tracking-tighter">Rounded Score</div>
+                    <div className="text-lg font-black leading-none text-white sm:text-2xl md:text-3xl">{overallRounded}</div>
+                    <div className="mt-1 text-[8px] font-bold uppercase tracking-[0.16em] text-purple-300 sm:text-[10px] sm:tracking-tighter">Rounded Score</div>
                   </div>
                   {overallRemarks && (
                     <span className="hidden rounded-xl border border-white/10 bg-white/10 px-4 py-1.5 text-[11px] font-black uppercase tracking-widest text-white shadow-lg backdrop-blur-md sm:inline-flex">
