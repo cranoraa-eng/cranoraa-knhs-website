@@ -6,22 +6,22 @@ import api from '../utils/api';
 import toast from 'react-hot-toast';
 
 const Field = ({ label, value }) => (
-  <div>
-    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">{label}</p>
-    <p className="text-sm font-semibold text-slate-800">{value || <span className="text-slate-300 font-normal italic">Not set</span>}</p>
+  <div className="min-w-0">
+    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1.5">{label}</p>
+    <p className="text-[13px] font-bold text-slate-800 truncate">{value || <span className="text-slate-300 font-normal italic">Not set</span>}</p>
   </div>
 );
 
 const Input = ({ label, value, onChange, type = 'text', required }) => (
-  <div>
-    <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
-      {label}{required && <span className="text-red-500 ml-0.5">*</span>}
+  <div className="min-w-0">
+    <label className="block text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-2">
+      {label}{required && <span className="text-rose-500 ml-1">*</span>}
     </label>
     <input
       type={type}
       value={value}
       onChange={e => onChange(e.target.value)}
-      className="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-white text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-400 transition-all"
+      className="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-white text-[13px] font-bold text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500/10 focus:border-violet-400 transition-all shadow-sm"
     />
   </div>
 );
@@ -141,24 +141,24 @@ const Profile = () => {
     : null;
 
   return (
-    <div className="space-y-5 animate-fade-in">
+    <div className="space-y-6 animate-fade-in p-1 sm:p-0">
       {/* ── Page Header ── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-black text-slate-900 tracking-tight">
+        <div className="min-w-0">
+          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight truncate">
             {studentId ? 'Student Profile' : 'My Profile'}
           </h1>
-          <p className="text-sm text-slate-500 mt-0.5">
+          <p className="text-[13px] font-medium text-slate-500 mt-1 line-clamp-1">
             {studentId ? 'Viewing student information' : 'View and update your personal information'}
           </p>
         </div>
         {!editing && !studentId && (
           <button
             onClick={() => setEditing(true)}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-violet-600 text-white text-sm font-bold hover:bg-violet-700 active:scale-95 transition-all shadow-sm"
+            className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-violet-600 text-white text-[13px] font-black uppercase tracking-widest hover:bg-violet-700 active:scale-95 transition-all shadow-md shadow-violet-200"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
             </svg>
             Edit Profile
           </button>
@@ -166,60 +166,65 @@ const Profile = () => {
       </div>
 
       {/* ── Profile card ── */}
-      <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+      <div className="bg-white border border-slate-200 rounded-[2rem] shadow-sm overflow-hidden">
 
         {/* Banner + avatar */}
-        <div className="h-28 bg-[#1A0B2E] px-6 flex items-end pb-3 relative overflow-hidden">
-          <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
-          <div className="absolute top-0 right-0 w-48 h-48 bg-violet-600/15 rounded-full translate-x-1/3 -translate-y-1/3 blur-2xl pointer-events-none" />
-          <div className="relative flex items-end gap-4">
-            <div className="relative group/avatar">
-              <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-white text-2xl font-black border-4 border-white/20 shadow-xl flex-shrink-0 mb-[-2.5rem] overflow-hidden">
+        <div className="h-32 bg-[#1A0B2E] px-6 sm:px-8 flex items-end pb-4 relative overflow-hidden">
+          <div className="absolute inset-0 opacity-[0.06]" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
+          <div className="absolute top-0 right-0 w-64 h-64 bg-violet-600/20 rounded-full translate-x-1/3 -translate-y-1/3 blur-3xl pointer-events-none" />
+          
+          <div className="relative flex items-end gap-5 w-full">
+            <div className="relative group/avatar flex-shrink-0">
+              <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-[2rem] bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-white text-3xl font-black border-4 border-white/20 shadow-2xl mb-[-3.5rem] overflow-hidden">
                 {profilePic ? (
                   <img src={profilePic} alt="Profile" className="w-full h-full object-cover" />
                 ) : initials}
                 {!studentId && (
-                  <label className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover/avatar:opacity-100 transition-opacity cursor-pointer z-10">
+                  <label className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover/avatar:opacity-100 transition-opacity cursor-pointer z-10">
                     <input type="file" className="hidden" accept="image/*" onChange={handleProfilePicUpload} />
-                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
                     </svg>
                   </label>
                 )}
               </div>
               {uploading && (
-                <div className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-2xl mb-[-2.5rem]">
-                  <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                <div className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-[2rem] mb-[-3.5rem]">
+                  <div className="w-7 h-7 border-3 border-white border-t-transparent rounded-full animate-spin" />
                 </div>
               )}
             </div>
-            <div className="pb-1">
-              <h2 className="text-xl font-black text-white">{fullName}</h2>
-              <div className="flex flex-wrap gap-2 mt-0.5">
-                <span className="text-xs font-bold capitalize text-violet-300">{user?.role}</span>
-                <span className="text-xs text-violet-300/70">{profile?.email}</span>
+            <div className="pb-2 min-w-0">
+              <h2 className="text-xl sm:text-2xl font-black text-white truncate leading-tight">{fullName}</h2>
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1">
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-violet-300 bg-violet-500/20 px-2 py-0.5 rounded-md">{user?.role}</span>
+                <span className="text-[11px] font-bold text-violet-300/80 truncate">{profile?.email}</span>
                 {profile?.profile?.registration_number && (
-                  <span className="text-xs font-mono text-violet-300/70">LRN: {profile.profile.registration_number}</span>
+                  <span className="text-[11px] font-black uppercase tracking-widest text-violet-300/60 hidden xs:inline">LRN: {profile.profile.registration_number}</span>
                 )}
               </div>
             </div>
           </div>
         </div>
-        <div className="px-6 pb-6 pt-14">
+
+        <div className="px-6 sm:px-8 pb-8 pt-20 sm:pt-24">
 
           {editing ? (
             /* ── Edit form ── */
-            <div className="space-y-6">
+            <div className="space-y-10">
               {/* Name */}
-              <div>
-                <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 pb-2 border-b border-slate-100">Name</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+              <div className="space-y-6">
+                <div className="flex items-center gap-4">
+                  <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] whitespace-nowrap">Name Details</h3>
+                  <div className="h-px w-full bg-slate-100"></div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-4 gap-5">
                   {user?.role === 'teacher' && (
-                    <div>
-                      <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Title</label>
+                    <div className="sm:col-span-1">
+                      <label className="block text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-2">Title</label>
                       <select value={form.title} onChange={e => set('title')(e.target.value)}
-                        className="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-white text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-400 transition-all">
+                        className="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-white text-[13px] font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-500/10 focus:border-violet-400 transition-all shadow-sm">
                         <option value="">Select</option>
                         <option value="Mr.">Mr.</option>
                         <option value="Ms.">Ms.</option>
@@ -238,13 +243,16 @@ const Profile = () => {
               </div>
 
               {/* Personal */}
-              <div>
-                <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 pb-2 border-b border-slate-100">Personal Information</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Sex</label>
+              <div className="space-y-6">
+                <div className="flex items-center gap-4">
+                  <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] whitespace-nowrap">Personal Information</h3>
+                  <div className="h-px w-full bg-slate-100"></div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                  <div className="min-w-0">
+                    <label className="block text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-2">Sex</label>
                     <select value={form.sex} onChange={e => set('sex')(e.target.value)}
-                      className="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-white text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-400 transition-all">
+                      className="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-white text-[13px] font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-500/10 focus:border-violet-400 transition-all shadow-sm">
                       <option value="">Select</option>
                       <option value="male">Male</option>
                       <option value="female">Female</option>
@@ -258,63 +266,75 @@ const Profile = () => {
               </div>
 
               {/* Family */}
-              <div>
-                <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 pb-2 border-b border-slate-100">Family</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-6">
+                <div className="flex items-center gap-4">
+                  <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] whitespace-nowrap">Family Details</h3>
+                  <div className="h-px w-full bg-slate-100"></div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   <Input label="Father's Name" value={form.father_name} onChange={set('father_name')} />
                   <Input label="Mother's Name" value={form.mother_name} onChange={set('mother_name')} />
                 </div>
               </div>
 
               {/* School */}
-              <div>
-                <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 pb-2 border-b border-slate-100">School</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-6">
+                <div className="flex items-center gap-4">
+                  <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] whitespace-nowrap">Academic Record</h3>
+                  <div className="h-px w-full bg-slate-100"></div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   <Input label="LRN (Learner Reference Number)" value={form.registration_number} onChange={set('registration_number')} />
                   <Input label="Grade Level" value={form.grade_level} onChange={set('grade_level')} />
                 </div>
               </div>
 
               {/* Contact */}
-              <div>
-                <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 pb-2 border-b border-slate-100">Contact</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-6">
+                <div className="flex items-center gap-4">
+                  <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] whitespace-nowrap">Contact Information</h3>
+                  <div className="h-px w-full bg-slate-100"></div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   <Input label="Email Address (Optional)" value={form.email} onChange={set('email')} type="email" />
                   <Input label="Phone Number" value={form.phone_number} onChange={set('phone_number')} />
                   <div className="sm:col-span-2">
-                    <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Address</label>
+                    <label className="block text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-2">Address</label>
                     <textarea value={form.address} onChange={e => set('address')(e.target.value)} rows={2}
-                      className="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-white text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-400 transition-all resize-none" />
+                      className="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-white text-[13px] font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-500/10 focus:border-violet-400 transition-all resize-none shadow-sm" />
                   </div>
                   <div className="sm:col-span-2">
-                    <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Emergency Contact</label>
+                    <label className="block text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-2">Emergency Contact</label>
                     <textarea value={form.contact_information} onChange={e => set('contact_information')(e.target.value)} rows={2}
-                      className="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-white text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-400 transition-all resize-none"
+                      className="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-white text-[13px] font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-500/10 focus:border-violet-400 transition-all resize-none shadow-sm"
                       placeholder="Name, relationship, phone number…" />
                   </div>
                 </div>
               </div>
 
               {/* Actions */}
-              <div className="flex gap-3 pt-2">
+              <div className="flex flex-col xs:flex-row gap-3 pt-4">
                 <button onClick={handleSave} disabled={saving}
-                  className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-violet-600 text-white text-sm font-bold hover:bg-violet-700 active:scale-95 transition-all disabled:opacity-50">
+                  className="flex-1 inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl bg-violet-600 text-white text-[13px] font-black uppercase tracking-widest hover:bg-violet-700 active:scale-95 transition-all disabled:opacity-50 shadow-lg shadow-violet-200">
                   {saving && <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
                   {saving ? 'Saving…' : 'Save Changes'}
                 </button>
                 <button onClick={() => setEditing(false)}
-                  className="px-6 py-2.5 rounded-xl bg-slate-100 text-slate-700 text-sm font-bold hover:bg-slate-200 active:scale-95 transition-all">
+                  className="flex-1 px-8 py-3.5 rounded-xl bg-slate-100 text-slate-700 text-[13px] font-black uppercase tracking-widest hover:bg-slate-200 active:scale-95 transition-all">
                   Cancel
                 </button>
               </div>
             </div>
           ) : (
             /* ── View mode ── */
-            <div className="space-y-6">
+            <div className="space-y-12">
               {/* Personal */}
-              <div>
-                <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Personal Information</h3>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-4">
+              <div className="space-y-6">
+                <div className="flex items-center gap-4">
+                  <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] whitespace-nowrap">Personal Information</h3>
+                  <div className="h-px w-full bg-slate-100"></div>
+                </div>
+                <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 gap-x-8 gap-y-6">
                   {user?.role === 'teacher' && <Field label="Title" value={profile?.profile?.title} />}
                   <Field label="First Name"   value={profile?.first_name} />
                   <Field label="Middle Name"  value={profile?.profile?.middle_name} />
@@ -329,45 +349,47 @@ const Profile = () => {
                 </div>
               </div>
 
-              <div className="border-t border-slate-100" />
-
               {/* Family */}
-              <div>
-                <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Family</h3>
-                <div className="grid grid-cols-2 gap-x-6 gap-y-4">
+              <div className="space-y-6">
+                <div className="flex items-center gap-4">
+                  <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] whitespace-nowrap">Family Details</h3>
+                  <div className="h-px w-full bg-slate-100"></div>
+                </div>
+                <div className="grid grid-cols-1 xs:grid-cols-2 gap-x-8 gap-y-6">
                   <Field label="Father's Name" value={profile?.profile?.father_name} />
                   <Field label="Mother's Name" value={profile?.profile?.mother_name} />
                 </div>
               </div>
 
-              <div className="border-t border-slate-100" />
-
               {/* Contact */}
-              <div>
-                <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Contact</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+              <div className="space-y-6">
+                <div className="flex items-center gap-4">
+                  <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] whitespace-nowrap">Contact Information</h3>
+                  <div className="h-px w-full bg-slate-100"></div>
+                </div>
+                <div className="grid grid-cols-1 xs:grid-cols-2 gap-x-8 gap-y-6">
                   <Field label="Email"        value={profile?.email} />
                   <Field label="Phone Number" value={profile?.profile?.phone_number} />
-                  <div className="sm:col-span-2">
+                  <div className="xs:col-span-2">
                     <Field label="Address"    value={profile?.profile?.address} />
                   </div>
-                  <div className="sm:col-span-2">
+                  <div className="xs:col-span-2">
                     <Field label="Emergency Contact" value={profile?.profile?.contact_information} />
                   </div>
                 </div>
               </div>
 
               {(profile?.profile?.registration_number || profile?.profile?.grade_level) && (
-                <>
-                  <div className="border-t border-slate-100" />
-                  <div>
-                    <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">School</h3>
-                    <div className="grid grid-cols-2 gap-x-6 gap-y-4">
-                      <Field label="LRN" value={profile?.profile?.registration_number} />
-                      <Field label="Grade Level" value={profile?.profile?.grade_level} />
-                    </div>
+                <div className="space-y-6">
+                  <div className="flex items-center gap-4">
+                    <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] whitespace-nowrap">Academic Record</h3>
+                    <div className="h-px w-full bg-slate-100"></div>
                   </div>
-                </>
+                  <div className="grid grid-cols-1 xs:grid-cols-2 gap-x-8 gap-y-6">
+                    <Field label="LRN" value={profile?.profile?.registration_number} />
+                    <Field label="Grade Level" value={profile?.profile?.grade_level} />
+                  </div>
+                </div>
               )}
             </div>
           )}
