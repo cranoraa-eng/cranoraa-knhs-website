@@ -768,6 +768,44 @@ def broadcast_notification(sender, instance, created, **kwargs):
             import logging
             logging.getLogger(__name__).error(f"Failed to broadcast notification {instance.id}: {e}")
 
+        # FCM Web Push — fire and forget, never block the signal
+        try:
+            from .fcm import send_push_notification
+            send_push_notification(
+                user=instance.recipient,
+                title=instance.title,
+                body=instance.message,
+                data={
+                    'notification_type': instance.notification_type,
+                    'link': instance.link or '',
+                    'notification_id': str(instance.id),
+                }
+            )
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).warning(f"FCM push failed for notification {instance.id}: {e}")
+
+
+class FCMToken(models.Model):
+    """Stores Firebase Cloud Messaging tokens for web push notifications."""
+    DEVICE_CHOICES = [
+        ('web', 'Web Browser'),
+        ('android', 'Android'),
+        ('ios', 'iOS'),
+    ]
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='fcm_tokens')
+    token = models.TextField(unique=True)
+    device_type = models.CharField(max_length=10, choices=DEVICE_CHOICES, default='web')
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-updated_at']
+
+    def __str__(self):
+        return f"{self.user.username} — {self.device_type} token"
+
 
 class EnrollmentApplication(models.Model):
     GRADE_LEVEL_CHOICES = [

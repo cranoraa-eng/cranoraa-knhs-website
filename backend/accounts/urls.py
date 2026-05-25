@@ -14,6 +14,7 @@ from .views import (
     password_reset_request_view, password_reset_confirm_view,
     RoomViewSet, TimeSlotViewSet, ScheduleViewSet,
     parent_dashboard_view, parent_child_detail_view,
+    fcm_token_register, fcm_token_delete,
 )
 
 router = DefaultRouter()
@@ -74,5 +75,7 @@ urlpatterns = [
     path('system/maintenance-status/', maintenance_status_view, name='maintenance_status'),
     path('parent/dashboard/', parent_dashboard_view, name='parent_dashboard'),
     path('parent/child/<int:student_id>/', parent_child_detail_view, name='parent_child_detail'),
+    path('fcm-tokens/', fcm_token_register, name='fcm_token_register'),
+    path('fcm-tokens/delete/', fcm_token_delete, name='fcm_token_delete'),
     path('', include(router.urls)),
 ]

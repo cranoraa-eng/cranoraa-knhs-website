@@ -17,7 +17,7 @@ from .serializers import (UserSerializer, ClassroomSerializer, StudentClassEnrol
     SystemSettingSerializer, AssignmentSerializer, SubmissionSerializer, ReportedMessageSerializer,
     RoomSerializer, TimeSlotSerializer, ScheduleSerializer, ParentChildSummarySerializer,
     full_name)
-from .models import User, Classroom, StudentClassEnrollment, Announcement, AnnouncementAttachment, Attendance, LearningMaterial, Subject, ClassroomSubject, ScratchCard, Fee, Notification, EnrollmentApplication, WebsiteContent, Grade, GradeReport, ChatRoom, ChatMessage, MessageReaction, Friendship, SystemSetting, Assignment, Submission, ReportedMessage, Room, TimeSlot, Schedule
+from .models import User, Classroom, StudentClassEnrollment, Announcement, AnnouncementAttachment, Attendance, LearningMaterial, Subject, ClassroomSubject, ScratchCard, Fee, Notification, EnrollmentApplication, WebsiteContent, Grade, GradeReport, ChatRoom, ChatMessage, MessageReaction, Friendship, SystemSetting, Assignment, Submission, ReportedMessage, Room, TimeSlot, Schedule, FCMToken
 from .permissions import IsAdmin, IsTeacher, IsStudent, IsParent, IsAdminOrTeacher, IsAdminOrReadOnly
 # Moved portal imports inside functions to avoid circular dependencies
 import logging
@@ -5163,3 +5163,58 @@ def parent_child_detail_view(request, student_id):
         'weekly_schedule': weekly_schedule,
         'assignments': assignments_data,
     })
+
+
+# ─── FCM Token Management ─────────────────────────────────────────────────────
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def fcm_token_register(request):
+    """
+    POST /api/fcm-tokens/
+    Save or refresh a user's FCM push token.
+    Body: { "token": "<fcm_token>", "device_type": "web" }
+    """
+    token = request.data.get('token', '').strip()
+    device_type = request.data.get('device_type', 'web')
+
+    if not token:
+        return Response({'error': 'token is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+    if device_type not in ('web', 'android', 'ios'):
+        device_type = 'web'
+
+    # Upsert: if the token already exists (possibly for another user after
+    # a browser reinstall), reassign it to the current user and reactivate.
+    obj, created = FCMToken.objects.update_or_create(
+        token=token,
+        defaults={
+            'user': request.user,
+            'device_type': device_type,
+            'is_active': True,
+        }
+    )
+
+    return Response(
+        {'status': 'registered', 'created': created},
+        status=status.HTTP_201_CREATED if created else status.HTTP_200_OK
+    )
+
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def fcm_token_delete(request):
+    """
+    DELETE /api/fcm-tokens/
+    Deactivate the token on logout.
+    Body: { "token": "<fcm_token>" }
+    """
+    token = request.data.get('token', '').strip()
+    if not token:
+        return Response({'error': 'token is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+    updated = FCMToken.objects.filter(
+        user=request.user, token=token
+    ).update(is_active=False)
+
+    return Response({'status': 'deactivated', 'count': updated})
