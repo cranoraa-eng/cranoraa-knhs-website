@@ -88,31 +88,14 @@ export function usePushNotifications(user) {
         const { title, body } = payload.notification || {};
         const notifTitle = title || 'KNHS Portal';
         const notifBody  = body  || payload.data?.message || '';
+        const link       = payload.data?.link;
 
         toast(
-          (t) => (
-            <div
-              className="flex items-start gap-3 cursor-pointer"
-              onClick={() => {
-                toast.dismiss(t.id);
-                const link = payload.data?.link;
-                if (link) window.location.href = link;
-              }}
-            >
-              <div className="w-8 h-8 rounded-lg bg-violet-100 flex items-center justify-center flex-shrink-0 text-violet-600 text-sm">
-                🔔
-              </div>
-              <div className="min-w-0">
-                <p className="text-sm font-bold text-slate-900 leading-tight">{notifTitle}</p>
-                {notifBody && (
-                  <p className="text-xs text-slate-500 mt-0.5 line-clamp-2">{notifBody}</p>
-                )}
-              </div>
-            </div>
-          ),
+          `🔔 ${notifTitle}${notifBody ? ` — ${notifBody}` : ''}`,
           {
             duration: 6000,
-            style: { maxWidth: '360px', padding: '12px 16px' },
+            style: { maxWidth: '360px' },
+            onClick: link ? () => { window.location.href = link; } : undefined,
           }
         );
       });
