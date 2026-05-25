@@ -17,15 +17,23 @@ def upload_to_supabase(file, folder="profiles"):
     Uploads a file to Supabase Storage and returns the public URL.
     Returns (url, error_message)
     """
-    if not settings.SUPABASE_URL or not settings.SUPABASE_KEY:
+    # Sanitize and validate settings
+    url = (settings.SUPABASE_URL or "").strip().strip("'").strip('"')
+    key = (settings.SUPABASE_KEY or "").strip().strip("'").strip('"')
+    bucket = (settings.SUPABASE_BUCKET or "profile-pictures").strip().strip("'").strip('"')
+
+    if not url or not key:
         missing = []
-        if not settings.SUPABASE_URL: missing.append("SUPABASE_URL")
-        if not settings.SUPABASE_KEY: missing.append("SUPABASE_KEY")
+        if not url: missing.append("SUPABASE_URL")
+        if not key: missing.append("SUPABASE_KEY (or SUPABASE_SERVICE_ROLE_KEY)")
         return None, f"Supabase configuration missing: {', '.join(missing)}"
+
+    if not url.startswith(('http://', 'https://')):
+        return None, f"Storage Error: Invalid URL format. SUPABASE_URL must start with https://. Current: {url[:10]}..."
 
     try:
         from supabase import create_client, Client as SupabaseClient
-        supabase: SupabaseClient = create_client(settings.SUPABASE_URL, settings.SUPABASE_KEY)
+        supabase: SupabaseClient = create_client(url, key)
         
         # Generate unique filename
         ext = os.path.splitext(file.name)[1].lower()
@@ -43,7 +51,7 @@ def upload_to_supabase(file, folder="profiles"):
             
         # Upload
         try:
-            res = supabase.storage.from_(settings.SUPABASE_BUCKET).upload(
+            res = supabase.storage.from_(bucket).upload(
                 path=filename,
                 file=content,
                 file_options={"content-type": file.content_type or "image/jpeg"}
@@ -57,13 +65,13 @@ def upload_to_supabase(file, folder="profiles"):
             # If upload fails, it might be because the bucket doesn't exist
             err_msg = str(upload_err)
             if "bucket" in err_msg.lower() or "not found" in err_msg.lower():
-                return None, f"Storage bucket '{settings.SUPABASE_BUCKET}' not found. Please create it in Supabase and set it to Public."
+                return None, f"Storage bucket '{bucket}' not found. Please create it in Supabase and set it to Public."
             raise upload_err
 
         # Construct public URL manually for maximum compatibility
         # Format: [SUPABASE_URL]/storage/v1/object/public/[BUCKET]/[FILENAME]
-        base_url = settings.SUPABASE_URL.rstrip('/')
-        public_url = f"{base_url}/storage/v1/object/public/{settings.SUPABASE_BUCKET}/{filename}"
+        base_url = url.rstrip('/')
+        public_url = f"{base_url}/storage/v1/object/public/{bucket}/{filename}"
         
         logger.info(f"Successfully uploaded profile picture: {public_url}")
         return public_url, None
