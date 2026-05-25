@@ -87,8 +87,9 @@ const Attendance = () => {
   }, [isStudent, academicYear]);
 
   const fetchAnalytics = useCallback(async () => {
+    if (!academicYear) return; // wait until year is loaded
     setLoadingAnalytics(true);
-    setAnalytics(null); // clear stale data immediately
+    setAnalytics(null);
     try {
       const params = { academic_year: academicYear };
       if (selectedClassroom) params.classroom = selectedClassroom;
@@ -100,7 +101,7 @@ const Attendance = () => {
 
   useEffect(() => {
     if (view === 'analytics') fetchAnalytics();
-  }, [view, fetchAnalytics]);
+  }, [view, fetchAnalytics, academicYear]); // academicYear here ensures re-fetch when year loads
 
   const loadAttendance = useCallback(async () => {
     if (!selectedClassroom || !selectedDate || isStudent) return;
@@ -127,9 +128,9 @@ const Attendance = () => {
   useEffect(() => { loadAttendance(); }, [loadAttendance]);
 
   const fetchHistory = useCallback(async () => {
-    if (!selectedClassroom) return;
+    if (!selectedClassroom || !academicYear) return; // wait until both are ready
     setLoadingHistory(true);
-    setHistory([]); // clear stale data immediately
+    setHistory([]);
     try {
       const params = new URLSearchParams({
         classroom: selectedClassroom,
@@ -144,7 +145,7 @@ const Attendance = () => {
 
   useEffect(() => {
     if (view === 'history' && selectedClassroom) fetchHistory();
-  }, [view, fetchHistory]);
+  }, [view, fetchHistory, academicYear]); // academicYear here ensures re-fetch when year loads
 
   // Mark in draft only (no API call)
   const markDraft = (studentId, status) => {
@@ -571,7 +572,9 @@ const Attendance = () => {
       {/* ── HISTORY VIEW ── */}
       {view === 'history' && (
         <>
-          {!selectedClassroom ? (
+          {yearLoading ? (
+            <div className="flex items-center justify-center h-24 md:h-48"><div className="animate-spin rounded-full h-5 w-5 md:h-10 md:w-10 border-b-2 border-violet-600" /></div>
+          ) : !selectedClassroom ? (
             <div className="bg-white border border-slate-200 rounded-xl shadow-sm p-4 md:p-16 text-center text-slate-400 font-bold text-[8px] md:text-sm uppercase tracking-widest">Select a classroom to view history.</div>
           ) : loadingHistory ? (
             <div className="flex items-center justify-center h-24 md:h-48"><div className="animate-spin rounded-full h-5 w-5 md:h-10 md:w-10 border-b-2 border-violet-600" /></div>
@@ -641,10 +644,10 @@ const Attendance = () => {
       {/* ── ANALYTICS VIEW ── */}
       {view === 'analytics' && (
         <div className="space-y-6 animate-fade-in">
-          {loadingAnalytics ? (
+          {(yearLoading || loadingAnalytics) ? (
             <div className="flex items-center justify-center h-48"><div className="w-10 h-10 rounded-full border-2 border-slate-100 border-t-violet-600 animate-spin" /></div>
           ) : !analytics ? (
-            <div className="bg-white border border-slate-200 rounded-xl shadow-sm p-16 text-center text-slate-400 font-bold text-sm uppercase tracking-widest">Failed to load analytics.</div>
+            <div className="bg-white border border-slate-200 rounded-xl shadow-sm p-16 text-center text-slate-400 font-bold text-sm uppercase tracking-widest">No analytics data for {academicYear || 'this year'}.</div>
           ) : (
             <>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
