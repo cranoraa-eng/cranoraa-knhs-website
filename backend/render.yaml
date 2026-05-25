@@ -24,3 +24,15 @@ services:
         value: 3.11.0
       - key: DJANGO_SETTINGS_MODULE
         value: school_portal.settings
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: SUPABASE_STORAGE_BUCKET
+        value: profile-pictures
+      - key: MAILJET_API_KEY
+        sync: false
+      - key: MAILJET_SECRET_KEY
+        sync: false
+      - key: MAILJET_SENDER_EMAIL
+        value: noreply@kiwalan-nhs.edu.ph
