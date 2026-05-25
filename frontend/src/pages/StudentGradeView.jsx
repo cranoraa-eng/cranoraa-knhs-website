@@ -291,24 +291,24 @@ const StudentGradeView = () => {
   );
 
   return (
-    <div className="animate-in fade-in duration-700 p-3 sm:p-4 md:p-6">
+    <div className="animate-in fade-in duration-700 p-2.5 sm:p-4 md:p-6">
 
       {/* Header */}
-      <div className="mb-5 flex flex-col gap-4 sm:mb-6 md:flex-row md:items-center md:justify-between md:gap-6">
-        <div className="flex items-start gap-3 sm:items-center">
+      <div className="mb-4 flex flex-col gap-3 sm:mb-6 md:flex-row md:items-center md:justify-between md:gap-6">
+        <div className="flex items-start gap-2.5 sm:items-center sm:gap-3">
           {isViewingOther && (
             <button onClick={() => navigate(-1)}
-              className="mt-0.5 shrink-0 rounded-xl border border-slate-200 bg-white p-2.5 text-slate-500 shadow-sm transition-all hover:text-violet-600 active:scale-95 sm:mt-0">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              className="mt-0.5 shrink-0 rounded-lg border border-slate-200 bg-white p-2 text-slate-500 shadow-sm transition-all hover:text-violet-600 active:scale-95 sm:mt-0 sm:rounded-xl sm:p-2.5">
+              <svg className="h-4.5 w-4.5 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
               </svg>
             </button>
           )}
           <div className="min-w-0 text-left">
-            <h1 className="text-xl font-black tracking-tight text-slate-800 sm:text-2xl md:text-3xl">
+            <h1 className="text-lg font-black tracking-tight text-slate-800 sm:text-2xl md:text-3xl">
               {isViewingOther ? `${displayName}'s Grades` : 'My Grades'}
             </h1>
-            <p className="mt-1 max-w-2xl text-xs font-medium text-slate-500 sm:text-sm md:text-base">
+            <p className="mt-0.5 max-w-2xl text-[11px] font-medium leading-snug text-slate-500 sm:mt-1 sm:text-sm md:text-base">
               {isViewingOther
                 ? `Final grades for ${displayName}`
                 : 'Your final grades by subject and quarter'}
@@ -317,8 +317,8 @@ const StudentGradeView = () => {
         </div>
         {grades.length > 0 && (
           <button onClick={downloadPDF}
-            className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#2D1B4D] px-4 py-2.5 text-sm font-bold text-white shadow-md transition-all hover:bg-[#3D2B5D] active:scale-95 sm:w-auto sm:px-6">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-[#2D1B4D] px-3.5 py-2 text-[13px] font-bold text-white shadow-md transition-all hover:bg-[#3D2B5D] active:scale-95 sm:w-auto sm:gap-2 sm:rounded-xl sm:px-6 sm:py-2.5 sm:text-sm">
+            <svg className="h-4.5 w-4.5 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
             Download PDF
@@ -328,9 +328,9 @@ const StudentGradeView = () => {
 
       {/* Filters */}
       {grades.length > 0 && (
-        <div className="mb-6 grid grid-cols-1 gap-3 rounded-2xl border border-slate-100 bg-white p-3 shadow-sm sm:grid-cols-2 sm:p-4 lg:grid-cols-3">
+        <div className="mb-5 grid grid-cols-1 gap-2.5 rounded-xl border border-slate-100 bg-white p-2.5 shadow-sm sm:mb-6 sm:grid-cols-2 sm:gap-3 sm:rounded-2xl sm:p-4 lg:grid-cols-3">
           <select value={filterQuarter} onChange={e => setFilterQuarter(e.target.value)}
-            className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 text-sm font-medium transition-all hover:border-violet-300 shadow-sm cursor-pointer">
+            className="w-full rounded-lg border border-slate-200 px-3 py-2 text-[13px] font-medium shadow-sm transition-all cursor-pointer hover:border-violet-300 focus:outline-none focus:ring-2 focus:ring-violet-500 sm:rounded-xl sm:px-4 sm:py-2.5 sm:text-sm">
             <option value="">All Quarters</option>
             <option value="1">Q1 — First Quarter</option>
             <option value="2">Q2 — Second Quarter</option>
@@ -338,19 +338,19 @@ const StudentGradeView = () => {
             <option value="4">Q4 — Fourth Quarter</option>
           </select>
           <select value={filterSubject} onChange={e => setFilterSubject(e.target.value)}
-            className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 text-sm font-medium transition-all hover:border-violet-300 shadow-sm cursor-pointer">
+            className="w-full rounded-lg border border-slate-200 px-3 py-2 text-[13px] font-medium shadow-sm transition-all cursor-pointer hover:border-violet-300 focus:outline-none focus:ring-2 focus:ring-violet-500 sm:rounded-xl sm:px-4 sm:py-2.5 sm:text-sm">
             <option value="">All Subjects</option>
             {uniqueSubjects.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
           </select>
-          <div className="flex items-center overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition-all focus-within:ring-2 focus-within:ring-violet-500 sm:col-span-2 lg:col-span-1">
-            <button onClick={() => handleYearChange('prev')} className="px-3 py-2.5 text-slate-500 transition-colors hover:bg-slate-50 active:bg-slate-100 sm:px-4 border-r border-slate-100">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="flex items-center overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm transition-all focus-within:ring-2 focus-within:ring-violet-500 sm:col-span-2 sm:rounded-xl lg:col-span-1">
+            <button onClick={() => handleYearChange('prev')} className="border-r border-slate-100 px-2.5 py-2 text-slate-500 transition-colors hover:bg-slate-50 active:bg-slate-100 sm:px-4 sm:py-2.5">
+              <svg className="h-3.5 w-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
               </svg>
             </button>
-            <div className="min-w-0 flex-1 px-2 text-center text-sm font-bold text-slate-700 select-none">{filterYear}</div>
-            <button onClick={() => handleYearChange('next')} className="px-3 py-2.5 text-slate-500 transition-colors hover:bg-slate-50 active:bg-slate-100 sm:px-4 border-l border-slate-100">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="min-w-0 flex-1 px-2 text-center text-[13px] font-bold text-slate-700 select-none sm:text-sm">{filterYear}</div>
+            <button onClick={() => handleYearChange('next')} className="border-l border-slate-100 px-2.5 py-2 text-slate-500 transition-colors hover:bg-slate-50 active:bg-slate-100 sm:px-4 sm:py-2.5">
+              <svg className="h-3.5 w-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
               </svg>
             </button>
@@ -360,29 +360,29 @@ const StudentGradeView = () => {
 
       {/* Grade table */}
       {subjectEntries.length === 0 ? (
-        <div className="animate-in zoom-in-95 rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm duration-500 sm:p-16">
-          <div className="w-20 h-20 bg-violet-50 rounded-full flex items-center justify-center mx-auto mb-6">
-            <svg className="w-10 h-10 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="animate-in zoom-in-95 rounded-xl border border-slate-200 bg-white p-6 text-center shadow-sm duration-500 sm:rounded-2xl sm:p-16">
+          <div className="mb-4 mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-violet-50 sm:mb-6 sm:h-20 sm:w-20">
+            <svg className="h-8 w-8 text-purple-300 sm:h-10 sm:w-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
             </svg>
           </div>
-          <h3 className="mb-2 text-lg font-bold tracking-tight text-slate-700 sm:text-xl">No Final Grades Yet</h3>
-          <p className="mx-auto max-w-xs text-sm font-medium text-slate-400">Final grades will appear here once encoded by your subject teachers.</p>
+          <h3 className="mb-2 text-base font-bold tracking-tight text-slate-700 sm:text-xl">No Final Grades Yet</h3>
+          <p className="mx-auto max-w-xs text-[13px] font-medium leading-snug text-slate-400 sm:text-sm">Final grades will appear here once encoded by your subject teachers.</p>
         </div>
       ) : (
         <>
-          <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-md">
+          <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-md sm:rounded-2xl">
             <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-slate-300">
-              <table className="w-full min-w-[640px] sm:min-w-[820px]">
+              <table className="w-full min-w-[580px] sm:min-w-[820px]">
                 <thead>
                   <tr className="bg-slate-50 border-b border-slate-200 text-slate-500">
-                    <th className="min-w-[180px] px-4 py-4 text-left text-[10px] font-bold uppercase tracking-widest sm:min-w-[200px] sm:px-6">Subject Details</th>
-                    <th className="px-3 py-4 text-center text-[10px] font-bold uppercase tracking-widest sm:px-4">Q1</th>
-                    <th className="px-3 py-4 text-center text-[10px] font-bold uppercase tracking-widest sm:px-4">Q2</th>
-                    <th className="px-3 py-4 text-center text-[10px] font-bold uppercase tracking-widest sm:px-4">Q3</th>
-                    <th className="px-3 py-4 text-center text-[10px] font-bold uppercase tracking-widest sm:px-4">Q4</th>
+                    <th className="min-w-[160px] px-3 py-3 text-left text-[9px] font-bold uppercase tracking-[0.18em] sm:min-w-[200px] sm:px-6 sm:py-4 sm:text-[10px] sm:tracking-widest">Subject Details</th>
+                    <th className="px-2 py-3 text-center text-[9px] font-bold uppercase tracking-[0.18em] sm:px-4 sm:py-4 sm:text-[10px] sm:tracking-widest">Q1</th>
+                    <th className="px-2 py-3 text-center text-[9px] font-bold uppercase tracking-[0.18em] sm:px-4 sm:py-4 sm:text-[10px] sm:tracking-widest">Q2</th>
+                    <th className="px-2 py-3 text-center text-[9px] font-bold uppercase tracking-[0.18em] sm:px-4 sm:py-4 sm:text-[10px] sm:tracking-widest">Q3</th>
+                    <th className="px-2 py-3 text-center text-[9px] font-bold uppercase tracking-[0.18em] sm:px-4 sm:py-4 sm:text-[10px] sm:tracking-widest">Q4</th>
                     <th className="hidden px-4 py-4 text-center text-[10px] font-bold uppercase tracking-widest sm:table-cell">Average</th>
-                    <th className="px-3 py-4 text-center text-[10px] font-bold uppercase tracking-widest sm:px-4">Rounded</th>
+                    <th className="px-2 py-3 text-center text-[9px] font-bold uppercase tracking-[0.18em] sm:px-4 sm:py-4 sm:text-[10px] sm:tracking-widest">Rounded</th>
                     <th className="hidden min-w-[140px] px-4 py-4 text-center text-[10px] font-bold uppercase tracking-widest sm:table-cell">Remarks</th>
                   </tr>
                 </thead>
@@ -394,21 +394,21 @@ const StudentGradeView = () => {
                     const remarks = rounded != null ? remarksFor(rounded) : null;
                     return (
                       <tr key={s.subject_code} className={`hover:bg-violet-50/50 transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'}`}>
-                        <td className="px-4 py-4 sm:px-6">
-                          <div className="font-bold text-slate-800 text-sm leading-tight">{s.subject_name}</div>
-                          <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">{s.subject_code}</div>
+                        <td className="px-3 py-3 sm:px-6 sm:py-4">
+                          <div className="text-[13px] font-bold leading-tight text-slate-800 sm:text-sm">{s.subject_name}</div>
+                          <div className="mt-0.5 text-[9px] font-bold uppercase tracking-[0.18em] text-slate-400 sm:mt-1 sm:text-[10px] sm:tracking-widest">{s.subject_code}</div>
                         </td>
                         {[1,2,3,4].map(q => {
                           const g = s.quarters[q];
                           const score = g ? parseFloat(g.raw_score) : null;
                           return (
-                            <td key={q} className="px-3 py-4 text-center sm:px-4">
+                            <td key={q} className="px-2 py-3 text-center sm:px-4 sm:py-4">
                               {score != null ? (
-                                <span className={`inline-flex items-center justify-center w-11 h-8 rounded-lg border-2 text-[13px] font-black shadow-sm ${scoreColor(score)}`}>
+                                <span className={`inline-flex h-7 w-9 items-center justify-center rounded-md border-2 text-[11px] font-black shadow-sm sm:h-8 sm:w-11 sm:rounded-lg sm:text-[13px] ${scoreColor(score)}`}>
                                   {score}
                                 </span>
                               ) : (
-                                <span className="text-slate-300 text-xs font-bold">—</span>
+                                <span className="text-[11px] font-bold text-slate-300 sm:text-xs">—</span>
                               )}
                             </td>
                           );
@@ -420,12 +420,12 @@ const StudentGradeView = () => {
                             </span>
                           ) : <span className="text-slate-300 text-xs font-bold">—</span>}
                         </td>
-                        <td className="px-3 py-4 text-center sm:px-4">
+                        <td className="px-2 py-3 text-center sm:px-4 sm:py-4">
                           {rounded ? (
-                            <span className={`inline-flex items-center justify-center px-3 py-1 rounded-lg border-2 text-[13px] font-black shadow-sm ${scoreColor(rounded)}`}>
+                            <span className={`inline-flex min-w-[2.25rem] items-center justify-center rounded-md border-2 px-2 py-0.5 text-[11px] font-black shadow-sm sm:rounded-lg sm:px-3 sm:py-1 sm:text-[13px] ${scoreColor(rounded)}`}>
                               {rounded}
                             </span>
-                          ) : <span className="text-slate-300 text-xs font-bold">—</span>}
+                          ) : <span className="text-[11px] font-bold text-slate-300 sm:text-xs">—</span>}
                         </td>
                         <td className="hidden px-4 py-4 text-center sm:table-cell">
                           {remarks ? (
@@ -443,17 +443,17 @@ const StudentGradeView = () => {
 
             {/* Overall average footer */}
             {overallAvg && (
-              <div className="flex flex-col justify-between gap-4 bg-gradient-to-r from-[#2D1B4D] to-[#4B2D7F] px-4 py-5 sm:flex-row sm:items-center sm:px-6">
-                <span className="text-white font-black text-sm uppercase tracking-widest">General Average</span>
-                <div className="flex flex-wrap items-center gap-4 sm:gap-6">
+              <div className="flex flex-col justify-between gap-3 bg-gradient-to-r from-[#2D1B4D] to-[#4B2D7F] px-3.5 py-4 sm:flex-row sm:items-center sm:gap-4 sm:px-6 sm:py-5">
+                <span className="text-[11px] font-black uppercase tracking-[0.18em] text-white sm:text-sm sm:tracking-widest">General Average</span>
+                <div className="flex flex-wrap items-center gap-3 sm:gap-6">
                   <div className="hidden flex-col sm:flex sm:items-end">
                     <div className="text-2xl md:text-3xl font-black text-white leading-none">{overallAvg}</div>
                     <div className="text-[10px] text-purple-300 font-bold uppercase tracking-tighter mt-1">Exact Average</div>
                   </div>
                   <div className="hidden sm:block w-px h-10 bg-white/20" />
                   <div className="flex flex-col sm:items-end">
-                    <div className="text-2xl md:text-3xl font-black text-white leading-none">{overallRounded}</div>
-                    <div className="text-[10px] text-purple-300 font-bold uppercase tracking-tighter mt-1">Rounded Score</div>
+                    <div className="text-xl font-black leading-none text-white sm:text-2xl md:text-3xl">{overallRounded}</div>
+                    <div className="mt-1 text-[9px] font-bold uppercase tracking-[0.16em] text-purple-300 sm:text-[10px] sm:tracking-tighter">Rounded Score</div>
                   </div>
                   {overallRemarks && (
                     <span className="hidden rounded-xl border border-white/10 bg-white/10 px-4 py-1.5 text-[11px] font-black uppercase tracking-widest text-white shadow-lg backdrop-blur-md sm:inline-flex">
@@ -466,16 +466,16 @@ const StudentGradeView = () => {
           </div>
 
           {/* Stats */}
-          <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-3 grid grid-cols-2 gap-2.5 sm:mt-4 sm:grid-cols-2 sm:gap-3 lg:grid-cols-4">
             {[
               { label: 'Total Subjects', value: subjectEntries.length, color: 'text-slate-800' },
               { label: 'Outstanding (90+)', value: allScores.filter(s => s >= 90).length, color: 'text-green-600' },
               { label: 'Passing (75–89)', value: allScores.filter(s => s >= 75 && s < 90).length, color: 'text-blue-600' },
               { label: 'Below 75', value: allScores.filter(s => s < 75).length, color: 'text-red-600' },
             ].map(stat => (
-              <div key={stat.label} className="rounded-xl border border-slate-200 bg-white p-4 text-center shadow-sm">
-                <div className={`text-2xl font-bold ${stat.color}`}>{stat.value}</div>
-                <div className="mt-1 text-[11px] leading-snug text-slate-500 sm:text-xs">{stat.label}</div>
+              <div key={stat.label} className="rounded-lg border border-slate-200 bg-white p-3 text-center shadow-sm sm:rounded-xl sm:p-4">
+                <div className={`text-xl font-bold ${stat.color} sm:text-2xl`}>{stat.value}</div>
+                <div className="mt-1 text-[10px] leading-snug text-slate-500 sm:text-xs">{stat.label}</div>
               </div>
             ))}
           </div>
