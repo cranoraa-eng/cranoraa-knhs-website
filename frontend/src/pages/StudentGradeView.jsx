@@ -102,185 +102,210 @@ const StudentGradeView = () => {
 
   const downloadPDF = () => {
     const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-    const W = 210; const H = 297; const ML = 15; const MR = 15; const CW = W - ML - MR;
+    const W = 210; const H = 297; const ML = 20; const MR = 20; const CW = W - ML - MR;
+    const PRIMARY_RGB = [45, 27, 77];
 
     const sf = (size, weight = 'normal', r = 0, g = 0, b = 0) => {
       doc.setFontSize(size); doc.setFont('helvetica', weight); doc.setTextColor(r, g, b);
     };
-    const hl = (y, lw = 0.3, r = 0, g = 0, b = 0) => {
+    const hl = (y, lw = 0.2, r = 200, g = 200, b = 200) => {
       doc.setDrawColor(r, g, b); doc.setLineWidth(lw); doc.line(ML, y, W - MR, y);
     };
 
-    // Double border
-    doc.setDrawColor(0,0,0); doc.setLineWidth(0.8); doc.rect(8, 8, W-16, H-16);
-    doc.setLineWidth(0.3); doc.rect(10, 10, W-20, H-20);
+    let y = 15;
 
-    // Watermark
-    doc.saveGraphicsState();
-    doc.setGState(new doc.GState({ opacity: 0.04 }));
-    doc.setFontSize(52); doc.setFont('helvetica','bold'); doc.setTextColor(0,0,0);
-    doc.text('OFFICIAL', W/2, H/2-10, { align:'center', angle:45 });
-    doc.restoreGraphicsState();
-
-    let y = 18;
-    // Republic header
-    sf(7,'normal',80,80,80);
+    // --- DepEd Official Header ---
+    sf(8, 'normal', 100, 100, 100);
     doc.text('Republic of the Philippines', W/2, y, {align:'center'}); y+=4;
+    sf(9, 'bold', 0, 0, 0);
     doc.text('Department of Education', W/2, y, {align:'center'}); y+=4;
+    sf(8, 'normal', 100, 100, 100);
     doc.text('Region X — Northern Mindanao', W/2, y, {align:'center'}); y+=4;
-    doc.text('Division of Iligan City', W/2, y, {align:'center'}); y+=5;
+    doc.text('Division of Iligan City', W/2, y, {align:'center'}); y+=6;
 
-    sf(14,'bold',0,0,0);
-    doc.text('KIWALAN NATIONAL HIGH SCHOOL', W/2, y, {align:'center'}); y+=5;
-    sf(8,'normal',60,60,60);
-    doc.text('Kiwalan, Iligan City, Lanao del Norte', W/2, y, {align:'center'}); y+=5;
+    sf(12, 'bold', ...PRIMARY_RGB);
+    doc.text('KIWALAN NATIONAL HIGH SCHOOL', W/2, y, {align:'center'}); y+=4;
+    sf(7, 'italic', 120, 120, 120);
+    doc.text('Kiwalan, Iligan City, Lanao del Norte | School ID: 304050', W/2, y, {align:'center'}); y+=6;
 
-    hl(y, 0.8); y+=1; hl(y, 0.3); y+=5;
+    doc.setDrawColor(...PRIMARY_RGB); doc.setLineWidth(0.5); doc.line(ML, y, W-MR, y); y+=1;
+    doc.setLineWidth(0.1); doc.line(ML, y, W-MR, y); y+=8;
 
-    sf(11,'bold',0,0,0);
-    doc.text('STUDENT GRADE REPORT', W/2, y, {align:'center'}); y+=4;
-    sf(8,'normal',60,60,60);
-    doc.text(filterQuarter ? `Quarter ${filterQuarter}` : 'Full Academic Year', W/2, y, {align:'center'}); y+=6;
-    hl(y, 0.3, 120,120,120); y+=5;
-
-    // Student info
-    const infoLeft = [
-      ['Name', displayName.toUpperCase()],
-      ['LRN / Student ID', viewingUser?.username || user?.username || '—'],
-      ['Grade Level', viewingUser?.profile?.grade_level || user?.profile?.grade_level || '—'],
-    ];
-    const infoRight = [
-      ['Academic Year', filterYear],
-      ['Date Generated', new Date().toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' })],
-      ['Report Period', filterQuarter ? `Quarter ${filterQuarter}` : 'Annual'],
-    ];
-    infoLeft.forEach(([label, value], i) => {
-      const iy = y + i * 6;
-      sf(7.5,'normal',80,80,80); doc.text(`${label}:`, ML, iy);
-      sf(7.5,'bold',0,0,0); doc.text(value, ML+28, iy);
-    });
-    infoRight.forEach(([label, value], i) => {
-      const iy = y + i * 6;
-      sf(7.5,'normal',80,80,80); doc.text(`${label}:`, W/2+2, iy);
-      sf(7.5,'bold',0,0,0); doc.text(value, W/2+30, iy);
-    });
-    y += infoLeft.length * 6 + 4;
-    hl(y, 0.3, 120,120,120); y += 6;
-
-    // Table
-    const COL = { sub:ML, q1:100, q2:114, q3:128, q4:142, avg:156, rnd:167, rem:178 };
-    const ROW_H = 7.5;
-
-    const drawHeader = (startY) => {
-      doc.setFillColor(220,220,220); doc.rect(ML, startY, CW, 8, 'F');
-      doc.setDrawColor(0,0,0); doc.setLineWidth(0.4); doc.rect(ML, startY, CW, 8);
-      sf(7.5,'bold',0,0,0);
-      doc.text('SUBJECT', COL.sub+2, startY+5.5);
-      ['Q1','Q2','Q3','Q4','AVG','RND'].forEach((h,i) => {
-        const xs = [COL.q1,COL.q2,COL.q3,COL.q4,COL.avg,COL.rnd];
-        doc.text(h, xs[i], startY+5.5, {align:'center'});
-      });
-      doc.text('REMARKS', COL.rem+2, startY+5.5);
-      doc.setLineWidth(0.2);
-      [COL.q1-5,COL.q2-5,COL.q3-5,COL.q4-5,COL.avg-5,COL.rnd-5,COL.rem-5].forEach(x => doc.line(x, startY, x, startY+8));
-      return startY + 8;
+    // --- Title & Metadata ---
+    sf(11, 'bold', 0, 0, 0);
+    doc.text('OFFICIAL LEARNER PROGRESS REPORT', W/2, y, {align:'center'}); y+=7;
+    
+    // Metadata grid
+    const metaY = y;
+    sf(7, 'bold', 120, 120, 120); doc.text('LEARNER INFORMATION', ML, y);
+    doc.text('ACADEMIC CONTEXT', W/2 + 5, y); y+=5;
+    
+    const drawMeta = (label, value, x, currY) => {
+      sf(7, 'normal', 100, 100, 100); doc.text(`${label}:`, x, currY);
+      sf(7, 'bold', 0, 0, 0); doc.text(String(value || '—'), x + 25, currY);
     };
 
-    y = drawHeader(y);
+    drawMeta('Full Name', displayName.toUpperCase(), ML, y);
+    drawMeta('Academic Year', filterYear, W/2 + 5, y); y+=5;
+    drawMeta('LRN', viewingUser?.username || user?.username, ML, y);
+    drawMeta('Reporting Period', filterQuarter ? `Quarter ${filterQuarter}` : 'Annual Report', W/2 + 5, y); y+=5;
+    drawMeta('Grade Level', viewingUser?.profile?.grade_level || user?.profile?.grade_level, ML, y);
+    drawMeta('Date Issued', new Date().toLocaleDateString('en-US', { month:'long', day:'numeric', year:'numeric' }), W/2 + 5, y); y+=8;
 
-    Object.values(bySubject).forEach((s, idx) => {
-      if (y + ROW_H > H - 40) {
-        doc.addPage();
-        doc.setDrawColor(0,0,0); doc.setLineWidth(0.8); doc.rect(8,8,W-16,H-16);
-        doc.setLineWidth(0.3); doc.rect(10,10,W-20,H-20);
-        y = 18; sf(8,'bold',0,0,0);
-        doc.text('STUDENT GRADE REPORT (Continued)', W/2, y, {align:'center'}); y+=6;
-        y = drawHeader(y);
+    hl(y); y+=8;
+
+    // --- Scholastic Achievement Table ---
+    sf(9, 'bold', ...PRIMARY_RGB);
+    doc.text('I. SCHOLASTIC ACHIEVEMENT', ML, y); y+=5;
+
+    const COL = { sub:ML, q1:105, q2:118, q3:131, q4:144, rnd:162, rem:175 };
+    
+    // Table Header
+    doc.setFillColor(...PRIMARY_RGB);
+    doc.rect(ML, y, CW, 7, 'F');
+    sf(7, 'bold', 255, 255, 255);
+    doc.text('LEARNING AREAS', COL.sub+2, y+4.5);
+    ['Q1','Q2','Q3','Q4','FINAL'].forEach((h,i) => {
+      const xs = [COL.q1, COL.q2, COL.q3, COL.q4, COL.rnd];
+      doc.text(h, xs[i], y+4.5, {align:'center'});
+    });
+    doc.text('REMARKS', COL.rem, y+4.5);
+    y+=7;
+
+    // Table Body
+    subjectEntries.forEach((s, idx) => {
+      if (y > H - 100) { // Leave room for interpretation and signatures
+        doc.addPage(); y = 20;
+        sf(8, 'bold', ...PRIMARY_RGB); doc.text('SCHOLASTIC ACHIEVEMENT (Continued)', ML, y); y+=6;
       }
-      if (idx % 2 === 0) { doc.setFillColor(248,248,248); doc.rect(ML, y, CW, ROW_H, 'F'); }
-      doc.setDrawColor(200,200,200); doc.setLineWidth(0.2); doc.rect(ML, y, CW, ROW_H);
-      [COL.q1-5,COL.q2-5,COL.q3-5,COL.q4-5,COL.avg-5,COL.rnd-5,COL.rem-5].forEach(x => doc.line(x, y, x, y+ROW_H));
-
-      sf(7.5,'bold',0,0,0);
-      const subText = s.subject_name.length > 28 ? s.subject_name.substring(0,25)+'…' : s.subject_name;
-      doc.text(subText, COL.sub+2, y+4.5);
-      sf(6,'normal',100,100,100); doc.text(s.subject_code, COL.sub+2, y+7);
-
-      // Quarter scores — plain black, no color
-      sf(8,'normal',0,0,0);
-      [1,2,3,4].forEach(q => {
-        const g = s.quarters[q];
-        if (g && g.raw_score != null) {
-          doc.text(String(g.raw_score), COL[`q${q}`], y+5, {align:'center'});
-        } else {
-          sf(8,'normal',180,180,180); doc.text('—', COL[`q${q}`], y+5, {align:'center'}); sf(8,'normal',0,0,0);
-        }
-      });
-
+      
       const scores = [1,2,3,4].map(q => s.quarters[q] ? parseFloat(s.quarters[q].raw_score) : null).filter(v => v !== null);
       const avg = scores.length ? scores.reduce((a,b)=>a+b,0)/scores.length : null;
       const rounded = avg !== null ? Math.round(avg) : null;
       const remark = rounded !== null ? remarksFor(rounded) : null;
-      if (avg !== null) {
-        sf(8,'bold',0,0,0);
-        doc.text(avg.toFixed(2), COL.avg, y+5, {align:'center'});
+
+      if (idx % 2 !== 0) { doc.setFillColor(250, 250, 252); doc.rect(ML, y, CW, 8, 'F'); }
+      doc.setDrawColor(240, 240, 245); doc.setLineWidth(0.1); doc.line(ML, y+8, W-MR, y+8);
+
+      sf(7.5, 'bold', 30, 30, 30);
+      doc.text(s.subject_name, COL.sub+2, y+5);
+      
+      sf(8, 'normal', 0, 0, 0);
+      [1,2,3,4].forEach(q => {
+        const g = s.quarters[q];
+        const val = g ? String(g.raw_score) : '—';
+        if (val === '—') doc.setTextColor(200, 200, 200);
+        doc.text(val, COL[`q${q}`], y+5, {align:'center'});
+        doc.setTextColor(0, 0, 0);
+      });
+
+      if (rounded !== null) {
+        sf(8, 'bold', ...PRIMARY_RGB);
         doc.text(String(rounded), COL.rnd, y+5, {align:'center'});
-        sf(7,'normal',0,0,0);
-        const short = {'Did Not Meet Expectations':'Did Not Meet Exp.'};
-        doc.text(short[remark] || remark || '—', COL.rem+2, y+5);
-      } else {
-        sf(8,'normal',180,180,180);
-        doc.text('—', COL.avg, y+5, {align:'center'}); doc.text('—', COL.rnd, y+5, {align:'center'});
+        sf(6.5, 'normal', 80, 80, 80);
+        doc.text(remark === 'Did Not Meet Expectations' ? 'Failed' : 'Passed', COL.rem, y+5);
       }
-      y += ROW_H;
+      y+=8;
     });
 
-    // General average row
-    if (overallAvg) {
-      y += 1;
-      doc.setFillColor(200,200,200); doc.rect(ML, y, CW, 9, 'F');
-      doc.setDrawColor(0,0,0); doc.setLineWidth(0.5); doc.rect(ML, y, CW, 9);
-      sf(8.5,'bold',0,0,0);
+    // General Average Row
+    if (overallRounded) {
+      doc.setFillColor(245, 245, 250);
+      doc.rect(ML, y, CW, 9, 'F');
+      doc.setDrawColor(...PRIMARY_RGB); doc.setLineWidth(0.3); doc.line(ML, y, W-MR, y);
+      doc.line(ML, y+9, W-MR, y+9);
+      
+      sf(8, 'bold', 0, 0, 0);
       doc.text('GENERAL AVERAGE', COL.sub+2, y+6);
-      doc.text(overallAvg, COL.avg, y+6, {align:'center'});
-      doc.text(String(Math.round(parseFloat(overallAvg))), COL.rnd, y+6, {align:'center'});
-      sf(7.5,'bold',0,0,0);
-      doc.text(remarksFor(Math.round(parseFloat(overallAvg))) || '', COL.rem+2, y+6);
-      y += 12;
+      sf(10, 'bold', ...PRIMARY_RGB);
+      doc.text(String(overallRounded), COL.rnd, y+6, {align:'center'});
+      sf(8, 'bold', ...PRIMARY_RGB);
+      doc.text(overallRemarks || '', COL.rem, y+6);
+      y+=15;
     }
 
-    // Grading scale
-    if (y + 30 > H - 45) { doc.addPage(); y = 18; }
-    hl(y, 0.3, 150,150,150); y += 5;
-    sf(7.5,'bold',0,0,0); doc.text('GRADING SCALE (DepEd Order No. 8, s. 2015)', ML, y); y += 4;
-    const scale = [['90–100','Outstanding (O)'],['85–89','Very Satisfactory (VS)'],['80–84','Satisfactory (S)'],['75–79','Fairly Satisfactory (FS)'],['Below 75','Did Not Meet Exp. (DNME)']];
-    const colW = CW / scale.length;
+    // --- II. DATA INTERPRETATION & SUMMARY ---
+    if (y > H - 80) { doc.addPage(); y = 20; }
+    sf(9, 'bold', ...PRIMARY_RGB);
+    doc.text('II. QUALITATIVE INTERPRETATION & SUMMARY', ML, y); y+=6;
+
+    // Interpretation Logic
+    let interpretation = "";
+    if (overallRounded >= 90) {
+      interpretation = "The learner has demonstrated an outstanding mastery of the core competencies and consistently produces work of exceptional quality. Their academic performance reflects a deep understanding of the learning areas.";
+    } else if (overallRounded >= 85) {
+      interpretation = "The learner has shown a very satisfactory level of performance, meeting most competencies with high proficiency and showing strong analytical skills across major subjects.";
+    } else if (overallRounded >= 80) {
+      interpretation = "The learner has achieved a satisfactory level of proficiency. They have met the basic requirements of the curriculum and show steady progress in their academic journey.";
+    } else if (overallRounded >= 75) {
+      interpretation = "The learner has met the minimum passing requirements. Consistent effort and focused intervention are recommended to further improve proficiency in key learning areas.";
+    } else {
+      interpretation = "The learner is currently working towards meeting the minimum standards. Intensive academic support and regular parent-teacher consultation are highly recommended for the next reporting period.";
+    }
+
+    sf(8, 'normal', 50, 50, 50);
+    const splitInterpretation = doc.splitTextToSize(interpretation, CW - 10);
+    doc.text(splitInterpretation, ML + 5, y);
+    y += (splitInterpretation.length * 4.5) + 8;
+
+    // Strengths and Improvements
+    const validEntries = subjectEntries.filter(s => {
+      const scores = [1,2,3,4].map(q => s.quarters[q] ? parseFloat(s.quarters[q].raw_score) : null).filter(v => v !== null);
+      return scores.length > 0;
+    }).map(s => {
+      const scores = [1,2,3,4].map(q => s.quarters[q] ? parseFloat(s.quarters[q].raw_score) : null).filter(v => v !== null);
+      return { name: s.subject_name, avg: scores.reduce((a,b)=>a+b,0)/scores.length };
+    }).sort((a,b) => b.avg - a.avg);
+
+    if (validEntries.length > 0) {
+      sf(7.5, 'bold', 80, 80, 80);
+      doc.text('ACADEMIC HIGHLIGHTS', ML + 5, y);
+      y += 5;
+      sf(7, 'normal', 100, 100, 100);
+      doc.text(`• Academic Strength: ${validEntries[0].name}`, ML + 8, y); y+=4;
+      if (validEntries.length > 1) {
+        const lowest = validEntries[validEntries.length - 1];
+        if (lowest.avg < 80) {
+          doc.text(`• Area for Development: ${lowest.name} (Requires focused attention)`, ML + 8, y); y+=4;
+        }
+      }
+    }
+    y+=10;
+
+    // --- Grading Scale ---
+    if (y > H - 40) { doc.addPage(); y = 20; }
+    sf(7, 'bold', 120, 120, 120);
+    doc.text('GRADING SCALE (DepEd Order No. 8, s. 2015)', ML, y); y+=4;
+    const scale = [['90–100','Outstanding'],['85–89','Very Satisfactory'],['80–84','Satisfactory'],['75–79','Fairly Satisfactory'],['Below 75','Did Not Meet Exp.']];
     scale.forEach(([range, label], i) => {
-      const sx = ML + i * colW;
-      doc.setFillColor(240,240,240); doc.setDrawColor(180,180,180); doc.setLineWidth(0.2); doc.rect(sx, y, colW-1, 10);
-      sf(6.5,'bold',0,0,0); doc.text(range, sx+colW/2, y+4, {align:'center'});
-      sf(6,'normal',60,60,60); doc.text(label, sx+colW/2, y+8, {align:'center'});
+      const sx = ML + (i * (CW/5));
+      sf(6.5, 'bold', 80, 80, 80); doc.text(range, sx, y);
+      sf(6, 'normal', 120, 120, 120); doc.text(label, sx, y+3.5);
     });
-    y += 14;
+    y+=15;
 
-    // Signatures
-    if (y + 30 > H - 20) { doc.addPage(); y = 18; }
-    hl(y, 0.3, 150,150,150); y += 8;
-    const sigs = [ML+20, W/2, W-MR-20];
-    const sigLabels = ['Class Adviser','School Registrar','School Principal'];
-    sigs.forEach((sx, i) => {
-      doc.setDrawColor(0,0,0); doc.setLineWidth(0.4); doc.line(sx-22, y, sx+22, y);
-      sf(7.5,'bold',0,0,0); doc.text(sigLabels[i], sx, y+4.5, {align:'center'});
-      sf(6.5,'normal',80,80,80); doc.text('Signature over Printed Name', sx, y+8.5, {align:'center'});
-    });
+    // --- Signatures ---
+    if (y > H - 50) { doc.addPage(); y = 20; }
+    const sigW = CW / 3;
+    const drawSig = (label, x) => {
+      doc.setDrawColor(0,0,0); doc.setLineWidth(0.2);
+      doc.line(x + 5, y + 10, x + sigW - 5, y + 10);
+      sf(7, 'bold', 0, 0, 0);
+      doc.text(label, x + sigW/2, y + 14, {align:'center'});
+      sf(6, 'normal', 120, 120, 120);
+      doc.text('Signature over Printed Name', x + sigW/2, y + 17.5, {align:'center'});
+    };
 
-    // Document footer
-    hl(H-18, 0.3, 150,150,150);
-    sf(6.5,'italic',100,100,100);
-    doc.text('This is a computer-generated document from the Kiwalan National High School Portal. Unauthorized alteration is prohibited.', W/2, H-13, {align:'center'});
-    doc.text(`Generated: ${new Date().toLocaleString()}`, W/2, H-9, {align:'center'});
+    drawSig('Class Adviser', ML);
+    drawSig('School Registrar', ML + sigW);
+    drawSig('School Principal', ML + 2*sigW);
 
-    const fname = viewingUser?.username || user?.username || 'student';
+    // --- Footer ---
+    sf(6, 'italic', 150, 150, 150);
+    doc.text('This is a formal academic record generated by the Kiwalan National High School Portal.', W/2, H-15, {align:'center'});
+    doc.text(`Document Reference: ${viewingUser?.username || user?.username}-${Date.now()}`, W/2, H-12, {align:'center'});
+
+    const fname = (viewingUser?.last_name || user?.last_name || 'Student').toUpperCase();
     doc.save(`KNHS_Grade_Report_${fname}_${filterYear}.pdf`);
   };
 
