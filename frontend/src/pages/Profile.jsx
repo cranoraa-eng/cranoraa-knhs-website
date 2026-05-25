@@ -98,7 +98,9 @@ const Profile = () => {
       toast.success('Profile picture updated');
       if (!studentId) refreshUser();
     } catch (err) {
-      toast.error('Failed to upload picture');
+      const msg = err.response?.data?.error || err.response?.data?.detail || 'Failed to upload picture';
+      toast.error(msg);
+      console.error('Upload error:', err);
     } finally {
       setUploading(false);
     }

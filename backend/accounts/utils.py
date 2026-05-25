@@ -28,42 +28,44 @@ def upload_to_supabase(file, folder="profiles"):
         supabase: SupabaseClient = create_client(settings.SUPABASE_URL, settings.SUPABASE_KEY)
         
         # Generate unique filename
-        ext = os.path.splitext(file.name)[1]
+        ext = os.path.splitext(file.name)[1].lower()
+        if not ext:
+            ext = '.jpg'
         filename = f"{folder}/{secrets.token_hex(8)}{ext}"
         
         # Read file content
         file.seek(0)
         content = file.read()
         
-        # Upload
-        # We don't check 'res' directly because different versions of the lib
-        # handle returns differently. If it doesn't raise, we assume success or check manually.
-        try:
-            # Check if bucket exists, if not create it (optional, but good for robustness)
-            # buckets = supabase.storage.list_buckets()
-            # if not any(b.name == settings.SUPABASE_BUCKET for b in buckets):
-            #     supabase.storage.create_bucket(settings.SUPABASE_BUCKET, options={"public": True})
+        # Check file size (e.g., 5MB limit)
+        if len(content) > 5 * 1024 * 1024:
+            return None, "File too large (max 5MB)"
             
-            supabase.storage.from_(settings.SUPABASE_BUCKET).upload(
+        # Upload
+        try:
+            res = supabase.storage.from_(settings.SUPABASE_BUCKET).upload(
                 path=filename,
                 file=content,
                 file_options={"content-type": file.content_type or "image/jpeg"}
             )
+            
+            # For some versions of the library, we need to check the response
+            if hasattr(res, 'error') and res.error:
+                return None, f"Supabase Error: {res.error.get('message', 'Unknown error')}"
+                
         except Exception as upload_err:
-            # If upload fails, it might be because the file already exists (though unlikely with tokens)
-            # or the bucket doesn't exist.
-            err_str = str(upload_err)
-            if "already exists" in err_str.lower():
-                pass # Continue to return URL if it exists
-            else:
-                raise upload_err
+            # If upload fails, it might be because the bucket doesn't exist
+            err_msg = str(upload_err)
+            if "bucket" in err_msg.lower() or "not found" in err_msg.lower():
+                return None, f"Storage bucket '{settings.SUPABASE_BUCKET}' not found. Please create it in Supabase and set it to Public."
+            raise upload_err
 
         # Construct public URL manually for maximum compatibility
         # Format: [SUPABASE_URL]/storage/v1/object/public/[BUCKET]/[FILENAME]
         base_url = settings.SUPABASE_URL.rstrip('/')
-        # Ensure we use the correct public URL format for Supabase
         public_url = f"{base_url}/storage/v1/object/public/{settings.SUPABASE_BUCKET}/{filename}"
         
+        logger.info(f"Successfully uploaded profile picture: {public_url}")
         return public_url, None
     except Exception as e:
         error_msg = str(e)
