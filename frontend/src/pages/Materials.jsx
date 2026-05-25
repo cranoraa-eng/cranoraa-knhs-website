@@ -1,8 +1,9 @@
-﻿import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import api from '../utils/api';
 import { getUser } from '../utils/auth';
 import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
+import { useScrollLock } from '../hooks/useScrollLock';
 
 const GRADE_LEVEL_ORDER = ['Grade 7', 'Grade 8', 'Grade 9', 'Grade 10', 'Grade 11', 'Grade 12'];
 
@@ -38,6 +39,8 @@ const Materials = () => {
   const [saving, setSaving] = useState(false);
   const user = getUser();
   const canManage = user?.role === 'admin' || user?.role === 'teacher';
+
+  useScrollLock(showUploadModal);
 
   const sortedClassrooms = useMemo(() => {
     return [...classrooms].sort((a, b) => {

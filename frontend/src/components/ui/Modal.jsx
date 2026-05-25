@@ -7,19 +7,11 @@
  */
 import React, { useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import { useScrollLock } from '../../hooks/useScrollLock';
 
 export const Modal = ({ open, onClose, title, subtitle, children, size = 'md', className = '' }) => {
   // Lock body scroll when modal is open
-  useEffect(() => {
-    if (open) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
-    }
-    return () => {
-      document.body.style.overflow = 'unset';
-    };
-  }, [open]);
+  useScrollLock(open);
 
   // Close on Escape key
   useEffect(() => {
