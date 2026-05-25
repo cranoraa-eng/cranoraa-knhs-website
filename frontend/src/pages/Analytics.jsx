@@ -11,49 +11,295 @@ const COLORS = ['#8b5cf6', '#10b981', '#3b82f6', '#f59e0b', '#ef4444'];
 
 // ── PDF Export ────────────────────────────────────────────────────────────────
 
-const exportToPDF = async (ref, filename, title, subtitle) => {
+const exportToPDF = async (ref, filename, title, subtitle, meta = {}) => {
   if (!ref.current) return;
   try {
     const { default: html2canvas } = await import('html2canvas');
     const { jsPDF } = await import('jspdf');
 
+    // ── Capture the chart area ──────────────────────────────────────────────
     const canvas = await html2canvas(ref.current, {
       scale: 2,
       useCORS: true,
-      backgroundColor: '#ffffff',
+      backgroundColor: '#f8fafc',
       logging: false,
+      ignoreElements: el => el.classList?.contains('no-print'),
+    });
+    const imgData = canvas.toDataURL('image/png');
+
+    const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    const pageW = pdf.internal.pageSize.getWidth();   // 210
+    const pageH = pdf.internal.pageSize.getHeight();  // 297
+    const margin = 14;
+    const contentW = pageW - margin * 2;
+
+    // ── Palette ─────────────────────────────────────────────────────────────
+    const DARK   = [26,  11,  46];   // #1A0B2E
+    const VIOLET = [99, 102, 241];   // indigo-500
+    const LIGHT  = [248, 250, 252];  // slate-50
+    const MUTED  = [100, 116, 139];  // slate-500
+    const WHITE  = [255, 255, 255];
+    const BORDER = [226, 232, 240];  // slate-200
+
+    // ── Helper: rounded rect ─────────────────────────────────────────────────
+    const roundedRect = (x, y, w, h, r, fillColor, strokeColor) => {
+      if (fillColor) { pdf.setFillColor(...fillColor); pdf.roundedRect(x, y, w, h, r, r, 'F'); }
+      if (strokeColor) { pdf.setDrawColor(...strokeColor); pdf.roundedRect(x, y, w, h, r, r, 'S'); }
+    };
+
+    // ════════════════════════════════════════════════════════════════════════
+    // PAGE 1 — COVER
+    // ════════════════════════════════════════════════════════════════════════
+
+    // Full dark background
+    pdf.setFillColor(...DARK);
+    pdf.rect(0, 0, pageW, pageH, 'F');
+
+    // Decorative violet circle top-right
+    pdf.setFillColor(139, 92, 246, 0.15);
+    pdf.circle(pageW + 10, -10, 80, 'F');
+
+    // Decorative violet circle bottom-left
+    pdf.setFillColor(99, 102, 241, 0.1);
+    pdf.circle(-20, pageH + 20, 70, 'F');
+
+    // School name badge
+    roundedRect(margin, 40, contentW, 10, 2, [45, 27, 77]);
+    pdf.setTextColor(167, 139, 250);
+    pdf.setFontSize(8);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text((meta.schoolName || 'KNHS School Portal').toUpperCase(), pageW / 2, 46.5, { align: 'center' });
+
+    // Report type label
+    pdf.setTextColor(148, 163, 184);
+    pdf.setFontSize(9);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text('ANALYTICS REPORT', pageW / 2, 65, { align: 'center' });
+
+    // Main title
+    pdf.setTextColor(...WHITE);
+    pdf.setFontSize(28);
+    pdf.setFont('helvetica', 'bold');
+    const titleLines = pdf.splitTextToSize(title, contentW);
+    pdf.text(titleLines, pageW / 2, 82, { align: 'center' });
+
+    // Subtitle
+    pdf.setTextColor(167, 139, 250);
+    pdf.setFontSize(11);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text(subtitle, pageW / 2, 82 + titleLines.length * 12 + 6, { align: 'center' });
+
+    // Divider line
+    const divY = 82 + titleLines.length * 12 + 18;
+    pdf.setDrawColor(99, 102, 241);
+    pdf.setLineWidth(0.5);
+    pdf.line(margin + 30, divY, pageW - margin - 30, divY);
+
+    // Meta info cards
+    const metaItems = [
+      { label: 'Generated', value: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) },
+      { label: 'Time', value: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) },
+      { label: 'Academic Year', value: meta.academicYear || '—' },
+      { label: 'Prepared By', value: meta.preparedBy || 'School Administrator' },
+    ];
+    const cardW = (contentW - 9) / 4;
+    metaItems.forEach((item, i) => {
+      const cx = margin + i * (cardW + 3);
+      const cy = divY + 10;
+      roundedRect(cx, cy, cardW, 22, 2, [45, 27, 77]);
+      pdf.setTextColor(148, 163, 184);
+      pdf.setFontSize(7);
+      pdf.setFont('helvetica', 'normal');
+      pdf.text(item.label.toUpperCase(), cx + cardW / 2, cy + 7, { align: 'center' });
+      pdf.setTextColor(...WHITE);
+      pdf.setFontSize(8.5);
+      pdf.setFont('helvetica', 'bold');
+      const valLines = pdf.splitTextToSize(item.value, cardW - 4);
+      pdf.text(valLines[0], cx + cardW / 2, cy + 15, { align: 'center' });
     });
 
-    const imgData = canvas.toDataURL('image/png');
-    const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
-    const pageW = pdf.internal.pageSize.getWidth();
-    const pageH = pdf.internal.pageSize.getHeight();
+    // Summary stats (if provided)
+    if (meta.stats && meta.stats.length > 0) {
+      const statsY = divY + 46;
+      pdf.setTextColor(148, 163, 184);
+      pdf.setFontSize(7);
+      pdf.setFont('helvetica', 'normal');
+      pdf.text('KEY METRICS', pageW / 2, statsY, { align: 'center' });
 
-    // Header bar
-    pdf.setFillColor(26, 11, 46);
-    pdf.rect(0, 0, pageW, 18, 'F');
-    pdf.setTextColor(255, 255, 255);
-    pdf.setFontSize(11);
+      const statW = (contentW - (meta.stats.length - 1) * 4) / meta.stats.length;
+      meta.stats.forEach((stat, i) => {
+        const sx = margin + i * (statW + 4);
+        const sy = statsY + 5;
+        roundedRect(sx, sy, statW, 28, 3, [45, 27, 77]);
+        // Colored top accent
+        pdf.setFillColor(...(stat.color || VIOLET));
+        pdf.roundedRect(sx, sy, statW, 3, 1.5, 1.5, 'F');
+        pdf.setTextColor(148, 163, 184);
+        pdf.setFontSize(6.5);
+        pdf.setFont('helvetica', 'normal');
+        pdf.text(stat.label.toUpperCase(), sx + statW / 2, sy + 10, { align: 'center' });
+        pdf.setTextColor(...WHITE);
+        pdf.setFontSize(16);
+        pdf.setFont('helvetica', 'bold');
+        pdf.text(String(stat.value), sx + statW / 2, sy + 21, { align: 'center' });
+      });
+    }
+
+    // Bottom branding strip
+    pdf.setFillColor(45, 27, 77);
+    pdf.rect(0, pageH - 18, pageW, 18, 'F');
+    pdf.setTextColor(167, 139, 250);
+    pdf.setFontSize(7);
     pdf.setFont('helvetica', 'bold');
-    pdf.text(title, 10, 11);
-    pdf.setFontSize(8);
+    pdf.text('KNHS SCHOOL PORTAL', margin, pageH - 10);
+    pdf.setTextColor(100, 116, 139);
     pdf.setFont('helvetica', 'normal');
-    pdf.text(subtitle, 10, 16);
-    pdf.text(`Generated: ${new Date().toLocaleString()}`, pageW - 10, 11, { align: 'right' });
+    pdf.text('Confidential — For Internal Use Only', pageW - margin, pageH - 10, { align: 'right' });
+    pdf.setTextColor(148, 163, 184);
+    pdf.text('Page 1', pageW / 2, pageH - 10, { align: 'center' });
 
-    // Chart image
-    const imgW = pageW - 20;
-    const imgH = (canvas.height * imgW) / canvas.width;
-    const maxH = pageH - 28;
-    const finalH = Math.min(imgH, maxH);
-    pdf.addImage(imgData, 'PNG', 10, 22, imgW, finalH);
+    // ════════════════════════════════════════════════════════════════════════
+    // PAGE 2 — CHARTS
+    // ════════════════════════════════════════════════════════════════════════
+    pdf.addPage();
+
+    // Light background
+    pdf.setFillColor(...LIGHT);
+    pdf.rect(0, 0, pageW, pageH, 'F');
+
+    // Top header strip
+    pdf.setFillColor(...DARK);
+    pdf.rect(0, 0, pageW, 14, 'F');
+    pdf.setTextColor(...WHITE);
+    pdf.setFontSize(8);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text(title, margin, 9);
+    pdf.setFont('helvetica', 'normal');
+    pdf.setTextColor(167, 139, 250);
+    pdf.text(subtitle, pageW - margin, 9, { align: 'right' });
+
+    // Section label
+    pdf.setTextColor(...MUTED);
+    pdf.setFontSize(7);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('CHARTS & VISUALIZATIONS', margin, 22);
+    pdf.setDrawColor(...VIOLET);
+    pdf.setLineWidth(0.4);
+    pdf.line(margin, 24, margin + 52, 24);
+
+    // Chart image — fit to page with padding
+    const chartY = 28;
+    const maxChartH = pageH - chartY - 22;
+    const imgW = contentW;
+    const imgH = Math.min((canvas.height * imgW) / canvas.width, maxChartH);
+    roundedRect(margin - 2, chartY - 2, imgW + 4, imgH + 4, 3, WHITE, BORDER);
+    pdf.addImage(imgData, 'PNG', margin, chartY, imgW, imgH);
 
     // Footer
-    pdf.setFillColor(248, 250, 252);
-    pdf.rect(0, pageH - 8, pageW, 8, 'F');
-    pdf.setTextColor(100, 116, 139);
+    pdf.setFillColor(...DARK);
+    pdf.rect(0, pageH - 12, pageW, 12, 'F');
+    pdf.setTextColor(167, 139, 250);
     pdf.setFontSize(7);
-    pdf.text('KNHS School Portal — Analytics Report', pageW / 2, pageH - 3, { align: 'center' });
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('KNHS SCHOOL PORTAL', margin, pageH - 5);
+    pdf.setTextColor(100, 116, 139);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text('Confidential — For Internal Use Only', pageW - margin, pageH - 5, { align: 'right' });
+    pdf.setTextColor(148, 163, 184);
+    pdf.text('Page 2', pageW / 2, pageH - 5, { align: 'center' });
+
+    // ════════════════════════════════════════════════════════════════════════
+    // PAGE 3 — INTERPRETATIONS (if provided)
+    // ════════════════════════════════════════════════════════════════════════
+    if (meta.interpretations && meta.interpretations.length > 0) {
+      pdf.addPage();
+
+      pdf.setFillColor(...LIGHT);
+      pdf.rect(0, 0, pageW, pageH, 'F');
+
+      // Header
+      pdf.setFillColor(...DARK);
+      pdf.rect(0, 0, pageW, 14, 'F');
+      pdf.setTextColor(...WHITE);
+      pdf.setFontSize(8);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text(title, margin, 9);
+      pdf.setTextColor(167, 139, 250);
+      pdf.setFont('helvetica', 'normal');
+      pdf.text(subtitle, pageW - margin, 9, { align: 'right' });
+
+      // Section label
+      pdf.setTextColor(...MUTED);
+      pdf.setFontSize(7);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('ANALYSIS & INTERPRETATION', margin, 22);
+      pdf.setDrawColor(...VIOLET);
+      pdf.setLineWidth(0.4);
+      pdf.line(margin, 24, margin + 60, 24);
+
+      let curY = 30;
+      const typeConfig = {
+        good:  { bg: [240, 253, 244], border: [187, 247, 208], icon: '✓', iconColor: [22, 163, 74]  },
+        warn:  { bg: [255, 251, 235], border: [253, 230, 138], icon: '!', iconColor: [217, 119, 6]  },
+        bad:   { bg: [254, 242, 242], border: [254, 202, 202], icon: '✕', iconColor: [220, 38,  38] },
+        info:  { bg: [239, 246, 255], border: [191, 219, 254], icon: 'i', iconColor: [37,  99, 235] },
+      };
+
+      meta.interpretations.forEach((item) => {
+        const cfg = typeConfig[item.type] || typeConfig.info;
+        const textLines = pdf.splitTextToSize(item.text, contentW - 18);
+        const cardH = Math.max(12, textLines.length * 4.5 + 7);
+
+        if (curY + cardH > pageH - 18) {
+          // New page if overflow
+          pdf.addPage();
+          pdf.setFillColor(...LIGHT);
+          pdf.rect(0, 0, pageW, pageH, 'F');
+          pdf.setFillColor(...DARK);
+          pdf.rect(0, 0, pageW, 14, 'F');
+          pdf.setTextColor(...WHITE);
+          pdf.setFontSize(8);
+          pdf.setFont('helvetica', 'bold');
+          pdf.text(title, margin, 9);
+          curY = 20;
+        }
+
+        // Card background
+        pdf.setFillColor(...cfg.bg);
+        pdf.setDrawColor(...cfg.border);
+        pdf.setLineWidth(0.3);
+        pdf.roundedRect(margin, curY, contentW, cardH, 2, 2, 'FD');
+
+        // Icon circle
+        pdf.setFillColor(...cfg.iconColor);
+        pdf.circle(margin + 6, curY + cardH / 2, 3, 'F');
+        pdf.setTextColor(...WHITE);
+        pdf.setFontSize(6);
+        pdf.setFont('helvetica', 'bold');
+        pdf.text(cfg.icon, margin + 6, curY + cardH / 2 + 2, { align: 'center' });
+
+        // Text
+        pdf.setTextColor(30, 41, 59);
+        pdf.setFontSize(8);
+        pdf.setFont('helvetica', 'normal');
+        pdf.text(textLines, margin + 13, curY + 5.5);
+
+        curY += cardH + 3;
+      });
+
+      // Footer
+      pdf.setFillColor(...DARK);
+      pdf.rect(0, pageH - 12, pageW, 12, 'F');
+      pdf.setTextColor(167, 139, 250);
+      pdf.setFontSize(7);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('KNHS SCHOOL PORTAL', margin, pageH - 5);
+      pdf.setTextColor(100, 116, 139);
+      pdf.setFont('helvetica', 'normal');
+      pdf.text('Confidential — For Internal Use Only', pageW - margin, pageH - 5, { align: 'right' });
+      pdf.setTextColor(148, 163, 184);
+      pdf.text(`Page ${pdf.internal.getNumberOfPages()}`, pageW / 2, pageH - 5, { align: 'center' });
+    }
 
     pdf.save(filename);
   } catch (err) {
@@ -687,13 +933,52 @@ const Analytics = () => {
 
   const handleExport = async (ref, tab) => {
     setExporting(true);
+    const now = new Date();
     const titles = {
-      system: ['System Overview Report', `Academic Year ${academicYear}`],
-      grades: ['Academic Performance Report', `${academicYear} · ${filterLevel !== 'all' ? filterLevel : 'All Levels'} · Q${filterQuarter !== 'all' ? filterQuarter : 'All'}`],
-      attendance: ['Attendance Dynamics Report', `${academicYear} · ${attendanceTimeframe === 'all' ? 'All-Time' : attendanceTimeframe}`],
+      system:     ['System Overview',        `Academic Year ${academicYear}`],
+      grades:     ['Academic Performance',   `${academicYear} · ${filterLevel !== 'all' ? filterLevel : 'All Levels'} · ${filterQuarter !== 'all' ? 'Q' + filterQuarter : 'All Quarters'}`],
+      attendance: ['Attendance Dynamics',    `${academicYear} · ${attendanceTimeframe === 'all' ? 'All-Time' : attendanceTimeframe === 'today' ? 'Today' : 'Past 7 Days'}`],
     };
     const [title, subtitle] = titles[tab] || ['Analytics Report', academicYear];
-    await exportToPDF(ref, `knhs-${tab}-analytics-${academicYear}.pdf`, title, subtitle);
+
+    // Build stats chips per tab
+    const statsMap = {
+      system: data ? [
+        { label: 'Total Students', value: data.dashboard?.total_students ?? '—', color: [59, 130, 246] },
+        { label: 'Total Faculty',  value: data.dashboard?.total_teachers ?? '—', color: [16, 185, 129] },
+        { label: 'Avg Grade',      value: data.dashboard?.average_grade ? `${data.dashboard.average_grade}%` : '—', color: [139, 92, 246] },
+        { label: "Today's Rate",   value: `${data.dashboard?.today_rate ?? 0}%`, color: [245, 158, 11] },
+        { label: 'Active Users',   value: data.dashboard?.active_users ?? '—', color: [99, 102, 241] },
+      ] : [],
+      grades: gradeData ? [
+        { label: 'Avg Score',   value: `${gradeData.overall_average ?? 0}%`, color: [99, 102, 241] },
+        { label: 'Students',    value: gradeData.total_students ?? 0,         color: [16, 185, 129] },
+        { label: 'Grade Entries', value: gradeData.total_entries ?? 0,        color: [59, 130, 246] },
+      ] : [],
+      attendance: attendanceAnalytics ? [
+        { label: 'Present',  value: attendanceAnalytics.pie_data?.find(d => d.name === 'Present')?.value ?? 0,  color: [16, 185, 129] },
+        { label: 'Absent',   value: attendanceAnalytics.pie_data?.find(d => d.name === 'Absent')?.value ?? 0,   color: [239, 68, 68] },
+        { label: 'Late',     value: attendanceAnalytics.pie_data?.find(d => d.name === 'Late')?.value ?? 0,     color: [245, 158, 11] },
+        { label: 'Excused',  value: attendanceAnalytics.pie_data?.find(d => d.name === 'Excused')?.value ?? 0,  color: [99, 102, 241] },
+      ] : [],
+    };
+
+    // Build interpretations per tab
+    const interpMap = {
+      system:     interpretSystemData(data),
+      grades:     interpretGradeData(gradeData, filterLevel, filterSubject, filterQuarter),
+      attendance: interpretAttendanceData(attendanceAnalytics),
+    };
+
+    const meta = {
+      schoolName:      'Kiwalan National High School',
+      academicYear,
+      preparedBy:      'School Administrator',
+      stats:           statsMap[tab] || [],
+      interpretations: interpMap[tab] || [],
+    };
+
+    await exportToPDF(ref, `knhs-${tab}-analytics-${academicYear}.pdf`, title, subtitle, meta);
     setExporting(false);
   };
   
