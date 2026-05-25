@@ -3,6 +3,7 @@ import api from '../utils/api';
 import Swal from 'sweetalert2';
 import toast from 'react-hot-toast';
 import { useScrollLock } from '../hooks/useScrollLock';
+import { Modal } from '../components/ui/Modal';
 
 const GRADE_LEVELS = ['Grade 7', 'Grade 8', 'Grade 9', 'Grade 10', 'Grade 11', 'Grade 12'];
 
@@ -345,100 +346,85 @@ const ClassManagement = () => {
       )}
 
       {/* Create / Edit Modal */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-[100] p-4 animate-fade-in">
-          <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden animate-scale-in">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
-              <div>
-                <h2 className="text-base font-black text-slate-900 tracking-tight">
-                  {editingClass ? 'Edit Class' : 'Add New Class'}
-                </h2>
-                {/* Show which year this class will be assigned to */}
-                <p className="text-[10px] font-bold text-violet-600 uppercase tracking-widest mt-0.5">
-                  {selectedYearName}
-                </p>
-              </div>
-              <button onClick={() => setShowModal(false)}
-                className="p-2 rounded-xl text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-all no-min">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-            <form onSubmit={handleSubmit} className="p-6 space-y-4">
-              <div className="space-y-1.5">
-                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider">
-                  Grade Level <span className="text-red-500">*</span>
-                </label>
-                <select
-                  value={formData.grade_level}
-                  onChange={e => {
-                    const level = e.target.value;
-                    setFormData(prev => ({
-                      ...prev,
-                      grade_level: level,
-                      name: prev.name || level + ' - ',
-                    }));
-                  }}
-                  className="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-white text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-400 transition-all"
-                  required
-                >
-                  <option value="">Select grade level</option>
-                  {GRADE_LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
-                </select>
-              </div>
-              <div className="space-y-1.5">
-                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider">
-                  Class Name <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={formData.name}
-                  onChange={e => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="e.g. Grade 7 - Rizal"
-                  className="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-white text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-400 transition-all"
-                  required
-                />
-                <p className="text-xs text-slate-400">Include the grade level, e.g. "Grade 7 - Rizal"</p>
-              </div>
-              <div className="space-y-1.5">
-                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider">
-                  Adviser / Teacher <span className="text-slate-400 font-medium normal-case tracking-normal">(optional)</span>
-                </label>
-                <select
-                  value={formData.teacher || ''}
-                  onChange={e => setFormData({ ...formData, teacher: e.target.value })}
-                  className="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-white text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-400 transition-all"
-                >
-                  <option value="">— No Adviser —</option>
-                  {teachers.map(t => {
-                    const otherClass = classes.find(c => c.teacher === t.id && c.id !== editingClass?.id);
-                    const isAssigned = !!otherClass;
-                    return (
-                      <option key={t.id} value={t.id} disabled={isAssigned}>
-                        {t.first_name && t.last_name ? `${t.first_name} ${t.last_name}` : t.username}
-                        {isAssigned ? ` (Adviser of ${otherClass.name})` : ` (${t.email})`}
-                      </option>
-                    );
-                  })}
-                </select>
-                <p className="text-xs text-slate-400">Leave empty to assign an adviser later.</p>
-              </div>
-              <div className="flex gap-3 pt-2">
-                <button type="submit" disabled={saving}
-                  className="flex-1 inline-flex items-center justify-center gap-2 py-2.5 rounded-xl bg-violet-600 text-white text-sm font-bold hover:bg-violet-700 active:scale-95 transition-all disabled:opacity-50">
-                  {saving && <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
-                  {saving ? 'Saving…' : editingClass ? 'Update Class' : 'Create Class'}
-                </button>
-                <button type="button" onClick={() => setShowModal(false)}
-                  className="flex-1 py-2.5 rounded-xl bg-slate-100 text-slate-700 text-sm font-bold hover:bg-slate-200 active:scale-95 transition-all">
-                  Cancel
-                </button>
-              </div>
-            </form>
+      <Modal
+        open={showModal}
+        onClose={() => setShowModal(false)}
+        title={editingClass ? 'Edit Class' : 'Add New Class'}
+        subtitle={selectedYearName}
+        size="md"
+      >
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-1.5">
+            <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider">
+              Grade Level <span className="text-red-500">*</span>
+            </label>
+            <select
+              value={formData.grade_level}
+              onChange={e => {
+                const level = e.target.value;
+                setFormData(prev => ({
+                  ...prev,
+                  grade_level: level,
+                  name: prev.name || level + ' - ',
+                }));
+              }}
+              className="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-white text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-400 transition-all"
+              required
+            >
+              <option value="">Select grade level</option>
+              {GRADE_LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
+            </select>
           </div>
-        </div>
-      )}
+          <div className="space-y-1.5">
+            <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider">
+              Class Name <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              value={formData.name}
+              onChange={e => setFormData({ ...formData, name: e.target.value })}
+              placeholder="e.g. Grade 7 - Rizal"
+              className="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-white text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-400 transition-all"
+              required
+            />
+            <p className="text-xs text-slate-400">Include the grade level, e.g. "Grade 7 - Rizal"</p>
+          </div>
+          <div className="space-y-1.5">
+            <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider">
+              Adviser / Teacher <span className="text-slate-400 font-medium normal-case tracking-normal">(optional)</span>
+            </label>
+            <select
+              value={formData.teacher || ''}
+              onChange={e => setFormData({ ...formData, teacher: e.target.value })}
+              className="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-white text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-400 transition-all"
+            >
+              <option value="">— No Adviser —</option>
+              {teachers.map(t => {
+                const otherClass = classes.find(c => c.teacher === t.id && c.id !== editingClass?.id);
+                const isAssigned = !!otherClass;
+                return (
+                  <option key={t.id} value={t.id} disabled={isAssigned}>
+                    {t.first_name && t.last_name ? `${t.first_name} ${t.last_name}` : t.username}
+                    {isAssigned ? ` (Adviser of ${otherClass.name})` : ` (${t.email})`}
+                  </option>
+                );
+              })}
+            </select>
+            <p className="text-xs text-slate-400">Leave empty to assign an adviser later.</p>
+          </div>
+          <div className="flex gap-3 pt-2">
+            <button type="submit" disabled={saving}
+              className="flex-1 inline-flex items-center justify-center gap-2 py-2.5 rounded-xl bg-violet-600 text-white text-sm font-bold hover:bg-violet-700 active:scale-95 transition-all disabled:opacity-50">
+              {saving && <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
+              {saving ? 'Saving…' : editingClass ? 'Update Class' : 'Create Class'}
+            </button>
+            <button type="button" onClick={() => setShowModal(false)}
+              className="flex-1 py-2.5 rounded-xl bg-slate-100 text-slate-700 text-sm font-bold hover:bg-slate-200 active:scale-95 transition-all">
+              Cancel
+            </button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 };
