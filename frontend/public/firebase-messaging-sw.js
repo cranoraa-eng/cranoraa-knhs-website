@@ -21,12 +21,12 @@
 // ─── Replace these with your actual Firebase project config ──────────────────
 // You can find them in Firebase Console → Project Settings → General → Your apps
 const FIREBASE_CONFIG = {
-  apiKey:            self.VITE_FIREBASE_API_KEY            || '__VITE_FIREBASE_API_KEY__',
-  authDomain:        self.VITE_FIREBASE_AUTH_DOMAIN        || '__VITE_FIREBASE_AUTH_DOMAIN__',
-  projectId:         self.VITE_FIREBASE_PROJECT_ID         || '__VITE_FIREBASE_PROJECT_ID__',
-  storageBucket:     self.VITE_FIREBASE_STORAGE_BUCKET     || '__VITE_FIREBASE_STORAGE_BUCKET__',
-  messagingSenderId: self.VITE_FIREBASE_MESSAGING_SENDER_ID|| '__VITE_FIREBASE_MESSAGING_SENDER_ID__',
-  appId:             self.VITE_FIREBASE_APP_ID             || '__VITE_FIREBASE_APP_ID__',
+  apiKey:            'AIzaSyD5JKllrVK6oZrBmRaHEVKWdz2xTdtMqVY',
+  authDomain:        'notification-knhs.firebaseapp.com',
+  projectId:         'notification-knhs',
+  storageBucket:     'notification-knhs.firebasestorage.app',
+  messagingSenderId: '117715050118',
+  appId:             '1:117715050118:web:cb20ddaa193e9ac286fb07',
 };
 // ─────────────────────────────────────────────────────────────────────────────
 
