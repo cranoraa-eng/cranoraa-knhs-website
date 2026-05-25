@@ -38,15 +38,30 @@ def upload_to_supabase(file, folder="profiles"):
         # Upload
         # We don't check 'res' directly because different versions of the lib
         # handle returns differently. If it doesn't raise, we assume success or check manually.
-        supabase.storage.from_(settings.SUPABASE_BUCKET).upload(
-            path=filename,
-            file=content,
-            file_options={"content-type": file.content_type or "image/jpeg"}
-        )
+        try:
+            # Check if bucket exists, if not create it (optional, but good for robustness)
+            # buckets = supabase.storage.list_buckets()
+            # if not any(b.name == settings.SUPABASE_BUCKET for b in buckets):
+            #     supabase.storage.create_bucket(settings.SUPABASE_BUCKET, options={"public": True})
+            
+            supabase.storage.from_(settings.SUPABASE_BUCKET).upload(
+                path=filename,
+                file=content,
+                file_options={"content-type": file.content_type or "image/jpeg"}
+            )
+        except Exception as upload_err:
+            # If upload fails, it might be because the file already exists (though unlikely with tokens)
+            # or the bucket doesn't exist.
+            err_str = str(upload_err)
+            if "already exists" in err_str.lower():
+                pass # Continue to return URL if it exists
+            else:
+                raise upload_err
 
         # Construct public URL manually for maximum compatibility
         # Format: [SUPABASE_URL]/storage/v1/object/public/[BUCKET]/[FILENAME]
         base_url = settings.SUPABASE_URL.rstrip('/')
+        # Ensure we use the correct public URL format for Supabase
         public_url = f"{base_url}/storage/v1/object/public/{settings.SUPABASE_BUCKET}/{filename}"
         
         return public_url, None
