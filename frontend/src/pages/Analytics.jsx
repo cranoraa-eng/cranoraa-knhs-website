@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import api from '../utils/api';
 import { getCurrentAcademicYear } from '../utils/dateHelpers';
 import { 
@@ -8,6 +8,198 @@ import {
 import { Spinner } from '../components/Spinner';
 
 const COLORS = ['#8b5cf6', '#10b981', '#3b82f6', '#f59e0b', '#ef4444'];
+
+// ── PDF Export ────────────────────────────────────────────────────────────────
+
+const exportToPDF = async (ref, filename, title, subtitle) => {
+  if (!ref.current) return;
+  try {
+    const { default: html2canvas } = await import('html2canvas');
+    const { jsPDF } = await import('jspdf');
+
+    const canvas = await html2canvas(ref.current, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: '#ffffff',
+      logging: false,
+    });
+
+    const imgData = canvas.toDataURL('image/png');
+    const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+    const pageW = pdf.internal.pageSize.getWidth();
+    const pageH = pdf.internal.pageSize.getHeight();
+
+    // Header bar
+    pdf.setFillColor(26, 11, 46);
+    pdf.rect(0, 0, pageW, 18, 'F');
+    pdf.setTextColor(255, 255, 255);
+    pdf.setFontSize(11);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text(title, 10, 11);
+    pdf.setFontSize(8);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text(subtitle, 10, 16);
+    pdf.text(`Generated: ${new Date().toLocaleString()}`, pageW - 10, 11, { align: 'right' });
+
+    // Chart image
+    const imgW = pageW - 20;
+    const imgH = (canvas.height * imgW) / canvas.width;
+    const maxH = pageH - 28;
+    const finalH = Math.min(imgH, maxH);
+    pdf.addImage(imgData, 'PNG', 10, 22, imgW, finalH);
+
+    // Footer
+    pdf.setFillColor(248, 250, 252);
+    pdf.rect(0, pageH - 8, pageW, 8, 'F');
+    pdf.setTextColor(100, 116, 139);
+    pdf.setFontSize(7);
+    pdf.text('KNHS School Portal — Analytics Report', pageW / 2, pageH - 3, { align: 'center' });
+
+    pdf.save(filename);
+  } catch (err) {
+    console.error('PDF export failed:', err);
+    alert('PDF export failed. Please try again.');
+  }
+};
+
+// ── Interpretation Helpers ────────────────────────────────────────────────────
+
+const InterpretationPanel = ({ items }) => (
+  <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 mt-4 space-y-2">
+    <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3 flex items-center gap-2">
+      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+      </svg>
+      Interpretation
+    </p>
+    <div className="space-y-2">
+      {items.map((item, i) => (
+        <div key={i} className={`flex items-start gap-2.5 p-2.5 rounded-lg border ${item.type === 'good' ? 'bg-emerald-50 border-emerald-100' : item.type === 'warn' ? 'bg-amber-50 border-amber-100' : item.type === 'bad' ? 'bg-rose-50 border-rose-100' : 'bg-white border-slate-100'}`}>
+          <span className="text-sm flex-shrink-0 mt-0.5">
+            {item.type === 'good' ? '✅' : item.type === 'warn' ? '⚠️' : item.type === 'bad' ? '🔴' : 'ℹ️'}
+          </span>
+          <p className="text-[10px] font-bold text-slate-700 leading-relaxed">{item.text}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
+const interpretSystemData = (data) => {
+  if (!data) return [];
+  const items = [];
+  const rate = data.dashboard?.today_rate || 0;
+  const avg = data.dashboard?.average_grade || 0;
+  const pending = data.dashboard?.pending_approvals || 0;
+  const active = data.dashboard?.active_users || 0;
+
+  if (rate >= 90) items.push({ type: 'good', text: `Excellent attendance today at ${rate}%. Students are highly engaged.` });
+  else if (rate >= 75) items.push({ type: 'warn', text: `Attendance today is ${rate}%. Acceptable but below the 90% target. Monitor absenteeism trends.` });
+  else if (rate > 0) items.push({ type: 'bad', text: `Low attendance today at ${rate}%. Immediate follow-up with advisers is recommended.` });
+
+  if (avg >= 85) items.push({ type: 'good', text: `School average grade of ${avg}% is Very Satisfactory. Academic performance is strong.` });
+  else if (avg >= 75) items.push({ type: 'warn', text: `School average grade of ${avg}% meets the passing threshold but has room for improvement.` });
+  else if (avg > 0) items.push({ type: 'bad', text: `School average grade of ${avg}% is below 75%. Intervention programs may be needed.` });
+
+  if (pending > 0) items.push({ type: 'warn', text: `${pending} account${pending > 1 ? 's are' : ' is'} pending approval. Review and approve to allow access.` });
+  else items.push({ type: 'good', text: 'All account registrations have been reviewed. No pending approvals.' });
+
+  if (active > 0) items.push({ type: 'info', text: `${active} user${active > 1 ? 's are' : ' is'} currently active in the portal.` });
+
+  return items;
+};
+
+const interpretGradeData = (gradeData, filterLevel, filterSubject, filterQuarter) => {
+  if (!gradeData || gradeData.total_students === 0) return [];
+  const items = [];
+  const avg = gradeData.overall_average || 0;
+  const cats = gradeData.category_counts || [];
+  const outstanding = cats.find(c => c.name.includes('Outstanding'))?.value || 0;
+  const dnm = cats.find(c => c.name.includes('Did Not'))?.value || 0;
+  const total = gradeData.total_students || 1;
+  const outPct = Math.round((outstanding / total) * 100);
+  const dnmPct = Math.round((dnm / total) * 100);
+
+  const scope = filterLevel !== 'all' ? filterLevel : 'all grade levels';
+  const qLabel = filterQuarter !== 'all' ? `Q${filterQuarter}` : 'all quarters';
+
+  if (avg >= 90) items.push({ type: 'good', text: `Outstanding average of ${avg}% across ${scope} for ${qLabel}. Students are performing excellently.` });
+  else if (avg >= 85) items.push({ type: 'good', text: `Very Satisfactory average of ${avg}% for ${scope}. Performance is above expectations.` });
+  else if (avg >= 75) items.push({ type: 'warn', text: `Average of ${avg}% for ${scope} meets the passing standard. Consider targeted support for struggling students.` });
+  else if (avg > 0) items.push({ type: 'bad', text: `Average of ${avg}% for ${scope} is below the passing threshold of 75%. Immediate academic intervention is recommended.` });
+
+  if (outPct >= 30) items.push({ type: 'good', text: `${outPct}% of students are in the Outstanding category — a strong indicator of effective teaching.` });
+  if (dnmPct > 20) items.push({ type: 'bad', text: `${dnmPct}% of students (${dnm}) did not meet expectations. Remedial programs should be prioritized.` });
+  else if (dnmPct > 0) items.push({ type: 'warn', text: `${dnmPct}% of students (${dnm}) did not meet expectations. Monitor these students closely.` });
+  else items.push({ type: 'good', text: 'All students are meeting the minimum passing standard of 75%.' });
+
+  const byLevel = gradeData.by_level || [];
+  if (byLevel.length > 1) {
+    const sorted = [...byLevel].sort((a, b) => b.average - a.average);
+    const top = sorted[0];
+    const bottom = sorted[sorted.length - 1];
+    if (top && bottom && top.label !== bottom.label) {
+      items.push({ type: 'info', text: `${top.label} leads with ${top.average}% average. ${bottom.label} has the lowest at ${bottom.average}% — consider allocating more resources there.` });
+    }
+  }
+
+  return items;
+};
+
+const interpretAttendanceData = (analytics) => {
+  if (!analytics) return [];
+  const items = [];
+  const pie = analytics.pie_data || [];
+  const total = pie.reduce((s, d) => s + d.value, 0);
+  if (total === 0) return [{ type: 'info', text: 'No attendance records found for this period.' }];
+
+  const present = pie.find(d => d.name === 'Present')?.value || 0;
+  const absent = pie.find(d => d.name === 'Absent')?.value || 0;
+  const late = pie.find(d => d.name === 'Late')?.value || 0;
+  const excused = pie.find(d => d.name === 'Excused')?.value || 0;
+  const presentRate = Math.round(((present + late + excused) / total) * 100);
+  const absentRate = Math.round((absent / total) * 100);
+
+  if (presentRate >= 95) items.push({ type: 'good', text: `Excellent overall attendance rate of ${presentRate}%. Students are consistently present.` });
+  else if (presentRate >= 85) items.push({ type: 'good', text: `Good attendance rate of ${presentRate}%. Minor absences are within acceptable range.` });
+  else if (presentRate >= 75) items.push({ type: 'warn', text: `Attendance rate of ${presentRate}% is at the minimum threshold. Investigate recurring absences.` });
+  else items.push({ type: 'bad', text: `Low attendance rate of ${presentRate}%. Significant absenteeism detected — parent/guardian communication is advised.` });
+
+  if (absentRate > 15) items.push({ type: 'bad', text: `${absentRate}% absence rate (${absent} records) is high. Consider home visitation or counseling programs.` });
+  if (late > 0) {
+    const latePct = Math.round((late / total) * 100);
+    if (latePct > 10) items.push({ type: 'warn', text: `${latePct}% of records are marked Late (${late} instances). Review school arrival policies.` });
+  }
+
+  const rankings = analytics.section_rankings || [];
+  if (rankings.length > 0) {
+    const top = rankings[0];
+    const bottom = rankings[rankings.length - 1];
+    if (top.total_records > 0) items.push({ type: 'good', text: `Top section: ${top.name} with ${top.rate}% attendance rate.` });
+    if (bottom.total_records > 0 && bottom.rate < 75) items.push({ type: 'bad', text: `${bottom.name} has the lowest attendance at ${bottom.rate}%. Needs immediate attention.` });
+  }
+
+  return items;
+};
+
+// ── Export Button ─────────────────────────────────────────────────────────────
+
+const ExportButton = ({ onClick, loading }) => (
+  <button
+    onClick={onClick}
+    disabled={loading}
+    className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-xl text-[10px] font-black text-slate-600 uppercase tracking-widest hover:bg-slate-50 hover:border-violet-300 hover:text-violet-700 active:scale-95 transition-all shadow-sm disabled:opacity-50"
+  >
+    {loading ? (
+      <div className="w-3.5 h-3.5 border-2 border-slate-300 border-t-violet-600 rounded-full animate-spin" />
+    ) : (
+      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+      </svg>
+    )}
+    Export PDF
+  </button>
+);
 
 // --- Sub-components (Moved to top to avoid ReferenceErrors) ---
 
@@ -486,6 +678,24 @@ const Analytics = () => {
   const [activeTab, setActiveTab] = useState('system');
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  // PDF export refs — one per tab
+  const systemRef = useRef(null);
+  const gradesRef = useRef(null);
+  const attendanceRef = useRef(null);
+  const [exporting, setExporting] = useState(false);
+
+  const handleExport = async (ref, tab) => {
+    setExporting(true);
+    const titles = {
+      system: ['System Overview Report', `Academic Year ${academicYear}`],
+      grades: ['Academic Performance Report', `${academicYear} · ${filterLevel !== 'all' ? filterLevel : 'All Levels'} · Q${filterQuarter !== 'all' ? filterQuarter : 'All'}`],
+      attendance: ['Attendance Dynamics Report', `${academicYear} · ${attendanceTimeframe === 'all' ? 'All-Time' : attendanceTimeframe}`],
+    };
+    const [title, subtitle] = titles[tab] || ['Analytics Report', academicYear];
+    await exportToPDF(ref, `knhs-${tab}-analytics-${academicYear}.pdf`, title, subtitle);
+    setExporting(false);
+  };
   
   // Grade specific filters
   const [gradeData, setGradeData] = useState(null);
@@ -588,28 +798,37 @@ const Analytics = () => {
 
   return (
     <div className="space-y-4 pb-8 animate-fade-in max-w-full overflow-hidden">
-      {/* Tab Navigation */}
-      <div className="flex flex-wrap gap-2 bg-slate-100/50 p-1 rounded-xl border border-slate-200 w-fit">
-        {tabs.map(tab => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${
-              activeTab === tab.id 
-                ? 'bg-slate-900 text-white shadow-lg' 
-                : 'text-slate-500 hover:bg-slate-200'
-            }`}
-          >
-            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d={tab.icon} />
-            </svg>
-            {tab.label}
-          </button>
-        ))}
+      {/* Tab Navigation + Export */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap gap-2 bg-slate-100/50 p-1 rounded-xl border border-slate-200">
+          {tabs.map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${
+                activeTab === tab.id
+                  ? 'bg-slate-900 text-white shadow-lg'
+                  : 'text-slate-500 hover:bg-slate-200'
+              }`}
+            >
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d={tab.icon} />
+              </svg>
+              {tab.label}
+            </button>
+          ))}
+        </div>
+        <ExportButton
+          loading={exporting}
+          onClick={() => {
+            const refMap = { system: systemRef, grades: gradesRef, attendance: attendanceRef };
+            handleExport(refMap[activeTab], activeTab);
+          }}
+        />
       </div>
 
       {activeTab === 'system' && (
-        <div className="space-y-4 animate-fade-in">
+        <div className="space-y-4 animate-fade-in" ref={systemRef}>
           {!data && loading ? <Spinner /> : (
             <>
               <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 bg-slate-900 p-8 rounded-2xl border border-slate-800 shadow-2xl">
@@ -650,6 +869,9 @@ const Analytics = () => {
                   <div className="lg:col-span-5">
                     <TrafficIntelligenceSection data={data?.dashboard?.charts?.active_users_trends} />
                   </div>
+                  <div className="lg:col-span-12">
+                    <InterpretationPanel items={interpretSystemData(data)} />
+                  </div>
                 </div>
               )}
             </>
@@ -658,7 +880,7 @@ const Analytics = () => {
       )}
 
       {activeTab === 'grades' && (
-        <div className="space-y-4 animate-fade-in">
+        <div className="space-y-4 animate-fade-in" ref={gradesRef}>
           {gradeLoading && !gradeData ? <Spinner /> : (
             <>
               <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4 bg-slate-900 py-8 px-6 rounded-2xl border border-slate-800 shadow-2xl">
@@ -729,9 +951,9 @@ const Analytics = () => {
               ) : (
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
                   <div className="lg:col-span-4">
-                    <GradeDistributionPieSection 
-                      data={gradeData.category_counts} 
-                      total={distributionMode === 'student' ? gradeData.total_students : gradeData.total_entries} 
+                    <GradeDistributionPieSection
+                      data={gradeData.category_counts}
+                      total={distributionMode === 'student' ? gradeData.total_students : gradeData.total_entries}
                       label={distributionMode === 'student' ? 'Students' : 'Entries'}
                     />
                   </div>
@@ -741,6 +963,9 @@ const Analytics = () => {
                   <div className="lg:col-span-12">
                     <GradeRankingSection data={gradeData.by_group} filterSubject={filterSubject} meta={gradeData.meta} timeframe={gradeTimeframe} />
                   </div>
+                  <div className="lg:col-span-12">
+                    <InterpretationPanel items={interpretGradeData(gradeData, filterLevel, filterSubject, filterQuarter)} />
+                  </div>
                 </div>
               )}
             </>
@@ -749,7 +974,7 @@ const Analytics = () => {
       )}
 
       {activeTab === 'attendance' && (
-        <div className="space-y-4 animate-fade-in">
+        <div className="space-y-4 animate-fade-in" ref={attendanceRef}>
           {attendanceLoading && !attendanceAnalytics ? <Spinner /> : (
             <>
               <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 bg-slate-900 p-8 rounded-2xl border border-slate-800 shadow-2xl">
@@ -793,6 +1018,9 @@ const Analytics = () => {
                   </div>
                   <div className="lg:col-span-8">
                     <AttendanceByLevelBarSection data={attendanceAnalytics.grade_trends} />
+                  </div>
+                  <div className="lg:col-span-12">
+                    <InterpretationPanel items={interpretAttendanceData(attendanceAnalytics)} />
                   </div>
                 </div>
               )}
