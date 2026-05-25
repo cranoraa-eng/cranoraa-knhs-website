@@ -22,6 +22,8 @@ const Login = () => {
     if (user) {
       if (user.must_change_password) {
         navigate('/force-password-change', { replace: true });
+      } else if (user.role === 'parent') {
+        navigate('/parent-dashboard', { replace: true });
       } else {
         navigate('/dashboard', { replace: true });
       }
@@ -77,7 +79,11 @@ const Login = () => {
       }
       signIn(userData);
       toast.success('Welcome back!');
-      navigate('/dashboard', { replace: true });
+      if (userData.role === 'parent') {
+        navigate('/parent-dashboard', { replace: true });
+      } else {
+        navigate('/dashboard', { replace: true });
+      }
     } catch (err) {
       setLoading(false);
       const status = err.response?.status;
@@ -198,7 +204,7 @@ const Login = () => {
 
           {/* Login type toggle */}
           <div className="flex p-1 bg-slate-100 rounded-xl mb-6 border border-slate-200">
-            {['student', 'teacher'].map(type => (
+            {['student', 'teacher', 'parent'].map(type => (
               <button
                 key={type}
                 onClick={() => { setLoginType(type); setIdentifier(''); setFieldErrors({}); }}
@@ -208,7 +214,7 @@ const Login = () => {
                     : 'text-slate-500 hover:text-slate-700'
                 }`}
               >
-                {type === 'student' ? 'Student' : 'Teacher'}
+                {type === 'student' ? 'Student' : type === 'teacher' ? 'Teacher' : 'Parent'}
               </button>
             ))}
           </div>
@@ -218,7 +224,7 @@ const Login = () => {
             {/* Identifier */}
             <div>
               <label htmlFor="identifier" className="block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wider">
-                {loginType === 'student' ? 'Student ID or Email' : 'Teacher Email'}
+                {loginType === 'student' ? 'Student ID or Email' : loginType === 'parent' ? 'Email Address' : 'Teacher Email'}
               </label>
               <input
                 id="identifier"
@@ -226,7 +232,7 @@ const Login = () => {
                 autoComplete="username"
                 value={identifier}
                 onChange={e => { setIdentifier(e.target.value); setFieldErrors(p => ({ ...p, identifier: '' })); }}
-                placeholder={loginType === 'student' ? 'Student ID or email address' : 'teacher@knhs.edu.ph'}
+                placeholder={loginType === 'student' ? 'Student ID or email address' : loginType === 'parent' ? 'parent@email.com' : 'teacher@knhs.edu.ph'}
                 className={`w-full px-4 py-2.5 rounded-xl border text-sm bg-white transition-colors focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 ${
                   fieldErrors.identifier ? 'border-red-400 bg-red-50' : 'border-slate-200'
                 }`}
@@ -291,6 +297,8 @@ const Login = () => {
           <p className="text-center text-xs text-slate-400 mt-6">
             {loginType === 'student'
               ? 'No account? Contact your school administrator.'
+              : loginType === 'parent'
+              ? 'No account? Contact the school office to register.'
               : 'No account? Contact the ICT coordinator.'}
           </p>
         </div>
