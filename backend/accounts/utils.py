@@ -33,6 +33,8 @@ def upload_to_supabase(file, folder="profiles"):
 
     try:
         from supabase import create_client, Client as SupabaseClient
+        
+        # Initialize client with explicitly sanitized values
         supabase: SupabaseClient = create_client(url, key)
         
         # Generate unique filename
@@ -45,31 +47,45 @@ def upload_to_supabase(file, folder="profiles"):
         file.seek(0)
         content = file.read()
         
-        # Check file size (e.g., 5MB limit)
+        # Check file size (5MB limit)
         if len(content) > 5 * 1024 * 1024:
             return None, "File too large (max 5MB)"
             
-        # Upload
+        # Upload using a more robust approach
         try:
-            res = supabase.storage.from_(bucket).upload(
+            storage_client = supabase.storage.from_(bucket)
+            
+            # Use the upload method - in newer supabase-py this returns a response 
+            # or raises an exception. We handle both.
+            res = storage_client.upload(
                 path=filename,
                 file=content,
                 file_options={"content-type": file.content_type or "image/jpeg"}
             )
             
-            # For some versions of the library, we need to check the response
+            # Check if res is a dict (older versions) or has error attr
+            if isinstance(res, dict) and 'error' in res:
+                return None, f"Supabase Error: {res.get('message', res.get('error'))}"
+            
             if hasattr(res, 'error') and res.error:
-                return None, f"Supabase Error: {res.error.get('message', 'Unknown error')}"
-                
+                # If res is an object with an error attribute (some versions)
+                err_msg = res.error.get('message', str(res.error)) if isinstance(res.error, dict) else str(res.error)
+                return None, f"Supabase Error: {err_msg}"
+
         except Exception as upload_err:
-            # If upload fails, it might be because the bucket doesn't exist
+            # This is where the "'dict' object has no attribute 'text'" often comes from 
+            # inside the library. We catch it and try to extract the real message.
             err_msg = str(upload_err)
+            
+            if "'dict' object has no attribute 'text'" in err_msg:
+                return None, "Storage Error: The Supabase client encountered an internal error. This usually means your SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY is incorrect, or the bucket 'profile-pictures' is not Public."
+            
             if "bucket" in err_msg.lower() or "not found" in err_msg.lower():
                 return None, f"Storage bucket '{bucket}' not found. Please create it in Supabase and set it to Public."
-            raise upload_err
+                
+            return None, f"Upload Failed: {err_msg}"
 
-        # Construct public URL manually for maximum compatibility
-        # Format: [SUPABASE_URL]/storage/v1/object/public/[BUCKET]/[FILENAME]
+        # Construct public URL manually
         base_url = url.rstrip('/')
         public_url = f"{base_url}/storage/v1/object/public/{bucket}/{filename}"
         
