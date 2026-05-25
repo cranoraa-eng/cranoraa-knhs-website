@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import api from '../utils/api';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
+import { useScrollLock } from '../hooks/useScrollLock';
 
 const ProfileField = ({ label, value }) => (
   <div className="py-2 border-b border-slate-50 last:border-0">
@@ -18,6 +19,8 @@ const MyClasses = () => {
   const [loading, setLoading] = useState(true);
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [showProfileModal, setShowProfileModal] = useState(false);
+
+  useScrollLock(showProfileModal);
 
   useEffect(() => {
     if (user?.id) fetchMyClasses();

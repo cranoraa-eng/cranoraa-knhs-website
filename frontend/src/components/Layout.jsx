@@ -8,6 +8,7 @@ import Swal from 'sweetalert2';
 import toast from 'react-hot-toast';
 import { useNetworkStatus } from '../hooks/useNetworkStatus';
 import { getMuted, toggleMute, playSound } from '../utils/sounds';
+import { useScrollLock } from '../hooks/useScrollLock';
 import PullToRefresh from './PullToRefresh';
 
 const NavItem = ({ to, label, isActive, icon, onClick }) => (
@@ -77,6 +78,8 @@ const Layout = () => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { isOnline } = useNetworkStatus();
+
+  useScrollLock(sidebarOpen);
 
   const isActive = (path) => location.pathname === path;
 

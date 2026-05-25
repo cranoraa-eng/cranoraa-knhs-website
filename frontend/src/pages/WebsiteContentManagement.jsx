@@ -1,5 +1,9 @@
 import { useState, useEffect } from 'react';
 import api from '../utils/api';
+import toast from 'react-hot-toast';
+import Swal from 'sweetalert2';
+import { useScrollLock } from '../hooks/useScrollLock';
+
 const WebsiteContentManagement = () => {
   const [content, setContent] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -8,6 +12,8 @@ const WebsiteContentManagement = () => {
   const [activeCategory, setActiveCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
+
+  useScrollLock(showAddModal);
 
   const [newSection, setNewSection] = useState({
     category: 'home',

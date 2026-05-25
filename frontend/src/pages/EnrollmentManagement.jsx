@@ -1,6 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import api from '../utils/api';
+import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
+import { useScrollLock } from '../hooks/useScrollLock';
 
 const EnrollmentManagement = () => {
   const [applications, setApplications] = useState([]);
@@ -9,6 +11,8 @@ const EnrollmentManagement = () => {
   const [filter, setFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [activeActionMenu, setActiveActionMenu] = useState(null);
+
+  useScrollLock(!!selectedApplication);
 
   useEffect(() => {
     fetchApplications();

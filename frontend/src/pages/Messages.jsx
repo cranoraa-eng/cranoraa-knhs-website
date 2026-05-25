@@ -69,7 +69,7 @@ const Messages = () => {
   // Pinned messages panel
   const [showPinnedPanel, setShowPinnedPanel]     = useState(false);
 
-  useScrollLock(showGroupModal);
+  useScrollLock(showGroupModal || showGroupSettings || showMembersPanel || showPinnedPanel || !!activeMoreMenu || !!showReactionPicker);
 
   // ── Helpers ───────────────────────────────────────────────────────────────
   const scrollToBottom = () => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
