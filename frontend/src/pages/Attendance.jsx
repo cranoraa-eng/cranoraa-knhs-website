@@ -2,12 +2,12 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import api from '../utils/api';
 import { useAuth } from '../context/AuthContext';
-import { getCurrentAcademicYear, getLocalDate } from '../utils/dateHelpers';
+import { getLocalDate } from '../utils/dateHelpers';
 import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
-import { 
-  ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, 
-  PieChart, Pie, Cell, BarChart, Bar, Legend 
+import {
+  ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
+  PieChart, Pie, Cell, BarChart, Bar, Legend
 } from 'recharts';
 
 const STATUS_CONFIG = {
@@ -31,8 +31,9 @@ const Attendance = () => {
   const location = useLocation();
   const isStudent = user?.role === 'student';
 
-  // Global Academic Year context
-  const [academicYear, setAcademicYear] = useState(localStorage.getItem('knhs_academic_year') || getCurrentAcademicYear());
+  // Academic year — auto-synced from system settings (active year)
+  const [academicYear, setAcademicYear] = useState('');
+  const [yearLoading, setYearLoading] = useState(true);
 
   // Teacher/admin state
   const [classrooms, setClassrooms]             = useState([]);
@@ -58,28 +59,32 @@ const Attendance = () => {
   const [loadingHistory, setLoadingHistory] = useState(false);
   const [loadingAnalytics, setLoadingAnalytics] = useState(false);
 
+  // Fetch active academic year from system settings on mount
   useEffect(() => {
+    api.get('/system/settings/')
+      .then(r => {
+        const year = r.data.academic_year || '';
+        setAcademicYear(year);
+      })
+      .catch(() => {
+        api.get('/admin/academic-years/')
+          .then(r => {
+            const active = r.data.find(y => y.is_active);
+            if (active) setAcademicYear(active.name);
+          })
+          .catch(() => {});
+      })
+      .finally(() => setYearLoading(false));
+  }, []);
+
+  useEffect(() => {
+    if (!academicYear) return;
     if (!isStudent) {
       api.get(`/classrooms/?academic_year=${academicYear}`).then(r => setClassrooms(r.data)).catch(() => toast.error('Failed to load classrooms'));
     } else {
       api.get('/attendance/').then(r => setMyAttendance(r.data)).catch(() => toast.error('Failed to load attendance'));
     }
   }, [isStudent, academicYear]);
-
-  const handleYearChange = (dir) => {
-    const [start, end] = academicYear.split('-').map(Number);
-    const newYear = dir === 'next' ? `${start + 1}-${end + 1}` : `${start - 1}-${end - 1}`;
-    setAcademicYear(newYear);
-    localStorage.setItem('knhs_academic_year', newYear);
-    // Reset classroom so the new year's classroom list is used cleanly
-    setSelectedClassroom('');
-    // Clear stale data immediately so old year's data doesn't flash
-    setHistory([]);
-    setAnalytics(null);
-    setStudents([]);
-    setSavedAttendance({});
-    setDraftAttendance({});
-  };
 
   const fetchAnalytics = useCallback(async () => {
     setLoadingAnalytics(true);
@@ -338,7 +343,7 @@ const Attendance = () => {
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 mb-4">
         <div className="text-center lg:text-left min-w-0">
           <h1 className="text-xl md:text-3xl font-black text-slate-800 tracking-tight uppercase truncate">Attendance Tracker</h1>
-          <div className="flex items-center justify-center lg:justify-start gap-2 mt-0.5">
+          <div className="flex items-center justify-center lg:justify-start gap-2 mt-0.5 flex-wrap">
             <p className="text-[9px] md:text-sm text-slate-500 font-medium uppercase tracking-widest truncate">
               {view === 'mark'
                 ? `Marking: ${new Date(selectedDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
@@ -348,6 +353,16 @@ const Attendance = () => {
               <span className={`px-2 py-0.5 rounded text-[8px] md:text-[10px] font-black uppercase tracking-widest ${isWeekend(selectedDate) ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-500'}`}>
                 {getDayName(selectedDate)}
               </span>
+            )}
+            {/* Active year badge — auto-synced from Settings */}
+            {academicYear && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-violet-100 text-violet-700 text-[8px] md:text-[10px] font-black uppercase tracking-widest border border-violet-200">
+                <span className="w-1.5 h-1.5 rounded-full bg-violet-500" />
+                {academicYear}
+              </span>
+            )}
+            {yearLoading && (
+              <span className="text-[8px] text-slate-400 font-bold uppercase tracking-widest">Loading year…</span>
             )}
           </div>
         </div>
@@ -378,7 +393,7 @@ const Attendance = () => {
             </div>
           </div>
         )}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-1.5 md:gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-1.5 md:gap-4">
           <div className="min-w-0">
             <label className="block text-[7px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Classroom</label>
             <select value={selectedClassroom} onChange={e => setSelectedClassroom(e.target.value)}
@@ -386,10 +401,6 @@ const Attendance = () => {
               <option value="">Select classroom</option>
               {sortedClassrooms.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
-          </div>
-          <div className="min-w-0">
-            <label className="block text-[7px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Academic Year</label>
-            <YearSelector academicYear={academicYear} onYearChange={handleYearChange} />
           </div>
           <div className="min-w-0">
             <label className="block text-[7px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Date</label>
@@ -710,30 +721,5 @@ const Attendance = () => {
     </div>
   );
 };
-
-const YearSelector = ({ academicYear, onYearChange }) => (
-  <div className="relative min-w-[140px]">
-    <label className="absolute -top-2 left-2 px-1 bg-white text-[8px] font-black text-slate-500 uppercase tracking-widest z-10">Academic Year</label>
-    <div className="flex items-center bg-slate-800 border border-slate-700 rounded-lg overflow-hidden h-[38px] group/selector">
-      <button 
-        type="button"
-        onClick={() => onYearChange('prev')} 
-        className="px-2 h-full hover:bg-slate-700 text-slate-400 border-r border-slate-700 transition-all active:scale-95 active:bg-slate-900 flex items-center justify-center group-hover/selector:text-white"
-      >
-        <svg className="w-3 h-3 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M15 19l-7-7 7-7" /></svg>
-      </button>
-      <div className="flex-1 px-3 text-[10px] font-black text-white uppercase tracking-widest text-center select-none tabular-nums">
-        {academicYear}
-      </div>
-      <button 
-        type="button"
-        onClick={() => onYearChange('next')} 
-        className="px-2 h-full hover:bg-slate-700 text-slate-400 border-l border-slate-700 transition-all active:scale-95 active:bg-slate-900 flex items-center justify-center group-hover/selector:text-white"
-      >
-        <svg className="w-3 h-3 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" /></svg>
-      </button>
-    </div>
-  </div>
-);
 
 export default Attendance;
