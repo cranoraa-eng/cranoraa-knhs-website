@@ -91,3 +91,22 @@ self.addEventListener('notificationclick', (event) => {
       })
   );
 });
+
+/**
+ * CRITICAL: Do NOT intercept fetch or navigate events.
+ *
+ * The Workbox PWA service worker (sw.js, registered by vite-plugin-pwa)
+ * handles all caching, navigation fallback, and the skipWaiting reload flow.
+ *
+ * If this SW intercepts fetch events it will:
+ *   1. Break the Workbox SW update flow (causing the "stuck on Applying update" bug)
+ *   2. Interfere with API calls and page navigations
+ *
+ * This SW is ONLY for FCM push message handling — nothing else.
+ */
+self.addEventListener('fetch', () => {
+  // Intentionally empty — pass all requests through to Workbox SW / network
+});
+
+// Do NOT call self.skipWaiting() or self.clients.claim() here.
+// Those are managed exclusively by the Workbox SW.

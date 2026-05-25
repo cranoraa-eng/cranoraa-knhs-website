@@ -63,7 +63,7 @@ export default defineConfig({
         // Bump this version string on every deploy to bust old caches.
         // vite-plugin-pwa auto-versions the precache manifest, but this
         // ensures runtime caches are also invalidated cleanly.
-        cacheId: 'knhs-portal-v2',
+        cacheId: 'knhs-portal-v3',
 
         // Pre-cache all Vite build assets (hashed filenames = safe forever)
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],

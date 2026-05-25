@@ -15,12 +15,24 @@ export function usePushNotifications(user) {
   const registerSW = useCallback(async () => {
     if (!('serviceWorker' in navigator)) return null;
     try {
-      const reg = await navigator.serviceWorker.register(SW_PATH, { scope: '/' });
+      // Register with the standard FCM scope — this prevents it from
+      // overlapping with the Workbox PWA SW registered at scope '/'.
+      // Firebase SDK automatically finds this SW when getToken() is called.
+      const reg = await navigator.serviceWorker.register(SW_PATH, {
+        scope: '/firebase-cloud-messaging-push-scope',
+      });
       await navigator.serviceWorker.ready;
       return reg;
     } catch (err) {
-      console.warn('FCM SW registration failed:', err);
-      return null;
+      // Scope restriction may fail on some hosts — fall back to root scope
+      try {
+        const reg = await navigator.serviceWorker.register(SW_PATH, { scope: '/' });
+        await navigator.serviceWorker.ready;
+        return reg;
+      } catch (err2) {
+        console.warn('FCM SW registration failed:', err2);
+        return null;
+      }
     }
   }, []);
 

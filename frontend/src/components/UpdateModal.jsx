@@ -28,10 +28,14 @@ const UpdateModal = () => {
 
   const handleRefresh = () => {
     setUpdating(true);
-    // Small delay so the "Applying update…" state is visible before reload
     setTimeout(() => {
       applyUpdate();
-    }, 600);
+      // Hard reload fallback — if the SW skipWaiting + reload doesn't fire
+      // within 4 seconds (e.g. blocked by another SW), force a full navigation.
+      setTimeout(() => {
+        window.location.href = window.location.href;
+      }, 4000);
+    }, 400);
   };
 
   const handleLater = () => {
