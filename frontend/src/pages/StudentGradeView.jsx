@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import api from '../utils/api';
-import { getUser } from '../utils/auth';
+import { useAuth } from '../context/AuthContext';
 import { jsPDF } from 'jspdf';
 import toast from 'react-hot-toast';
 
@@ -34,7 +34,7 @@ const remarksFor = (score) => {
 };
 
 const StudentGradeView = () => {
-  const user = getUser();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const studentIdParam = searchParams.get('student_id');
@@ -98,276 +98,187 @@ const StudentGradeView = () => {
     : (user?.first_name && user?.last_name ? `${user.first_name} ${user.last_name}` : user?.username);
 
   const downloadPDF = () => {
-    const doc = new jsPDF();
-    const primaryColor = [45, 27, 77]; // #2D1B4D
-    const secondaryColor = [75, 45, 127]; // #4B2D7F
-    const textColor = [45, 55, 72];
-    const lightGray = [247, 250, 252];
-    
-    // --- Helper: Get Color by Score ---
-    const getColorForPDF = (score) => {
-      if (score == null) return [160, 174, 192];
-      const n = parseFloat(score);
-      if (n >= 90) return [22, 163, 74];  // green-600
-      if (n >= 85) return [37, 99, 235];  // blue-600
-      if (n >= 80) return [202, 138, 4];  // yellow-600
-      if (n >= 75) return [234, 88, 12];  // orange-600
-      return [220, 38, 38];               // red-600
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    const W = 210; const H = 297; const ML = 15; const MR = 15; const CW = W - ML - MR;
+
+    const sf = (size, weight = 'normal', r = 0, g = 0, b = 0) => {
+      doc.setFontSize(size); doc.setFont('helvetica', weight); doc.setTextColor(r, g, b);
+    };
+    const hl = (y, lw = 0.3, r = 0, g = 0, b = 0) => {
+      doc.setDrawColor(r, g, b); doc.setLineWidth(lw); doc.line(ML, y, W - MR, y);
     };
 
-    // --- Page Border ---
-    doc.setDrawColor(...primaryColor);
-    doc.setLineWidth(0.5);
-    doc.rect(5, 5, 200, 287);
-    doc.setLineWidth(0.2);
-    doc.rect(7, 7, 196, 283);
+    // Double border
+    doc.setDrawColor(0,0,0); doc.setLineWidth(0.8); doc.rect(8, 8, W-16, H-16);
+    doc.setLineWidth(0.3); doc.rect(10, 10, W-20, H-20);
 
-    // --- Watermark ---
+    // Watermark
     doc.saveGraphicsState();
-    doc.setGState(new doc.GState({ opacity: 0.05 }));
-    doc.setFontSize(60);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(...primaryColor);
-    doc.text('OFFICIAL REPORT', 105, 150, { align: 'center', angle: 45 });
+    doc.setGState(new doc.GState({ opacity: 0.04 }));
+    doc.setFontSize(52); doc.setFont('helvetica','bold'); doc.setTextColor(0,0,0);
+    doc.text('OFFICIAL', W/2, H/2-10, { align:'center', angle:45 });
     doc.restoreGraphicsState();
-    
-    // --- Header ---
-    doc.setFillColor(...primaryColor);
-    doc.rect(0, 0, 210, 40, 'F');
-    
-    // Logo Placeholder
-    doc.setFillColor(255, 255, 255);
-    doc.circle(25, 20, 12, 'F');
-    doc.setTextColor(...primaryColor);
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'bold');
-    doc.text('KNHS', 25, 21, { align: 'center' });
 
-    doc.setTextColor(255, 255, 255);
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(20);
-    doc.text('KIWALAN NATIONAL HIGH SCHOOL', 115, 18, { align: 'center' });
-    
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
-    doc.text('Iligan City, Lanao del Norte, Philippines', 115, 24, { align: 'center' });
-    doc.setFont('helvetica', 'bold');
-    doc.text('OFFICIAL STUDENT GRADE REPORT', 115, 32, { align: 'center' });
-    
-    if (isViewingOther) {
-      doc.setFontSize(7);
-      doc.setTextColor(255, 255, 255);
-      doc.text(user?.role === 'admin' ? "ADMIN'S COPY" : "TEACHER'S COPY", 195, 10, { align: 'right' });
-    }
-    
-    // --- Student Info Card ---
-    doc.setFillColor(...lightGray);
-    doc.roundedRect(15, 45, 180, 35, 3, 3, 'F');
-    doc.setDrawColor(226, 232, 240);
-    doc.roundedRect(15, 45, 180, 35, 3, 3, 'S');
-    
-    doc.setTextColor(...primaryColor);
-    doc.setFontSize(9);
-    doc.setFont('helvetica', 'bold');
-    doc.text('STUDENT INFORMATION', 22, 53);
-    
-    doc.setTextColor(...textColor);
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(8.5);
-    doc.text(`Name:`, 22, 62);
-    doc.setFont('helvetica', 'bold');
-    doc.text(displayName.toUpperCase(), 45, 62);
-    
-    doc.setFont('helvetica', 'normal');
-    doc.text(`Email:`, 22, 69);
-    doc.text(viewingUser?.email || user?.email || 'N/A', 45, 69);
+    let y = 18;
+    // Republic header
+    sf(7,'normal',80,80,80);
+    doc.text('Republic of the Philippines', W/2, y, {align:'center'}); y+=4;
+    doc.text('Department of Education', W/2, y, {align:'center'}); y+=4;
+    doc.text('Region X — Northern Mindanao', W/2, y, {align:'center'}); y+=4;
+    doc.text('Division of Iligan City', W/2, y, {align:'center'}); y+=5;
 
-    const regNum = viewingUser?.profile?.registration_number || user?.profile?.registration_number;
-    if (regNum) {
-      doc.text(`Reg. No:`, 22, 76);
-      doc.setFont('helvetica', 'bold');
-      doc.text(regNum, 45, 76);
-    }
-    
-    doc.text(`Date Generated:`, 120, 62);
-    doc.text(new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }), 155, 62);
-    
-    doc.text(`Academic Year:`, 120, 69);
-    doc.text(filterYear, 155, 69);
+    sf(14,'bold',0,0,0);
+    doc.text('KIWALAN NATIONAL HIGH SCHOOL', W/2, y, {align:'center'}); y+=5;
+    sf(8,'normal',60,60,60);
+    doc.text('Kiwalan, Iligan City, Lanao del Norte', W/2, y, {align:'center'}); y+=5;
 
-    doc.text(`Report Period:`, 120, 76);
-    doc.setFont('helvetica', 'bold');
-    doc.text(filterQuarter ? `Quarter ${filterQuarter}` : 'Full Academic Year', 155, 76);
+    hl(y, 0.8); y+=1; hl(y, 0.3); y+=5;
 
-    // --- Grades Table ---
-    let y = 90;
-    
-    // Table Header
-    doc.setFillColor(...primaryColor);
-    doc.rect(15, y, 180, 10, 'F');
-    doc.setTextColor(255, 255, 255);
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(8);
-    
-    const cols = {
-      subject: 18,
-      q1: 82,
-      q2: 95,
-      q3: 108,
-      q4: 121,
-      avg: 134,
-      rounded: 148,
-      remarks: 162
+    sf(11,'bold',0,0,0);
+    doc.text('STUDENT GRADE REPORT', W/2, y, {align:'center'}); y+=4;
+    sf(8,'normal',60,60,60);
+    doc.text(filterQuarter ? `Quarter ${filterQuarter}` : 'Full Academic Year', W/2, y, {align:'center'}); y+=6;
+    hl(y, 0.3, 120,120,120); y+=5;
+
+    // Student info
+    const infoLeft = [
+      ['Name', displayName.toUpperCase()],
+      ['LRN / Student ID', viewingUser?.username || user?.username || '—'],
+      ['Grade Level', viewingUser?.profile?.grade_level || user?.profile?.grade_level || '—'],
+    ];
+    const infoRight = [
+      ['Academic Year', filterYear],
+      ['Date Generated', new Date().toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' })],
+      ['Report Period', filterQuarter ? `Quarter ${filterQuarter}` : 'Annual'],
+    ];
+    infoLeft.forEach(([label, value], i) => {
+      const iy = y + i * 6;
+      sf(7.5,'normal',80,80,80); doc.text(`${label}:`, ML, iy);
+      sf(7.5,'bold',0,0,0); doc.text(value, ML+28, iy);
+    });
+    infoRight.forEach(([label, value], i) => {
+      const iy = y + i * 6;
+      sf(7.5,'normal',80,80,80); doc.text(`${label}:`, W/2+2, iy);
+      sf(7.5,'bold',0,0,0); doc.text(value, W/2+30, iy);
+    });
+    y += infoLeft.length * 6 + 4;
+    hl(y, 0.3, 120,120,120); y += 6;
+
+    // Table
+    const COL = { sub:ML, q1:100, q2:114, q3:128, q4:142, avg:156, rnd:167, rem:178 };
+    const ROW_H = 7.5;
+
+    const drawHeader = (startY) => {
+      doc.setFillColor(220,220,220); doc.rect(ML, startY, CW, 8, 'F');
+      doc.setDrawColor(0,0,0); doc.setLineWidth(0.4); doc.rect(ML, startY, CW, 8);
+      sf(7.5,'bold',0,0,0);
+      doc.text('SUBJECT', COL.sub+2, startY+5.5);
+      ['Q1','Q2','Q3','Q4','AVG','RND'].forEach((h,i) => {
+        const xs = [COL.q1,COL.q2,COL.q3,COL.q4,COL.avg,COL.rnd];
+        doc.text(h, xs[i], startY+5.5, {align:'center'});
+      });
+      doc.text('REMARKS', COL.rem+2, startY+5.5);
+      doc.setLineWidth(0.2);
+      [COL.q1-5,COL.q2-5,COL.q3-5,COL.q4-5,COL.avg-5,COL.rnd-5,COL.rem-5].forEach(x => doc.line(x, startY, x, startY+8));
+      return startY + 8;
     };
-    
-    doc.text('SUBJECT', cols.subject, y + 6.5);
-    doc.text('Q1', cols.q1, y + 6.5, { align: 'center' });
-    doc.text('Q2', cols.q2, y + 6.5, { align: 'center' });
-    doc.text('Q3', cols.q3, y + 6.5, { align: 'center' });
-    doc.text('Q4', cols.q4, y + 6.5, { align: 'center' });
-    doc.text('AVG', cols.avg, y + 6.5, { align: 'center' });
-    doc.text('RND', cols.rounded, y + 6.5, { align: 'center' });
-    doc.text('REMARKS', cols.remarks, y + 6.5);
-    
-    y += 10;
-    
+
+    y = drawHeader(y);
+
     Object.values(bySubject).forEach((s, idx) => {
-      if (y > 240) {
+      if (y + ROW_H > H - 40) {
         doc.addPage();
-        y = 20;
-        // Re-draw table header on new page
-        doc.setFillColor(...primaryColor);
-        doc.rect(15, y, 180, 10, 'F');
-        doc.setTextColor(255, 255, 255);
-        doc.text('SUBJECT', cols.subject, y + 6.5);
-        doc.text('Q1', cols.q1, y + 6.5, { align: 'center' });
-        doc.text('Q2', cols.q2, y + 6.5, { align: 'center' });
-        doc.text('Q3', cols.q3, y + 6.5, { align: 'center' });
-        doc.text('Q4', cols.q4, y + 6.5, { align: 'center' });
-        doc.text('AVG', cols.avg, y + 6.5, { align: 'center' });
-        doc.text('RND', cols.rounded, y + 6.5, { align: 'center' });
-        doc.text('REMARKS', cols.remarks, y + 6.5);
-        y += 10;
+        doc.setDrawColor(0,0,0); doc.setLineWidth(0.8); doc.rect(8,8,W-16,H-16);
+        doc.setLineWidth(0.3); doc.rect(10,10,W-20,H-20);
+        y = 18; sf(8,'bold',0,0,0);
+        doc.text('STUDENT GRADE REPORT (Continued)', W/2, y, {align:'center'}); y+=6;
+        y = drawHeader(y);
       }
-      
-      if (idx % 2 === 0) {
-        doc.setFillColor(252, 252, 252);
-        doc.rect(15, y, 180, 8, 'F');
-      }
-      
-      doc.setTextColor(...textColor);
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(8);
-      const subjectText = s.subject_name.length > 30 ? s.subject_name.substring(0, 27) + '...' : s.subject_name;
-      doc.text(subjectText, cols.subject, y + 5);
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(7);
-      doc.text(s.subject_code, cols.subject, y + 8);
-      
-      doc.setFontSize(8);
-      [1,2,3,4].forEach((q, i) => {
+      if (idx % 2 === 0) { doc.setFillColor(248,248,248); doc.rect(ML, y, CW, ROW_H, 'F'); }
+      doc.setDrawColor(200,200,200); doc.setLineWidth(0.2); doc.rect(ML, y, CW, ROW_H);
+      [COL.q1-5,COL.q2-5,COL.q3-5,COL.q4-5,COL.avg-5,COL.rnd-5,COL.rem-5].forEach(x => doc.line(x, y, x, y+ROW_H));
+
+      sf(7.5,'bold',0,0,0);
+      const subText = s.subject_name.length > 28 ? s.subject_name.substring(0,25)+'…' : s.subject_name;
+      doc.text(subText, COL.sub+2, y+4.5);
+      sf(6,'normal',100,100,100); doc.text(s.subject_code, COL.sub+2, y+7);
+
+      // Quarter scores — plain black, no color
+      sf(8,'normal',0,0,0);
+      [1,2,3,4].forEach(q => {
         const g = s.quarters[q];
-        if (g) {
-          doc.setTextColor(...getColorForPDF(g.raw_score));
-          doc.text(String(g.raw_score), cols[`q${q}`], y + 5.5, { align: 'center' });
+        if (g && g.raw_score != null) {
+          doc.text(String(g.raw_score), COL[`q${q}`], y+5, {align:'center'});
         } else {
-          doc.setTextColor(200, 200, 200);
-          doc.text('—', cols[`q${q}`], y + 5.5, { align: 'center' });
+          sf(8,'normal',180,180,180); doc.text('—', COL[`q${q}`], y+5, {align:'center'}); sf(8,'normal',0,0,0);
         }
       });
-      
-      const scores = Object.values(s.quarters).map(g => parseFloat(g.raw_score)).filter(v => !isNaN(v));
-      const avgValue = scores.length ? (scores.reduce((a,b) => a+b,0)/scores.length) : null;
-      const exactAvg = avgValue ? avgValue.toFixed(2) : '—';
-      const roundedAvg = avgValue ? Math.round(avgValue) : '—';
-      const remark = avgValue ? remarksFor(Math.round(avgValue)) : '—';
-      
-      doc.setFont('helvetica', 'bold');
-      doc.setTextColor(...getColorForPDF(avgValue));
-      doc.text(String(exactAvg), cols.avg, y + 5.5, { align: 'center' });
-      doc.text(String(roundedAvg), cols.rounded, y + 5.5, { align: 'center' });
-      
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(7);
-      doc.text(remark, cols.remarks, y + 5.5);
-      
-      y += 9;
+
+      const scores = [1,2,3,4].map(q => s.quarters[q] ? parseFloat(s.quarters[q].raw_score) : null).filter(v => v !== null);
+      const avg = scores.length ? scores.reduce((a,b)=>a+b,0)/scores.length : null;
+      const rounded = avg !== null ? Math.round(avg) : null;
+      const remark = rounded !== null ? remarksFor(rounded) : null;
+      if (avg !== null) {
+        sf(8,'bold',0,0,0);
+        doc.text(avg.toFixed(2), COL.avg, y+5, {align:'center'});
+        doc.text(String(rounded), COL.rnd, y+5, {align:'center'});
+        sf(7,'normal',0,0,0);
+        const short = {'Did Not Meet Expectations':'Did Not Meet Exp.'};
+        doc.text(short[remark] || remark || '—', COL.rem+2, y+5);
+      } else {
+        sf(8,'normal',180,180,180);
+        doc.text('—', COL.avg, y+5, {align:'center'}); doc.text('—', COL.rnd, y+5, {align:'center'});
+      }
+      y += ROW_H;
     });
 
-    // --- Footer Summary ---
+    // General average row
     if (overallAvg) {
-      y += 5;
-      doc.setFillColor(...secondaryColor);
-      doc.rect(15, y, 180, 12, 'F');
-      
-      doc.setTextColor(255, 255, 255);
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'bold');
-      doc.text('GENERAL AVERAGE', 22, y + 7.5);
-      
-      const roundedOverall = Math.round(parseFloat(overallAvg));
-      doc.text(`${overallAvg}`, cols.avg, y + 7.5, { align: 'center' });
-      doc.text(`${roundedOverall}`, cols.rounded, y + 7.5, { align: 'center' });
-      
-      const overallRemark = remarksFor(roundedOverall);
-      doc.setFontSize(8);
-      doc.text(overallRemark || '', cols.remarks, y + 7.5);
-
-      // Add Subject Count
-      doc.setFontSize(7);
-      doc.setFont('helvetica', 'normal');
-      doc.setTextColor(255, 255, 255);
-      doc.text(`Total Subjects: ${Object.keys(bySubject).length}`, 22, y + 10.5);
-      
-      y += 20;
+      y += 1;
+      doc.setFillColor(200,200,200); doc.rect(ML, y, CW, 9, 'F');
+      doc.setDrawColor(0,0,0); doc.setLineWidth(0.5); doc.rect(ML, y, CW, 9);
+      sf(8.5,'bold',0,0,0);
+      doc.text('GENERAL AVERAGE', COL.sub+2, y+6);
+      doc.text(overallAvg, COL.avg, y+6, {align:'center'});
+      doc.text(String(Math.round(parseFloat(overallAvg))), COL.rnd, y+6, {align:'center'});
+      sf(7.5,'bold',0,0,0);
+      doc.text(remarksFor(Math.round(parseFloat(overallAvg))) || '', COL.rem+2, y+6);
+      y += 12;
     }
 
-    // --- Grading Scale & Signatures ---
-    if (y > 240) { doc.addPage(); y = 20; }
-    
-    // Grading Scale Legend
-    doc.setTextColor(...primaryColor);
-    doc.setFontSize(8);
-    doc.setFont('helvetica', 'bold');
-    doc.text('GRADING SCALE LEGEND', 15, y);
-    y += 4;
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(7);
-    const legend = [
-      ['90 - 100', 'Outstanding'],
-      ['85 - 89', 'Very Satisfactory'],
-      ['80 - 84', 'Satisfactory'],
-      ['75 - 79', 'Fairly Satisfactory'],
-      ['Below 75', 'Did Not Meet Expectations']
-    ];
-    legend.forEach(([range, label], i) => {
-      doc.text(`${range}: ${label}`, 15, y + (i * 4));
+    // Grading scale
+    if (y + 30 > H - 45) { doc.addPage(); y = 18; }
+    hl(y, 0.3, 150,150,150); y += 5;
+    sf(7.5,'bold',0,0,0); doc.text('GRADING SCALE (DepEd Order No. 8, s. 2015)', ML, y); y += 4;
+    const scale = [['90–100','Outstanding (O)'],['85–89','Very Satisfactory (VS)'],['80–84','Satisfactory (S)'],['75–79','Fairly Satisfactory (FS)'],['Below 75','Did Not Meet Exp. (DNME)']];
+    const colW = CW / scale.length;
+    scale.forEach(([range, label], i) => {
+      const sx = ML + i * colW;
+      doc.setFillColor(240,240,240); doc.setDrawColor(180,180,180); doc.setLineWidth(0.2); doc.rect(sx, y, colW-1, 10);
+      sf(6.5,'bold',0,0,0); doc.text(range, sx+colW/2, y+4, {align:'center'});
+      sf(6,'normal',60,60,60); doc.text(label, sx+colW/2, y+8, {align:'center'});
     });
+    y += 14;
 
     // Signatures
-    y += 35;
-    doc.setDrawColor(200, 200, 200);
-    doc.line(15, y, 75, y);
-    doc.line(135, y, 195, y);
-    
-    doc.setFontSize(8);
-    doc.setFont('helvetica', 'bold');
-    doc.text('CLASS ADVISER', 45, y + 5, { align: 'center' });
-    doc.text('SCHOOL PRINCIPAL', 165, y + 5, { align: 'center' });
-    
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(7);
-    doc.text('(Signature over Printed Name)', 45, y + 9, { align: 'center' });
-    doc.text('(Signature over Printed Name)', 165, y + 9, { align: 'center' });
+    if (y + 30 > H - 20) { doc.addPage(); y = 18; }
+    hl(y, 0.3, 150,150,150); y += 8;
+    const sigs = [ML+20, W/2, W-MR-20];
+    const sigLabels = ['Class Adviser','School Registrar','School Principal'];
+    sigs.forEach((sx, i) => {
+      doc.setDrawColor(0,0,0); doc.setLineWidth(0.4); doc.line(sx-22, y, sx+22, y);
+      sf(7.5,'bold',0,0,0); doc.text(sigLabels[i], sx, y+4.5, {align:'center'});
+      sf(6.5,'normal',80,80,80); doc.text('Signature over Printed Name', sx, y+8.5, {align:'center'});
+    });
 
-    // Page Footer
-    doc.setTextColor(160, 174, 192);
-    doc.setFontSize(7);
-    doc.setFont('helvetica', 'italic');
-    doc.text('This is a computer-generated document from the Kiwalan National High School Portal.', 105, 285, { align: 'center' });
-    doc.text(`Generated on ${new Date().toLocaleString()}`, 105, 290, { align: 'center' });
-    
-    doc.save(`KNHS_Grade_Report_${viewingUser?.username || user?.username}.pdf`);
+    // Document footer
+    hl(H-18, 0.3, 150,150,150);
+    sf(6.5,'italic',100,100,100);
+    doc.text('This is a computer-generated document from the Kiwalan National High School Portal. Unauthorized alteration is prohibited.', W/2, H-13, {align:'center'});
+    doc.text(`Generated: ${new Date().toLocaleString()}`, W/2, H-9, {align:'center'});
+
+    const fname = viewingUser?.username || user?.username || 'student';
+    doc.save(`KNHS_Grade_Report_${fname}_${filterYear}.pdf`);
   };
 
   if (loading) return (
