@@ -3,7 +3,6 @@ import api from '../utils/api';
 import Swal from 'sweetalert2';
 import toast from 'react-hot-toast';
 import { useScrollLock } from '../hooks/useScrollLock';
-import { getCurrentAcademicYear } from '../utils/dateHelpers';
 
 const GRADE_LEVELS = ['Grade 7', 'Grade 8', 'Grade 9', 'Grade 10', 'Grade 11', 'Grade 12'];
 
@@ -16,50 +15,65 @@ const ClassManagement = () => {
   const [classes, setClasses] = useState([]);
   const [teachers, setTeachers] = useState([]);
   const [academicYears, setAcademicYears] = useState([]);
+  // Global year context — all operations use this year
+  const [selectedYearId, setSelectedYearId] = useState('');
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingClass, setEditingClass] = useState(null);
   const [saving, setSaving] = useState(false);
   const [search, setSearch] = useState('');
   const [filterLevel, setFilterLevel] = useState('');
-  const [formData, setFormData] = useState({
-    name: '', teacher: '', grade_level: '', academic_year: ''
-  });
+  const [formData, setFormData] = useState({ name: '', teacher: '', grade_level: '' });
 
   useScrollLock(showModal);
 
-  useEffect(() => { fetchAll(); }, []);
+  // Load years + teachers once, then load classes whenever year changes
+  useEffect(() => {
+    const init = async () => {
+      try {
+        const [teacherRes, yearRes] = await Promise.all([
+          api.get('/users/?role=teacher'),
+          api.get('/admin/academic-years/'),
+        ]);
+        setTeachers(teacherRes.data);
+        const years = [...yearRes.data].sort((a, b) => b.name.localeCompare(a.name));
+        setAcademicYears(years);
+        // Default to the active year
+        const active = years.find(y => y.is_active) || years[0];
+        if (active) setSelectedYearId(String(active.id));
+      } catch {
+        toast.error('Failed to load data');
+      }
+    };
+    init();
+  }, []);
 
-  const fetchAll = async () => {
+  // Reload classrooms whenever the selected year changes
+  useEffect(() => {
+    if (!selectedYearId) return;
+    fetchClasses();
+  }, [selectedYearId]);
+
+  const fetchClasses = async () => {
     setLoading(true);
     try {
-      const [classRes, teacherRes, yearRes] = await Promise.all([
-        api.get('/classrooms/'),
-        api.get('/users/?role=teacher'),
-        api.get('/admin/academic-years/'),
-      ]);
-      setClasses(classRes.data);
-      setTeachers(teacherRes.data);
-      // Sort years newest first
-      const years = [...yearRes.data].sort((a, b) => b.name.localeCompare(a.name));
-      setAcademicYears(years);
+      const res = await api.get(`/classrooms/?academic_year=${getSelectedYearName()}`);
+      setClasses(res.data);
     } catch {
-      toast.error('Failed to load data');
+      toast.error('Failed to load classrooms');
     } finally {
       setLoading(false);
     }
   };
 
+  const getSelectedYearName = () => {
+    const y = academicYears.find(y => String(y.id) === String(selectedYearId));
+    return y?.name || '';
+  };
+
   const openCreate = () => {
     setEditingClass(null);
-    // Default to the active academic year or current year
-    const activeYear = academicYears.find(y => y.is_active);
-    setFormData({
-      name: '',
-      teacher: '',
-      grade_level: '',
-      academic_year: activeYear?.id || ''
-    });
+    setFormData({ name: '', teacher: '', grade_level: '' });
     setShowModal(true);
   };
 
@@ -69,7 +83,6 @@ const ClassManagement = () => {
       name: cls.name,
       teacher: cls.teacher || '',
       grade_level: cls.grade_level || '',
-      academic_year: cls.academic_year || ''
     });
     setShowModal(true);
   };
@@ -88,7 +101,7 @@ const ClassManagement = () => {
     try {
       await api.delete(`/classrooms/${cls.id}/`);
       toast.success('Class deleted');
-      fetchAll();
+      fetchClasses();
     } catch {
       toast.error('Failed to delete class');
     }
@@ -103,7 +116,8 @@ const ClassManagement = () => {
         name: formData.name.trim(),
         teacher: formData.teacher || null,
         grade_level: formData.grade_level,
-        academic_year: formData.academic_year || null,
+        // Always assign the currently selected year — this is the key change
+        academic_year: selectedYearId || null,
       };
       if (editingClass) {
         await api.patch(`/classrooms/${editingClass.id}/`, payload);
@@ -113,7 +127,7 @@ const ClassManagement = () => {
         toast.success('Class created');
       }
       setShowModal(false);
-      fetchAll();
+      fetchClasses();
     } catch (err) {
       toast.error(err.response?.data?.detail || err.response?.data?.teacher?.[0] || 'Failed to save class');
     } finally {
@@ -129,7 +143,7 @@ const ClassManagement = () => {
     return matchSearch && matchLevel;
   });
 
-  // Group by grade level field, sorted 7→12
+  // Group by grade level, sorted 7→12
   const grouped = filtered.reduce((acc, cls) => {
     const level = cls.grade_level || GRADE_LEVELS.find(l => cls.name.toLowerCase().includes(l.toLowerCase())) || 'Other';
     if (!acc[level]) acc[level] = [];
@@ -138,6 +152,7 @@ const ClassManagement = () => {
   }, {});
 
   const sortedGroups = Object.entries(grouped).sort(([a], [b]) => gradeNum(a) - gradeNum(b));
+  const selectedYearName = getSelectedYearName();
 
   return (
     <div className="space-y-5 animate-fade-in">
@@ -145,17 +160,53 @@ const ClassManagement = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-black text-slate-900 tracking-tight">Class Management</h1>
-          <p className="text-sm text-slate-500 mt-0.5">{classes.length} classrooms total</p>
+          <p className="text-sm text-slate-500 mt-0.5">
+            {classes.length} classroom{classes.length !== 1 ? 's' : ''} in{' '}
+            <span className="font-bold text-violet-600">{selectedYearName || '…'}</span>
+          </p>
         </div>
-        <button
-          onClick={openCreate}
-          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-violet-600 text-white text-sm font-bold hover:bg-violet-700 active:scale-95 transition-all shadow-sm"
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
-          </svg>
-          Add Class
-        </button>
+
+        {/* Year selector + Add button — side by side */}
+        <div className="flex items-center gap-3 flex-wrap">
+          {/* Academic Year Selector */}
+          <div className="relative">
+            <label className="absolute -top-2 left-2.5 px-1 bg-white text-[9px] font-black text-slate-400 uppercase tracking-widest z-10">
+              School Year
+            </label>
+            <select
+              value={selectedYearId}
+              onChange={e => {
+                setSelectedYearId(e.target.value);
+                setSearch('');
+                setFilterLevel('');
+              }}
+              className="pl-3 pr-8 py-2.5 border-2 border-violet-200 bg-violet-50 rounded-xl text-sm font-black text-violet-800 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all appearance-none cursor-pointer min-w-[140px]"
+            >
+              {academicYears.length === 0 && (
+                <option value="">No years set up</option>
+              )}
+              {academicYears.map(y => (
+                <option key={y.id} value={y.id}>
+                  {y.name}{y.is_active ? ' ★' : ''}
+                </option>
+              ))}
+            </select>
+            <svg className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-violet-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
+
+          <button
+            onClick={openCreate}
+            disabled={!selectedYearId}
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-violet-600 text-white text-sm font-bold hover:bg-violet-700 active:scale-95 transition-all shadow-sm disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
+            </svg>
+            Add Class
+          </button>
+        </div>
       </div>
 
       {/* Filters */}
@@ -184,6 +235,19 @@ const ClassManagement = () => {
         </div>
       </div>
 
+      {/* No year set up warning */}
+      {!loading && academicYears.length === 0 && (
+        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5 flex items-start gap-3">
+          <svg className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+          <div>
+            <p className="text-sm font-bold text-amber-800">No academic years configured</p>
+            <p className="text-xs text-amber-600 mt-0.5">Go to <strong>Settings → Academic Years</strong> to create one before adding classrooms.</p>
+          </div>
+        </div>
+      )}
+
       {/* Content */}
       {loading ? (
         <div className="flex flex-col items-center justify-center h-48 gap-4">
@@ -201,10 +265,12 @@ const ClassManagement = () => {
               </svg>
             </div>
             <h3 className="text-base font-bold text-slate-700 mb-1">
-              {search || filterLevel ? 'No results found' : 'No classes yet'}
+              {search || filterLevel ? 'No results found' : `No classes in ${selectedYearName}`}
             </h3>
             <p className="text-sm text-slate-400">
-              {search || filterLevel ? 'Try adjusting your filters.' : 'Create your first classroom to get started.'}
+              {search || filterLevel
+                ? 'Try adjusting your filters.'
+                : `Click "Add Class" to create the first classroom for ${selectedYearName}.`}
             </p>
           </div>
         </div>
@@ -212,7 +278,6 @@ const ClassManagement = () => {
         <div className="space-y-4">
           {sortedGroups.map(([level, items]) => (
             <div key={level} className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
-              {/* Group header */}
               <div className="flex items-center justify-between px-5 py-3 bg-slate-50 border-b border-slate-200">
                 <div className="flex items-center gap-2.5">
                   <span className="text-sm font-black text-slate-800 uppercase tracking-tight">{level}</span>
@@ -228,7 +293,6 @@ const ClassManagement = () => {
                     <tr>
                       <th className="text-left px-5 py-3 text-[10px] font-black text-slate-500 uppercase tracking-[0.15em]">Class</th>
                       <th className="hidden md:table-cell text-left px-5 py-3 text-[10px] font-black text-slate-500 uppercase tracking-[0.15em]">Adviser</th>
-                      <th className="hidden lg:table-cell text-left px-5 py-3 text-[10px] font-black text-slate-500 uppercase tracking-[0.15em]">School Year</th>
                       <th className="text-center px-5 py-3 text-[10px] font-black text-slate-500 uppercase tracking-[0.15em]">Students</th>
                       <th className="text-center px-5 py-3 text-[10px] font-black text-slate-500 uppercase tracking-[0.15em]">Actions</th>
                     </tr>
@@ -246,12 +310,6 @@ const ClassManagement = () => {
                         </td>
                         <td className="hidden md:table-cell px-5 py-3.5 text-sm font-medium text-slate-600">
                           {cls.teacher_name || <span className="text-slate-400 italic text-xs">Not assigned</span>}
-                        </td>
-                        <td className="hidden lg:table-cell px-5 py-3.5">
-                          {cls.academic_year_name
-                            ? <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-violet-50 border border-violet-100 text-violet-700 text-xs font-black tracking-tight">{cls.academic_year_name}</span>
-                            : <span className="text-slate-400 italic text-xs">Not set</span>
-                          }
                         </td>
                         <td className="px-5 py-3.5 text-center">
                           <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-violet-100 text-violet-700 font-black text-sm">
@@ -282,7 +340,7 @@ const ClassManagement = () => {
 
       {!loading && classes.length > 0 && (
         <p className="text-sm text-slate-400 mt-4">
-          Showing {filtered.length} of {classes.length} classes
+          Showing {filtered.length} of {classes.length} classes in {selectedYearName}
         </p>
       )}
 
@@ -291,9 +349,15 @@ const ClassManagement = () => {
         <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-[100] p-4 animate-fade-in">
           <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden animate-scale-in">
             <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
-              <h2 className="text-base font-black text-slate-900 tracking-tight">
-                {editingClass ? 'Edit Class' : 'Add New Class'}
-              </h2>
+              <div>
+                <h2 className="text-base font-black text-slate-900 tracking-tight">
+                  {editingClass ? 'Edit Class' : 'Add New Class'}
+                </h2>
+                {/* Show which year this class will be assigned to */}
+                <p className="text-[10px] font-bold text-violet-600 uppercase tracking-widest mt-0.5">
+                  {selectedYearName}
+                </p>
+              </div>
               <button onClick={() => setShowModal(false)}
                 className="p-2 rounded-xl text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-all no-min">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -322,24 +386,6 @@ const ClassManagement = () => {
                   <option value="">Select grade level</option>
                   {GRADE_LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
                 </select>
-              </div>
-              <div className="space-y-1.5">
-                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider">
-                  Academic Year <span className="text-slate-400 font-medium normal-case tracking-normal">(optional)</span>
-                </label>
-                <select
-                  value={formData.academic_year || ''}
-                  onChange={e => setFormData({ ...formData, academic_year: e.target.value })}
-                  className="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-white text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-400 transition-all"
-                >
-                  <option value="">— No Year Assigned —</option>
-                  {academicYears.map(y => (
-                    <option key={y.id} value={y.id}>
-                      {y.name}{y.is_active ? ' (Active)' : ''}
-                    </option>
-                  ))}
-                </select>
-                <p className="text-xs text-slate-400">Required for year-based filtering in attendance and analytics.</p>
               </div>
               <div className="space-y-1.5">
                 <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider">
