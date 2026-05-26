@@ -657,164 +657,159 @@ export default function ScheduleManagement() {
           SCHEDULE FORM MODAL
       ══════════════════════════════════════════════════════════════════════ */}
       {showForm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg max-h-[92vh] flex flex-col">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-lg max-h-[92vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
             {/* Header */}
-            <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100">
+            <div className="flex items-center justify-between px-8 py-6 border-b border-slate-100 bg-slate-50/50">
               <div>
-                <h3 className="text-lg font-black text-slate-900">{editItem ? 'Edit Schedule' : 'New Schedule Entry'}</h3>
-                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">
+                <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight">{editItem ? 'Edit Schedule' : 'New Schedule'}</h3>
+                <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.2em] mt-1">
                   {editItem ? 'Update assignment details' : 'Assign a class to a time slot'}
                 </p>
               </div>
-              <button onClick={() => setShowForm(false)} className="p-2 rounded-xl hover:bg-slate-100 text-slate-400 transition-all">
+              <button onClick={() => setShowForm(false)} className="p-2.5 rounded-2xl hover:bg-slate-200 text-slate-400 transition-all active:scale-90">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
             </div>
 
-            <form onSubmit={handleSave} className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
+            <form onSubmit={handleSave} className="flex-1 overflow-y-auto px-8 py-8 space-y-8 scrollbar-thin">
               {/* Core */}
-              <div className="grid grid-cols-2 gap-4">
-                <Field label="Classroom" required>
-                  <Select required value={form.classroom} onChange={e => setForm(f => ({ ...f, classroom: e.target.value, subject: '', teacher: '' }))}>
-                    <option value="">Select section…</option>
-                    {classrooms.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                  </Select>
-                </Field>
-                <Field label="Subject" required>
-                  {loadingAssignments ? (
-                    <div className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-400 bg-slate-50 flex items-center gap-2">
-                      <svg className="w-4 h-4 animate-spin text-violet-400" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
-                      Loading…
-                    </div>
-                  ) : (
-                    <Select required value={form.subject}
-                      onChange={e => {
-                        const subjectId = e.target.value;
-                        // Auto-fill teacher from the assignment for this subject
-                        const match = classroomAssignments.find(a => String(a.subject) === subjectId);
-                        setForm(f => ({
-                          ...f,
-                          subject: subjectId,
-                          teacher: match ? String(match.teacher) : f.teacher,
-                        }));
-                      }}>
-                      <option value="">
-                        {!form.classroom
-                          ? 'Select a classroom first'
-                          : classroomAssignments.length === 0
-                          ? 'No subjects assigned to this classroom'
-                          : 'Select subject…'}
-                      </option>
-                      {(form.classroom && classroomAssignments.length > 0
-                        ? classroomAssignments
-                        : []
-                      ).map(a => (
-                        <option key={a.subject} value={a.subject}>
-                          {a.subject_code} — {a.subject_name}
-                        </option>
-                      ))}
+              <div className="space-y-6">
+                <div className="flex items-center gap-4">
+                  <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] whitespace-nowrap">Core Assignment</h4>
+                  <div className="h-px w-full bg-slate-100"></div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                  <Field label="Classroom" required>
+                    <Select required value={form.classroom} onChange={e => setForm(f => ({ ...f, classroom: e.target.value, subject: '', teacher: '' }))}>
+                      <option value="">Select section…</option>
+                      {classrooms.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                     </Select>
-                  )}
-                  {form.classroom && !loadingAssignments && classroomAssignments.length === 0 && (
-                    <p className="text-[10px] text-amber-600 mt-1 font-medium">
-                      ⚠ No subjects assigned to this classroom yet. Go to Subject Assignment first.
-                    </p>
-                  )}
-                </Field>
+                  </Field>
+                  <Field label="Subject" required>
+                    {loadingAssignments ? (
+                      <div className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-[13px] font-bold text-slate-400 bg-slate-50 flex items-center gap-2">
+                        <svg className="w-4 h-4 animate-spin text-violet-400" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                        Loading…
+                      </div>
+                    ) : (
+                      <Select required value={form.subject}
+                        onChange={e => {
+                          const subjectId = e.target.value;
+                          const match = classroomAssignments.find(a => String(a.subject) === subjectId);
+                          setForm(f => ({
+                            ...f,
+                            subject: subjectId,
+                            teacher: match ? String(match.teacher) : f.teacher,
+                          }));
+                        }}>
+                        <option value="">
+                          {!form.classroom
+                            ? 'Select a classroom first'
+                            : classroomAssignments.length === 0
+                            ? 'No subjects assigned'
+                            : 'Select subject…'}
+                        </option>
+                        {(form.classroom && classroomAssignments.length > 0 ? classroomAssignments : []).map(a => (
+                          <option key={a.subject} value={a.subject}>{a.subject_code} — {a.subject_name}</option>
+                        ))}
+                      </Select>
+                    )}
+                  </Field>
+                </div>
               </div>
 
-              <Field label="Teacher" required>
-                <Select required value={form.teacher}
-                  onChange={e => setForm(f => ({ ...f, teacher: e.target.value }))}>
-                  <option value="">
-                    {!form.classroom
-                      ? 'Select a classroom first'
-                      : !form.subject
-                      ? 'Select a subject first'
-                      : 'Select teacher…'}
-                  </option>
-                  {/* Show only teachers assigned to this classroom-subject combo */}
-                  {(form.classroom && form.subject
-                    ? classroomAssignments.filter(a => String(a.subject) === String(form.subject))
-                    : form.classroom
-                    ? classroomAssignments
-                    : []
-                  ).map(a => (
-                    <option key={a.teacher} value={a.teacher}>{a.teacher_name}</option>
-                  ))}
-                  {/* Fallback: if no assignments, show all teachers */}
-                  {form.classroom && classroomAssignments.length === 0 && teachers.map(t => (
-                    <option key={t.id} value={t.id}>{t.full_name || `${t.first_name} ${t.last_name}`}</option>
-                  ))}
-                </Select>
-              </Field>
-
-              <div className="grid grid-cols-2 gap-4">
-                <Field label="Time Slot" required>
-                  <Select required value={form.time_slot} onChange={e => setForm(f => ({ ...f, time_slot: e.target.value }))}>
-                    <option value="">Select time…</option>
-                    {DAYS.map(d => {
-                      const daySlots = sortedSlots.filter(ts => ts.day === d);
-                      if (!daySlots.length) return null;
-                      return (
-                        <optgroup key={d} label={DAY_FULL[d]}>
-                          {daySlots.map(ts => (
-                            <option key={ts.id} value={ts.id}>
-                              {ts.start_time_display} – {ts.end_time_display}{ts.label ? ` (${ts.label})` : ''}
-                            </option>
-                          ))}
-                        </optgroup>
-                      );
-                    })}
-                  </Select>
-                </Field>
-                <Field label="Room (optional)">
-                  <Select value={form.room} onChange={e => setForm(f => ({ ...f, room: e.target.value }))}>
-                    <option value="">No room</option>
-                    {rooms.map(r => <option key={r.id} value={r.id}>{r.name}{r.building ? ` · ${r.building}` : ''}</option>)}
-                  </Select>
-                </Field>
+              <div className="space-y-6">
+                <div className="flex items-center gap-4">
+                  <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] whitespace-nowrap">Teacher & Room</h4>
+                  <div className="h-px w-full bg-slate-100"></div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                  <div className="sm:col-span-2">
+                    <Field label="Teacher" required>
+                      <Select required value={form.teacher} onChange={e => setForm(f => ({ ...f, teacher: e.target.value }))}>
+                        <option value="">Select teacher…</option>
+                        {(form.classroom && form.subject
+                          ? classroomAssignments.filter(a => String(a.subject) === String(form.subject))
+                          : teachers
+                        ).map(a => (
+                          <option key={a.teacher || a.id} value={a.teacher || a.id}>{a.teacher_name || a.full_name}</option>
+                        ))}
+                      </Select>
+                    </Field>
+                  </div>
+                  <Field label="Time Slot" required>
+                    <Select required value={form.time_slot} onChange={e => setForm(f => ({ ...f, time_slot: e.target.value }))}>
+                      <option value="">Select time…</option>
+                      {DAYS.map(d => {
+                        const daySlots = sortedSlots.filter(ts => ts.day === d);
+                        if (!daySlots.length) return null;
+                        return (
+                          <optgroup key={d} label={DAY_FULL[d]}>
+                            {daySlots.map(ts => (
+                              <option key={ts.id} value={ts.id}>
+                                {ts.start_time_display} – {ts.end_time_display}{ts.label ? ` (${ts.label})` : ''}
+                              </option>
+                            ))}
+                          </optgroup>
+                        );
+                      })}
+                    </Select>
+                  </Field>
+                  <Field label="Room (optional)">
+                    <Select value={form.room} onChange={e => setForm(f => ({ ...f, room: e.target.value }))}>
+                      <option value="">No room assigned</option>
+                      {rooms.map(r => <option key={r.id} value={r.id}>{r.name}{r.building ? ` · ${r.building}` : ''}</option>)}
+                    </Select>
+                  </Field>
+                </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <Field label="Academic Year" required>
-                  <Select required value={form.academic_year} onChange={e => setForm(f => ({ ...f, academic_year: e.target.value, semester: '' }))}>
-                    <option value="">Select year…</option>
-                    {academicYears.map(a => <option key={a.id} value={a.id}>{a.name}{a.is_active ? ' ★' : ''}</option>)}
-                  </Select>
-                </Field>
-                <Field label="Semester (optional)">
-                  <Select value={form.semester} onChange={e => setForm(f => ({ ...f, semester: e.target.value }))}>
-                    <option value="">None</option>
-                    {semesters.map(s => <option key={s.id} value={s.id}>{s.semester_type}</option>)}
-                  </Select>
-                </Field>
+              <div className="space-y-6">
+                <div className="flex items-center gap-4">
+                  <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] whitespace-nowrap">Context & Notes</h4>
+                  <div className="h-px w-full bg-slate-100"></div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                  <Field label="Academic Year" required>
+                    <Select required value={form.academic_year} onChange={e => setForm(f => ({ ...f, academic_year: e.target.value, semester: '' }))}>
+                      <option value="">Select year…</option>
+                      {academicYears.map(a => <option key={a.id} value={a.id}>{a.name}{a.is_active ? ' ★' : ''}</option>)}
+                    </Select>
+                  </Field>
+                  <Field label="Semester (optional)">
+                    <Select value={form.semester} onChange={e => setForm(f => ({ ...f, semester: e.target.value }))}>
+                      <option value="">None</option>
+                      {semesters.map(s => <option key={s.id} value={s.id}>{s.semester_type}</option>)}
+                    </Select>
+                  </Field>
+                  <div className="sm:col-span-2">
+                    <Field label="Notes (optional)">
+                      <textarea value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
+                        rows={2} placeholder="Any additional instructions…"
+                        className="w-full px-4 py-3 rounded-xl border border-slate-200 text-[13px] font-bold text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500/10 focus:border-violet-400 transition-all resize-none shadow-sm" />
+                    </Field>
+                  </div>
+                </div>
               </div>
 
-              <Field label="Notes (optional)">
-                <textarea value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
-                  rows={2} placeholder="Any additional notes…"
-                  className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400/30 focus:border-violet-400 transition-all resize-none" />
-              </Field>
-
-              {/* Conflict hint */}
-              <div className="bg-amber-50 border border-amber-100 rounded-xl px-3 py-2.5 flex items-start gap-2">
-                <svg className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                <p className="text-[10px] text-amber-700 font-medium">Conflicts (same teacher, room, or section at the same time) are validated automatically on save.</p>
+              <div className="bg-amber-50/50 border border-amber-100 rounded-2xl p-4 flex items-start gap-3">
+                <svg className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                <p className="text-[11px] text-amber-700 font-bold leading-relaxed uppercase tracking-tight">
+                  Conflicts (teacher, room, or section overlapping) are validated automatically upon saving.
+                </p>
               </div>
             </form>
 
-            {/* Footer */}
-            <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-100 bg-slate-50/50 rounded-b-3xl">
+            <div className="flex items-center justify-end gap-3 px-8 py-6 border-t border-slate-100 bg-slate-50/50">
               <button type="button" onClick={() => setShowForm(false)}
-                className="px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-bold text-sm hover:bg-slate-100 transition-all">
+                className="flex-1 sm:flex-none px-8 py-3.5 rounded-2xl border border-slate-200 text-slate-600 font-black text-[11px] uppercase tracking-[0.2em] hover:bg-white transition-all active:scale-95">
                 Cancel
               </button>
               <button onClick={handleSave} disabled={saving}
-                className="px-6 py-2.5 rounded-xl bg-violet-600 text-white font-bold text-sm hover:bg-violet-700 disabled:opacity-50 flex items-center gap-2 transition-all shadow-sm">
+                className="flex-[2] sm:flex-none px-10 py-3.5 rounded-2xl bg-violet-600 text-white font-black text-[11px] uppercase tracking-[0.2em] hover:bg-violet-700 disabled:opacity-50 flex items-center justify-center gap-2 transition-all shadow-lg shadow-violet-200 active:scale-95">
                 {saving && <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>}
-                {saving ? 'Saving…' : editItem ? 'Update Schedule' : 'Add Schedule'}
+                {saving ? 'Processing…' : editItem ? 'Update Assignment' : 'Create Assignment'}
               </button>
             </div>
           </div>
@@ -822,151 +817,180 @@ export default function ScheduleManagement() {
       )}
 
       {/* ══════════════════════════════════════════════════════════════════════
-          TIME SLOTS SIDE PANEL
+          TIME SLOTS MODAL
       ══════════════════════════════════════════════════════════════════════ */}
       {showSlotPanel && (
-        <div className="fixed inset-0 z-50 flex">
-          <div className="flex-1 bg-black/40 backdrop-blur-sm" onClick={() => setShowSlotPanel(false)} />
-          <div className="w-full max-w-sm bg-white h-full flex flex-col shadow-2xl overflow-hidden">
-            <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 bg-slate-50">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between px-8 py-6 border-b border-slate-100 bg-slate-50/50">
               <div>
-                <h3 className="text-base font-black text-slate-900">Time Slots</h3>
-                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">{timeSlots.length} defined</p>
+                <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight">Time Slots</h3>
+                <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.2em] mt-1">{timeSlots.length} Slots Configured</p>
               </div>
-              <button onClick={() => setShowSlotPanel(false)} className="p-2 rounded-xl hover:bg-slate-200 text-slate-400 transition-all">
+              <button onClick={() => setShowSlotPanel(false)} className="p-2.5 rounded-2xl hover:bg-slate-200 text-slate-400 transition-all active:scale-90">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
             </div>
 
-            {/* Add form */}
-            <form onSubmit={saveSlot} className="px-5 py-4 border-b border-slate-100 space-y-3 bg-violet-50/30">
-              <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Add New Slot</p>
-              <div className="grid grid-cols-2 gap-3">
-                <Field label="Day" required>
-                  <Select required value={slotForm.day} onChange={e => setSlotForm(f => ({ ...f, day: e.target.value }))}>
-                    {DAYS.map(d => <option key={d} value={d}>{DAY_FULL[d]}</option>)}
-                  </Select>
-                </Field>
-                <Field label="Label (optional)">
-                  <input value={slotForm.label} onChange={e => setSlotForm(f => ({ ...f, label: e.target.value }))}
-                    placeholder="e.g. 1st Period"
-                    className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400/30 focus:border-violet-400 transition-all" />
-                </Field>
-                <Field label="Start" required>
-                  <input required type="time" value={slotForm.start_time} onChange={e => setSlotForm(f => ({ ...f, start_time: e.target.value }))}
-                    className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400/30 focus:border-violet-400 transition-all" />
-                </Field>
-                <Field label="End" required>
-                  <input required type="time" value={slotForm.end_time} onChange={e => setSlotForm(f => ({ ...f, end_time: e.target.value }))}
-                    className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400/30 focus:border-violet-400 transition-all" />
-                </Field>
-              </div>
-              <button type="submit" disabled={savingSlot}
-                className="w-full py-2.5 rounded-xl bg-violet-600 text-white font-bold text-sm hover:bg-violet-700 disabled:opacity-50 transition-all">
-                {savingSlot ? 'Adding…' : '+ Add Time Slot'}
-              </button>
-            </form>
-
-            {/* Existing slots */}
-            <div className="flex-1 overflow-y-auto px-5 py-4 space-y-1">
-              {DAYS.map(d => {
-                const daySlots = sortedSlots.filter(ts => ts.day === d);
-                if (!daySlots.length) return null;
-                return (
-                  <div key={d} className="mb-3">
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">{DAY_FULL[d]}</p>
-                    {daySlots.map(ts => (
-                      <div key={ts.id} className="flex items-center justify-between py-2 px-3 rounded-xl hover:bg-slate-50 group">
-                        <div>
-                          <p className="text-sm font-bold text-slate-800">{ts.start_time?.slice(0,5)} – {ts.end_time?.slice(0,5)}</p>
-                          {ts.label && <p className="text-[10px] text-violet-500 font-bold">{ts.label}</p>}
-                        </div>
-                        <button onClick={() => deleteSlot(ts.id, `${DAY_SHORT[ts.day]} ${ts.start_time?.slice(0,5)}`)}
-                          className="p-1.5 rounded-lg text-rose-400 hover:bg-rose-50 opacity-0 group-hover:opacity-100 transition-all">
-                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                        </button>
-                      </div>
-                    ))}
+            <div className="flex-1 overflow-hidden flex flex-col md:flex-row">
+              {/* Left: Add form */}
+              <div className="w-full md:w-[320px] p-8 border-b md:border-b-0 md:border-r border-slate-100 bg-violet-50/20">
+                <form onSubmit={saveSlot} className="space-y-6">
+                  <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Register New Slot</h4>
+                  <div className="grid grid-cols-1 gap-5">
+                    <Field label="Day of Week" required>
+                      <Select required value={slotForm.day} onChange={e => setSlotForm(f => ({ ...f, day: e.target.value }))}>
+                        {DAYS.map(d => <option key={d} value={d}>{DAY_FULL[d]}</option>)}
+                      </Select>
+                    </Field>
+                    <Field label="Slot Label">
+                      <input value={slotForm.label} onChange={e => setSlotForm(f => ({ ...f, label: e.target.value }))}
+                        placeholder="e.g. 1st Period"
+                        className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-[13px] font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-500/10 focus:border-violet-400 transition-all" />
+                    </Field>
+                    <div className="grid grid-cols-2 gap-4">
+                      <Field label="Start Time" required>
+                        <input required type="time" value={slotForm.start_time} onChange={e => setSlotForm(f => ({ ...f, start_time: e.target.value }))}
+                          className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-[13px] font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-500/10 focus:border-violet-400 transition-all" />
+                      </Field>
+                      <Field label="End Time" required>
+                        <input required type="time" value={slotForm.end_time} onChange={e => setSlotForm(f => ({ ...f, end_time: e.target.value }))}
+                          className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-[13px] font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-500/10 focus:border-violet-400 transition-all" />
+                      </Field>
+                    </div>
                   </div>
-                );
-              })}
-              {timeSlots.length === 0 && (
-                <p className="text-center text-slate-400 text-sm py-8">No time slots yet. Add one above.</p>
-              )}
+                  <button type="submit" disabled={savingSlot}
+                    className="w-full py-3.5 rounded-2xl bg-violet-600 text-white font-black text-[11px] uppercase tracking-[0.2em] hover:bg-violet-700 disabled:opacity-50 transition-all shadow-lg shadow-violet-200 active:scale-95">
+                    {savingSlot ? 'Registering…' : '+ Register Slot'}
+                  </button>
+                </form>
+              </div>
+
+              {/* Right: Existing slots */}
+              <div className="flex-1 overflow-y-auto p-8 space-y-6 bg-white scrollbar-thin">
+                {DAYS.map(d => {
+                  const daySlots = sortedSlots.filter(ts => ts.day === d);
+                  if (!daySlots.length) return null;
+                  return (
+                    <div key={d} className="space-y-3">
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4 flex items-center gap-3">
+                        {DAY_FULL[d]}
+                        <div className="h-px w-full bg-slate-50"></div>
+                      </p>
+                      <div className="grid grid-cols-1 gap-2">
+                        {daySlots.map(ts => (
+                          <div key={ts.id} className="flex items-center justify-between py-3 px-4 rounded-2xl bg-slate-50 hover:bg-violet-50 transition-all group border border-transparent hover:border-violet-100">
+                            <div>
+                              <p className="text-[13px] font-bold text-slate-800 tracking-tight">{ts.start_time?.slice(0,5)} – {ts.end_time?.slice(0,5)}</p>
+                              {ts.label && <p className="text-[9px] text-violet-500 font-black uppercase tracking-widest mt-0.5">{ts.label}</p>}
+                            </div>
+                            <button onClick={() => deleteSlot(ts.id, `${DAY_SHORT[ts.day]} ${ts.start_time?.slice(0,5)}`)}
+                              className="p-2 rounded-xl text-rose-400 hover:text-rose-600 hover:bg-rose-100 opacity-0 group-hover:opacity-100 transition-all active:scale-90">
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+                {timeSlots.length === 0 && (
+                  <div className="flex flex-col items-center justify-center py-20 text-center">
+                    <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center mb-4">
+                      <svg className="w-6 h-6 text-slate-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    </div>
+                    <p className="text-slate-400 font-bold text-xs uppercase tracking-widest">No slots registered</p>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
       )}
 
       {/* ══════════════════════════════════════════════════════════════════════
-          ROOMS SIDE PANEL
+          ROOMS MODAL
       ══════════════════════════════════════════════════════════════════════ */}
       {showRoomPanel && (
-        <div className="fixed inset-0 z-50 flex">
-          <div className="flex-1 bg-black/40 backdrop-blur-sm" onClick={() => setShowRoomPanel(false)} />
-          <div className="w-full max-w-sm bg-white h-full flex flex-col shadow-2xl overflow-hidden">
-            <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 bg-slate-50">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between px-8 py-6 border-b border-slate-100 bg-slate-50/50">
               <div>
-                <h3 className="text-base font-black text-slate-900">Rooms</h3>
-                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">{rooms.length} defined</p>
+                <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight">Facility Management</h3>
+                <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.2em] mt-1">{rooms.length} Rooms Registered</p>
               </div>
-              <button onClick={() => setShowRoomPanel(false)} className="p-2 rounded-xl hover:bg-slate-200 text-slate-400 transition-all">
+              <button onClick={() => setShowRoomPanel(false)} className="p-2.5 rounded-2xl hover:bg-slate-200 text-slate-400 transition-all active:scale-90">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
             </div>
 
-            {/* Add form */}
-            <form onSubmit={saveRoom} className="px-5 py-4 border-b border-slate-100 space-y-3 bg-violet-50/30">
-              <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Add New Room</p>
-              <div className="grid grid-cols-2 gap-3">
-                <Field label="Room Name" required>
-                  <input required value={roomForm.name} onChange={e => setRoomForm(f => ({ ...f, name: e.target.value }))}
-                    placeholder="e.g. Room 204"
-                    className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400/30 focus:border-violet-400 transition-all" />
-                </Field>
-                <Field label="Building">
-                  <input value={roomForm.building} onChange={e => setRoomForm(f => ({ ...f, building: e.target.value }))}
-                    placeholder="e.g. Main Bldg"
-                    className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400/30 focus:border-violet-400 transition-all" />
-                </Field>
-                <Field label="Type">
-                  <Select value={roomForm.room_type} onChange={e => setRoomForm(f => ({ ...f, room_type: e.target.value }))}>
-                    <option value="classroom">Classroom</option>
-                    <option value="laboratory">Laboratory</option>
-                    <option value="gym">Gymnasium</option>
-                    <option value="library">Library</option>
-                    <option value="other">Other</option>
-                  </Select>
-                </Field>
-                <Field label="Capacity">
-                  <input type="number" min={1} value={roomForm.capacity} onChange={e => setRoomForm(f => ({ ...f, capacity: e.target.value }))}
-                    className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400/30 focus:border-violet-400 transition-all" />
-                </Field>
-              </div>
-              <button type="submit" disabled={savingRoom}
-                className="w-full py-2.5 rounded-xl bg-violet-600 text-white font-bold text-sm hover:bg-violet-700 disabled:opacity-50 transition-all">
-                {savingRoom ? 'Adding…' : '+ Add Room'}
-              </button>
-            </form>
-
-            {/* Existing rooms */}
-            <div className="flex-1 overflow-y-auto px-5 py-4 space-y-1">
-              {rooms.length === 0 ? (
-                <p className="text-center text-slate-400 text-sm py-8">No rooms yet. Add one above.</p>
-              ) : rooms.map(r => (
-                <div key={r.id} className="flex items-center justify-between py-2.5 px-3 rounded-xl hover:bg-slate-50 group">
-                  <div>
-                    <p className="text-sm font-bold text-slate-800">{r.name}</p>
-                    <p className="text-[10px] text-slate-400">
-                      {r.building && `${r.building} · `}{r.room_type} · cap. {r.capacity}
-                    </p>
+            <div className="flex-1 overflow-hidden flex flex-col md:flex-row">
+              {/* Left: Add form */}
+              <div className="w-full md:w-[320px] p-8 border-b md:border-b-0 md:border-r border-slate-100 bg-violet-50/20">
+                <form onSubmit={saveRoom} className="space-y-6">
+                  <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Register New Room</h4>
+                  <div className="grid grid-cols-1 gap-5">
+                    <Field label="Room Name" required>
+                      <input required value={roomForm.name} onChange={e => setRoomForm(f => ({ ...f, name: e.target.value }))}
+                        placeholder="e.g. Room 204"
+                        className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-[13px] font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-500/10 focus:border-violet-400 transition-all" />
+                    </Field>
+                    <Field label="Building">
+                      <input value={roomForm.building} onChange={e => setRoomForm(f => ({ ...f, building: e.target.value }))}
+                        placeholder="e.g. Main Bldg"
+                        className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-[13px] font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-500/10 focus:border-violet-400 transition-all" />
+                    </Field>
+                    <Field label="Facility Type">
+                      <Select value={roomForm.room_type} onChange={e => setRoomForm(f => ({ ...f, room_type: e.target.value }))}>
+                        <option value="classroom">Classroom</option>
+                        <option value="laboratory">Laboratory</option>
+                        <option value="gym">Gymnasium</option>
+                        <option value="library">Library</option>
+                        <option value="other">Other</option>
+                      </Select>
+                    </Field>
+                    <Field label="Seating Capacity">
+                      <input type="number" min={1} value={roomForm.capacity} onChange={e => setRoomForm(f => ({ ...f, capacity: e.target.value }))}
+                        className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-[13px] font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-500/10 focus:border-violet-400 transition-all" />
+                    </Field>
                   </div>
-                  <button onClick={() => deleteRoom(r.id, r.name)}
-                    className="p-1.5 rounded-lg text-rose-400 hover:bg-rose-50 opacity-0 group-hover:opacity-100 transition-all">
-                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                  <button type="submit" disabled={savingRoom}
+                    className="w-full py-3.5 rounded-2xl bg-violet-600 text-white font-black text-[11px] uppercase tracking-[0.2em] hover:bg-violet-700 disabled:opacity-50 transition-all shadow-lg shadow-violet-200 active:scale-95">
+                    {savingRoom ? 'Registering…' : '+ Register Room'}
                   </button>
+                </form>
+              </div>
+
+              {/* Right: Existing rooms */}
+              <div className="flex-1 overflow-y-auto p-8 space-y-4 bg-white scrollbar-thin">
+                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4">Registered Facilities</h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {rooms.map(r => (
+                    <div key={r.id} className="flex items-center justify-between py-4 px-5 rounded-2xl bg-slate-50 hover:bg-violet-50 transition-all group border border-transparent hover:border-violet-100 shadow-sm hover:shadow-md">
+                      <div className="min-w-0">
+                        <p className="text-[14px] font-black text-slate-900 truncate">{r.name}</p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="text-[9px] font-black uppercase tracking-widest text-violet-500 bg-violet-100 px-1.5 py-0.5 rounded-md">{r.room_type}</span>
+                          {r.building && <span className="text-[10px] text-slate-400 font-bold">· {r.building}</span>}
+                        </div>
+                        <p className="text-[9px] text-slate-400 font-black uppercase tracking-widest mt-1">Cap. {r.capacity} Seats</p>
+                      </div>
+                      <button onClick={() => deleteRoom(r.id, r.name)}
+                        className="p-2.5 rounded-xl text-rose-400 hover:text-rose-600 hover:bg-rose-100 opacity-0 group-hover:opacity-100 transition-all active:scale-90 flex-shrink-0 ml-4">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                      </button>
+                    </div>
+                  ))}
                 </div>
-              ))}
+                {rooms.length === 0 && (
+                  <div className="flex flex-col items-center justify-center py-20 text-center">
+                    <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center mb-4">
+                      <svg className="w-6 h-6 text-slate-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 012-2h2a2 2 0 012 2v16m-10 0V3a2 2 0 00-2-2H8a2 2 0 00-2 2v18" /></svg>
+                    </div>
+                    <p className="text-slate-400 font-bold text-xs uppercase tracking-widest">No rooms registered</p>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
