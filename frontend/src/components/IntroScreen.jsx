@@ -39,8 +39,8 @@ const IntroScreen = () => {
         {/* Animated Logo Container */}
         <div className="relative mb-8 group">
           <div className="absolute -inset-4 bg-gradient-to-r from-violet-600 to-indigo-600 rounded-full blur-xl opacity-40 group-hover:opacity-60 animate-pulse transition-opacity" />
-          <div className="relative w-24 h-24 md:w-32 md:h-32 bg-white rounded-3xl shadow-2xl flex items-center justify-center p-1 transform rotate-3 hover:rotate-0 transition-transform duration-500">
-            <div className="w-full h-full rounded-[1.4rem] bg-gradient-to-br from-violet-600 to-indigo-700 flex items-center justify-center overflow-hidden p-3">
+          <div className="relative w-24 h-24 md:w-32 md:h-32 bg-white rounded-full shadow-2xl flex items-center justify-center p-1 transform rotate-3 hover:rotate-0 transition-transform duration-500 border-4 border-white/20">
+            <div className="w-full h-full rounded-full bg-white flex items-center justify-center overflow-hidden p-3">
                <img src="/icons/school-logo-source.png" alt="KNHS Logo" className="w-full h-full object-contain" />
             </div>
           </div>

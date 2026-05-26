@@ -107,7 +107,23 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex">
+    <div className="min-h-screen bg-slate-50 flex relative">
+      {/* Loading Overlay */}
+      {loading && (
+        <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[#0F071E]/80 backdrop-blur-md transition-all duration-500">
+          <div className="relative mb-8">
+            <div className="absolute -inset-4 bg-violet-600 rounded-full blur-xl opacity-40 animate-pulse" />
+            <div className="relative w-20 h-20 bg-white rounded-full flex items-center justify-center p-1 shadow-2xl">
+              <div className="w-full h-full rounded-full border-4 border-violet-100 border-t-violet-600 animate-spin" />
+              <img src="/icons/school-logo-source.png" alt="KNHS" className="absolute w-10 h-10 object-contain" />
+            </div>
+          </div>
+          <div className="text-center space-y-2">
+            <h3 className="text-xl font-black text-white uppercase tracking-tighter">Authenticating</h3>
+            <p className="text-[10px] font-bold text-violet-400 uppercase tracking-[0.3em] animate-pulse">Syncing with school database...</p>
+          </div>
+        </div>
+      )}
 
       {/* ── Left panel (branding) — hidden on mobile ── */}
       <div className="hidden lg:flex lg:w-1/2 bg-[#0f0720] flex-col justify-between p-12 relative overflow-hidden">
@@ -119,8 +135,8 @@ const Login = () => {
 
         {/* Logo */}
         <div className="relative flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl overflow-hidden border border-white/10 bg-white/5 flex items-center justify-center">
-            <img src="/icons/school-logo-source.png" alt="KNHS" className="h-8 w-8 object-contain" />
+          <div className="h-10 w-10 rounded-full overflow-hidden border border-white/10 bg-white p-1 flex items-center justify-center">
+            <img src="/icons/school-logo-source.png" alt="KNHS" className="h-full w-full object-contain" />
           </div>
           <div>
             <p className="text-sm font-black text-white leading-none tracking-tight">KIWALAN NHS</p>

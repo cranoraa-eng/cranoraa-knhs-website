@@ -236,8 +236,8 @@ const PublicLayout = () => {
             {/* Brand */}
             <div className="lg:col-span-2 space-y-4">
               <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-xl overflow-hidden border border-white/10 bg-white/5 flex items-center justify-center">
-                  <img src="/icons/school-logo-source.png" alt="KNHS" className="h-8 w-8 object-contain" />
+                <div className="h-10 w-10 rounded-full overflow-hidden border border-white/10 bg-white p-1 flex items-center justify-center">
+                  <img src="/icons/school-logo-source.png" alt="KNHS" className="h-full w-full object-contain" />
                 </div>
                 <div>
                   <p className="text-sm font-black text-white leading-none">KIWALAN NATIONAL HIGH SCHOOL</p>

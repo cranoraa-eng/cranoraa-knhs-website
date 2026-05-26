@@ -371,7 +371,7 @@ const Layout = () => {
 
           {/* Logo Section */}
           <div className="flex items-center gap-3 px-6 py-8">
-            <div className="h-12 w-12 rounded-2xl bg-white/10 backdrop-blur-md p-2 flex items-center justify-center border border-white/10 shadow-xl shadow-black/20 group hover:bg-white/20 transition-all cursor-pointer">
+            <div className="h-12 w-12 rounded-full bg-white backdrop-blur-md p-1.5 flex items-center justify-center border border-white/10 shadow-xl shadow-black/20 group hover:bg-white/90 transition-all cursor-pointer">
               <img 
                 src="/icons/school-logo-source.png" 
                 alt="KNHS Logo" 
