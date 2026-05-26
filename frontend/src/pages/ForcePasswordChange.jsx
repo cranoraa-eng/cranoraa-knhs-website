@@ -46,57 +46,88 @@ const ForcePasswordChange = () => {
   };
 
   return (
-    <div className="min-h-screen relative overflow-hidden flex items-center justify-center px-4 py-8">
-      <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-violet-900 to-indigo-900">
-        <div className="absolute inset-0 opacity-20">
-          <div className="absolute top-0 left-0 w-96 h-96 bg-violet-500 rounded-full mix-blend-multiply filter blur-3xl animate-blob" />
-          <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-500 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-2000" />
-        </div>
-      </div>
+    <div className="min-h-screen relative overflow-hidden flex items-center justify-center px-4 py-12 bg-[#0F071E]">
+      {/* SaaS-style Background Accents */}
+      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-to-br from-violet-600/20 via-fuchsia-600/10 to-transparent rounded-full blur-[120px] -mr-64 -mt-64" />
+      <div className="absolute -bottom-32 -left-32 w-96 h-96 bg-indigo-600/20 rounded-full blur-[100px]" />
+      
+      {/* Grid texture */}
+      <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
 
-      <div className="relative w-full max-w-sm rounded-3xl border border-white/20 bg-white/95 p-6 md:p-8 shadow-2xl backdrop-blur-xl">
-        <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-slate-900 mb-1 tracking-tight">Security Update</h1>
-          <p className="text-[13px] text-slate-500 font-medium">Please set a new password for your account.</p>
-        </div>
+      <div className="relative w-full max-w-sm">
+        <div className="bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[2.5rem] p-8 shadow-2xl shadow-black/40 ring-1 ring-white/5 relative overflow-hidden">
+           {/* Inner glow */}
+           <div className="absolute inset-0 bg-gradient-to-br from-violet-500/[0.05] to-transparent pointer-events-none" />
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-slate-700 text-[12px] font-bold mb-1.5 ml-1 uppercase tracking-wider">
-              New Password
-            </label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-[13px] focus:outline-none focus:ring-4 focus:ring-violet-500/10 focus:border-violet-500 transition-all"
-              required
-            />
+          {/* Header */}
+          <div className="text-center mb-8 relative">
+            <div className="inline-flex items-center justify-center w-20 h-20 bg-white rounded-full mb-6 shadow-[0_0_30px_rgba(139,92,246,0.3)] p-1.5 border-4 border-white/10">
+              <img 
+                src="/icons/school-logo-source.png" 
+                alt="KNHS Logo" 
+                className="w-full h-full object-contain"
+              />
+            </div>
+            <h1 className="text-2xl font-black text-white mb-2 tracking-tight uppercase leading-none text-center">Security Policy</h1>
+            <p className="text-[10px] text-violet-400 font-bold uppercase tracking-[0.2em] text-center">Mandatory Password Update</p>
           </div>
 
-          <div>
-            <label className="block text-slate-700 text-[12px] font-bold mb-1.5 ml-1 uppercase tracking-wider">
-              Confirm New Password
-            </label>
-            <input
-              type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="••••••••"
-              className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-[13px] focus:outline-none focus:ring-4 focus:ring-violet-500/10 focus:border-violet-500 transition-all"
-              required
-            />
-          </div>
+          <form onSubmit={handleSubmit} className="space-y-5 relative">
+            <div className="p-4 bg-violet-500/10 border border-violet-500/20 rounded-2xl mb-6">
+              <p className="text-[11px] text-violet-200 leading-relaxed font-medium">
+                To keep your student portal account secure, our policy requires a unique password. Please set one now.
+              </p>
+            </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-violet-600 hover:bg-violet-700 text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-violet-100 active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2 text-sm"
-          >
-            {loading ? 'Updating...' : 'Update Password'}
-          </button>
-        </form>
+            <div>
+              <label className="block text-slate-400 text-[10px] font-black mb-2 ml-1 uppercase tracking-widest">New Password</label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                className="w-full px-5 py-3.5 bg-white/5 border border-white/10 rounded-2xl text-sm font-bold text-white focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all placeholder:text-slate-600"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-slate-400 text-[10px] font-black mb-2 ml-1 uppercase tracking-widest">Confirm Password</label>
+              <input
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="••••••••"
+                className="w-full px-5 py-3.5 bg-white/5 border border-white/10 rounded-2xl text-sm font-bold text-white focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all placeholder:text-slate-600"
+                required
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-violet-600 hover:bg-violet-500 text-white font-black py-4 rounded-2xl transition-all shadow-xl shadow-violet-900/20 active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2 text-xs uppercase tracking-widest"
+            >
+              {loading ? (
+                <svg className="animate-spin h-4 w-4 text-white" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
+              ) : (
+                <>
+                  Secure Account
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
+                </>
+              )}
+            </button>
+          </form>
+
+          <div className="mt-8 text-center">
+            <p className="text-slate-600 font-bold text-[9px] uppercase tracking-[0.2em]">
+              Kiwalan National High School • Data Privacy Protected
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );
