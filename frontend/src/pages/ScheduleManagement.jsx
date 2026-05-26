@@ -26,6 +26,7 @@ export default function ScheduleManagement() {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editItem, setEditItem] = useState(null);
+  const [selectedIds, setSelectedIds] = useState([]);
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
   const [filterDay, setFilterDay] = useState('');
@@ -56,6 +57,7 @@ export default function ScheduleManagement() {
       setSubjects(subRes.data.results || subRes.data);
       setTeachers(tchRes.data.results || tchRes.data);
       setAcademicYears(ayRes.data.results || ayRes.data);
+      setSelectedIds([]); // Clear selection on refresh
     } catch { toast.error('Failed to load schedule data'); }
     finally { setLoading(false); }
   }, []);
@@ -110,6 +112,33 @@ export default function ScheduleManagement() {
       toast.success('Deleted');
       fetchAll();
     } catch { toast.error('Failed to delete'); }
+  };
+
+  const handleBulkDelete = async () => {
+    if (!selectedIds.length) return;
+    if (!window.confirm(`Delete ${selectedIds.length} selected schedule(s)?`)) return;
+    
+    setLoading(true);
+    try {
+      await Promise.all(selectedIds.map(id => api.delete(`/schedules/${id}/`)));
+      toast.success(`Successfully deleted ${selectedIds.length} items`);
+      setSelectedIds([]);
+      fetchAll();
+    } catch {
+      toast.error('Failed to delete some items');
+      fetchAll();
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const toggleSelect = (id) => {
+    setSelectedIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+  };
+
+  const toggleSelectAll = (ids) => {
+    if (selectedIds.length === ids.length) setSelectedIds([]);
+    else setSelectedIds(ids);
   };
 
   const checkConflicts = async () => {
@@ -201,16 +230,31 @@ export default function ScheduleManagement() {
         ))}
       </div>
 
-      {/* Filters */}
-      <div className="flex flex-wrap gap-3">
-        <select value={filterDay} onChange={e => setFilterDay(e.target.value)} className="px-3 py-2 rounded-xl border border-slate-200 text-sm font-medium bg-white focus:outline-none focus:ring-2 focus:ring-violet-300">
-          <option value="">All Days</option>
-          {DAYS.map(d => <option key={d} value={d}>{DAY_FULL[d]}</option>)}
-        </select>
-        <select value={filterClassroom} onChange={e => setFilterClassroom(e.target.value)} className="px-3 py-2 rounded-xl border border-slate-200 text-sm font-medium bg-white focus:outline-none focus:ring-2 focus:ring-violet-300">
-          <option value="">All Classrooms</option>
-          {classrooms.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-        </select>
+      {/* Filters & Bulk Actions */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap gap-3">
+          <select value={filterDay} onChange={e => setFilterDay(e.target.value)} className="px-3 py-2 rounded-xl border border-slate-200 text-sm font-medium bg-white focus:outline-none focus:ring-2 focus:ring-violet-300">
+            <option value="">All Days</option>
+            {DAYS.map(d => <option key={d} value={d}>{DAY_FULL[d]}</option>)}
+          </select>
+          <select value={filterClassroom} onChange={e => setFilterClassroom(e.target.value)} className="px-3 py-2 rounded-xl border border-slate-200 text-sm font-medium bg-white focus:outline-none focus:ring-2 focus:ring-violet-300">
+            <option value="">All Classrooms</option>
+            {classrooms.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+          </select>
+        </div>
+        
+        {selectedIds.length > 0 && (
+          <div className="flex items-center gap-3 animate-in fade-in slide-in-from-right-4 duration-300">
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">{selectedIds.length} selected</span>
+            <button 
+              onClick={handleBulkDelete}
+              className="px-4 py-2 rounded-xl bg-rose-50 text-rose-600 border border-rose-100 font-bold text-xs uppercase tracking-widest hover:bg-rose-100 transition-all flex items-center gap-2"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+              Delete Selected
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Timetable Grid */}
@@ -271,6 +315,14 @@ export default function ScheduleManagement() {
             <table className="w-full text-left border-separate border-spacing-0">
               <thead className="bg-slate-50 border-b border-slate-200">
                 <tr>
+                  <th className="px-4 py-3 w-10">
+                    <input 
+                      type="checkbox" 
+                      checked={filtered.length > 0 && selectedIds.length === filtered.length}
+                      onChange={() => toggleSelectAll(filtered.map(s => s.id))}
+                      className="w-4 h-4 rounded border-slate-300 text-violet-600 focus:ring-violet-500 cursor-pointer"
+                    />
+                  </th>
                   {['Day & Time','Classroom','Subject','Teacher','Room','Actions'].map(h => (
                     <th key={h} className="px-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">{h}</th>
                   ))}
@@ -278,9 +330,17 @@ export default function ScheduleManagement() {
               </thead>
               <tbody className="divide-y divide-slate-50">
                 {filtered.length === 0 ? (
-                  <tr><td colSpan={6} className="px-4 py-12 text-center text-slate-400 text-sm">No schedules found.</td></tr>
+                  <tr><td colSpan={7} className="px-4 py-12 text-center text-slate-400 text-sm">No schedules found.</td></tr>
                 ) : filtered.map(s => (
-                  <tr key={s.id} className="hover:bg-slate-50 transition-colors">
+                  <tr key={s.id} className={`hover:bg-slate-50 transition-colors ${selectedIds.includes(s.id) ? 'bg-violet-50/30' : ''}`}>
+                    <td className="px-4 py-3">
+                      <input 
+                        type="checkbox" 
+                        checked={selectedIds.includes(s.id)}
+                        onChange={() => toggleSelect(s.id)}
+                        className="w-4 h-4 rounded border-slate-300 text-violet-600 focus:ring-violet-500 cursor-pointer"
+                      />
+                    </td>
                     <td className="px-4 py-3">
                       <p className="text-xs font-bold text-slate-800">{s.time_slot_detail ? DAY_FULL[s.time_slot_detail.day] : '—'}</p>
                       <p className="text-[10px] text-slate-400">{s.time_slot_detail?.start_time_display} – {s.time_slot_detail?.end_time_display}</p>
