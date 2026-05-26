@@ -78,6 +78,7 @@ export default function ScheduleManagement() {
   const [slotForm, setSlotForm]         = useState({ day:'monday', start_time:'07:00', end_time:'08:00', label:'' });
   const [savingRoom, setSavingRoom]     = useState(false);
   const [savingSlot, setSavingSlot]     = useState(false);
+  const [slotFilterDay, setSlotFilterDay] = useState(''); // Added for time slot filtering
 
   // Classroom → subject/teacher assignments (from ClassroomSubject)
   const [classroomAssignments, setClassroomAssignments] = useState([]); // [{subject, subject_name, subject_code, teacher, teacher_name}]
@@ -868,7 +869,19 @@ export default function ScheduleManagement() {
 
               {/* Right: Existing slots */}
               <div className="flex-1 overflow-y-auto p-8 space-y-6 bg-white scrollbar-thin">
-                {DAYS.map(d => {
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Registered Slots</h4>
+                  <select 
+                    value={slotFilterDay} 
+                    onChange={e => setSlotFilterDay(e.target.value)}
+                    className="px-3 py-1.5 rounded-lg border border-slate-200 text-[11px] font-black uppercase tracking-widest bg-slate-50 focus:outline-none focus:ring-2 focus:ring-violet-500/10 focus:border-violet-400 transition-all cursor-pointer"
+                  >
+                    <option value="">All Days</option>
+                    {DAYS.map(d => <option key={d} value={d}>{DAY_FULL[d]}</option>)}
+                  </select>
+                </div>
+
+                {(slotFilterDay ? [slotFilterDay] : DAYS).map(d => {
                   const daySlots = sortedSlots.filter(ts => ts.day === d);
                   if (!daySlots.length) return null;
                   return (
