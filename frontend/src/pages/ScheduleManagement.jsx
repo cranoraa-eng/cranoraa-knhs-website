@@ -157,10 +157,18 @@ export default function ScheduleManagement() {
     try {
       await api.post('/rooms/', roomForm);
       toast.success('Room created');
-      setShowRoomModal(false);
       setRoomForm({ name:'', building:'', capacity:40, room_type:'classroom' });
       fetchAll();
     } catch { toast.error('Failed to create room'); }
+  };
+
+  const handleDeleteRoom = async (id) => {
+    if (!window.confirm('Delete this room? This may affect existing schedules.')) return;
+    try {
+      await api.delete(`/rooms/${id}/`);
+      toast.success('Room deleted');
+      fetchAll();
+    } catch { toast.error('Failed to delete room'); }
   };
 
   const saveSlot = async (e) => {
@@ -168,10 +176,18 @@ export default function ScheduleManagement() {
     try {
       await api.post('/time-slots/', slotForm);
       toast.success('Time slot created');
-      setShowSlotModal(false);
       setSlotForm({ day:'monday', start_time:'07:00', end_time:'08:00', label:'' });
       fetchAll();
     } catch { toast.error('Failed to create time slot'); }
+  };
+
+  const handleDeleteSlot = async (id) => {
+    if (!window.confirm('Delete this time slot? This may affect existing schedules.')) return;
+    try {
+      await api.delete(`/time-slots/${id}/`);
+      toast.success('Time slot deleted');
+      fetchAll();
+    } catch { toast.error('Failed to delete time slot'); }
   };
 
   const filtered = schedules.filter(s => {
@@ -291,9 +307,15 @@ export default function ScheduleManagement() {
                               <p className="text-[10px] font-black text-violet-700 truncate">{s.subject_code}</p>
                               <p className="text-[9px] text-slate-600 truncate">{s.classroom_name}</p>
                               {s.room_name && <p className="text-[9px] text-slate-400 truncate">📍 {s.room_name}</p>}
-                              <div className="absolute top-1 right-1 hidden group-hover:flex gap-1">
-                                <button onClick={() => openEdit(s)} className="p-0.5 rounded bg-white text-violet-600 hover:bg-violet-100 text-[10px]">✏️</button>
-                                <button onClick={() => handleDelete(s.id)} className="p-0.5 rounded bg-white text-rose-500 hover:bg-rose-100 text-[10px]">🗑</button>
+                              
+                              {/* Hover Actions */}
+                              <div className="absolute top-1 right-1 hidden group-hover:flex gap-1.5 p-1 rounded-lg bg-white/90 backdrop-blur-sm shadow-sm border border-slate-100 transition-all">
+                                <button onClick={() => openEdit(s)} className="p-1 rounded-md text-violet-600 hover:bg-violet-50 transition-colors" title="Edit">
+                                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                                </button>
+                                <button onClick={() => handleDelete(s.id)} className="p-1 rounded-md text-rose-500 hover:bg-rose-50 transition-colors" title="Delete">
+                                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                </button>
                               </div>
                             </div>
                           ))}
@@ -438,14 +460,67 @@ export default function ScheduleManagement() {
       {/* Room Modal */}
       {showRoomModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm">
-            <div className="p-6 border-b border-slate-100"><h3 className="text-lg font-black text-slate-900">Add Room</h3></div>
-            <form onSubmit={saveRoom} className="p-6 space-y-4">
-              <div><label className="block text-xs font-black text-slate-500 uppercase tracking-widest mb-1">Room Name *</label><input required value={roomForm.name} onChange={e => setRoomForm(f=>({...f, name:e.target.value}))} className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-violet-300" placeholder="e.g. Room 204" /></div>
-              <div><label className="block text-xs font-black text-slate-500 uppercase tracking-widest mb-1">Building</label><input value={roomForm.building} onChange={e => setRoomForm(f=>({...f, building:e.target.value}))} className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-violet-300" /></div>
-              <div><label className="block text-xs font-black text-slate-500 uppercase tracking-widest mb-1">Type</label><select value={roomForm.room_type} onChange={e => setRoomForm(f=>({...f, room_type:e.target.value}))} className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-violet-300"><option value="classroom">Classroom</option><option value="laboratory">Laboratory</option><option value="gym">Gymnasium</option><option value="library">Library</option><option value="other">Other</option></select></div>
-              <div className="flex justify-end gap-3"><button type="button" onClick={() => setShowRoomModal(false)} className="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 font-bold text-sm">Cancel</button><button type="submit" className="px-6 py-2 rounded-xl bg-violet-600 text-white font-bold text-sm">Save</button></div>
-            </form>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+            <div className="p-6 border-b border-slate-100 flex justify-between items-center">
+              <h3 className="text-lg font-black text-slate-900 uppercase tracking-widest">Manage Rooms</h3>
+              <button onClick={() => setShowRoomModal(false)} className="text-slate-400 hover:text-slate-600 transition-colors">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+            
+            <div className="p-6 max-h-[70vh] overflow-y-auto space-y-8">
+              {/* Add Room Form */}
+              <form onSubmit={saveRoom} className="space-y-4">
+                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Add New Room</h4>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="col-span-2 sm:col-span-1">
+                    <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Room Name *</label>
+                    <input required value={roomForm.name} onChange={e => setRoomForm(f=>({...f, name:e.target.value}))} 
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-500/10 focus:border-violet-400 transition-all" placeholder="e.g. Room 204" />
+                  </div>
+                  <div className="col-span-2 sm:col-span-1">
+                    <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Building</label>
+                    <input value={roomForm.building} onChange={e => setRoomForm(f=>({...f, building:e.target.value}))} 
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-500/10 focus:border-violet-400 transition-all" placeholder="e.g. Science Bldg" />
+                  </div>
+                  <div className="col-span-2">
+                    <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Type</label>
+                    <select value={roomForm.room_type} onChange={e => setRoomForm(f=>({...f, room_type:e.target.value}))} 
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-500/10 focus:border-violet-400 transition-all">
+                      <option value="classroom">Classroom</option>
+                      <option value="laboratory">Laboratory</option>
+                      <option value="gym">Gymnasium</option>
+                      <option value="library">Library</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+                </div>
+                <button type="submit" className="w-full py-2.5 rounded-xl bg-violet-600 text-white font-black text-[11px] uppercase tracking-widest hover:bg-violet-700 transition-all shadow-md shadow-violet-200">
+                  Save Room
+                </button>
+              </form>
+
+              {/* Room List */}
+              <div className="space-y-4">
+                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Existing Rooms</h4>
+                <div className="divide-y divide-slate-100 border border-slate-100 rounded-xl overflow-hidden">
+                  {rooms.length === 0 ? (
+                    <p className="p-4 text-center text-xs text-slate-400 italic">No rooms added yet</p>
+                  ) : rooms.map(r => (
+                    <div key={r.id} className="p-3 flex items-center justify-between hover:bg-slate-50 transition-colors group">
+                      <div className="min-w-0">
+                        <p className="text-sm font-bold text-slate-800 truncate">{r.name}</p>
+                        <p className="text-[10px] text-slate-400 uppercase tracking-wider">{r.building || 'No Building'} • {r.room_type}</p>
+                      </div>
+                      <button onClick={() => handleDeleteRoom(r.id)} 
+                        className="p-2 rounded-lg text-rose-400 hover:text-rose-600 hover:bg-rose-50 transition-all opacity-0 group-hover:opacity-100">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       )}
@@ -453,14 +528,68 @@ export default function ScheduleManagement() {
       {/* Time Slot Modal */}
       {showSlotModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm">
-            <div className="p-6 border-b border-slate-100"><h3 className="text-lg font-black text-slate-900">Add Time Slot</h3></div>
-            <form onSubmit={saveSlot} className="p-6 space-y-4">
-              <div><label className="block text-xs font-black text-slate-500 uppercase tracking-widest mb-1">Day *</label><select required value={slotForm.day} onChange={e => setSlotForm(f=>({...f, day:e.target.value}))} className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-violet-300">{DAYS.map(d => <option key={d} value={d}>{DAY_FULL[d]}</option>)}</select></div>
-              <div className="grid grid-cols-2 gap-3"><div><label className="block text-xs font-black text-slate-500 uppercase tracking-widest mb-1">Start *</label><input required type="time" value={slotForm.start_time} onChange={e => setSlotForm(f=>({...f, start_time:e.target.value}))} className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-violet-300" /></div><div><label className="block text-xs font-black text-slate-500 uppercase tracking-widest mb-1">End *</label><input required type="time" value={slotForm.end_time} onChange={e => setSlotForm(f=>({...f, end_time:e.target.value}))} className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-violet-300" /></div></div>
-              <div><label className="block text-xs font-black text-slate-500 uppercase tracking-widest mb-1">Label</label><input value={slotForm.label} onChange={e => setSlotForm(f=>({...f, label:e.target.value}))} className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-violet-300" placeholder="e.g. 1st Period" /></div>
-              <div className="flex justify-end gap-3"><button type="button" onClick={() => setShowSlotModal(false)} className="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 font-bold text-sm">Cancel</button><button type="submit" className="px-6 py-2 rounded-xl bg-violet-600 text-white font-bold text-sm">Save</button></div>
-            </form>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+            <div className="p-6 border-b border-slate-100 flex justify-between items-center">
+              <h3 className="text-lg font-black text-slate-900 uppercase tracking-widest">Manage Time Slots</h3>
+              <button onClick={() => setShowSlotModal(false)} className="text-slate-400 hover:text-slate-600 transition-colors">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+
+            <div className="p-6 max-h-[70vh] overflow-y-auto space-y-8">
+              {/* Add Slot Form */}
+              <form onSubmit={saveSlot} className="space-y-4">
+                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Add New Time Slot</h4>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="col-span-2">
+                    <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Day *</label>
+                    <select required value={slotForm.day} onChange={e => setSlotForm(f=>({...f, day:e.target.value}))} 
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-500/10 focus:border-violet-400 transition-all">
+                      {DAYS.map(d => <option key={d} value={d}>{DAY_FULL[d]}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Start *</label>
+                    <input required type="time" value={slotForm.start_time} onChange={e => setSlotForm(f=>({...f, start_time:e.target.value}))} 
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-500/10 focus:border-violet-400 transition-all" />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">End *</label>
+                    <input required type="time" value={slotForm.end_time} onChange={e => setSlotForm(f=>({...f, end_time:e.target.value}))} 
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-500/10 focus:border-violet-400 transition-all" />
+                  </div>
+                  <div className="col-span-2">
+                    <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Label</label>
+                    <input value={slotForm.label} onChange={e => setSlotForm(f=>({...f, label:e.target.value}))} 
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-500/10 focus:border-violet-400 transition-all" placeholder="e.g. 1st Period" />
+                  </div>
+                </div>
+                <button type="submit" className="w-full py-2.5 rounded-xl bg-violet-600 text-white font-black text-[11px] uppercase tracking-widest hover:bg-violet-700 transition-all shadow-md shadow-violet-200">
+                  Save Time Slot
+                </button>
+              </form>
+
+              {/* Slot List */}
+              <div className="space-y-4">
+                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Existing Slots</h4>
+                <div className="divide-y divide-slate-100 border border-slate-100 rounded-xl overflow-hidden">
+                  {timeSlots.length === 0 ? (
+                    <p className="p-4 text-center text-xs text-slate-400 italic">No slots added yet</p>
+                  ) : timeSlots.sort((a,b) => a.start_time.localeCompare(b.start_time)).map(ts => (
+                    <div key={ts.id} className="p-3 flex items-center justify-between hover:bg-slate-50 transition-colors group">
+                      <div className="min-w-0">
+                        <p className="text-sm font-bold text-slate-800">{ts.label || 'Unnamed Slot'}</p>
+                        <p className="text-[10px] text-slate-400 uppercase tracking-wider">{DAY_LABELS[ts.day]} • {ts.start_time_display} – {ts.end_time_display}</p>
+                      </div>
+                      <button onClick={() => handleDeleteSlot(ts.id)} 
+                        className="p-2 rounded-lg text-rose-400 hover:text-rose-600 hover:bg-rose-50 transition-all opacity-0 group-hover:opacity-100">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       )}
