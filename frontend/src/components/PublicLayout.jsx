@@ -1,12 +1,11 @@
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { getUser, clearSession } from '../utils/auth';
 
 const SITE_URL = 'https://cranoraa-eng-cranoraa-knhs-website.vercel.app';
 
 const PublicLayout = () => {
-  const { user, setUser } = useAuth();
+  const { user, signOut } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
@@ -14,7 +13,6 @@ const PublicLayout = () => {
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
-    setUser(getUser());
     setShowProfileMenu(false);
     setMobileMenuOpen(false);
     window.scrollTo(0, 0);
@@ -24,9 +22,8 @@ const PublicLayout = () => {
   }, [location.pathname]);
 
   const handleLogout = () => {
-    clearSession();
-    setUser(null);
-    navigate('/');
+    signOut();
+    navigate('/', { replace: true });
   };
 
   const isActive = (path) => location.pathname === path;
