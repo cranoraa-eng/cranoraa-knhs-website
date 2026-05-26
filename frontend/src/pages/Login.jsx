@@ -98,7 +98,6 @@ const Login = () => {
   };
 
   const currentRole = roleConfig[loginType];
-  const isAdmin = loginType === 'admin';
 
   // Already logged in — redirect
   useEffect(() => {
