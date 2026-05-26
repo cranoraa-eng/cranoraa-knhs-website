@@ -18,16 +18,14 @@ import { useRegisterSW } from 'virtual:pwa-register/react';
 export function useSWUpdate() {
   const intervalRef = useRef(null);
 
-  const {
-    needRefresh: [needRefresh, setNeedRefresh],
-    updateServiceWorker,
-  } = useRegisterSW({
+  const sw = useRegisterSW({
     onRegistered(registration) {
       if (!registration) return;
       console.log('[SW] Registered. Checking for updates every 60 minutes.');
 
       // Poll for updates every 60 minutes while the app is open.
       // Render's free tier redeploys can happen any time — this catches them.
+      if (intervalRef.current) clearInterval(intervalRef.current);
       intervalRef.current = setInterval(() => {
         registration.update().catch(() => {
           // Silently ignore — user may be offline
@@ -38,6 +36,11 @@ export function useSWUpdate() {
       console.error('[SW] Registration failed:', error);
     },
   });
+
+  // Extract state pairs safely — handles different plugin versions/configs
+  const [needRefresh, setNeedRefresh] = Array.isArray(sw.needRefresh)
+    ? sw.needRefresh
+    : [!!sw.needRefresh, typeof sw.needRefresh === 'function' ? sw.needRefresh : () => {}];
 
   // Clean up the polling interval on unmount
   useEffect(() => {
@@ -52,8 +55,10 @@ export function useSWUpdate() {
    * Pass reloadPage=true so vite-plugin-pwa triggers window.location.reload().
    */
   const applyUpdate = useCallback(() => {
-    updateServiceWorker(true);
-  }, [updateServiceWorker]);
+    if (typeof sw.updateServiceWorker === 'function') {
+      sw.updateServiceWorker(true);
+    }
+  }, [sw.updateServiceWorker]);
 
   /**
    * Hide the modal without applying the update.
@@ -61,7 +66,9 @@ export function useSWUpdate() {
    * on the next page load if the SW is still waiting.
    */
   const dismissUpdate = useCallback(() => {
-    setNeedRefresh(false);
+    if (typeof setNeedRefresh === 'function') {
+      setNeedRefresh(false);
+    }
   }, [setNeedRefresh]);
 
   return { needRefresh, applyUpdate, dismissUpdate };

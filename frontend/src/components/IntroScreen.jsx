@@ -47,7 +47,7 @@ const IntroScreen = () => {
         </div>
 
         {/* Text Content */}
-        <div className="space-y-4 animate-fade-in-up">
+        <div className="space-y-4 animate-fade-in-up" style={{ animation: 'fadeInUp 1s ease-out forwards', animationDelay: '0.3s', opacity: 0 }}>
           <h1 className="text-3xl md:text-5xl font-black text-white tracking-tighter uppercase leading-none">
             KNHS <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-indigo-300">Portal</span>
           </h1>
@@ -58,7 +58,10 @@ const IntroScreen = () => {
 
         {/* Progress Bar */}
         <div className="mt-12 w-48 h-1 bg-white/5 rounded-full overflow-hidden">
-          <div className="h-full bg-gradient-to-r from-violet-500 to-indigo-500 animate-progress" />
+          <div 
+            className="h-full bg-gradient-to-r from-violet-500 to-indigo-500" 
+            style={{ animation: 'progress 3s ease-in-out forwards', width: '0%' }} 
+          />
         </div>
 
         {/* Skip Button (Optional but good for UX) */}
@@ -70,7 +73,7 @@ const IntroScreen = () => {
         </button>
       </div>
 
-      <style jsx>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         @keyframes progress {
           0% { width: 0%; }
           100% { width: 100%; }
@@ -79,15 +82,7 @@ const IntroScreen = () => {
           from { opacity: 0; transform: translateY(20px); }
           to { opacity: 1; transform: translateY(0); }
         }
-        .animate-progress {
-          animation: progress 3s ease-in-out forwards;
-        }
-        .animate-fade-in-up {
-          animation: fadeInUp 1s ease-out forwards;
-          animation-delay: 0.3s;
-          opacity: 0;
-        }
-      `}</style>
+      `}} />
     </div>
   );
 };
