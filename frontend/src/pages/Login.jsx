@@ -49,8 +49,8 @@ const Login = () => {
       identifierPlaceholder: 'parent@email.com'
     },
     admin: {
-      color: 'slate',
-      accent: 'zinc',
+      color: 'emerald',
+      accent: 'green',
       title: 'System Administration Control Panel',
       desc: 'High-level management of school infrastructure, user accounts, and security protocols.',
       features: ['Full system oversight', 'Advanced security logs', 'Database management', 'Administrative reports', 'User permission control'],
@@ -61,6 +61,7 @@ const Login = () => {
   };
 
   const currentRole = roleConfig[loginType];
+  const isAdmin = loginType === 'admin';
 
   // Already logged in — redirect
   useEffect(() => {
@@ -152,12 +153,12 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex relative">
+    <div className={`min-h-screen flex relative transition-colors duration-1000 ${isAdmin ? 'bg-[#020617]' : 'bg-slate-50'}`}>
       {/* Secret Admin Trigger */}
       <button 
-        onClick={() => setLoginType('admin')}
-        className="fixed top-2 right-2 z-50 w-8 h-8 rounded-full flex items-center justify-center text-slate-200 hover:text-slate-400 transition-colors opacity-10 hover:opacity-100"
-        title="Admin Portal"
+        onClick={() => setLoginType(isAdmin ? 'student' : 'admin')}
+        className={`fixed top-2 right-2 z-50 w-8 h-8 rounded-full flex items-center justify-center transition-all duration-500 opacity-10 hover:opacity-100 ${isAdmin ? 'text-emerald-500 rotate-180' : 'text-slate-200 hover:text-slate-400'}`}
+        title={isAdmin ? "Back to Student Portal" : "Admin Portal"}
       >
         <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
@@ -166,45 +167,59 @@ const Login = () => {
 
       {/* Loading Overlay */}
       {loading && (
-        <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[#0F071E]/80 backdrop-blur-md transition-all duration-500">
+        <div className={`fixed inset-0 z-[100] flex flex-col items-center justify-center backdrop-blur-md transition-all duration-500 ${isAdmin ? 'bg-black/90' : 'bg-[#0F071E]/80'}`}>
           <div className="relative mb-8">
             <div className={`absolute -inset-4 bg-${currentRole.color}-600 rounded-full blur-xl opacity-40 animate-pulse`} />
-            <div className="relative w-20 h-20 bg-white rounded-full flex items-center justify-center p-1 shadow-2xl">
-              <div className={`w-full h-full rounded-full border-4 border-${currentRole.color}-100 border-t-${currentRole.color}-600 animate-spin`} />
+            <div className={`relative w-20 h-20 rounded-full flex items-center justify-center p-1 shadow-2xl ${isAdmin ? 'bg-slate-900 border border-emerald-500/30' : 'bg-white'}`}>
+              <div className={`w-full h-full rounded-full border-4 ${isAdmin ? 'border-emerald-900/30 border-t-emerald-500' : `border-${currentRole.color}-100 border-t-${currentRole.color}-600`} animate-spin`} />
               <img src="/icons/school-logo-source.png" alt="KNHS" className="absolute w-10 h-10 object-contain" />
             </div>
           </div>
           <div className="text-center space-y-2">
-            <h3 className="text-xl font-black text-white uppercase tracking-tighter">Authenticating</h3>
-            <p className={`text-[10px] font-bold text-${currentRole.color}-400 uppercase tracking-[0.3em] animate-pulse`}>Syncing with school database...</p>
+            <h3 className="text-xl font-black text-white uppercase tracking-tighter">{isAdmin ? 'Initializing Core' : 'Authenticating'}</h3>
+            <p className={`text-[10px] font-bold text-${currentRole.color}-400 uppercase tracking-[0.3em] animate-pulse`}>
+              {isAdmin ? 'Verifying administrative clearance...' : 'Syncing with school database...'}
+            </p>
           </div>
         </div>
       )}
 
       {/* ── Left panel (branding) — hidden on mobile ── */}
-      <div className="hidden lg:flex lg:w-1/2 bg-[#0f0720] flex-col justify-between p-12 relative overflow-hidden transition-colors duration-700">
+      <div className={`hidden lg:flex lg:w-1/2 flex-col justify-between p-12 relative overflow-hidden transition-all duration-1000 ${isAdmin ? 'bg-black border-r border-emerald-500/10' : 'bg-[#0f0720]'}`}>
         {/* Grid texture */}
-        <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '50px 50px' }} />
+        <div className={`absolute inset-0 ${isAdmin ? 'opacity-[0.08]' : 'opacity-[0.04]'}`} 
+          style={{ 
+            backgroundImage: isAdmin 
+              ? 'radial-gradient(#10b981 0.5px, transparent 0.5px)' 
+              : 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', 
+            backgroundSize: isAdmin ? '30px 30px' : '50px 50px' 
+          }} 
+        />
+        
         {/* Glow accents */}
-        <div className={`absolute top-0 right-0 w-80 h-80 bg-${currentRole.color}-600/15 rounded-full translate-x-1/2 -translate-y-1/2 blur-3xl pointer-events-none transition-all duration-1000`} />
+        <div className={`absolute top-0 right-0 w-80 h-80 bg-${currentRole.color}-600/15 rounded-full translate-x-1/2 -translate-y-1/2 blur-3xl pointer-events-none transition-all duration-1000 ${isAdmin ? 'opacity-30' : ''}`} />
         <div className={`absolute bottom-0 left-0 w-64 h-64 bg-${currentRole.accent}-600/10 rounded-full -translate-x-1/2 translate-y-1/2 blur-3xl pointer-events-none transition-all duration-1000`} />
 
         {/* Logo */}
         <div className="relative flex items-center gap-3">
-          <div className="h-10 w-10 rounded-full overflow-hidden border border-white/10 bg-white p-1 flex items-center justify-center">
+          <div className={`h-10 w-10 rounded-full overflow-hidden border p-1 flex items-center justify-center transition-all duration-500 ${isAdmin ? 'border-emerald-500/50 bg-slate-900' : 'border-white/10 bg-white'}`}>
             <img src="/icons/school-logo-source.png" alt="KNHS" className="h-full w-full object-contain" />
           </div>
           <div>
             <p className="text-sm font-black text-white leading-none tracking-tight">KIWALAN NHS</p>
-            <p className={`text-[10px] text-${currentRole.color}-400 font-bold mt-0.5 uppercase tracking-widest transition-colors duration-500`}>{loginType} Portal</p>
+            <p className={`text-[10px] text-${currentRole.color}-400 font-bold mt-0.5 uppercase tracking-widest transition-colors duration-500`}>
+              {isAdmin ? 'System Core' : `${loginType} Portal`}
+            </p>
           </div>
         </div>
 
         {/* Center content */}
         <div className="relative space-y-8">
           <div className="animate-fade-in" key={loginType}>
-            <p className={`text-xs font-bold text-${currentRole.color}-400 uppercase tracking-widest mb-4 transition-colors duration-500`}>Welcome Back</p>
-            <h2 className="text-4xl font-black text-white leading-tight mb-4 whitespace-pre-line">
+            <p className={`text-xs font-bold text-${currentRole.color}-400 uppercase tracking-widest mb-4 transition-colors duration-500`}>
+              {isAdmin ? 'Root Access' : 'Welcome Back'}
+            </p>
+            <h2 className={`text-4xl font-black leading-tight mb-4 whitespace-pre-line transition-colors duration-500 ${isAdmin ? 'text-emerald-500' : 'text-white'}`}>
               {currentRole.title}
             </h2>
             <p className="text-slate-400 leading-relaxed text-sm">
@@ -218,15 +233,15 @@ const Login = () => {
                 <div className={`w-5 h-5 rounded-full bg-${currentRole.color}-500/20 border border-${currentRole.color}-500/30 flex items-center justify-center flex-shrink-0 transition-colors duration-500`}>
                   <svg className={`w-3 h-3 text-${currentRole.color}-400 transition-colors duration-500`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
                 </div>
-                <span className="text-sm text-slate-400">{f}</span>
+                <span className={`text-sm transition-colors duration-500 ${isAdmin ? 'text-emerald-500/70' : 'text-slate-400'}`}>{f}</span>
               </div>
             ))}
           </div>
           {/* Stats */}
           <div className="grid grid-cols-2 gap-3 pt-2" key={`stats-${loginType}`}>
             {currentRole.stats.map((s, i) => (
-              <div key={i} className="bg-white/5 border border-white/10 rounded-xl p-3 animate-fade-in" style={{ animationDelay: `${(i + 5) * 100}ms` }}>
-                <p className="text-lg font-black text-white">{s.val}</p>
+              <div key={i} className={`border rounded-xl p-3 animate-fade-in transition-all duration-500 ${isAdmin ? 'bg-emerald-500/5 border-emerald-500/20' : 'bg-white/5 border-white/10'}`} style={{ animationDelay: `${(i + 5) * 100}ms` }}>
+                <p className={`text-lg font-black transition-colors duration-500 ${isAdmin ? 'text-emerald-500' : 'text-white'}`}>{s.val}</p>
                 <p className="text-[10px] text-slate-500 font-semibold uppercase tracking-widest mt-0.5">{s.label}</p>
               </div>
             ))}
@@ -235,21 +250,21 @@ const Login = () => {
 
         {/* Bottom link */}
         <div className="relative">
-          <button onClick={() => { window.location.href = '/'; }} className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-white transition-colors font-medium">
+          <button onClick={() => { window.location.href = '/'; }} className={`inline-flex items-center gap-2 text-sm transition-colors font-medium ${isAdmin ? 'text-emerald-500/50 hover:text-emerald-400' : 'text-slate-500 hover:text-white'}`}>
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
-            Back to Website
+            Terminal Logout
           </button>
         </div>
       </div>
 
       {/* ── Right panel (form) ── */}
-      <div className="flex-1 flex flex-col items-center justify-center px-4 py-12 sm:px-8 bg-slate-50">
+      <div className={`flex-1 flex flex-col items-center justify-center px-4 py-12 sm:px-8 transition-colors duration-1000 ${isAdmin ? 'bg-[#020617]' : 'bg-slate-50'}`}>
 
         {/* Mobile back link */}
         <div className="w-full max-w-sm mb-6 lg:hidden">
           <button
             onClick={() => { window.location.href = '/'; }}
-            className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700 transition-colors font-medium"
+            className={`inline-flex items-center gap-1.5 text-sm transition-colors font-medium ${isAdmin ? 'text-emerald-500/50 hover:text-emerald-400' : 'text-slate-500 hover:text-slate-700'}`}
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -258,44 +273,59 @@ const Login = () => {
           </button>
         </div>
 
-        <div className="w-full max-w-sm">
+        <div className={`w-full max-w-sm p-8 rounded-3xl transition-all duration-1000 ${isAdmin ? 'bg-slate-900/50 border border-emerald-500/20 shadow-[0_0_50px_-12px_rgba(16,185,129,0.15)]' : 'bg-transparent'}`}>
           {/* Header */}
           <div className="mb-8">
             <div className="flex items-center gap-3 mb-6 lg:hidden">
-              <div className="h-9 w-9 rounded-full overflow-hidden border border-slate-200 bg-white flex items-center justify-center shadow-sm p-1">
+              <div className={`h-9 w-9 rounded-full overflow-hidden border flex items-center justify-center shadow-sm p-1 transition-all duration-500 ${isAdmin ? 'border-emerald-500/50 bg-slate-900' : 'border-slate-200 bg-white'}`}>
                 <img src="/icons/school-logo-source.png" alt="KNHS" className="h-full w-full object-contain" />
               </div>
               <div>
-                <p className="text-sm font-black text-slate-900 leading-none">KIWALAN NHS</p>
-                <p className={`text-[10px] text-${currentRole.color}-600 font-bold mt-0.5 uppercase tracking-widest transition-colors duration-500`}>{loginType} Portal</p>
+                <p className={`text-sm font-black leading-none transition-colors duration-500 ${isAdmin ? 'text-white' : 'text-slate-900'}`}>KIWALAN NHS</p>
+                <p className={`text-[10px] font-bold mt-0.5 uppercase tracking-widest transition-colors duration-500 ${isAdmin ? 'text-emerald-500' : `text-${currentRole.color}-600`}`}>
+                  {isAdmin ? 'System Core' : `${loginType} Portal`}
+                </p>
               </div>
             </div>
-            <h1 className="text-2xl font-black text-slate-900 mb-1">Sign in</h1>
-            <p className="text-sm text-slate-500">Access your KNHS {loginType} account</p>
+            <h1 className={`text-2xl font-black mb-1 transition-colors duration-500 ${isAdmin ? 'text-white' : 'text-slate-900'}`}>
+              {isAdmin ? 'Authorize' : 'Sign in'}
+            </h1>
+            <p className={`text-sm transition-colors duration-500 ${isAdmin ? 'text-slate-400' : 'text-slate-500'}`}>
+              {isAdmin ? 'Enter administrative credentials' : `Access your KNHS ${loginType} account`}
+            </p>
           </div>
 
           {/* Login type toggle */}
-          <div className="flex p-1 bg-slate-100 rounded-xl mb-6 border border-slate-200">
-            {['student', 'teacher', 'parent'].map(type => (
-              <button
-                key={type}
-                onClick={() => { setLoginType(type); setIdentifier(''); setFieldErrors({}); }}
-                className={`flex-1 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-all ${
-                  loginType === type
-                    ? `bg-white text-${roleConfig[type].color}-700 shadow-sm border border-slate-200`
-                    : 'text-slate-500 hover:text-slate-700'
-                }`}
-              >
-                {type === 'student' ? 'Student' : type === 'teacher' ? 'Teacher' : 'Parent'}
-              </button>
-            ))}
-          </div>
+          {!isAdmin && (
+            <div className="flex p-1 bg-slate-100 rounded-xl mb-6 border border-slate-200">
+              {['student', 'teacher', 'parent'].map(type => (
+                <button
+                  key={type}
+                  onClick={() => { setLoginType(type); setIdentifier(''); setFieldErrors({}); }}
+                  className={`flex-1 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-all ${
+                    loginType === type
+                      ? `bg-white text-${roleConfig[type].color}-700 shadow-sm border border-slate-200`
+                      : 'text-slate-500 hover:text-slate-700'
+                  }`}
+                >
+                  {type === 'student' ? 'Student' : type === 'teacher' ? 'Teacher' : 'Parent'}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {isAdmin && (
+            <div className="mb-6 flex items-center gap-2 px-3 py-2 bg-emerald-500/10 border border-emerald-500/20 rounded-lg">
+              <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">Secured Terminal Active</span>
+            </div>
+          )}
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4" noValidate>
             {/* Identifier */}
             <div>
-              <label htmlFor="identifier" className="block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wider">
+              <label htmlFor="identifier" className={`block text-xs font-bold mb-1.5 uppercase tracking-wider transition-colors duration-500 ${isAdmin ? 'text-emerald-500/70' : 'text-slate-600'}`}>
                 {currentRole.identifierLabel}
               </label>
               <input
@@ -305,9 +335,11 @@ const Login = () => {
                 value={identifier}
                 onChange={e => { setIdentifier(e.target.value); setFieldErrors(p => ({ ...p, identifier: '' })); }}
                 placeholder={currentRole.identifierPlaceholder}
-                className={`w-full px-4 py-2.5 rounded-xl border text-sm bg-white transition-colors focus:outline-none focus:ring-2 focus:ring-${currentRole.color}-500/20 focus:border-${currentRole.color}-500 ${
-                  fieldErrors.identifier ? 'border-red-400 bg-red-50' : 'border-slate-200'
-                }`}
+                className={`w-full px-4 py-2.5 rounded-xl border text-sm transition-all focus:outline-none focus:ring-2 ${
+                  isAdmin 
+                    ? 'bg-slate-900 border-emerald-500/20 text-white placeholder:text-slate-600 focus:ring-emerald-500/20 focus:border-emerald-500' 
+                    : `bg-white border-slate-200 text-slate-900 focus:ring-${currentRole.color}-500/20 focus:border-${currentRole.color}-500`
+                } ${fieldErrors.identifier ? 'border-red-400 bg-red-50' : ''}`}
               />
               {fieldErrors.identifier && <p className="text-red-500 text-[11px] mt-1 font-medium">{fieldErrors.identifier}</p>}
             </div>
@@ -315,8 +347,8 @@ const Login = () => {
             {/* Password */}
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label htmlFor="password" className="text-xs font-bold text-slate-600 uppercase tracking-wider">Password</label>
-                <Link to="/forgot-password" className={`text-xs font-semibold text-${currentRole.color}-600 hover:text-${currentRole.color}-700 transition-colors`}>Forgot password?</Link>
+                <label htmlFor="password" className={`text-xs font-bold uppercase tracking-wider transition-colors duration-500 ${isAdmin ? 'text-emerald-500/70' : 'text-slate-600'}`}>Password</label>
+                {!isAdmin && <Link to="/forgot-password" className={`text-xs font-semibold text-${currentRole.color}-600 hover:text-${currentRole.color}-700 transition-colors`}>Forgot password?</Link>}
               </div>
               <div className="relative">
                 <input
@@ -326,24 +358,26 @@ const Login = () => {
                   value={password}
                   onChange={e => { setPassword(e.target.value); setFieldErrors(p => ({ ...p, password: '' })); }}
                   placeholder="••••••••"
-                  className={`w-full px-4 py-2.5 rounded-xl border text-sm bg-white transition-colors focus:outline-none focus:ring-2 focus:ring-${currentRole.color}-500/20 focus:border-${currentRole.color}-500 pr-10 ${
-                    fieldErrors.password ? 'border-red-400 bg-red-50' : 'border-slate-200'
-                  }`}
+                  className={`w-full px-4 py-2.5 rounded-xl border text-sm transition-all focus:outline-none focus:ring-2 ${
+                    isAdmin 
+                      ? 'bg-slate-900 border-emerald-500/20 text-white placeholder:text-slate-600 focus:ring-emerald-500/20 focus:border-emerald-500 pr-10' 
+                      : `bg-white border-slate-200 text-slate-900 focus:ring-${currentRole.color}-500/20 focus:border-${currentRole.color}-500 pr-10`
+                  } ${fieldErrors.password ? 'border-red-400 bg-red-50' : ''}`}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(v => !v)}
                   tabIndex={-1}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                  className={`absolute right-3 top-1/2 -translate-y-1/2 transition-colors ${isAdmin ? 'text-emerald-500/30 hover:text-emerald-500' : 'text-slate-400 hover:text-slate-600'}`}
                 >
                   {showPassword ? (
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268-2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
                     </svg>
                   ) : (
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268-2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                     </svg>
                   )}
                 </button>
@@ -355,7 +389,11 @@ const Login = () => {
             <button
               type="submit"
               disabled={loading}
-              className={`w-full py-3 px-4 rounded-xl bg-${currentRole.color}-600 text-white text-sm font-bold shadow-lg shadow-${currentRole.color}-900/20 hover:bg-${currentRole.color}-700 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-2`}
+              className={`w-full py-3 px-4 rounded-xl text-sm font-bold shadow-lg active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-2 ${
+                isAdmin 
+                  ? 'bg-emerald-600 text-white shadow-emerald-900/40 hover:bg-emerald-500' 
+                  : `bg-${currentRole.color}-600 text-white shadow-${currentRole.color}-900/20 hover:bg-${currentRole.color}-700`
+              }`}
             >
               {loading ? (
                 <>
@@ -363,11 +401,11 @@ const Login = () => {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                   </svg>
-                  Signing in...
+                  {isAdmin ? 'Executing...' : 'Signing in...'}
                 </>
               ) : (
                 <>
-                  Sign in as {loginType.charAt(0).toUpperCase() + loginType.slice(1)}
+                  {isAdmin ? 'Override & Authorize' : `Sign in as ${loginType.charAt(0).toUpperCase() + loginType.slice(1)}`}
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
                 </>
               )}
