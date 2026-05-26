@@ -1,13 +1,14 @@
-import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
-import { getUser, clearSession } from '../utils/auth';
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
+import { getUser, clearSession } from '../utils/auth';
 
 const SITE_URL = 'https://cranoraa-eng-cranoraa-knhs-website.vercel.app';
 
 const PublicLayout = () => {
+  const { user, setUser } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
-  const [user, setUser] = useState(null);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -16,10 +17,11 @@ const PublicLayout = () => {
     setUser(getUser());
     setShowProfileMenu(false);
     setMobileMenuOpen(false);
+    window.scrollTo(0, 0);
     const handleScroll = () => setScrolled(window.scrollY > 10);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [location]);
+  }, [location.pathname]);
 
   const handleLogout = () => {
     clearSession();
@@ -224,8 +226,10 @@ const PublicLayout = () => {
       </nav>
 
       {/* ── Page content ── */}
-      <main className="flex-grow">
-        <Outlet />
+      <main className="flex-grow overflow-hidden">
+        <div key={location.pathname} className="animate-fade-in">
+          <Outlet />
+        </div>
       </main>
 
       {/* ── Footer ── */}
