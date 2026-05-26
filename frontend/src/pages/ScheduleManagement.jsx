@@ -508,80 +508,178 @@ export default function ScheduleManagement() {
               </button>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full border-separate border-spacing-0" style={{ minWidth: 700 }}>
-                <thead>
-                  <tr className="bg-gradient-to-r from-[#1A0B2E] to-[#2D1452]">
-                    <th className="px-4 py-3 text-left w-28">
-                      <span className="text-[10px] font-black text-violet-300 uppercase tracking-widest">Time</span>
-                    </th>
-                    {DAYS.map(d => (
-                      <th key={d} className="px-3 py-3 text-left">
-                        <span className="text-[10px] font-black text-violet-200 uppercase tracking-widest hidden sm:block">{DAY_FULL[d]}</span>
-                        <span className="text-[10px] font-black text-violet-200 uppercase tracking-widest sm:hidden">{DAY_SHORT[d]}</span>
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {sortedSlots.map((slot, rowIdx) => (
-                    <tr key={slot.id} className={rowIdx % 2 === 0 ? 'bg-white' : 'bg-slate-50/40'}>
-                      {/* Time column */}
-                      <td className="px-4 py-3 border-r border-slate-100 align-top">
-                        <p className="text-xs font-black text-slate-800">{slot.start_time?.slice(0,5)}</p>
-                        <p className="text-[10px] text-slate-400 mt-0.5">{slot.end_time?.slice(0,5)}</p>
-                        {slot.label && (
-                          <span className="mt-1 inline-block px-1.5 py-0.5 rounded-md bg-violet-100 text-violet-600 text-[9px] font-black uppercase tracking-widest">
-                            {slot.label}
-                          </span>
+            <>
+              {/* ── MOBILE: day-by-day card stack (hidden on md+) ── */}
+              <div className="md:hidden">
+                {/* Day selector tabs */}
+                <div className="flex overflow-x-auto scrollbar-none border-b border-slate-100 bg-slate-50">
+                  {DAYS.map(d => {
+                    const hasEntries = sortedSlots.some(slot => (gridData[d]?.[slot.id] || []).length > 0);
+                    return (
+                      <button
+                        key={d}
+                        onClick={() => setFilterDay(filterDay === d ? '' : d)}
+                        className={`flex-shrink-0 px-4 py-3 text-[10px] font-black uppercase tracking-widest border-b-2 transition-all relative ${
+                          filterDay === d
+                            ? 'border-violet-600 text-violet-600 bg-white'
+                            : 'border-transparent text-slate-400'
+                        }`}
+                      >
+                        {DAY_SHORT[d]}
+                        {hasEntries && (
+                          <span className="absolute top-2 right-1.5 w-1.5 h-1.5 rounded-full bg-violet-400" />
                         )}
-                      </td>
-                      {/* Day columns */}
-                      {DAYS.map(d => {
-                        const entries = gridData[d]?.[slot.id] || [];
-                        return (
-                          <td key={d} className="px-2 py-2 align-top border-r border-slate-100 min-w-[130px] group/cell">
-                            {entries.map(s => (
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Cards for the selected day (or all days if none selected) */}
+                <div className="p-3 space-y-3">
+                  {(filterDay ? [filterDay] : DAYS).map(d => {
+                    const daySlots = sortedSlots.filter(slot => (gridData[d]?.[slot.id] || []).length > 0);
+                    if (daySlots.length === 0 && filterDay) {
+                      return (
+                        <div key={d} className="py-10 text-center">
+                          <p className="text-slate-400 text-sm font-bold">No classes on {DAY_FULL[d]}</p>
+                          <button onClick={() => openCreate('')}
+                            className="mt-3 px-4 py-2 rounded-xl bg-violet-50 text-violet-600 text-xs font-bold border border-violet-200 hover:bg-violet-100 transition-all">
+                            + Add Class
+                          </button>
+                        </div>
+                      );
+                    }
+                    if (daySlots.length === 0) return null;
+                    return (
+                      <div key={d}>
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1">{DAY_FULL[d]}</p>
+                        <div className="space-y-2">
+                          {daySlots.map(slot => {
+                            const entries = gridData[d][slot.id] || [];
+                            return entries.map(s => (
                               <div key={s.id}
-                                className={`mb-1.5 p-2.5 rounded-xl border ${subjectColorMap[s.subject] || SUBJECT_COLORS[0]} relative group shadow-sm hover:shadow-md transition-all`}>
-                                <p className="text-[10px] font-black uppercase tracking-tight leading-none mb-1">{s.subject_code}</p>
-                                <p className="text-[11px] font-bold leading-tight line-clamp-1">{s.subject_name}</p>
-                                <p className="text-[9px] opacity-70 mt-1 truncate">{s.classroom_name}</p>
-                                {s.teacher_name && <p className="text-[9px] opacity-60 truncate">{s.teacher_name}</p>}
-                                {s.room_name && (
-                                  <p className="text-[9px] opacity-60 mt-0.5 flex items-center gap-0.5">
-                                    <svg className="w-2.5 h-2.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /></svg>
-                                    {s.room_name}
-                                  </p>
-                                )}
-                                {/* Hover actions */}
-                                <div className="absolute top-1 right-1 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                className={`flex gap-3 p-3 rounded-2xl border ${subjectColorMap[s.subject] || SUBJECT_COLORS[0]} shadow-sm`}>
+                                {/* Time */}
+                                <div className="text-center min-w-[52px] flex-shrink-0">
+                                  <p className="text-xs font-black leading-none">{slot.start_time?.slice(0,5)}</p>
+                                  <p className="text-[9px] opacity-60 mt-0.5">{slot.end_time?.slice(0,5)}</p>
+                                  {slot.label && (
+                                    <span className="mt-1 inline-block text-[8px] font-black opacity-70 uppercase">{slot.label}</span>
+                                  )}
+                                </div>
+                                {/* Divider */}
+                                <div className="w-px bg-current opacity-20 self-stretch" />
+                                {/* Content */}
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-[10px] font-black uppercase tracking-tight opacity-70 leading-none mb-0.5">{s.subject_code}</p>
+                                  <p className="text-sm font-bold leading-tight truncate">{s.subject_name}</p>
+                                  <p className="text-[10px] opacity-70 mt-1 truncate">{s.classroom_name}</p>
+                                  {s.room_name && (
+                                    <p className="text-[9px] opacity-60 mt-0.5 flex items-center gap-0.5">
+                                      <svg className="w-2.5 h-2.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /></svg>
+                                      {s.room_name}
+                                    </p>
+                                  )}
+                                </div>
+                                {/* Actions */}
+                                <div className="flex flex-col gap-1 flex-shrink-0">
                                   <button onClick={() => openEdit(s)}
-                                    className="w-5 h-5 rounded-md bg-white/80 flex items-center justify-center hover:bg-white shadow-sm"
+                                    className="w-8 h-8 rounded-xl bg-white/60 flex items-center justify-center hover:bg-white transition-all active:scale-90"
                                     title="Edit">
-                                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
                                   </button>
                                   <button onClick={() => handleDelete(s.id, `${s.subject_name} — ${s.classroom_name}`)}
-                                    className="w-5 h-5 rounded-md bg-rose-500 flex items-center justify-center hover:bg-rose-600 shadow-sm"
+                                    className="w-8 h-8 rounded-xl bg-rose-500 flex items-center justify-center hover:bg-rose-600 transition-all active:scale-90"
                                     title="Delete">
-                                    <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" /></svg>
+                                    <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" /></svg>
                                   </button>
                                 </div>
                               </div>
-                            ))}
-                            {/* Quick-add button */}
-                            <button onClick={() => openCreate(String(slot.id))}
-                              className="w-full py-1.5 border-2 border-dashed border-slate-100 rounded-xl text-slate-300 flex items-center justify-center opacity-0 group-hover/cell:opacity-100 hover:border-violet-300 hover:text-violet-400 hover:bg-violet-50/30 transition-all text-xs">
-                              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" /></svg>
-                            </button>
-                          </td>
-                        );
-                      })}
+                            ));
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })}
+
+                  {/* Add button */}
+                  <button onClick={() => openCreate('')}
+                    className="w-full py-3 border-2 border-dashed border-slate-200 rounded-2xl text-slate-400 flex items-center justify-center gap-2 hover:border-violet-300 hover:text-violet-500 hover:bg-violet-50/30 transition-all text-xs font-bold">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" /></svg>
+                    Add Schedule
+                  </button>
+                </div>
+              </div>
+
+              {/* ── DESKTOP: full 7-column grid (hidden on mobile) ── */}
+              <div className="hidden md:block overflow-x-auto">
+                <table className="w-full border-separate border-spacing-0" style={{ minWidth: 700 }}>
+                  <thead>
+                    <tr className="bg-gradient-to-r from-[#1A0B2E] to-[#2D1452]">
+                      <th className="px-4 py-3 text-left w-28">
+                        <span className="text-[10px] font-black text-violet-300 uppercase tracking-widest">Time</span>
+                      </th>
+                      {DAYS.map(d => (
+                        <th key={d} className="px-3 py-3 text-left">
+                          <span className="text-[10px] font-black text-violet-200 uppercase tracking-widest">{DAY_FULL[d]}</span>
+                        </th>
+                      ))}
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {sortedSlots.map((slot, rowIdx) => (
+                      <tr key={slot.id} className={rowIdx % 2 === 0 ? 'bg-white' : 'bg-slate-50/40'}>
+                        <td className="px-4 py-3 border-r border-slate-100 align-top">
+                          <p className="text-xs font-black text-slate-800">{slot.start_time?.slice(0,5)}</p>
+                          <p className="text-[10px] text-slate-400 mt-0.5">{slot.end_time?.slice(0,5)}</p>
+                          {slot.label && (
+                            <span className="mt-1 inline-block px-1.5 py-0.5 rounded-md bg-violet-100 text-violet-600 text-[9px] font-black uppercase tracking-widest">
+                              {slot.label}
+                            </span>
+                          )}
+                        </td>
+                        {DAYS.map(d => {
+                          const entries = gridData[d]?.[slot.id] || [];
+                          return (
+                            <td key={d} className="px-2 py-2 align-top border-r border-slate-100 min-w-[130px] group/cell">
+                              {entries.map(s => (
+                                <div key={s.id}
+                                  className={`mb-1.5 p-2.5 rounded-xl border ${subjectColorMap[s.subject] || SUBJECT_COLORS[0]} relative group shadow-sm hover:shadow-md transition-all`}>
+                                  <p className="text-[10px] font-black uppercase tracking-tight leading-none mb-1">{s.subject_code}</p>
+                                  <p className="text-[11px] font-bold leading-tight line-clamp-1">{s.subject_name}</p>
+                                  <p className="text-[9px] opacity-70 mt-1 truncate">{s.classroom_name}</p>
+                                  {s.teacher_name && <p className="text-[9px] opacity-60 truncate">{s.teacher_name}</p>}
+                                  {s.room_name && (
+                                    <p className="text-[9px] opacity-60 mt-0.5 flex items-center gap-0.5">
+                                      <svg className="w-2.5 h-2.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /></svg>
+                                      {s.room_name}
+                                    </p>
+                                  )}
+                                  <div className="absolute top-1 right-1 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <button onClick={() => openEdit(s)}
+                                      className="w-5 h-5 rounded-md bg-white/80 flex items-center justify-center hover:bg-white shadow-sm" title="Edit">
+                                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                                    </button>
+                                    <button onClick={() => handleDelete(s.id, `${s.subject_name} — ${s.classroom_name}`)}
+                                      className="w-5 h-5 rounded-md bg-rose-500 flex items-center justify-center hover:bg-rose-600 shadow-sm" title="Delete">
+                                      <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" /></svg>
+                                    </button>
+                                  </div>
+                                </div>
+                              ))}
+                              <button onClick={() => openCreate(String(slot.id))}
+                                className="w-full py-1.5 border-2 border-dashed border-slate-100 rounded-xl text-slate-300 flex items-center justify-center opacity-0 group-hover/cell:opacity-100 hover:border-violet-300 hover:text-violet-400 hover:bg-violet-50/30 transition-all text-xs">
+                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" /></svg>
+                              </button>
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
           )}
         </div>
       )}
