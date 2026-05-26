@@ -794,6 +794,12 @@ const StudentView = () => {
     ? (finalGrades.reduce((s, g) => s + parseFloat(g.transmuted_score || g.raw_score || 0), 0) / finalGrades.length).toFixed(2)
     : null;
 
+  const attPieData = [
+    { name: 'Present', value: presentCount, color: '#10b981' },
+    { name: 'Late',    value: lateCount,    color: '#f59e0b' },
+    { name: 'Absent',  value: absentCount,  color: '#f43f5e' },
+  ].filter(d => d.value > 0);
+
   const today = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
 
   return (
@@ -916,68 +922,125 @@ const StudentView = () => {
           </div>
         </div>
 
-        {/* Quick Links & Announcements */}
-        <div className="lg:col-span-4 space-y-6 md:gap-8">
-          <div className="bg-[#1A0B2E] rounded-[2rem] p-6 shadow-xl border border-white/5 relative overflow-hidden group">
-            <div className="absolute -right-8 -top-8 w-40 h-40 bg-violet-500/20 rounded-full blur-3xl group-hover:bg-violet-500/30 transition-all duration-700" />
-            <div className="relative z-10">
-              <h3 className="text-white text-sm font-black uppercase tracking-tight mb-6">Quick Navigator</h3>
-              <div className="grid grid-cols-2 gap-3 md:gap-4">
-                {[
-                  { label: 'My Grades',    path: '/student-grades',    icon: '📊' },
-                  { label: 'Schedule',     path: '/schedule',          icon: '🗓️' },
-                  { label: 'Materials',    path: '/materials',         icon: '📚' },
-                  { label: 'Messages',     path: '/messages',          icon: '💬' },
-                ].map(a => (
-                  <button
-                    key={a.path}
-                    onClick={() => navigate(a.path)}
-                    className="flex flex-col items-center justify-center p-5 bg-white/5 rounded-2xl border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all active:scale-95 group/btn"
-                  >
-                    <span className="text-2xl mb-2 group-hover/btn:scale-125 transition-transform duration-300">{a.icon}</span>
-                    <span className="text-[10px] font-black text-violet-200 uppercase tracking-widest">{a.label}</span>
-                  </button>
-                ))}
-              </div>
+        {/* Attendance Distribution */}
+        <div className="lg:col-span-4 bg-white border border-slate-200/70 rounded-[2rem] p-6 md:p-8 shadow-sm flex flex-col">
+          <div className="flex items-center justify-between mb-8 shrink-0">
+            <div>
+              <h3 className="text-sm font-black text-slate-900 uppercase tracking-tight">Attendance Analysis</h3>
+              <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1">Monthly presence distribution</p>
             </div>
+            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
           </div>
-
-          <div className="bg-white border border-slate-200/70 rounded-[2rem] p-6 shadow-sm flex flex-col">
-            <div className="flex items-center justify-between mb-6 shrink-0">
-              <div>
-                <h3 className="text-sm font-black text-slate-900 uppercase tracking-tight">System Updates</h3>
-                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1">Notifications & alerts</p>
+          <div className="flex-1 flex flex-col justify-center gap-8 min-h-[300px]">
+            <div className="h-48 relative shrink-0">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={attPieData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={85}
+                    paddingAngle={8}
+                    dataKey="value"
+                    animationDuration={1500}
+                  >
+                    {attPieData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} stroke="none" />
+                    ))}
+                  </Pie>
+                  <Tooltip 
+                    contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)' }}
+                    itemStyle={{ fontWeight: 900, fontSize: '11px', textTransform: 'uppercase' }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center justify-center pointer-events-none">
+                <p className="text-3xl font-black text-slate-900 leading-none">{monthAtt.length}</p>
+                <p className="text-[8px] font-black text-slate-400 uppercase tracking-[0.2em] mt-1.5">Total Days</p>
               </div>
-              <Link to="/notifications" className="p-2.5 rounded-xl bg-violet-50 text-violet-600 hover:bg-violet-600 hover:text-white transition-all active:scale-90">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
-              </Link>
             </div>
-            <div className="space-y-3 flex-1 overflow-y-auto pr-1 -mr-1 scrollbar-thin">
-              {stats?.recent_notifications?.map((notif, i) => (
-                <div key={i} className="flex gap-4 p-3 rounded-2xl hover:bg-slate-50 transition-all cursor-pointer group" onClick={() => navigate('/notifications')}>
-                  <div className="w-10 h-10 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-sm shadow-sm group-hover:bg-violet-50 group-hover:border-violet-100 transition-all">
-                    {notif.type === 'grade' ? '📈' : '🔔'}
+
+            <div className="grid grid-cols-3 gap-2 px-2">
+              {attPieData.map((item) => (
+                <div key={item.name} className="flex flex-col items-center gap-1 text-center">
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
+                    <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest">{item.name}</span>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[11px] font-bold text-slate-700 leading-tight line-clamp-1 group-hover:text-violet-600 transition-colors">{notif.title}</p>
-                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1.5">{notif.time}</p>
-                  </div>
+                  <p className="text-sm font-black text-slate-900">{item.value}</p>
                 </div>
               ))}
-              {!stats?.recent_notifications?.length && (
-                <div className="flex flex-col items-center justify-center py-10 opacity-40">
-                  <svg className="w-8 h-8 text-slate-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">No alerts</p>
-                </div>
-              )}
             </div>
           </div>
+        </div>
+      </div>
 
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
+        {/* Quick Links */}
+        <div className="bg-[#1A0B2E] rounded-[2rem] p-6 shadow-xl border border-white/5 relative overflow-hidden group h-full flex flex-col justify-center">
+          <div className="absolute -right-8 -top-8 w-40 h-40 bg-violet-500/20 rounded-full blur-3xl group-hover:bg-violet-500/30 transition-all duration-700" />
+          <div className="relative z-10">
+            <h3 className="text-white text-sm font-black uppercase tracking-tight mb-6">Quick Navigator</h3>
+            <div className="grid grid-cols-2 gap-3 md:gap-4">
+              {[
+                { label: 'My Grades',    path: '/student-grades',    icon: '📊' },
+                { label: 'Schedule',     path: '/schedule',          icon: '🗓️' },
+                { label: 'Materials',    path: '/materials',         icon: '📚' },
+                { label: 'Messages',     path: '/messages',          icon: '💬' },
+              ].map(a => (
+                <button
+                  key={a.path}
+                  onClick={() => navigate(a.path)}
+                  className="flex flex-col items-center justify-center p-5 bg-white/5 rounded-2xl border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all active:scale-95 group/btn"
+                >
+                  <span className="text-2xl mb-2 group-hover/btn:scale-125 transition-transform duration-300">{a.icon}</span>
+                  <span className="text-[10px] font-black text-violet-200 uppercase tracking-widest">{a.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* System Updates */}
+        <div className="bg-white border border-slate-200/70 rounded-[2rem] p-6 shadow-sm h-full flex flex-col">
+          <div className="flex items-center justify-between mb-6 shrink-0">
+            <div>
+              <h3 className="text-sm font-black text-slate-900 uppercase tracking-tight">System Updates</h3>
+              <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1">Notifications & alerts</p>
+            </div>
+            <Link to="/notifications" className="p-2.5 rounded-xl bg-violet-50 text-violet-600 hover:bg-violet-600 hover:text-white transition-all active:scale-90">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
+            </Link>
+          </div>
+          <div className="space-y-3 flex-1 overflow-y-auto pr-1 -mr-1 scrollbar-thin">
+            {stats?.recent_notifications?.map((notif, i) => (
+              <div key={i} className="flex gap-4 p-3 rounded-2xl hover:bg-slate-50 transition-all cursor-pointer group" onClick={() => navigate('/notifications')}>
+                <div className="w-10 h-10 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-sm shadow-sm group-hover:bg-violet-50 group-hover:border-violet-100 transition-all">
+                  {notif.type === 'grade' ? '📈' : '🔔'}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[11px] font-bold text-slate-700 leading-tight line-clamp-1 group-hover:text-violet-600 transition-colors">{notif.title}</p>
+                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1.5">{notif.time}</p>
+                </div>
+              </div>
+            ))}
+            {!stats?.recent_notifications?.length && (
+              <div className="flex flex-col items-center justify-center py-10 opacity-40">
+                <svg className="w-8 h-8 text-slate-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">No alerts</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Schedule/Messages Combined */}
+        <div className="space-y-6 md:gap-8 h-full">
+          <TodayScheduleWidget role="student" />
           <LatestMessagesWidget 
             messages={stats?.latest_messages} 
             onOpenChat={() => navigate('/messages')} 
           />
-          <TodayScheduleWidget role="student" />
         </div>
       </div>
     </div>
