@@ -25,7 +25,7 @@ const WelcomeBanner = ({ user, today, actions, subtitle }) => {
     .filter(Boolean).map(n => n[0].toUpperCase()).join('') || '?';
 
   return (
-    <div className="bg-white rounded-[2.5rem] p-8 md:p-10 border border-slate-200/50 shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative overflow-hidden group">
+    <div className="bg-white rounded-[2.5rem] p-6 md:p-10 border border-slate-200/50 shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative overflow-hidden group">
       {/* Dynamic Background Effects */}
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-gradient-to-br from-violet-200/40 via-fuchsia-100/20 to-transparent rounded-full blur-[100px] -mr-64 -mt-64 opacity-60 group-hover:opacity-80 transition-opacity duration-1000" />
       <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-gradient-to-tr from-blue-200/30 via-indigo-50/10 to-transparent rounded-full blur-[80px] -ml-48 -mb-48 opacity-40" />
@@ -33,39 +33,24 @@ const WelcomeBanner = ({ user, today, actions, subtitle }) => {
       {/* Abstract Pattern Overlay */}
       <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%234338ca' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")` }} />
 
-      <div className="relative flex flex-col lg:flex-row lg:items-center justify-between gap-8">
-        <div className="flex flex-col md:flex-row items-start md:items-center gap-6 md:gap-8 flex-1">
-          {/* Profile Picture */}
-          <div className="relative shrink-0">
-            <div className="w-20 h-20 md:w-24 md:h-24 rounded-[2rem] bg-gradient-to-br from-violet-600 to-indigo-600 p-1 shadow-xl group-hover:scale-105 transition-transform duration-500">
-              <div className="w-full h-full rounded-[1.8rem] bg-white overflow-hidden flex items-center justify-center border-4 border-white/20">
-                {user?.profile_picture ? (
-                  <img src={user.profile_picture} alt="Profile" className="w-full h-full object-cover" />
-                ) : (
-                  <span className="text-2xl md:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-br from-violet-600 to-indigo-600">
-                    {initials}
-                  </span>
-                )}
-              </div>
-            </div>
-            <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-emerald-500 border-4 border-white shadow-sm animate-pulse" />
-          </div>
-
-          <div className="space-y-4">
-            <div className="flex flex-wrap items-center gap-3">
-              <div className={`flex items-center gap-2 px-4 py-1.5 rounded-full bg-${greeting.color}-50 border border-${greeting.color}-100/50 shadow-sm`}>
-                <span className="text-sm transform group-hover:rotate-12 transition-transform duration-500">{greeting.icon}</span>
-                <p className={`text-[11px] font-black text-${greeting.color}-600 uppercase tracking-[0.2em]`}>{greeting.text}</p>
+      <div className="relative space-y-8">
+        <div className="flex items-center justify-between gap-4">
+          {/* Welcome Text Section (Left) */}
+          <div className="flex-1 space-y-4">
+            <div className="flex flex-wrap items-center gap-2 md:gap-3">
+              <div className={`flex items-center gap-2 px-3 md:px-4 py-1.5 rounded-full bg-${greeting.color}-50 border border-${greeting.color}-100/50 shadow-sm`}>
+                <span className="text-xs md:text-sm transform group-hover:rotate-12 transition-transform duration-500">{greeting.icon}</span>
+                <p className={`text-[9px] md:text-[11px] font-black text-${greeting.color}-600 uppercase tracking-[0.2em]`}>{greeting.text}</p>
               </div>
               <div className="hidden sm:block w-px h-4 bg-slate-200" />
-              <div className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-50 border border-slate-100/50">
-                <svg className="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                <p className="text-[11px] font-black text-slate-500 uppercase tracking-[0.2em]">{today}</p>
+              <div className="flex items-center gap-2 px-3 md:px-4 py-1.5 rounded-full bg-slate-50 border border-slate-100/50">
+                <svg className="w-3 md:w-3.5 h-3 md:h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                <p className="text-[9px] md:text-[11px] font-black text-slate-500 uppercase tracking-[0.2em]">{today}</p>
               </div>
             </div>
 
             <div className="space-y-1.5">
-              <h1 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight leading-none">
+              <h1 className="text-2xl sm:text-3xl md:text-5xl font-black text-slate-900 tracking-tight leading-none">
                 Welcome back, <br className="sm:hidden" />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-600 via-indigo-600 to-blue-600 animate-gradient-x">
                   {user?.first_name || 'User'}
@@ -74,14 +59,31 @@ const WelcomeBanner = ({ user, today, actions, subtitle }) => {
               {subtitle && (
                 <div className="flex items-center gap-2 text-slate-500">
                   <span className="w-1.5 h-1.5 rounded-full bg-violet-400" />
-                  <p className="text-sm md:text-base font-bold tracking-tight">{subtitle}</p>
+                  <p className="text-xs md:text-base font-bold tracking-tight">{subtitle}</p>
                 </div>
               )}
             </div>
           </div>
+
+          {/* Profile Picture Section (Right) */}
+          <div className="relative shrink-0">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-2xl sm:rounded-[2rem] bg-gradient-to-br from-violet-600 to-indigo-600 p-0.5 sm:p-1 shadow-xl group-hover:scale-105 transition-transform duration-500">
+              <div className="w-full h-full rounded-[0.9rem] sm:rounded-[1.8rem] bg-white overflow-hidden flex items-center justify-center border-2 sm:border-4 border-white/20">
+                {user?.profile_picture ? (
+                  <img src={user.profile_picture} alt="Profile" className="w-full h-full object-cover" />
+                ) : (
+                  <span className="text-xl sm:text-2xl md:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-br from-violet-600 to-indigo-600">
+                    {initials}
+                  </span>
+                )}
+              </div>
+            </div>
+            <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 sm:w-6 sm:h-6 rounded-full bg-emerald-500 border-2 sm:border-4 border-white shadow-sm animate-pulse" />
+          </div>
         </div>
 
-        <div className="flex flex-wrap lg:flex-col xl:flex-row gap-3 md:gap-4 shrink-0">
+        {/* Action Buttons Section (Bottom) */}
+        <div className="flex flex-wrap gap-3 md:gap-4 shrink-0 relative z-10">
           {actions}
         </div>
       </div>
