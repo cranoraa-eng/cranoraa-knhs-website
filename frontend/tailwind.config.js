@@ -48,8 +48,18 @@ export default {
         'slide-up':      'slideUp 0.3s ease-out',
         'pulse-slow':    'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
         'spin-slow':     'spin 2s linear infinite',
+        'gradient-x':    'gradientX 6s ease infinite',
+        'float':         'float 6s ease-in-out infinite',
       },
       keyframes: {
+        gradientX: {
+          '0%, 100%': { 'background-size': '200% 200%', 'background-position': 'left center' },
+          '50%':      { 'background-size': '200% 200%', 'background-position': 'right center' },
+        },
+        float: {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%':      { transform: 'translateY(-10px)' },
+        },
         fadeIn: {
           '0%':   { opacity: '0' },
           '100%': { opacity: '1' },

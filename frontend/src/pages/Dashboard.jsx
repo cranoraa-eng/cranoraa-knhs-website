@@ -13,37 +13,52 @@ import Spinner from '../components/Spinner';
 // ─── Shared UI Components ───────────────────────────────────────────────────
 
 const WelcomeBanner = ({ user, today, actions }) => {
-  const getGreeting = () => {
+  const getGreetingData = () => {
     const hours = new Date().getHours();
-    if (hours < 12) return 'Good Morning';
-    if (hours < 17) return 'Good Afternoon';
-    return 'Good Evening';
+    if (hours < 12) return { text: 'Good Morning', icon: '☀️', color: 'emerald' };
+    if (hours < 17) return { text: 'Good Afternoon', icon: '🌤️', color: 'amber' };
+    return { text: 'Good Evening', icon: '🌙', color: 'indigo' };
   };
 
+  const greeting = getGreetingData();
+
   return (
-    <div className="bg-white rounded-[2rem] p-6 md:p-10 border border-slate-200/60 shadow-sm relative overflow-hidden">
-      {/* Decorative background elements */}
-      <div className="absolute top-0 right-0 w-80 h-80 bg-violet-100/50 rounded-full blur-3xl -mr-40 -mt-40 opacity-40 animate-pulse" />
-      <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-100/30 rounded-full blur-3xl -ml-32 -mb-32 opacity-30" />
+    <div className="bg-white rounded-[2.5rem] p-8 md:p-12 border border-slate-200/50 shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative overflow-hidden group">
+      {/* Dynamic Background Effects */}
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-gradient-to-br from-violet-200/40 via-fuchsia-100/20 to-transparent rounded-full blur-[100px] -mr-64 -mt-64 opacity-60 group-hover:opacity-80 transition-opacity duration-1000" />
+      <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-gradient-to-tr from-blue-200/30 via-indigo-50/10 to-transparent rounded-full blur-[80px] -ml-48 -mb-48 opacity-40" />
       
-      <div className="relative flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-        <div className="space-y-3">
-          <div className="flex items-center gap-2.5">
-            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-100">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              <p className="text-[10px] font-black text-emerald-600 uppercase tracking-[0.2em]">{getGreeting()}</p>
+      {/* Abstract Pattern Overlay */}
+      <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%234338ca' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")` }} />
+
+      <div className="relative flex flex-col lg:flex-row lg:items-center justify-between gap-10">
+        <div className="space-y-6 max-w-2xl">
+          <div className="flex flex-wrap items-center gap-3">
+            <div className={`flex items-center gap-2 px-4 py-1.5 rounded-full bg-${greeting.color}-50 border border-${greeting.color}-100/50 shadow-sm`}>
+              <span className="text-sm transform group-hover:rotate-12 transition-transform duration-500">{greeting.icon}</span>
+              <p className={`text-[11px] font-black text-${greeting.color}-600 uppercase tracking-[0.2em]`}>{greeting.text}</p>
             </div>
-            <span className="text-slate-300">/</span>
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">{today}</p>
+            <div className="hidden sm:block w-px h-4 bg-slate-200" />
+            <div className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-50 border border-slate-100/50">
+              <svg className="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+              <p className="text-[11px] font-black text-slate-500 uppercase tracking-[0.2em]">{today}</p>
+            </div>
           </div>
-          <h1 className="text-2xl md:text-4xl font-black text-slate-900 tracking-tight leading-tight">
-            Welcome back, <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-indigo-600">{user?.first_name || 'User'}</span>
-          </h1>
-          <p className="text-slate-500 font-medium text-sm max-w-xl">
-            Here's what's happening in your educational portal today. Stay organized and keep track of your progress.
-          </p>
+
+          <div className="space-y-3">
+            <h1 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight leading-[1.1]">
+              Welcome back, <br className="sm:hidden" />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-600 via-indigo-600 to-blue-600 animate-gradient-x">
+                {user?.first_name || 'User'}
+              </span>
+            </h1>
+            <p className="text-slate-500 font-medium text-base md:text-lg leading-relaxed max-w-xl">
+              Your academic journey continues. You have <span className="text-violet-600 font-bold underline decoration-violet-200 underline-offset-4">new updates</span> waiting for your review today.
+            </p>
+          </div>
         </div>
-        <div className="flex flex-wrap gap-3">
+
+        <div className="flex flex-wrap lg:flex-col xl:flex-row gap-4 shrink-0">
           {actions}
         </div>
       </div>
