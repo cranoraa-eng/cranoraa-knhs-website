@@ -16,8 +16,42 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [loginType, setLoginType] = useState('student');
+  
+  // Real-time states for Admin UI
+  const [uptime, setUptime] = useState('00:00:00');
+  const [serverLoad, setServerLoad] = useState(0);
+  const [activeAdmins, setActiveAdmins] = useState(0);
+  const [securityEvents, setSecurityEvents] = useState([]);
 
   const isAdmin = loginType === 'admin';
+
+  // Admin Real-time simulation
+  useEffect(() => {
+    if (!isAdmin) return;
+
+    const startTime = Date.now();
+    const interval = setInterval(() => {
+      const diff = Date.now() - startTime;
+      const h = Math.floor(diff / 3600000).toString().padStart(2, '0');
+      const m = Math.floor((diff % 3600000) / 60000).toString().padStart(2, '0');
+      const s = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
+      setUptime(`${h}:${m}:${s}`);
+      setServerLoad(Math.floor(Math.random() * 15) + 5);
+    }, 1000);
+
+    setActiveAdmins(Math.floor(Math.random() * 3) + 1);
+    
+    const events = [
+      'Encrypted tunnel established',
+      'Database node 01 synced',
+      'Security firewall active',
+      'Intrusion detection online',
+      'Port 443 handshake complete'
+    ];
+    setSecurityEvents(events.sort(() => Math.random() - 0.5).slice(0, 3));
+
+    return () => clearInterval(interval);
+  }, [isAdmin]);
 
   const BinaryBackground = () => {
     if (!isAdmin) return null;
@@ -40,16 +74,72 @@ const Login = () => {
               ))}
             </div>
           ))}
-        </div>
         <style dangerouslySetInnerHTML={{ __html: `
           @keyframes matrix-rain {
             0% { transform: translateY(-100%); }
             100% { transform: translateY(100%); }
           }
+          @keyframes pulse-slow {
+            0%, 100% { opacity: 0.03; transform: translate(-50%, -50%) scale(1); }
+            50% { opacity: 0.05; transform: translate(-50%, -50%) scale(1.05); }
+          }
+          @keyframes glow-pulse {
+            0%, 100% { box-shadow: 0 0 20px rgba(16, 185, 129, 0.1); }
+            50% { box-shadow: 0 0 40px rgba(16, 185, 129, 0.2); }
+          }
           .animate-matrix-rain {
             animation: matrix-rain linear infinite;
           }
+          .animate-pulse-slow {
+            animation: pulse-slow 8s ease-in-out infinite;
+          }
+          .admin-glass-glow {
+            animation: glow-pulse 4s ease-in-out infinite;
+          }
         `}} />
+      </div>
+    );
+  };
+
+  const SystemMonitor = () => {
+    if (!isAdmin) return null;
+    return (
+      <div className="space-y-6 mt-8 p-4 bg-emerald-500/5 border border-emerald-500/10 rounded-2xl backdrop-blur-sm animate-fade-in">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">Live Monitor</span>
+          </div>
+          <span className="text-[10px] font-mono text-emerald-500/50 uppercase">Kiwalan-Net v4.0</span>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-1">
+            <p className="text-[9px] text-slate-500 uppercase font-bold tracking-tighter">Uptime</p>
+            <p className="text-sm font-mono text-emerald-400 font-bold">{uptime}</p>
+          </div>
+          <div className="space-y-1">
+            <p className="text-[9px] text-slate-500 uppercase font-bold tracking-tighter">Server Load</p>
+            <div className="flex items-center gap-2">
+              <div className="flex-1 h-1 bg-emerald-900/30 rounded-full overflow-hidden">
+                <div className="h-full bg-emerald-500 transition-all duration-1000" style={{ width: `${serverLoad}%` }} />
+              </div>
+              <span className="text-[10px] font-mono text-emerald-400">{serverLoad}%</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="pt-2 border-t border-emerald-500/10 space-y-2">
+          <p className="text-[9px] text-slate-500 uppercase font-bold tracking-tighter">Security Log</p>
+          <div className="space-y-1">
+            {securityEvents.map((event, i) => (
+              <div key={i} className="flex items-center gap-2 text-[10px] font-mono text-emerald-500/60">
+                <span className="text-emerald-500 opacity-50 text-[8px] tracking-tighter">[{new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'})}]</span>
+                <span className="truncate">{event}</span>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     );
   };
@@ -191,6 +281,13 @@ const Login = () => {
   return (
     <div className={`min-h-screen flex relative transition-colors duration-1000 ${isAdmin ? 'bg-[#020617]' : 'bg-slate-50'}`}>
       <BinaryBackground />
+      {/* Branding Panel Academic Identity (Admin Only) */}
+      {isAdmin && (
+        <div className="absolute left-1/4 top-1/2 -translate-x-1/2 -translate-y-1/2 opacity-[0.03] pointer-events-none select-none animate-pulse-slow">
+          <img src="/icons/school-logo-source.png" alt="" className="w-[500px] h-[500px] object-contain grayscale invert" />
+        </div>
+      )}
+
       {/* Secret Admin Trigger */}
       <button 
         onClick={() => setLoginType(isAdmin ? 'student' : 'admin')}
@@ -252,38 +349,52 @@ const Login = () => {
         </div>
 
         {/* Center content */}
-        <div className="relative space-y-8">
+        <div className="relative space-y-8 max-w-lg">
           <div className="animate-fade-in" key={loginType}>
-            <p className={`text-xs font-bold text-${currentRole.color}-400 uppercase tracking-widest mb-4 transition-colors duration-500`}>
-              {isAdmin ? 'Root Access' : 'Welcome Back'}
-            </p>
-            <h2 className={`text-4xl font-black leading-tight mb-4 whitespace-pre-line transition-colors duration-500 ${isAdmin ? 'text-emerald-500' : 'text-white'}`}>
+            <div className="flex items-center gap-3 mb-4">
+              <p className={`text-xs font-bold text-${currentRole.color}-400 uppercase tracking-widest transition-colors duration-500`}>
+                {isAdmin ? 'Root Authorization' : 'Welcome Back'}
+              </p>
+              {isAdmin && (
+                <div className="px-2 py-0.5 bg-emerald-500/10 border border-emerald-500/20 rounded text-[8px] font-black text-emerald-500 uppercase tracking-widest animate-pulse">
+                  Level 5 Access
+                </div>
+              )}
+            </div>
+            <h2 className={`text-4xl font-black leading-tight mb-4 whitespace-pre-line transition-colors duration-500 ${isAdmin ? 'text-emerald-500 drop-shadow-[0_0_10px_rgba(16,185,129,0.3)]' : 'text-white'}`}>
               {currentRole.title}
             </h2>
             <p className="text-slate-400 leading-relaxed text-sm">
               {currentRole.desc}
             </p>
           </div>
-          {/* Feature list */}
-          <div className="space-y-3" key={`features-${loginType}`}>
-            {currentRole.features.map((f, i) => (
-              <div key={i} className="flex items-center gap-3 animate-fade-in" style={{ animationDelay: `${i * 100}ms` }}>
-                <div className={`w-5 h-5 rounded-full bg-${currentRole.color}-500/20 border border-${currentRole.color}-500/30 flex items-center justify-center flex-shrink-0 transition-colors duration-500`}>
-                  <svg className={`w-3 h-3 text-${currentRole.color}-400 transition-colors duration-500`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
-                </div>
-                <span className={`text-sm transition-colors duration-500 ${isAdmin ? 'text-emerald-500/70' : 'text-slate-400'}`}>{f}</span>
+
+          {isAdmin ? (
+            <SystemMonitor />
+          ) : (
+            <>
+              {/* Feature list */}
+              <div className="space-y-3" key={`features-${loginType}`}>
+                {currentRole.features.map((f, i) => (
+                  <div key={i} className="flex items-center gap-3 animate-fade-in" style={{ animationDelay: `${i * 100}ms` }}>
+                    <div className={`w-5 h-5 rounded-full bg-${currentRole.color}-500/20 border border-${currentRole.color}-500/30 flex items-center justify-center flex-shrink-0 transition-colors duration-500`}>
+                      <svg className={`w-3 h-3 text-${currentRole.color}-400 transition-colors duration-500`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
+                    </div>
+                    <span className={`text-sm transition-colors duration-500 ${isAdmin ? 'text-emerald-500/70' : 'text-slate-400'}`}>{f}</span>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-          {/* Stats */}
-          <div className="grid grid-cols-2 gap-3 pt-2" key={`stats-${loginType}`}>
-            {currentRole.stats.map((s, i) => (
-              <div key={i} className={`border rounded-xl p-3 animate-fade-in transition-all duration-500 ${isAdmin ? 'bg-emerald-500/5 border-emerald-500/20' : 'bg-white/5 border-white/10'}`} style={{ animationDelay: `${(i + 5) * 100}ms` }}>
-                <p className={`text-lg font-black transition-colors duration-500 ${isAdmin ? 'text-emerald-500' : 'text-white'}`}>{s.val}</p>
-                <p className="text-[10px] text-slate-500 font-semibold uppercase tracking-widest mt-0.5">{s.label}</p>
+              {/* Stats */}
+              <div className="grid grid-cols-2 gap-3 pt-2" key={`stats-${loginType}`}>
+                {currentRole.stats.map((s, i) => (
+                  <div key={i} className={`border rounded-xl p-3 animate-fade-in transition-all duration-500 ${isAdmin ? 'bg-emerald-500/5 border-emerald-500/20' : 'bg-white/5 border-white/10'}`} style={{ animationDelay: `${(i + 5) * 100}ms` }}>
+                    <p className={`text-lg font-black transition-colors duration-500 ${isAdmin ? 'text-emerald-500' : 'text-white'}`}>{s.val}</p>
+                    <p className="text-[10px] text-slate-500 font-semibold uppercase tracking-widest mt-0.5">{s.label}</p>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+            </>
+          )}
         </div>
 
         {/* Bottom link */}
@@ -311,11 +422,20 @@ const Login = () => {
           </button>
         </div>
 
-        <div className={`w-full max-w-sm p-8 rounded-3xl transition-all duration-1000 ${isAdmin ? 'bg-slate-900/50 border border-emerald-500/20 shadow-[0_0_50px_-12px_rgba(16,185,129,0.15)]' : 'bg-transparent'}`}>
+        <div className={`w-full max-w-sm p-8 rounded-[2rem] transition-all duration-1000 relative group ${
+          isAdmin 
+            ? 'bg-slate-900/40 backdrop-blur-2xl border border-emerald-500/20 shadow-[0_0_80px_-15px_rgba(16,185,129,0.15)] ring-1 ring-white/5 admin-glass-glow' 
+            : 'bg-transparent'
+        }`}>
+          {/* Form inner shadow/glow for Admin */}
+          {isAdmin && (
+            <div className="absolute inset-0 rounded-[2rem] bg-gradient-to-br from-emerald-500/[0.05] to-transparent pointer-events-none" />
+          )}
+
           {/* Header */}
-          <div className="mb-8">
+          <div className="mb-8 relative">
             <div className="flex items-center gap-3 mb-6 lg:hidden">
-              <div className={`h-9 w-9 rounded-full overflow-hidden border flex items-center justify-center shadow-sm p-1 transition-all duration-500 ${isAdmin ? 'border-emerald-500/50 bg-slate-900' : 'border-slate-200 bg-white'}`}>
+              <div className={`h-9 w-9 rounded-full overflow-hidden border flex items-center justify-center shadow-sm p-1 transition-all duration-500 ${isAdmin ? 'border-emerald-500/50 bg-slate-900 shadow-[0_0_15px_rgba(16,185,129,0.2)]' : 'border-slate-200 bg-white'}`}>
                 <img src="/icons/school-logo-source.png" alt="KNHS" className="h-full w-full object-contain" />
               </div>
               <div>
@@ -325,11 +445,11 @@ const Login = () => {
                 </p>
               </div>
             </div>
-            <h1 className={`text-2xl font-black mb-1 transition-colors duration-500 ${isAdmin ? 'text-white' : 'text-slate-900'}`}>
-              {isAdmin ? 'Authorize' : 'Sign in'}
+            <h1 className={`text-2xl font-black mb-1 transition-colors duration-500 ${isAdmin ? 'text-white tracking-tight' : 'text-slate-900'}`}>
+              {isAdmin ? 'System Authorization' : 'Sign in'}
             </h1>
-            <p className={`text-sm transition-colors duration-500 ${isAdmin ? 'text-slate-400' : 'text-slate-500'}`}>
-              {isAdmin ? 'Enter administrative credentials' : `Access your KNHS ${loginType} account`}
+            <p className={`text-sm transition-colors duration-500 ${isAdmin ? 'text-slate-400 font-medium' : 'text-slate-500'}`}>
+              {isAdmin ? 'Secure access to administrative tools' : `Access your KNHS ${loginType} account`}
             </p>
           </div>
 
