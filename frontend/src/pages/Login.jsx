@@ -17,6 +17,43 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loginType, setLoginType] = useState('student');
 
+  const isAdmin = loginType === 'admin';
+
+  const BinaryBackground = () => {
+    if (!isAdmin) return null;
+    return (
+      <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-20 select-none">
+        <div className="flex justify-around w-full h-full text-[10px] font-mono text-emerald-500/30 whitespace-nowrap overflow-hidden">
+          {[...Array(12)].map((_, i) => (
+            <div 
+              key={i} 
+              className="flex flex-col animate-matrix-rain"
+              style={{ 
+                animationDuration: `${15 + Math.random() * 20}s`,
+                animationDelay: `${-Math.random() * 20}s` 
+              }}
+            >
+              {[...Array(50)].map((_, j) => (
+                <span key={j} className="my-1">
+                  {Math.round(Math.random()).toString()}
+                </span>
+              ))}
+            </div>
+          ))}
+        </div>
+        <style dangerouslySetInnerHTML={{ __html: `
+          @keyframes matrix-rain {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(100%); }
+          }
+          .animate-matrix-rain {
+            animation: matrix-rain linear infinite;
+          }
+        `}} />
+      </div>
+    );
+  };
+
   const roleConfig = {
     student: {
       color: 'violet',
@@ -154,6 +191,7 @@ const Login = () => {
 
   return (
     <div className={`min-h-screen flex relative transition-colors duration-1000 ${isAdmin ? 'bg-[#020617]' : 'bg-slate-50'}`}>
+      <BinaryBackground />
       {/* Secret Admin Trigger */}
       <button 
         onClick={() => setLoginType(isAdmin ? 'student' : 'admin')}
@@ -186,6 +224,7 @@ const Login = () => {
 
       {/* ── Left panel (branding) — hidden on mobile ── */}
       <div className={`hidden lg:flex lg:w-1/2 flex-col justify-between p-12 relative overflow-hidden transition-all duration-1000 ${isAdmin ? 'bg-black border-r border-emerald-500/10' : 'bg-[#0f0720]'}`}>
+        <BinaryBackground />
         {/* Grid texture */}
         <div className={`absolute inset-0 ${isAdmin ? 'opacity-[0.08]' : 'opacity-[0.04]'}`} 
           style={{ 
@@ -259,7 +298,7 @@ const Login = () => {
 
       {/* ── Right panel (form) ── */}
       <div className={`flex-1 flex flex-col items-center justify-center px-4 py-12 sm:px-8 transition-colors duration-1000 ${isAdmin ? 'bg-[#020617]' : 'bg-slate-50'}`}>
-
+        <BinaryBackground />
         {/* Mobile back link */}
         <div className="w-full max-w-sm mb-6 lg:hidden">
           <button
