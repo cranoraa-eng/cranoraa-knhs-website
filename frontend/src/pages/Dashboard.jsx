@@ -686,17 +686,35 @@ const TeacherView = () => {
             </div>
             <div className="grid grid-cols-2 gap-3 md:gap-4">
               {[
-                { label: 'Attendance',    path: '/attendance',        icon: '📋', color: 'emerald' },
-                { label: 'Grade Input',   path: '/grade-input',       icon: '✏️', color: 'violet' },
-                { label: 'Analytics',     path: '/analytics',         icon: '📈', color: 'blue' },
-                { label: 'Materials',     path: '/materials',         icon: '📂', color: 'amber' },
+                { 
+                  label: 'Attendance',    
+                  path: '/attendance',        
+                  icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg> 
+                },
+                { 
+                  label: 'Grade Input',   
+                  path: '/grade-input',       
+                  icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg> 
+                },
+                { 
+                  label: 'Analytics',     
+                  path: '/analytics',         
+                  icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg> 
+                },
+                { 
+                  label: 'Materials',     
+                  path: '/materials',         
+                  icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg> 
+                },
               ].map(a => (
                 <button
                   key={a.path}
                   onClick={() => navigate(a.path)}
                   className="flex flex-col items-center justify-center p-5 bg-slate-50/50 rounded-[1.5rem] border border-slate-100 hover:bg-white hover:border-violet-200 hover:shadow-[0_15px_30px_rgba(139,92,246,0.1)] transition-all group active:scale-95"
                 >
-                  <span className="text-2xl mb-2.5 group-hover:scale-125 transition-transform duration-300 drop-shadow-sm">{a.icon}</span>
+                  <div className="text-violet-500 mb-2.5 group-hover:scale-125 transition-transform duration-300 drop-shadow-sm">
+                    {a.icon}
+                  </div>
                   <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.1em] group-hover:text-violet-600 transition-colors">{a.label}</span>
                 </button>
               ))}
@@ -977,30 +995,59 @@ const StudentView = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
-        {/* Quick Links */}
-        <div className="bg-[#1A0B2E] rounded-[2rem] p-6 shadow-xl border border-white/5 relative overflow-hidden group h-full flex flex-col justify-center">
-          <div className="absolute -right-8 -top-8 w-40 h-40 bg-violet-500/20 rounded-full blur-3xl group-hover:bg-violet-500/30 transition-all duration-700" />
-          <div className="relative z-10">
-            <h3 className="text-white text-sm font-black uppercase tracking-tight mb-6">Quick Navigator</h3>
-            <div className="grid grid-cols-2 gap-3 md:gap-4">
-              {[
-                { label: 'My Grades',    path: '/student-grades',    icon: '📊' },
-                { label: 'Schedule',     path: '/schedule',          icon: '🗓️' },
-                { label: 'Materials',    path: '/materials',         icon: '📚' },
-                { label: 'Messages',     path: '/messages',          icon: '💬' },
-              ].map(a => (
-                <button
-                  key={a.path}
-                  onClick={() => navigate(a.path)}
-                  className="flex flex-col items-center justify-center p-5 bg-white/5 rounded-2xl border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all active:scale-95 group/btn"
-                >
-                  <span className="text-2xl mb-2 group-hover/btn:scale-125 transition-transform duration-300">{a.icon}</span>
-                  <span className="text-[10px] font-black text-violet-200 uppercase tracking-widest">{a.label}</span>
-                </button>
-              ))}
+        {/* Quick Links & Attendance Analysis */}
+        <div className="lg:col-span-4 space-y-6 md:gap-8 flex flex-col">
+          <div className="bg-[#1A0B2E] rounded-[2rem] p-6 shadow-xl border border-white/5 relative overflow-hidden group flex-1 flex flex-col justify-center">
+            <div className="absolute -right-8 -top-8 w-40 h-40 bg-violet-500/20 rounded-full blur-3xl group-hover:bg-violet-500/30 transition-all duration-700" />
+            <div className="relative z-10">
+              <h3 className="text-white text-sm font-black uppercase tracking-tight mb-6">Quick Navigator</h3>
+              <div className="grid grid-cols-2 gap-3 md:gap-4">
+                {[
+                  { 
+                    label: 'My Grades',    
+                    path: '/student-grades',    
+                    icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg> 
+                  },
+                  { 
+                    label: 'Schedule',     
+                    path: '/schedule',          
+                    icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                  },
+                  { 
+                    label: 'Materials',    
+                    path: '/materials',         
+                    icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
+                  },
+                  { 
+                    label: 'Messages',     
+                    path: '/messages',          
+                    icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
+                  },
+                  { 
+                    label: 'Attendance',   
+                    path: '/attendance',        
+                    icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
+                  },
+                  { 
+                    label: 'Profile',      
+                    path: '/profile',           
+                    icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                  },
+                ].map(a => (
+                  <button
+                    key={a.path}
+                    onClick={() => navigate(a.path)}
+                    className="flex flex-col items-center justify-center p-4 md:p-5 bg-white/5 rounded-2xl border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all active:scale-95 group/btn"
+                  >
+                    <div className="text-violet-400 mb-2.5 group-hover/btn:scale-125 group-hover/btn:text-white transition-all duration-300">
+                      {a.icon}
+                    </div>
+                    <span className="text-[10px] font-black text-violet-200 uppercase tracking-widest text-center">{a.label}</span>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
-        </div>
 
         {/* System Updates */}
         <div className="bg-white border border-slate-200/70 rounded-[2rem] p-6 shadow-sm h-full flex flex-col">
