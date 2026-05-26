@@ -859,7 +859,7 @@ const StudentManagement = () => {
                     </div>
 
                     <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-slate-200 max-w-full">
-                      <table className="w-full text-left min-w-[400px] md:min-w-full">
+                      <table className="w-full text-left min-w-[480px] md:min-w-full">
                         <thead>
                           <tr className="text-[7px] md:text-[10px] font-black text-white uppercase tracking-widest border-b border-slate-50 bg-[#2D1B4D]">
                             <th className="px-3 py-1.5 md:px-6 md:py-4 w-10 md:w-16">

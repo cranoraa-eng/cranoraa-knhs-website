@@ -359,7 +359,7 @@ const GradeManagement = () => {
                                     {subjectOpen && (
                                       <div className="px-1 md:px-8 pb-4 pt-2 animate-in fade-in slide-in-from-top-2 duration-300">
                                         <div className="overflow-x-auto rounded-lg md:rounded-xl border border-slate-200 shadow-sm scrollbar-thin scrollbar-thumb-slate-300">
-                                          <table className="w-full text-[10px] md:text-sm">
+                                          <table className="w-full text-[10px] md:text-sm min-w-[640px]">
                                             <thead className="bg-slate-50 border-b border-slate-200">
                                               <tr>
                                                 <th className="text-left px-2 md:px-4 py-2 md:py-3 text-[8px] md:text-xs font-black text-slate-400 uppercase tracking-[0.2em] sticky left-0 bg-slate-50 z-10 w-8 md:w-12 border-r border-slate-100">#</th>

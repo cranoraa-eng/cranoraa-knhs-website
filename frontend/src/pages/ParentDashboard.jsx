@@ -284,12 +284,14 @@ export default function ParentDashboard() {
                   </div>
                   {detailLoading ? <div className="p-8 text-center"><Spinner /></div> : (
                     <div className="overflow-x-auto">
-                      <table className="w-full text-left border-separate border-spacing-0">
+                      <table className="w-full text-left border-separate border-spacing-0 min-w-[480px]">
                         <thead className="bg-slate-50 border-b border-slate-200">
                           <tr>
-                            {['Subject','Code','Quarter','Score','Remarks'].map(h => (
-                              <th key={h} className="px-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">{h}</th>
-                            ))}
+                            <th className="px-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Subject</th>
+                            <th className="px-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest hidden sm:table-cell">Code</th>
+                            <th className="px-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Quarter</th>
+                            <th className="px-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Score</th>
+                            <th className="px-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest hidden sm:table-cell">Remarks</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-50">
@@ -298,10 +300,10 @@ export default function ParentDashboard() {
                           ) : (detail?.grades || child.grades || []).map((g, i) => (
                             <tr key={i} className="hover:bg-slate-50 transition-colors">
                               <td className="px-4 py-3 text-xs font-bold text-slate-800">{g.subject_name}</td>
-                              <td className="px-4 py-3 text-[10px] text-slate-500">{g.subject_code}</td>
+                              <td className="px-4 py-3 text-[10px] text-slate-500 hidden sm:table-cell">{g.subject_code}</td>
                               <td className="px-4 py-3 text-xs text-slate-600">Q{g.quarter}</td>
                               <td className="px-4 py-3"><GradeBadge score={g.score} /></td>
-                              <td className="px-4 py-3 text-[10px] text-slate-500">{g.remarks}</td>
+                              <td className="px-4 py-3 text-[10px] text-slate-500 hidden sm:table-cell">{g.remarks}</td>
                             </tr>
                           ))}
                         </tbody>
@@ -323,12 +325,13 @@ export default function ParentDashboard() {
                   </div>
                   {detailLoading ? <div className="p-8 text-center"><Spinner /></div> : (
                     <div className="overflow-x-auto">
-                      <table className="w-full text-left border-separate border-spacing-0">
+                      <table className="w-full text-left border-separate border-spacing-0 min-w-[360px]">
                         <thead className="bg-slate-50 border-b border-slate-200">
                           <tr>
-                            {['Date','Day','Status','Remarks'].map(h => (
-                              <th key={h} className="px-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">{h}</th>
-                            ))}
+                            <th className="px-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Date</th>
+                            <th className="px-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest hidden sm:table-cell">Day</th>
+                            <th className="px-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Status</th>
+                            <th className="px-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest hidden sm:table-cell">Remarks</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-50">
@@ -339,9 +342,9 @@ export default function ParentDashboard() {
                             return (
                               <tr key={i} className="hover:bg-slate-50 transition-colors">
                                 <td className="px-4 py-3 text-xs font-medium text-slate-700">{d.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' })}</td>
-                                <td className="px-4 py-3 text-xs text-slate-500">{d.toLocaleDateString('en-US', { weekday:'long' })}</td>
+                                <td className="px-4 py-3 text-xs text-slate-500 hidden sm:table-cell">{d.toLocaleDateString('en-US', { weekday:'long' })}</td>
                                 <td className="px-4 py-3"><AttBadge status={r.status} /></td>
-                                <td className="px-4 py-3 text-[10px] text-slate-400">{r.remarks || '—'}</td>
+                                <td className="px-4 py-3 text-[10px] text-slate-400 hidden sm:table-cell">{r.remarks || '—'}</td>
                               </tr>
                             );
                           })}

@@ -207,7 +207,7 @@ const EnrollmentManagement = () => {
       {/* Applications Table */}
       <div className="bg-white rounded-xl md:rounded-3xl shadow-sm border border-slate-100 overflow-hidden min-w-0">
         <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-slate-200">
-          <table className="w-full text-left min-w-0">
+          <table className="w-full text-left min-w-[480px]">
             <thead className="bg-slate-50/50 text-[8px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">
               <tr>
                 <th className="px-3 py-2 md:px-6 md:py-4">Applicant</th>
