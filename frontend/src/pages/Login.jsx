@@ -352,14 +352,6 @@ const Login = () => {
               )}
             </button>
           </form>
-
-          {/* Signup link (only for parents) */}
-          {loginType === 'parent' && (
-            <p className="mt-8 text-center text-sm text-slate-500">
-              Don't have a parent account?{' '}
-              <Link to="/parent-signup" className={`font-bold text-${currentRole.color}-600 hover:text-${currentRole.color}-700 transition-colors`}>Create one</Link>
-            </p>
-          )}
         </div>
       </div>
     </div>
