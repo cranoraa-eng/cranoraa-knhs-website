@@ -25,58 +25,61 @@ const WelcomeBanner = ({ user, today, actions, subtitle, stats }) => {
     .filter(Boolean).map(n => n[0].toUpperCase()).join('') || '?';
 
   return (
-    <div className="bg-white rounded-[2.5rem] p-6 md:p-10 border border-slate-200/50 shadow-[0_20px_50px_rgba(0,0,0,0.04)] relative overflow-hidden group">
+    <div className="bg-slate-50/50 rounded-[2.5rem] p-6 md:p-8 border border-slate-200/50 shadow-[0_20px_50px_rgba(0,0,0,0.04)] relative overflow-hidden group">
       {/* SaaS-style Background Accents */}
-      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-to-br from-violet-500/10 via-fuchsia-500/5 to-transparent rounded-full blur-[120px] -mr-80 -mt-80 opacity-60 group-hover:opacity-100 transition-opacity duration-1000" />
-      <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-indigo-500/5 rounded-full blur-[100px] opacity-40" />
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-gradient-to-br from-violet-500/15 via-fuchsia-500/10 to-transparent rounded-full blur-[100px] -mr-64 -mt-64 opacity-80 group-hover:opacity-100 transition-opacity duration-1000" />
+      <div className="absolute -bottom-24 -left-24 w-80 h-80 bg-indigo-500/10 rounded-full blur-[80px] opacity-60" />
       
-      {/* Modern Pattern Overlay */}
-      <div className="absolute inset-0 opacity-[0.015] pointer-events-none mix-blend-multiply" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 86c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zm66 3c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zm-46-43c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zm0-46c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM94 71c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM52 24c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%234338ca' fill-opacity='1' fill-rule='evenodd'/%3E%3C/svg%3E")` }} />
+      {/* Subtle Radial Glow */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[radial-gradient(circle_at_center,rgba(139,92,246,0.03)_0%,transparent_70%)] pointer-events-none" />
 
-      <div className="relative space-y-10">
+      {/* Modern Pattern Overlay */}
+      <div className="absolute inset-0 opacity-[0.02] pointer-events-none mix-blend-multiply" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 86c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zm66 3c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zm-46-43c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zm0-46c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM94 71c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM52 24c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%234338ca' fill-opacity='1' fill-rule='evenodd'/%3E%3C/svg%3E")` }} />
+
+      <div className="relative space-y-6 md:space-y-8">
         <div className="flex items-center justify-between gap-6">
           {/* Welcome Text Section (Left) */}
-          <div className="flex-1 space-y-6">
+          <div className="flex-1 space-y-4 md:space-y-6">
             <div className="flex flex-wrap items-center gap-3">
-              <div className={`flex items-center gap-2 px-4 py-2 rounded-full bg-${greeting.color}-50 border border-${greeting.color}-100 shadow-sm transition-all duration-500 hover:scale-105`}>
+              <div className={`flex items-center gap-2 px-4 py-2 rounded-full bg-white/60 backdrop-blur-md border border-${greeting.color}-100/50 shadow-sm transition-all duration-500 hover:scale-105`}>
                 <span className="text-sm transform group-hover:rotate-12 transition-transform duration-500">{greeting.icon}</span>
                 <p className={`text-[10px] font-black text-${greeting.color}-600 uppercase tracking-[0.25em]`}>{greeting.text}</p>
               </div>
-              <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-slate-50 border border-slate-100 shadow-sm">
+              <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/60 backdrop-blur-md border border-slate-100 shadow-sm">
                 <svg className="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                 <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.25em]">{today}</p>
               </div>
             </div>
 
-            <div className="space-y-3">
-              <h1 className="text-3xl sm:text-4xl md:text-6xl font-black text-slate-900 tracking-tighter leading-none">
+            <div className="space-y-2 md:space-y-3">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-slate-900 tracking-tighter leading-none">
                 Welcome back, <br className="sm:hidden" />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-600 via-indigo-600 to-blue-600 animate-gradient-x inline-block mt-2">
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-600 via-indigo-600 to-blue-600 animate-gradient-x inline-block mt-1 md:mt-2">
                   {user?.first_name || 'User'}
                 </span>
               </h1>
-              <div className="flex flex-col gap-2">
-                <p className="text-slate-500 font-bold text-base md:text-xl tracking-tight leading-relaxed">
+              <div className="flex flex-col gap-1.5 md:gap-2">
+                <p className="text-slate-500 font-bold text-sm md:text-lg tracking-tight leading-relaxed max-w-md">
                   {greeting.message}
                 </p>
                 {subtitle && (
-                  <div className="flex items-center gap-3 px-4 py-1.5 bg-slate-50 border border-slate-100 rounded-xl w-fit">
+                  <div className="flex items-center gap-3 px-4 py-1.5 bg-white/40 backdrop-blur-sm border border-slate-100/50 rounded-xl w-fit">
                     <span className="w-2 h-2 rounded-full bg-violet-500 animate-pulse shadow-[0_0_8px_rgba(139,92,246,0.4)]" />
-                    <p className="text-xs md:text-sm font-black text-slate-600 uppercase tracking-widest">{subtitle}</p>
+                    <p className="text-[10px] md:text-xs font-black text-slate-600 uppercase tracking-widest">{subtitle}</p>
                   </div>
                 )}
               </div>
             </div>
           </div>
 
-          {/* Profile Picture Section (Right) */}
+          {/* Profile Picture Section (Right) - Shrunk */}
           <div className="relative shrink-0 hidden sm:block">
-            <div className="w-24 h-24 md:w-32 md:h-32 rounded-[2.5rem] bg-gradient-to-br from-violet-600 via-indigo-600 to-blue-600 p-1.5 shadow-2xl group-hover:rotate-3 transition-all duration-700">
-              <div className="w-full h-full rounded-[2.2rem] bg-white overflow-hidden flex items-center justify-center border-4 border-white/20 relative group/avatar">
+            <div className="w-20 h-20 md:w-28 md:h-28 rounded-[2rem] bg-gradient-to-br from-violet-600 via-indigo-600 to-blue-600 p-1 shadow-2xl group-hover:rotate-3 transition-all duration-700">
+              <div className="w-full h-full rounded-[1.8rem] bg-white overflow-hidden flex items-center justify-center border-4 border-white/20 relative group/avatar">
                 {user?.profile_picture ? (
                   <img src={user.profile_picture} alt="Profile" className="w-full h-full object-cover group-hover/avatar:scale-110 transition-transform duration-700" />
                 ) : (
-                  <span className="text-3xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-br from-violet-600 to-indigo-600">
+                  <span className="text-2xl md:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-br from-violet-600 to-indigo-600">
                     {initials}
                   </span>
                 )}
@@ -84,46 +87,15 @@ const WelcomeBanner = ({ user, today, actions, subtitle, stats }) => {
                 <div className="absolute inset-0 bg-violet-600/10 opacity-0 group-hover/avatar:opacity-100 transition-opacity duration-300" />
               </div>
             </div>
-            <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-emerald-500 border-4 border-white shadow-lg animate-pulse z-10" />
+            <div className="absolute -bottom-0.5 -right-0.5 w-6 h-6 md:w-7 md:h-7 rounded-full bg-emerald-500 border-4 border-white shadow-lg animate-pulse z-10" />
             
             {/* Progress Ring Decorative */}
-            <div className="absolute -inset-4 border-2 border-dashed border-slate-200 rounded-[3rem] animate-spin-slow opacity-20 pointer-events-none" />
-          </div>
-        </div>
-
-        {/* Progress & Quick Stats Section */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6 border-t border-slate-100 relative z-10">
-          <div className="flex items-center gap-4 group/stat">
-            <div className="w-12 h-12 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center shrink-0 group-hover/stat:bg-emerald-500 group-hover/stat:text-white transition-all duration-300">
-              <svg className="w-6 h-6 text-emerald-600 group-hover/stat:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-            </div>
-            <div>
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Attendance Streak</p>
-              <h4 className="text-lg font-black text-slate-900 leading-none">12 Days <span className="text-emerald-500 text-xs ml-1">🔥</span></h4>
-            </div>
-          </div>
-          <div className="flex items-center gap-4 group/stat">
-            <div className="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-100 flex items-center justify-center shrink-0 group-hover/stat:bg-amber-500 group-hover/stat:text-white transition-all duration-300">
-              <svg className="w-6 h-6 text-amber-600 group-hover/stat:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-            </div>
-            <div>
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Next Class</p>
-              <h4 className="text-lg font-black text-slate-900 leading-none">In 45 Mins <span className="text-slate-400 text-xs ml-1 font-bold">@ Rm 402</span></h4>
-            </div>
-          </div>
-          <div className="flex items-center gap-4 group/stat">
-            <div className="w-12 h-12 rounded-2xl bg-violet-50 border border-violet-100 flex items-center justify-center shrink-0 group-hover/stat:bg-violet-500 group-hover/stat:text-white transition-all duration-300">
-              <svg className="w-6 h-6 text-violet-600 group-hover/stat:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-            </div>
-            <div>
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Assignments</p>
-              <h4 className="text-lg font-black text-slate-900 leading-none">3 Pending <span className="text-violet-500 text-xs ml-1 font-bold">Action Needed</span></h4>
-            </div>
+            <div className="absolute -inset-3 border-2 border-dashed border-slate-200 rounded-[2.5rem] animate-spin-slow opacity-20 pointer-events-none" />
           </div>
         </div>
 
         {/* Action Buttons Section (Bottom) */}
-        <div className="flex flex-wrap gap-4 shrink-0 relative z-10 pt-2">
+        <div className="flex flex-wrap gap-3 md:gap-4 shrink-0 relative z-10 pt-2">
           {actions}
         </div>
       </div>
