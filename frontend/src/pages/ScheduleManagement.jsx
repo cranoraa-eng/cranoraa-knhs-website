@@ -79,6 +79,10 @@ export default function ScheduleManagement() {
   const [savingRoom, setSavingRoom]     = useState(false);
   const [savingSlot, setSavingSlot]     = useState(false);
 
+  // Classroom → subject/teacher assignments (from ClassroomSubject)
+  const [classroomAssignments, setClassroomAssignments] = useState([]); // [{subject, subject_name, subject_code, teacher, teacher_name}]
+  const [loadingAssignments, setLoadingAssignments]     = useState(false);
+
   // ── Fetch ─────────────────────────────────────────────────────────────────
   const fetchAll = useCallback(async () => {
     setLoading(true);
@@ -115,6 +119,31 @@ export default function ScheduleManagement() {
         .catch(() => {});
     }
   }, [form.academic_year]);
+
+  // When classroom changes in the form, fetch its assigned subjects + teachers
+  useEffect(() => {
+    if (!form.classroom) {
+      setClassroomAssignments([]);
+      return;
+    }
+    setLoadingAssignments(true);
+    api.get(`/classroom-subjects/by_classroom/?classroom_id=${form.classroom}`)
+      .then(r => {
+        const data = r.data.results || r.data;
+        setClassroomAssignments(data);
+        // If current subject/teacher is no longer valid for this classroom, clear them
+        setForm(f => {
+          const validSubjectIds = data.map(a => String(a.subject));
+          const newSubject = validSubjectIds.includes(String(f.subject)) ? f.subject : '';
+          // Auto-fill teacher if only one assignment matches the selected subject
+          const match = data.find(a => String(a.subject) === String(newSubject));
+          const newTeacher = match ? String(match.teacher) : (validSubjectIds.length === 0 ? f.teacher : '');
+          return { ...f, subject: newSubject, teacher: newTeacher };
+        });
+      })
+      .catch(() => setClassroomAssignments([]))
+      .finally(() => setLoadingAssignments(false));
+  }, [form.classroom]);
 
   // ── Subject → color mapping (stable per subject id) ───────────────────────
   const subjectColorMap = useMemo(() => {
@@ -647,23 +676,77 @@ export default function ScheduleManagement() {
               {/* Core */}
               <div className="grid grid-cols-2 gap-4">
                 <Field label="Classroom" required>
-                  <Select required value={form.classroom} onChange={e => setForm(f => ({ ...f, classroom: e.target.value }))}>
+                  <Select required value={form.classroom} onChange={e => setForm(f => ({ ...f, classroom: e.target.value, subject: '', teacher: '' }))}>
                     <option value="">Select section…</option>
                     {classrooms.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                   </Select>
                 </Field>
                 <Field label="Subject" required>
-                  <Select required value={form.subject} onChange={e => setForm(f => ({ ...f, subject: e.target.value }))}>
-                    <option value="">Select subject…</option>
-                    {subjects.map(s => <option key={s.id} value={s.id}>{s.code} — {s.name}</option>)}
-                  </Select>
+                  {loadingAssignments ? (
+                    <div className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-400 bg-slate-50 flex items-center gap-2">
+                      <svg className="w-4 h-4 animate-spin text-violet-400" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                      Loading…
+                    </div>
+                  ) : (
+                    <Select required value={form.subject}
+                      onChange={e => {
+                        const subjectId = e.target.value;
+                        // Auto-fill teacher from the assignment for this subject
+                        const match = classroomAssignments.find(a => String(a.subject) === subjectId);
+                        setForm(f => ({
+                          ...f,
+                          subject: subjectId,
+                          teacher: match ? String(match.teacher) : f.teacher,
+                        }));
+                      }}>
+                      <option value="">
+                        {!form.classroom
+                          ? 'Select a classroom first'
+                          : classroomAssignments.length === 0
+                          ? 'No subjects assigned to this classroom'
+                          : 'Select subject…'}
+                      </option>
+                      {(form.classroom && classroomAssignments.length > 0
+                        ? classroomAssignments
+                        : []
+                      ).map(a => (
+                        <option key={a.subject} value={a.subject}>
+                          {a.subject_code} — {a.subject_name}
+                        </option>
+                      ))}
+                    </Select>
+                  )}
+                  {form.classroom && !loadingAssignments && classroomAssignments.length === 0 && (
+                    <p className="text-[10px] text-amber-600 mt-1 font-medium">
+                      ⚠ No subjects assigned to this classroom yet. Go to Subject Assignment first.
+                    </p>
+                  )}
                 </Field>
               </div>
 
               <Field label="Teacher" required>
-                <Select required value={form.teacher} onChange={e => setForm(f => ({ ...f, teacher: e.target.value }))}>
-                  <option value="">Select teacher…</option>
-                  {teachers.map(t => <option key={t.id} value={t.id}>{t.full_name || `${t.first_name} ${t.last_name}`}</option>)}
+                <Select required value={form.teacher}
+                  onChange={e => setForm(f => ({ ...f, teacher: e.target.value }))}>
+                  <option value="">
+                    {!form.classroom
+                      ? 'Select a classroom first'
+                      : !form.subject
+                      ? 'Select a subject first'
+                      : 'Select teacher…'}
+                  </option>
+                  {/* Show only teachers assigned to this classroom-subject combo */}
+                  {(form.classroom && form.subject
+                    ? classroomAssignments.filter(a => String(a.subject) === String(form.subject))
+                    : form.classroom
+                    ? classroomAssignments
+                    : []
+                  ).map(a => (
+                    <option key={a.teacher} value={a.teacher}>{a.teacher_name}</option>
+                  ))}
+                  {/* Fallback: if no assignments, show all teachers */}
+                  {form.classroom && classroomAssignments.length === 0 && teachers.map(t => (
+                    <option key={t.id} value={t.id}>{t.full_name || `${t.first_name} ${t.last_name}`}</option>
+                  ))}
                 </Select>
               </Field>
 
