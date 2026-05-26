@@ -1091,6 +1091,7 @@ const StudentView = () => {
         </div>
       </div>
     </div>
+  </div>
   );
 };
 
