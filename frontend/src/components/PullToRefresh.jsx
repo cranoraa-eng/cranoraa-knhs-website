@@ -64,7 +64,7 @@ const PullToRefresh = ({ onRefresh, children, className = '' }) => {
       <div
         ref={containerRef}
         style={{
-          transform: `translateY(${pullDistance * 0.4}px)`,
+          transform: pullDistance > 0 ? `translateY(${pullDistance * 0.4}px)` : 'none',
           transition: isPulling ? 'none' : 'transform 0.3s ease',
         }}
         className={`h-full overflow-y-auto overflow-x-hidden ${className}`}

@@ -1,10 +1,9 @@
-import { useState, useEffect, useMemo } from 'react';
+﻿import { useState, useEffect } from 'react';
 import api from '../utils/api';
 import { getStoredUser } from '../utils/auth';
 import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import toast from 'react-hot-toast';
-import { useScrollLock } from '../hooks/useScrollLock';
 
 const SubjectAssignment = () => {
   const navigate = useNavigate();
@@ -16,9 +15,6 @@ const SubjectAssignment = () => {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [saving, setSaving] = useState(false);
-
-  useScrollLock(showModal);
-
   const [selectedClassroom, setSelectedClassroom] = useState('');
   const [selectedAssignment, setSelectedAssignment] = useState(null);
   const [subjectSearch, setSubjectSearch] = useState('');

@@ -14,15 +14,13 @@ class Command(BaseCommand):
             import os, secrets
             # Use env var if set, otherwise generate a strong random password
             # NEVER use a hardcoded default password in production
-            admin_password = os.environ.get('DJANGO_SUPERUSER_PASSWORD') or secrets.token_urlsafe(20)
-            admin_email = os.environ.get('DJANGO_SUPERUSER_EMAIL') or 'admin@kiwalan-nhs.edu.ph'
-            
+            admin_password = os.environ.get('DJANGO_ADMIN_PASSWORD') or secrets.token_urlsafe(20)
             self.stdout.write(self.style.WARNING(
                 f'No admin user found. Creating one with a generated password. '
-                f'Set DJANGO_SUPERUSER_PASSWORD env var to control this.'
+                f'Set DJANGO_ADMIN_PASSWORD env var to control this.'
             ))
             admin_user = User.objects.create_superuser(
-                email=admin_email,
+                email='admin@kiwalan-nhs.edu.ph',
                 username='admin',
                 password=admin_password,
                 role='admin',

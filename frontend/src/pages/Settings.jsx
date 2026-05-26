@@ -3,7 +3,6 @@ import api from '../utils/api';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
-import { useScrollLock } from '../hooks/useScrollLock';
 
 // ── Shared UI ─────────────────────────────────────────────────────────────────
 
@@ -204,8 +203,6 @@ const AcademicYearsTab = () => {
   const [editingYear, setEditingYear] = useState(null);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({ name: '', start_date: '', end_date: '', is_active: false });
-
-  useScrollLock(showForm);
 
   const fetchYears = async () => {
     try {

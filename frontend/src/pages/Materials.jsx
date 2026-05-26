@@ -1,10 +1,8 @@
-import { useState, useEffect, useMemo } from 'react';
+﻿import { useState, useEffect, useMemo } from 'react';
 import api from '../utils/api';
 import { getUser } from '../utils/auth';
 import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
-import { useScrollLock } from '../hooks/useScrollLock';
-import { Modal } from '../components/ui/Modal';
 
 const GRADE_LEVEL_ORDER = ['Grade 7', 'Grade 8', 'Grade 9', 'Grade 10', 'Grade 11', 'Grade 12'];
 
@@ -40,8 +38,6 @@ const Materials = () => {
   const [saving, setSaving] = useState(false);
   const user = getUser();
   const canManage = user?.role === 'admin' || user?.role === 'teacher';
-
-  useScrollLock(showUploadModal);
 
   const sortedClassrooms = useMemo(() => {
     return [...classrooms].sort((a, b) => {
@@ -342,187 +338,201 @@ const Materials = () => {
       )}
 
       {/* Upload Modal */}
-      <Modal
-        open={showUploadModal}
-        onClose={() => setShowUploadModal(false)}
-        title="Upload Learning Material"
-        subtitle="Share resources with your classes"
-        size="md"
-      >
-        <form onSubmit={handleUpload} className="space-y-4">
-          {/* Title Field */}
-          <div className="space-y-1.5">
-            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-0.5">
-              Title <span className="text-violet-500">*</span>
-            </label>
-            <input
-              type="text"
-              required
-              placeholder="e.g., Advanced Calculus - Unit 1"
-              value={newMaterial.title}
-              onChange={(e) => setNewMaterial({ ...newMaterial, title: e.target.value })}
-              className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-600 text-sm text-slate-700 transition-all placeholder:text-slate-400"
-            />
-          </div>
-
-          {/* Description Field */}
-          <div className="space-y-1.5">
-            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-0.5">Description</label>
-            <textarea
-              rows={2}
-              placeholder="Describe the learning objectives or content..."
-              value={newMaterial.description}
-              onChange={(e) => setNewMaterial({ ...newMaterial, description: e.target.value })}
-              className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-600 text-sm text-slate-700 transition-all placeholder:text-slate-400 resize-none"
-            />
-          </div>
-
-          {/* Material Type & Access Level Row */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-0.5">Material Type</label>
-              <div className="relative group">
-                <select
-                  value={newMaterial.material_type}
-                  onChange={(e) => setNewMaterial({ ...newMaterial, material_type: e.target.value })}
-                  className="appearance-none w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-600 text-sm text-slate-700 transition-all cursor-pointer"
-                >
-                  {Object.entries(MATERIAL_TYPE_CONFIG).map(([k, v]) => (
-                    <option key={k} value={k}>{v.label}</option>
-                  ))}
-                </select>
-                <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 group-hover:text-slate-600 transition-colors">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
-                </div>
+      {showUploadModal && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-[100] p-4 transition-all duration-300">
+          <div className="bg-white rounded-2xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] w-full max-w-lg max-h-[90vh] flex flex-col animate-in fade-in zoom-in duration-300 border border-slate-100/50">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+              <div>
+                <h2 className="text-xl font-extrabold text-slate-900 tracking-tight">Upload Learning Material</h2>
+                <p className="text-[10px] font-bold text-slate-400 mt-0.5 uppercase tracking-widest">Share resources with your classes</p>
               </div>
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-0.5">Access Level</label>
-              <div className="relative group">
-                <select
-                  value={newMaterial.classroom}
-                  onChange={(e) => setNewMaterial({ ...newMaterial, classroom: e.target.value })}
-                  className="appearance-none w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-600 text-sm text-slate-700 transition-all cursor-pointer"
-                >
-                  <option value="">No specific class</option>
-                  {sortedClassrooms.map((cls) => (
-                    <option key={cls.id} value={cls.id}>{cls.name}</option>
-                  ))}
-                </select>
-                <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 group-hover:text-slate-600 transition-colors">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-0.5">Quarter</label>
-              <div className="relative group">
-                <select
-                  value={newMaterial.quarter}
-                  onChange={(e) => setNewMaterial({ ...newMaterial, quarter: e.target.value })}
-                  className="appearance-none w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-600 text-sm text-slate-700 transition-all cursor-pointer"
-                >
-                  <option value="">Select Quarter</option>
-                  <option value="1">Quarter 1</option>
-                  <option value="2">Quarter 2</option>
-                  <option value="3">Quarter 3</option>
-                  <option value="4">Quarter 4</option>
-                </select>
-                <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 group-hover:text-slate-600 transition-colors">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-0.5">Week Number</label>
-              <input
-                type="number"
-                min="1"
-                max="10"
-                placeholder="e.g., 1"
-                value={newMaterial.week}
-                onChange={(e) => setNewMaterial({ ...newMaterial, week: e.target.value })}
-                className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-600 text-sm text-slate-700 transition-all placeholder:text-slate-400"
-              />
-            </div>
-          </div>
-
-          {/* Dropzone */}
-          <div className="space-y-1.5">
-            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-0.5">
-              File Attachment <span className="text-violet-500">*</span>
-            </label>
-            <div className="relative group">
-              <input
-                type="file"
-                required
-                onChange={(e) => setNewMaterial({ ...newMaterial, file: e.target.files[0] })}
-                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-              />
-              <div className={`w-full px-6 py-6 border-2 border-dashed rounded-2xl flex flex-col items-center justify-center transition-all duration-300 
-                ${newMaterial.file 
-                  ? 'border-violet-500 bg-violet-50/40' 
-                  : 'border-slate-200 bg-slate-50/50 group-hover:border-violet-400 group-hover:bg-violet-50/30'}`}
+              <button 
+                onClick={() => setShowUploadModal(false)} 
+                className="p-2 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-full transition-all duration-200"
               >
-                <div className={`p-2.5 rounded-xl shadow-sm mb-2 transition-all duration-300 
-                  ${newMaterial.file ? 'bg-violet-600 text-white' : 'bg-white text-violet-500 group-hover:scale-110'}`}
-                >
-                  {newMaterial.file ? (
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  ) : (
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                    </svg>
-                  )}
-                </div>
-                <p className="text-[13px] font-semibold text-slate-700 text-center px-4">
-                  {newMaterial.file ? newMaterial.file.name : 'Click to upload or drag & drop'}
-                </p>
-                <p className="text-[10px] text-slate-400 mt-1 font-medium">
-                  Supported formats: PDF, DOCX, PPTX, or Images
-                </p>
-              </div>
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
             </div>
-          </div>
+            
+            <form onSubmit={handleUpload} className="flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar">
+              {/* Title Field */}
+              <div className="space-y-1.5">
+                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-0.5">
+                  Title <span className="text-violet-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g., Advanced Calculus - Unit 1"
+                  value={newMaterial.title}
+                  onChange={(e) => setNewMaterial({ ...newMaterial, title: e.target.value })}
+                  className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-600 text-sm text-slate-700 transition-all placeholder:text-slate-400"
+                />
+              </div>
 
-          {/* Action Buttons */}
-          <div className="flex items-center gap-4 pt-2">
-            <button
-              type="button"
-              onClick={() => setShowUploadModal(false)}
-              className="flex-1 px-6 py-3 border border-slate-200 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all active:scale-95"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={saving}
-              className="flex-[1.5] bg-[#4F46E5] text-white rounded-xl hover:bg-[#4338CA] font-bold text-sm py-3 transition-all shadow-lg shadow-indigo-200 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-            >
-              {saving ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                  <span>Publishing...</span>
-                </>
-              ) : (
-                <>
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-                  </svg>
-                  <span>Publish Material</span>
-                </>
-              )}
-            </button>
+              {/* Description Field */}
+              <div className="space-y-1.5">
+                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-0.5">Description</label>
+                <textarea
+                  rows={2}
+                  placeholder="Describe the learning objectives or content..."
+                  value={newMaterial.description}
+                  onChange={(e) => setNewMaterial({ ...newMaterial, description: e.target.value })}
+                  className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-600 text-sm text-slate-700 transition-all placeholder:text-slate-400 resize-none"
+                />
+              </div>
+
+              {/* Material Type & Access Level Row */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-0.5">Material Type</label>
+                  <div className="relative group">
+                    <select
+                      value={newMaterial.material_type}
+                      onChange={(e) => setNewMaterial({ ...newMaterial, material_type: e.target.value })}
+                      className="appearance-none w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-600 text-sm text-slate-700 transition-all cursor-pointer"
+                    >
+                      {Object.entries(MATERIAL_TYPE_CONFIG).map(([k, v]) => (
+                        <option key={k} value={k}>{v.label}</option>
+                      ))}
+                    </select>
+                    <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 group-hover:text-slate-600 transition-colors">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-0.5">Access Level</label>
+                  <div className="relative group">
+                    <select
+                      value={newMaterial.classroom}
+                      onChange={(e) => setNewMaterial({ ...newMaterial, classroom: e.target.value })}
+                      className="appearance-none w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-600 text-sm text-slate-700 transition-all cursor-pointer"
+                    >
+                      <option value="">No specific class</option>
+                      {sortedClassrooms.map((cls) => (
+                        <option key={cls.id} value={cls.id}>{cls.name}</option>
+                      ))}
+                    </select>
+                    <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 group-hover:text-slate-600 transition-colors">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-0.5">Quarter</label>
+                  <div className="relative group">
+                    <select
+                      value={newMaterial.quarter}
+                      onChange={(e) => setNewMaterial({ ...newMaterial, quarter: e.target.value })}
+                      className="appearance-none w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-600 text-sm text-slate-700 transition-all cursor-pointer"
+                    >
+                      <option value="">Select Quarter</option>
+                      <option value="1">Quarter 1</option>
+                      <option value="2">Quarter 2</option>
+                      <option value="3">Quarter 3</option>
+                      <option value="4">Quarter 4</option>
+                    </select>
+                    <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 group-hover:text-slate-600 transition-colors">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-0.5">Week Number</label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="10"
+                    placeholder="e.g., 1"
+                    value={newMaterial.week}
+                    onChange={(e) => setNewMaterial({ ...newMaterial, week: e.target.value })}
+                    className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-600 text-sm text-slate-700 transition-all placeholder:text-slate-400"
+                  />
+                </div>
+              </div>
+
+              {/* Dropzone */}
+              <div className="space-y-1.5">
+                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-0.5">
+                  File Attachment <span className="text-violet-500">*</span>
+                </label>
+                <div className="relative group">
+                  <input
+                    type="file"
+                    required
+                    onChange={(e) => setNewMaterial({ ...newMaterial, file: e.target.files[0] })}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                  />
+                  <div className={`w-full px-6 py-6 border-2 border-dashed rounded-2xl flex flex-col items-center justify-center transition-all duration-300 
+                    ${newMaterial.file 
+                      ? 'border-violet-500 bg-violet-50/40' 
+                      : 'border-slate-200 bg-slate-50/50 group-hover:border-violet-400 group-hover:bg-violet-50/30'}`}
+                  >
+                    <div className={`p-2.5 rounded-xl shadow-sm mb-2 transition-all duration-300 
+                      ${newMaterial.file ? 'bg-violet-600 text-white' : 'bg-white text-violet-500 group-hover:scale-110'}`}
+                    >
+                      {newMaterial.file ? (
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                      ) : (
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                        </svg>
+                      )}
+                    </div>
+                    <p className="text-[13px] font-semibold text-slate-700 text-center px-4">
+                      {newMaterial.file ? newMaterial.file.name : 'Click to upload or drag & drop'}
+                    </p>
+                    <p className="text-[10px] text-slate-400 mt-1 font-medium">
+                      Supported formats: PDF, DOCX, PPTX, or Images
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex items-center gap-4 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowUploadModal(false)}
+                  className="flex-1 px-6 py-3 border border-slate-200 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all active:scale-95"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={saving}
+                  className="flex-[1.5] bg-[#4F46E5] text-white rounded-xl hover:bg-[#4338CA] font-bold text-sm py-3 transition-all shadow-lg shadow-indigo-200 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {saving ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                      <span>Publishing...</span>
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                      </svg>
+                      <span>Publish Material</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
           </div>
-        </form>
-      </Modal>
+        </div>
+      )}
     </div>
   );
 };

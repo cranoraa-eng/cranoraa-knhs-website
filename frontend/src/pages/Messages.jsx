@@ -5,7 +5,6 @@ import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
 import { playSound } from '../utils/sounds';
-import { useScrollLock } from '../hooks/useScrollLock';
 
 const Messages = () => {
   const { user } = useAuth();
@@ -68,8 +67,6 @@ const Messages = () => {
 
   // Pinned messages panel
   const [showPinnedPanel, setShowPinnedPanel]     = useState(false);
-
-  useScrollLock(showGroupModal || showGroupSettings || showMembersPanel || showPinnedPanel || !!activeMoreMenu || !!showReactionPicker);
 
   // ── Helpers ───────────────────────────────────────────────────────────────
   const scrollToBottom = () => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });

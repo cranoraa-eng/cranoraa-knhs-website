@@ -7,11 +7,19 @@
  */
 import React, { useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { useScrollLock } from '../../hooks/useScrollLock';
 
-export const Modal = ({ open, onClose, title, subtitle, children, size = 'md', className = '' }) => {
+export const Modal = ({ open, onClose, title, subtitle, children, footer, size = 'md', className = '' }) => {
   // Lock body scroll when modal is open
-  useScrollLock(open);
+  useEffect(() => {
+    if (open) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [open]);
 
   // Close on Escape key
   useEffect(() => {
@@ -45,20 +53,16 @@ export const Modal = ({ open, onClose, title, subtitle, children, size = 'md', c
       />
 
       {/* Panel */}
-      <div className={`relative w-full ${sizeClass} max-h-[90vh] flex flex-col bg-white rounded-3xl shadow-[0_20px_50px_-12px_rgba(0,0,0,0.3)] border border-slate-200/60 overflow-hidden animate-in zoom-in-95 duration-300 ${className}`}>
+      <div className={`relative w-full ${sizeClass} max-h-[90vh] flex flex-col bg-white rounded-3xl shadow-2xl border border-slate-200/50 overflow-hidden animate-in zoom-in-95 duration-300 ${className}`}>
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-5 bg-slate-50/50 border-b border-slate-100 flex-shrink-0">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 flex-shrink-0 bg-slate-50/50">
           <div>
-            <h2 className="text-[10px] font-black text-violet-600 uppercase tracking-[0.2em] mb-0.5">
-              {subtitle || 'System Dialog'}
-            </h2>
-            <h3 className="text-lg font-black text-slate-900 tracking-tight leading-none">
-              {title}
-            </h3>
+            <h2 className="text-base font-black text-slate-900 tracking-tight uppercase">{title}</h2>
+            {subtitle && <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.2em] mt-1">{subtitle}</p>}
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-xl text-slate-400 hover:bg-slate-100 hover:text-slate-900 transition-all active:scale-90"
+            className="p-2.5 rounded-2xl hover:bg-slate-200 text-slate-400 transition-all active:scale-90"
             aria-label="Close"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -68,9 +72,16 @@ export const Modal = ({ open, onClose, title, subtitle, children, size = 'md', c
         </div>
 
         {/* Body */}
-        <div className="flex-1 overflow-y-auto p-6">
+        <div className="flex-1 overflow-y-auto">
           {children}
         </div>
+
+        {/* Footer */}
+        {footer && (
+          <div className="px-6 py-4 border-t border-slate-100 bg-slate-50/50 flex-shrink-0">
+            {footer}
+          </div>
+        )}
       </div>
     </div>,
     document.body
