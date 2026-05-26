@@ -69,7 +69,7 @@ const MyClasses = () => {
   }
 
   return (
-    <div className="p-1.5 md:p-4 space-y-3 md:space-y-4 bg-slate-50/50">
+    <div className="p-1.5 md:p-4 space-y-3 md:space-y-4 bg-slate-50/50 page-bottom-safe">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 animate-fade-in-up">
         <div>

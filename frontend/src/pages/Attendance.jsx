@@ -643,7 +643,7 @@ const Attendance = () => {
 
       {/* ── ANALYTICS VIEW ── */}
       {view === 'analytics' && (
-        <div className="space-y-6 animate-fade-in">
+        <div className="space-y-6 animate-fade-in page-bottom-safe">
           {(yearLoading || loadingAnalytics) ? (
             <div className="flex items-center justify-center h-48"><div className="w-10 h-10 rounded-full border-2 border-slate-100 border-t-violet-600 animate-spin" /></div>
           ) : !analytics ? (

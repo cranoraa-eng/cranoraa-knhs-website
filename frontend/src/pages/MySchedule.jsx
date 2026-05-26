@@ -50,7 +50,7 @@ export default function MySchedule() {
   const isTeacher = user?.role === 'teacher';
 
   return (
-    <div className="space-y-6 pb-12">
+    <div className="space-y-6 page-bottom-safe">
       {/* Header */}
       <div>
         <h2 className="text-2xl font-black text-slate-900">My Schedule</h2>

@@ -144,7 +144,7 @@ const WebsiteContentManagement = () => {
   }
 
   return (
-    <div className="p-1.5 md:p-6 bg-slate-50 min-h-full max-w-full overflow-x-hidden">
+    <div className="p-1.5 md:p-6 bg-slate-50 min-h-full max-w-full overflow-x-hidden page-bottom-safe">
       {/* Header */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-3 md:mb-8 gap-2 md:gap-6 min-w-0">
         <div className="text-left min-w-0">

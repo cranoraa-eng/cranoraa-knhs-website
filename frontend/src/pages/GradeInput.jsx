@@ -267,7 +267,7 @@ const GradeInput = () => {
   };
 
   return (
-    <div className="flex flex-col bg-slate-50 overflow-hidden max-w-full" style={{ height: 'calc(100dvh - 68px - 80px)' }}>
+    <div className="flex flex-col bg-slate-50 overflow-hidden max-w-full page-bottom-safe" style={{ height: 'calc(100dvh - 68px - 80px)' }}>
 
       {/* ── Toolbar ── */}
       <div className="flex-shrink-0 bg-white border-b border-slate-200 px-2 md:px-4 py-2 md:py-2.5 shadow-sm z-30">

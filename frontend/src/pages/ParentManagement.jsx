@@ -168,7 +168,7 @@ export default function ParentManagement() {
   );
 
   return (
-    <div className="space-y-6 pb-12">
+    <div className="space-y-6 page-bottom-safe">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -230,9 +230,12 @@ export default function ParentManagement() {
             <table className="w-full text-left border-separate border-spacing-0">
               <thead className="bg-slate-50 border-b border-slate-200">
                 <tr>
-                  {['Parent', 'Email', 'Linked Children', 'Status', 'Temp Password', 'Actions'].map(h => (
-                    <th key={h} className="px-5 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">{h}</th>
-                  ))}
+                  <th className="px-5 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Parent</th>
+                  <th className="px-5 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest hidden md:table-cell">Email</th>
+                  <th className="px-5 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Linked Children</th>
+                  <th className="px-5 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest hidden sm:table-cell">Status</th>
+                  <th className="px-5 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest hidden lg:table-cell">Temp Password</th>
+                  <th className="px-5 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-50">
@@ -248,10 +251,12 @@ export default function ParentManagement() {
                           <div>
                             <p className="text-sm font-bold text-slate-800">{p.first_name} {p.last_name}</p>
                             <p className="text-[10px] text-violet-500 font-black uppercase tracking-widest">Parent</p>
+                            {/* Show email inline on mobile */}
+                            <p className="text-[10px] text-slate-400 md:hidden">{p.email || '—'}</p>
                           </div>
                         </div>
                       </td>
-                      <td className="px-5 py-4 text-xs text-slate-500">{p.email || '—'}</td>
+                      <td className="px-5 py-4 text-xs text-slate-500 hidden md:table-cell">{p.email || '—'}</td>
                       <td className="px-5 py-4">
                         {linked.length === 0 ? (
                           <span className="text-[10px] text-slate-400 italic">No children linked</span>
@@ -268,14 +273,14 @@ export default function ParentManagement() {
                           </div>
                         )}
                       </td>
-                      <td className="px-5 py-4">
+                      <td className="px-5 py-4 hidden sm:table-cell">
                         <span className={`px-2 py-1 rounded-full text-[10px] font-black uppercase ${
                           p.account_status === 'active' ? 'bg-emerald-100 text-emerald-700' :
                           p.account_status === 'suspended' ? 'bg-rose-100 text-rose-700' :
                           'bg-slate-100 text-slate-500'
                         }`}>{p.account_status}</span>
                       </td>
-                      <td className="px-5 py-4">
+                      <td className="px-5 py-4 hidden lg:table-cell">
                         {p.must_change_password && p.temp_password_storage ? (
                           <span className="font-mono text-xs text-amber-600 bg-amber-50 px-2 py-1 rounded border border-amber-100 select-all cursor-help" title="Visible until parent changes password">
                             {p.temp_password_storage}

@@ -167,7 +167,7 @@ const EnrollmentManagement = () => {
   }
 
   return (
-    <div className="p-2 md:p-6 max-w-full overflow-x-hidden bg-slate-50/50">
+    <div className="p-2 md:p-6 max-w-full overflow-x-hidden bg-slate-50/50 page-bottom-safe">
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 md:mb-8 gap-2 min-w-0">
         <div className="min-w-0">
           <h1 className="text-lg md:text-3xl font-black text-slate-800 tracking-tight truncate uppercase">Enrollment Management</h1>

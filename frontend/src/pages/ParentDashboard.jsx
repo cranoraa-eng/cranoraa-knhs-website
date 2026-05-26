@@ -74,7 +74,7 @@ export default function ParentDashboard() {
   const today = new Date().toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
 
   return (
-    <div className="space-y-6 pb-20">
+    <div className="space-y-6 page-bottom-safe">
       {/* Welcome Banner */}
       <div className="bg-white rounded-2xl p-5 md:p-8 border border-slate-200 shadow-sm relative overflow-hidden">
         <div className="absolute top-0 right-0 w-64 h-64 bg-violet-50 rounded-full blur-3xl -mr-32 -mt-32 opacity-60" />

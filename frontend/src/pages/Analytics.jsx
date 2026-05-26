@@ -1026,7 +1026,7 @@ const Analytics = () => {
   );
 
   return (
-    <div className="space-y-4 pb-8 animate-fade-in max-w-full overflow-hidden">
+    <div className="space-y-4 animate-fade-in max-w-full overflow-hidden page-bottom-safe">
       {/* Tab Navigation + Export */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap gap-2 bg-slate-100/50 p-1 rounded-xl border border-slate-200">

@@ -314,7 +314,7 @@ export default function ScheduleManagement() {
   const needsSetup = timeSlots.length === 0 || classrooms.length === 0;
 
   return (
-    <div className="space-y-5 pb-16">
+    <div className="space-y-5 page-bottom-safe">
 
       {/* ── Header ── */}
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
@@ -371,7 +371,7 @@ export default function ScheduleManagement() {
               </div>
             </div>
           </div>
-          <div className="mt-4 grid grid-cols-3 gap-3">
+          <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
             {[
               { label: 'Time Slots', count: timeSlots.length, done: timeSlots.length > 0, action: () => setShowSlotPanel(true) },
               { label: 'Rooms', count: rooms.length, done: rooms.length > 0, action: () => setShowRoomPanel(true) },

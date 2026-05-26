@@ -221,7 +221,7 @@ const AdminView = () => {
   const COLORS = ['#10b981', '#3b82f6', '#8b5cf6', '#f59e0b', '#ef4444'];
 
   return (
-    <div className="space-y-6 pb-12">
+    <div className="space-y-6 page-bottom-safe">
       <WelcomeBanner
         user={user}
         today={today}
@@ -490,7 +490,7 @@ const TeacherView = () => {
   const today = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
 
   return (
-    <div className="space-y-6 pb-12 animate-fade-in">
+    <div className="space-y-6 animate-fade-in page-bottom-safe">
       <WelcomeBanner
         user={user}
         today={today}
@@ -725,7 +725,7 @@ const StudentView = () => {
   const today = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
 
   return (
-    <div className="space-y-6 pb-12 animate-fade-in">
+    <div className="space-y-6 animate-fade-in page-bottom-safe">
       <WelcomeBanner
         user={user}
         today={today}

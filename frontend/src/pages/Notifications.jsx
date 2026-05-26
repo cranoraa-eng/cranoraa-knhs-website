@@ -176,7 +176,7 @@ const Notifications = () => {
   const hasUnread    = unreadCount > 0; // use global count, not just current page
 
   return (
-    <div className="space-y-5 animate-fade-in">
+    <div className="space-y-5 animate-fade-in page-bottom-safe">
 
       {/* ── Page Header ── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -376,8 +376,8 @@ const Notifications = () => {
                     <p className="text-xs text-slate-500 line-clamp-2">{n.message}</p>
                   </div>
 
-                  {/* Actions */}
-                  <div className="flex items-center gap-1 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                  {/* Actions — always visible on touch, hover-reveal on desktop */}
+                  <div className="flex items-center gap-1 flex-shrink-0 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                     {!n.is_read && (
                       <button
                         onClick={() => markRead(n.id)}

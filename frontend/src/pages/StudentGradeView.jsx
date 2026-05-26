@@ -316,7 +316,7 @@ const StudentGradeView = () => {
   );
 
   return (
-    <div className="animate-in fade-in duration-700 p-2.5 sm:p-4 md:p-6">
+    <div className="animate-in fade-in duration-700 p-2.5 sm:p-4 md:p-6 page-bottom-safe">
 
       {/* Header */}
       <div className="mb-4 flex flex-row items-start justify-between gap-3 sm:mb-6 sm:items-center md:gap-6">

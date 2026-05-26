@@ -297,6 +297,30 @@
   }
   .scrollbar-none::-webkit-scrollbar { display: none; }
 
+  /* ── Utility: mobile page bottom clearance ──
+     Accounts for the bottom nav bar (64px) + iOS home indicator safe area.
+     Apply to the outermost div of every portal page. */
+  .page-bottom-safe {
+    padding-bottom: calc(5rem + env(safe-area-inset-bottom));
+  }
+
+  /* ── Utility: touch-friendly action button ──
+     Ensures icon-only buttons meet 44×44 minimum on touch devices */
+  .touch-btn {
+    @apply flex items-center justify-center min-h-[44px] min-w-[44px] rounded-xl transition-all active:scale-90;
+  }
+
+  /* ── Utility: mobile-readable text ── */
+  .text-mobile-xs { font-size: max(0.625rem, 10px); } /* never below 10px */
+
+  /* ── Utility: horizontal scroll container ── */
+  .scroll-x {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .scroll-x::-webkit-scrollbar { display: none; }
+
   /* ── Utility: line-clamp ── */
   .line-clamp-1 { overflow: hidden; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; }
   .line-clamp-2 { overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }

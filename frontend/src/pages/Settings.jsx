@@ -726,19 +726,36 @@ const Settings = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Sidebar */}
-        <div className="lg:col-span-3 space-y-1">
-          {tabs.map(tab => (
-            <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all text-left ${
-                activeTab === tab.id
-                  ? 'bg-violet-600 text-white shadow-md shadow-violet-200'
-                  : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
-              }`}>
-              <span className="text-base">{tab.icon}</span>
-              {tab.label}
-            </button>
-          ))}
+        {/* Sidebar — horizontal scroll tabs on mobile, vertical list on desktop */}
+        <div className="lg:col-span-3">
+          {/* Mobile: horizontal scrollable pill tabs */}
+          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none lg:hidden">
+            {tabs.map(tab => (
+              <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+                className={`flex-shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+                  activeTab === tab.id
+                    ? 'bg-violet-600 text-white shadow-md shadow-violet-200'
+                    : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
+                }`}>
+                <span>{tab.icon}</span>
+                {tab.label}
+              </button>
+            ))}
+          </div>
+          {/* Desktop: vertical list */}
+          <div className="hidden lg:flex flex-col space-y-1">
+            {tabs.map(tab => (
+              <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all text-left ${
+                  activeTab === tab.id
+                    ? 'bg-violet-600 text-white shadow-md shadow-violet-200'
+                    : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                }`}>
+                <span className="text-base">{tab.icon}</span>
+                {tab.label}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Content */}

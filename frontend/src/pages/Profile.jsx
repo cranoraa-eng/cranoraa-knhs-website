@@ -143,7 +143,7 @@ const Profile = () => {
     : null;
 
   return (
-    <div className="space-y-6 animate-fade-in p-1 sm:p-0">
+    <div className="space-y-6 animate-fade-in p-1 sm:p-0 page-bottom-safe">
       {/* ── Page Header ── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="min-w-0">
