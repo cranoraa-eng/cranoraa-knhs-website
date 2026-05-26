@@ -1,10 +1,102 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { loginRequest } from '../utils/auth';
 import api from '../utils/api';
 import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
+
+const BinaryBackground = ({ isAdmin }) => {
+  if (!isAdmin) return null;
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-20 select-none">
+      <div className="flex justify-around w-full h-full text-[10px] font-mono text-emerald-500/30 whitespace-nowrap overflow-hidden">
+        {[...Array(12)].map((_, i) => (
+          <div 
+            key={i} 
+            className="flex flex-col animate-matrix-rain"
+            style={{ 
+              animationDuration: `${15 + Math.random() * 20}s`,
+              animationDelay: `${-Math.random() * 20}s` 
+            }}
+          >
+            {[...Array(50)].map((_, j) => (
+              <span key={j} className="my-1">
+                {Math.round(Math.random()).toString()}
+              </span>
+            ))}
+          </div>
+        ))}
+      </div>
+      <style dangerouslySetInnerHTML={{ __html: `
+        @keyframes matrix-rain {
+          0% { transform: translateY(-100%); }
+          100% { transform: translateY(100%); }
+        }
+        @keyframes pulse-slow {
+          0%, 100% { opacity: 0.03; transform: translate(-50%, -50%) scale(1); }
+          50% { opacity: 0.05; transform: translate(-50%, -50%) scale(1.05); }
+        }
+        @keyframes glow-pulse {
+          0%, 100% { box-shadow: 0 0 20px rgba(16, 185, 129, 0.1); }
+          50% { box-shadow: 0 0 40px rgba(16, 185, 129, 0.2); }
+        }
+        .animate-matrix-rain {
+          animation: matrix-rain linear infinite;
+        }
+        .animate-pulse-slow {
+          animation: pulse-slow 8s ease-in-out infinite;
+        }
+        .admin-glass-glow {
+          animation: glow-pulse 4s ease-in-out infinite;
+        }
+      `}} />
+    </div>
+  );
+};
+
+const SystemMonitor = ({ isAdmin, uptime, serverLoad, securityEvents }) => {
+  if (!isAdmin) return null;
+  return (
+    <div className="space-y-6 mt-8 p-4 bg-emerald-500/5 border border-emerald-500/10 rounded-2xl backdrop-blur-sm animate-fade-in">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+          <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">Live Monitor</span>
+        </div>
+        <span className="text-[10px] font-mono text-emerald-500/50 uppercase">Kiwalan-Net v4.0</span>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-1">
+          <p className="text-[9px] text-slate-500 uppercase font-bold tracking-tighter">Uptime</p>
+          <p className="text-sm font-mono text-emerald-400 font-bold">{uptime}</p>
+        </div>
+        <div className="space-y-1">
+          <p className="text-[9px] text-slate-500 uppercase font-bold tracking-tighter">Server Load</p>
+          <div className="flex items-center gap-2">
+            <div className="flex-1 h-1 bg-emerald-900/30 rounded-full overflow-hidden">
+              <div className="h-full bg-emerald-500 transition-all duration-1000" style={{ width: `${serverLoad}%` }} />
+            </div>
+            <span className="text-[10px] font-mono text-emerald-400">{serverLoad}%</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="pt-2 border-t border-emerald-500/10 space-y-2">
+        <p className="text-[9px] text-slate-500 uppercase font-bold tracking-tighter">Security Log</p>
+        <div className="space-y-1">
+          {securityEvents.map((event, i) => (
+            <div key={i} className="flex items-center gap-2 text-[10px] font-mono text-emerald-500/60">
+              <span className="text-emerald-500 opacity-50 text-[8px] tracking-tighter">[{new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'})}]</span>
+              <span className="truncate">{event}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const Login = () => {
   const { user, signIn } = useAuth();
@@ -20,7 +112,6 @@ const Login = () => {
   // Real-time states for Admin UI
   const [uptime, setUptime] = useState('00:00:00');
   const [serverLoad, setServerLoad] = useState(0);
-  const [activeAdmins, setActiveAdmins] = useState(0);
   const [securityEvents, setSecurityEvents] = useState([]);
 
   const isAdmin = loginType === 'admin';
@@ -39,8 +130,6 @@ const Login = () => {
       setServerLoad(Math.floor(Math.random() * 15) + 5);
     }, 1000);
 
-    setActiveAdmins(Math.floor(Math.random() * 3) + 1);
-    
     const events = [
       'Encrypted tunnel established',
       'Database node 01 synced',
@@ -52,97 +141,6 @@ const Login = () => {
 
     return () => clearInterval(interval);
   }, [isAdmin]);
-
-  const BinaryBackground = () => {
-    if (!isAdmin) return null;
-    return (
-      <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-20 select-none">
-        <div className="flex justify-around w-full h-full text-[10px] font-mono text-emerald-500/30 whitespace-nowrap overflow-hidden">
-          {[...Array(12)].map((_, i) => (
-            <div 
-              key={i} 
-              className="flex flex-col animate-matrix-rain"
-              style={{ 
-                animationDuration: `${15 + Math.random() * 20}s`,
-                animationDelay: `${-Math.random() * 20}s` 
-              }}
-            >
-              {[...Array(50)].map((_, j) => (
-                <span key={j} className="my-1">
-                  {Math.round(Math.random()).toString()}
-                </span>
-              ))}
-            </div>
-          ))}
-        <style dangerouslySetInnerHTML={{ __html: `
-          @keyframes matrix-rain {
-            0% { transform: translateY(-100%); }
-            100% { transform: translateY(100%); }
-          }
-          @keyframes pulse-slow {
-            0%, 100% { opacity: 0.03; transform: translate(-50%, -50%) scale(1); }
-            50% { opacity: 0.05; transform: translate(-50%, -50%) scale(1.05); }
-          }
-          @keyframes glow-pulse {
-            0%, 100% { box-shadow: 0 0 20px rgba(16, 185, 129, 0.1); }
-            50% { box-shadow: 0 0 40px rgba(16, 185, 129, 0.2); }
-          }
-          .animate-matrix-rain {
-            animation: matrix-rain linear infinite;
-          }
-          .animate-pulse-slow {
-            animation: pulse-slow 8s ease-in-out infinite;
-          }
-          .admin-glass-glow {
-            animation: glow-pulse 4s ease-in-out infinite;
-          }
-        `}} />
-      </div>
-    );
-  };
-
-  const SystemMonitor = () => {
-    if (!isAdmin) return null;
-    return (
-      <div className="space-y-6 mt-8 p-4 bg-emerald-500/5 border border-emerald-500/10 rounded-2xl backdrop-blur-sm animate-fade-in">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">Live Monitor</span>
-          </div>
-          <span className="text-[10px] font-mono text-emerald-500/50 uppercase">Kiwalan-Net v4.0</span>
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-1">
-            <p className="text-[9px] text-slate-500 uppercase font-bold tracking-tighter">Uptime</p>
-            <p className="text-sm font-mono text-emerald-400 font-bold">{uptime}</p>
-          </div>
-          <div className="space-y-1">
-            <p className="text-[9px] text-slate-500 uppercase font-bold tracking-tighter">Server Load</p>
-            <div className="flex items-center gap-2">
-              <div className="flex-1 h-1 bg-emerald-900/30 rounded-full overflow-hidden">
-                <div className="h-full bg-emerald-500 transition-all duration-1000" style={{ width: `${serverLoad}%` }} />
-              </div>
-              <span className="text-[10px] font-mono text-emerald-400">{serverLoad}%</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="pt-2 border-t border-emerald-500/10 space-y-2">
-          <p className="text-[9px] text-slate-500 uppercase font-bold tracking-tighter">Security Log</p>
-          <div className="space-y-1">
-            {securityEvents.map((event, i) => (
-              <div key={i} className="flex items-center gap-2 text-[10px] font-mono text-emerald-500/60">
-                <span className="text-emerald-500 opacity-50 text-[8px] tracking-tighter">[{new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'})}]</span>
-                <span className="truncate">{event}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  };
 
   const roleConfig = {
     student: {
@@ -280,7 +278,7 @@ const Login = () => {
 
   return (
     <div className={`min-h-screen flex relative transition-colors duration-1000 ${isAdmin ? 'bg-[#020617]' : 'bg-slate-50'}`}>
-      <BinaryBackground />
+      <BinaryBackground isAdmin={isAdmin} />
       {/* Branding Panel Academic Identity (Admin Only) */}
       {isAdmin && (
         <div className="absolute left-1/4 top-1/2 -translate-x-1/2 -translate-y-1/2 opacity-[0.03] pointer-events-none select-none animate-pulse-slow">
@@ -320,7 +318,7 @@ const Login = () => {
 
       {/* ── Left panel (branding) — hidden on mobile ── */}
       <div className={`hidden lg:flex lg:w-1/2 flex-col justify-between p-12 relative overflow-hidden transition-all duration-1000 ${isAdmin ? 'bg-black border-r border-emerald-500/10' : 'bg-[#0f0720]'}`}>
-        <BinaryBackground />
+        <BinaryBackground isAdmin={isAdmin} />
         {/* Grid texture */}
         <div className={`absolute inset-0 ${isAdmin ? 'opacity-[0.08]' : 'opacity-[0.04]'}`} 
           style={{ 
@@ -337,7 +335,7 @@ const Login = () => {
 
         {/* Logo */}
         <div className="relative flex items-center gap-3">
-          <div className={`h-10 w-10 rounded-full overflow-hidden border p-1 flex items-center justify-center transition-all duration-500 ${isAdmin ? 'border-emerald-500/50 bg-slate-900' : 'border-white/10 bg-white'}`}>
+          <div className={`h-10 w-10 rounded-full overflow-hidden border p-1 flex items-center justify-center transition-all duration-500 ${isAdmin ? 'border-emerald-500/50 bg-slate-900 shadow-[0_0_15px_rgba(16,185,129,0.2)]' : 'border-white/10 bg-white'}`}>
             <img src="/icons/school-logo-source.png" alt="KNHS" className="h-full w-full object-contain" />
           </div>
           <div>
@@ -370,7 +368,12 @@ const Login = () => {
           </div>
 
           {isAdmin ? (
-            <SystemMonitor />
+            <SystemMonitor 
+              isAdmin={isAdmin} 
+              uptime={uptime} 
+              serverLoad={serverLoad} 
+              securityEvents={securityEvents} 
+            />
           ) : (
             <>
               {/* Feature list */}
@@ -408,7 +411,7 @@ const Login = () => {
 
       {/* ── Right panel (form) ── */}
       <div className={`flex-1 flex flex-col items-center justify-center px-4 py-12 sm:px-8 transition-colors duration-1000 ${isAdmin ? 'bg-[#020617]' : 'bg-slate-50'}`}>
-        <BinaryBackground />
+        <BinaryBackground isAdmin={isAdmin} />
         {/* Mobile back link */}
         <div className="w-full max-w-sm mb-6 lg:hidden">
           <button
@@ -530,12 +533,12 @@ const Login = () => {
                 >
                   {showPassword ? (
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268-2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
                     </svg>
                   ) : (
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268-2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                     </svg>
                   )}
                 </button>
