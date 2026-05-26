@@ -821,8 +821,8 @@ export default function ScheduleManagement() {
       ══════════════════════════════════════════════════════════════════════ */}
       {showSlotPanel && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-in fade-in duration-200">
-          <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
-            <div className="flex items-center justify-between px-8 py-6 border-b border-slate-100 bg-slate-50/50">
+          <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-2xl h-[600px] max-h-[85vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between px-8 py-6 border-b border-slate-100 bg-slate-50/50 shrink-0">
               <div>
                 <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight">Time Slots</h3>
                 <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.2em] mt-1">{timeSlots.length} Slots Configured</p>
@@ -832,9 +832,9 @@ export default function ScheduleManagement() {
               </button>
             </div>
 
-            <div className="flex-1 overflow-hidden flex flex-col md:flex-row">
+            <div className="flex-1 overflow-hidden flex flex-col md:flex-row min-h-0">
               {/* Left: Add form */}
-              <div className="w-full md:w-[320px] p-8 border-b md:border-b-0 md:border-r border-slate-100 bg-violet-50/20">
+              <div className="w-full md:w-[320px] p-8 border-b md:border-b-0 md:border-r border-slate-100 bg-violet-50/20 overflow-y-auto scrollbar-none shrink-0">
                 <form onSubmit={saveSlot} className="space-y-6">
                   <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Register New Slot</h4>
                   <div className="grid grid-cols-1 gap-5">
@@ -913,8 +913,8 @@ export default function ScheduleManagement() {
       ══════════════════════════════════════════════════════════════════════ */}
       {showRoomPanel && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-in fade-in duration-200">
-          <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
-            <div className="flex items-center justify-between px-8 py-6 border-b border-slate-100 bg-slate-50/50">
+          <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-2xl h-[600px] max-h-[85vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between px-8 py-6 border-b border-slate-100 bg-slate-50/50 shrink-0">
               <div>
                 <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight">Facility Management</h3>
                 <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.2em] mt-1">{rooms.length} Rooms Registered</p>
@@ -924,9 +924,9 @@ export default function ScheduleManagement() {
               </button>
             </div>
 
-            <div className="flex-1 overflow-hidden flex flex-col md:flex-row">
+            <div className="flex-1 overflow-hidden flex flex-col md:flex-row min-h-0">
               {/* Left: Add form */}
-              <div className="w-full md:w-[320px] p-8 border-b md:border-b-0 md:border-r border-slate-100 bg-violet-50/20">
+              <div className="w-full md:w-[320px] p-8 border-b md:border-b-0 md:border-r border-slate-100 bg-violet-50/20 overflow-y-auto scrollbar-none shrink-0">
                 <form onSubmit={saveRoom} className="space-y-6">
                   <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Register New Room</h4>
                   <div className="grid grid-cols-1 gap-5">
