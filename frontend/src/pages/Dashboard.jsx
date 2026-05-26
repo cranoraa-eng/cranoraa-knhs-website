@@ -61,12 +61,24 @@ const StatCard = ({ label, value, sub, icon, color = 'violet', onClick, badge })
     indigo: 'text-indigo-600 bg-indigo-50 border-indigo-100 group-hover:bg-indigo-600 group-hover:text-white group-hover:shadow-indigo-200',
   };
 
+  const bgGradients = {
+    violet: 'from-violet-500/5 to-transparent',
+    blue:   'from-blue-500/5 to-transparent',
+    emerald:'from-emerald-500/5 to-transparent',
+    rose:   'from-rose-500/5 to-transparent',
+    amber:  'from-amber-500/5 to-transparent',
+    indigo: 'from-indigo-500/5 to-transparent',
+  };
+
   return (
     <div
       onClick={onClick}
-      className={`group bg-white border border-slate-200/70 rounded-[1.75rem] p-5 md:p-6 transition-all duration-500 hover:border-transparent hover:shadow-[0_20px_50px_rgba(0,0,0,0.05)] hover:-translate-y-1 flex flex-col justify-between min-h-[140px] md:min-h-[160px] ${onClick ? 'cursor-pointer' : ''}`}
+      className={`group bg-white border border-slate-200/70 rounded-[1.75rem] p-5 md:p-6 transition-all duration-500 hover:border-transparent hover:shadow-[0_20px_50px_rgba(0,0,0,0.05)] hover:-translate-y-1 flex flex-col justify-between min-h-[140px] md:min-h-[160px] relative overflow-hidden ${onClick ? 'cursor-pointer' : ''}`}
     >
-      <div className="flex items-start justify-between">
+      {/* Subtle background gradient */}
+      <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${bgGradients[color]} rounded-full -mr-16 -mt-16 blur-2xl opacity-50 group-hover:opacity-100 transition-opacity duration-500`} />
+      
+      <div className="relative z-10 flex items-start justify-between">
         <div className={`w-11 h-11 md:w-12 md:h-12 rounded-2xl flex items-center justify-center transition-all duration-500 shadow-sm ${themes[color]}`}>
           {icon}
         </div>
@@ -76,7 +88,7 @@ const StatCard = ({ label, value, sub, icon, color = 'violet', onClick, badge })
           </span>
         )}
       </div>
-      <div className="mt-4">
+      <div className="relative z-10 mt-4">
         <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1.5">{label}</p>
         <div className="flex items-baseline gap-2">
           <h3 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight transition-colors group-hover:text-violet-600">
@@ -829,24 +841,24 @@ const StudentView = () => {
           <>
             <button
               onClick={() => navigate('/materials')}
-              className="px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 font-bold text-xs uppercase tracking-widest hover:bg-slate-50 transition-all flex items-center gap-2"
+              className="px-5 py-3 rounded-2xl border border-slate-200 bg-white text-slate-700 font-black text-[10px] uppercase tracking-[0.15em] hover:bg-slate-50 hover:border-violet-200 hover:text-violet-600 transition-all flex items-center gap-2.5 shadow-sm active:scale-95"
             >
               <svg className="w-4 h-4 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
-              Learning Materials
+              Materials
             </button>
             <button
               onClick={() => navigate('/student-grades')}
-              className="px-4 py-2.5 rounded-xl bg-[#1A0B2E] text-white font-bold text-xs uppercase tracking-widest hover:bg-violet-900 shadow-lg shadow-violet-200/50 transition-all flex items-center gap-2"
+              className="px-5 py-3 rounded-2xl bg-[#1A0B2E] text-white font-black text-[10px] uppercase tracking-[0.15em] hover:bg-violet-900 shadow-lg shadow-violet-200/50 transition-all flex items-center gap-2.5 active:scale-95"
             >
               <svg className="w-4 h-4 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
-              View All Grades
+              My Grades
             </button>
           </>
         }
       />
 
       {/* Attendance Overview */}
-      <div className="grid grid-cols-3 gap-4 md:gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6">
         <StatCard
           label="Present" value={presentCount} sub="Days"
           color="emerald"
@@ -995,9 +1007,9 @@ const StudentView = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
-        {/* Quick Links & Attendance Analysis */}
-        <div className="lg:col-span-4 space-y-6 md:gap-8 flex flex-col">
-          <div className="bg-[#1A0B2E] rounded-[2rem] p-6 shadow-xl border border-white/5 relative overflow-hidden group flex-1 flex flex-col justify-center">
+        {/* Quick Navigator Column */}
+        <div className="flex flex-col">
+          <div className="bg-[#1A0B2E] rounded-[2rem] p-6 shadow-xl border border-white/5 relative overflow-hidden group h-full flex flex-col justify-center min-h-[400px]">
             <div className="absolute -right-8 -top-8 w-40 h-40 bg-violet-500/20 rounded-full blur-3xl group-hover:bg-violet-500/30 transition-all duration-700" />
             <div className="relative z-10">
               <h3 className="text-white text-sm font-black uppercase tracking-tight mb-6">Quick Navigator</h3>
@@ -1048,9 +1060,10 @@ const StudentView = () => {
               </div>
             </div>
           </div>
+        </div>
 
-        {/* System Updates */}
-        <div className="bg-white border border-slate-200/70 rounded-[2rem] p-6 shadow-sm h-full flex flex-col">
+        {/* System Updates Column */}
+        <div className="bg-white border border-slate-200/70 rounded-[2rem] p-6 shadow-sm flex flex-col min-h-[400px]">
           <div className="flex items-center justify-between mb-6 shrink-0">
             <div>
               <h3 className="text-sm font-black text-slate-900 uppercase tracking-tight">System Updates</h3>
@@ -1081,8 +1094,8 @@ const StudentView = () => {
           </div>
         </div>
 
-        {/* Schedule/Messages Combined */}
-        <div className="space-y-6 md:gap-8 h-full">
+        {/* Schedule & Messages Column */}
+        <div className="space-y-6 flex flex-col">
           <TodayScheduleWidget role="student" />
           <LatestMessagesWidget 
             messages={stats?.latest_messages} 
@@ -1091,7 +1104,6 @@ const StudentView = () => {
         </div>
       </div>
     </div>
-  </div>
   );
 };
 
