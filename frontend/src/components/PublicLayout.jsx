@@ -224,9 +224,7 @@ const PublicLayout = () => {
 
       {/* ── Page content ── */}
       <main className="flex-grow overflow-hidden">
-        <div key={location.pathname} className="animate-fade-in">
-          <Outlet />
-        </div>
+        <Outlet />
       </main>
 
       {/* ── Footer ── */}

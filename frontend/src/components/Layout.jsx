@@ -664,7 +664,7 @@ const Layout = () => {
             onRefresh={() => window.location.reload()}
             className="p-4 lg:p-8 scroll-smooth pb-20 lg:pb-8"
           >
-            <div key={location.pathname} className="mx-auto w-full max-w-[1440px] animate-fade-in">
+            <div className="mx-auto w-full max-w-[1440px]">
               <Outlet />
             </div>
           </PullToRefresh>
