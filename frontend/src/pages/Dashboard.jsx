@@ -58,7 +58,7 @@ const StatCard = ({ label, value, sub, icon, color = 'violet', onClick, badge })
   return (
     <div
       onClick={onClick}
-      className={`group bg-white border border-slate-200 rounded-2xl p-4 md:p-6 transition-all duration-300 hover:border-transparent hover:shadow-xl hover:shadow-slate-200/50 ${onClick ? 'cursor-pointer' : ''}`}
+      className={`group bg-white border border-slate-200 rounded-2xl p-3 md:p-6 transition-all duration-300 hover:border-transparent hover:shadow-xl hover:shadow-slate-200/50 ${onClick ? 'cursor-pointer' : ''}`}
     >
       <div className="flex items-start justify-between">
         <div className="space-y-4 w-full">
@@ -714,8 +714,12 @@ const StudentView = () => {
     const isWeekend = day === 0 || day === 6;
     return isThisMonth && !isWeekend;
   }) : [];
-  const presentCount = monthAtt.filter(r => ['present', 'late'].includes(r.status)).length;
-  const attRate = monthAtt.length > 0 ? Math.round((presentCount / monthAtt.length) * 100) : null;
+  
+  const presentCount = monthAtt.filter(r => r.status === 'present').length;
+  const lateCount = monthAtt.filter(r => r.status === 'late').length;
+  const absentCount = monthAtt.filter(r => r.status === 'absent').length;
+  const totalPresentForRate = monthAtt.filter(r => ['present', 'late'].includes(r.status)).length;
+  const attRate = monthAtt.length > 0 ? Math.round((totalPresentForRate / monthAtt.length) * 100) : null;
 
   const finalGrades = Array.isArray(grades) ? grades.filter(g => g.grade_type === 'final_grade' && (g.transmuted_score != null || g.raw_score != null)) : [];
   const overallAvg = finalGrades.length > 0
@@ -749,7 +753,26 @@ const StudentView = () => {
         }
       />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Attendance Overview */}
+      <div className="grid grid-cols-3 gap-3 md:gap-4">
+        <StatCard
+          label="Present" value={presentCount} sub="Days"
+          color="emerald"
+          icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
+        />
+        <StatCard
+          label="Absent" value={absentCount} sub="Days"
+          color="rose"
+          icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
+        />
+        <StatCard
+          label="Late" value={lateCount} sub="Days"
+          color="amber"
+          icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
+        />
+      </div>
+
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           label="General Average" value={overallAvg || '0.00'} sub="Academic Standing"
           color="violet" onClick={() => navigate('/student-grades')}
