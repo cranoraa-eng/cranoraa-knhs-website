@@ -17,6 +17,41 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loginType, setLoginType] = useState('student');
 
+  const roleConfig = {
+    student: {
+      color: 'violet',
+      accent: 'indigo',
+      title: 'Your academic journey, all in one place.',
+      desc: 'Access grades, attendance, announcements, messages, and more — all from your personalized portal.',
+      features: ['Real-time grade tracking', 'Attendance monitoring', 'Direct teacher messaging', 'Instant announcements', 'Learning materials access'],
+      stats: [{ val: '1,200+', label: 'Students' }, { val: '80+', label: 'Faculty' }, { val: '5,000+', label: 'Graduates' }, { val: '20+', label: 'Years' }],
+      identifierLabel: 'Student ID or Email',
+      identifierPlaceholder: 'Student ID or email address'
+    },
+    teacher: {
+      color: 'emerald',
+      accent: 'teal',
+      title: 'Empowering educators, inspiring students.',
+      desc: 'Manage classes, record grades, track attendance, and communicate with parents and students seamlessly.',
+      features: ['Class management tools', 'Automated grading system', 'Parent-teacher communication', 'Curriculum planning', 'Resource sharing'],
+      stats: [{ val: '45+', label: 'Sections' }, { val: '98%', label: 'Efficiency' }, { val: '24/7', label: 'Support' }, { val: 'Top', label: 'Ranked' }],
+      identifierLabel: 'Teacher Email',
+      identifierPlaceholder: 'teacher@knhs.edu.ph'
+    },
+    parent: {
+      color: 'blue',
+      accent: 'sky',
+      title: 'Partnering in your child\'s success.',
+      desc: 'Stay informed about your child\'s academic progress, attendance, and school activities in real-time.',
+      features: ['Grade notifications', 'Attendance alerts', 'Direct teacher contact', 'School event calendar', 'Performance analytics'],
+      stats: [{ val: '2,000+', label: 'Parents' }, { val: '100%', label: 'Visibility' }, { val: 'Secure', label: 'Access' }, { val: 'Global', label: 'Standard' }],
+      identifierLabel: 'Parent Email',
+      identifierPlaceholder: 'parent@email.com'
+    }
+  };
+
+  const currentRole = roleConfig[loginType];
+
   // Already logged in — redirect
   useEffect(() => {
     if (user) {
@@ -112,26 +147,26 @@ const Login = () => {
       {loading && (
         <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[#0F071E]/80 backdrop-blur-md transition-all duration-500">
           <div className="relative mb-8">
-            <div className="absolute -inset-4 bg-violet-600 rounded-full blur-xl opacity-40 animate-pulse" />
+            <div className={`absolute -inset-4 bg-${currentRole.color}-600 rounded-full blur-xl opacity-40 animate-pulse`} />
             <div className="relative w-20 h-20 bg-white rounded-full flex items-center justify-center p-1 shadow-2xl">
-              <div className="w-full h-full rounded-full border-4 border-violet-100 border-t-violet-600 animate-spin" />
+              <div className={`w-full h-full rounded-full border-4 border-${currentRole.color}-100 border-t-${currentRole.color}-600 animate-spin`} />
               <img src="/icons/school-logo-source.png" alt="KNHS" className="absolute w-10 h-10 object-contain" />
             </div>
           </div>
           <div className="text-center space-y-2">
             <h3 className="text-xl font-black text-white uppercase tracking-tighter">Authenticating</h3>
-            <p className="text-[10px] font-bold text-violet-400 uppercase tracking-[0.3em] animate-pulse">Syncing with school database...</p>
+            <p className={`text-[10px] font-bold text-${currentRole.color}-400 uppercase tracking-[0.3em] animate-pulse`}>Syncing with school database...</p>
           </div>
         </div>
       )}
 
       {/* ── Left panel (branding) — hidden on mobile ── */}
-      <div className="hidden lg:flex lg:w-1/2 bg-[#0f0720] flex-col justify-between p-12 relative overflow-hidden">
+      <div className="hidden lg:flex lg:w-1/2 bg-[#0f0720] flex-col justify-between p-12 relative overflow-hidden transition-colors duration-700">
         {/* Grid texture */}
         <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '50px 50px' }} />
         {/* Glow accents */}
-        <div className="absolute top-0 right-0 w-80 h-80 bg-violet-600/15 rounded-full translate-x-1/2 -translate-y-1/2 blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-64 h-64 bg-indigo-600/10 rounded-full -translate-x-1/2 translate-y-1/2 blur-3xl pointer-events-none" />
+        <div className={`absolute top-0 right-0 w-80 h-80 bg-${currentRole.color}-600/15 rounded-full translate-x-1/2 -translate-y-1/2 blur-3xl pointer-events-none transition-all duration-1000`} />
+        <div className={`absolute bottom-0 left-0 w-64 h-64 bg-${currentRole.accent}-600/10 rounded-full -translate-x-1/2 translate-y-1/2 blur-3xl pointer-events-none transition-all duration-1000`} />
 
         {/* Logo */}
         <div className="relative flex items-center gap-3">
@@ -140,36 +175,36 @@ const Login = () => {
           </div>
           <div>
             <p className="text-sm font-black text-white leading-none tracking-tight">KIWALAN NHS</p>
-            <p className="text-[10px] text-violet-400 font-bold mt-0.5 uppercase tracking-widest">Student Portal</p>
+            <p className={`text-[10px] text-${currentRole.color}-400 font-bold mt-0.5 uppercase tracking-widest transition-colors duration-500`}>{loginType} Portal</p>
           </div>
         </div>
 
         {/* Center content */}
         <div className="relative space-y-8">
-          <div>
-            <p className="text-xs font-bold text-violet-400 uppercase tracking-widest mb-4">Welcome Back</p>
-            <h2 className="text-4xl font-black text-white leading-tight mb-4">
-              Your academic<br />journey, all in<br />one place.
+          <div className="animate-fade-in" key={loginType}>
+            <p className={`text-xs font-bold text-${currentRole.color}-400 uppercase tracking-widest mb-4 transition-colors duration-500`}>Welcome Back</p>
+            <h2 className="text-4xl font-black text-white leading-tight mb-4 whitespace-pre-line">
+              {currentRole.title}
             </h2>
             <p className="text-slate-400 leading-relaxed text-sm">
-              Access grades, attendance, announcements, messages, and more — all from your personalized portal.
+              {currentRole.desc}
             </p>
           </div>
           {/* Feature list */}
-          <div className="space-y-3">
-            {['Real-time grade tracking', 'Attendance monitoring', 'Direct teacher messaging', 'Instant announcements', 'Learning materials access'].map((f, i) => (
-              <div key={i} className="flex items-center gap-3">
-                <div className="w-5 h-5 rounded-full bg-violet-500/20 border border-violet-500/30 flex items-center justify-center flex-shrink-0">
-                  <svg className="w-3 h-3 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
+          <div className="space-y-3" key={`features-${loginType}`}>
+            {currentRole.features.map((f, i) => (
+              <div key={i} className="flex items-center gap-3 animate-fade-in" style={{ animationDelay: `${i * 100}ms` }}>
+                <div className={`w-5 h-5 rounded-full bg-${currentRole.color}-500/20 border border-${currentRole.color}-500/30 flex items-center justify-center flex-shrink-0 transition-colors duration-500`}>
+                  <svg className={`w-3 h-3 text-${currentRole.color}-400 transition-colors duration-500`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
                 </div>
                 <span className="text-sm text-slate-400">{f}</span>
               </div>
             ))}
           </div>
           {/* Stats */}
-          <div className="grid grid-cols-2 gap-3 pt-2">
-            {[{ val: '1,200+', label: 'Students' }, { val: '80+', label: 'Faculty' }, { val: '5,000+', label: 'Graduates' }, { val: '20+', label: 'Years' }].map((s, i) => (
-              <div key={i} className="bg-white/5 border border-white/10 rounded-xl p-3">
+          <div className="grid grid-cols-2 gap-3 pt-2" key={`stats-${loginType}`}>
+            {currentRole.stats.map((s, i) => (
+              <div key={i} className="bg-white/5 border border-white/10 rounded-xl p-3 animate-fade-in" style={{ animationDelay: `${(i + 5) * 100}ms` }}>
                 <p className="text-lg font-black text-white">{s.val}</p>
                 <p className="text-[10px] text-slate-500 font-semibold uppercase tracking-widest mt-0.5">{s.label}</p>
               </div>
@@ -206,16 +241,16 @@ const Login = () => {
           {/* Header */}
           <div className="mb-8">
             <div className="flex items-center gap-3 mb-6 lg:hidden">
-              <div className="h-9 w-9 rounded-xl overflow-hidden border border-slate-200 bg-white flex items-center justify-center shadow-sm">
-                <img src="https://plain-apac-prod-public.komododecks.com/202605/18/u3t1lOolacFscP6v1Bq8/image.png" alt="KNHS" className="h-7 w-7 object-contain" />
+              <div className="h-9 w-9 rounded-full overflow-hidden border border-slate-200 bg-white flex items-center justify-center shadow-sm p-1">
+                <img src="/icons/school-logo-source.png" alt="KNHS" className="h-full w-full object-contain" />
               </div>
               <div>
                 <p className="text-sm font-black text-slate-900 leading-none">KIWALAN NHS</p>
-                <p className="text-[10px] text-slate-400 font-medium mt-0.5 uppercase tracking-widest">Student Portal</p>
+                <p className={`text-[10px] text-${currentRole.color}-600 font-bold mt-0.5 uppercase tracking-widest transition-colors duration-500`}>{loginType} Portal</p>
               </div>
             </div>
             <h1 className="text-2xl font-black text-slate-900 mb-1">Sign in</h1>
-            <p className="text-sm text-slate-500">Access your KNHS Portal account</p>
+            <p className="text-sm text-slate-500">Access your KNHS {loginType} account</p>
           </div>
 
           {/* Login type toggle */}
@@ -226,7 +261,7 @@ const Login = () => {
                 onClick={() => { setLoginType(type); setIdentifier(''); setFieldErrors({}); }}
                 className={`flex-1 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-all ${
                   loginType === type
-                    ? 'bg-white text-violet-700 shadow-sm border border-slate-200'
+                    ? `bg-white text-${roleConfig[type].color}-700 shadow-sm border border-slate-200`
                     : 'text-slate-500 hover:text-slate-700'
                 }`}
               >
@@ -240,7 +275,7 @@ const Login = () => {
             {/* Identifier */}
             <div>
               <label htmlFor="identifier" className="block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wider">
-                {loginType === 'student' ? 'Student ID or Email' : loginType === 'parent' ? 'Email Address' : 'Teacher Email'}
+                {currentRole.identifierLabel}
               </label>
               <input
                 id="identifier"
@@ -248,8 +283,8 @@ const Login = () => {
                 autoComplete="username"
                 value={identifier}
                 onChange={e => { setIdentifier(e.target.value); setFieldErrors(p => ({ ...p, identifier: '' })); }}
-                placeholder={loginType === 'student' ? 'Student ID or email address' : loginType === 'parent' ? 'parent@email.com' : 'teacher@knhs.edu.ph'}
-                className={`w-full px-4 py-2.5 rounded-xl border text-sm bg-white transition-colors focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 ${
+                placeholder={currentRole.identifierPlaceholder}
+                className={`w-full px-4 py-2.5 rounded-xl border text-sm bg-white transition-colors focus:outline-none focus:ring-2 focus:ring-${currentRole.color}-500/20 focus:border-${currentRole.color}-500 ${
                   fieldErrors.identifier ? 'border-red-400 bg-red-50' : 'border-slate-200'
                 }`}
               />
@@ -260,7 +295,7 @@ const Login = () => {
             <div>
               <div className="flex items-center justify-between mb-1.5">
                 <label htmlFor="password" className="text-xs font-bold text-slate-600 uppercase tracking-wider">Password</label>
-                <Link to="/forgot-password" className="text-xs font-semibold text-violet-600 hover:text-violet-700 transition-colors">Forgot password?</Link>
+                <Link to="/forgot-password" className={`text-xs font-semibold text-${currentRole.color}-600 hover:text-${currentRole.color}-700 transition-colors`}>Forgot password?</Link>
               </div>
               <div className="relative">
                 <input
@@ -270,7 +305,7 @@ const Login = () => {
                   value={password}
                   onChange={e => { setPassword(e.target.value); setFieldErrors(p => ({ ...p, password: '' })); }}
                   placeholder="••••••••"
-                  className={`w-full px-4 py-2.5 rounded-xl border text-sm bg-white transition-colors focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 pr-10 ${
+                  className={`w-full px-4 py-2.5 rounded-xl border text-sm bg-white transition-colors focus:outline-none focus:ring-2 focus:ring-${currentRole.color}-500/20 focus:border-${currentRole.color}-500 pr-10 ${
                     fieldErrors.password ? 'border-red-400 bg-red-50' : 'border-slate-200'
                   }`}
                 />
@@ -299,24 +334,32 @@ const Login = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 rounded-xl bg-violet-600 text-white text-sm font-bold hover:bg-violet-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2 mt-2"
+              className={`w-full py-3 px-4 rounded-xl bg-${currentRole.color}-600 text-white text-sm font-bold shadow-lg shadow-${currentRole.color}-900/20 hover:bg-${currentRole.color}-700 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-2`}
             >
               {loading ? (
-                <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                </svg>
-              ) : 'Sign In'}
+                <>
+                  <svg className="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  </svg>
+                  Signing in...
+                </>
+              ) : (
+                <>
+                  Sign in as {loginType.charAt(0).toUpperCase() + loginType.slice(1)}
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+                </>
+              )}
             </button>
           </form>
 
-          <p className="text-center text-xs text-slate-400 mt-6">
-            {loginType === 'student'
-              ? 'No account? Contact your school administrator.'
-              : loginType === 'parent'
-              ? 'No account? Contact the school office to register.'
-              : 'No account? Contact the ICT coordinator.'}
-          </p>
+          {/* Signup link (only for parents) */}
+          {loginType === 'parent' && (
+            <p className="mt-8 text-center text-sm text-slate-500">
+              Don't have a parent account?{' '}
+              <Link to="/parent-signup" className={`font-bold text-${currentRole.color}-600 hover:text-${currentRole.color}-700 transition-colors`}>Create one</Link>
+            </p>
+          )}
         </div>
       </div>
     </div>
