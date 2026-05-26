@@ -12,12 +12,12 @@ import Spinner from '../components/Spinner';
 
 // ─── Shared UI Components ───────────────────────────────────────────────────
 
-const WelcomeBanner = ({ user, today, actions, subtitle }) => {
+const WelcomeBanner = ({ user, today, actions, subtitle, stats }) => {
   const getGreetingData = () => {
     const hours = new Date().getHours();
-    if (hours < 12) return { text: 'Good Morning', icon: '☀️', color: 'emerald' };
-    if (hours < 17) return { text: 'Good Afternoon', icon: '🌤️', color: 'amber' };
-    return { text: 'Good Evening', icon: '🌙', color: 'indigo' };
+    if (hours < 12) return { text: 'Good Morning', icon: '☀️', color: 'emerald', message: "Ready to conquer your classes today?" };
+    if (hours < 17) return { text: 'Good Afternoon', icon: '🌤️', color: 'amber', message: "Keep up the great momentum!" };
+    return { text: 'Good Evening', icon: '🌙', color: 'indigo', message: "Time to review and recharge." };
   };
 
   const greeting = getGreetingData();
@@ -25,65 +25,105 @@ const WelcomeBanner = ({ user, today, actions, subtitle }) => {
     .filter(Boolean).map(n => n[0].toUpperCase()).join('') || '?';
 
   return (
-    <div className="bg-white rounded-[2.5rem] p-6 md:p-10 border border-slate-200/50 shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative overflow-hidden group">
-      {/* Dynamic Background Effects */}
-      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-gradient-to-br from-violet-200/40 via-fuchsia-100/20 to-transparent rounded-full blur-[100px] -mr-64 -mt-64 opacity-60 group-hover:opacity-80 transition-opacity duration-1000" />
-      <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-gradient-to-tr from-blue-200/30 via-indigo-50/10 to-transparent rounded-full blur-[80px] -ml-48 -mb-48 opacity-40" />
+    <div className="bg-white rounded-[2.5rem] p-6 md:p-10 border border-slate-200/50 shadow-[0_20px_50px_rgba(0,0,0,0.04)] relative overflow-hidden group">
+      {/* SaaS-style Background Accents */}
+      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-to-br from-violet-500/10 via-fuchsia-500/5 to-transparent rounded-full blur-[120px] -mr-80 -mt-80 opacity-60 group-hover:opacity-100 transition-opacity duration-1000" />
+      <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-indigo-500/5 rounded-full blur-[100px] opacity-40" />
       
-      {/* Abstract Pattern Overlay */}
-      <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%234338ca' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")` }} />
+      {/* Modern Pattern Overlay */}
+      <div className="absolute inset-0 opacity-[0.015] pointer-events-none mix-blend-multiply" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 86c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zm66 3c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zm-46-43c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zm0-46c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM94 71c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM52 24c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%234338ca' fill-opacity='1' fill-rule='evenodd'/%3E%3C/svg%3E")` }} />
 
-      <div className="relative space-y-8">
-        <div className="flex items-center justify-between gap-4">
+      <div className="relative space-y-10">
+        <div className="flex items-center justify-between gap-6">
           {/* Welcome Text Section (Left) */}
-          <div className="flex-1 space-y-4">
-            <div className="flex flex-wrap items-center gap-2 md:gap-3">
-              <div className={`flex items-center gap-2 px-3 md:px-4 py-1.5 rounded-full bg-${greeting.color}-50 border border-${greeting.color}-100/50 shadow-sm`}>
-                <span className="text-xs md:text-sm transform group-hover:rotate-12 transition-transform duration-500">{greeting.icon}</span>
-                <p className={`text-[9px] md:text-[11px] font-black text-${greeting.color}-600 uppercase tracking-[0.2em]`}>{greeting.text}</p>
+          <div className="flex-1 space-y-6">
+            <div className="flex flex-wrap items-center gap-3">
+              <div className={`flex items-center gap-2 px-4 py-2 rounded-full bg-${greeting.color}-50 border border-${greeting.color}-100 shadow-sm transition-all duration-500 hover:scale-105`}>
+                <span className="text-sm transform group-hover:rotate-12 transition-transform duration-500">{greeting.icon}</span>
+                <p className={`text-[10px] font-black text-${greeting.color}-600 uppercase tracking-[0.25em]`}>{greeting.text}</p>
               </div>
-              <div className="hidden sm:block w-px h-4 bg-slate-200" />
-              <div className="flex items-center gap-2 px-3 md:px-4 py-1.5 rounded-full bg-slate-50 border border-slate-100/50">
-                <svg className="w-3 md:w-3.5 h-3 md:h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                <p className="text-[9px] md:text-[11px] font-black text-slate-500 uppercase tracking-[0.2em]">{today}</p>
+              <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-slate-50 border border-slate-100 shadow-sm">
+                <svg className="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.25em]">{today}</p>
               </div>
             </div>
 
-            <div className="space-y-1.5">
-              <h1 className="text-2xl sm:text-3xl md:text-5xl font-black text-slate-900 tracking-tight leading-none">
+            <div className="space-y-3">
+              <h1 className="text-3xl sm:text-4xl md:text-6xl font-black text-slate-900 tracking-tighter leading-none">
                 Welcome back, <br className="sm:hidden" />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-600 via-indigo-600 to-blue-600 animate-gradient-x">
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-600 via-indigo-600 to-blue-600 animate-gradient-x inline-block mt-2">
                   {user?.first_name || 'User'}
                 </span>
               </h1>
-              {subtitle && (
-                <div className="flex items-center gap-2 text-slate-500">
-                  <span className="w-1.5 h-1.5 rounded-full bg-violet-400" />
-                  <p className="text-xs md:text-base font-bold tracking-tight">{subtitle}</p>
-                </div>
-              )}
+              <div className="flex flex-col gap-2">
+                <p className="text-slate-500 font-bold text-base md:text-xl tracking-tight leading-relaxed">
+                  {greeting.message}
+                </p>
+                {subtitle && (
+                  <div className="flex items-center gap-3 px-4 py-1.5 bg-slate-50 border border-slate-100 rounded-xl w-fit">
+                    <span className="w-2 h-2 rounded-full bg-violet-500 animate-pulse shadow-[0_0_8px_rgba(139,92,246,0.4)]" />
+                    <p className="text-xs md:text-sm font-black text-slate-600 uppercase tracking-widest">{subtitle}</p>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
           {/* Profile Picture Section (Right) */}
-          <div className="relative shrink-0">
-            <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-2xl sm:rounded-[2rem] bg-gradient-to-br from-violet-600 to-indigo-600 p-0.5 sm:p-1 shadow-xl group-hover:scale-105 transition-transform duration-500">
-              <div className="w-full h-full rounded-[0.9rem] sm:rounded-[1.8rem] bg-white overflow-hidden flex items-center justify-center border-2 sm:border-4 border-white/20">
+          <div className="relative shrink-0 hidden sm:block">
+            <div className="w-24 h-24 md:w-32 md:h-32 rounded-[2.5rem] bg-gradient-to-br from-violet-600 via-indigo-600 to-blue-600 p-1.5 shadow-2xl group-hover:rotate-3 transition-all duration-700">
+              <div className="w-full h-full rounded-[2.2rem] bg-white overflow-hidden flex items-center justify-center border-4 border-white/20 relative group/avatar">
                 {user?.profile_picture ? (
-                  <img src={user.profile_picture} alt="Profile" className="w-full h-full object-cover" />
+                  <img src={user.profile_picture} alt="Profile" className="w-full h-full object-cover group-hover/avatar:scale-110 transition-transform duration-700" />
                 ) : (
-                  <span className="text-xl sm:text-2xl md:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-br from-violet-600 to-indigo-600">
+                  <span className="text-3xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-br from-violet-600 to-indigo-600">
                     {initials}
                   </span>
                 )}
+                {/* Glass Overlay on Hover */}
+                <div className="absolute inset-0 bg-violet-600/10 opacity-0 group-hover/avatar:opacity-100 transition-opacity duration-300" />
               </div>
             </div>
-            <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 sm:w-6 sm:h-6 rounded-full bg-emerald-500 border-2 sm:border-4 border-white shadow-sm animate-pulse" />
+            <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-emerald-500 border-4 border-white shadow-lg animate-pulse z-10" />
+            
+            {/* Progress Ring Decorative */}
+            <div className="absolute -inset-4 border-2 border-dashed border-slate-200 rounded-[3rem] animate-spin-slow opacity-20 pointer-events-none" />
+          </div>
+        </div>
+
+        {/* Progress & Quick Stats Section */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6 border-t border-slate-100 relative z-10">
+          <div className="flex items-center gap-4 group/stat">
+            <div className="w-12 h-12 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center shrink-0 group-hover/stat:bg-emerald-500 group-hover/stat:text-white transition-all duration-300">
+              <svg className="w-6 h-6 text-emerald-600 group-hover/stat:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            </div>
+            <div>
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Attendance Streak</p>
+              <h4 className="text-lg font-black text-slate-900 leading-none">12 Days <span className="text-emerald-500 text-xs ml-1">🔥</span></h4>
+            </div>
+          </div>
+          <div className="flex items-center gap-4 group/stat">
+            <div className="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-100 flex items-center justify-center shrink-0 group-hover/stat:bg-amber-500 group-hover/stat:text-white transition-all duration-300">
+              <svg className="w-6 h-6 text-amber-600 group-hover/stat:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            </div>
+            <div>
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Next Class</p>
+              <h4 className="text-lg font-black text-slate-900 leading-none">In 45 Mins <span className="text-slate-400 text-xs ml-1 font-bold">@ Rm 402</span></h4>
+            </div>
+          </div>
+          <div className="flex items-center gap-4 group/stat">
+            <div className="w-12 h-12 rounded-2xl bg-violet-50 border border-violet-100 flex items-center justify-center shrink-0 group-hover/stat:bg-violet-500 group-hover/stat:text-white transition-all duration-300">
+              <svg className="w-6 h-6 text-violet-600 group-hover/stat:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+            </div>
+            <div>
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Assignments</p>
+              <h4 className="text-lg font-black text-slate-900 leading-none">3 Pending <span className="text-violet-500 text-xs ml-1 font-bold">Action Needed</span></h4>
+            </div>
           </div>
         </div>
 
         {/* Action Buttons Section (Bottom) */}
-        <div className="flex flex-wrap gap-3 md:gap-4 shrink-0 relative z-10">
+        <div className="flex flex-wrap gap-4 shrink-0 relative z-10 pt-2">
           {actions}
         </div>
       </div>
@@ -301,19 +341,20 @@ const AdminView = () => {
       <WelcomeBanner
         user={user}
         today={today}
+        stats={data}
         subtitle="System Administrator • Portal Management"
         actions={
           <>
             <button
               onClick={() => navigate('/announcements')}
-              className="px-6 py-3 rounded-xl border border-slate-200 bg-white text-slate-700 font-bold text-sm hover:bg-slate-50 transition-all"
+              className="px-5 py-3 rounded-2xl border border-slate-200 bg-white text-slate-700 font-black text-[10px] uppercase tracking-[0.15em] hover:bg-slate-50 hover:border-violet-200 hover:text-violet-600 transition-all flex items-center gap-2.5 shadow-sm active:scale-95"
             >
-              + Announcement
+              Post Announcement
             </button>
             {data?.pending_approvals > 0 && (
               <button
                 onClick={() => navigate('/account-approvals')}
-                className="px-6 py-3 rounded-xl bg-violet-600 text-white font-bold text-sm hover:bg-violet-700 shadow-sm transition-all flex items-center gap-2"
+                className="px-5 py-3 rounded-2xl bg-[#1A0B2E] text-white font-black text-[10px] uppercase tracking-[0.15em] hover:bg-violet-900 shadow-lg shadow-violet-200/50 transition-all flex items-center gap-2.5 active:scale-95"
               >
                 Review Approvals ({data.pending_approvals})
               </button>
@@ -593,19 +634,20 @@ const TeacherView = () => {
       <WelcomeBanner
         user={user}
         today={today}
+        stats={data}
         subtitle={`${user?.profile?.employee_id || 'Faculty'} • Handling ${data?.total_classes || 0} Sections`}
         actions={
           <>
             <button
               onClick={() => navigate('/announcements')}
-              className="px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 font-bold text-xs uppercase tracking-widest hover:bg-slate-50 transition-all flex items-center gap-2"
+              className="px-5 py-3 rounded-2xl border border-slate-200 bg-white text-slate-700 font-black text-[10px] uppercase tracking-[0.15em] hover:bg-slate-50 hover:border-violet-200 hover:text-violet-600 transition-all flex items-center gap-2.5 shadow-sm active:scale-95"
             >
               <svg className="w-4 h-4 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" /></svg>
               Post Announcement
             </button>
             <button
               onClick={() => navigate('/grade-input')}
-              className="px-4 py-2.5 rounded-xl bg-[#1A0B2E] text-white font-bold text-xs uppercase tracking-widest hover:bg-violet-900 shadow-lg shadow-violet-200/50 transition-all flex items-center gap-2"
+              className="px-5 py-3 rounded-2xl bg-[#1A0B2E] text-white font-black text-[10px] uppercase tracking-[0.15em] hover:bg-violet-900 shadow-lg shadow-violet-200/50 transition-all flex items-center gap-2.5 active:scale-95"
             >
               <svg className="w-4 h-4 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
               Input Grades
@@ -879,6 +921,7 @@ const StudentView = () => {
       <WelcomeBanner
         user={user}
         today={today}
+        stats={stats}
         subtitle={`${stats?.classroom_name || user?.profile?.grade_level || 'Student'} • KNHS Learner`}
         actions={
           <>
