@@ -373,7 +373,7 @@ const Layout = () => {
           <div className="flex items-center gap-3 px-6 py-8">
             <div className="h-12 w-12 rounded-2xl bg-white/10 backdrop-blur-md p-2 flex items-center justify-center border border-white/10 shadow-xl shadow-black/20 group hover:bg-white/20 transition-all cursor-pointer">
               <img 
-                src="https://plain-apac-prod-public.komododecks.com/202605/18/u3t1lOolacFscP6v1Bq8/image.png" 
+                src="/icons/school-logo-source.png" 
                 alt="KNHS Logo" 
                 className="h-full w-full object-contain group-hover:scale-110 transition-transform"
               />

@@ -54,7 +54,7 @@ const PublicLayout = () => {
               {/* Logo circle — matches the circular PWA icon style */}
               <div className="h-10 w-10 rounded-full overflow-hidden flex items-center justify-center flex-shrink-0 transition-all duration-300 ring-2 ring-white/10 bg-white/10">
                 <img
-                  src="https://plain-apac-prod-public.komododecks.com/202605/18/u3t1lOolacFscP6v1Bq8/image.png"
+                  src="/icons/school-logo-source.png"
                   alt="KNHS"
                   className="h-8 w-8 object-contain group-hover:scale-110 transition-transform duration-200"
                 />
@@ -237,7 +237,7 @@ const PublicLayout = () => {
             <div className="lg:col-span-2 space-y-4">
               <div className="flex items-center gap-3">
                 <div className="h-10 w-10 rounded-xl overflow-hidden border border-white/10 bg-white/5 flex items-center justify-center">
-                  <img src="https://plain-apac-prod-public.komododecks.com/202605/18/u3t1lOolacFscP6v1Bq8/image.png" alt="KNHS" className="h-8 w-8 object-contain" />
+                  <img src="/icons/school-logo-source.png" alt="KNHS" className="h-8 w-8 object-contain" />
                 </div>
                 <div>
                   <p className="text-sm font-black text-white leading-none">KIWALAN NATIONAL HIGH SCHOOL</p>

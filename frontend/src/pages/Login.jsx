@@ -120,7 +120,7 @@ const Login = () => {
         {/* Logo */}
         <div className="relative flex items-center gap-3">
           <div className="h-10 w-10 rounded-xl overflow-hidden border border-white/10 bg-white/5 flex items-center justify-center">
-            <img src="https://plain-apac-prod-public.komododecks.com/202605/18/u3t1lOolacFscP6v1Bq8/image.png" alt="KNHS" className="h-8 w-8 object-contain" />
+            <img src="/icons/school-logo-source.png" alt="KNHS" className="h-8 w-8 object-contain" />
           </div>
           <div>
             <p className="text-sm font-black text-white leading-none tracking-tight">KIWALAN NHS</p>
