@@ -182,8 +182,8 @@ export const NotificationProvider = ({ children }) => {
     realtimeConnected,
     isPolling,
     sendWS,
-    // Expose socket for legacy consumers that check it
-    socket: socketRef.current,
+    // NOTE: do not expose socketRef.current directly — it's always stale in a value object.
+    // Consumers that need to send WS messages should use sendWS() instead.
   };
 
   return (

@@ -116,8 +116,13 @@ def login_view(request):
                 'user': UserSerializer(user).data
             }, status=status.HTTP_200_OK)
 
+        # Clear the plaintext temp password now that the user has successfully authenticated
+        if user.temp_password_storage:
+            user.temp_password_storage = None
+            user.save(update_fields=['temp_password_storage'])
+
         refresh = RefreshToken.for_user(user)
-        
+
         # Log successful login
         from portal.views import log_audit_action
         log_audit_action(
@@ -746,10 +751,10 @@ class StudentClassEnrollmentViewSet(viewsets.ModelViewSet):
         )
     
     def perform_update(self, serializer):
-        # Only teachers can update grades
-        if self.request.user.role != 'teacher':
+        # Only teachers and admins can update grades
+        if self.request.user.role not in ['teacher', 'admin']:
             from rest_framework.exceptions import PermissionDenied
-            raise PermissionDenied("Only teachers can update grades")
+            raise PermissionDenied("Only teachers and admins can update grades")
         enrollment = serializer.save()
         
         # Log grade update

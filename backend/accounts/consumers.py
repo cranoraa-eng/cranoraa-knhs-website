@@ -286,7 +286,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     async def room_update(self, event):
         await self.send(text_data=json.dumps({
-            'type': event['event'],   # 'room_updated' or 'group_deleted'
+            'type': 'room_update',
+            'event': event['event'],   # 'room_updated' or 'group_deleted'
             'room': event.get('room'),
             'room_id': event['room_id'],
         }))

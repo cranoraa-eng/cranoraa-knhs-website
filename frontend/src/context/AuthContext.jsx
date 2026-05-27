@@ -11,16 +11,18 @@ export const AuthProvider = ({ children }) => {
   const refreshUser = useCallback(async () => {
     if (!hasToken()) return;
     try {
-      const response = await api.get('/student/profile/');
+      // Use the generic profile endpoint that works for all roles
+      const response = await api.get('/profile/');
+      const profileResponse = await api.get('/student/profile/').catch(() => null);
       const updatedUser = {
         ...getStoredUser(),
         first_name: response.data.first_name,
         last_name: response.data.last_name,
         email: response.data.email,
-        profile_picture: response.data.profile?.profile_picture,
-        mute_until: response.data.profile?.mute_until,
-        is_muted: !!response.data.profile?.is_muted,
-        is_suspended: !!response.data.profile?.is_suspended,
+        profile_picture: profileResponse?.data?.profile?.profile_picture ?? response.data.profile?.profile_picture,
+        mute_until: profileResponse?.data?.profile?.mute_until ?? null,
+        is_muted: !!(profileResponse?.data?.profile?.is_muted),
+        is_suspended: !!(profileResponse?.data?.profile?.is_suspended),
       };
       localStorage.setItem('user', JSON.stringify(updatedUser));
       setUser(updatedUser);

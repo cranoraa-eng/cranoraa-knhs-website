@@ -2,10 +2,35 @@ import axios from 'axios';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 
-// Derive the WebSocket root URL from the API_BASE_URL
-// If API_BASE_URL is https://example.onrender.com/api, WS_ROOT will be wss://example.onrender.com
-export const WS_ROOT = API_BASE_URL.replace('/api', '').replace('http', 'ws');
-export const MEDIA_ROOT = API_BASE_URL.replace('/api', '');
+// Derive the WebSocket root URL from the API_BASE_URL using URL parsing
+// so we don't accidentally corrupt URLs that contain 'http' or '/api' elsewhere.
+function deriveWsRoot(apiUrl) {
+  try {
+    const url = new URL(apiUrl);
+    // Strip the /api suffix from the pathname
+    url.pathname = url.pathname.replace(/\/api\/?$/, '') || '/';
+    // Switch protocol: http -> ws, https -> wss
+    url.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
+    // Remove trailing slash
+    return url.toString().replace(/\/$/, '');
+  } catch {
+    // Fallback for relative or malformed URLs
+    return apiUrl.replace(/\/api\/?$/, '').replace(/^http/, 'ws');
+  }
+}
+
+function deriveMediaRoot(apiUrl) {
+  try {
+    const url = new URL(apiUrl);
+    url.pathname = url.pathname.replace(/\/api\/?$/, '') || '/';
+    return url.toString().replace(/\/$/, '');
+  } catch {
+    return apiUrl.replace(/\/api\/?$/, '');
+  }
+}
+
+export const WS_ROOT = deriveWsRoot(API_BASE_URL);
+export const MEDIA_ROOT = deriveMediaRoot(API_BASE_URL);
 
 const api = axios.create({
   baseURL: API_BASE_URL,

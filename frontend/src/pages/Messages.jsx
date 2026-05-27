@@ -6,6 +6,34 @@ import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
 import { playSound } from '../utils/sounds';
 
+// ── FriendActionButton — defined outside Messages to avoid re-creation on every render ──
+const FriendActionButton = ({ targetUser, status, onStartChat, onSendRequest, onShowRequests }) => {
+  if (status === 'friends') return (
+    <button onClick={() => onStartChat(targetUser.id)}
+      className="p-2 text-green-600 bg-green-50 rounded-lg hover:bg-green-600 hover:text-white transition-all shadow-sm active:scale-95" title="Message">
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.001 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
+    </button>
+  );
+  if (status === 'sent') return (
+    <div className="flex items-center gap-1 px-3 py-1.5 bg-slate-100 text-slate-400 rounded-lg text-[10px] font-black uppercase tracking-widest border border-slate-200">
+      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
+      Sent
+    </div>
+  );
+  if (status === 'received') return (
+    <button onClick={onShowRequests}
+      className="px-3 py-1.5 bg-amber-50 text-amber-600 rounded-lg text-[10px] font-black uppercase tracking-widest border border-amber-100 hover:bg-amber-600 hover:text-white transition-all animate-pulse">
+      Accept?
+    </button>
+  );
+  return (
+    <button onClick={() => onSendRequest(targetUser.id)}
+      className="p-2 text-violet-600 bg-violet-50 rounded-lg hover:bg-violet-600 hover:text-white transition-all shadow-sm active:scale-95" title="Add Friend">
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" /></svg>
+    </button>
+  );
+};
+
 const Messages = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -657,144 +685,140 @@ const Messages = () => {
                 }
               : r
           ));
-      }
+        }
 
-      if (data.type === 'message_reaction') {
-        setMessages(prev => prev.map(m => 
-          m.id === data.message_id ? { ...m, reactions: data.reactions } : m
-        ));
-        
-        // Update room preview for reaction
-        setRooms(prev => prev.map(r => {
-          if (r.id === data.room_id) {
+        if (data.type === 'message_reaction') {
+          setMessages(prev => prev.map(m =>
+            m.id === data.message_id ? { ...m, reactions: data.reactions } : m
+          ));
+          // Update room preview for reaction
+          setRooms(prev => prev.map(r => {
+            if (r.id === data.room_id) {
+              return {
+                ...r,
+                last_action_type: 'reaction',
+                last_action_sender: data.user_id,
+                last_action_sender_name: data.user_name,
+                last_action_content: data.emoji,
+                updated_at: new Date().toISOString(),
+              };
+            }
+            return r;
+          }));
+        }
+
+        if (data.type === 'message_deleted') {
+          setMessages(prev => prev.filter(m => m.id !== data.message_id));
+          setRooms(prev => prev.map(r => {
+            if (r.id === data.room_id) {
+              return {
+                ...r,
+                last_action_type: 'unsend',
+                last_action_sender: data.deleted_by,
+                last_action_sender_name: data.deleted_by_name,
+                updated_at: new Date().toISOString(),
+              };
+            }
+            return r;
+          }));
+        }
+
+        if (data.type === 'message_edited') {
+          setMessages(prev => prev.map(m => m.id === data.message_id ? { ...m, content: data.content, is_edited: true } : m));
+          setRooms(prev => prev.map(r => {
+            if (r.id === data.room_id) {
+              return {
+                ...r,
+                last_action_type: 'edit',
+                last_action_sender: data.edited_by,
+                last_action_sender_name: data.edited_by_name,
+                last_action_content: data.content,
+                updated_at: new Date().toISOString(),
+              };
+            }
+            return r;
+          }));
+        }
+
+        if (data.type === 'message_pinned') {
+          setMessages(prev => prev.map(m => m.id === data.message_id ? { ...m, is_pinned: data.is_pinned } : m));
+        }
+
+        // Live Room/Event updates
+        if (data.type === 'new_message_notify') {
+          const currentRoomId = selectedRoomRef.current?.id;
+          setRooms(prev => prev.map(r => {
+            if (r.id !== data.room_id) return r;
             return {
               ...r,
-              last_action_type: 'reaction',
-              last_action_sender: data.user_id,
-              last_action_sender_name: data.user_name,
-              last_action_content: data.emoji,
-              updated_at: new Date().toISOString(),
-            };
-          }
-          return r;
-        }));
-      }
-
-      if (data.type === 'message_deleted') {
-        setMessages(prev => prev.filter(m => m.id !== data.message_id));
-        setRooms(prev => prev.map(r => {
-          if (r.id === data.room_id) {
-            return {
-              ...r,
-              last_action_type: 'unsend',
-              last_action_sender: data.deleted_by,
-              last_action_sender_name: data.deleted_by_name,
-              updated_at: new Date().toISOString(),
-            };
-          }
-          return r;
-        }));
-      }
-
-      if (data.type === 'message_edited') {
-        setMessages(prev => prev.map(m => m.id === data.message_id ? { ...m, content: data.content, is_edited: true } : m));
-        setRooms(prev => prev.map(r => {
-          if (r.id === data.room_id) {
-            return {
-              ...r,
-              last_action_type: 'edit',
-              last_action_sender: data.edited_by,
-              last_action_sender_name: data.edited_by_name,
+              last_message: { content: data.content, timestamp: data.timestamp, sender_name: data.sender_name },
+              last_action_type: 'message',
+              last_action_sender: data.sender_id,
+              last_action_sender_name: data.sender_name,
               last_action_content: data.content,
-              updated_at: new Date().toISOString(),
+              updated_at: data.timestamp,
+              unread_count: currentRoomId === data.room_id
+                ? 0
+                : (r.unread_count || 0) + 1,
             };
+          }));
+          return;
+        }
+
+        if (data.type === 'room_update') {
+          const updated = data.room;
+          if (data.event === 'new_room') {
+            setRooms(prev => {
+              if (prev.some(r => r.id === updated.id)) return prev;
+              toast(`New chat: ${updated.is_group ? updated.name : updated.participants_details?.find(p => p.id !== user?.id)?.full_name}`, { icon: '💬' });
+              return [updated, ...prev];
+            });
+          } else if (data.event === 'group_deleted') {
+            setRooms(prev => prev.filter(r => r.id !== data.room_id));
+            setSelectedRoom(prev => {
+              if (prev?.id === data.room_id) {
+                setMessages([]);
+                setShowGroupSettings(false);
+                toast('This group was deleted by the creator.', { icon: '🗑️' });
+                return null;
+              }
+              return prev;
+            });
+          } else {
+            setRooms(prev => prev.map(r => r.id === updated.id ? { ...updated, unread_count: r.unread_count } : r));
+            setSelectedRoom(prev => prev?.id === updated.id ? updated : prev);
           }
-          return r;
-        }));
-      }
+        }
 
-      if (data.type === 'message_pinned') {
-        setMessages(prev => prev.map(m => m.id === data.message_id ? { ...m, is_pinned: data.is_pinned } : m));
-      }
-
-      // Live Room/Event updates
-      if (data.type === 'new_message_notify') {
-        const currentRoomId = selectedRoomRef.current?.id;
-        setRooms(prev => prev.map(r => {
-          if (r.id !== data.room_id) return r;
-          return {
+        if (data.type === 'user_online' || data.type === 'peer_presence') {
+          const isOnline = data.type === 'user_online' ? true : data.is_online;
+          const updateOnlineStatus = (list) => list.map(u => u.id === data.user_id ? { ...u, is_online: isOnline } : u);
+          setFriends(updateOnlineStatus);
+          setRooms(prev => prev.map(r => ({
             ...r,
-            last_message: { content: data.content, timestamp: data.timestamp, sender_name: data.sender_name },
-            last_action_type: 'message',
-            last_action_sender: data.sender_id,
-            last_action_sender_name: data.sender_name,
-            last_action_content: data.content,
-            updated_at: data.timestamp, // Move to top live
-            unread_count: currentRoomId === data.room_id
-              ? 0
-              : (r.unread_count || 0) + 1,
-          };
-        }));
-        return;
-      }
-      if (data.type === 'room_update') {
-        const updated = data.room;
-        if (data.event === 'new_room') {
-           setRooms(prev => {
-             if (prev.some(r => r.id === updated.id)) return prev;
-             toast(`New chat: ${updated.is_group ? updated.name : updated.participants_details.find(p => p.id !== user?.id)?.full_name}`, { icon: '💬' });
-             return [updated, ...prev];
-           });
-        } else {
-           setRooms(prev => prev.map(r => r.id === updated.id ? { ...updated, unread_count: r.unread_count } : r));
-           setSelectedRoom(prev => prev?.id === updated.id ? updated : prev);
-        }
-      }
-
-      if (data.type === 'friendship_update') {
-        // Refresh friends and requests list live
-        fetchFriends();
-        fetchFriendships();
-        if (data.event === 'request_received') {
-          toast(`New friend request!`, { icon: '🤝' });
-        } else if (data.event === 'request_accepted') {
-          toast(`Friend request accepted!`, { icon: '✨' });
-        }
-      }
-
-      if (data.type === 'user_online' || data.type === 'peer_presence') {
-        const isOnline = data.type === 'user_online' ? true : data.is_online;
-        const updateOnlineStatus = (list) => list.map(u => u.id === data.user_id ? { ...u, is_online: isOnline } : u);
-        
-        setFriends(updateOnlineStatus);
-        setRooms(prev => prev.map(r => ({
-          ...r,
-          participants_details: updateOnlineStatus(r.participants_details || [])
-        })));
-        if (selectedRoom) {
+            participants_details: updateOnlineStatus(r.participants_details || [])
+          })));
           setSelectedRoom(prev => prev ? {
             ...prev,
             participants_details: updateOnlineStatus(prev.participants_details || [])
           } : null);
         }
-      }
 
-      if (data.type === 'group_deleted') {
-        setRooms(prev => prev.filter(r => r.id !== data.room_id));
-        setSelectedRoom(prev => {
-          if (prev?.id === data.room_id) {
-            setMessages([]);
-            setShowGroupSettings(false);
-            toast('This group was deleted by the creator.', { icon: '🗑️' });
-            return null;
+        if (data.type === 'friendship_update') {
+          // Refresh friends and requests list live
+          fetchFriends();
+          fetchFriendships();
+          if (data.event === 'request_received') {
+            toast(`New friend request!`, { icon: '🤝' });
+          } else if (data.event === 'request_accepted') {
+            toast(`Friend request accepted!`, { icon: '✨' });
           }
-          return prev;
-        });
+        }
+
+      } catch (err) {
+        console.error('Error parsing chat message', err);
       }
-    } catch (err) {
-      console.error('Error parsing chat message', err);
-    }
-  };
+    };
 
     ws.onclose = (e) => {
       console.log('Chat WS disconnected', e.code, e.reason);
@@ -809,34 +833,6 @@ const Messages = () => {
       ws.close();
     };
   }, [user?.id, selectedRoom]);
-
-  const FriendActionButton = ({ targetUser }) => {
-    const status = getFriendshipStatus(targetUser.id);
-    if (status === 'friends') return (
-      <button onClick={() => startPrivateChat(targetUser.id)}
-        className="p-2 text-green-600 bg-green-50 rounded-lg hover:bg-green-600 hover:text-white transition-all shadow-sm active:scale-95" title="Message">
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.001 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
-      </button>
-    );
-    if (status === 'sent') return (
-      <div className="flex items-center gap-1 px-3 py-1.5 bg-slate-100 text-slate-400 rounded-lg text-[10px] font-black uppercase tracking-widest border border-slate-200">
-        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
-        Sent
-      </div>
-    );
-    if (status === 'received') return (
-      <button onClick={() => setActiveTab('requests')}
-        className="px-3 py-1.5 bg-amber-50 text-amber-600 rounded-lg text-[10px] font-black uppercase tracking-widest border border-amber-100 hover:bg-amber-600 hover:text-white transition-all animate-pulse">
-        Accept?
-      </button>
-    );
-    return (
-      <button onClick={() => sendFriendRequest(targetUser.id)}
-        className="p-2 text-violet-600 bg-violet-50 rounded-lg hover:bg-violet-600 hover:text-white transition-all shadow-sm active:scale-95" title="Add Friend">
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" /></svg>
-      </button>
-    );
-  };
 
   // ── Loading screen ────────────────────────────────────────────────────────
   if (loading) return (
@@ -1071,7 +1067,7 @@ const Messages = () => {
                               <h4 className="text-sm font-bold text-slate-800 truncate">{u.full_name}</h4>
                               <p className="text-[9px] text-slate-400 uppercase tracking-widest font-black">{u.is_online ? 'Online' : 'Offline'}</p>
                             </div>
-                            <FriendActionButton targetUser={u} />
+                            <FriendActionButton targetUser={u} status={getFriendshipStatus(u.id)} onStartChat={startPrivateChat} onSendRequest={sendFriendRequest} onShowRequests={() => setActiveTab('requests')} />
                           </div>
                         ))}
                       </div>
@@ -1091,7 +1087,7 @@ const Messages = () => {
                               <h4 className="text-sm font-bold text-slate-800 truncate">{u.full_name}</h4>
                               <p className="text-[9px] text-slate-400 uppercase tracking-widest font-black truncate">{u.is_online ? 'Online' : 'Offline'}</p>
                             </div>
-                            <FriendActionButton targetUser={u} />
+                            <FriendActionButton targetUser={u} status={getFriendshipStatus(u.id)} onStartChat={startPrivateChat} onSendRequest={sendFriendRequest} onShowRequests={() => setActiveTab('requests')} />
                           </div>
                         ))}
                       </div>
@@ -1111,7 +1107,7 @@ const Messages = () => {
                               <h4 className="text-sm font-bold text-slate-800 truncate">{u.full_name}</h4>
                               <p className="text-[9px] text-slate-400 uppercase tracking-widest font-black truncate">{u.is_online ? 'Online' : 'Offline'}</p>
                             </div>
-                            <FriendActionButton targetUser={u} />
+                            <FriendActionButton targetUser={u} status={getFriendshipStatus(u.id)} onStartChat={startPrivateChat} onSendRequest={sendFriendRequest} onShowRequests={() => setActiveTab('requests')} />
                           </div>
                         ))}
                       </div>
