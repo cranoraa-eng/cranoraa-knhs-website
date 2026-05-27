@@ -166,7 +166,7 @@ const exportToPDF = async (ref, filename, title, subtitle, meta = {}) => {
     pdf.roundedRect(M, metaY, CW, 35, 2, 2, 'FD');
 
     const metaItems = [
-      ['Report Period', academicYear],
+      ['Report Period', meta.academicYear || 'Current Year'],
       ['Generated On', new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })],
       ['Classification', 'Confidential / Administrative'],
       ['Prepared By', meta.preparedBy || 'School Administrator']
