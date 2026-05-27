@@ -5270,8 +5270,31 @@ def test_push_notification(request):
     """
     POST /api/test-push/
     Sends a test push notification to the current user's active tokens.
+    Includes diagnostic checks to help the user identify missing environment variables.
     """
     from .fcm import send_push_notification
+    from .models import FCMToken
+    import os
+
+    # 1. Check if push is enabled
+    if os.environ.get('FCM_ENABLED', 'true').lower() == 'false':
+        return Response({'error': 'Push notifications are disabled (FCM_ENABLED=false)'}, status=400)
+
+    # 2. Check for required Firebase credentials
+    project_id = os.environ.get('FIREBASE_PROJECT_ID', '')
+    sa_json = os.environ.get('FIREBASE_SERVICE_ACCOUNT_JSON', '')
+    
+    if not project_id:
+        return Response({'error': 'Missing FIREBASE_PROJECT_ID in Render environment variables'}, status=400)
+    if not sa_json:
+        return Response({'error': 'Missing FIREBASE_SERVICE_ACCOUNT_JSON in Render environment variables'}, status=400)
+
+    # 3. Check for active tokens
+    tokens = FCMToken.objects.filter(user=request.user, is_active=True)
+    token_count = tokens.count()
+    if token_count == 0:
+        return Response({'error': 'No active push tokens found for your account. Try refreshing the page.'}, status=400)
+
     try:
         send_push_notification(
             user=request.user,
@@ -5279,6 +5302,10 @@ def test_push_notification(request):
             body="If you see this, push notifications are working correctly!",
             data={"link": "/notifications"}
         )
-        return Response({'status': 'Test push sent'})
+        return Response({
+            'status': 'success',
+            'message': f'Test push dispatched to {token_count} active device(s).',
+            'note': 'If you still dont see it, check your Windows "Do Not Disturb" settings or Chrome notification permissions.'
+        })
     except Exception as e:
-        return Response({'error': str(e)}, status=500)
+        return Response({'error': f'Firebase error: {str(e)}'}, status=500)
