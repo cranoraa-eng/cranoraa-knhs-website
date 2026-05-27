@@ -2,29 +2,31 @@ import time
 from django.utils.deprecation import MiddlewareMixin
 from portal.models import APIRequestLog
 
+# High-frequency endpoints that should not be logged to avoid table bloat
+_SKIP_LOG_PATHS = (
+    '/api/token/',
+    '/api/token/refresh/',
+    '/api/system/maintenance-status/',
+    '/api/notifications/polling/',  # polling fallback — called every 30s per user
+    '/api/chat/messages/',          # chat message fetches — called on every room open
+)
+
 
 class APIRequestLoggingMiddleware(MiddlewareMixin):
     """Middleware to log API requests for analytics"""
-    
+
     def process_request(self, request):
         request.start_time = time.time()
         return None
-    
+
     def process_response(self, request, response):
         # Only log API requests (not static files, admin, etc.)
         if not request.path.startswith('/api/'):
             return response
 
-    # Skip high-frequency or sensitive endpoints to prevent table bloat
-    skip_paths = (
-        '/api/token/',
-        '/api/token/refresh/',
-        '/api/system/maintenance-status/',
-        '/api/notifications/polling/',   # polling fallback — very frequent
-        '/api/chat/messages/',           # chat message fetches — very frequent
-    )
-    if request.path.startswith(skip_paths):
-        return response
+        # Skip high-frequency or sensitive endpoints to prevent table bloat
+        if request.path.startswith(_SKIP_LOG_PATHS):
+            return response
 
         # Calculate response time
         if hasattr(request, 'start_time'):
@@ -59,7 +61,7 @@ class APIRequestLoggingMiddleware(MiddlewareMixin):
                 pass
 
         return response
-    
+
     def get_client_ip(self, request):
         """Get the client's IP address"""
         x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
