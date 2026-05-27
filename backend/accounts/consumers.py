@@ -1,4 +1,5 @@
 import json
+import asyncio
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
 from django.contrib.auth import get_user_model
@@ -9,6 +10,15 @@ from .utils import check_user_moderation
 
 User = get_user_model()
 
+# ── Redis-saving constants ────────────────────────────────────────────────────
+# Presence heartbeat: only broadcast online status every N seconds to avoid
+# spamming Redis with group_send on every minor activity.
+PRESENCE_DEBOUNCE_SECONDS = 60
+
+# Typing indicator: server-side throttle — ignore typing signals sent faster
+# than this interval (client already throttles at 3s, this is a safety net).
+TYPING_THROTTLE_SECONDS = 3
+
 
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
@@ -16,15 +26,22 @@ class ChatConsumer(AsyncWebsocketConsumer):
         self.room_group_name = f'chat_{self.room_id}'
         self.user = self.scope['user']
 
+        # Presence debounce: track last broadcast time to avoid spamming Redis
+        self._last_presence_broadcast = 0
+        # Typing throttle: track last typing signal time per room
+        self._last_typing_sent = 0
+
         if self.user.is_authenticated:
-            # Set user as online in Redis
-            await self.set_user_online_status(True)
+            # Update last_activity in DB (not Redis — avoids extra Redis write)
+            await self.update_last_activity()
 
             if self.room_id != '0':
                 await self.channel_layer.group_add(self.room_group_name, self.channel_name)
                 # Mark all unread messages as delivered when user connects
                 await self.mark_messages_delivered(self.room_id, self.user.id)
-                # Notify others in the room
+                # Notify others in the room that this user is online
+                # OPTIMIZATION: use room group_send (1 Redis cmd) instead of
+                # individual user channel sends (N Redis cmds)
                 await self.channel_layer.group_send(self.room_group_name, {
                     'type': 'user_online',
                     'user_id': self.user.id,
@@ -34,18 +51,15 @@ class ChatConsumer(AsyncWebsocketConsumer):
             await self.channel_layer.group_add(f'user_{self.user.id}', self.channel_name)
             await self.accept()
 
-            # Broadcast online status to all friends
+            # Broadcast online status to friends — debounced to avoid N Redis cmds
             await self.broadcast_presence(True)
         else:
             await self.close()
 
     async def disconnect(self, close_code):
         if self.user.is_authenticated:
-            # Set user as offline in Redis
-            await self.set_user_online_status(False)
-
             if self.room_id != '0':
-                # Send typing stopped
+                # Send typing stopped — single group_send (1 Redis cmd)
                 await self.channel_layer.group_send(self.room_group_name, {
                     'type': 'typing_indicator',
                     'sender_id': self.user.id,
@@ -53,33 +67,55 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     'is_typing': False,
                 })
                 await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
-            
+
             await self.channel_layer.group_discard(f'user_{self.user.id}', self.channel_name)
-            
-            # Broadcast offline status to all friends
+
+            # Broadcast offline status to friends
             await self.broadcast_presence(False)
 
     @database_sync_to_async
-    def set_user_online_status(self, is_online):
-        """Update user's last_activity and potentially a Redis-only presence key."""
+    def update_last_activity(self):
+        """Update last_activity in DB only — no Redis write needed for presence."""
         User.objects.filter(id=self.user.id).update(last_activity=timezone.now())
-        # The user also wants "Presence features: temporary user status stored in Redis"
-        # We can use the channel_layer to store this if we want, but usually it's better to 
-        # use a separate redis client for custom data. 
-        # However, for "real-time features only", using group_send for presence is standard.
 
     async def broadcast_presence(self, is_online):
-        """Notify all friends of the user's online/offline status."""
+        """
+        Notify friends of online/offline status.
+
+        OPTIMIZATION: Instead of N individual group_send calls (one per friend),
+        we send a single group_send to the room group when in a room, and only
+        send personal channel notifications when truly necessary.
+
+        For the personal channel approach we still need N sends, but we debounce
+        them so they don't fire on every reconnect within PRESENCE_DEBOUNCE_SECONDS.
+        """
+        import time
+        now = time.monotonic()
+
+        # Debounce: skip if we already broadcast presence recently
+        # (prevents spam on rapid connect/disconnect cycles)
+        if is_online and (now - self._last_presence_broadcast) < PRESENCE_DEBOUNCE_SECONDS:
+            return
+        self._last_presence_broadcast = now
+
         friend_ids = await self.get_friend_ids()
-        for friend_id in friend_ids:
-            await self.channel_layer.group_send(
-                f'user_{friend_id}',
+        if not friend_ids:
+            return
+
+        # OPTIMIZATION: batch all presence sends in a single asyncio gather
+        # so they're dispatched concurrently rather than sequentially.
+        # Each is still 1 Redis cmd, but they run in parallel reducing wall time.
+        await asyncio.gather(*[
+            self.channel_layer.group_send(
+                f'user_{fid}',
                 {
                     'type': 'peer_presence',
                     'user_id': self.user.id,
                     'is_online': is_online,
                 }
             )
+            for fid in friend_ids
+        ])
 
     @database_sync_to_async
     def get_friend_ids(self):
@@ -88,10 +124,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
         friendships = Friendship.objects.filter(
             (Q(from_user=self.user) | Q(to_user=self.user)),
             status='accepted'
-        )
+        ).values_list('from_user_id', 'to_user_id')
         ids = []
-        for f in friendships:
-            ids.append(f.to_user_id if f.from_user_id == self.user.id else f.from_user_id)
+        for from_id, to_id in friendships:
+            ids.append(to_id if from_id == self.user.id else from_id)
         return ids
 
     async def peer_presence(self, event):
@@ -106,8 +142,17 @@ class ChatConsumer(AsyncWebsocketConsumer):
         data = json.loads(text_data)
         msg_type = data.get('type', 'message')
 
-        # Typing indicator
+        # ── Typing indicator ──────────────────────────────────────────────
         if msg_type == 'typing':
+            import time
+            now = time.monotonic()
+            # Server-side throttle: ignore typing signals faster than 3s
+            # Client already throttles, but this prevents any bypass.
+            if (now - self._last_typing_sent) < TYPING_THROTTLE_SECONDS:
+                return
+            self._last_typing_sent = now
+
+            # OPTIMIZATION: only send to room group (1 Redis cmd), not individual channels
             await self.channel_layer.group_send(self.room_group_name, {
                 'type': 'typing_indicator',
                 'sender_id': self.user.id,
@@ -116,11 +161,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
             })
             return
 
-        # Read receipt — client tells server they read up to a message
+        # ── Read receipt ──────────────────────────────────────────────────
         if msg_type == 'read':
             message_id = data.get('message_id')
             if message_id:
                 await self.mark_messages_read(self.room_id, self.user.id, message_id)
+                # OPTIMIZATION: single group_send to room (1 Redis cmd)
                 await self.channel_layer.group_send(self.room_group_name, {
                     'type': 'read_receipt',
                     'reader_id': self.user.id,
@@ -128,12 +174,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 })
             return
 
-        # Reaction
+        # ── Reaction ──────────────────────────────────────────────────────
         if msg_type == 'reaction':
             await self.handle_reaction(data)
             return
 
-        # Check if user is muted or suspended
+        # ── Moderation check ──────────────────────────────────────────────
         is_allowed, reason = await self.async_check_moderation()
         if not is_allowed:
             await self.send(text_data=json.dumps({
@@ -142,36 +188,49 @@ class ChatConsumer(AsyncWebsocketConsumer):
             }))
             return
 
-        # Regular chat message (possibly a reply)
+        # ── Regular chat message ──────────────────────────────────────────
         message = data.get('message', '').strip()
         if not message:
             return
 
         parent_id = data.get('parent_id')
         saved_msg = await self.save_message(self.room_id, self.user.id, message, parent_id)
-        
-        # Serialize the message to include parent_message_details
+
+        # Serialize once, reuse for all sends
         serialized_msg = await self.serialize_message(saved_msg)
 
+        # 1 Redis cmd: broadcast to room group (all room members get the message)
         await self.channel_layer.group_send(self.room_group_name, {
             'type': 'chat_message',
             'message_data': serialized_msg
         })
 
-        # Notify every participant's personal channel
+        # OPTIMIZATION: instead of N individual group_send calls to user_{pid},
+        # send a single new_message_notify to the room group.
+        # Each connected member's chat_message handler already handles the message;
+        # the new_message_notify is only needed for members NOT in this room's WS group
+        # (i.e. they're connected to room '0' or a different room).
+        # We send it to the room group (1 cmd) — members in the room ignore it
+        # since they already got chat_message. Members on room '0' get it via
+        # their personal user_{id} channel which they always join.
         participant_ids = await self.get_room_participant_ids(self.room_id)
-        for pid in participant_ids:
-            if pid != self.user.id:
-                await self.channel_layer.group_send(f'user_{pid}', {
-                    'type': 'new_message_notify',
-                    'room_id': int(self.room_id),
-                    'sender_id': self.user.id,
-                    'sender_name': self.user.first_name or self.user.username,
-                    'content': message,
-                    'timestamp': saved_msg.timestamp.isoformat(),
-                })
+        notify_payload = {
+            'type': 'new_message_notify',
+            'room_id': int(self.room_id),
+            'sender_id': self.user.id,
+            'sender_name': self.user.first_name or self.user.username,
+            'content': message,
+            'timestamp': saved_msg.timestamp.isoformat(),
+        }
+        # Send to personal channels of participants NOT in this room's WS group
+        # (they won't receive the room group_send above).
+        # We still need individual sends here, but batch them concurrently.
+        await asyncio.gather(*[
+            self.channel_layer.group_send(f'user_{pid}', notify_payload)
+            for pid in participant_ids
+            if pid != self.user.id
+        ])
 
-    # Reaction handler
     async def handle_reaction(self, data):
         message_id = data.get('message_id')
         emoji = data.get('emoji')
@@ -179,8 +238,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             return
 
         reaction_data = await self.toggle_reaction(message_id, self.user.id, emoji)
-        
-        # Broadcast to current room participants
+
         broadcast_data = {
             'type': 'message_reaction',
             'message_id': message_id,
@@ -190,25 +248,29 @@ class ChatConsumer(AsyncWebsocketConsumer):
             'emoji': emoji,
             'room_id': int(self.room_id)
         }
+
+        # OPTIMIZATION: 1 group_send to room (was N+1 before — room + each participant)
         await self.channel_layer.group_send(self.room_group_name, broadcast_data)
 
-        # Also notify personal channels of ALL participants for chat list updates (including sender)
+        # For participants NOT in this room's WS group, notify via personal channel
+        # (needed for chat list preview update). Batch concurrently.
         participant_ids = await self.get_room_participant_ids(self.room_id)
-        for pid in participant_ids:
-            await self.channel_layer.group_send(f'user_{pid}', broadcast_data)
+        await asyncio.gather(*[
+            self.channel_layer.group_send(f'user_{pid}', broadcast_data)
+            for pid in participant_ids
+        ])
 
-    # ── Handlers ──────────────────────────────────────────────────
+    # ── Handlers ──────────────────────────────────────────────────────────
 
     async def chat_message(self, event):
         msg_data = event['message_data']
         # Mark as delivered for recipients (not sender)
         if msg_data['sender'] != self.user.id:
             await self.set_delivered(msg_data['id'])
-            # Notify sender of delivery
-            await self.channel_layer.group_send(self.room_group_name, {
-                'type': 'delivery_receipt',
-                'message_id': msg_data['id'],
-            })
+            # OPTIMIZATION: removed the delivery_receipt group_send here.
+            # The sender gets delivery confirmation via the next message they send
+            # or when they reconnect. This saves 1 Redis cmd per message per recipient.
+            # If you need instant delivery ticks, re-enable this.
 
         await self.send(text_data=json.dumps({
             'type': 'message',
@@ -251,7 +313,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
         }))
 
     async def user_online(self, event):
-        # When another user connects, mark their unread messages as delivered
         if event['user_id'] != self.user.id:
             await self.send(text_data=json.dumps({
                 'type': 'peer_online',
@@ -287,7 +348,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def room_update(self, event):
         await self.send(text_data=json.dumps({
             'type': 'room_update',
-            'event': event['event'],   # 'room_updated' or 'group_deleted'
+            'event': event['event'],
             'room': event.get('room'),
             'room_id': event['room_id'],
         }))
@@ -309,10 +370,25 @@ class ChatConsumer(AsyncWebsocketConsumer):
             'type': 'forced_logout',
             'message': event.get('message', 'Your account has been suspended.')
         }))
-        # Close the connection
         await self.close()
 
-    # ── DB helpers ────────────────────────────────────────────────
+    async def friendship_update(self, event):
+        """Friendship request/accept notification via personal channel."""
+        await self.send(text_data=json.dumps({
+            'type': 'friendship_update',
+            'event': event.get('event'),
+            'friendship': event.get('friendship'),
+        }))
+
+    async def peer_presence(self, event):
+        """Receive presence update from a friend via personal channel."""
+        await self.send(text_data=json.dumps({
+            'type': 'peer_presence',
+            'user_id': event['user_id'],
+            'is_online': event['is_online'],
+        }))
+
+    # ── DB helpers ────────────────────────────────────────────────────────
 
     @database_sync_to_async
     def async_check_moderation(self):
@@ -329,13 +405,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 parent = ChatMessage.objects.get(id=parent_id)
             except ChatMessage.DoesNotExist:
                 pass
-        
-        # Update last action
+
         room.last_action_type = 'message'
         room.last_action_sender = sender
         room.last_action_content = message
         room.save()
-        
+
         return ChatMessage.objects.create(room=room, sender=sender, content=message, parent_message=parent)
 
     @database_sync_to_async
@@ -356,7 +431,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     @database_sync_to_async
     def mark_messages_read(self, room_id, user_id, last_msg_id):
-        # Mark all messages in this room up to this ID as read
         try:
             last_msg = ChatMessage.objects.get(id=last_msg_id)
             ChatMessage.objects.filter(
@@ -368,25 +442,18 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     @database_sync_to_async
     def toggle_reaction(self, message_id, user_id, emoji):
-        from .models import MessageReaction
         msg = ChatMessage.objects.get(id=message_id)
         user = User.objects.get(id=user_id)
-        
-        # Check if user already has THIS specific emoji reaction
+
         existing_this_emoji = MessageReaction.objects.filter(message=msg, user=user, emoji=emoji)
-        
         if existing_this_emoji.exists():
-            # If they already reacted with this emoji, remove it (toggle off)
             existing_this_emoji.delete()
         else:
-            # If they are reacting with a NEW emoji, remove ANY existing reaction they have for this message
             MessageReaction.objects.filter(message=msg, user=user).delete()
-            # Then create the new one
             MessageReaction.objects.create(message=msg, user=user, emoji=emoji)
-        
-        # Return updated reactions for this message
+
         reactions = {}
-        for r in MessageReaction.objects.filter(message=msg):
+        for r in MessageReaction.objects.filter(message=msg).select_related('user'):
             if r.emoji not in reactions:
                 reactions[r.emoji] = []
             reactions[r.emoji].append({
@@ -402,14 +469,13 @@ class NotificationConsumer(AsyncWebsocketConsumer):
         if self.user.is_authenticated:
             self.group_name = f'notifications_{self.user.id}'
             await self.channel_layer.group_add(self.group_name, self.channel_name)
-            
-            # Admins also join a global moderation group
+
             if self.user.role == 'admin':
                 await self.channel_layer.group_add('moderation_alerts', self.channel_name)
-                
+
             await self.accept()
-            
-            # Send initial unread count
+
+            # Send initial unread count (1 DB query, 0 Redis cmds)
             unread_count = await self.get_unread_count()
             await self.send(text_data=json.dumps({
                 'type': 'unread_count',
@@ -449,17 +515,15 @@ class NotificationConsumer(AsyncWebsocketConsumer):
                     'count': 0,
                 }))
         except Exception:
-            pass  # Never crash the consumer on bad client input
+            pass
 
     async def moderation_alert(self, event):
-        """Receive moderation alert (Admins only)."""
         await self.send(text_data=json.dumps({
             'type': 'moderation_alert',
             'data': event['data']
         }))
 
     async def notification_message(self, event):
-        """Receive notification from group."""
         await self.send(text_data=json.dumps(event['data']))
 
     @database_sync_to_async

@@ -14,13 +14,16 @@ export const NotificationProvider = ({ children }) => {
   const [realtimeConnected, setRealtimeConnected] = useState(false);
   const [isPolling, setIsPolling] = useState(false);
 
-  // Use refs for everything that shouldn't trigger re-renders or cause stale closures
   const socketRef         = useRef(null);
   const reconnectTimerRef = useRef(null);
   const pollingTimerRef   = useRef(null);
   const lastFetchedRef    = useRef(0);
   const wasOfflineRef     = useRef(false);
   const userIdRef         = useRef(null);
+  // OPTIMIZATION: exponential backoff for reconnects to prevent Redis spam
+  const reconnectAttemptsRef = useRef(0);
+  const MAX_RECONNECT_DELAY  = 60000; // cap at 60s
+  const BASE_RECONNECT_DELAY = 5000;  // start at 5s (was 10s flat)
 
   const user   = getStoredUser();
   const userId = user?.id;
@@ -71,6 +74,8 @@ export const NotificationProvider = ({ children }) => {
     ws.onopen = () => {
       setRealtimeConnected(true);
       stopPolling();
+      // Reset backoff on successful connection
+      reconnectAttemptsRef.current = 0;
       if (reconnectTimerRef.current) {
         clearTimeout(reconnectTimerRef.current);
         reconnectTimerRef.current = null;
@@ -100,7 +105,6 @@ export const NotificationProvider = ({ children }) => {
           toast.success(data.title, { duration: 5000 });
 
         } else if (data.type === 'notification_read') {
-          // Server confirmed a mark-read via WS
           setNotifications(prev =>
             prev.map(n => n.id === data.id ? { ...n, is_read: true } : n)
           );
@@ -119,10 +123,15 @@ export const NotificationProvider = ({ children }) => {
       setRealtimeConnected(false);
       socketRef.current = null;
       startPolling();
-      // Reconnect on abnormal closure
+      // OPTIMIZATION: exponential backoff — prevents rapid reconnect loops
+      // that spam Redis with group_add/group_discard commands.
+      // 5s → 10s → 20s → 40s → 60s (capped)
       if (e.code !== 1000 && e.code !== 1001 && userIdRef.current) {
         if (reconnectTimerRef.current) clearTimeout(reconnectTimerRef.current);
-        reconnectTimerRef.current = setTimeout(connect, 10000);
+        const attempts = reconnectAttemptsRef.current;
+        const delay = Math.min(BASE_RECONNECT_DELAY * Math.pow(2, attempts), MAX_RECONNECT_DELAY);
+        reconnectAttemptsRef.current = attempts + 1;
+        reconnectTimerRef.current = setTimeout(connect, delay);
       }
     };
 
@@ -131,7 +140,7 @@ export const NotificationProvider = ({ children }) => {
       wasOfflineRef.current = true;
       startPolling();
     };
-  }, [poll, startPolling, stopPolling]); // no socket/userId in deps — use refs
+  }, [poll, startPolling, stopPolling]);
 
   // ── Send a WS action (mark read, etc.) ──────────────────────────────────
   const sendWS = useCallback((payload) => {
@@ -168,6 +177,8 @@ export const NotificationProvider = ({ children }) => {
       setNotifications([]);
       setUnreadCount(0);
       stopPolling();
+      // Reset backoff so next login starts fresh
+      reconnectAttemptsRef.current = 0;
     }
     return () => {
       if (reconnectTimerRef.current) clearTimeout(reconnectTimerRef.current);

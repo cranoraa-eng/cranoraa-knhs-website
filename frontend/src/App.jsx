@@ -96,7 +96,10 @@ function App() {
 
   useEffect(() => {
     checkMaintenance();
-    const interval = setInterval(checkMaintenance, 60000);
+    // OPTIMIZATION: check every 5 minutes instead of every 60s.
+    // Maintenance mode changes are rare admin actions — 5min lag is acceptable
+    // and saves ~4 API calls/min per active user.
+    const interval = setInterval(checkMaintenance, 5 * 60 * 1000);
     return () => clearInterval(interval);
   }, []);
 

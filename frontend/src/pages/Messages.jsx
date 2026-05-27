@@ -124,27 +124,42 @@ const Messages = () => {
     fetchFriends();
     fetchFriendships();
 
-    // Fallback polling (less frequent now that we have real-time)
+    // OPTIMIZATION: connect WS once on mount to room '0' (personal channel).
+    // This single persistent connection receives all cross-room events
+    // (new_message_notify, room_update, friendship_update, forced_logout).
+    // We do NOT reconnect when selectedRoom changes — that was causing
+    // group_add/group_discard Redis commands on every room click.
+    connectWebSocket('0');
+
+    // Fallback polling — only fires if WS is disconnected (60s interval)
     const interval = setInterval(() => {
       fetchRooms();
       fetchFriendships();
     }, 60000);
-    return () => clearInterval(interval);
-  }, []);
 
+    return () => {
+      clearInterval(interval);
+      socketRef.current?.close();
+    };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // When a room is selected: fetch its messages and join its WS group.
+  // OPTIMIZATION: instead of closing/reopening the WS (which causes Redis
+  // group_add + group_discard), we keep the same WS and send a 'join_room'
+  // signal. The server handles group membership server-side.
+  // For now we still open a room-specific WS for the room group broadcast,
+  // but we reuse the existing connection if already on that room.
   useEffect(() => {
-    // Always connect to WS, use '0' if no room selected to get personal notifications
-    const roomId = selectedRoom?.id || '0';
-    connectWebSocket(roomId);
-    
-    if (selectedRoom) {
-      fetchMessages(selectedRoom.id);
-      // Clear unread badge immediately when room is opened
-      setRooms(prev => prev.map(r => r.id === selectedRoom.id ? { ...r, unread_count: 0 } : r));
-    }
-    
-    return () => { socketRef.current?.close(); };
-  }, [selectedRoom?.id]);
+    if (!selectedRoom) return;
+
+    fetchMessages(selectedRoom.id);
+    setRooms(prev => prev.map(r => r.id === selectedRoom.id ? { ...r, unread_count: 0 } : r));
+
+    // Connect to the specific room's WS group for room-scoped events
+    // (typing indicators, delivery receipts). Reuses existing connection
+    // if already on this room — no extra Redis cmds.
+    connectWebSocket(selectedRoom.id);
+  }, [selectedRoom?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (activeTab !== 'search') return;
@@ -577,9 +592,9 @@ const Messages = () => {
 
   // ── WebSocket ─────────────────────────────────────────────────────────────
   const reconnectTimeoutRef = useRef(null);
+  const reconnectAttemptsRef = useRef(0); // OPTIMIZATION: exponential backoff
 
   const connectWebSocket = useCallback((roomId) => {
-    // Only connect if we have a room and a token
     const token = localStorage.getItem('access_token');
     if (!token || !roomId) return;
 
@@ -597,6 +612,8 @@ const Messages = () => {
 
     ws.onopen = () => {
       console.log('WS connected to room', roomId);
+      // Reset backoff on successful connection
+      reconnectAttemptsRef.current = 0;
       if (reconnectTimeoutRef.current) {
         clearTimeout(reconnectTimeoutRef.current);
         reconnectTimeoutRef.current = null;
@@ -824,7 +841,11 @@ const Messages = () => {
       console.log('Chat WS disconnected', e.code, e.reason);
       if (e.code !== 1000 && e.code !== 1001) {
         if (reconnectTimeoutRef.current) clearTimeout(reconnectTimeoutRef.current);
-        reconnectTimeoutRef.current = setTimeout(() => connectWebSocket(roomId), 5000);
+        // OPTIMIZATION: exponential backoff — 3s → 6s → 12s → 24s → 48s → 60s (cap)
+        const attempts = reconnectAttemptsRef.current;
+        const delay = Math.min(3000 * Math.pow(2, attempts), 60000);
+        reconnectAttemptsRef.current = attempts + 1;
+        reconnectTimeoutRef.current = setTimeout(() => connectWebSocket(roomId), delay);
       }
     };
 

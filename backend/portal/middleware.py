@@ -15,10 +15,16 @@ class APIRequestLoggingMiddleware(MiddlewareMixin):
         if not request.path.startswith('/api/'):
             return response
 
-        # Skip high-frequency or sensitive endpoints to prevent table bloat
-        skip_paths = ('/api/token/', '/api/token/refresh/', '/api/system/maintenance-status/')
-        if request.path.startswith(skip_paths):
-            return response
+    # Skip high-frequency or sensitive endpoints to prevent table bloat
+    skip_paths = (
+        '/api/token/',
+        '/api/token/refresh/',
+        '/api/system/maintenance-status/',
+        '/api/notifications/polling/',   # polling fallback — very frequent
+        '/api/chat/messages/',           # chat message fetches — very frequent
+    )
+    if request.path.startswith(skip_paths):
+        return response
 
         # Calculate response time
         if hasattr(request, 'start_time'):

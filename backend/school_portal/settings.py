@@ -92,6 +92,13 @@ if os.environ.get('REDIS_URL'):
             'BACKEND': 'channels_redis.core.RedisChannelLayer',
             'CONFIG': {
                 "hosts": [os.environ.get('REDIS_URL')],
+                # OPTIMIZATION: limit channel capacity to prevent unbounded Redis memory growth.
+                # Messages beyond capacity are dropped (old ones) rather than accumulating.
+                "capacity": 100,          # max messages per channel (default: 100)
+                "expiry": 30,             # seconds before undelivered messages expire (default: 60)
+                # group_expiry: how long a group membership lives in Redis.
+                # Shorter = fewer stale keys. 3600s = 1 hour (default: 86400).
+                "group_expiry": 3600,
             },
         },
     }
