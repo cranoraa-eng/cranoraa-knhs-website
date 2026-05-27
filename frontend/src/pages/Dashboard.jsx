@@ -57,7 +57,7 @@ const WelcomeBanner = ({ user, today, actions, subtitle, stats, statusChips }) =
     .filter(Boolean).map(n => n[0].toUpperCase()).join('') || '?';
 
   return (
-    <div className="bg-[#1A0B2E] rounded-xl md:rounded-[2.5rem] p-3 md:p-10 shadow-2xl relative overflow-hidden group border border-white/5">
+    <div className="bg-[#1A0B2E] rounded-xl md:rounded-2xl p-3 md:p-5 shadow-2xl relative overflow-hidden group border border-white/5">
       {/* Premium Background Effects */}
       <div className="absolute top-0 right-0 w-[700px] h-[700px] bg-gradient-to-br from-violet-600/25 via-fuchsia-600/15 to-transparent rounded-full blur-[140px] -mr-64 -mt-64 opacity-90 group-hover:opacity-100 transition-opacity duration-1000" />
       <div className="absolute -bottom-32 -left-32 w-96 h-96 bg-indigo-600/20 rounded-full blur-[100px] opacity-70" />
@@ -66,37 +66,37 @@ const WelcomeBanner = ({ user, today, actions, subtitle, stats, statusChips }) =
       {/* Subtle Mesh Pattern */}
       <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: `radial-gradient(#ffffff 1px, transparent 1px)`, backgroundSize: '30px 30px' }} />
 
-      <div className="relative flex flex-row items-center justify-between gap-2 md:gap-8">
-        <div className="flex-1 space-y-2 md:space-y-6 min-w-0">
-          <div className="flex flex-wrap items-center gap-1.5 md:gap-3">
-            <div className="flex items-center gap-1 md:gap-2 px-2 py-1 md:px-4 md:py-2 rounded-full bg-white/5 backdrop-blur-xl border border-white/10">
-              <span className="text-[10px] md:text-sm">{greeting.icon}</span>
-              <p className="text-[7px] md:text-[10px] font-black text-violet-200 uppercase tracking-[0.15em]">{greeting.text}</p>
+      <div className="relative flex flex-row items-center justify-between gap-2 md:gap-5">
+        <div className="flex-1 space-y-2 md:space-y-3 min-w-0">
+          <div className="flex flex-wrap items-center gap-1.5 md:gap-2">
+            <div className="flex items-center gap-1 md:gap-1.5 px-2 py-1 md:px-3 md:py-1.5 rounded-full bg-white/5 backdrop-blur-xl border border-white/10">
+              <span className="text-[10px] md:text-xs">{greeting.icon}</span>
+              <p className="text-[7px] md:text-[9px] font-black text-violet-200 uppercase tracking-[0.15em]">{greeting.text}</p>
             </div>
-            <div className="hidden sm:flex items-center gap-1 md:gap-2 px-2 py-1 md:px-4 md:py-2 rounded-full bg-white/5 backdrop-blur-xl border border-white/10">
-              <svg className="w-2.5 md:w-3.5 h-2.5 md:h-3.5 text-violet-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-              <p className="text-[7px] md:text-[10px] font-black text-violet-200 uppercase tracking-[0.15em]">{today}</p>
+            <div className="hidden sm:flex items-center gap-1 md:gap-1.5 px-2 py-1 md:px-3 md:py-1.5 rounded-full bg-white/5 backdrop-blur-xl border border-white/10">
+              <svg className="w-2.5 md:w-3 h-2.5 md:h-3 text-violet-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+              <p className="text-[7px] md:text-[9px] font-black text-violet-200 uppercase tracking-[0.15em]">{today}</p>
             </div>
           </div>
 
-          <div className="space-y-1 md:space-y-3">
-            <h1 className="text-lg md:text-5xl font-black text-white tracking-tighter leading-tight md:leading-[0.95]">
+          <div className="space-y-1 md:space-y-2">
+            <h1 className="text-lg md:text-3xl font-black text-white tracking-tighter leading-tight md:leading-[1]">
               Welcome back,<br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 via-fuchsia-300 to-indigo-300">{user?.first_name || 'User'}</span>
             </h1>
-            <p className="text-violet-200/60 font-semibold text-[9px] md:text-base tracking-tight max-w-lg leading-normal md:leading-relaxed hidden sm:block">
+            <p className="text-violet-200/60 font-semibold text-[9px] md:text-sm tracking-tight max-w-lg leading-normal md:leading-relaxed hidden sm:block">
               {greeting.message}
             </p>
           </div>
 
           {/* Status Chips Section */}
-          <div className="flex flex-wrap gap-1.5 md:gap-2.5 pt-0.5 md:pt-3">
+          <div className="flex flex-wrap gap-1.5 md:gap-2 pt-0.5 md:pt-2">
             {statusChips?.map((chip, idx) => (
-              <div key={idx} className="flex items-center gap-1.5 md:gap-2.5 px-2 py-1 md:px-4 md:py-2.5 rounded-lg md:rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md hover:bg-white/10 hover:border-white/20 transition-all cursor-default group/chip">
-                <div className={`w-1 h-1 md:w-2 md:h-2 rounded-full bg-${chip.color}-400 group-hover/chip:scale-125 transition-transform shrink-0 md:shadow-[0_0_8px_rgba(0,0,0,0.3)]`} />
+              <div key={idx} className="flex items-center gap-1.5 md:gap-2 px-2 py-1 md:px-3 md:py-2 rounded-lg md:rounded-xl bg-white/5 border border-white/10 backdrop-blur-md hover:bg-white/10 hover:border-white/20 transition-all cursor-default group/chip">
+                <div className={`w-1 h-1 md:w-1.5 md:h-1.5 rounded-full bg-${chip.color}-400 group-hover/chip:scale-125 transition-transform shrink-0`} />
                 <div className="flex flex-col">
-                  <span className="text-[8px] md:text-xs font-black text-white leading-none">{chip.value}</span>
-                  <span className="text-[6px] md:text-[9px] font-bold text-violet-300/60 uppercase tracking-widest mt-0.5">{chip.label}</span>
+                  <span className="text-[8px] md:text-[11px] font-black text-white leading-none">{chip.value}</span>
+                  <span className="text-[6px] md:text-[8px] font-bold text-violet-300/60 uppercase tracking-widest mt-0.5">{chip.label}</span>
                 </div>
               </div>
             ))}
@@ -108,15 +108,15 @@ const WelcomeBanner = ({ user, today, actions, subtitle, stats, statusChips }) =
           </div>
         </div>
 
-        <div className="flex flex-col items-end gap-3 md:gap-6 shrink-0">
+        <div className="flex flex-col items-end gap-3 md:gap-4 shrink-0">
           {/* Avatar Section */}
           <div className="relative group/avatar">
-            <div className="w-14 h-14 md:w-36 md:h-36 rounded-xl md:rounded-[2.5rem] bg-gradient-to-br from-violet-500 to-fuchsia-500 p-0.5 md:p-1 shadow-2xl transition-transform duration-700 group-hover/avatar:rotate-3">
-              <div className="w-full h-full rounded-[10px] md:rounded-[2.2rem] bg-[#1A0B2E] overflow-hidden flex items-center justify-center border-2 md:border-4 border-white/10 relative">
+            <div className="w-14 h-14 md:w-24 md:h-24 rounded-xl md:rounded-2xl bg-gradient-to-br from-violet-500 to-fuchsia-500 p-0.5 md:p-1 shadow-2xl transition-transform duration-700 group-hover/avatar:rotate-3">
+              <div className="w-full h-full rounded-[10px] md:rounded-xl bg-[#1A0B2E] overflow-hidden flex items-center justify-center border-2 md:border-4 border-white/10 relative">
                 {user?.profile_picture ? (
                   <img src={user.profile_picture} alt="Profile" className="w-full h-full object-cover group-hover/avatar:scale-110 transition-transform duration-700" />
                 ) : (
-                  <span className="text-lg md:text-5xl font-black text-white">
+                  <span className="text-lg md:text-3xl font-black text-white">
                     {initials}
                   </span>
                 )}
@@ -736,7 +736,7 @@ const TeacherView = () => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.8, ease: "easeOut" }}
-      className="space-y-3 md:space-y-6 page-bottom-safe max-w-[1600px] mx-auto px-2 py-2 md:px-6 md:py-6"
+      className="space-y-3 md:space-y-4 page-bottom-safe max-w-[1600px] mx-auto px-2 py-2 md:px-6 md:py-6"
     >
       <WelcomeBanner
         user={user}
@@ -770,7 +770,7 @@ const TeacherView = () => {
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15, duration: 0.5 }}
-          className={`rounded-xl md:rounded-2xl px-3 py-2.5 md:px-5 md:py-4 flex items-center justify-between gap-3 border ${
+          className={`rounded-xl md:rounded-xl px-3 py-2.5 md:px-4 md:py-3 flex items-center justify-between gap-3 border ${
             unmarkedCount === 0
               ? 'bg-emerald-50 border-emerald-200'
               : 'bg-amber-50 border-amber-200'
@@ -802,20 +802,20 @@ const TeacherView = () => {
         </motion.div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 md:gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 md:gap-5">
         {/* ── MAIN CONTENT (Left - 8 Cols) ── */}
-        <div className="lg:col-span-8 space-y-3 md:space-y-8">
+        <div className="lg:col-span-8 space-y-3 md:space-y-5">
           
           {/* Today's Classes & Sections Combined */}
           <motion.div 
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.2, duration: 0.6 }}
-            className="bg-white border border-slate-200/60 rounded-xl md:rounded-2xl shadow-sm overflow-hidden flex flex-col lg:h-[560px] min-h-[300px]"
+            className="bg-white border border-slate-200/60 rounded-xl md:rounded-2xl shadow-sm overflow-hidden flex flex-col lg:h-[420px] min-h-[300px]"
           >
-            <div className="px-3 md:px-7 py-3 md:py-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2 md:gap-4 bg-gradient-to-r from-slate-50/80 to-white shrink-0">
+            <div className="px-3 md:px-5 py-3 md:py-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2 md:gap-3 bg-gradient-to-r from-slate-50/80 to-white shrink-0">
               <div className="flex items-center gap-2 md:gap-3.5">
-                <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl bg-violet-600 shadow-lg shadow-violet-200/60 flex items-center justify-center shrink-0">
+                <div className="w-8 h-8 md:w-8 md:h-8 rounded-lg md:rounded-xl bg-violet-600 shadow-lg shadow-violet-200/60 flex items-center justify-center shrink-0">
                   <svg className="w-4 h-4 md:w-5 md:h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
                 </div>
                 <div>
@@ -832,10 +832,10 @@ const TeacherView = () => {
               <table className="w-full text-left border-separate border-spacing-0 min-w-[480px]">
                 <thead className="bg-slate-50/80 border-b border-slate-100 sticky top-0 z-10">
                   <tr>
-                    <th className="px-3 md:px-7 py-2 md:py-4 text-[8px] md:text-[9px] font-black text-slate-400 uppercase tracking-[0.15em]">Section</th>
-                    <th className="px-3 md:px-7 py-2 md:py-4 text-[8px] md:text-[9px] font-black text-slate-400 uppercase tracking-[0.15em]">Subject</th>
-                    <th className="px-3 md:px-7 py-2 md:py-4 text-[8px] md:text-[9px] font-black text-slate-400 uppercase tracking-[0.15em]">Today's Attendance</th>
-                    <th className="px-3 md:px-7 py-2 md:py-4 text-[8px] md:text-[9px] font-black text-slate-400 uppercase tracking-[0.15em] text-right">Actions</th>
+                    <th className="px-3 md:px-5 py-2 md:py-3 text-[8px] md:text-[9px] font-black text-slate-400 uppercase tracking-[0.15em]">Section</th>
+                    <th className="px-3 md:px-5 py-2 md:py-3 text-[8px] md:text-[9px] font-black text-slate-400 uppercase tracking-[0.15em]">Subject</th>
+                    <th className="px-3 md:px-5 py-2 md:py-3 text-[8px] md:text-[9px] font-black text-slate-400 uppercase tracking-[0.15em]">Today's Attendance</th>
+                    <th className="px-3 md:px-5 py-2 md:py-3 text-[8px] md:text-[9px] font-black text-slate-400 uppercase tracking-[0.15em] text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-50">
@@ -855,7 +855,7 @@ const TeacherView = () => {
                       const marked = todayAttendance[c.id];
                       return (
                         <tr key={c.id} className="hover:bg-violet-50/30 transition-colors group cursor-pointer border-b border-slate-50 last:border-0">
-                          <td className="px-3 md:px-7 py-2.5 md:py-4">
+                          <td className="px-3 md:px-5 py-2.5 md:py-3">
                             <div className="flex items-center gap-2 md:gap-4">
                               <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl bg-gradient-to-br from-violet-50 to-indigo-50 text-violet-600 flex items-center justify-center font-black text-xs md:text-sm shadow-sm border border-violet-100/50 group-hover:from-violet-600 group-hover:to-indigo-600 group-hover:text-white transition-all duration-300 shrink-0">
                                 {c.name?.match(/\d+/)?.[0] || 'C'}
@@ -866,11 +866,11 @@ const TeacherView = () => {
                               </div>
                             </div>
                           </td>
-                          <td className="px-3 md:px-7 py-2.5 md:py-4">
+                          <td className="px-3 md:px-5 py-2.5 md:py-3">
                             <p className="text-[10px] md:text-sm font-semibold text-slate-700">{c.subject_name || 'General'}</p>
                             <p className="text-[7px] md:text-[9px] font-bold text-indigo-500 uppercase tracking-[0.15em] mt-0.5">{c.subject_code || 'GEN-101'}</p>
                           </td>
-                          <td className="px-3 md:px-7 py-2.5 md:py-4">
+                          <td className="px-3 md:px-5 py-2.5 md:py-3">
                             {marked === undefined ? (
                               <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-100 border border-slate-200">
                                 <div className="w-1.5 h-1.5 rounded-full bg-slate-400 animate-pulse" />
@@ -888,7 +888,7 @@ const TeacherView = () => {
                               </div>
                             )}
                           </td>
-                          <td className="px-3 md:px-7 py-2.5 md:py-4 text-right">
+                          <td className="px-3 md:px-5 py-2.5 md:py-3 text-right">
                             <div className="flex items-center justify-end gap-1.5 md:gap-2">
                               <button onClick={() => navigate('/attendance', { state: { classroomId: c.id } })} title="Mark Attendance" className="p-1.5 md:p-2.5 text-emerald-600 bg-emerald-50 hover:bg-emerald-600 hover:text-white rounded-lg transition-all shadow-sm active:scale-90 border border-emerald-100"><svg className="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 8l2 2 4-4" /></svg></button>
                               <button onClick={() => navigate('/grade-input', { state: { classroomId: c.id } })} title="Input Grades" className="p-1.5 md:p-2.5 text-violet-600 bg-violet-50 hover:bg-violet-600 hover:text-white rounded-lg transition-all shadow-sm active:scale-90 border border-violet-100"><svg className="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg></button>
@@ -908,11 +908,11 @@ const TeacherView = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5, duration: 0.6 }}
-            className="bg-white border border-slate-200/60 rounded-xl md:rounded-2xl p-3 md:p-7 shadow-sm flex flex-col lg:h-[560px]"
+            className="bg-white border border-slate-200/60 rounded-xl md:rounded-2xl p-3 md:p-5 shadow-sm flex flex-col lg:h-[420px]"
           >
-            <div className="flex items-center justify-between mb-4 md:mb-6 shrink-0">
+            <div className="flex items-center justify-between mb-4 md:mb-5 shrink-0">
               <div className="flex items-center gap-2 md:gap-3.5">
-                <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl bg-emerald-500 shadow-lg shadow-emerald-100 flex items-center justify-center shrink-0">
+                <div className="w-8 h-8 md:w-8 md:h-8 rounded-lg md:rounded-xl bg-emerald-500 shadow-lg shadow-emerald-100 flex items-center justify-center shrink-0">
                   <svg className="w-4 h-4 md:w-5 md:h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                 </div>
                 <div>
@@ -960,14 +960,12 @@ const TeacherView = () => {
         </div>
 
         {/* ── SIDEBAR CONTENT (Right - 4 Cols) ── */}
-        <div className="lg:col-span-4 space-y-3 md:space-y-5">
-          
-          {/* Today's Schedule Sidebar */}
+        <div className="lg:col-span-4 space-y-3 md:space-y-4">
           <motion.div 
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.3, duration: 0.6 }}
-            className="lg:h-[560px]"
+            className="lg:h-[420px]"
           >
             <TodayScheduleWidget role="teacher" />
           </motion.div>
@@ -977,7 +975,7 @@ const TeacherView = () => {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.4, duration: 0.6 }}
-            className="bg-[#1A0B2E] rounded-xl md:rounded-2xl p-4 md:p-6 shadow-xl border border-white/5 relative overflow-hidden group lg:h-[320px] flex flex-col justify-center"
+            className="bg-[#1A0B2E] rounded-xl md:rounded-2xl p-4 md:p-5 shadow-xl border border-white/5 relative overflow-hidden group lg:h-[240px] flex flex-col justify-center"
           >
             <div className="absolute -right-8 -top-8 w-40 h-40 bg-violet-600/20 rounded-full blur-[60px]" />
             <h3 className="text-white text-[10px] md:text-xs font-black uppercase tracking-[0.2em] mb-4 md:mb-5 relative z-10 flex items-center gap-2 shrink-0">
@@ -998,7 +996,7 @@ const TeacherView = () => {
                   onClick={() => navigate(a.path)}
                   className="flex flex-col items-center justify-center gap-1.5 md:gap-2.5 p-2 md:p-3 bg-white/5 rounded-xl border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all group active:scale-95"
                 >
-                  <div className={`w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl bg-${a.color}-500/10 text-${a.color}-400 flex items-center justify-center group-hover:bg-${a.color}-500 group-hover:text-white transition-all duration-300`}>
+                  <div className={`w-8 h-8 md:w-8 md:h-8 rounded-lg md:rounded-xl bg-${a.color}-500/10 text-${a.color}-400 flex items-center justify-center group-hover:bg-${a.color}-500 group-hover:text-white transition-all duration-300`}>
                     <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d={a.icon} /></svg>
                   </div>
                   <span className="text-[7px] md:text-[9px] font-black text-violet-200/80 uppercase tracking-[0.15em]">{a.label}</span>
@@ -1014,7 +1012,7 @@ const TeacherView = () => {
             transition={{ delay: 0.5, duration: 0.6 }}
             className="space-y-3 md:space-y-5"
           >
-            <div className="lg:h-[360px]">
+            <div className="lg:h-[260px]">
               <LatestMessagesWidget messages={data?.latest_messages} onOpenChat={() => navigate('/messages')} />
             </div>
             
@@ -1106,7 +1104,7 @@ const StudentView = () => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.8, ease: "easeOut" }}
-      className="space-y-3 md:space-y-6 page-bottom-safe max-w-[1600px] mx-auto px-2 py-2 md:px-6 md:py-6"
+      className="space-y-3 md:space-y-4 page-bottom-safe max-w-[1600px] mx-auto px-2 py-2 md:px-6 md:py-6"
     >
       <WelcomeBanner
         user={user}
@@ -1136,26 +1134,26 @@ const StudentView = () => {
         }
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 md:gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 md:gap-5">
         {/* ── MAIN CONTENT (Left - 8 Cols) ── */}
-        <div className="lg:col-span-8 space-y-3 md:space-y-8">
+        <div className="lg:col-span-8 space-y-3 md:space-y-5">
           
           {/* Performance Analytics & Attendance Streak */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-5">
             {/* Grade Analysis Chart */}
             <motion.div 
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.2, duration: 0.6 }}
-              className="bg-white border border-slate-200/60 rounded-xl md:rounded-2xl p-3 md:p-6 shadow-sm flex flex-col h-[240px] md:h-[380px]"
+              className="bg-white border border-slate-200/60 rounded-xl md:rounded-2xl p-3 md:p-5 shadow-sm flex flex-col h-[240px] md:h-[280px]"
             >
-              <div className="flex items-center justify-between mb-3 md:mb-5 shrink-0">
+              <div className="flex items-center justify-between mb-3 md:mb-4 shrink-0">
                 <div className="flex items-center gap-2">
-                  <div className="w-7 h-7 md:w-9 md:h-9 rounded-lg md:rounded-xl bg-violet-50 text-violet-600 flex items-center justify-center border border-violet-100">
+                  <div className="w-7 h-7 md:w-8 md:h-8 rounded-lg md:rounded-xl bg-violet-50 text-violet-600 flex items-center justify-center border border-violet-100">
                     <svg className="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
                   </div>
                   <div>
-                    <h3 className="text-[10px] md:text-sm font-black text-slate-900 tracking-tight">Grade Analysis</h3>
+                    <h3 className="text-[10px] md:text-xs font-black text-slate-900 tracking-tight">Grade Analysis</h3>
                     <p className="text-[7px] md:text-[9px] font-semibold text-slate-400 uppercase tracking-widest mt-0.5 hidden md:block">Subject performance trend</p>
                   </div>
                 </div>
@@ -1194,21 +1192,21 @@ const StudentView = () => {
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.3, duration: 0.6 }}
-              className="bg-white border border-slate-200/60 rounded-xl md:rounded-2xl p-3 md:p-6 shadow-sm flex flex-col h-[240px] md:h-[380px]"
+              className="bg-white border border-slate-200/60 rounded-xl md:rounded-2xl p-3 md:p-5 shadow-sm flex flex-col h-[240px] md:h-[280px]"
             >
-              <div className="flex items-center justify-between mb-3 md:mb-4 shrink-0">
+              <div className="flex items-center justify-between mb-3 md:mb-3 shrink-0">
                 <div className="flex items-center gap-2">
-                  <div className="w-7 h-7 md:w-9 md:h-9 rounded-lg md:rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100">
+                  <div className="w-7 h-7 md:w-8 md:h-8 rounded-lg md:rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100">
                     <svg className="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                   </div>
                   <div>
-                    <h3 className="text-[10px] md:text-sm font-black text-slate-900 tracking-tight">Attendance</h3>
+                    <h3 className="text-[10px] md:text-xs font-black text-slate-900 tracking-tight">Attendance</h3>
                     <p className="text-[7px] md:text-[9px] font-semibold text-slate-400 uppercase tracking-widest mt-0.5 hidden md:block">Monthly streak tracker</p>
                   </div>
                 </div>
                 <div className="flex flex-col items-end">
-                  <span className="text-lg md:text-xl font-black text-emerald-600 leading-none">{attRate}%</span>
-                  <span className="text-[7px] md:text-[9px] font-semibold text-slate-400 uppercase tracking-widest mt-0.5">Monthly</span>
+                  <span className="text-lg md:text-lg font-black text-emerald-600 leading-none">{attRate}%</span>
+                  <span className="text-[7px] md:text-[8px] font-semibold text-slate-400 uppercase tracking-widest mt-0.5">Monthly</span>
                 </div>
               </div>
 
@@ -1291,11 +1289,11 @@ const StudentView = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4, duration: 0.6 }}
-            className="bg-white border border-slate-200/60 rounded-xl md:rounded-2xl shadow-sm overflow-hidden flex flex-col lg:h-[480px]"
+            className="bg-white border border-slate-200/60 rounded-xl md:rounded-2xl shadow-sm overflow-hidden flex flex-col lg:h-[360px]"
           >
-            <div className="px-3 md:px-7 py-3 md:py-5 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-slate-50/80 to-white shrink-0">
+            <div className="px-3 md:px-5 py-3 md:py-4 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-slate-50/80 to-white shrink-0">
               <div className="flex items-center gap-2 md:gap-3.5">
-                <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl bg-indigo-600 shadow-lg shadow-indigo-200/60 flex items-center justify-center shrink-0">
+                <div className="w-8 h-8 md:w-8 md:h-8 rounded-lg md:rounded-xl bg-indigo-600 shadow-lg shadow-indigo-200/60 flex items-center justify-center shrink-0">
                   <svg className="w-4 h-4 md:w-5 md:h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
                 </div>
                 <div>
@@ -1311,10 +1309,10 @@ const StudentView = () => {
               <table className="w-full text-left border-separate border-spacing-0">
                 <thead className="bg-slate-50/80 border-b border-slate-100 sticky top-0 z-10">
                   <tr>
-                    <th className="px-3 md:px-7 py-2 md:py-4 text-[8px] md:text-[9px] font-black text-slate-400 uppercase tracking-[0.15em]">Subject</th>
-                    <th className="hidden sm:table-cell px-3 md:px-7 py-2 md:py-4 text-[8px] md:text-[9px] font-black text-slate-400 uppercase tracking-[0.15em]">Instructor</th>
-                    <th className="px-3 md:px-7 py-2 md:py-4 text-[8px] md:text-[9px] font-black text-slate-400 uppercase tracking-[0.15em]">Grade</th>
-                    <th className="px-3 md:px-7 py-2 md:py-4 text-[8px] md:text-[9px] font-black text-slate-400 uppercase tracking-[0.15em] text-right">Mastery</th>
+                    <th className="px-3 md:px-5 py-2 md:py-3 text-[8px] md:text-[9px] font-black text-slate-400 uppercase tracking-[0.15em]">Subject</th>
+                    <th className="hidden sm:table-cell px-3 md:px-5 py-2 md:py-3 text-[8px] md:text-[9px] font-black text-slate-400 uppercase tracking-[0.15em]">Instructor</th>
+                    <th className="px-3 md:px-5 py-2 md:py-3 text-[8px] md:text-[9px] font-black text-slate-400 uppercase tracking-[0.15em]">Grade</th>
+                    <th className="px-3 md:px-5 py-2 md:py-3 text-[8px] md:text-[9px] font-black text-slate-400 uppercase tracking-[0.15em] text-right">Mastery</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-50">
@@ -1329,7 +1327,7 @@ const StudentView = () => {
                     </td></tr>
                   ) : finalGrades.map(g => (
                     <tr key={g.id} className="hover:bg-indigo-50/30 transition-colors group cursor-pointer">
-                      <td className="px-3 md:px-7 py-2.5 md:py-4">
+                      <td className="px-3 md:px-5 py-2.5 md:py-3">
                         <div className="flex items-center gap-2 md:gap-4">
                           <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl bg-gradient-to-br from-indigo-50 to-violet-50 text-indigo-600 flex items-center justify-center font-black text-xs md:text-sm shadow-sm border border-indigo-100/50 group-hover:from-indigo-600 group-hover:to-violet-600 group-hover:text-white transition-all duration-300 shrink-0">
                             {g.subject_name?.[0] || 'S'}
@@ -1337,15 +1335,15 @@ const StudentView = () => {
                           <span className="text-xs md:text-sm font-bold text-slate-800 tracking-tight">{g.subject_name}</span>
                         </div>
                       </td>
-                      <td className="hidden sm:table-cell px-3 md:px-7 py-2.5 md:py-4">
+                      <td className="hidden sm:table-cell px-3 md:px-5 py-2.5 md:py-3">
                         <p className="text-[10px] md:text-sm font-semibold text-slate-600">{g.teacher_name || 'Instructor'}</p>
                       </td>
-                      <td className="px-3 md:px-7 py-2.5 md:py-4">
+                      <td className="px-3 md:px-5 py-2.5 md:py-3">
                         <span className={`text-base md:text-lg font-black ${(g.transmuted_score || g.raw_score) >= 90 ? 'text-emerald-600' : (g.transmuted_score || g.raw_score) >= 75 ? 'text-indigo-600' : 'text-rose-600'}`}>
                           {g.transmuted_score || g.raw_score}
                         </span>
                       </td>
-                      <td className="px-3 md:px-7 py-2.5 md:py-4 text-right">
+                      <td className="px-3 md:px-5 py-2.5 md:py-3 text-right">
                         <div className="w-16 md:w-28 ml-auto">
                           <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
                             <motion.div 
@@ -1367,14 +1365,14 @@ const StudentView = () => {
         </div>
 
         {/* ── SIDEBAR CONTENT (Right - 4 Cols) ── */}
-        <div className="lg:col-span-4 space-y-3 md:space-y-5">
+        <div className="lg:col-span-4 space-y-3 md:space-y-4">
           
           {/* Quick Shortcuts (Student Hub) */}
           <motion.div 
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.5, duration: 0.6 }}
-            className="bg-[#1A0B2E] rounded-xl md:rounded-2xl p-4 md:p-6 shadow-xl border border-white/5 relative overflow-hidden group lg:h-[300px] flex flex-col justify-center"
+            className="bg-[#1A0B2E] rounded-xl md:rounded-2xl p-4 md:p-5 shadow-xl border border-white/5 relative overflow-hidden group lg:h-[220px] flex flex-col justify-center"
           >
             <div className="absolute -right-8 -top-8 w-40 h-40 bg-indigo-600/20 rounded-full blur-[60px]" />
             <h3 className="text-white text-[10px] md:text-xs font-black uppercase tracking-[0.2em] mb-4 md:mb-5 relative z-10 flex items-center gap-2 shrink-0">
@@ -1395,7 +1393,7 @@ const StudentView = () => {
                   onClick={() => navigate(a.path)}
                   className="flex flex-col items-center justify-center gap-1.5 md:gap-2.5 p-2 md:p-3 bg-white/5 rounded-xl border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all group active:scale-95"
                 >
-                  <div className={`w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl bg-${a.color}-500/10 text-${a.color}-400 flex items-center justify-center group-hover:bg-${a.color}-500 group-hover:text-white transition-all duration-300`}>
+                  <div className={`w-8 h-8 md:w-8 md:h-8 rounded-lg md:rounded-xl bg-${a.color}-500/10 text-${a.color}-400 flex items-center justify-center group-hover:bg-${a.color}-500 group-hover:text-white transition-all duration-300`}>
                     <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d={a.icon} /></svg>
                   </div>
                   <span className="text-[7px] md:text-[9px] font-black text-indigo-200/80 uppercase tracking-[0.15em]">{a.label}</span>
@@ -1406,10 +1404,10 @@ const StudentView = () => {
 
           {/* Combined Widgets */}
           <div className="space-y-3 md:space-y-5">
-            <div className="lg:h-[360px]">
+            <div className="lg:h-[260px]">
               <TodayScheduleWidget role="student" />
             </div>
-            <div className="lg:h-[360px]">
+            <div className="lg:h-[260px]">
               <LatestMessagesWidget messages={stats?.latest_messages} onOpenChat={() => navigate('/messages')} />
             </div>
             <div className="bg-slate-50 border border-slate-200/60 rounded-lg md:rounded-xl p-3 md:p-4 shadow-sm flex items-center justify-between shrink-0">
