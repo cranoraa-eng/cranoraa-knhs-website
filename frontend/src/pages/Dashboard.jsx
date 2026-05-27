@@ -245,7 +245,7 @@ const TodayScheduleWidget = ({ role }) => {
   });
 
   return (
-    <div className="bg-white border border-slate-200/70 rounded-[2rem] p-6 shadow-sm flex flex-col relative overflow-hidden group">
+    <div className="bg-white border border-slate-200/70 rounded-[2rem] p-6 shadow-sm flex flex-col h-full relative overflow-hidden group">
       {/* Decorative background element */}
       <div className="absolute top-0 left-0 w-24 h-24 bg-gradient-to-br from-indigo-500/5 to-transparent rounded-full -ml-12 -mt-12 blur-2xl opacity-50" />
       
@@ -264,20 +264,20 @@ const TodayScheduleWidget = ({ role }) => {
         </div>
         <button
           onClick={() => navigate('/schedule')}
-          className="px-3 py-1.5 rounded-lg bg-indigo-50 text-[10px] font-black text-indigo-600 hover:bg-indigo-600 hover:text-white uppercase tracking-widest transition-all active:scale-95"
+          className="px-3 py-1.5 rounded-lg bg-indigo-50 text-[10px] font-black text-indigo-600 hover:bg-indigo-600 hover:text-white uppercase tracking-widest transition-all active:scale-95 shadow-sm"
         >
           View Full
         </button>
       </div>
 
       {/* Content */}
-      <div className="space-y-3 relative z-10">
+      <div className="flex-1 min-h-0 relative z-10">
         {loading ? (
           <div className="space-y-3">
             {[1,2,3].map(i => <div key={i} className="h-16 rounded-2xl bg-slate-50 animate-pulse border border-slate-100/50" />)}
           </div>
         ) : schedule.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-8 bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
+          <div className="flex flex-col items-center justify-center h-full bg-slate-50/50 rounded-2xl border border-dashed border-slate-200 p-6 text-center">
             <div className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center mb-3 shadow-sm">
               <svg className="w-6 h-6 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -287,7 +287,7 @@ const TodayScheduleWidget = ({ role }) => {
             <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-1">Enjoy your free time!</p>
           </div>
         ) : (
-          <div className="space-y-2.5 max-h-[300px] overflow-y-auto pr-1 -mr-1 scrollbar-none">
+          <div className="space-y-2.5 h-full overflow-y-auto pr-1 -mr-1 scrollbar-none pb-2">
             {schedule.map((s, idx) => {
               const isCurrent = idx === currentIdx;
               const isPast    = currentIdx !== -1 && idx < currentIdx;
@@ -845,10 +845,10 @@ const TeacherView = () => {
         {/* ── RIGHT COLUMN (lg:4): Tools + Schedule + Messages ── */}
         <div className="lg:col-span-4 space-y-5 md:space-y-6">
           {/* Teaching Intelligence */}
-          <div className="bg-[#1A0B2E] rounded-[2rem] p-6 shadow-xl border border-white/5 relative overflow-hidden group">
+          <div className="bg-[#1A0B2E] rounded-[2rem] p-6 shadow-xl border border-white/5 relative overflow-hidden group lg:h-[380px] flex flex-col justify-center">
             <div className="absolute -right-8 -top-8 w-40 h-40 bg-violet-500/10 rounded-full blur-3xl" />
             
-            <div className="relative z-10 flex items-center justify-between mb-6">
+            <div className="relative z-10 flex items-center justify-between mb-6 shrink-0">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-2xl bg-violet-500/20 border border-violet-500/30 flex items-center justify-center shrink-0">
                   <svg className="w-5 h-5 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
@@ -860,7 +860,7 @@ const TeacherView = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3 relative z-10">
+            <div className="grid grid-cols-2 gap-3 relative z-10 flex-1">
               {[
                 { label: 'Attendance', path: '/attendance', color: 'text-emerald-400', bg: 'bg-emerald-400/10', icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4' },
                 { label: 'Grade Input', path: '/grade-input', color: 'text-violet-400', bg: 'bg-violet-400/10', icon: 'M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z' },
@@ -878,9 +878,11 @@ const TeacherView = () => {
             </div>
           </div>
 
-          <TodayScheduleWidget role="teacher" />
+          <div className="lg:h-[380px]">
+            <TodayScheduleWidget role="teacher" />
+          </div>
           
-          <div className="flex-1 min-h-[400px]">
+          <div className="lg:h-[380px]">
             <LatestMessagesWidget messages={data?.latest_messages} onOpenChat={() => navigate('/messages')} />
           </div>
         </div>
