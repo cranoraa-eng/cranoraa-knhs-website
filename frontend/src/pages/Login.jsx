@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { loginRequest, clearSession } from '../utils/auth';
 import api from '../utils/api';
@@ -237,7 +237,98 @@ const Login = () => {
     });
   };
 
-  const validate = () => {
+  const handleForgotPassword = () => {
+    if (loginType === 'student') {
+      // Students: show info popup — no email form
+      Swal.fire({
+        title: 'Forgot Password?',
+        html: `
+          <div style="text-align:left;font-size:13px;color:#475569;line-height:1.7;">
+            <p style="margin-bottom:12px;">
+              Contact your <strong style="color:#1e293b;">teacher</strong> or visit the
+              <strong style="color:#1e293b;">school office</strong> to request a password reset.
+            </p>
+            <p style="margin-bottom:16px;">
+              Your teacher or admin will provide you with a temporary password.
+              You'll be asked to change it on your next login.
+            </p>
+            <div style="border-top:1px solid #e2e8f0;padding-top:12px;text-align:center;">
+              <p style="font-size:12px;color:#94a3b8;margin-bottom:8px;">
+                If you have a registered email address, you can also reset directly.
+              </p>
+            </div>
+          </div>
+        `,
+        confirmButtonText: 'Reset via Email →',
+        confirmButtonColor: '#7c3aed',
+        showCancelButton: true,
+        cancelButtonText: 'Got it',
+        cancelButtonColor: '#64748b',
+        customClass: { popup: 'rounded-[2rem]' },
+      }).then((result) => {
+        if (result.isConfirmed) {
+          openEmailResetPopup();
+        }
+      });
+    } else {
+      // Teachers / Parents: go straight to email reset
+      openEmailResetPopup();
+    }
+  };
+
+  const openEmailResetPopup = () => {
+    Swal.fire({
+      title: 'Reset Password',
+      html: `
+        <p style="font-size:13px;color:#64748b;margin-bottom:16px;">
+          Enter your registered email address and we'll send you a reset code.
+        </p>
+        <input
+          id="swal-reset-email"
+          type="email"
+          placeholder="your@email.com"
+          class="swal2-input"
+          style="font-size:14px;"
+        />
+      `,
+      confirmButtonText: 'Send Reset Code',
+      confirmButtonColor: '#7c3aed',
+      showCancelButton: true,
+      cancelButtonColor: '#64748b',
+      customClass: { popup: 'rounded-[2rem]' },
+      focusConfirm: false,
+      showLoaderOnConfirm: true,
+      preConfirm: async () => {
+        const email = document.getElementById('swal-reset-email').value.trim();
+        if (!email) {
+          Swal.showValidationMessage('Please enter your email address');
+          return false;
+        }
+        try {
+          await api.post('/password-reset/', { email });
+          return email;
+        } catch (err) {
+          const msg = err.response?.data?.error || err.response?.data?.message || 'Failed to send reset code.';
+          Swal.showValidationMessage(msg);
+          return false;
+        }
+      },
+      allowOutsideClick: () => !Swal.isLoading(),
+    }).then((result) => {
+      if (result.isConfirmed && result.value) {
+        Swal.fire({
+          icon: 'success',
+          title: 'Code Sent!',
+          text: `A reset code has been sent to ${result.value}. Check your inbox and spam folder.`,
+          confirmButtonColor: '#7c3aed',
+          confirmButtonText: 'Enter Code',
+          customClass: { popup: 'rounded-[2rem]' },
+        }).then(() => {
+          navigate('/reset-password', { state: { email: result.value } });
+        });
+      }
+    });
+  };
     const errors = {};
     if (!identifier.trim()) errors.identifier = loginType === 'student' ? 'Student ID or Email is required' : 'Email is required';
     if (!password) errors.password = 'Password is required';
@@ -550,7 +641,7 @@ const Login = () => {
             <div>
               <div className="flex items-center justify-between mb-1.5">
                 <label htmlFor="password" className={`text-xs font-bold uppercase tracking-wider transition-colors duration-500 ${isAdmin ? 'text-emerald-500/70' : 'text-slate-600'}`}>Password</label>
-                {!isAdmin && <Link to="/forgot-password" className={`text-xs font-semibold text-${currentRole.color}-600 hover:text-${currentRole.color}-700 transition-colors`}>Forgot password?</Link>}
+                {!isAdmin && <button type="button" onClick={handleForgotPassword} className={`text-xs font-semibold text-${currentRole.color}-600 hover:text-${currentRole.color}-700 transition-colors`}>Forgot password?</button>}
               </div>
               <div className="relative">
                 <input
