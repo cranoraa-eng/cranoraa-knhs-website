@@ -14,7 +14,7 @@ from .views import (
     password_reset_request_view, password_reset_confirm_view,
     RoomViewSet, TimeSlotViewSet, ScheduleViewSet,
     parent_dashboard_view, parent_child_detail_view,
-    fcm_token_register, fcm_token_delete,
+    fcm_token_register, fcm_token_delete, test_push_notification,
 )
 
 router = DefaultRouter()
