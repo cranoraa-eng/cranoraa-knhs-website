@@ -4228,17 +4228,25 @@ class ReportedMessageViewSet(viewsets.ModelViewSet):
     def delete_message(self, request, pk=None):
         if request.user.role != 'admin':
             return Response({'error': 'Unauthorized'}, status=403)
+        
         report = self.get_object()
         message = report.message
+        note = request.data.get('note', 'Message deleted by moderator.')
+
         if not message:
-             return Response({'error': 'Message already deleted'}, status=404)
+            # If message is already gone, just resolve the report
+            report.status = 'resolved'
+            report.moderator_note = f"{note} (Note: Message was already removed)"
+            report.resolved_by = request.user
+            report.resolved_at = timezone.now()
+            report.save()
+            return Response({'status': 'Report resolved (message was already deleted)'})
         
         sender = message.sender
-        room_name = message.room.name if message.room else "a chat room"
+        room = message.room
+        room_name = room.name if room and room.is_group else "a chat room"
         room_id = message.room_id
         message_id = message.id
-        room = message.room
-        note = request.data.get('note', 'Message deleted by moderator.')
         
         # Broadcast before deletion
         from channels.layers import get_channel_layer
@@ -4257,9 +4265,10 @@ class ReportedMessageViewSet(viewsets.ModelViewSet):
         async_to_sync(channel_layer.group_send)(f'chat_{room_id}', broadcast_data)
         
         # Personal channel broadcasts
-        participants = room.participants.all()
-        for p in participants:
-            async_to_sync(channel_layer.group_send)(f'user_{p.id}', broadcast_data)
+        if room:
+            participants = room.participants.all()
+            for p in participants:
+                async_to_sync(channel_layer.group_send)(f'user_{p.id}', broadcast_data)
             
         message.delete()
         
