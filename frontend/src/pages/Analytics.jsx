@@ -17,51 +17,86 @@ const exportToPDF = async (ref, filename, title, subtitle, meta = {}) => {
     const { default: html2canvas } = await import('html2canvas');
     const { jsPDF } = await import('jspdf');
 
-    // ── Fix transparency: force white bg before capture ─────────────────────
+    // ── Fix transparency and prepare for capture ─────────────────────
     const el = ref.current;
+    
+    // Temporarily hide interactive elements (buttons, selectors)
+    const interactiveElements = el.querySelectorAll('button, select, .YearSelector, .FilterSelect');
+    interactiveElements.forEach(item => {
+      item.dataset.originalOpacity = item.style.opacity;
+      item.style.opacity = '0';
+    });
+
     const prevBg = el.style.background;
-    const prevColor = el.style.color;
     el.style.background = '#ffffff';
 
     const canvas = await html2canvas(el, {
-      scale: 1.8,
+      scale: 2,
       useCORS: true,
       allowTaint: true,
       backgroundColor: '#ffffff',
       logging: false,
-      windowWidth: el.scrollWidth,
-      windowHeight: el.scrollHeight,
+      windowWidth: 1200,
       onclone: (cloneDoc) => {
-        // Force dark sections to render with solid backgrounds
-        cloneDoc.querySelectorAll('[class*="bg-slate-9"], [class*="bg-\\[#"]').forEach(n => {
-          if (window.getComputedStyle(n).backgroundColor === 'rgba(0, 0, 0, 0)') {
-            n.style.backgroundColor = '#1a0b2e';
-          }
+        // Find the element in the clone
+        const clonedEl = cloneDoc.querySelector(`[data-pdf-content="${el.dataset.pdfContent}"]`);
+        if (clonedEl) {
+          clonedEl.style.background = '#ffffff';
+          clonedEl.style.padding = '0px';
+          clonedEl.style.margin = '0px';
+          clonedEl.style.boxShadow = 'none';
+          clonedEl.style.width = '1200px';
+        }
+        
+        // Hide interactive elements
+        cloneDoc.querySelectorAll('button, select, .YearSelector, .FilterSelect, .TabNavigation').forEach(n => {
+          n.style.display = 'none';
         });
-        // Remove backdrop-filter which causes transparency
+
+        // Convert dark sections to light for PDF and reduce padding
+        cloneDoc.querySelectorAll('.bg-slate-900, .bg-slate-800').forEach(n => {
+          n.style.background = '#ffffff';
+          n.style.color = '#0f172a';
+          n.style.border = '1px solid #e2e8f0';
+          n.style.padding = '20px'; // Reduced from p-8
+          n.style.boxShadow = 'none';
+          
+          // Fix nested text colors
+          n.querySelectorAll('.text-slate-50, .text-slate-100, .text-slate-200, .text-slate-300').forEach(t => {
+            t.style.color = '#1e293b';
+          });
+        });
+
+        // Ensure all text is dark and remove shadows
         cloneDoc.querySelectorAll('*').forEach(n => {
           n.style.backdropFilter = 'none';
           n.style.webkitBackdropFilter = 'none';
+          n.style.boxShadow = 'none';
+          if (n.classList.contains('text-slate-400') || n.classList.contains('text-slate-500')) {
+            n.style.color = '#64748b';
+          }
         });
       },
     });
 
+    // Restore styles
     el.style.background = prevBg;
-    el.style.color = prevColor;
+    interactiveElements.forEach(item => {
+      item.style.opacity = item.dataset.originalOpacity || '';
+    });
 
     const imgData = canvas.toDataURL('image/png', 1.0);
 
     // ── PDF setup ────────────────────────────────────────────────────────────
     const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-    const W = 210; const H = 297; const M = 18; const CW = W - M * 2;
+    const W = 210; const H = 297; const M = 15; const CW = W - M * 2;
 
-    // Palette — clean, formal
     const C = {
       black:  [15,  23,  42],
       dark:   [30,  41,  59],
       mid:    [71,  85, 105],
       muted:  [148, 163, 184],
-      border: [203, 213, 225],
+      border: [226, 232, 240],
       light:  [248, 250, 252],
       white:  [255, 255, 255],
       accent: [79,  70, 229],
@@ -71,180 +106,215 @@ const exportToPDF = async (ref, filename, title, subtitle, meta = {}) => {
     const sf = (size, w = 'normal', col = C.black) => {
       pdf.setFontSize(size); pdf.setFont('helvetica', w); pdf.setTextColor(...col);
     };
-    const hl = (y, col = C.border, lw = 0.25) => {
+    const hl = (y, col = C.border, lw = 0.2) => {
       pdf.setDrawColor(...col); pdf.setLineWidth(lw); pdf.line(M, y, W - M, y);
     };
-    const footer = (pageNum) => {
-      hl(H - 14, C.border);
-      sf(6.5, 'normal', C.muted);
-      pdf.text(meta.schoolName || 'Kiwalan National High School', M, H - 8);
-      pdf.text('Confidential — Internal Use Only', W - M, H - 8, { align: 'right' });
-      pdf.text(String(pageNum), W / 2, H - 8, { align: 'center' });
+    const footer = (pageNum, totalPages) => {
+      hl(H - 15, C.border);
+      sf(7, 'normal', C.muted);
+      pdf.text(meta.schoolName || 'Kiwalan National High School', M, H - 10);
+      pdf.text(`Page ${pageNum} ${totalPages ? 'of ' + totalPages : ''}`, W / 2, H - 10, { align: 'center' });
+      pdf.text('Internal Document', W - M, H - 10, { align: 'right' });
     };
-    const pageHeader = () => {
-      sf(7, 'bold', C.accent);
-      pdf.text(title.toUpperCase(), M, 13);
-      sf(6.5, 'normal', C.muted);
-      pdf.text(subtitle, W - M, 13, { align: 'right' });
-      hl(16, C.border);
+    const pageHeader = (pTitle) => {
+      sf(8, 'bold', C.accent);
+      pdf.text(pTitle || title.toUpperCase(), M, 12);
+      sf(7, 'normal', C.muted);
+      pdf.text(subtitle, W - M, 12, { align: 'right' });
+      hl(15);
     };
 
     // ════════════════════════════════════════════════════════════════════════
-    // PAGE 1 — COVER (clean, formal, white)
+    // PAGE 1 — COVER & OVERVIEW
     // ════════════════════════════════════════════════════════════════════════
-    pdf.setFillColor(...C.white);
+    // Background accent
+    pdf.setFillColor(252, 251, 255);
     pdf.rect(0, 0, W, H, 'F');
-
-    // Top accent bar
+    
+    // Left decorative bar
     pdf.setFillColor(...C.accent);
-    pdf.rect(0, 0, W, 3, 'F');
+    pdf.rect(0, 0, 1.5, H, 'F');
 
-    // School name — top right
-    sf(7.5, 'normal', C.muted);
-    pdf.text((meta.schoolName || 'Kiwalan National High School').toUpperCase(), W - M, 14, { align: 'right' });
-    hl(17);
+    // Logo & School Name
+    try {
+      pdf.addImage('/icons/school-logo-source.png', 'PNG', M, 20, 15, 15);
+    } catch(e) {}
+    
+    sf(10, 'bold', C.black);
+    pdf.text(meta.schoolName || 'Kiwalan National High School', M + 18, 26);
+    sf(7, 'normal', C.muted);
+    pdf.text('DEPARTMENT OF EDUCATION • REGION X • DIVISION OF ILIGAN CITY', M + 18, 30);
+    
+    hl(40);
 
-    // Report label
-    sf(8, 'normal', C.muted);
-    pdf.text('ANALYTICS REPORT', M, 30);
+    // Title Block
+    sf(8, 'bold', C.accent);
+    pdf.text('ANALYTICS & INTELLIGENCE REPORT', M, 55);
+    
+    sf(28, 'bold', C.black);
+    const titleLines = pdf.splitTextToSize(title, CW - 40);
+    pdf.text(titleLines, M, 70);
+    const titleH = titleLines.length * 12;
 
-    // Main title
-    sf(26, 'bold', C.black);
-    const titleLines = pdf.splitTextToSize(title, CW);
-    pdf.text(titleLines, M, 42);
-    const titleBottom = 42 + titleLines.length * 10;
+    sf(12, 'normal', C.mid);
+    pdf.text(subtitle, M, 70 + titleH + 2);
 
-    // Subtitle
-    sf(10, 'normal', C.mid);
-    pdf.text(subtitle, M, titleBottom + 5);
+    // Meta Info Table-style
+    const metaY = 70 + titleH + 25;
+    pdf.setFillColor(255, 255, 255);
+    pdf.setDrawColor(...C.border);
+    pdf.roundedRect(M, metaY, CW, 35, 2, 2, 'FD');
 
-    // Accent underline
-    pdf.setFillColor(...C.accent);
-    pdf.rect(M, titleBottom + 10, 28, 1, 'F');
-
-    // Meta block
-    const metaY = titleBottom + 24;
-    hl(metaY - 4);
-    const metaRows = [
-      ['Date Generated', new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })],
-      ['Time',           new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })],
-      ['Academic Year',  meta.academicYear || '—'],
-      ['Prepared By',    meta.preparedBy || 'School Administrator'],
+    const metaItems = [
+      ['Report Period', academicYear],
+      ['Generated On', new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })],
+      ['Classification', 'Confidential / Administrative'],
+      ['Prepared By', meta.preparedBy || 'School Administrator']
     ];
-    metaRows.forEach(([label, value], i) => {
-      const y = metaY + i * 9;
-      sf(7, 'normal', C.muted);
-      pdf.text(label.toUpperCase(), M, y);
-      sf(8, 'bold', C.dark);
-      pdf.text(value, M + 48, y);
-    });
-    hl(metaY + metaRows.length * 9 + 2);
 
-    // Key metrics
+    metaItems.forEach(([label, val], i) => {
+      const rowY = metaY + 8 + (i * 7);
+      sf(7, 'bold', C.muted);
+      pdf.text(label.toUpperCase(), M + 8, rowY);
+      sf(8, 'normal', C.black);
+      pdf.text(val, M + 50, rowY);
+    });
+
+    // Key Stats Section
+    let curY = metaY + 50;
     if (meta.stats && meta.stats.length > 0) {
-      const sY = metaY + metaRows.length * 9 + 12;
-      sf(7, 'normal', C.muted);
-      pdf.text('KEY METRICS', M, sY);
-      const sW = (CW - (meta.stats.length - 1) * 3) / meta.stats.length;
+      sf(9, 'bold', C.black);
+      pdf.text('EXECUTIVE SUMMARY METRICS', M, curY);
+      
+      const cardW = (CW - (meta.stats.length - 1) * 4) / meta.stats.length;
       meta.stats.forEach((stat, i) => {
-        const sx = M + i * (sW + 3);
-        const sy = sY + 5;
-        pdf.setFillColor(...C.white);
+        const x = M + i * (cardW + 4);
+        const y = curY + 6;
+        pdf.setFillColor(255, 255, 255);
         pdf.setDrawColor(...C.border);
-        pdf.setLineWidth(0.3);
-        pdf.roundedRect(sx, sy, sW, 20, 1.5, 1.5, 'FD');
+        pdf.roundedRect(x, y, cardW, 22, 1.5, 1.5, 'FD');
+        
+        // Color strip
         pdf.setFillColor(...(stat.color || C.accent));
-        pdf.roundedRect(sx, sy, sW, 1.5, 0.5, 0.5, 'F');
-        sf(6.5, 'normal', C.muted);
-        pdf.text(stat.label.toUpperCase(), sx + sW / 2, sy + 8, { align: 'center' });
-        sf(13, 'bold', C.black);
-        pdf.text(String(stat.value), sx + sW / 2, sy + 16, { align: 'center' });
+        pdf.rect(x + 2, y + 2, 2, 18, 'F');
+
+        sf(6, 'bold', C.muted);
+        pdf.text(stat.label.toUpperCase(), x + 7, y + 8);
+        sf(12, 'bold', C.black);
+        pdf.text(String(stat.value), x + 7, y + 17);
       });
+      curY += 35; // Advance Y after stats
     }
 
-    // Footer
-    footer(1);
-
     // ════════════════════════════════════════════════════════════════════════
-    // PAGE 2 — CHARTS
+    // DATA VISUALIZATIONS (Integrated into Flow)
     // ════════════════════════════════════════════════════════════════════════
-    pdf.addPage();
-    pdf.setFillColor(...C.white);
-    pdf.rect(0, 0, W, H, 'F');
-    pdf.setFillColor(...C.accent);
-    pdf.rect(0, 0, W, 3, 'F');
-    pageHeader();
-
-    sf(7.5, 'bold', C.accent);
-    pdf.text('CHARTS & VISUALIZATIONS', M, 25);
-    hl(28, C.accentL);
-
-    const chartY = 32;
-    const maxChartH = H - chartY - 20;
     const imgW = CW;
-    const imgH = Math.min((canvas.height * imgW) / canvas.width, maxChartH);
-    pdf.setDrawColor(...C.border);
-    pdf.setLineWidth(0.25);
-    pdf.rect(M, chartY, imgW, imgH);
-    pdf.addImage(imgData, 'PNG', M, chartY, imgW, imgH);
-    footer(2);
+    const imgH = (canvas.height * imgW) / canvas.width;
+    
+    // Check if we should start visualizations on a new page or continue
+    const firstPageAvailH = H - curY - 25;
+    
+    if (firstPageAvailH < 40) { // If less than 40mm left, just start new page
+      footer(pdf.internal.getNumberOfPages());
+      pdf.addPage();
+      pageHeader('DATA VISUALIZATIONS & ANALYTICS');
+      curY = 20;
+    } else {
+      sf(9, 'bold', C.black);
+      pdf.text('DATA VISUALIZATIONS & ANALYTICS', M, curY);
+      curY += 6;
+    }
+
+    let remainingH = imgH;
+    let currentSourceY = 0;
+    let currentPage = pdf.internal.getNumberOfPages();
+    
+    while (remainingH > 0) {
+      const availH = H - curY - 25;
+      const pageCaptureH = Math.min(remainingH, availH);
+      
+      const ratio = canvas.width / imgW;
+      const sourceH = pageCaptureH * ratio;
+      
+      const tempCanvas = document.createElement('canvas');
+      tempCanvas.width = canvas.width;
+      tempCanvas.height = sourceH;
+      const ctx = tempCanvas.getContext('2d');
+      ctx.drawImage(canvas, 0, currentSourceY, canvas.width, sourceH, 0, 0, canvas.width, sourceH);
+      
+      const partData = tempCanvas.toDataURL('image/png');
+      pdf.addImage(partData, 'PNG', M, curY, imgW, pageCaptureH);
+      
+      remainingH -= pageCaptureH;
+      currentSourceY += sourceH;
+      curY += pageCaptureH;
+
+      if (remainingH > 0) {
+        footer(currentPage);
+        pdf.addPage();
+        currentPage++;
+        pageHeader('DATA VISUALIZATIONS (CONTINUED)');
+        curY = 20;
+      }
+    }
 
     // ════════════════════════════════════════════════════════════════════════
-    // PAGE 3 — INTERPRETATIONS
+    // INTERPRETATIONS (Integrated into Flow)
     // ════════════════════════════════════════════════════════════════════════
     if (meta.interpretations && meta.interpretations.length > 0) {
-      const drawInterpHeader = (pageNum) => {
-        pdf.setFillColor(...C.white);
-        pdf.rect(0, 0, W, H, 'F');
-        pdf.setFillColor(...C.accent);
-        pdf.rect(0, 0, W, 3, 'F');
-        pageHeader();
-        sf(7.5, 'bold', C.accent);
-        pdf.text('ANALYSIS & INTERPRETATION', M, 25);
-        hl(28, C.accentL);
-        footer(pageNum);
-      };
-
-      pdf.addPage();
-      drawInterpHeader(3);
-
+      // Check space for interpretation header
+      if (H - curY - 25 < 30) {
+        footer(pdf.internal.getNumberOfPages());
+        pdf.addPage();
+        pageHeader('AI INTERPRETATION & INSIGHTS');
+        curY = 20;
+      } else {
+        curY += 10;
+        sf(9, 'bold', C.black);
+        pdf.text('AI INTERPRETATION & INSIGHTS', M, curY);
+        curY += 6;
+      }
+      
       const tStyle = {
-        good: { bg: [240,253,244], border: [134,239,172], lc: [22,163,74],  label: 'POSITIVE'  },
-        warn: { bg: [255,251,235], border: [253,224,71],  lc: [161,98,7],   label: 'ATTENTION' },
-        bad:  { bg: [254,242,242], border: [252,165,165], lc: [185,28,28],  label: 'CONCERN'   },
-        info: { bg: [239,246,255], border: [147,197,253], lc: [29,78,216],  label: 'NOTE'      },
+        good: { bg: [240, 253, 244], border: [187, 247, 208], text: [21, 128, 61], label: 'POSITIVE' },
+        warn: { bg: [255, 251, 235], border: [254, 243, 199], text: [180, 83, 9],  label: 'ATTENTION' },
+        bad:  { bg: [254, 242, 242], border: [254, 226, 226], text: [185, 28, 28], label: 'CONCERN' },
+        info: { bg: [240, 249, 255], border: [224, 242, 254], text: [3, 105, 161], label: 'NOTE' },
       };
-
-      let curY = 32;
-      let pageNum = 3;
 
       meta.interpretations.forEach((item) => {
         const s = tStyle[item.type] || tStyle.info;
-        const lines = pdf.splitTextToSize(item.text, CW - 22);
-        const cardH = Math.max(13, lines.length * 4.8 + 8);
+        const lines = pdf.splitTextToSize(item.text, CW - 25);
+        const cardH = Math.max(16, lines.length * 5 + 10);
 
-        if (curY + cardH > H - 20) {
-          pageNum++;
+        if (curY + cardH > H - 25) {
+          footer(pdf.internal.getNumberOfPages());
           pdf.addPage();
-          drawInterpHeader(pageNum);
-          curY = 32;
+          pageHeader('INTERPRETATION (CONTINUED)');
+          curY = 20;
         }
 
+        // Card shadow/border
         pdf.setFillColor(...s.bg);
         pdf.setDrawColor(...s.border);
-        pdf.setLineWidth(0.25);
-        pdf.roundedRect(M, curY, CW, cardH, 1.5, 1.5, 'FD');
-        pdf.setFillColor(...s.lc);
-        pdf.roundedRect(M, curY, 2.5, cardH, 0.5, 0.5, 'F');
-        sf(6, 'bold', s.lc);
-        pdf.text(s.label, M + 6, curY + 5.5);
-        sf(7.5, 'normal', C.dark);
-        pdf.text(lines, M + 6, curY + 10.5);
+        pdf.roundedRect(M, curY, CW, cardH, 2, 2, 'FD');
+        
+        // Icon indicator
+        pdf.setFillColor(...s.text);
+        pdf.circle(M + 8, curY + 8, 1.5, 'F');
+        
+        sf(7, 'bold', s.text);
+        pdf.text(s.label, M + 12, curY + 9);
+        
+        sf(9, 'normal', C.dark);
+        pdf.text(lines, M + 12, curY + 16);
 
-        curY += cardH + 3.5;
+        curY += cardH + 5;
       });
     }
-
+    
+    footer(pdf.internal.getNumberOfPages());
     pdf.save(filename);
   } catch (err) {
     console.error('PDF export failed:', err);
@@ -805,7 +875,7 @@ const GradeRankingSection = ({ data, filterSubject, meta, timeframe }) => (
 );
 
 const FilterSelect = ({ label, value, onChange, options }) => (
-  <div className="relative min-w-[140px]">
+  <div className="relative min-w-[140px] FilterSelect">
     <label className="absolute -top-2 left-2 px-1 bg-slate-900 text-[8px] font-black text-slate-500 uppercase tracking-widest z-10">{label}</label>
     <select value={value} onChange={onChange} className="w-full h-[38px] px-3 bg-slate-800 border border-slate-700 rounded-lg text-[10px] font-black text-white uppercase tracking-tight focus:border-indigo-500 outline-none transition-all appearance-none pr-8 cursor-pointer">
       {options.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
@@ -824,7 +894,7 @@ const SubjectFilterSelect = ({ value, onChange, filterLevel, gradeData }) => {
   }, {});
 
   return (
-    <div className="relative min-w-[140px]">
+    <div className="relative min-w-[140px] FilterSelect">
       <label className="absolute -top-2 left-2 px-1 bg-slate-900 text-[8px] font-black text-slate-500 uppercase tracking-widest z-10">Subject Focus</label>
       <select value={value} onChange={onChange} className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-[10px] font-black text-white uppercase tracking-tight focus:border-indigo-500 outline-none transition-all appearance-none pr-8 cursor-pointer disabled:opacity-50" disabled={filterLevel === 'all'}>
         <option value="all">{filterLevel === 'all' ? 'Select Level First' : 'Cumulative (All Subjects)'}</option>
@@ -838,7 +908,7 @@ const SubjectFilterSelect = ({ value, onChange, filterLevel, gradeData }) => {
 };
 
 const YearSelector = ({ academicYear, onYearChange }) => (
-  <div className="relative min-w-[140px]">
+  <div className="relative min-w-[140px] YearSelector">
     <label className="absolute -top-2 left-2 px-1 bg-slate-900 text-[8px] font-black text-slate-500 uppercase tracking-widest z-10">Academic Year</label>
     <div className="flex items-center bg-slate-800 border border-slate-700 rounded-lg overflow-hidden h-[38px] group/selector">
       <button 
@@ -1057,7 +1127,7 @@ const Analytics = () => {
       </div>
 
       {activeTab === 'system' && (
-        <div className="space-y-4 animate-fade-in" ref={systemRef}>
+        <div className="space-y-4 animate-fade-in" ref={systemRef} data-pdf-content="system">
           {!data && loading ? <Spinner /> : (
             <>
               <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 bg-slate-900 p-8 rounded-2xl border border-slate-800 shadow-2xl">
@@ -1109,7 +1179,7 @@ const Analytics = () => {
       )}
 
       {activeTab === 'grades' && (
-        <div className="space-y-4 animate-fade-in" ref={gradesRef}>
+        <div className="space-y-4 animate-fade-in" ref={gradesRef} data-pdf-content="grades">
           {gradeLoading && !gradeData ? <Spinner /> : (
             <>
               <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4 bg-slate-900 py-8 px-6 rounded-2xl border border-slate-800 shadow-2xl">
@@ -1203,7 +1273,7 @@ const Analytics = () => {
       )}
 
       {activeTab === 'attendance' && (
-        <div className="space-y-4 animate-fade-in" ref={attendanceRef}>
+        <div className="space-y-4 animate-fade-in" ref={attendanceRef} data-pdf-content="attendance">
           {attendanceLoading && !attendanceAnalytics ? <Spinner /> : (
             <>
               <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 bg-slate-900 p-8 rounded-2xl border border-slate-800 shadow-2xl">
