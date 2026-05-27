@@ -2,7 +2,7 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from .views import (
-    login_view, admin_create_user_view, force_password_change_view, verify_otp_view, resend_otp_view, user_profile, student_profile,
+    login_view, admin_create_user_view, force_password_change_view, user_profile, student_profile,
     teacher_dashboard_stats, student_dashboard_stats, ClassroomViewSet, StudentClassEnrollmentViewSet, UserViewSet,
     AnnouncementViewSet, AttendanceViewSet, LearningMaterialViewSet, SubjectViewSet,
     ClassroomSubjectViewSet, ScratchCardViewSet, FeeViewSet, NotificationViewSet,
@@ -11,7 +11,6 @@ from .views import (
     student_calendar_view, notifications_polling_view, system_metrics_view,
     maintenance_feed_view, maintenance_mode_view, force_sync_view, run_backup_view, clear_cache_view,
     system_settings_view, maintenance_status_view,
-    password_reset_request_view, password_reset_confirm_view,
     RoomViewSet, TimeSlotViewSet, ScheduleViewSet,
     parent_dashboard_view, parent_child_detail_view,
     fcm_token_register, fcm_token_delete, test_push_notification,
@@ -47,10 +46,6 @@ urlpatterns = [
     path('login/', login_view, name='login'),
     path('admin/create-user/', admin_create_user_view, name='admin_create_user'),
     path('force-password-change/', force_password_change_view, name='force_password_change'),
-    path('password-reset/', password_reset_request_view, name='password_reset_request'),
-    path('password-reset-confirm/', password_reset_confirm_view, name='password_reset_confirm'),
-    path('verify-otp/', verify_otp_view, name='verify_otp'),
-    path('resend-otp/', resend_otp_view, name='resend_otp'),
     path('profile/', user_profile, name='profile'),
     path('student/profile/', student_profile, name='student_profile'),
     path('student/calendar/', student_calendar_view, name='student_calendar'),

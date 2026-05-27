@@ -31,13 +31,8 @@ import random
 import string
 
 from .utils import (
-    create_otp,
-    verify_otp_code,
-    send_mailjet_otp_email,
     send_mailjet_email,
     check_user_moderation,
-    normalize_mailjet_error_detail,
-    get_mailjet_health_status,
 )
 
 @csrf_exempt
@@ -312,136 +307,6 @@ def admin_create_user_view(request):
     except Exception as e:
         logger.error(f"User creation error: {str(e)}")
         return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
-
-@api_view(['POST'])
-@permission_classes([AllowAny])
-def verify_otp_view(request):
-    email = request.data.get('email')
-    code = request.data.get('code')
-    otp_type = request.data.get('type', 'signup')
-    
-    if not email or not code:
-        return Response({'error': 'Email and code are required'}, status=status.HTTP_400_BAD_REQUEST)
-        
-    try:
-        user = User.objects.get(email=email)
-        success, message = verify_otp_code(user, code, otp_type=otp_type)
-        
-        if not success:
-            return Response({'error': message}, status=status.HTTP_400_BAD_REQUEST)
-            
-        if otp_type == 'signup':
-            user.is_verified = True
-            user.save()
-        
-        return Response({'message': message})
-        
-    except User.DoesNotExist:
-        return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
-
-
-@csrf_exempt
-@api_view(['POST'])
-@permission_classes([AllowAny])
-def resend_otp_view(request):
-    try:
-        email = request.data.get('email')
-        otp_type = request.data.get('type', 'signup')
-        
-        logger.info(f"Resend OTP request for email: {email}, type: {otp_type}")
-        
-        if not email:
-            return Response({'error': 'Email is required'}, status=status.HTTP_400_BAD_REQUEST)
-            
-        try:
-            user = User.objects.get(email=email)
-            if otp_type == 'signup' and user.is_verified:
-                return Response({'message': 'Email is already verified'})
-                
-            code = create_otp(user, otp_type=otp_type)
-            logger.info(f"Generated {otp_type} OTP for {email}")
-            
-            # Use safe send_mailjet_otp_email which handles its own exceptions
-            sent, error_detail = send_mailjet_otp_email(user.email, code, user.first_name or user.username, otp_type=otp_type)
-            
-            if sent:
-                logger.info(f"Successfully resent {otp_type} OTP to {email}")
-                return Response({'message': f'A new verification code has been sent to {email}.'})
-            else:
-                error_meta = normalize_mailjet_error_detail(error_detail)
-                logger.error(f"Failed to send {otp_type} OTP to {email} via Mailjet. Error: {error_detail}")
-                return Response({
-                    'error': f"Email delivery failed: {error_meta['message']}",
-                    'detail': error_meta['admin_message'],
-                    'error_code': error_meta['code'],
-                    'admin_message': error_meta['admin_message'],
-                    'code': code if settings.DEBUG else None
-                }, status=status.HTTP_400_BAD_REQUEST)
-            
-        except User.DoesNotExist:
-            logger.warning(f"Resend OTP requested for non-existent user: {email}")
-            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
-    except Exception as e:
-        logger.error(f"Unexpected error in resend_otp_view: {str(e)}", exc_info=True)
-        return Response({'error': f'An unexpected error occurred: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
-@csrf_exempt
-@api_view(['POST'])
-@permission_classes([AllowAny])
-def password_reset_request_view(request):
-    email = request.data.get('email')
-    if not email:
-        return Response({'error': 'Email is required'}, status=status.HTTP_400_BAD_REQUEST)
-    
-    try:
-        user = User.objects.get(email=email)
-        code = create_otp(user, otp_type='password_reset')
-        sent, error_detail = send_mailjet_otp_email(user.email, code, user.first_name or user.username, otp_type='password_reset')
-        if sent:
-            return Response({'message': 'Password reset code sent to your email.'})
-        else:
-            error_meta = normalize_mailjet_error_detail(error_detail)
-            return Response({
-                'error': f"Email delivery failed: {error_meta['message']}",
-                'detail': error_meta['admin_message'],
-                'error_code': error_meta['code'],
-                'admin_message': error_meta['admin_message'],
-                'code': code if settings.DEBUG else None
-            }, status=status.HTTP_400_BAD_REQUEST)
-    except User.DoesNotExist:
-        # For security, don't reveal if user exists
-        return Response({'message': 'If an account exists with this email, a reset code has been sent.'})
-
-
-@csrf_exempt
-@api_view(['POST'])
-@permission_classes([AllowAny])
-def password_reset_confirm_view(request):
-    email = request.data.get('email')
-    code = request.data.get('code')
-    new_password = request.data.get('password')
-    
-    if not email or not code or not new_password:
-        return Response({'error': 'Email, code, and password are required'}, status=status.HTTP_400_BAD_REQUEST)
-    
-    if len(new_password) < 8:
-        return Response({'error': 'Password must be at least 8 characters long'}, status=status.HTTP_400_BAD_REQUEST)
-        
-    try:
-        user = User.objects.get(email=email)
-        success, message = verify_otp_code(user, code, otp_type='password_reset')
-        
-        if not success:
-            return Response({'error': message}, status=status.HTTP_400_BAD_REQUEST)
-            
-        user.set_password(new_password)
-        user.save()
-        
-        return Response({'message': 'Password reset successful! You can now log in.'})
-    except User.DoesNotExist:
-        return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
 
 
 @api_view(['GET'])

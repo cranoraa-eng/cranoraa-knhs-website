@@ -13,8 +13,6 @@ import { SkeletonDashboard } from './components/Skeleton';
 
 // ── Eagerly loaded (auth + critical path) ────────────────────────────────────
 import Login from './pages/Login';
-import ForgotPassword from './pages/ForgotPassword';
-import ResetPassword from './pages/ResetPassword';
 import ForcePasswordChange from './pages/ForcePasswordChange';
 import Dashboard from './pages/Dashboard';
 import Maintenance from './pages/Maintenance';
@@ -136,8 +134,6 @@ function App() {
             <Routes>
               {/* Auth Routes */}
               <Route path="/login" element={<Login />} />
-              <Route path="/forgot-password" element={<ForgotPassword />} />
-              <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/force-password-change" element={<ForcePasswordChange />} />
 
               {/* Public Website Routes */}
