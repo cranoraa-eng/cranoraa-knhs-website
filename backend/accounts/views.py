@@ -4462,6 +4462,17 @@ class ReportedMessageViewSet(viewsets.ModelViewSet):
         
         return Response({'status': f'User {user_to_unmute.username} unmuted'})
 
+    @action(detail=False, methods=['post', 'delete'], url_path='bulk-delete')
+    def bulk_delete(self, request):
+        if request.user.role != 'admin':
+            return Response({'error': 'Unauthorized'}, status=403)
+        ids = request.data.get('ids', [])
+        if not ids:
+            return Response({'error': 'No reports selected'}, status=400)
+        
+        deleted_count, _ = ReportedMessage.objects.filter(id__in=ids).delete()
+        return Response({'status': f'Successfully deleted {deleted_count} reports'})
+
 
 class FriendshipViewSet(viewsets.ModelViewSet):
     serializer_class = FriendshipSerializer
