@@ -62,7 +62,14 @@ const EmailVerificationWidget = ({ email, isVerified, onVerified }) => {
       setResendCooldown(60);
       toast.success('Verification code sent to your email');
     } catch (err) {
-      setError(err.response?.data?.error || 'Failed to send code');
+      const msg = err.response?.data?.error || 'Failed to send code';
+      // If Mailjet isn't configured, show a helpful message
+      const isMailjetError = msg.toLowerCase().includes('delivery failed') || msg.toLowerCase().includes('mailjet');
+      setError(
+        isMailjetError
+          ? 'Email delivery failed. The school email service may not be configured yet. Please contact your administrator.'
+          : msg
+      );
       setStep('idle');
     }
   };
@@ -95,23 +102,28 @@ const EmailVerificationWidget = ({ email, isVerified, onVerified }) => {
 
   if (step === 'idle' || step === 'sending') {
     return (
-      <button
-        onClick={sendCode}
-        disabled={step === 'sending'}
-        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-50 border border-amber-200 text-[10px] font-black text-amber-600 uppercase tracking-widest hover:bg-amber-100 transition-all disabled:opacity-50 active:scale-95"
-      >
-        {step === 'sending' ? (
-          <svg className="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-          </svg>
-        ) : (
-          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-          </svg>
+      <div className="flex flex-col gap-1.5">
+        <button
+          onClick={sendCode}
+          disabled={step === 'sending'}
+          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-50 border border-amber-200 text-[10px] font-black text-amber-600 uppercase tracking-widest hover:bg-amber-100 transition-all disabled:opacity-50 active:scale-95"
+        >
+          {step === 'sending' ? (
+            <svg className="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+            </svg>
+          ) : (
+            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            </svg>
+          )}
+          {step === 'sending' ? 'Sending…' : 'Verify Email'}
+        </button>
+        {error && (
+          <p className="text-[10px] font-bold text-red-500 max-w-xs leading-relaxed">{error}</p>
         )}
-        {step === 'sending' ? 'Sending…' : 'Verify Email'}
-      </button>
+      </div>
     );
   }
 

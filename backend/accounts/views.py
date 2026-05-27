@@ -387,9 +387,9 @@ def request_email_verification_view(request):
     """
     user = request.user
 
-    if not user.email:
+    if not user.email or not user.email.strip():
         return Response(
-            {'error': 'No email address is set on your account. Please add an email first.'},
+            {'error': 'No email address is set on your account. Please add an email in your profile first.'},
             status=status.HTTP_400_BAD_REQUEST
         )
 
@@ -405,8 +405,14 @@ def request_email_verification_view(request):
         if sent:
             return Response({'message': f'Verification code sent to {user.email}.'})
         else:
+            # Log the code so admin can retrieve it from Render logs if needed
+            logger.warning(
+                f"Email verification OTP for {user.username} ({user.email}) "
+                f"could not be delivered. Code: {code}. Error: {error_detail}"
+            )
             return Response({
                 'error': f'Email delivery failed: {error_detail}',
+                # Return code in DEBUG so developers can test without Mailjet
                 'code': code if settings.DEBUG else None
             }, status=status.HTTP_400_BAD_REQUEST)
     except Exception as e:
