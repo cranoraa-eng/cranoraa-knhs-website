@@ -15,6 +15,7 @@ from .views import (
     RoomViewSet, TimeSlotViewSet, ScheduleViewSet,
     parent_dashboard_view, parent_child_detail_view,
     fcm_token_register, fcm_token_delete, test_push_notification,
+    request_email_verification_view, confirm_email_verification_view,
 )
 
 router = DefaultRouter()
@@ -78,5 +79,7 @@ urlpatterns = [
     path('fcm-tokens/', fcm_token_register, name='fcm_token_register'),
     path('fcm-tokens/delete/', fcm_token_delete, name='fcm_token_delete'),
     path('test-push/', test_push_notification, name='test_push_notification'),
+    path('email-verification/request/', request_email_verification_view, name='email_verification_request'),
+    path('email-verification/confirm/', confirm_email_verification_view, name='email_verification_confirm'),
     path('', include(router.urls)),
 ]
