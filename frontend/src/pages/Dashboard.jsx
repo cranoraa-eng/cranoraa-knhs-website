@@ -708,8 +708,8 @@ const TeacherView = () => {
         {/* ── LEFT COLUMN (lg:8): Active Sessions + Activity ── */}
         <div className="lg:col-span-8 space-y-5 md:space-y-6">
           {/* Active Classroom Sessions */}
-          <div className="bg-white border border-slate-200/60 rounded-[2rem] shadow-sm overflow-hidden flex flex-col">
-            <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/30">
+          <div className="bg-white border border-slate-200/60 rounded-[2rem] shadow-sm overflow-hidden flex flex-col lg:h-[580px]">
+            <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/30 shrink-0">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-2xl bg-violet-600 shadow-lg shadow-violet-200 flex items-center justify-center shrink-0">
                   <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
@@ -725,9 +725,9 @@ const TeacherView = () => {
               </Link>
             </div>
             
-            <div className="overflow-x-auto scrollbar-none">
+            <div className="flex-1 overflow-y-auto scrollbar-none">
               <table className="w-full text-left border-separate border-spacing-0">
-                <thead className="bg-slate-50/60 border-b border-slate-100">
+                <thead className="bg-slate-50/60 border-b border-slate-100 sticky top-0 z-10">
                   <tr>
                     <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Classroom</th>
                     <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Subject Info</th>
@@ -801,8 +801,8 @@ const TeacherView = () => {
           </div>
 
           {/* Recent Activity - Wide Style */}
-          <div className="bg-white border border-slate-200/60 rounded-[2rem] p-6 shadow-sm">
-            <div className="flex items-center justify-between mb-6">
+          <div className="bg-white border border-slate-200/60 rounded-[2rem] p-6 shadow-sm flex flex-col lg:h-[580px]">
+            <div className="flex items-center justify-between mb-6 shrink-0">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-2xl bg-emerald-500 shadow-lg shadow-emerald-200 flex items-center justify-center shrink-0">
                   <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
@@ -818,9 +818,9 @@ const TeacherView = () => {
               </div>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {data?.recent_activities?.length ? data.recent_activities.slice(0, 6).map((act, i) => (
-                <div key={i} className="flex items-center gap-4 p-4 rounded-2xl bg-slate-50/50 border border-slate-100 hover:bg-white hover:border-violet-200 hover:shadow-md transition-all group">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-1 overflow-y-auto pr-1 -mr-1 scrollbar-none pb-2">
+              {data?.recent_activities?.length ? data.recent_activities.slice(0, 10).map((act, i) => (
+                <div key={i} className="flex items-center gap-4 p-4 rounded-2xl bg-slate-50/50 border border-slate-100 hover:bg-white hover:border-violet-200 hover:shadow-md transition-all group h-fit">
                   <div className="w-10 h-10 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-lg shrink-0 group-hover:scale-110 transition-transform shadow-sm">
                     {act.type === 'grade' ? '📊' : act.type === 'attendance' ? '📋' : '📢'}
                   </div>
@@ -834,7 +834,7 @@ const TeacherView = () => {
                   </div>
                 </div>
               )) : (
-                <div className="col-span-full py-8 text-center opacity-50">
+                <div className="col-span-full h-full flex flex-col items-center justify-center opacity-50">
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">No recent activities recorded</p>
                 </div>
               )}
