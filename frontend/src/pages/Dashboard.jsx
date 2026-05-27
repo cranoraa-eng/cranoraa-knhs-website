@@ -908,7 +908,7 @@ const TeacherView = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5, duration: 0.6 }}
-            className="bg-white border border-slate-200/60 rounded-xl md:rounded-2xl p-3 md:p-5 shadow-sm flex flex-col lg:h-[420px]"
+            className="bg-white border border-slate-200/60 rounded-xl md:rounded-2xl p-3 md:p-5 shadow-sm flex flex-col lg:h-[520px]"
           >
             <div className="flex items-center justify-between mb-4 md:mb-5 shrink-0">
               <div className="flex items-center gap-2 md:gap-3.5">
@@ -1301,7 +1301,7 @@ const StudentView = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4, duration: 0.6 }}
-            className="bg-white border border-slate-200/60 rounded-xl md:rounded-2xl shadow-sm overflow-hidden flex flex-col lg:h-[360px]"
+            className="bg-white border border-slate-200/60 rounded-xl md:rounded-2xl shadow-sm overflow-hidden flex flex-col lg:h-[480px]"
           >
             <div className="px-3 md:px-5 py-3 md:py-4 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-slate-50/80 to-white shrink-0">
               <div className="flex items-center gap-2 md:gap-3.5">
