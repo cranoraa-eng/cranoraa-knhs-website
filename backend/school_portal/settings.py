@@ -317,5 +317,7 @@ if not SUPABASE_URL or not SUPABASE_KEY:
 # Get a free API key at https://resend.com — 3,000 emails/month free
 # Set RESEND_API_KEY in Render environment variables to enable.
 # If not set, falls back to Mailjet.
+# RESEND_FROM_EMAIL defaults to onboarding@resend.dev (no domain verification needed).
+# To use your own domain, verify it in Resend dashboard and set RESEND_FROM_EMAIL.
 RESEND_API_KEY = os.environ.get('RESEND_API_KEY')
-RESEND_FROM_EMAIL = os.environ.get('RESEND_FROM_EMAIL', 'KNHS Portal <noreply@knhsportal.dedyn.io>')
+RESEND_FROM_EMAIL = os.environ.get('RESEND_FROM_EMAIL', 'KNHS Portal <onboarding@resend.dev>')

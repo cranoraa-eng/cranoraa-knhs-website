@@ -71,7 +71,7 @@ def _send_resend_direct(to_email, subject, html_content, text_content=None):
         return False, 'RESEND_API_KEY not configured'
 
     from_email = getattr(settings, 'RESEND_FROM_EMAIL', None) or \
-                 os.environ.get('RESEND_FROM_EMAIL', 'KNHS Portal <noreply@knhsportal.dedyn.io>')
+                 os.environ.get('RESEND_FROM_EMAIL', 'KNHS Portal <onboarding@resend.dev>')
 
     payload = {
         'from': from_email,
