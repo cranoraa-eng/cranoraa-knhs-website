@@ -1,6 +1,6 @@
 import { getUser } from '../utils/auth';
 import { useAuth } from '../context/AuthContext';
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../utils/api';
 import { getCurrentAcademicYear } from '../utils/dateHelpers';
