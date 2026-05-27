@@ -802,73 +802,12 @@ const TeacherView = () => {
             </div>
           </motion.div>
 
-          {/* Activity Timeline */}
-          <motion.div 
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.3, duration: 0.6 }}
-            className="bg-white border border-slate-200/60 rounded-[2.5rem] p-6 md:p-8 shadow-[0_20px_50px_rgba(0,0,0,0.03)] flex flex-col lg:h-[580px] min-h-[400px]"
-          >
-            <div className="flex items-center justify-between mb-6 md:mb-8 shrink-0">
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-emerald-500 shadow-xl shadow-emerald-100 flex items-center justify-center shrink-0">
-                  <svg className="w-5 h-5 md:w-6 md:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                </div>
-                <div>
-                  <h3 className="text-base md:text-lg font-black text-slate-900 uppercase tracking-tight">Activity Timeline</h3>
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Real-time audit log</p>
-                </div>
-              </div>
-              <div className="px-3 py-1.5 rounded-xl bg-emerald-50 text-[8px] md:text-[9px] font-black text-emerald-600 uppercase tracking-[0.2em]">
-                Live
-              </div>
-            </div>
-            
-            <div className="relative space-y-6 flex-1 overflow-y-auto pr-2 scrollbar-none">
-              <div className="absolute left-[23px] md:left-[27px] top-2 bottom-2 w-0.5 bg-slate-100" />
-              <AnimatePresence>
-                {data?.recent_activities?.length ? data.recent_activities.slice(0, 10).map((act, i) => (
-                  <motion.div 
-                    key={i}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: i * 0.1 }}
-                    className="relative flex items-center gap-4 md:gap-6 group"
-                  >
-                    <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-white border-2 border-slate-50 shadow-sm flex items-center justify-center text-lg md:text-xl shrink-0 z-10 group-hover:border-violet-200 group-hover:scale-110 transition-all duration-500">
-                      {act.type === 'grade' ? '📊' : act.type === 'attendance' ? '📋' : '📢'}
-                    </div>
-                    <div className="flex-1 bg-slate-50/50 rounded-2xl p-4 md:p-5 border border-slate-100/50 group-hover:bg-white group-hover:shadow-xl group-hover:shadow-slate-200/50 transition-all duration-500 min-w-0">
-                      <div className="flex justify-between items-start mb-2 gap-2">
-                        <p className="text-xs md:text-sm font-black text-slate-800 leading-snug group-hover:text-violet-600 transition-colors truncate sm:whitespace-normal">{act.message}</p>
-                        <span className="text-[8px] md:text-[9px] font-black text-slate-400 uppercase tracking-widest shrink-0">{act.time}</span>
-                      </div>
-                      <div className="flex items-center gap-2 md:gap-3">
-                        <span className={`text-[7px] md:text-[8px] font-black uppercase tracking-widest px-1.5 md:py-0.5 rounded-md ${
-                          act.type === 'grade' ? 'bg-violet-100 text-violet-600' : 'bg-emerald-100 text-emerald-600'
-                        }`}>
-                          {act.type}
-                        </span>
-                        <span className="w-0.5 h-0.5 md:w-1 md:h-1 rounded-full bg-slate-300" />
-                        <span className="text-[8px] md:text-[9px] font-bold text-slate-400 italic">Web Portal</span>
-                      </div>
-                    </div>
-                  </motion.div>
-                )) : (
-                  <div className="py-20 text-center opacity-40">
-                    <p className="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-widest">No recent events</p>
-                  </div>
-                )}
-              </AnimatePresence>
-            </div>
-          </motion.div>
-
-          {/* Activity Feed / Timeline */}
+          {/* Recent Activity Section */}
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5, duration: 0.6 }}
-            className="bg-white border border-slate-200/60 rounded-[2.5rem] p-8 shadow-[0_20px_50px_rgba(0,0,0,0.03)] flex flex-col lg:h-[480px]"
+            className="bg-white border border-slate-200/60 rounded-[2.5rem] p-8 shadow-[0_20px_50px_rgba(0,0,0,0.03)] flex flex-col lg:h-[580px]"
           >
             <div className="flex items-center justify-between mb-8 shrink-0">
               <div className="flex items-center gap-4">
@@ -888,7 +827,7 @@ const TeacherView = () => {
             <div className="relative space-y-6 flex-1 overflow-y-auto pr-2 scrollbar-none">
               <div className="absolute left-[27px] top-2 bottom-2 w-0.5 bg-slate-100" />
               <AnimatePresence>
-                {stats?.recent_activities?.length ? stats.recent_activities.map((act, i) => (
+                {data?.recent_activities?.length ? data.recent_activities.map((act, i) => (
                   <motion.div 
                     key={i}
                     initial={{ opacity: 0, x: -10 }}
@@ -925,6 +864,16 @@ const TeacherView = () => {
         {/* ── SIDEBAR CONTENT (Right - 4 Cols) ── */}
         <div className="lg:col-span-4 space-y-6 md:space-y-8">
           
+          {/* Today's Schedule Sidebar */}
+          <motion.div 
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.3, duration: 0.6 }}
+            className="lg:h-[580px]"
+          >
+            <TodayScheduleWidget role="teacher" />
+          </motion.div>
+
           {/* Quick Actions Redesign */}
           <motion.div 
             initial={{ opacity: 0, x: 20 }}
@@ -960,16 +909,13 @@ const TeacherView = () => {
             </div>
           </motion.div>
 
-          {/* Schedule & Messages Combined Sidebar */}
+          {/* Messages & Status Sidebar */}
           <motion.div 
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.5, duration: 0.6 }}
             className="space-y-6 md:space-y-8"
           >
-            <div className="lg:h-[380px]">
-              <TodayScheduleWidget role="teacher" />
-            </div>
             <div className="lg:h-[380px]">
               <LatestMessagesWidget messages={data?.latest_messages} onOpenChat={() => navigate('/messages')} />
             </div>
@@ -1348,55 +1294,8 @@ const StudentView = () => {
     </motion.div>
   );
 };
-          icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
-        />
-        <StatCard
-          label="Late" value={lateCount} sub="Days"
-          color="amber"
-          icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
-        />
-      </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-5">
-        <StatCard
-          label="General Average" value={overallAvg || '0.00'} sub="Academic Standing"
-          color="violet" onClick={() => navigate('/student-grades')}
-          icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>}
-        />
-        <StatCard
-          label="Attendance Rate" value={attRate !== null ? `${attRate}%` : '0%'} sub="This Month"
-          color={attRate !== null && attRate < 75 ? 'rose' : 'emerald'} onClick={() => navigate('/attendance')}
-          icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 8l2 2 4-4" /></svg>}
-        />
-        <StatCard
-          label="Total Subjects" value={finalGrades.length} sub="Current Load"
-          color="blue"
-          icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>}
-        />
-        <StatCard
-          label="Unread Alerts" value={stats?.unread_notifications || 0} sub="Notifications"
-          color="amber" onClick={() => navigate('/notifications')}
-          icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>}
-        />
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 md:gap-6">
-        {/* ── LEFT COLUMN (lg:8): Performance + Notifications ── */}
-        <div className="lg:col-span-8 space-y-5 md:space-y-6">
-          {/* Performance Visualization */}
-          <div className="bg-white border border-slate-200/70 rounded-[2rem] p-6 md:p-8 shadow-sm overflow-hidden flex flex-col">
-            <div className="flex items-center justify-between mb-8 shrink-0">
-              <div>
-                <h3 className="text-sm font-black text-slate-900 uppercase tracking-tight">Subject Performance Matrix</h3>
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Comparative view of your current grades</p>
-              </div>
-              <div className="flex gap-4">
-                <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-violet-500 shadow-[0_0_8px_rgba(139,92,246,0.5)]" />
-                  <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Score (%)</span>
-                </div>
-              </div>
-            </div>
+export default Dashboard;
             
             <div className="flex-1 h-72 min-h-[300px] w-full">
               <ResponsiveContainer width="100%" height="100%">
