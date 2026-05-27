@@ -373,9 +373,9 @@ const interpretGradeData = (gradeData, filterLevel, filterSubject, filterQuarter
   if (!gradeData || gradeData.total_students === 0) return [];
   const items = [];
   const avg = gradeData.overall_average || 0;
-  const cats = Array.isArray(gradeData.category_counts) ? gradeData.category_counts : [];
-  const outstanding = cats.find(c => c.name && c.name.includes('Outstanding'))?.value || 0;
-  const dnm = cats.find(c => c.name && c.name.includes('Did Not'))?.value || 0;
+  const cats = gradeData.category_counts || [];
+  const outstanding = cats.find(c => c.name.includes('Outstanding'))?.value || 0;
+  const dnm = cats.find(c => c.name.includes('Did Not'))?.value || 0;
   const total = gradeData.total_students || 1;
   const outPct = Math.round((outstanding / total) * 100);
   const dnmPct = Math.round((dnm / total) * 100);
@@ -409,8 +409,8 @@ const interpretGradeData = (gradeData, filterLevel, filterSubject, filterQuarter
 const interpretAttendanceData = (analytics) => {
   if (!analytics) return [];
   const items = [];
-  const pie = Array.isArray(analytics.pie_data) ? analytics.pie_data : [];
-  const total = pie.reduce((s, d) => s + (d.value || 0), 0);
+  const pie = analytics.pie_data || [];
+  const total = pie.reduce((s, d) => s + d.value, 0);
   if (total === 0) return [{ type: 'info', text: 'No attendance records found for this period.' }];
 
   const present = pie.find(d => d.name === 'Present')?.value || 0;
@@ -586,10 +586,9 @@ const AttendanceTrendsSection = ({ data }) => (
 );
 
 const AttendanceStatusPieSection = ({ data }) => {
-  const pieData = Array.isArray(data) ? data : [];
-  const total = pieData.reduce((sum, d) => sum + (d.value || 0), 0) || 0;
+  const total = data?.reduce((sum, d) => sum + d.value, 0) || 0;
   const pieColors = ['#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
-  const hasData = pieData.length > 0 && pieData.some(d => (d.value || 0) > 0);
+  const hasData = data && data.some(d => d.value > 0);
   
   return (
     <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm h-[400px] w-full flex flex-col">
@@ -605,8 +604,8 @@ const AttendanceStatusPieSection = ({ data }) => {
             <div className="w-1/2 h-full relative">
               <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                 <PieChart>
-                  <Pie data={pieData} cx="50%" cy="50%" innerRadius={50} outerRadius={70} paddingAngle={6} dataKey="value">
-                    {pieData.map((entry, index) => <Cell key={`cell-${index}`} fill={pieColors[index % pieColors.length]} strokeWidth={0} />)}
+                  <Pie data={data} cx="50%" cy="50%" innerRadius={50} outerRadius={70} paddingAngle={6} dataKey="value">
+                    {data?.map((entry, index) => <Cell key={`cell-${index}`} fill={pieColors[index % pieColors.length]} strokeWidth={0} />)}
                   </Pie>
                   <Tooltip content={<CustomPieTooltip />} />
                 </PieChart>
@@ -617,7 +616,7 @@ const AttendanceStatusPieSection = ({ data }) => {
               </div>
             </div>
             <div className="w-1/2 flex flex-col justify-center space-y-3">
-              {pieData.map((item, index) => {
+              {data?.map((item, index) => {
                 const percentage = total > 0 ? ((item.value / total) * 100).toFixed(1) : 0;
                 return (
                   <div key={item.name} className="flex items-center justify-between gap-2">
@@ -639,79 +638,71 @@ const AttendanceStatusPieSection = ({ data }) => {
   );
 };
 
-const AttendanceByLevelBarSection = ({ data }) => {
-  const chartData = Array.isArray(data) ? data : [];
-  
-  return (
-    <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm h-[400px] w-full flex flex-col">
-      <div className="mb-6">
-        <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Level Engagement</h3>
-        <p className="text-sm font-black text-slate-900 uppercase tracking-tight">Attendance Rate by Grade Level</p>
-      </div>
-      <div className="flex-1">
-        {chartData.length === 0 ? (
-          <div className="h-full flex items-center justify-center text-[10px] font-black text-slate-300 uppercase tracking-widest italic">No level-wise data available</div>
-        ) : (
-          <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
-            <BarChart data={chartData}>
-              <CartesianGrid strokeDasharray="2 2" vertical={false} stroke="#f1f5f9" />
-              <XAxis dataKey="level" tick={{fontSize: 8, fontWeight: 900, fill: '#64748b'}} axisLine={false} tickLine={false} />
-              <YAxis domain={[0, 100]} tick={{fontSize: 8, fontWeight: 900, fill: '#64748b'}} axisLine={false} tickLine={false} />
-              <Tooltip content={<CustomTooltip unit="%" />} />
-              <Bar dataKey="rate" fill="#3b82f6" radius={[2, 2, 0, 0]} barSize={32} label={renderCustomBarLabel}>
-                {chartData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.rate >= 90 ? '#10b981' : entry.rate >= 75 ? '#3b82f6' : '#ef4444'} />)}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        )}
-      </div>
+const AttendanceByLevelBarSection = ({ data }) => (
+  <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm h-[400px] w-full flex flex-col">
+    <div className="mb-6">
+      <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Level Engagement</h3>
+      <p className="text-sm font-black text-slate-900 uppercase tracking-tight">Attendance Rate by Grade Level</p>
     </div>
-  );
-};
+    <div className="flex-1">
+      {!data || data.length === 0 ? (
+        <div className="h-full flex items-center justify-center text-[10px] font-black text-slate-300 uppercase tracking-widest italic">No level-wise data available</div>
+      ) : (
+        <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
+          <BarChart data={data}>
+            <CartesianGrid strokeDasharray="2 2" vertical={false} stroke="#f1f5f9" />
+            <XAxis dataKey="level" tick={{fontSize: 8, fontWeight: 900, fill: '#64748b'}} axisLine={false} tickLine={false} />
+            <YAxis domain={[0, 100]} tick={{fontSize: 8, fontWeight: 900, fill: '#64748b'}} axisLine={false} tickLine={false} />
+            <Tooltip content={<CustomTooltip unit="%" />} />
+            <Bar dataKey="rate" fill="#3b82f6" radius={[2, 2, 0, 0]} barSize={32} label={renderCustomBarLabel}>
+              {data?.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.rate >= 90 ? '#10b981' : entry.rate >= 75 ? '#3b82f6' : '#ef4444'} />)}
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      )}
+    </div>
+  </div>
+);
 
-const AttendanceRankingsSection = ({ rankings, period }) => {
-  const rankingData = Array.isArray(rankings) ? rankings : [];
-  
-  return (
-    <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm overflow-hidden flex flex-col h-[400px] w-full">
-      <div className="mb-6">
-        <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Rankings — {period}</h3>
-        <p className="text-sm font-black text-slate-900 uppercase tracking-tight">Section Performance Index</p>
-      </div>
-      <div className="flex-1 overflow-y-auto space-y-2 pr-1 scrollbar-thin scrollbar-thumb-slate-200">
-        {rankingData.length === 0 ? (
-          <div className="h-full flex items-center justify-center text-[10px] font-black text-slate-300 uppercase tracking-widest italic text-center py-10">No rankings established for this period</div>
-        ) : (
-          rankingData.map((rank, idx) => (
-            <div key={rank.id} className="group flex items-center justify-between p-2.5 bg-slate-50/50 rounded-lg border border-slate-100 hover:border-indigo-200 hover:bg-white transition-all">
-              <div className="flex items-center gap-3">
-                <span className={`w-5 h-5 flex items-center justify-center rounded-md font-black text-[9px] ${rank.total_records > 0 ? (idx === 0 ? 'bg-amber-100 text-amber-600 shadow-sm' : idx === 1 ? 'bg-slate-200 text-slate-600' : idx === 2 ? 'bg-orange-100 text-orange-600' : 'bg-slate-100 text-slate-400') : 'bg-slate-50 text-slate-300'}`}>
-                  {idx + 1}
+const AttendanceRankingsSection = ({ rankings, period }) => (
+  <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm overflow-hidden flex flex-col h-[400px] w-full">
+    <div className="mb-6">
+      <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Rankings — {period}</h3>
+      <p className="text-sm font-black text-slate-900 uppercase tracking-tight">Section Performance Index</p>
+    </div>
+    <div className="flex-1 overflow-y-auto space-y-2 pr-1 scrollbar-thin scrollbar-thumb-slate-200">
+      {!rankings || rankings.length === 0 ? (
+        <div className="h-full flex items-center justify-center text-[10px] font-black text-slate-300 uppercase tracking-widest italic text-center py-10">No rankings established for this period</div>
+      ) : (
+        rankings?.map((rank, idx) => (
+          <div key={rank.id} className="group flex items-center justify-between p-2.5 bg-slate-50/50 rounded-lg border border-slate-100 hover:border-indigo-200 hover:bg-white transition-all">
+            <div className="flex items-center gap-3">
+              <span className={`w-5 h-5 flex items-center justify-center rounded-md font-black text-[9px] ${rank.total_records > 0 ? (idx === 0 ? 'bg-amber-100 text-amber-600 shadow-sm' : idx === 1 ? 'bg-slate-200 text-slate-600' : idx === 2 ? 'bg-orange-100 text-orange-600' : 'bg-slate-100 text-slate-400') : 'bg-slate-50 text-slate-300'}`}>
+                {idx + 1}
+              </span>
+              <div className="flex flex-col">
+                <span className="text-[10px] font-black text-slate-700 uppercase tracking-tight leading-none mb-1">{rank.name}</span>
+                <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest leading-none">
+                  {rank.total_records > 0 ? `${rank.total_records} records` : 'No attendance yet'}
                 </span>
-                <div className="flex flex-col">
-                  <span className="text-[10px] font-black text-slate-700 uppercase tracking-tight leading-none mb-1">{rank.name}</span>
-                  <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest leading-none">
-                    {rank.total_records > 0 ? `${rank.total_records} records` : 'No attendance yet'}
-                  </span>
-                </div>
-              </div>
-              <div className="text-right">
-                {rank.total_records > 0 ? (
-                  <>
-                    <div className={`text-xs font-black leading-none mb-1 ${rank.rate >= 90 ? 'text-emerald-600' : rank.rate >= 75 ? 'text-blue-600' : 'text-rose-600'}`}>{rank.rate}%</div>
-                    <div className="w-12 h-1 bg-slate-200 rounded-full overflow-hidden"><div className={`h-full rounded-full ${rank.rate >= 90 ? 'bg-emerald-500' : rank.rate >= 75 ? 'bg-blue-500' : 'bg-rose-500'}`} style={{ width: `${rank.rate}%` }} /></div>
-                  </>
-                ) : (
-                  <div className="text-[8px] font-black text-slate-300 uppercase tracking-widest italic">N/A</div>
-                )}
               </div>
             </div>
-          ))
-        )}
-      </div>
+            <div className="text-right">
+              {rank.total_records > 0 ? (
+                <>
+                  <div className={`text-xs font-black leading-none mb-1 ${rank.rate >= 90 ? 'text-emerald-600' : rank.rate >= 75 ? 'text-blue-600' : 'text-rose-600'}`}>{rank.rate}%</div>
+                  <div className="w-12 h-1 bg-slate-200 rounded-full overflow-hidden"><div className={`h-full rounded-full ${rank.rate >= 90 ? 'bg-emerald-500' : rank.rate >= 75 ? 'bg-blue-500' : 'bg-rose-500'}`} style={{ width: `${rank.rate}%` }} /></div>
+                </>
+              ) : (
+                <div className="text-[8px] font-black text-slate-300 uppercase tracking-widest italic">N/A</div>
+              )}
+            </div>
+          </div>
+        ))
+      )}
     </div>
-  );
-};
+  </div>
+);
 
 const SubjectPerformanceSection = ({ data }) => (
   <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm min-h-[350px] w-full">
@@ -781,8 +772,7 @@ const TrafficIntelligenceSection = ({ data }) => (
 );
 
 const GradeDistributionPieSection = ({ data, total, label }) => {
-  const pieData = Array.isArray(data) ? data : [];
-  const totalSum = pieData.reduce((sum, d) => sum + (d.value || 0), 0);
+  const totalSum = data.reduce((sum, d) => sum + d.value, 0);
   
   return (
     <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm min-h-[350px] w-full">
@@ -795,8 +785,8 @@ const GradeDistributionPieSection = ({ data, total, label }) => {
         <div className="w-1/2 h-full relative">
           <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
             <PieChart>
-              <Pie data={pieData} cx="50%" cy="50%" innerRadius={50} outerRadius={70} paddingAngle={6} dataKey="value">
-                {pieData.map((entry, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} strokeWidth={0} />)}
+              <Pie data={data} cx="50%" cy="50%" innerRadius={50} outerRadius={70} paddingAngle={6} dataKey="value">
+                {data.map((entry, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} strokeWidth={0} />)}
               </Pie>
               <Tooltip content={<CustomPieTooltip />} />
             </PieChart>
@@ -809,14 +799,14 @@ const GradeDistributionPieSection = ({ data, total, label }) => {
 
         {/* Right Side: Legends & Highlighted Percentages */}
         <div className="w-1/2 flex flex-col justify-center space-y-3">
-          {pieData.map((item, index) => {
+          {data.map((item, index) => {
             const percentage = totalSum > 0 ? ((item.value / totalSum) * 100).toFixed(1) : 0;
             return (
               <div key={item.name} className="flex items-center justify-between gap-2 group">
                 <div className="flex items-center gap-2 min-w-0">
                   <div className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
                   <span className="text-[8px] font-black text-slate-500 uppercase tracking-tighter truncate leading-none" title={item.name}>
-                    {item.name ? item.name.split(' (')[0] : 'N/A'}
+                    {item.name.split(' (')[0]}
                   </span>
                 </div>
                 <div className="flex items-baseline gap-1">
@@ -857,38 +847,32 @@ const GradeDistributionBarSection = ({ data, filterLevel }) => (
   </div>
 );
 
-const GradeRankingSection = ({ data, filterSubject, meta, timeframe }) => {
-  const subjectName = (meta?.subjects && Array.isArray(meta.subjects)) 
-    ? meta.subjects.find(s => String(s.id) === String(filterSubject))?.name 
-    : '';
-
-  return (
-    <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm min-h-[350px] w-full">
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Competitive Ranking — {timeframe === 'all' ? 'Annual' : timeframe === 'today' ? 'Today' : 'Weekly'}</h3>
-          <p className="text-sm font-black text-slate-900 uppercase tracking-tight">
-            {filterSubject === 'all' ? 'Top 10 Performing Subjects' : `Top 10 Classrooms — ${subjectName || ''}`}
-          </p>
-        </div>
-        <div className="px-2 py-1 bg-slate-900 rounded text-[8px] font-black text-white uppercase tracking-[0.2em]">Efficiency Leaderboard</div>
+const GradeRankingSection = ({ data, filterSubject, meta, timeframe }) => (
+  <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm min-h-[350px] w-full">
+    <div className="flex items-center justify-between mb-8">
+      <div>
+        <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Competitive Ranking — {timeframe === 'all' ? 'Annual' : timeframe === 'today' ? 'Today' : 'Weekly'}</h3>
+        <p className="text-sm font-black text-slate-900 uppercase tracking-tight">
+          {filterSubject === 'all' ? 'Top 10 Performing Subjects' : `Top 10 Classrooms — ${meta.subjects.find(s => String(s.id) === String(filterSubject))?.name || ''}`}
+        </p>
       </div>
-      <div className="h-96">
-        <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
-          <BarChart data={data} layout="vertical" margin={{ left: 40, right: 60 }}>
-            <CartesianGrid strokeDasharray="2 2" horizontal={true} vertical={false} stroke="#f1f5f9" />
-            <XAxis type="number" domain={[0, 100]} hide />
-            <YAxis type="category" dataKey="code" width={80} tick={{fontSize: 8, fontWeight: 900, fill: '#475569'}} axisLine={false} tickLine={false} />
-            <Tooltip content={<CustomTooltip unit="%" />} />
-            <Bar dataKey="average" fill="#4f46e5" radius={[0, 2, 2, 0]} barSize={20} label={renderHorizontalBarLabel}>
-              {data && Array.isArray(data) && data.map((entry, index) => <Cell key={`cell-${index}`} fill="#4f46e5" opacity={1 - (index * 0.05)} />)}
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
+      <div className="px-2 py-1 bg-slate-900 rounded text-[8px] font-black text-white uppercase tracking-[0.2em]">Efficiency Leaderboard</div>
     </div>
-  );
-};
+    <div className="h-96">
+      <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
+        <BarChart data={data} layout="vertical" margin={{ left: 40, right: 60 }}>
+          <CartesianGrid strokeDasharray="2 2" horizontal={true} vertical={false} stroke="#f1f5f9" />
+          <XAxis type="number" domain={[0, 100]} hide />
+          <YAxis type="category" dataKey="code" width={80} tick={{fontSize: 8, fontWeight: 900, fill: '#475569'}} axisLine={false} tickLine={false} />
+          <Tooltip content={<CustomTooltip unit="%" />} />
+          <Bar dataKey="average" fill="#4f46e5" radius={[0, 2, 2, 0]} barSize={20} label={renderHorizontalBarLabel}>
+            {data.map((entry, index) => <Cell key={`cell-${index}`} fill="#4f46e5" opacity={1 - (index * 0.05)} />)}
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  </div>
+);
 
 const FilterSelect = ({ label, value, onChange, options }) => (
   <div className="relative min-w-[140px] FilterSelect">
@@ -985,11 +969,11 @@ const Analytics = () => {
         { label: 'Students',    value: gradeData.total_students ?? 0,         color: [16, 185, 129] },
         { label: 'Grade Entries', value: gradeData.total_entries ?? 0,        color: [59, 130, 246] },
       ] : [],
-      attendance: (attendanceAnalytics && Array.isArray(attendanceAnalytics.pie_data)) ? [
-        { label: 'Present',  value: attendanceAnalytics.pie_data.find(d => d.name === 'Present')?.value ?? 0,  color: [16, 185, 129] },
-        { label: 'Absent',   value: attendanceAnalytics.pie_data.find(d => d.name === 'Absent')?.value ?? 0,   color: [239, 68, 68] },
-        { label: 'Late',     value: attendanceAnalytics.pie_data.find(d => d.name === 'Late')?.value ?? 0,     color: [245, 158, 11] },
-        { label: 'Excused',  value: attendanceAnalytics.pie_data.find(d => d.name === 'Excused')?.value ?? 0,  color: [99, 102, 241] },
+      attendance: attendanceAnalytics ? [
+        { label: 'Present',  value: attendanceAnalytics.pie_data?.find(d => d.name === 'Present')?.value ?? 0,  color: [16, 185, 129] },
+        { label: 'Absent',   value: attendanceAnalytics.pie_data?.find(d => d.name === 'Absent')?.value ?? 0,   color: [239, 68, 68] },
+        { label: 'Late',     value: attendanceAnalytics.pie_data?.find(d => d.name === 'Late')?.value ?? 0,     color: [245, 158, 11] },
+        { label: 'Excused',  value: attendanceAnalytics.pie_data?.find(d => d.name === 'Excused')?.value ?? 0,  color: [99, 102, 241] },
       ] : [],
     };
 
