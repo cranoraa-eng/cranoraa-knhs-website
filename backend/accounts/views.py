@@ -899,7 +899,7 @@ class UserViewSet(viewsets.ModelViewSet):
             
         return response
 
-    @action(detail=False, methods=['post'], url_path='bulk-delete')
+    @action(detail=False, methods=['post', 'delete'], url_path='bulk-delete')
     def bulk_delete(self, request):
         """Bulk delete users (admin or advisory teacher)"""
         user_ids = request.data.get('user_ids', [])
@@ -1539,7 +1539,7 @@ class AnnouncementViewSet(viewsets.ModelViewSet):
             logger.error(f"Error in perform_create: {str(e)}")
             raise
 
-    @action(detail=False, methods=['post'])
+    @action(detail=False, methods=['post', 'delete'])
     def bulk_delete(self, request):
         ids = request.data.get('ids', [])
         if not ids:
@@ -2974,7 +2974,7 @@ class NotificationViewSet(viewsets.ModelViewSet):
         unread_count = Notification.objects.filter(recipient=request.user, is_read=False).count()
         return Response({'status': f'{len(ids)} marked as read', 'unread_count': unread_count})
 
-    @action(detail=False, methods=['post'], url_path='bulk-delete')
+    @action(detail=False, methods=['post', 'delete'], url_path='bulk-delete')
     def bulk_delete(self, request):
         """Delete a list of notification IDs."""
         ids = request.data.get('ids', [])
