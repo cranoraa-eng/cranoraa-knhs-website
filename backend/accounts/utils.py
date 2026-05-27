@@ -12,6 +12,88 @@ import secrets
 
 logger = logging.getLogger(__name__)
 
+
+def build_mailjet_error(code, message, admin_message=None):
+    """Create a consistent Mailjet error payload for API responses."""
+    return {
+        "code": code,
+        "message": message,
+        "admin_message": admin_message or message,
+    }
+
+
+def normalize_mailjet_error_detail(error_detail):
+    """Normalize legacy string errors and structured Mailjet errors."""
+    if isinstance(error_detail, dict):
+        return {
+            "code": error_detail.get("code", "mail_delivery_failed"),
+            "message": error_detail.get("message", "Email delivery failed."),
+            "admin_message": error_detail.get(
+                "admin_message",
+                error_detail.get("message", "Email delivery failed."),
+            ),
+        }
+
+    message = str(error_detail or "Email delivery failed.")
+    lowered = message.lower()
+
+    if "api keys are missing" in lowered or "environment variables" in lowered:
+        return build_mailjet_error(
+            "mailjet_config_missing",
+            "Mailjet is not configured yet.",
+            "Mailjet credentials are missing on the server. Set MAILJET_API_KEY and MAILJET_SECRET_KEY in Render before using email verification.",
+        )
+    if "authentication failed" in lowered or "invalid api key" in lowered:
+        return build_mailjet_error(
+            "mailjet_auth_failed",
+            "Mailjet authentication failed.",
+            "Mailjet rejected the API credentials. Update MAILJET_API_KEY and MAILJET_SECRET_KEY in Render.",
+        )
+    if "permission denied" in lowered or "verified sender" in lowered:
+        return build_mailjet_error(
+            "mailjet_sender_unverified",
+            "Mailjet sender identity is not authorized.",
+            f"Mailjet rejected the sender address. Verify {settings.MAILJET_SENDER_EMAIL} or its domain in Mailjet before sending email.",
+        )
+
+    return build_mailjet_error(
+        "mail_delivery_failed",
+        message,
+        f"Mail delivery failed: {message}",
+    )
+
+
+def get_mailjet_health_status():
+    """Return a lightweight email-service health summary for admins."""
+    has_api_key = bool(settings.MAILJET_API_KEY)
+    has_secret_key = bool(settings.MAILJET_SECRET_KEY)
+    has_sender_email = bool(settings.MAILJET_SENDER_EMAIL)
+    issues = []
+
+    if not has_api_key or not has_secret_key:
+        issues.append("Mailjet API credentials are missing from the server environment.")
+    if not has_sender_email:
+        issues.append("MAILJET_SENDER_EMAIL is not set.")
+
+    configured = has_api_key and has_secret_key and has_sender_email
+    summary = (
+        "Email delivery is configured. Confirm the sender address is verified in Mailjet."
+        if configured
+        else "Email delivery is not fully configured. Student verification emails can fail until this is fixed."
+    )
+
+    return {
+        "configured": configured,
+        "status": "ok" if configured else "error",
+        "summary": summary,
+        "sender_email": settings.MAILJET_SENDER_EMAIL or "",
+        "checks": {
+            "api_credentials": has_api_key and has_secret_key,
+            "sender_email": has_sender_email,
+        },
+        "issues": issues,
+    }
+
 def upload_to_supabase(file, folder="profiles"):
     """
     Uploads a file to Supabase Storage and returns the public URL.
@@ -302,7 +384,11 @@ def send_mailjet_otp_email(email, code, user_name, otp_type='signup'):
     try:
         mailjet = get_mailjet_client()
         if not mailjet:
-            return False, "Mailjet API keys are missing. Please check server environment variables."
+            return False, build_mailjet_error(
+                "mailjet_config_missing",
+                "Mailjet is not configured yet.",
+                "Mailjet credentials are missing on the server. Set MAILJET_API_KEY and MAILJET_SECRET_KEY in Render before using email verification.",
+            )
         
         result = mailjet.send.create(data=data)
         if result.status_code == 200:
@@ -312,14 +398,29 @@ def send_mailjet_otp_email(email, code, user_name, otp_type='signup'):
             error_info = result.json()
             logger.error(f"Mailjet API Error: {result.status_code} - {error_info}")
             
-            error_msg = f"Mailjet Error {result.status_code}"
             if result.status_code == 401:
-                error_msg = "Mailjet Authentication failed. Invalid API Key or Secret."
+                return False, build_mailjet_error(
+                    "mailjet_auth_failed",
+                    "Mailjet authentication failed.",
+                    "Mailjet rejected the API credentials. Update MAILJET_API_KEY and MAILJET_SECRET_KEY in Render.",
+                )
             elif result.status_code == 403:
-                error_msg = f"Mailjet Permission denied. Ensure {settings.MAILJET_SENDER_EMAIL} is a verified sender."
-            
-            return False, error_msg
+                return False, build_mailjet_error(
+                    "mailjet_sender_unverified",
+                    "Mailjet sender identity is not authorized.",
+                    f"Mailjet rejected the sender address. Verify {settings.MAILJET_SENDER_EMAIL} or its domain in Mailjet before sending email.",
+                )
+
+            return False, build_mailjet_error(
+                f"mailjet_http_{result.status_code}",
+                f"Mailjet error {result.status_code}.",
+                f"Mailjet returned HTTP {result.status_code} while sending email. Check the backend logs for the full Mailjet response.",
+            )
     except Exception as e:
         err_str = str(e)
         logger.error(f"CRITICAL: Failed to send email via Mailjet to {email}. Error: {err_str}")
-        return False, f"Unexpected error: {err_str}"
+        return False, build_mailjet_error(
+            "mailjet_unexpected_error",
+            "Unexpected email delivery error.",
+            f"Mailjet request failed unexpectedly: {err_str}",
+        )

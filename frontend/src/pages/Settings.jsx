@@ -57,6 +57,79 @@ const SectionCard = ({ title, subtitle, icon, children, danger }) => (
   </div>
 );
 
+const EmailServiceNotice = ({ health }) => {
+  if (!health) return null;
+
+  const healthy = health.status === 'ok';
+
+  return (
+    <div className={`rounded-2xl border px-5 py-4 shadow-sm ${
+      healthy ? 'bg-emerald-50 border-emerald-200' : 'bg-amber-50 border-amber-200'
+    }`}>
+      <div className="flex items-start gap-3">
+        <div className={`mt-0.5 flex h-8 w-8 items-center justify-center rounded-full ${
+          healthy ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
+        }`}>
+          {healthy ? 'OK' : '!'}
+        </div>
+        <div className="min-w-0 flex-1 space-y-2">
+          <div>
+            <p className={`text-xs font-black uppercase tracking-[0.2em] ${
+              healthy ? 'text-emerald-700' : 'text-amber-700'
+            }`}>
+              Email Service Health
+            </p>
+            <p className={`mt-1 text-sm font-bold ${
+              healthy ? 'text-emerald-900' : 'text-amber-900'
+            }`}>
+              {health.summary}
+            </p>
+          </div>
+
+          <div className="flex flex-wrap gap-2 text-[11px] font-bold">
+            <span className={`rounded-full px-2.5 py-1 ${
+              health.checks?.api_credentials
+                ? 'bg-emerald-100 text-emerald-700'
+                : 'bg-rose-100 text-rose-700'
+            }`}>
+              {health.checks?.api_credentials ? 'API keys present' : 'API keys missing'}
+            </span>
+            <span className={`rounded-full px-2.5 py-1 ${
+              health.checks?.sender_email
+                ? 'bg-emerald-100 text-emerald-700'
+                : 'bg-rose-100 text-rose-700'
+            }`}>
+              {health.checks?.sender_email ? 'Sender email set' : 'Sender email missing'}
+            </span>
+          </div>
+
+          <p className={`text-xs font-medium ${
+            healthy ? 'text-emerald-800' : 'text-amber-800'
+          }`}>
+            Sender: <span className="font-black">{health.sender_email || 'Not configured'}</span>
+          </p>
+
+          {health.issues?.length > 0 && (
+            <div className="space-y-1">
+              {health.issues.map((issue) => (
+                <p key={issue} className="text-xs font-medium text-amber-900">
+                  {issue}
+                </p>
+              ))}
+            </div>
+          )}
+
+          <p className={`text-[11px] font-medium ${
+            healthy ? 'text-emerald-700' : 'text-amber-700'
+          }`}>
+            Mailjet can still reject delivery if the sender address or domain has not been verified in the Mailjet dashboard.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // ── Tab definitions ───────────────────────────────────────────────────────────
 
 const TABS_ADMIN = [
@@ -410,6 +483,8 @@ const PortalSettingsTab = () => {
 
   return (
     <form onSubmit={save} className="space-y-6">
+      <EmailServiceNotice health={settings.email_service_health} />
+
       {/* Academic Context */}
       <SectionCard title="Academic Context" subtitle="Controls global defaults for grading and analytics" icon="🎓">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

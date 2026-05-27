@@ -30,7 +30,15 @@ from django.conf import settings
 import random
 import string
 
-from .utils import create_otp, verify_otp_code, send_mailjet_otp_email, send_mailjet_email, check_user_moderation
+from .utils import (
+    create_otp,
+    verify_otp_code,
+    send_mailjet_otp_email,
+    send_mailjet_email,
+    check_user_moderation,
+    normalize_mailjet_error_detail,
+    get_mailjet_health_status,
+)
 
 @csrf_exempt
 @api_view(['POST'])
@@ -361,11 +369,13 @@ def resend_otp_view(request):
                 logger.info(f"Successfully resent {otp_type} OTP to {email}")
                 return Response({'message': f'A new verification code has been sent to {email}.'})
             else:
+                error_meta = normalize_mailjet_error_detail(error_detail)
                 logger.error(f"Failed to send {otp_type} OTP to {email} via Mailjet. Error: {error_detail}")
-                # Combine error and detail into a single string for better visibility in toasts
                 return Response({
-                    'error': f'Email delivery failed: {error_detail}',
-                    'detail': f'Service Error: {error_detail}. If you are the administrator, please verify your Mailjet credentials and sender email.',
+                    'error': f"Email delivery failed: {error_meta['message']}",
+                    'detail': error_meta['admin_message'],
+                    'error_code': error_meta['code'],
+                    'admin_message': error_meta['admin_message'],
                     'code': code if settings.DEBUG else None
                 }, status=status.HTTP_400_BAD_REQUEST)
             
@@ -405,13 +415,16 @@ def request_email_verification_view(request):
         if sent:
             return Response({'message': f'Verification code sent to {user.email}.'})
         else:
+            error_meta = normalize_mailjet_error_detail(error_detail)
             # Log the code so admin can retrieve it from Render logs if needed
             logger.warning(
                 f"Email verification OTP for {user.username} ({user.email}) "
                 f"could not be delivered. Code: {code}. Error: {error_detail}"
             )
             return Response({
-                'error': f'Email delivery failed: {error_detail}',
+                'error': f"Email delivery failed: {error_meta['message']}",
+                'error_code': error_meta['code'],
+                'admin_message': error_meta['admin_message'],
                 # Return code in DEBUG so developers can test without Mailjet
                 'code': code if settings.DEBUG else None
             }, status=status.HTTP_400_BAD_REQUEST)
@@ -469,9 +482,12 @@ def password_reset_request_view(request):
         if sent:
             return Response({'message': 'Password reset code sent to your email.'})
         else:
+            error_meta = normalize_mailjet_error_detail(error_detail)
             return Response({
-                'error': f'Email delivery failed: {error_detail}',
-                'detail': f'Service Error: {error_detail}. Please contact support.',
+                'error': f"Email delivery failed: {error_meta['message']}",
+                'detail': error_meta['admin_message'],
+                'error_code': error_meta['code'],
+                'admin_message': error_meta['admin_message'],
                 'code': code if settings.DEBUG else None
             }, status=status.HTTP_400_BAD_REQUEST)
     except User.DoesNotExist:
@@ -2250,7 +2266,10 @@ def system_settings_view(request):
             serializer = SystemSettingSerializer(settings, data=request.data, partial=True)
             if serializer.is_valid():
                 serializer.save()
-                return Response(serializer.data)
+                response_data = dict(serializer.data)
+                if getattr(request.user, 'role', None) == 'admin':
+                    response_data['email_service_health'] = get_mailjet_health_status()
+                return Response(response_data)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             logger.error(f"Error updating system settings: {str(e)}", exc_info=True)
@@ -2258,7 +2277,10 @@ def system_settings_view(request):
     
     # GET
     serializer = SystemSettingSerializer(settings)
-    return Response(serializer.data)
+    response_data = dict(serializer.data)
+    if getattr(request.user, 'role', None) == 'admin':
+        response_data['email_service_health'] = get_mailjet_health_status()
+    return Response(response_data)
 
 
 @api_view(['GET'])

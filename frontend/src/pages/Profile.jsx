@@ -28,6 +28,8 @@ const Input = ({ label, value, onChange, type = 'text', required }) => (
 
 // ── Inline Email Verification Widget ─────────────────────────────────────────
 const EmailVerificationWidget = ({ email, isVerified, onVerified }) => {
+  const user = getUser();
+  const isAdmin = user?.role === 'admin';
   const [step, setStep]           = useState('idle'); // idle | sending | code | verifying | done
   const [code, setCode]           = useState('');
   const [error, setError]         = useState('');
@@ -63,10 +65,17 @@ const EmailVerificationWidget = ({ email, isVerified, onVerified }) => {
       toast.success('Verification code sent to your email');
     } catch (err) {
       const msg = err.response?.data?.error || 'Failed to send code';
-      // If Mailjet isn't configured, show a helpful message
-      const isMailjetError = msg.toLowerCase().includes('delivery failed') || msg.toLowerCase().includes('mailjet');
+      const errorCode = err.response?.data?.error_code || '';
+      const adminMessage = err.response?.data?.admin_message || '';
+      const isMailjetError =
+        errorCode.startsWith('mailjet') ||
+        msg.toLowerCase().includes('delivery failed') ||
+        msg.toLowerCase().includes('mailjet');
+
       setError(
-        isMailjetError
+        isAdmin && adminMessage && isMailjetError
+          ? adminMessage
+          : isMailjetError
           ? 'Email delivery failed. The school email service may not be configured yet. Please contact your administrator.'
           : msg
       );
