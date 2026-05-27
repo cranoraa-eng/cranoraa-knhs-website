@@ -151,7 +151,10 @@ const Login = () => {
       features: ['Real-time grade tracking', 'Attendance monitoring', 'Direct teacher messaging', 'Instant announcements', 'Learning materials access'],
       stats: [{ val: '1,200+', label: 'Students' }, { val: '80+', label: 'Faculty' }, { val: '5,000+', label: 'Graduates' }, { val: '20+', label: 'Years' }],
       identifierLabel: 'Student ID or Email',
-      identifierPlaceholder: 'Student ID or email address'
+      identifierPlaceholder: 'Student ID or email address',
+      loadingTitle: 'Preparing Portal',
+      loadingDesc: 'Fetching your academic records...',
+      loadingIcon: 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253'
     },
     teacher: {
       color: 'emerald',
@@ -161,7 +164,10 @@ const Login = () => {
       features: ['Class management tools', 'Automated grading system', 'Parent-teacher communication', 'Curriculum planning', 'Resource sharing'],
       stats: [{ val: '45+', label: 'Sections' }, { val: '98%', label: 'Efficiency' }, { val: '24/7', label: 'Support' }, { val: 'Top', label: 'Ranked' }],
       identifierLabel: 'Teacher Email',
-      identifierPlaceholder: 'teacher@knhs.edu.ph'
+      identifierPlaceholder: 'teacher@knhs.edu.ph',
+      loadingTitle: 'Initializing Classes',
+      loadingDesc: 'Loading classroom management tools...',
+      loadingIcon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01'
     },
     parent: {
       color: 'blue',
@@ -171,7 +177,10 @@ const Login = () => {
       features: ['Grade notifications', 'Attendance alerts', 'Direct teacher contact', 'School event calendar', 'Performance analytics'],
       stats: [{ val: '2,000+', label: 'Parents' }, { val: '100%', label: 'Visibility' }, { val: 'Secure', label: 'Access' }, { val: 'Global', label: 'Standard' }],
       identifierLabel: 'Parent Email',
-      identifierPlaceholder: 'parent@email.com'
+      identifierPlaceholder: 'parent@email.com',
+      loadingTitle: 'Connecting Home',
+      loadingDesc: 'Syncing child progress data...',
+      loadingIcon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6'
     },
     admin: {
       color: 'emerald',
@@ -181,7 +190,10 @@ const Login = () => {
       features: ['Full system oversight', 'Advanced security logs', 'Database management', 'Administrative reports', 'User permission control'],
       stats: [{ val: 'V3.2', label: 'Version' }, { val: 'Active', label: 'Status' }, { val: 'Secure', label: 'Layer' }, { val: '24/7', label: 'Uptime' }],
       identifierLabel: 'Admin Email or ID',
-      identifierPlaceholder: 'admin@knhs.edu.ph'
+      identifierPlaceholder: 'admin@knhs.edu.ph',
+      loadingTitle: 'Initializing Core',
+      loadingDesc: 'Verifying administrative clearance...',
+      loadingIcon: 'M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z'
     }
   };
 
@@ -319,16 +331,28 @@ const Login = () => {
         <div className={`fixed inset-0 z-[100] flex flex-col items-center justify-center backdrop-blur-md transition-all duration-500 ${isAdmin ? 'bg-black/90' : 'bg-[#0F071E]/80'}`}>
           <div className="relative mb-8">
             <div className={`absolute -inset-4 bg-${currentRole.color}-600 rounded-full blur-xl opacity-40 animate-pulse`} />
-            <div className={`relative w-20 h-20 rounded-full flex items-center justify-center p-1 shadow-2xl ${isAdmin ? 'bg-slate-900 border border-emerald-500/30' : 'bg-white'}`}>
-              <div className={`w-full h-full rounded-full border-4 ${isAdmin ? 'border-emerald-900/30 border-t-emerald-500' : `border-${currentRole.color}-100 border-t-${currentRole.color}-600`} animate-spin`} />
-              <img src="/icons/school-logo-source.png" alt="KNHS" className="absolute w-10 h-10 object-contain" />
+            <div className={`relative w-24 h-24 rounded-full flex items-center justify-center p-1 shadow-2xl transition-all duration-500 ${isAdmin ? 'bg-slate-900 border border-emerald-500/30' : 'bg-white'}`}>
+              <div className={`absolute inset-0 rounded-full border-4 ${isAdmin ? 'border-emerald-900/30 border-t-emerald-500' : `border-${currentRole.color}-100 border-t-${currentRole.color}-600`} animate-spin`} />
+              <div className={`relative w-full h-full rounded-full flex items-center justify-center ${isAdmin ? 'bg-emerald-500/10' : `bg-${currentRole.color}-50`}`}>
+                <svg className={`w-10 h-10 transition-colors duration-500 ${isAdmin ? 'text-emerald-500' : `text-${currentRole.color}-600`}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={currentRole.loadingIcon} />
+                </svg>
+              </div>
             </div>
           </div>
-          <div className="text-center space-y-2">
-            <h3 className="text-xl font-black text-white uppercase tracking-tighter">{isAdmin ? 'Initializing Core' : 'Authenticating'}</h3>
-            <p className={`text-[10px] font-bold text-${currentRole.color}-400 uppercase tracking-[0.3em] animate-pulse`}>
-              {isAdmin ? 'Verifying administrative clearance...' : 'Syncing with school database...'}
+          <div className="text-center space-y-2 max-w-xs px-6">
+            <h3 className="text-xl font-black text-white uppercase tracking-tighter animate-pulse">{currentRole.loadingTitle}</h3>
+            <p className={`text-[10px] font-bold text-${currentRole.color}-400 uppercase tracking-[0.3em] leading-relaxed`}>
+              {currentRole.loadingDesc}
             </p>
+            {isAdmin && (
+              <div className="mt-4 flex flex-col items-center gap-1">
+                <div className="w-32 h-1 bg-emerald-900/30 rounded-full overflow-hidden">
+                  <div className="h-full bg-emerald-500 animate-progress" style={{ width: '0%' }} />
+                </div>
+                <span className="text-[8px] font-mono text-emerald-500/50 uppercase tracking-[0.2em]">Executing System Handshake</span>
+              </div>
+            )}
           </div>
         </div>
       )}
