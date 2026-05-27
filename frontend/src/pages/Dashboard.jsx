@@ -1092,11 +1092,23 @@ const StudentView = () => {
 
   const today = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
 
+  const todayStatusLabel =
+    todayIsWeekend ? 'Weekend' :
+    !todayRecord ? 'Not Marked' :
+    todayRecord.status.charAt(0).toUpperCase() + todayRecord.status.slice(1);
+
+  const todayStatusColor =
+    todayIsWeekend ? 'slate' :
+    !todayRecord ? 'amber' :
+    todayRecord.status === 'present' ? 'emerald' :
+    todayRecord.status === 'late' ? 'yellow' :
+    todayRecord.status === 'absent' ? 'rose' : 'blue';
+
   const statusChips = [
     { label: 'Grade Level', value: user?.profile?.grade_level || 'N/A', color: 'violet' },
-    { label: 'Section', value: stats?.classroom_name || 'N/A', color: 'blue' },
-    { label: 'Avg Grade', value: overallAvg || '—', color: 'emerald' },
-    { label: 'Streak', value: hasAttData ? `${streak}d` : '—', color: 'amber' },
+    { label: 'Attendance', value: monthAtt.length > 0 ? `${attRate}%` : '—', color: 'emerald' },
+    { label: 'Avg Grade', value: overallAvg || '—', color: 'indigo' },
+    { label: 'Today', value: todayStatusLabel, color: todayStatusColor },
   ];
 
   return (
