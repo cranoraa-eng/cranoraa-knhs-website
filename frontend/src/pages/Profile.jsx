@@ -64,19 +64,18 @@ const EmailVerificationWidget = ({ email, isVerified, onVerified }) => {
       setResendCooldown(60);
       toast.success('Verification code sent to your email');
     } catch (err) {
-      const msg = err.response?.data?.error || 'Failed to send code';
-      const errorCode = err.response?.data?.error_code || '';
-      const adminMessage = err.response?.data?.admin_message || '';
-      const isMailjetError =
-        errorCode.startsWith('mailjet') ||
-        msg.toLowerCase().includes('delivery failed') ||
-        msg.toLowerCase().includes('mailjet');
+      const data = err.response?.data || {};
+      const msg = data.error || 'Failed to send code';
+      const errorCode = data.error_code || '';
+
+      // connection_error = transient Render network issue — tell user to retry
+      const isTransient = errorCode === 'mailjet_connection_error' ||
+        msg.toLowerCase().includes('network error') ||
+        msg.toLowerCase().includes('try again');
 
       setError(
-        isAdmin && adminMessage && isMailjetError
-          ? adminMessage
-          : isMailjetError
-          ? 'Email delivery failed. The school email service may not be configured yet. Please contact your administrator.'
+        isTransient
+          ? 'Network error — please try again in a moment.'
           : msg
       );
       setStep('idle');

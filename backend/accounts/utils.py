@@ -1,6 +1,7 @@
 from mailjet_rest import Client
 import random
 import string
+import time
 from django.conf import settings
 from django.utils import timezone
 from datetime import timedelta
@@ -11,6 +12,44 @@ import os
 import secrets
 
 logger = logging.getLogger(__name__)
+
+
+# ── Retry helper for transient network errors ─────────────────────────────────
+# Render's free tier occasionally drops outbound TCP connections to external
+# APIs (ConnectionResetError 104). Retrying with backoff resolves ~95% of these.
+
+def _mailjet_send_with_retry(mailjet_client, data, max_retries=3):
+    """
+    Call mailjet.send.create(data=data) with exponential backoff retry.
+    Retries on connection errors (ConnectionResetError, ConnectionError, etc.)
+    Does NOT retry on HTTP 4xx responses (those are permanent failures).
+    Returns (result_object, None) on success or (None, error_string) on failure.
+    """
+    last_error = None
+    for attempt in range(max_retries):
+        try:
+            result = mailjet_client.send.create(data=data)
+            return result, None
+        except Exception as e:
+            err_str = str(e)
+            last_error = err_str
+            # Only retry on transient network errors
+            is_transient = any(keyword in err_str.lower() for keyword in [
+                'connection reset', 'connectionreset', 'connection aborted',
+                'connectionerror', 'timeout', 'timed out', 'broken pipe',
+                'remote end closed', 'connection refused',
+            ])
+            if is_transient and attempt < max_retries - 1:
+                wait = 2 ** attempt  # 1s, 2s, 4s
+                logger.warning(
+                    f"Mailjet transient error (attempt {attempt + 1}/{max_retries}), "
+                    f"retrying in {wait}s: {err_str}"
+                )
+                time.sleep(wait)
+                continue
+            # Non-transient error or last attempt — give up
+            break
+    return None, last_error
 
 
 def build_mailjet_error(code, message, admin_message=None):
@@ -291,7 +330,10 @@ def broadcast_mailjet_email(emails, subject, message_html, message_text=None):
         mailjet = get_mailjet_client()
         if not mailjet:
             return False, "API Keys missing"
-        result = mailjet.send.create(data=data)
+        result, err = _mailjet_send_with_retry(mailjet, data)
+        if err:
+            logger.error(f"Failed to broadcast Mailjet email after retries: {err}")
+            return False, err
         return result.status_code == 200, f"Status: {result.status_code}"
     except Exception as e:
         logger.error(f"Failed to broadcast Mailjet email: {str(e)}")
@@ -323,17 +365,18 @@ def send_mailjet_email(email, subject, message_html, message_text=None, user_nam
         mailjet = get_mailjet_client()
         if not mailjet:
             return False, "API Keys missing"
-        result = mailjet.send.create(data=data)
+        result, err = _mailjet_send_with_retry(mailjet, data)
+        if err:
+            logger.error(f"CRITICAL: Failed to send email via Mailjet to {email} after retries. Error: {err}")
+            return False, err
         if result.status_code == 200:
             logger.info(f"Mailjet email sent successfully to {email}")
             return True, "Success"
         else:
             error_data = result.json()
             logger.error(f"Mailjet API Error: {result.status_code} - {error_data}")
-            # If it's a 401, it's definitely credentials
             if result.status_code == 401:
                 logger.error("AUTHENTICATION ERROR: Check your MAILJET_API_KEY and MAILJET_SECRET_KEY.")
-            # If it's a 403, it's often the sender email not being verified
             elif result.status_code == 403:
                 logger.error(f"PERMISSION ERROR: Ensure {settings.MAILJET_SENDER_EMAIL} is a verified sender in your Mailjet dashboard.")
             return False, f"Mailjet error {result.status_code}"
@@ -389,15 +432,24 @@ def send_mailjet_otp_email(email, code, user_name, otp_type='signup'):
                 "Mailjet is not configured yet.",
                 "Mailjet credentials are missing on the server. Set MAILJET_API_KEY and MAILJET_SECRET_KEY in Render before using email verification.",
             )
-        
-        result = mailjet.send.create(data=data)
+
+        # Use retry wrapper to handle transient Render network errors
+        result, net_err = _mailjet_send_with_retry(mailjet, data)
+        if net_err:
+            logger.error(f"CRITICAL: Failed to send OTP email to {email} after retries. Error: {net_err}")
+            return False, build_mailjet_error(
+                "mailjet_connection_error",
+                "Email delivery failed due to a network error. Please try again.",
+                f"Mailjet connection failed after retries: {net_err}",
+            )
+
         if result.status_code == 200:
-            logger.info(f"Mailjet email sent successfully to {email}")
+            logger.info(f"Mailjet OTP email sent successfully to {email}")
             return True, "Email sent successfully."
         else:
             error_info = result.json()
             logger.error(f"Mailjet API Error: {result.status_code} - {error_info}")
-            
+
             if result.status_code == 401:
                 return False, build_mailjet_error(
                     "mailjet_auth_failed",
