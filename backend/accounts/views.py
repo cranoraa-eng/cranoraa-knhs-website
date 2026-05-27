@@ -5262,3 +5262,23 @@ def fcm_token_delete(request):
     ).update(is_active=False)
 
     return Response({'status': 'deactivated', 'count': updated})
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def test_push_notification(request):
+    """
+    POST /api/test-push/
+    Sends a test push notification to the current user's active tokens.
+    """
+    from .fcm import send_push_notification
+    try:
+        send_push_notification(
+            user=request.user,
+            title="Test Notification 🔔",
+            body="If you see this, push notifications are working correctly!",
+            data={"link": "/notifications"}
+        )
+        return Response({'status': 'Test push sent'})
+    except Exception as e:
+        return Response({'error': str(e)}, status=500)

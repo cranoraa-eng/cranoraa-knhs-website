@@ -149,26 +149,39 @@ const Notifications = () => {
   const handleBulkDelete = async () => {
     if (!selectedIds.length) return;
     const result = await Swal.fire({
-      title: `Delete ${selectedIds.length} notification${selectedIds.length > 1 ? 's' : ''}?`,
-      text: 'This cannot be undone.',
+      title: 'Delete selected?',
+      text: "This cannot be undone",
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonText: 'Delete',
+      confirmButtonText: 'Yes, delete',
       confirmButtonColor: '#ef4444',
       customClass: { popup: 'rounded-2xl' },
     });
     if (!result.isConfirmed) return;
     setProcessing(true);
     try {
-      // Single bulk-delete request instead of N parallel requests
-      const r = await api.post('/notifications/bulk-delete/', { ids: selectedIds });
+      const r = await api.delete('/notifications/bulk-delete/', { data: { ids: selectedIds } });
       setNotifications(prev => prev.filter(n => !selectedIds.includes(n.id)));
       setTotalCount(prev => Math.max(0, prev - selectedIds.length));
       setSelectedIds([]);
       if (r.data.unread_count !== undefined) setUnreadCount(r.data.unread_count);
-      toast.success('Deleted successfully');
+      toast.success('Selected notifications deleted');
     } catch { toast.error('Failed to delete notifications'); }
     finally { setProcessing(false); }
+  };
+
+  const handleTestPush = async () => {
+    setProcessing(true);
+    try {
+      await api.post('/test-push/');
+      toast.success('Test push sent! Check your corner in 2-3s.');
+    } catch (err) {
+      const errorMsg = err.response?.data?.error || 'Failed to send test push';
+      toast.error(errorMsg);
+      console.error('Test push error:', err);
+    } finally {
+      setProcessing(false);
+    }
   };
 
   const unreadInView = notifications.filter(n => !n.is_read).length;
@@ -191,16 +204,28 @@ const Notifications = () => {
             )}
           </p>
         </div>
-        <button
-          onClick={markAllRead}
-          disabled={processing || loading || !hasUnread}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-slate-200 text-sm font-bold text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-sm"
-        >
-          <svg className="w-4 h-4 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-          </svg>
-          Mark all read
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleTestPush}
+            disabled={processing || loading}
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-violet-600 text-sm font-bold text-white hover:bg-violet-700 transition-all disabled:opacity-40 shadow-sm"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+            </svg>
+            Send Test
+          </button>
+          <button
+            onClick={markAllRead}
+            disabled={processing || loading || !hasUnread}
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-slate-200 text-sm font-bold text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-sm"
+          >
+            <svg className="w-4 h-4 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+            </svg>
+            Mark all read
+          </button>
+        </div>
       </div>
 
       {/* ── Filters ── */}

@@ -77,5 +77,6 @@ urlpatterns = [
     path('parent/child/<int:student_id>/', parent_child_detail_view, name='parent_child_detail'),
     path('fcm-tokens/', fcm_token_register, name='fcm_token_register'),
     path('fcm-tokens/delete/', fcm_token_delete, name='fcm_token_delete'),
+    path('test-push/', test_push_notification, name='test_push_notification'),
     path('', include(router.urls)),
 ]
