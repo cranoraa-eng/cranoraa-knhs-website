@@ -387,86 +387,6 @@ def resend_otp_view(request):
         return Response({'error': f'An unexpected error occurred: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def request_email_verification_view(request):
-    """
-    Authenticated endpoint: send an OTP to the logged-in user's email
-    so they can verify it from the Profile page.
-    The user must have an email set on their account first.
-    """
-    user = request.user
-
-    if not user.email or not user.email.strip():
-        return Response(
-            {'error': 'No email address is set on your account. Please add an email in your profile first.'},
-            status=status.HTTP_400_BAD_REQUEST
-        )
-
-    if user.is_verified:
-        return Response({'message': 'Your email is already verified.'})
-
-    try:
-        from .utils import create_otp, send_mailjet_otp_email
-        code = create_otp(user, otp_type='signup')
-        sent, error_detail = send_mailjet_otp_email(
-            user.email, code, user.first_name or user.username, otp_type='signup'
-        )
-        if sent:
-            return Response({'message': f'Verification code sent to {user.email}.'})
-        else:
-            error_meta = normalize_mailjet_error_detail(error_detail)
-            # Log the code so admin can retrieve it from Render logs if needed
-            logger.warning(
-                f"Email verification OTP for {user.username} ({user.email}) "
-                f"could not be delivered. Code: {code}. Error: {error_detail}"
-            )
-            return Response({
-                'error': f"Email delivery failed: {error_meta['message']}",
-                'error_code': error_meta['code'],
-                'admin_message': error_meta['admin_message'],
-                # Return code in DEBUG so developers can test without Mailjet
-                'code': code if settings.DEBUG else None
-            }, status=status.HTTP_400_BAD_REQUEST)
-    except Exception as e:
-        logger.error(f"request_email_verification error for {user.username}: {e}", exc_info=True)
-        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def confirm_email_verification_view(request):
-    """
-    Authenticated endpoint: verify the OTP code the user received.
-    Marks is_verified=True on success.
-    """
-    user = request.user
-    code = request.data.get('code', '').strip()
-
-    if not code:
-        return Response({'error': 'Verification code is required.'}, status=status.HTTP_400_BAD_REQUEST)
-
-    if not user.email:
-        return Response({'error': 'No email address on account.'}, status=status.HTTP_400_BAD_REQUEST)
-
-    if user.is_verified:
-        return Response({'message': 'Email is already verified.'})
-
-    try:
-        from .utils import verify_otp_code
-        success, message = verify_otp_code(user, code, otp_type='signup')
-        if not success:
-            return Response({'error': message}, status=status.HTTP_400_BAD_REQUEST)
-
-        user.is_verified = True
-        user.save(update_fields=['is_verified'])
-
-        return Response({'message': 'Email verified successfully!', 'is_verified': True})
-    except Exception as e:
-        logger.error(f"confirm_email_verification error for {user.username}: {e}", exc_info=True)
-        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
 @csrf_exempt
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -2924,7 +2844,6 @@ def student_profile(request):
             'first_name': target_user.first_name,
             'last_name': target_user.last_name,
             'role': target_user.role,
-            'is_verified': target_user.is_verified,
             'must_change_password': target_user.must_change_password,
             'profile': {
                 'title': profile.title,
