@@ -16,38 +16,82 @@ logger = logging.getLogger(__name__)
 
 # ── Retry helper for transient network errors ─────────────────────────────────
 # Render's free tier occasionally drops outbound TCP connections to external
-# APIs (ConnectionResetError 104). Retrying with backoff resolves ~95% of these.
+# APIs (ConnectionResetError 104). We bypass the mailjet-rest library and call
+# the Mailjet API directly via requests with a Session + HTTPAdapter that has
+# its own retry logic at the urllib3 level, plus an explicit timeout.
+
+def _send_mailjet_direct(data):
+    """
+    Send a Mailjet v3.1 send request directly via requests.Session.
+    Bypasses the mailjet-rest library which has no timeout or retry config.
+    Returns (status_code, response_json) or raises on network failure.
+    """
+    import requests
+    from requests.adapters import HTTPAdapter
+    from urllib3.util.retry import Retry
+
+    api_key = settings.MAILJET_API_KEY
+    secret_key = settings.MAILJET_SECRET_KEY
+
+    # urllib3-level retry: retries on connection errors before the request
+    # even reaches the server (handles ConnectionResetError, BrokenPipeError).
+    retry_strategy = Retry(
+        total=3,
+        backoff_factor=1,          # 0s, 1s, 2s between retries
+        status_forcelist=[429, 500, 502, 503, 504],
+        allowed_methods=["POST"],
+        raise_on_status=False,
+    )
+    adapter = HTTPAdapter(max_retries=retry_strategy)
+    session = requests.Session()
+    session.mount("https://", adapter)
+    session.mount("http://", adapter)
+
+    response = session.post(
+        "https://api.mailjet.com/v3.1/send",
+        json=data,
+        auth=(api_key, secret_key),
+        timeout=(10, 30),  # (connect timeout, read timeout) in seconds
+        headers={"Content-Type": "application/json"},
+    )
+    return response.status_code, response.json()
+
 
 def _mailjet_send_with_retry(mailjet_client, data, max_retries=3):
     """
-    Call mailjet.send.create(data=data) with exponential backoff retry.
-    Retries on connection errors (ConnectionResetError, ConnectionError, etc.)
-    Does NOT retry on HTTP 4xx responses (those are permanent failures).
+    Send via the direct requests path (mailjet_client arg kept for
+    backward compatibility but is no longer used).
     Returns (result_object, None) on success or (None, error_string) on failure.
+    Uses a simple wrapper so callers don't need to change.
     """
     last_error = None
     for attempt in range(max_retries):
         try:
-            result = mailjet_client.send.create(data=data)
-            return result, None
+            status_code, resp_json = _send_mailjet_direct(data)
+            # Wrap in a simple object so existing callers can do result.status_code
+            class _Result:
+                def __init__(self, sc, rj):
+                    self.status_code = sc
+                    self._json = rj
+                def json(self):
+                    return self._json
+            return _Result(status_code, resp_json), None
         except Exception as e:
             err_str = str(e)
             last_error = err_str
-            # Only retry on transient network errors
             is_transient = any(keyword in err_str.lower() for keyword in [
                 'connection reset', 'connectionreset', 'connection aborted',
                 'connectionerror', 'timeout', 'timed out', 'broken pipe',
-                'remote end closed', 'connection refused',
+                'remote end closed', 'connection refused', 'max retries exceeded',
             ])
             if is_transient and attempt < max_retries - 1:
-                wait = 2 ** attempt  # 1s, 2s, 4s
+                wait = 2 ** attempt  # 1s, 2s
                 logger.warning(
                     f"Mailjet transient error (attempt {attempt + 1}/{max_retries}), "
                     f"retrying in {wait}s: {err_str}"
                 )
                 time.sleep(wait)
                 continue
-            # Non-transient error or last attempt — give up
             break
     return None, last_error
 
