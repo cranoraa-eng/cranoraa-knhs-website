@@ -312,3 +312,10 @@ SUPABASE_BUCKET = os.environ.get('SUPABASE_STORAGE_BUCKET', 'profile-pictures')
 
 if not SUPABASE_URL or not SUPABASE_KEY:
     print("WARNING: SUPABASE_URL or SUPABASE_KEY not set — file uploads will fail.")
+
+# Resend Email Configuration (primary email provider — works on Render free tier)
+# Get a free API key at https://resend.com — 3,000 emails/month free
+# Set RESEND_API_KEY in Render environment variables to enable.
+# If not set, falls back to Mailjet.
+RESEND_API_KEY = os.environ.get('RESEND_API_KEY')
+RESEND_FROM_EMAIL = os.environ.get('RESEND_FROM_EMAIL', 'KNHS Portal <noreply@knhsportal.dedyn.io>')

@@ -57,6 +57,53 @@ def _send_mailjet_direct(data):
     return response.status_code, response.json()
 
 
+def _send_resend_direct(to_email, subject, html_content, text_content=None):
+    """
+    Send an email via Resend API (https://resend.com).
+    Resend works reliably on Render free tier unlike Mailjet.
+    Returns (True, 'Success') or (False, error_string).
+    Requires RESEND_API_KEY in environment variables.
+    """
+    import requests
+
+    api_key = getattr(settings, 'RESEND_API_KEY', None) or os.environ.get('RESEND_API_KEY')
+    if not api_key:
+        return False, 'RESEND_API_KEY not configured'
+
+    from_email = getattr(settings, 'RESEND_FROM_EMAIL', None) or \
+                 os.environ.get('RESEND_FROM_EMAIL', 'KNHS Portal <noreply@knhsportal.dedyn.io>')
+
+    payload = {
+        'from': from_email,
+        'to': [to_email],
+        'subject': subject,
+        'html': html_content,
+    }
+    if text_content:
+        payload['text'] = text_content
+
+    try:
+        response = requests.post(
+            'https://api.resend.com/emails',
+            json=payload,
+            headers={
+                'Authorization': f'Bearer {api_key}',
+                'Content-Type': 'application/json',
+            },
+            timeout=(10, 30),
+        )
+        if response.status_code in (200, 201):
+            logger.info(f"Resend email sent successfully to {to_email}")
+            return True, 'Success'
+        else:
+            err = response.json()
+            logger.error(f"Resend API error {response.status_code}: {err}")
+            return False, f"Resend error {response.status_code}: {err.get('message', str(err))}"
+    except Exception as e:
+        logger.error(f"Resend request failed to {to_email}: {e}")
+        return False, str(e)
+
+
 def _mailjet_send_with_retry(mailjet_client, data, max_retries=3):
     """
     Send via the direct requests path (mailjet_client arg kept for
@@ -429,10 +476,17 @@ def send_mailjet_email(email, subject, message_html, message_text=None, user_nam
         return False, str(e)
 
 def send_mailjet_otp_email(email, code, user_name, otp_type='signup'):
-    """Send an OTP email using Mailjet API."""
+    """
+    Send an OTP email. Tries Resend first (reliable on Render free tier),
+    falls back to Mailjet if RESEND_API_KEY is not configured.
+    """
     subject_text = "Verify your account" if otp_type == 'signup' else "Reset your password"
     title = "Account Verification" if otp_type == 'signup' else "Password Reset"
-    body_text = f"Your verification code for the KNHS School Portal is: {code}" if otp_type == 'signup' else f"Your password reset code for the KNHS School Portal is: {code}"
+    body_text = (
+        f"Your verification code for the KNHS School Portal is: {code}"
+        if otp_type == 'signup'
+        else f"Your password reset code for the KNHS School Portal is: {code}"
+    )
 
     html_content = f"""
     <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
@@ -447,7 +501,17 @@ def send_mailjet_otp_email(email, code, user_name, otp_type='signup'):
         <p style="color: #9ca3af; font-size: 12px; text-align: center;">&copy; 2026 KNHS School Portal. All rights reserved.</p>
     </div>
     """
+    subject = f"KNHS Portal - {subject_text}"
 
+    # ── Try Resend first (works on Render free tier) ──────────────────────────
+    resend_key = getattr(settings, 'RESEND_API_KEY', None) or os.environ.get('RESEND_API_KEY')
+    if resend_key:
+        sent, detail = _send_resend_direct(email, subject, html_content, body_text)
+        if sent:
+            return True, "Email sent successfully."
+        logger.warning(f"Resend failed for {email}: {detail}. Falling back to Mailjet.")
+
+    # ── Fall back to Mailjet ──────────────────────────────────────────────────
     data = {
         'Messages': [
             {
@@ -455,13 +519,8 @@ def send_mailjet_otp_email(email, code, user_name, otp_type='signup'):
                     "Email": settings.MAILJET_SENDER_EMAIL,
                     "Name": "KNHS School Portal"
                 },
-                "To": [
-                    {
-                        "Email": email,
-                        "Name": user_name
-                    }
-                ],
-                "Subject": f"KNHS Portal - {subject_text}",
+                "To": [{"Email": email, "Name": user_name}],
+                "Subject": subject,
                 "HTMLPart": html_content,
                 "TextPart": body_text
             }
