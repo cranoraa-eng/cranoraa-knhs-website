@@ -202,11 +202,19 @@ SIMPLE_JWT = {
 
 # CORS Configuration
 # In production, only allow the known frontend origin.
-# CORS_ALLOW_ALL_ORIGINS is kept as a fallback for local dev only.
+# We prioritize CORS_ALLOWED_ORIGINS environment variable if set.
 _frontend_url = os.environ.get('FRONTEND_URL', 'http://localhost:5173')
-_extra_cors = os.environ.get('EXTRA_CORS_ORIGINS', '')  # comma-separated extra origins
+_cors_env = os.environ.get('CORS_ALLOWED_ORIGINS', '')
 
-CORS_ALLOWED_ORIGINS = [o.strip() for o in [_frontend_url] + (_extra_cors.split(',') if _extra_cors else []) if o.strip()]
+# Hardcoded production fallback for Vercel
+_vercel_url = 'https://cranoraa-eng-cranoraa-knhs-website.vercel.app'
+
+if _cors_env:
+    CORS_ALLOWED_ORIGINS = [o.strip() for o in _cors_env.split(',') if o.strip()]
+else:
+    _extra_cors = os.environ.get('EXTRA_CORS_ORIGINS', '')
+    CORS_ALLOWED_ORIGINS = [o.strip() for o in [_frontend_url, _vercel_url] + (_extra_cors.split(',') if _extra_cors else []) if o.strip()]
+
 CORS_ALLOW_ALL_ORIGINS = DEBUG  # Only allow all origins in local dev mode
 CORS_ALLOW_CREDENTIALS = True
 
@@ -214,14 +222,22 @@ CORS_ALLOW_HEADERS = list(default_headers) + [
     'authorization',
 ]
 
-CSRF_TRUSTED_ORIGINS = [o.strip() for o in os.environ.get(
-    'CSRF_TRUSTED_ORIGINS',
-    'http://localhost:5173,http://127.0.0.1:5173'
-).split(',') if o.strip()]
+# CSRF Configuration
+_csrf_env = os.environ.get('CSRF_TRUSTED_ORIGINS', '')
+if _csrf_env:
+    CSRF_TRUSTED_ORIGINS = [o.strip() for o in _csrf_env.split(',') if o.strip()]
+else:
+    CSRF_TRUSTED_ORIGINS = [o.strip() for o in os.environ.get(
+        'CSRF_TRUSTED_ORIGINS_DEFAULT',
+        f'http://localhost:5173,http://127.0.0.1:5173,{_vercel_url}'
+    ).split(',') if o.strip()]
 
-# Ensure the frontend URL is always in CSRF trusted origins
-if _frontend_url and _frontend_url not in CSRF_TRUSTED_ORIGINS:
-    CSRF_TRUSTED_ORIGINS.append(_frontend_url)
+# Ensure the frontend URL is always in CSRF trusted origins if not using the env var
+if not _csrf_env:
+    if _frontend_url and _frontend_url not in CSRF_TRUSTED_ORIGINS:
+        CSRF_TRUSTED_ORIGINS.append(_frontend_url)
+    if _vercel_url not in CSRF_TRUSTED_ORIGINS:
+        CSRF_TRUSTED_ORIGINS.append(_vercel_url)
 
 # Email Configuration (Mailjet API)
 MAILJET_API_KEY = os.environ.get('MAILJET_API_KEY')
