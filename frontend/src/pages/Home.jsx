@@ -63,7 +63,21 @@ const MiniCalendar = ({ events, onSelectDay }) => {
 };
 
 // ── Helpers (unchanged) ───────────────────────────────────────────────────────
-const attachUrl = (url) => { if (!url) return null; if (url.startsWith('http')) return url; return `${api.defaults.baseURL.replace('/api', '')}${url}`; };
+const attachUrl = (url) => {
+  if (!url) return null;
+  if (url.startsWith('http')) return url;
+  // Derive media root safely — strip /api suffix from baseURL
+  const base = (() => {
+    try {
+      const u = new URL(api.defaults.baseURL);
+      u.pathname = u.pathname.replace(/\/api\/?$/, '') || '/';
+      return u.toString().replace(/\/$/, '');
+    } catch {
+      return api.defaults.baseURL.replace(/\/api\/?$/, '');
+    }
+  })();
+  return `${base}${url}`;
+};
 const getFirstImage = (a) => { if (a.attachment_url && /\.(jpg|jpeg|png|gif|webp)$/i.test(a.attachment_url)) return attachUrl(a.attachment_url); const img = a.attachments?.find(att => att.is_image); return attachUrl(img?.url); };
 const getPDFs = (a) => { const pdfs = []; if (a.attachment_url?.toLowerCase().endsWith('.pdf')) pdfs.push({ name: 'Attachment.pdf', url: attachUrl(a.attachment_url) }); a.attachments?.forEach(att => { if (att.url?.toLowerCase().endsWith('.pdf')) pdfs.push({ name: att.filename || 'Document.pdf', url: attachUrl(att.url) }); }); return pdfs; };
 const formatDate = (d) => new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });

@@ -560,13 +560,18 @@ class ChatRoomSerializer(serializers.ModelSerializer):
     unread_count = serializers.SerializerMethodField()
     participants_details = UserSerializer(source='participants', many=True, read_only=True)
     is_pinned = serializers.SerializerMethodField()
-    last_action_sender_name = serializers.CharField(source='last_action_sender.full_name', read_only=True, default='')
+    last_action_sender_name = serializers.SerializerMethodField()
 
     class Meta:
         model = ChatRoom
         fields = ['id', 'name', 'is_group', 'participants', 'participants_details', 
                  'created_by', 'created_at', 'updated_at', 'last_message', 'unread_count', 'is_pinned',
                  'last_action_type', 'last_action_sender', 'last_action_sender_name', 'last_action_content']
+
+    def get_last_action_sender_name(self, obj):
+        if obj.last_action_sender:
+            return full_name(obj.last_action_sender)
+        return ''
 
     def get_last_message(self, obj):
         msg = obj.messages.last()

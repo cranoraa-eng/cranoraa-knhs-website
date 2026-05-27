@@ -29,7 +29,7 @@ class User(AbstractUser):
     account_status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active')
     
     USERNAME_FIELD = 'username'
-    REQUIRED_FIELDS = ['email', 'role']
+    REQUIRED_FIELDS = ['role']
     
     def __str__(self):
         return f"{self.username} ({self.role})"
@@ -678,6 +678,9 @@ from django.dispatch import receiver
 from django.conf import settings
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
+import logging
+
+_models_logger = logging.getLogger(__name__)
 
 @receiver(post_save, sender=Announcement)
 def send_announcement_email(sender, instance, created, **kwargs):
@@ -734,7 +737,7 @@ def send_announcement_email(sender, instance, created, **kwargs):
                 message_text=message_text
             )
     except Exception as e:
-        logger.error(f"Failed to broadcast announcement email for id={instance.id}: {e}")
+        _models_logger.error(f"Failed to broadcast announcement email for id={instance.id}: {e}")
 
 @receiver(post_save, sender=Notification)
 def broadcast_notification(sender, instance, created, **kwargs):

@@ -160,15 +160,6 @@ class AcademicYearViewSet(viewsets.ModelViewSet):
         year.save()
         return Response({'status': f'Academic Year {year.name} activated'})
 
-    @action(detail=True, methods=['post'])
-    def set_active(self, request, pk=None):
-        if request.user.role != 'admin':
-            return Response({'error': 'Unauthorized'}, status=403)
-        year = self.get_object()
-        year.is_active = True
-        year.save()
-        return Response({'status': 'Academic year set as active'})
-
 
 from rest_framework.pagination import PageNumberPagination
 
@@ -423,26 +414,28 @@ class DatabaseBackupViewSet(viewsets.ModelViewSet):
             from django.conf import settings
             import os
             from django.http import FileResponse
-            
+
             backup = self.get_object()
             backup_dir = os.path.join(settings.BASE_DIR, 'backups')
             backup_path = os.path.join(backup_dir, backup.filename)
-            
+
             if not os.path.exists(backup_path):
                 return Response(
-                    {'error': 'Backup file not found'}, 
+                    {'error': 'Backup file not found'},
                     status=404
                 )
-            
+
+            # FileResponse closes the file handle automatically when the response is consumed
+            fh = open(backup_path, 'rb')
             return FileResponse(
-                open(backup_path, 'rb'),
+                fh,
                 as_attachment=True,
                 filename=backup.filename
             )
-            
+
         except Exception as e:
             return Response(
-                {'error': str(e)}, 
+                {'error': str(e)},
                 status=500
             )
 
