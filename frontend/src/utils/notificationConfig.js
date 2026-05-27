@@ -20,6 +20,10 @@ export const TYPE_CONFIG = {
     icon: 'M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z',
     bg: 'bg-blue-100', color: 'text-blue-600', label: 'Message',
   },
+  friend_request: {
+    icon: 'M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z',
+    bg: 'bg-pink-100', color: 'text-pink-600', label: 'Friend Request',
+  },
   fee: {
     icon: 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z',
     bg: 'bg-rose-100', color: 'text-rose-600', label: 'Fee',

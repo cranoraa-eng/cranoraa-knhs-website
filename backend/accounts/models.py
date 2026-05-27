@@ -655,6 +655,7 @@ class Notification(models.Model):
         ('attendance', 'Attendance'),
         ('fee', 'Fee Reminder'),
         ('message', 'Message'),
+        ('friend_request', 'Friend Request'),
         ('system', 'System'),
     ]
     

@@ -411,7 +411,36 @@ class ChatConsumer(AsyncWebsocketConsumer):
         room.last_action_content = message
         room.save()
 
-        return ChatMessage.objects.create(room=room, sender=sender, content=message, parent_message=parent)
+        msg = ChatMessage.objects.create(room=room, sender=sender, content=message, parent_message=parent)
+
+        # Create persistent notifications for participants who are offline
+        # (online users get the real-time WS event; offline users need the DB row)
+        import datetime
+        from django.utils import timezone as tz
+        five_mins_ago = tz.now() - datetime.timedelta(minutes=5)
+        sender_name = sender.get_full_name() or sender.username
+        room_label = room.name if room.is_group else sender_name
+        preview = message[:80] + ('…' if len(message) > 80 else '')
+
+        offline_participants = room.participants.exclude(id=sender_id).filter(
+            last_activity__lt=five_mins_ago
+        )
+        notifications = [
+            Notification(
+                recipient=participant,
+                notification_type='message',
+                title=f'New message from {sender_name}',
+                message=f'{room_label}: {preview}',
+                link='/messages',
+            )
+            for participant in offline_participants
+        ]
+        if notifications:
+            # Individual saves so the broadcast_notification signal fires for each
+            for n in notifications:
+                n.save()
+
+        return msg
 
     @database_sync_to_async
     def serialize_message(self, msg):

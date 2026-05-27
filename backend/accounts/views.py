@@ -1426,7 +1426,11 @@ class AnnouncementViewSet(viewsets.ModelViewSet):
                         )
                     )
             if notifications_to_create:
-                Notification.objects.bulk_create(notifications_to_create)
+                # Use individual creates so the post_save signal fires for each,
+                # triggering real-time WS broadcast to connected users.
+                # For large audiences this is slightly slower but ensures live delivery.
+                for notif in notifications_to_create:
+                    notif.save()
         except Exception as e:
             logger.error(f"Error in perform_create: {str(e)}")
             raise
@@ -3358,35 +3362,47 @@ class GradeViewSet(viewsets.ModelViewSet):
         user = self.request.user
         if user.role == 'student':
             raise serializers.ValidationError("Students cannot create grades")
-        
+
         serializer.save(teacher=user)
-        
+        grade = serializer.instance
+
         # Log the action
         from portal.views import log_audit_action
         log_audit_action(
             user=user,
             action='grade_create',
             model_name='Grade',
-            object_id=serializer.instance.id,
-            object_repr=str(serializer.instance),
-            description=f'Created grade for {serializer.instance.student.username} in {serializer.instance.subject.code}',
+            object_id=grade.id,
+            object_repr=str(grade),
+            description=f'Created grade for {grade.student.username} in {grade.subject.code}',
             request=self.request
         )
-    
+
+        # Notify the student — only for final grades to avoid spamming on every component
+        if grade.grade_type == 'final_grade' and grade.transmuted_score is not None:
+            teacher_name = user.get_full_name() or user.username
+            Notification.objects.create(
+                recipient=grade.student,
+                notification_type='grade',
+                title='Grade Posted',
+                message=f'{teacher_name} posted your {grade.subject.name} grade for Q{grade.quarter}: {grade.transmuted_score}.',
+                link='/grades',
+            )
+
     def perform_update(self, serializer):
         user = self.request.user
         grade = self.get_object()
-        
+
         # Check if grade is locked
         if grade.is_locked and user.role != 'admin':
-            # Allow toggling lock status, but not editing other fields
             if len(serializer.validated_data) == 1 and 'is_locked' in serializer.validated_data:
                 pass
             else:
                 raise serializers.ValidationError("This grade is locked and cannot be edited")
-        
+
         serializer.save()
-        
+        grade.refresh_from_db()
+
         # Log the action
         from portal.views import log_audit_action
         log_audit_action(
@@ -3398,6 +3414,17 @@ class GradeViewSet(viewsets.ModelViewSet):
             description=f'Updated grade for {grade.student.username} in {grade.subject.code}',
             request=self.request
         )
+
+        # Notify the student on final grade updates
+        if grade.grade_type == 'final_grade' and grade.transmuted_score is not None:
+            teacher_name = user.get_full_name() or user.username
+            Notification.objects.create(
+                recipient=grade.student,
+                notification_type='grade',
+                title='Grade Updated',
+                message=f'{teacher_name} updated your {grade.subject.name} grade for Q{grade.quarter}: {grade.transmuted_score}.',
+                link='/grades',
+            )
     
     def perform_destroy(self, instance):
         user = self.request.user
@@ -4392,9 +4419,18 @@ class FriendshipViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         try:
             friendship = serializer.save(from_user=self.request.user, status='pending')
-            # Notify the target user of the new request
+            # Real-time WS event
             serialized = FriendshipSerializer(friendship, context={'request': self.request}).data
             _notify_user_of_friendship_update(friendship.to_user.id, serialized, 'request_received')
+            # Persistent notification so offline users see it when they log in
+            sender_name = self.request.user.get_full_name() or self.request.user.username
+            Notification.objects.create(
+                recipient=friendship.to_user,
+                notification_type='friend_request',
+                title='New Friend Request',
+                message=f'{sender_name} sent you a friend request.',
+                link='/messages',
+            )
         except Exception as e:
             logger.error(f"Friendship create error: {str(e)}")
             raise
@@ -4405,16 +4441,24 @@ class FriendshipViewSet(viewsets.ModelViewSet):
             friendship = self.get_object()
             if friendship.to_user != request.user:
                 return Response({'error': 'Unauthorized'}, status=status.HTTP_403_FORBIDDEN)
-            
+
             friendship.status = 'accepted'
             friendship.save()
-            
+
             serialized = FriendshipSerializer(friendship, context={'request': request}).data
-            # Notify the requester that it was accepted
             _notify_user_of_friendship_update(friendship.from_user.id, serialized, 'request_accepted')
-            # Notify self to sync tabs
             _notify_user_of_friendship_update(request.user.id, serialized, 'request_accepted')
-            
+
+            # Notify the original requester that their request was accepted
+            accepter_name = request.user.get_full_name() or request.user.username
+            Notification.objects.create(
+                recipient=friendship.from_user,
+                notification_type='friend_request',
+                title='Friend Request Accepted',
+                message=f'{accepter_name} accepted your friend request.',
+                link='/messages',
+            )
+
             return Response(serialized)
         except Exception as e:
             logger.error(f"Friendship accept error: {str(e)}")

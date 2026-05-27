@@ -101,7 +101,14 @@ export const NotificationProvider = ({ children }) => {
             return [data, ...prev].slice(0, 20);
           });
           setUnreadCount(data.unread_count);
-          playSound(data.notification_type === 'announcement' ? 'announcement' : 'notification');
+          // Play appropriate sound per notification type
+          if (data.notification_type === 'announcement') {
+            playSound('announcement');
+          } else if (data.notification_type === 'message') {
+            playSound('message');
+          } else {
+            playSound('notification');
+          }
           toast.success(data.title, { duration: 5000 });
 
         } else if (data.type === 'notification_read') {
