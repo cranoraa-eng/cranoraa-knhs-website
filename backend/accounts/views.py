@@ -181,7 +181,12 @@ def force_password_change_view(request):
 def admin_create_user_view(request):
     username = request.data.get('username') # For students, this will be their Student ID
     email = request.data.get('email')
-    if email == "": email = None # Treat empty string as None for unique constraint
+    
+    # Treat empty string or only whitespace as None for unique constraint
+    if email is not None:
+        email = email.strip()
+        if email == "":
+            email = None
     
     password = request.data.get('password') # Temporary password
     role = request.data.get('role', 'student')
