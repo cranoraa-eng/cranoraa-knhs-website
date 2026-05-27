@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { loginRequest } from '../utils/auth';
+import { loginRequest, clearSession } from '../utils/auth';
 import api from '../utils/api';
 import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
@@ -241,6 +241,23 @@ const Login = () => {
     setLoading(true);
     try {
       const userData = await loginRequest(identifier, password, loginType);
+      
+      // Strict role verification: Ensure the account's actual role matches the selected login UI
+      // This prevents e.g. an admin from logging in through the student portal UI
+      if (userData.role && userData.role !== loginType) {
+         setLoading(false);
+         // Clear the session since it was saved by loginRequest
+         clearSession();
+         
+         Swal.fire({
+          icon: 'error',
+          title: 'Unauthorized Portal',
+          text: `This account is registered as a ${userData.role.charAt(0).toUpperCase() + userData.role.slice(1)}. Please use the correct portal to sign in.`,
+          confirmButtonColor: isAdmin ? '#10b981' : '#9333ea',
+        });
+        return;
+      }
+
       if (userData?.must_change_password) {
         signIn(userData);
         toast.success('Please update your password to continue.');
