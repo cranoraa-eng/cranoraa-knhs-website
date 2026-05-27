@@ -214,70 +214,109 @@ const TodayScheduleWidget = ({ role }) => {
       .finally(() => setLoading(false));
   }, []);
 
-  const todayLabel = new Date().toLocaleDateString('en-US', { weekday: 'long' });
+  const todayLabel = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+
+  // Highlight the currently active period
+  const toMinutes = (timeStr) => {
+    if (!timeStr) return 0;
+    const [time, period] = timeStr.split(' ');
+    let [h, m] = time.split(':').map(Number);
+    if (period === 'PM' && h !== 12) h += 12;
+    if (period === 'AM' && h === 12) h = 0;
+    return h * 60 + m;
+  };
+  const now = new Date();
+  const nowMinutes = now.getHours() * 60 + now.getMinutes();
+  const currentIdx = schedule.findIndex(s => {
+    const start = toMinutes(s.time_slot_detail?.start_time_display);
+    const end   = toMinutes(s.time_slot_detail?.end_time_display);
+    return nowMinutes >= start && nowMinutes < end;
+  });
 
   return (
-    <div className="bg-white border border-slate-200/70 rounded-3xl md:rounded-[2rem] p-4 md:p-6 shadow-sm flex flex-col">
-      <div className="flex items-center justify-between mb-4 md:mb-6 shrink-0">
-        <div>
-          <h3 className="text-xs md:text-sm font-black text-slate-900 uppercase tracking-tight">Today's Schedule</h3>
-          <p className="text-[8px] md:text-[9px] font-black text-slate-400 uppercase tracking-widest mt-0.5 md:mt-1">{todayLabel}</p>
+    <div className="bg-white border border-slate-200/70 rounded-3xl md:rounded-[2rem] p-4 md:p-5 shadow-sm">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-3 md:mb-4">
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-xl bg-violet-50 flex items-center justify-center shrink-0">
+            <svg className="w-4 h-4 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+          </div>
+          <div>
+            <h3 className="text-xs font-black text-slate-900 uppercase tracking-tight leading-none">Today's Schedule</h3>
+            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">{todayLabel}</p>
+          </div>
         </div>
         <button
           onClick={() => navigate('/schedule')}
-          className="p-2 md:p-2.5 rounded-lg md:rounded-xl bg-violet-50 text-violet-600 hover:bg-violet-600 hover:text-white transition-all active:scale-90"
-          title="Full Schedule"
+          className="text-[9px] font-black text-violet-600 hover:text-violet-700 uppercase tracking-widest flex items-center gap-1 transition-colors"
         >
-          <svg className="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+          Full
+          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" /></svg>
         </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto pr-1 -mr-1 scrollbar-thin">
-        {loading ? (
-          <div className="space-y-2 md:space-y-3">
-            {[1,2,3].map(i => (
-              <div key={i} className="h-14 md:h-16 rounded-xl md:rounded-2xl bg-slate-50 animate-pulse" />
-            ))}
+      {/* Content */}
+      {loading ? (
+        <div className="space-y-2">
+          {[1,2,3].map(i => <div key={i} className="h-12 rounded-xl bg-slate-50 animate-pulse" />)}
+        </div>
+      ) : schedule.length === 0 ? (
+        <div className="flex items-center gap-3 py-3 px-3 bg-slate-50 rounded-2xl">
+          <div className="w-9 h-9 rounded-xl bg-white border border-slate-100 flex items-center justify-center shrink-0 shadow-sm">
+            <svg className="w-4 h-4 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
           </div>
-        ) : schedule.length === 0 ? (
-          <div className="py-8 md:py-12 flex flex-col items-center justify-center opacity-40">
-            <svg className="w-8 h-8 md:w-10 md:h-10 text-slate-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-            <p className="text-[8px] md:text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">No classes today</p>
+          <div>
+            <p className="text-xs font-black text-slate-500">No classes today</p>
+            <p className="text-[9px] text-slate-400 font-medium mt-0.5">Enjoy your free day</p>
           </div>
-        ) : (
-          <div className="space-y-2 md:space-y-3">
-            {schedule.map(s => (
-              <div key={s.id} className="flex items-center gap-3 md:gap-4 p-3 md:p-4 rounded-xl md:rounded-2xl bg-slate-50/50 hover:bg-white hover:shadow-md hover:shadow-violet-100 transition-all border border-transparent hover:border-violet-100 group cursor-default">
-                <div className="text-center min-w-[50px] md:min-w-[56px] py-0.5 md:py-1 border-r border-slate-200 group-hover:border-violet-200 transition-colors">
-                  <p className="text-[10px] md:text-[11px] font-black text-violet-600 leading-none">
+        </div>
+      ) : (
+        <div className="space-y-1.5">
+          {schedule.map((s, idx) => {
+            const isCurrent = idx === currentIdx;
+            const isPast    = currentIdx !== -1 && idx < currentIdx;
+            return (
+              <div key={s.id} className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all border ${
+                isCurrent
+                  ? 'bg-violet-600 border-violet-600 shadow-md shadow-violet-200'
+                  : isPast
+                  ? 'bg-slate-50 border-transparent opacity-50'
+                  : 'bg-slate-50/60 border-transparent hover:bg-white hover:border-slate-100 hover:shadow-sm'
+              }`}>
+                <div className="text-center min-w-[44px] shrink-0">
+                  <p className={`text-[10px] font-black leading-none ${isCurrent ? 'text-white' : 'text-violet-600'}`}>
                     {s.time_slot_detail?.start_time_display}
                   </p>
-                  <p className="text-[8px] md:text-[9px] font-bold text-slate-400 mt-1 uppercase">
+                  <p className={`text-[8px] font-bold mt-0.5 ${isCurrent ? 'text-violet-200' : 'text-slate-400'}`}>
                     {s.time_slot_detail?.end_time_display}
                   </p>
                 </div>
+                <div className={`w-px h-7 shrink-0 ${isCurrent ? 'bg-violet-400' : 'bg-slate-200'}`} />
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between gap-2 mb-0.5 md:mb-1">
-                    <p className="text-[10px] md:text-xs font-black text-slate-800 truncate group-hover:text-violet-600 transition-colors">{s.subject_name}</p>
-                    <span className="px-1.5 py-0.5 rounded-md bg-white border border-slate-100 text-[7px] md:text-[8px] font-black text-slate-400 uppercase tracking-widest flex-shrink-0 group-hover:border-violet-200 group-hover:text-violet-500 transition-colors">
-                      {s.subject_code}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2 md:gap-3 text-[9px] md:text-[10px] text-slate-500 font-bold uppercase tracking-tight">
-                    <span className="truncate">{role === 'teacher' ? s.classroom_name : s.teacher_name}</span>
-                    {s.room_name && (
-                      <span className="flex items-center gap-1 text-violet-500 shrink-0">
-                        <span className="w-0.5 h-0.5 md:w-1 md:h-1 rounded-full bg-slate-300" />
-                        📍 {s.room_name}
+                  <div className="flex items-center justify-between gap-1">
+                    <p className={`text-[11px] font-black truncate ${isCurrent ? 'text-white' : 'text-slate-800'}`}>
+                      {s.subject_name}
+                    </p>
+                    {isCurrent && (
+                      <span className="shrink-0 px-1.5 py-0.5 rounded-full bg-white/20 text-[7px] font-black text-white uppercase tracking-widest">
+                        Now
                       </span>
                     )}
                   </div>
+                  <p className={`text-[9px] font-bold truncate mt-0.5 ${isCurrent ? 'text-violet-200' : 'text-slate-400'}`}>
+                    {role === 'teacher' ? s.classroom_name : s.teacher_name}
+                    {s.room_name && ` · ${s.room_name}`}
+                  </p>
                 </div>
               </div>
-            ))}
-          </div>
-        )}
-      </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 };
