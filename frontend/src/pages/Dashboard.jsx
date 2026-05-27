@@ -691,25 +691,27 @@ const TeacherView = () => {
         />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
-        {/* Assigned Classes - Detailed Table View */}
-        <div className="bg-white border border-slate-200/70 rounded-3xl md:rounded-[2rem] shadow-sm overflow-hidden">
-          <div className="px-4 py-3 md:px-6 md:py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/30">
-            <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-lg bg-violet-50 flex items-center justify-center shrink-0">
-                <svg className="w-3.5 h-3.5 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-5">
+        {/* ── Col 1 (lg:5): Active Classroom Sessions + Recent Activity ── */}
+        <div className="lg:col-span-5 space-y-4">
+          {/* Active Classroom Sessions */}
+          <div className="bg-white border border-slate-200/70 rounded-3xl md:rounded-[2rem] shadow-sm overflow-hidden">
+            <div className="px-4 py-3 md:px-5 md:py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/30">
+              <div className="flex items-center gap-2.5">
+                <div className="w-7 h-7 rounded-lg bg-violet-50 flex items-center justify-center shrink-0">
+                  <svg className="w-3.5 h-3.5 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+                </div>
+                <div>
+                  <h3 className="text-xs font-black text-slate-900 uppercase tracking-tight leading-none">Active Classroom Sessions</h3>
+                  <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Your assigned sections</p>
+                </div>
               </div>
-              <div>
-                <h3 className="text-xs font-black text-slate-900 uppercase tracking-tight leading-none">Active Classroom Sessions</h3>
-                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Real-time status of your assigned sections</p>
-              </div>
+              <Link to="/my-classes" className="text-[9px] font-black text-violet-600 hover:text-violet-700 uppercase tracking-widest flex items-center gap-1 transition-colors">
+                All Classes
+                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" /></svg>
+              </Link>
             </div>
-            <Link to="/my-classes" className="text-[9px] font-black text-violet-600 hover:text-violet-700 uppercase tracking-widest flex items-center gap-1 transition-colors">
-              All Classes
-              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" /></svg>
-            </Link>
-          </div>
-          <div className="overflow-x-auto scrollbar-thin">
+            <div className="overflow-x-auto scrollbar-thin">
             <table className="w-full text-left border-separate border-spacing-0">
               <thead className="bg-slate-50/60 border-b border-slate-100">
                 <tr>
@@ -779,94 +781,81 @@ const TeacherView = () => {
               </tbody>
             </table>
           </div>
+          </div>
         </div>
 
         {/* Quick Tools & Schedule Widget */}
-        <div className="space-y-4">
-          <div className="bg-white border border-slate-200/70 rounded-3xl md:rounded-[2rem] p-4 md:p-6 shadow-sm">
-            <div className="flex items-center justify-between mb-4 md:mb-6">
-              <div>
-                <h3 className="text-xs md:text-sm font-black text-slate-900 uppercase tracking-tight">Teaching Intelligence</h3>
-                <p className="text-[8px] md:text-[9px] font-black text-slate-400 uppercase tracking-widest mt-0.5 md:mt-1">Management quick tools</p>
+        <div className="lg:col-span-4 space-y-4">
+          {/* Teaching Intelligence */}
+          <div className="bg-white border border-slate-200/70 rounded-3xl md:rounded-[2rem] p-4 md:p-5 shadow-sm">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-7 h-7 rounded-lg bg-violet-50 flex items-center justify-center shrink-0">
+                  <svg className="w-3.5 h-3.5 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                </div>
+                <div>
+                  <h3 className="text-xs font-black text-slate-900 uppercase tracking-tight leading-none">Teaching Intelligence</h3>
+                  <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Quick tools</p>
+                </div>
               </div>
               <div className="w-2 h-2 rounded-full bg-violet-500 shadow-[0_0_8px_rgba(139,92,246,0.5)]" />
             </div>
-            <div className="grid grid-cols-2 gap-3 md:gap-4">
+            <div className="grid grid-cols-2 gap-2">
               {[
-                { 
-                  label: 'Attendance',    
-                  path: '/attendance',        
-                  icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg> 
-                },
-                { 
-                  label: 'Grade Input',   
-                  path: '/grade-input',       
-                  icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg> 
-                },
-                { 
-                  label: 'Analytics',     
-                  path: '/analytics',         
-                  icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg> 
-                },
-                { 
-                  label: 'Materials',     
-                  path: '/materials',         
-                  icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg> 
-                },
+                { label: 'Attendance', path: '/attendance', color: 'text-emerald-500', icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4' },
+                { label: 'Grade Input', path: '/grade-input', color: 'text-violet-500', icon: 'M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z' },
+                { label: 'Analytics', path: '/analytics', color: 'text-blue-500', icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z' },
+                { label: 'Materials', path: '/materials', color: 'text-amber-500', icon: 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253' },
               ].map(a => (
-                <button
-                  key={a.path}
-                  onClick={() => navigate(a.path)}
-                  className="flex flex-col items-center justify-center p-3 md:p-5 bg-slate-50/50 rounded-2xl md:rounded-[1.5rem] border border-slate-100 hover:bg-white hover:border-violet-200 hover:shadow-[0_15px_30px_rgba(139,92,246,0.1)] transition-all group active:scale-95"
-                >
-                  <div className="text-violet-500 mb-1.5 md:mb-2.5 group-hover:scale-125 transition-transform duration-300 drop-shadow-sm">
-                    {a.icon}
-                  </div>
-                  <span className="text-[8px] md:text-[10px] font-black text-slate-500 uppercase tracking-[0.1em] group-hover:text-violet-600 transition-colors">{a.label}</span>
+                <button key={a.path} onClick={() => navigate(a.path)}
+                  className="flex items-center gap-2 p-3 bg-slate-50/60 rounded-xl border border-slate-100 hover:bg-white hover:border-violet-200 hover:shadow-sm transition-all group active:scale-95 text-left">
+                  <svg className={`w-4 h-4 ${a.color} group-hover:scale-110 transition-transform shrink-0`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={a.icon} /></svg>
+                  <span className="text-[10px] font-black text-slate-600 uppercase tracking-tight group-hover:text-violet-600 transition-colors">{a.label}</span>
                 </button>
               ))}
             </div>
           </div>
-
-          <div className="bg-white border border-slate-200/70 rounded-3xl md:rounded-[2rem] p-4 md:p-6 shadow-sm flex flex-col">
-            <div className="flex items-center justify-between mb-4 md:mb-6 shrink-0">
-              <div>
-                <h3 className="text-xs md:text-sm font-black text-slate-900 uppercase tracking-tight">Recent Activity</h3>
-                <p className="text-[8px] md:text-[9px] font-black text-slate-400 uppercase tracking-widest mt-0.5 md:mt-1">Personal audit log</p>
+          {/* Recent Activity */}
+          <div className="bg-white border border-slate-200/70 rounded-3xl md:rounded-[2rem] p-4 md:p-5 shadow-sm">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-7 h-7 rounded-lg bg-emerald-50 flex items-center justify-center shrink-0">
+                  <svg className="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                </div>
+                <div>
+                  <h3 className="text-xs font-black text-slate-900 uppercase tracking-tight leading-none">Recent Activity</h3>
+                  <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Personal audit log</p>
+                </div>
               </div>
               <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
             </div>
-            <div className="space-y-4 flex-1 overflow-y-auto pr-1 -mr-1 scrollbar-thin">
-              {data?.recent_activities?.map((act, i) => (
-                <div key={i} className="flex gap-4 group cursor-default">
-                  <div className="relative shrink-0">
-                    <div className="w-9 h-9 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-sm shadow-sm group-hover:bg-violet-50 group-hover:border-violet-100 transition-all">
-                      {act.type === 'grade' ? '📊' : act.type === 'attendance' ? '📋' : '📢'}
-                    </div>
-                    {i < data.recent_activities.length - 1 && (
-                      <div className="absolute top-10 left-1/2 -translate-x-1/2 w-px h-6 bg-slate-100" />
-                    )}
+            <div className="space-y-2.5">
+              {data?.recent_activities?.length ? data.recent_activities.slice(0, 5).map((act, i) => (
+                <div key={i} className="flex items-start gap-3 group">
+                  <div className="w-7 h-7 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center text-xs shrink-0 group-hover:bg-violet-50 group-hover:border-violet-100 transition-all">
+                    {act.type === 'grade' ? '📊' : act.type === 'attendance' ? '📋' : '📢'}
                   </div>
-                  <div className="min-w-0">
-                    <p className="text-[11px] font-bold text-slate-700 leading-relaxed group-hover:text-violet-600 transition-colors">{act.message}</p>
-                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1.5">{act.time}</p>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[11px] font-bold text-slate-700 leading-relaxed group-hover:text-violet-600 transition-colors line-clamp-1">{act.message}</p>
+                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-0.5">{act.time}</p>
                   </div>
                 </div>
-              ))}
-              {!data?.recent_activities?.length && (
-                <div className="py-12 flex flex-col items-center justify-center opacity-40">
-                  <svg className="w-10 h-10 text-slate-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">No recent actions</p>
+              )) : (
+                <div className="flex items-center gap-3 py-1 opacity-50">
+                  <div className="w-7 h-7 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center shrink-0">
+                    <svg className="w-3.5 h-3.5 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                  </div>
+                  <p className="text-xs font-black text-slate-400">No recent actions</p>
                 </div>
               )}
             </div>
           </div>
-
-          <LatestMessagesWidget 
-            messages={data?.latest_messages} 
-            onOpenChat={() => navigate('/messages')} 
-          />
           <TodayScheduleWidget role="teacher" />
+        </div>
+
+        {/* ── Col 3 (lg:3): Latest Messages ── */}
+        <div className="lg:col-span-3">
+          <LatestMessagesWidget messages={data?.latest_messages} onOpenChat={() => navigate('/messages')} />
         </div>
       </div>
     </div>
