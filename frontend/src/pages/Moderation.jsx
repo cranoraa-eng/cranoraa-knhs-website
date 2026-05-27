@@ -117,16 +117,97 @@ const Moderation = () => {
       </div>
 
       <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse table-fixed">
+        {/* Mobile View: Card List */}
+        <div className="md:hidden divide-y divide-slate-100">
+          {loading ? (
+            <div className="px-6 py-12 text-center">
+              <div className="w-10 h-10 rounded-full border-2 border-slate-100 border-t-violet-600 animate-spin mx-auto" />
+            </div>
+          ) : reports.length === 0 ? (
+            <div className="px-6 py-12 text-center text-slate-400 font-bold text-xs uppercase tracking-widest">
+              No reports found
+            </div>
+          ) : (
+            reports.map((report) => (
+              <div key={report.id} className="p-4 space-y-4">
+                <div className="flex items-start justify-between">
+                  <div className="space-y-1">
+                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Reporter</span>
+                    <span className="text-xs font-bold text-slate-700">{report.reporter_name}</span>
+                  </div>
+                  <div className="text-right">
+                    <span className={`px-2 py-1 rounded-full text-[8px] font-black uppercase tracking-widest ${
+                      report.status === 'pending' ? 'bg-amber-100 text-amber-600' : 
+                      report.status === 'dismissed' ? 'bg-slate-100 text-slate-500' :
+                      'bg-emerald-100 text-emerald-600'
+                    }`}>
+                      {report.status}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Message Content</span>
+                  <p className="text-xs text-slate-600 bg-slate-50 p-3 rounded-xl border border-slate-100 whitespace-pre-wrap">
+                    {report.message_content}
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Sender</span>
+                    <div className="flex flex-col">
+                      <span className="text-xs font-bold text-slate-700">@{report.message_sender}</span>
+                      {report.sender_is_muted && (
+                        <span className="inline-flex items-center gap-1 mt-1 text-[7px] font-black text-amber-600 uppercase tracking-widest">
+                          Muted
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Reason</span>
+                    <p className="text-xs text-slate-500 italic">"{report.reason}"</p>
+                  </div>
+                </div>
+
+                {report.moderator_note && (
+                  <div className="bg-blue-50/50 p-2 rounded-lg border border-blue-100">
+                    <span className="text-[8px] font-black text-blue-400 uppercase tracking-widest block mb-0.5">Moderator Note</span>
+                    <p className="text-[10px] text-blue-600 italic">"{report.moderator_note}"</p>
+                  </div>
+                )}
+
+                <div className="pt-2 flex items-center justify-end gap-2 border-t border-slate-50">
+                  {report.status === 'pending' ? (
+                    <>
+                      <button onClick={() => handleAction(report.id, 'resolve', 'Resolve Report')} className="p-2.5 bg-emerald-50 text-emerald-600 rounded-xl transition-all active:scale-95"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg></button>
+                      <button onClick={() => handleAction(report.id, 'delete-message', 'Delete Message')} className="p-2.5 bg-red-50 text-red-600 rounded-xl transition-all active:scale-95"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg></button>
+                      <button onClick={() => handleMute(report.id)} className="p-2.5 bg-amber-50 text-amber-600 rounded-xl transition-all active:scale-95"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" /></svg></button>
+                      <button onClick={() => handleAction(report.id, 'dismiss', 'Dismiss Report')} className="p-2.5 bg-slate-100 text-slate-500 rounded-xl transition-all active:scale-95"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" /></svg></button>
+                    </>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-black text-slate-400 uppercase">Handled by {report.resolved_by_name || 'Admin'}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* Desktop View: Table */}
+        <div className="hidden md:block overflow-x-auto">
+          <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-slate-50 border-b border-slate-100">
-                <th className="w-[15%] px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Reporter</th>
-                <th className="w-[30%] px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Message Content</th>
-                <th className="w-[15%] px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Sender</th>
-                <th className="w-[20%] px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Reason</th>
-                <th className="w-[10%] px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Status</th>
-                <th className="w-[10%] px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Action</th>
+                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Reporter</th>
+                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Message Content</th>
+                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Sender</th>
+                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Reason</th>
+                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Status</th>
+                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -145,15 +226,15 @@ const Moderation = () => {
               ) : (
                 reports.map((report) => (
                   <tr key={report.id} className="hover:bg-slate-50 transition-colors">
-                    <td className="px-6 py-4 truncate">
-                      <span className="text-xs font-bold text-slate-700 block truncate" title={report.reporter_name}>{report.reporter_name}</span>
-                    </td>
                     <td className="px-6 py-4">
+                      <span className="text-xs font-bold text-slate-700 block truncate max-w-[120px]" title={report.reporter_name}>{report.reporter_name}</span>
+                    </td>
+                    <td className="px-6 py-4 max-w-md">
                       <p className="text-xs text-slate-600 line-clamp-3 break-words whitespace-pre-wrap" title={report.message_content}>
                         {report.message_content}
                       </p>
                     </td>
-                    <td className="px-6 py-4 truncate">
+                    <td className="px-6 py-4">
                       <div className="flex flex-col">
                         <span className="text-xs font-bold text-slate-700 block truncate" title={`@${report.message_sender}`}>@{report.message_sender}</span>
                         {report.sender_is_muted && (
@@ -164,12 +245,12 @@ const Moderation = () => {
                         )}
                       </div>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-6 py-4 max-w-xs">
                       <p className="text-xs text-slate-500 italic line-clamp-3 break-words" title={report.reason}>
                         "{report.reason}"
                       </p>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`px-2 py-1 rounded-full text-[8px] font-black uppercase tracking-widest ${
                         report.status === 'pending' ? 'bg-amber-100 text-amber-600' : 
                         report.status === 'dismissed' ? 'bg-slate-100 text-slate-500' :
@@ -178,12 +259,12 @@ const Moderation = () => {
                         {report.status}
                       </span>
                       {report.moderator_note && (
-                        <p className="text-[9px] text-slate-400 mt-1 italic line-clamp-1" title={report.moderator_note}>
+                        <p className="text-[9px] text-slate-400 mt-1 italic line-clamp-1 max-w-[100px]" title={report.moderator_note}>
                           Note: {report.moderator_note}
                         </p>
                       )}
                     </td>
-                    <td className="px-6 py-4 text-center">
+                    <td className="px-6 py-4">
                       {report.status === 'pending' ? (
                         <div className="flex items-center justify-center gap-1">
                           <button
@@ -205,7 +286,7 @@ const Moderation = () => {
                             </svg>
                           </button>
                           <button
-                            onClick={() => handleAction(report.id, 'mute-user', 'Mute User')}
+                            onClick={() => handleMute(report.id)}
                             className="p-2 text-amber-500 hover:bg-amber-50 rounded-lg transition-colors"
                             title="Mute User (24h)"
                           >
@@ -214,43 +295,6 @@ const Moderation = () => {
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
                             </svg>
                           </button>
-                          {report.sender_is_muted && (
-                            <button
-                              onClick={() => handleAction(report.id, 'unmute-user', 'Unmute User')}
-                              className="p-2 text-violet-600 bg-violet-50 hover:bg-violet-100 rounded-lg transition-colors border border-violet-100"
-                              title="Unmute User"
-                            >
-                              <div className="flex items-center gap-1 px-1">
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
-                                </svg>
-                                <span className="text-[9px] font-black uppercase tracking-tighter">Unmute</span>
-                              </div>
-                            </button>
-                          )}
-                          <button
-                            onClick={() => handleAction(report.id, 'suspend-user', 'Suspend User')}
-                            className="p-2 text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
-                            title="Suspend User"
-                          >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
-                            </svg>
-                          </button>
-                          {report.sender_is_suspended && (
-                            <button
-                              onClick={() => handleAction(report.id, 'unsuspend-user', 'Unsuspend User')}
-                              className="p-2 text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors border border-emerald-100"
-                              title="Unsuspend User"
-                            >
-                              <div className="flex items-center gap-1 px-1">
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                                <span className="text-[9px] font-black uppercase tracking-tighter">Unsuspend</span>
-                              </div>
-                            </button>
-                          )}
                           <button
                             onClick={() => handleAction(report.id, 'dismiss', 'Dismiss Report')}
                             className="p-2 text-slate-400 hover:bg-slate-100 rounded-lg transition-colors"
@@ -269,30 +313,6 @@ const Moderation = () => {
                               {report.resolved_by_name || 'Admin'}
                             </span>
                           </div>
-                          {report.sender_is_muted && (
-                            <button
-                              onClick={() => handleAction(report.id, 'unmute-user', 'Unmute User')}
-                              className="px-3 py-1 bg-violet-50 text-violet-600 rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-violet-100 transition-colors border border-violet-100 flex items-center gap-1"
-                              title="Unmute User"
-                            >
-                              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
-                              </svg>
-                              Unmute
-                            </button>
-                          )}
-                          {report.sender_is_suspended && (
-                            <button
-                              onClick={() => handleAction(report.id, 'unsuspend-user', 'Unsuspend User')}
-                              className="px-3 py-1 bg-emerald-50 text-emerald-600 rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-emerald-100 transition-colors border border-emerald-100 flex items-center gap-1"
-                              title="Unsuspend User"
-                            >
-                              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                              </svg>
-                              Unsuspend
-                            </button>
-                          )}
                         </div>
                       )}
                     </td>
