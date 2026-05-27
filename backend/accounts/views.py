@@ -2929,54 +2929,62 @@ def student_profile(request):
             if 'email' in request.data:
                 email_val = request.data.get('email')
                 new_email = email_val.strip() if email_val and isinstance(email_val, str) else None
-                
+
                 if new_email:
+                    # Only reject if a DIFFERENT user already has this email
                     if User.objects.filter(email=new_email).exclude(id=target_user.id).exists():
                         return Response({'error': 'Email already in use'}, status=400)
                     target_user.email = new_email
                 else:
+                    # Empty/blank → clear the email (store as NULL)
                     target_user.email = None
-                
+
             if 'first_name' in request.data:
                 target_user.first_name = request.data['first_name']
             if 'last_name' in request.data:
                 target_user.last_name = request.data['last_name']
             target_user.save()
-            
+
             # Update profile fields
             profile_fields = [
-                'title', 'sex', 'state', 'nationality', 'middle_name', 
-                'father_name', 'mother_name', 'phone_number', 'address', 
-                'contact_information', 'registration_number', 'grade_level'
+                'title', 'sex', 'state', 'nationality', 'middle_name',
+                'father_name', 'mother_name', 'phone_number', 'address',
+                'contact_information', 'grade_level'
             ]
-            
+
             for field in profile_fields:
                 if field in request.data:
                     val = request.data[field]
-                    # Handle empty strings for unique or constrained fields
                     if not val or (isinstance(val, str) and not val.strip()):
                         val = None
-                    
-                    # Special handling for registration_number/lrn sync
-                    if field == 'registration_number':
-                        profile.registration_number = val
-                        profile.lrn = val # Keep them in sync
-                    else:
-                        setattr(profile, field, val)
-            
+                    setattr(profile, field, val)
+
+            # registration_number / lrn — handle separately with update_fields
+            # to avoid triggering the unique constraint on an unchanged value.
+            if 'registration_number' in request.data:
+                val = request.data['registration_number']
+                if not val or (isinstance(val, str) and not val.strip()):
+                    val = None
+                # Only update if the value actually changed
+                if val != profile.registration_number:
+                    # Check uniqueness manually before saving
+                    if val and Profile.objects.filter(registration_number=val).exclude(pk=profile.pk).exists():
+                        return Response({'error': 'This LRN is already assigned to another student.'}, status=400)
+                    profile.registration_number = val
+                    profile.lrn = val
+
             if 'date_of_birth' in request.data:
                 dob_val = request.data['date_of_birth']
                 if dob_val:
                     from datetime import datetime
                     try:
-                        # Try to parse if it's a string
                         if isinstance(dob_val, str):
                             profile.date_of_birth = datetime.strptime(dob_val, '%Y-%m-%d').date()
                     except (ValueError, TypeError):
                         pass
                 else:
                     profile.date_of_birth = None
-            
+
             profile.save()
             return Response({'message': 'Profile updated successfully'})
             
@@ -2984,13 +2992,10 @@ def student_profile(request):
             import traceback
             import logging
             logger = logging.getLogger(__name__)
-            error_msg = f"Error updating profile for user {target_user.username}: {str(e)}"
-            logger.error(f"{error_msg}\n{traceback.format_exc()}")
-            # Return more info in the response to help debug on Render
+            logger.error(f"Error updating profile for user {target_user.username}: {str(e)}\n{traceback.format_exc()}")
             return Response({
-                'error': 'Internal Server Error during profile update',
+                'error': str(e),
                 'details': str(e),
-                'field_errors': getattr(e, 'message_dict', None) # For Django validation errors
             }, status=500)
 
 

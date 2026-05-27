@@ -261,8 +261,10 @@ const Profile = () => {
       setEditing(false);
       refreshUser();
       fetchProfile();
-    } catch { toast.error('Failed to update profile'); }
-    finally { setSaving(false); }
+    } catch (err) {
+      const msg = err.response?.data?.error || err.response?.data?.details || 'Failed to update profile';
+      toast.error(msg);
+    } finally { setSaving(false); }
   };
 
   const set = (field) => (val) => setForm(f => ({ ...f, [field]: val }));
