@@ -1014,208 +1014,187 @@ const StudentView = () => {
         />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-8">
-        {/* Performance Visualization */}
-        <div className="lg:col-span-8 bg-white border border-slate-200/70 rounded-3xl md:rounded-[2rem] p-4 md:p-8 shadow-sm overflow-hidden flex flex-col">
-          <div className="flex items-center justify-between mb-8 shrink-0">
-            <div>
-              <h3 className="text-sm font-black text-slate-900 uppercase tracking-tight">Subject Performance Matrix</h3>
-              <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1">Comparative view of your current grades</p>
-            </div>
-            <div className="flex gap-4">
-              <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-violet-500 shadow-[0_0_8px_rgba(139,92,246,0.5)]" />
-                <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Score (%)</span>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 md:gap-6">
+        {/* ── LEFT COLUMN (lg:8): Performance + Notifications ── */}
+        <div className="lg:col-span-8 space-y-5 md:space-y-6">
+          {/* Performance Visualization */}
+          <div className="bg-white border border-slate-200/70 rounded-[2rem] p-6 md:p-8 shadow-sm overflow-hidden flex flex-col">
+            <div className="flex items-center justify-between mb-8 shrink-0">
+              <div>
+                <h3 className="text-sm font-black text-slate-900 uppercase tracking-tight">Subject Performance Matrix</h3>
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Comparative view of your current grades</p>
               </div>
-            </div>
-          </div>
-          
-          <div className="flex-1 h-72 min-h-[300px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={finalGrades} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                <XAxis 
-                  dataKey="subject_code" 
-                  axisLine={false} 
-                  tickLine={false} 
-                  tick={{fontSize: 10, fontWeight: 900, fill: '#94a3b8'}}
-                  dy={10}
-                />
-                <YAxis 
-                  axisLine={false} 
-                  tickLine={false} 
-                  tick={{fontSize: 10, fontWeight: 900, fill: '#94a3b8'}}
-                  domain={[70, 100]}
-                  dx={-5}
-                />
-                <Tooltip 
-                  cursor={{fill: '#f8fafc'}}
-                  contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)', padding: '12px' }}
-                  labelStyle={{ fontWeight: 900, color: '#1e293b', fontSize: '11px', textTransform: 'uppercase', marginBottom: '4px' }}
-                  itemStyle={{ fontWeight: 800, fontSize: '12px', color: '#8b5cf6' }}
-                />
-                <Bar 
-                  dataKey="raw_score" 
-                  fill="#8b5cf6" 
-                  radius={[6, 6, 0, 0]} 
-                  barSize={40}
-                  name="Final Grade"
-                  animationDuration={1500}
-                />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        {/* Attendance Distribution */}
-        <div className="lg:col-span-4 bg-white border border-slate-200/70 rounded-3xl md:rounded-[2rem] p-4 md:p-8 shadow-sm flex flex-col">
-          <div className="flex items-center justify-between mb-8 shrink-0">
-            <div>
-              <h3 className="text-sm font-black text-slate-900 uppercase tracking-tight">Attendance Analysis</h3>
-              <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1">Monthly presence distribution</p>
-            </div>
-            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
-          </div>
-          <div className="flex-1 flex flex-col justify-center gap-8 min-h-[300px]">
-            <div className="h-48 relative shrink-0">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={attPieData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={85}
-                    paddingAngle={8}
-                    dataKey="value"
-                    animationDuration={1500}
-                  >
-                    {attPieData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} stroke="none" />
-                    ))}
-                  </Pie>
-                  <Tooltip 
-                    contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)' }}
-                    itemStyle={{ fontWeight: 900, fontSize: '11px', textTransform: 'uppercase' }}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center justify-center pointer-events-none">
-                <p className="text-3xl font-black text-slate-900 leading-none">{monthAtt.length}</p>
-                <p className="text-[8px] font-black text-slate-400 uppercase tracking-[0.2em] mt-1.5">Total Days</p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-3 gap-2 px-2">
-              {attPieData.map((item) => (
-                <div key={item.name} className="flex flex-col items-center gap-1 text-center">
-                  <div className="flex items-center gap-1.5">
-                    <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
-                    <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest">{item.name}</span>
-                  </div>
-                  <p className="text-sm font-black text-slate-900">{item.value}</p>
+              <div className="flex gap-4">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-violet-500 shadow-[0_0_8px_rgba(139,92,246,0.5)]" />
+                  <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Score (%)</span>
                 </div>
-              ))}
+              </div>
+            </div>
+            
+            <div className="flex-1 h-72 min-h-[300px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={finalGrades} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                  <XAxis 
+                    dataKey="subject_code" 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={{fontSize: 10, fontWeight: 900, fill: '#94a3b8'}}
+                    dy={10}
+                  />
+                  <YAxis 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={{fontSize: 10, fontWeight: 900, fill: '#94a3b8'}}
+                    domain={[70, 100]}
+                    dx={-5}
+                  />
+                  <Tooltip 
+                    cursor={{fill: '#f8fafc'}}
+                    contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)', padding: '12px' }}
+                    labelStyle={{ fontWeight: 900, color: '#1e293b', fontSize: '11px', textTransform: 'uppercase', marginBottom: '4px' }}
+                    itemStyle={{ fontWeight: 800, fontSize: '12px', color: '#8b5cf6' }}
+                  />
+                  <Bar 
+                    dataKey="raw_score" 
+                    fill="#8b5cf6" 
+                    radius={[6, 6, 0, 0]} 
+                    barSize={40}
+                    name="Final Grade"
+                    animationDuration={1500}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* System Updates - Wide Style */}
+          <div className="bg-white border border-slate-200/70 rounded-[2rem] p-6 shadow-sm flex flex-col">
+            <div className="flex items-center justify-between mb-6 shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-violet-50 text-violet-600 flex items-center justify-center shrink-0 shadow-sm border border-violet-100">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
+                </div>
+                <div>
+                  <h3 className="text-sm font-black text-slate-900 uppercase tracking-tight">System Updates</h3>
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Notifications & alerts</p>
+                </div>
+              </div>
+              <Link to="/notifications" className="p-2.5 rounded-xl bg-violet-50 text-violet-600 hover:bg-violet-600 hover:text-white transition-all active:scale-90 shadow-sm border border-violet-100/50">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+              </Link>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {stats?.recent_notifications?.length ? stats.recent_notifications.slice(0, 6).map((notif, i) => (
+                <div key={i} className="flex gap-4 p-4 rounded-2xl bg-slate-50/50 border border-slate-100 hover:bg-white hover:border-violet-200 hover:shadow-md transition-all cursor-pointer group" onClick={() => navigate('/notifications')}>
+                  <div className="w-11 h-11 rounded-2xl bg-white border border-slate-100 flex items-center justify-center text-lg shadow-sm group-hover:scale-110 group-hover:bg-violet-50 transition-all">
+                    {notif.type === 'grade' ? '📈' : '🔔'}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-bold text-slate-700 leading-tight line-clamp-1 group-hover:text-violet-600 transition-colors">{notif.title}</p>
+                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1.5">{notif.time}</p>
+                  </div>
+                </div>
+              )) : (
+                <div className="col-span-full flex flex-col items-center justify-center py-10 opacity-40">
+                  <svg className="w-8 h-8 text-slate-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">No alerts</p>
+                </div>
+              )}
             </div>
           </div>
         </div>
-      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8">
-        {/* Quick Navigator Column */}
-        <div className="flex flex-col">
-          <div className="bg-[#1A0B2E] rounded-3xl md:rounded-[2rem] p-4 md:p-6 shadow-xl border border-white/5 relative overflow-hidden group h-full flex flex-col justify-center min-h-[350px] md:min-h-[400px]">
-            <div className="absolute -right-8 -top-8 w-40 h-40 bg-violet-500/20 rounded-full blur-3xl group-hover:bg-violet-500/30 transition-all duration-700" />
-            <div className="relative z-10">
-              <h3 className="text-white text-sm font-black uppercase tracking-tight mb-6">Quick Navigator</h3>
-              <div className="grid grid-cols-2 gap-3 md:gap-4">
+        {/* ── RIGHT COLUMN (lg:4): Analysis + Navigator + Schedule + Messages ── */}
+        <div className="lg:col-span-4 space-y-5 md:space-y-6">
+          {/* Attendance Distribution */}
+          <div className="bg-white border border-slate-200/70 rounded-[2rem] p-6 md:p-8 shadow-sm flex flex-col lg:h-[380px]">
+            <div className="flex items-center justify-between mb-6 shrink-0">
+              <div>
+                <h3 className="text-sm font-black text-slate-900 uppercase tracking-tight">Attendance Analysis</h3>
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Monthly presence</p>
+              </div>
+              <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+            </div>
+            <div className="flex-1 flex flex-col justify-center gap-6 min-h-0">
+              <div className="h-40 relative shrink-0">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={attPieData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={50}
+                      outerRadius={70}
+                      paddingAngle={8}
+                      dataKey="value"
+                      animationDuration={1500}
+                    >
+                      {attPieData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} stroke="none" />
+                      ))}
+                    </Pie>
+                    <Tooltip 
+                      contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)' }}
+                      itemStyle={{ fontWeight: 900, fontSize: '11px', textTransform: 'uppercase' }}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center justify-center pointer-events-none">
+                  <p className="text-2xl font-black text-slate-900 leading-none">{monthAtt.length}</p>
+                  <p className="text-[7px] font-black text-slate-400 uppercase tracking-[0.2em] mt-1">Days</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-2 px-2 shrink-0">
+                {attPieData.map((item) => (
+                  <div key={item.name} className="flex flex-col items-center gap-1 text-center">
+                    <div className="flex items-center gap-1.5">
+                      <div className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
+                      <span className="text-[7px] font-black text-slate-500 uppercase tracking-widest">{item.name}</span>
+                    </div>
+                    <p className="text-xs font-black text-slate-900">{item.value}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Quick Navigator Column */}
+          <div className="bg-[#1A0B2E] rounded-[2rem] p-6 shadow-xl border border-white/5 relative overflow-hidden group lg:h-[380px] flex flex-col justify-center">
+            <div className="absolute -right-8 -top-8 w-40 h-40 bg-violet-500/10 rounded-full blur-3xl group-hover:bg-violet-500/20 transition-all duration-700" />
+            <div className="relative z-10 flex flex-col h-full">
+              <h3 className="text-white text-sm font-black uppercase tracking-tight mb-6 shrink-0">Quick Navigator</h3>
+              <div className="grid grid-cols-2 gap-3 flex-1">
                 {[
-                  { 
-                    label: 'My Grades',    
-                    path: '/student-grades',    
-                    icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg> 
-                  },
-                  { 
-                    label: 'Schedule',     
-                    path: '/schedule',          
-                    icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                  },
-                  { 
-                    label: 'Materials',    
-                    path: '/materials',         
-                    icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
-                  },
-                  { 
-                    label: 'Messages',     
-                    path: '/messages',          
-                    icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
-                  },
-                  { 
-                    label: 'Attendance',   
-                    path: '/attendance',        
-                    icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
-                  },
-                  { 
-                    label: 'Profile',      
-                    path: '/profile',           
-                    icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
-                  },
+                  { label: 'My Grades', path: '/student-grades', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg> },
+                  { label: 'Schedule', path: '/schedule', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg> },
+                  { label: 'Materials', path: '/materials', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg> },
+                  { label: 'Messages', path: '/messages', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg> },
+                  { label: 'Attendance', path: '/attendance', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg> },
+                  { label: 'Profile', path: '/profile', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg> },
                 ].map(a => (
-                  <button
-                    key={a.path}
-                    onClick={() => navigate(a.path)}
-                    className="flex flex-col items-center justify-center p-3 md:p-5 bg-white/5 rounded-2xl border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all active:scale-95 group/btn"
-                  >
-                    <div className="text-violet-400 mb-1.5 md:mb-2.5 group-hover/btn:scale-125 group-hover/btn:text-white transition-all duration-300">
+                  <button key={a.path} onClick={() => navigate(a.path)}
+                    className="flex flex-col items-center justify-center p-3 bg-white/5 rounded-2xl border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all active:scale-95 group/btn">
+                    <div className="text-violet-400 mb-2 group-hover/btn:scale-110 group-hover/btn:text-white transition-all duration-300">
                       {a.icon}
                     </div>
-                    <span className="text-[8px] md:text-[10px] font-black text-violet-200 uppercase tracking-widest text-center">{a.label}</span>
+                    <span className="text-[9px] font-black text-violet-200 uppercase tracking-widest text-center">{a.label}</span>
                   </button>
                 ))}
               </div>
             </div>
           </div>
-        </div>
 
-        {/* System Updates Column */}
-        <div className="bg-white border border-slate-200/70 rounded-3xl md:rounded-[2rem] p-4 md:p-6 shadow-sm flex flex-col min-h-[350px] md:min-h-[400px]">
-          <div className="flex items-center justify-between mb-6 shrink-0">
-            <div>
-              <h3 className="text-sm font-black text-slate-900 uppercase tracking-tight">System Updates</h3>
-              <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1">Notifications & alerts</p>
-            </div>
-            <Link to="/notifications" className="p-2.5 rounded-xl bg-violet-50 text-violet-600 hover:bg-violet-600 hover:text-white transition-all active:scale-90">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
-            </Link>
+          <div className="lg:h-[380px]">
+            <TodayScheduleWidget role="student" />
           </div>
-          <div className="space-y-3 flex-1 overflow-y-auto pr-1 -mr-1 scrollbar-thin">
-            {stats?.recent_notifications?.map((notif, i) => (
-              <div key={i} className="flex gap-4 p-3 rounded-2xl hover:bg-slate-50 transition-all cursor-pointer group" onClick={() => navigate('/notifications')}>
-                <div className="w-10 h-10 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-sm shadow-sm group-hover:bg-violet-50 group-hover:border-violet-100 transition-all">
-                  {notif.type === 'grade' ? '📈' : '🔔'}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-[11px] font-bold text-slate-700 leading-tight line-clamp-1 group-hover:text-violet-600 transition-colors">{notif.title}</p>
-                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1.5">{notif.time}</p>
-                </div>
-              </div>
-            ))}
-            {!stats?.recent_notifications?.length && (
-              <div className="flex flex-col items-center justify-center py-10 opacity-40">
-                <svg className="w-8 h-8 text-slate-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">No alerts</p>
-              </div>
-            )}
+          
+          <div className="lg:h-[380px]">
+            <LatestMessagesWidget messages={stats?.latest_messages} onOpenChat={() => navigate('/messages')} />
           </div>
-        </div>
-
-        {/* Schedule & Messages Column */}
-        <div className="space-y-4 md:space-y-6 flex flex-col">
-          <TodayScheduleWidget role="student" />
-          <LatestMessagesWidget 
-            messages={stats?.latest_messages} 
-            onOpenChat={() => navigate('/messages')} 
-          />
         </div>
       </div>
     </div>
