@@ -691,9 +691,9 @@ const TeacherView = () => {
         />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
         {/* Assigned Classes - Detailed Table View */}
-        <div className="lg:col-span-8 bg-white border border-slate-200/70 rounded-3xl md:rounded-[2rem] shadow-sm overflow-hidden">
+        <div className="bg-white border border-slate-200/70 rounded-3xl md:rounded-[2rem] shadow-sm overflow-hidden">
           <div className="px-4 py-3 md:px-6 md:py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/30">
             <div className="flex items-center gap-2.5">
               <div className="w-7 h-7 rounded-lg bg-violet-50 flex items-center justify-center shrink-0">
@@ -782,7 +782,7 @@ const TeacherView = () => {
         </div>
 
         {/* Quick Tools & Schedule Widget */}
-        <div className="lg:col-span-4 space-y-4 md:gap-8">
+        <div className="space-y-4">
           <div className="bg-white border border-slate-200/70 rounded-3xl md:rounded-[2rem] p-4 md:p-6 shadow-sm">
             <div className="flex items-center justify-between mb-4 md:mb-6">
               <div>
