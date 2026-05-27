@@ -117,7 +117,7 @@ const Moderation = () => {
       </div>
 
       <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
-        {/* Mobile View: Card List */}
+        {/* Mobile View: Compact Card List */}
         <div className="md:hidden divide-y divide-slate-100">
           {loading ? (
             <div className="px-6 py-12 text-center">
@@ -129,68 +129,46 @@ const Moderation = () => {
             </div>
           ) : (
             reports.map((report) => (
-              <div key={report.id} className="p-4 space-y-4">
-                <div className="flex items-start justify-between">
-                  <div className="space-y-1">
-                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Reporter</span>
-                    <span className="text-xs font-bold text-slate-700">{report.reporter_name}</span>
+              <div key={report.id} className="p-3 space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-black text-slate-700 truncate max-w-[100px]">{report.reporter_name}</span>
+                    <span className="text-[9px] text-slate-400 font-bold uppercase tracking-tighter">reported</span>
+                    <span className="text-[10px] font-black text-violet-600 truncate max-w-[80px]">@{report.message_sender}</span>
                   </div>
-                  <div className="text-right">
-                    <span className={`px-2 py-1 rounded-full text-[8px] font-black uppercase tracking-widest ${
-                      report.status === 'pending' ? 'bg-amber-100 text-amber-600' : 
-                      report.status === 'dismissed' ? 'bg-slate-100 text-slate-500' :
-                      'bg-emerald-100 text-emerald-600'
-                    }`}>
-                      {report.status}
-                    </span>
-                  </div>
+                  <span className={`px-1.5 py-0.5 rounded-md text-[7px] font-black uppercase tracking-widest ${
+                    report.status === 'pending' ? 'bg-amber-100 text-amber-600' : 
+                    report.status === 'dismissed' ? 'bg-slate-100 text-slate-500' :
+                    'bg-emerald-100 text-emerald-600'
+                  }`}>
+                    {report.status}
+                  </span>
                 </div>
 
-                <div className="space-y-1">
-                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Message Content</span>
-                  <p className="text-xs text-slate-600 bg-slate-50 p-3 rounded-xl border border-slate-100 whitespace-pre-wrap">
-                    {report.message_content}
+                <div className="bg-slate-50 p-2 rounded-lg border border-slate-100">
+                  <p className="text-[10px] text-slate-600 line-clamp-2 leading-relaxed italic">
+                    "{report.message_content}"
                   </p>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Sender</span>
-                    <div className="flex flex-col">
-                      <span className="text-xs font-bold text-slate-700">@{report.message_sender}</span>
-                      {report.sender_is_muted && (
-                        <span className="inline-flex items-center gap-1 mt-1 text-[7px] font-black text-amber-600 uppercase tracking-widest">
-                          Muted
-                        </span>
-                      )}
-                    </div>
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[9px] text-slate-500 italic truncate" title={report.reason}>
+                      Reason: {report.reason}
+                    </p>
                   </div>
-                  <div className="space-y-1">
-                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Reason</span>
-                    <p className="text-xs text-slate-500 italic">"{report.reason}"</p>
+                  <div className="flex items-center gap-1 shrink-0">
+                    {report.status === 'pending' ? (
+                      <>
+                        <button onClick={() => handleAction(report.id, 'resolve', 'Resolve')} className="p-1.5 bg-emerald-50 text-emerald-600 rounded-lg active:scale-95"><svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg></button>
+                        <button onClick={() => handleAction(report.id, 'delete-message', 'Delete')} className="p-1.5 bg-red-50 text-red-600 rounded-lg active:scale-95"><svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg></button>
+                        <button onClick={() => handleMute(report.id)} className="p-1.5 bg-amber-50 text-amber-600 rounded-lg active:scale-95"><svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" /></svg></button>
+                        <button onClick={() => handleAction(report.id, 'dismiss', 'Dismiss')} className="p-1.5 bg-slate-100 text-slate-500 rounded-lg active:scale-95"><svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" /></svg></button>
+                      </>
+                    ) : (
+                      <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter">Done by {report.resolved_by_name?.split(' ')[0] || 'Admin'}</span>
+                    )}
                   </div>
-                </div>
-
-                {report.moderator_note && (
-                  <div className="bg-blue-50/50 p-2 rounded-lg border border-blue-100">
-                    <span className="text-[8px] font-black text-blue-400 uppercase tracking-widest block mb-0.5">Moderator Note</span>
-                    <p className="text-[10px] text-blue-600 italic">"{report.moderator_note}"</p>
-                  </div>
-                )}
-
-                <div className="pt-2 flex items-center justify-end gap-2 border-t border-slate-50">
-                  {report.status === 'pending' ? (
-                    <>
-                      <button onClick={() => handleAction(report.id, 'resolve', 'Resolve Report')} className="p-2.5 bg-emerald-50 text-emerald-600 rounded-xl transition-all active:scale-95"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg></button>
-                      <button onClick={() => handleAction(report.id, 'delete-message', 'Delete Message')} className="p-2.5 bg-red-50 text-red-600 rounded-xl transition-all active:scale-95"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg></button>
-                      <button onClick={() => handleMute(report.id)} className="p-2.5 bg-amber-50 text-amber-600 rounded-xl transition-all active:scale-95"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" /></svg></button>
-                      <button onClick={() => handleAction(report.id, 'dismiss', 'Dismiss Report')} className="p-2.5 bg-slate-100 text-slate-500 rounded-xl transition-all active:scale-95"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" /></svg></button>
-                    </>
-                  ) : (
-                    <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-black text-slate-400 uppercase">Handled by {report.resolved_by_name || 'Admin'}</span>
-                    </div>
-                  )}
                 </div>
               </div>
             ))
