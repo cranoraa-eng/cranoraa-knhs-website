@@ -394,6 +394,7 @@ def teacher_dashboard_stats(request):
                     'content': m.content,
                     'timestamp': m.timestamp.isoformat(),
                     'sender': m.sender.get_full_name() or m.sender.username,
+                    'sender_profile_picture': getattr(getattr(m.sender, 'profile', None), 'profile_picture', None),
                     'is_read': m.is_read
                 })
                 seen_senders.add(m.sender_id)
@@ -455,6 +456,7 @@ def student_dashboard_stats(request):
                     'content': m.content,
                     'timestamp': m.timestamp.isoformat(),
                     'sender': m.sender.get_full_name() or m.sender.username,
+                    'sender_profile_picture': getattr(getattr(m.sender, 'profile', None), 'profile_picture', None),
                     'is_read': m.is_read
                 })
                 seen_senders.add(m.sender_id)
@@ -2295,6 +2297,7 @@ def admin_dashboard_stats(request):
                         'content': m.content,
                         'timestamp': m.timestamp.isoformat(),
                         'sender': m.sender.get_full_name() or m.sender.username,
+                        'sender_profile_picture': getattr(getattr(m.sender, 'profile', None), 'profile_picture', None),
                         'is_read': m.is_read
                     })
                     seen_senders.add(m.sender_id)

@@ -939,9 +939,11 @@ const Messages = () => {
                             </svg>
                           </div>
                         ) : (
-                          /* Private — initials on violet-fuchsia */
-                          <div className="h-8 w-8 md:h-10 md:w-10 rounded-lg md:rounded-xl bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center text-white font-bold text-[10px] md:text-sm shadow-md">
-                            {initials}
+                          /* Private — profile pic or initials */
+                          <div className="h-8 w-8 md:h-10 md:w-10 rounded-lg md:rounded-xl bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center text-white font-bold text-[10px] md:text-sm shadow-md overflow-hidden">
+                            {otherUser?.profile?.profile_picture
+                              ? <img src={otherUser.profile.profile_picture} alt="" className="w-full h-full object-cover" />
+                              : initials}
                           </div>
                         )}
                         {/* Pin indicator */}
@@ -1147,15 +1149,17 @@ const Messages = () => {
             <div className="hidden md:flex items-center justify-between px-5 py-3 border-b border-slate-100 bg-white sticky top-0 z-10">
               {/* Left: avatar + name + status */}
               <div className="flex items-center gap-3 min-w-0">
-                <div className={`h-9 w-9 rounded-xl flex items-center justify-center text-white font-bold text-xs shadow-sm shrink-0 ${selectedRoom.is_group ? 'bg-gradient-to-br from-indigo-500 to-violet-600' : 'bg-gradient-to-br from-violet-500 to-fuchsia-500'}`}>
+                <div className={`h-9 w-9 rounded-xl flex items-center justify-center text-white font-bold text-xs shadow-sm shrink-0 overflow-hidden ${selectedRoom.is_group ? 'bg-gradient-to-br from-indigo-500 to-violet-600' : 'bg-gradient-to-br from-violet-500 to-fuchsia-500'}`}>
                   {selectedRoom.is_group ? (
                     <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
-                  ) : (
-                    (selectedRoom.participants_details.find(p => p.id !== user?.id)?.full_name)
-                      ?.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2)
-                  )}
+                  ) : (() => {
+                    const other = selectedRoom.participants_details.find(p => p.id !== user?.id);
+                    return other?.profile?.profile_picture
+                      ? <img src={other.profile.profile_picture} alt="" className="w-full h-full object-cover" />
+                      : other?.full_name?.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+                  })()}
                 </div>
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
@@ -1238,15 +1242,17 @@ const Messages = () => {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
                   </svg>
                 </button>
-                <div className={`h-8 w-8 rounded-xl flex items-center justify-center text-white font-bold text-[9px] shadow-sm shrink-0 ${selectedRoom.is_group ? 'bg-gradient-to-br from-indigo-500 to-violet-600' : 'bg-gradient-to-br from-violet-500 to-fuchsia-500'}`}>
+                <div className={`h-8 w-8 rounded-xl flex items-center justify-center text-white font-bold text-[9px] shadow-sm shrink-0 overflow-hidden ${selectedRoom.is_group ? 'bg-gradient-to-br from-indigo-500 to-violet-600' : 'bg-gradient-to-br from-violet-500 to-fuchsia-500'}`}>
                   {selectedRoom.is_group ? (
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
-                  ) : (
-                    (selectedRoom.participants_details.find(p => p.id !== user?.id)?.full_name)
-                      ?.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2)
-                  )}
+                  ) : (() => {
+                    const other = selectedRoom.participants_details.find(p => p.id !== user?.id);
+                    return other?.profile?.profile_picture
+                      ? <img src={other.profile.profile_picture} alt="" className="w-full h-full object-cover" />
+                      : other?.full_name?.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+                  })()}
                 </div>
                 <div className="min-w-0">
                   <h3 className="text-sm font-bold text-slate-900 truncate leading-tight">
@@ -1309,8 +1315,10 @@ const Messages = () => {
                     <div key={msg.id} className={`flex ${isMine ? 'justify-end' : 'justify-start'} items-end gap-2 group overflow-visible`}>
                       {/* Avatar for other person */}
                       {!isMine && (
-                        <div className={`w-7 h-7 rounded-lg shrink-0 flex items-center justify-center text-[10px] font-bold text-white shadow-sm ${showAvatar ? 'bg-gradient-to-br from-slate-400 to-slate-600' : 'opacity-0'}`}>
-                          {msg.sender_name?.charAt(0).toUpperCase()}
+                        <div className={`w-7 h-7 rounded-lg shrink-0 flex items-center justify-center text-[10px] font-bold text-white shadow-sm overflow-hidden ${showAvatar ? 'bg-gradient-to-br from-slate-400 to-slate-600' : 'opacity-0'}`}>
+                          {showAvatar && (msg.sender_profile_picture
+                            ? <img src={msg.sender_profile_picture} alt="" className="w-full h-full object-cover" />
+                            : msg.sender_name?.charAt(0).toUpperCase())}
                         </div>
                       )}
 
@@ -1757,8 +1765,10 @@ const Messages = () => {
                 return (
                   <div key={member.id} className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 transition-all">
                     <div className="relative shrink-0">
-                      <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-violet-400 to-indigo-500 flex items-center justify-center text-white font-bold text-sm">
-                        {member.full_name?.charAt(0).toUpperCase()}
+                      <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-violet-400 to-indigo-500 flex items-center justify-center text-white font-bold text-sm overflow-hidden">
+                        {member.profile?.profile_picture
+                          ? <img src={member.profile.profile_picture} alt="" className="w-full h-full object-cover" />
+                          : member.full_name?.charAt(0).toUpperCase()}
                       </div>
                       <div className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-white ${member.is_online ? 'bg-green-500' : 'bg-slate-300'}`} />
                     </div>
@@ -1873,8 +1883,10 @@ const Messages = () => {
                     const isMe = member.id === user?.id;
                     return (
                       <div key={member.id} className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 transition-all">
-                        <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-violet-400 to-indigo-500 flex items-center justify-center text-white font-bold text-sm shrink-0">
-                          {member.full_name?.charAt(0).toUpperCase()}
+                        <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-violet-400 to-indigo-500 flex items-center justify-center text-white font-bold text-sm shrink-0 overflow-hidden">
+                          {member.profile?.profile_picture
+                            ? <img src={member.profile.profile_picture} alt="" className="w-full h-full object-cover" />
+                            : member.full_name?.charAt(0).toUpperCase()}
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-bold text-slate-800 truncate">

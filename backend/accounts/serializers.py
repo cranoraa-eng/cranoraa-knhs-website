@@ -516,19 +516,26 @@ class MessageReactionSerializer(serializers.ModelSerializer):
 
 class ChatMessageSerializer(serializers.ModelSerializer):
     sender_name = serializers.SerializerMethodField()
+    sender_profile_picture = serializers.SerializerMethodField()
     reactions = serializers.SerializerMethodField()
     parent_message_details = serializers.SerializerMethodField()
 
     class Meta:
         model = ChatMessage
         fields = [
-            'id', 'room', 'sender', 'sender_name', 'content', 'timestamp', 
+            'id', 'room', 'sender', 'sender_name', 'sender_profile_picture', 'content', 'timestamp', 
             'is_read', 'is_delivered', 'is_pinned', 'is_edited', 
             'parent_message', 'parent_message_details', 'reactions'
         ]
 
     def get_sender_name(self, obj):
         return full_name(obj.sender)
+
+    def get_sender_profile_picture(self, obj):
+        try:
+            return obj.sender.profile.profile_picture or None
+        except Exception:
+            return None
 
     def get_reactions(self, obj):
         # Group reactions by emoji

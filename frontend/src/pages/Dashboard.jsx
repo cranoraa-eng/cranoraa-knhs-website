@@ -212,8 +212,10 @@ const LatestMessagesWidget = ({ messages, onOpenChat }) => {
         {messages?.map(m => (
           <div key={m.id} className="flex gap-4 p-4 rounded-2xl bg-slate-50/50 border border-slate-100 hover:bg-white hover:border-violet-200 hover:shadow-md transition-all cursor-pointer group/msg" onClick={onOpenChat}>
             <div className="relative shrink-0">
-              <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center text-slate-600 font-black text-xs shadow-sm border border-white group-hover/msg:rotate-6 transition-transform">
-                {m.sender ? m.sender[0].toUpperCase() : '?'}
+              <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center text-slate-600 font-black text-xs shadow-sm border border-white group-hover/msg:rotate-6 transition-transform overflow-hidden">
+                {m.sender_profile_picture
+                  ? <img src={m.sender_profile_picture} alt="" className="w-full h-full object-cover" />
+                  : m.sender ? m.sender[0].toUpperCase() : '?'}
               </div>
               <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-emerald-500 border-2 border-white rounded-full shadow-sm" />
             </div>
