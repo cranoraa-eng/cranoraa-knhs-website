@@ -57,7 +57,7 @@ const WelcomeBanner = ({ user, today, actions, subtitle, stats, statusChips }) =
     .filter(Boolean).map(n => n[0].toUpperCase()).join('') || '?';
 
   return (
-    <div className="bg-[#1A0B2E] rounded-xl md:rounded-2xl p-3 md:p-5 shadow-2xl relative overflow-hidden group border border-white/5">
+    <div className="bg-[#1A0B2E] rounded-md md:rounded-lg p-3 md:p-5 shadow-2xl relative overflow-hidden group border border-white/5">
       {/* Premium Background Effects */}
       <div className="absolute top-0 right-0 w-[700px] h-[700px] bg-gradient-to-br from-violet-600/25 via-fuchsia-600/15 to-transparent rounded-full blur-[140px] -mr-64 -mt-64 opacity-90 group-hover:opacity-100 transition-opacity duration-1000" />
       <div className="absolute -bottom-32 -left-32 w-96 h-96 bg-indigo-600/20 rounded-full blur-[100px] opacity-70" />
@@ -92,7 +92,7 @@ const WelcomeBanner = ({ user, today, actions, subtitle, stats, statusChips }) =
           {/* Status Chips Section */}
           <div className="flex flex-wrap gap-1.5 md:gap-2 pt-0.5 md:pt-2">
             {statusChips?.map((chip, idx) => (
-              <div key={idx} className="flex items-center gap-1.5 md:gap-2 px-2 py-1 md:px-3 md:py-2 rounded-lg md:rounded-xl bg-white/5 border border-white/10 backdrop-blur-md hover:bg-white/10 hover:border-white/20 transition-all cursor-default group/chip">
+              <div key={idx} className="flex items-center gap-1.5 md:gap-2 px-2 py-1 md:px-3 md:py-2 rounded md:rounded-md bg-white/5 border border-white/10 backdrop-blur-md hover:bg-white/10 hover:border-white/20 transition-all cursor-default group/chip">
                 <div className={`w-1 h-1 md:w-1.5 md:h-1.5 rounded-full bg-${chip.color}-400 group-hover/chip:scale-125 transition-transform shrink-0`} />
                 <div className="flex flex-col">
                   <span className="text-[8px] md:text-[11px] font-black text-white leading-none">{chip.value}</span>
@@ -111,8 +111,8 @@ const WelcomeBanner = ({ user, today, actions, subtitle, stats, statusChips }) =
         <div className="flex flex-col items-end gap-3 md:gap-4 shrink-0">
           {/* Avatar Section */}
           <div className="relative group/avatar">
-            <div className="w-14 h-14 md:w-24 md:h-24 rounded-xl md:rounded-2xl bg-gradient-to-br from-violet-500 to-fuchsia-500 p-0.5 md:p-1 shadow-2xl transition-transform duration-700 group-hover/avatar:rotate-3">
-              <div className="w-full h-full rounded-[10px] md:rounded-xl bg-[#1A0B2E] overflow-hidden flex items-center justify-center border-2 md:border-4 border-white/10 relative">
+            <div className="w-14 h-14 md:w-24 md:h-24 rounded-md md:rounded-lg bg-gradient-to-br from-violet-500 to-fuchsia-500 p-0.5 md:p-1 shadow-2xl transition-transform duration-700 group-hover/avatar:rotate-3">
+              <div className="w-full h-full rounded-[10px] md:rounded-md bg-[#1A0B2E] overflow-hidden flex items-center justify-center border-2 md:border-4 border-white/10 relative">
                 {user?.profile_picture ? (
                   <img src={user.profile_picture} alt="Profile" className="w-full h-full object-cover group-hover/avatar:scale-110 transition-transform duration-700" />
                 ) : (
@@ -157,13 +157,13 @@ const StatCard = ({ label, value, sub, icon, color = 'violet', onClick, badge })
   return (
     <div
       onClick={onClick}
-      className={`group bg-white border border-slate-200/70 rounded-xl md:rounded-2xl p-2.5 md:p-6 transition-all duration-300 hover:border-transparent hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] hover:-translate-y-0.5 flex flex-col justify-between min-h-[80px] md:min-h-[140px] relative overflow-hidden ${onClick ? 'cursor-pointer' : ''}`}
+      className={`group bg-white border border-slate-200/70 rounded-md md:rounded-lg p-2.5 md:p-6 transition-all duration-300 hover:border-transparent hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] hover:-translate-y-0.5 flex flex-col justify-between min-h-[80px] md:min-h-[140px] relative overflow-hidden ${onClick ? 'cursor-pointer' : ''}`}
     >
       {/* Subtle background gradient */}
       <div className={`absolute top-0 right-0 w-40 h-40 bg-gradient-to-br ${bgGradients[color]} rounded-full -mr-20 -mt-20 blur-2xl opacity-60 group-hover:opacity-100 transition-opacity duration-300`} />
       
       <div className="relative z-10 flex items-start justify-between">
-        <div className={`w-7 h-7 md:w-11 md:h-11 rounded-lg md:rounded-xl flex items-center justify-center transition-all duration-300 shadow-sm border ${themes[color]}`}>
+        <div className={`w-7 h-7 md:w-11 md:h-11 rounded md:rounded-md flex items-center justify-center transition-all duration-300 shadow-sm border ${themes[color]}`}>
           {React.cloneElement(icon, { className: "w-3.5 h-3.5 md:w-5 md:h-5" })}
         </div>
         {badge > 0 && (
@@ -191,7 +191,7 @@ const LatestMessagesWidget = ({ messages, onOpenChat }) => {
       
       <div className="flex items-center justify-between mb-6 shrink-0 relative z-10">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-violet-50 text-violet-600 flex items-center justify-center shrink-0 shadow-sm border border-violet-100">
+          <div className="w-10 h-10 rounded-lg bg-violet-50 text-violet-600 flex items-center justify-center shrink-0 shadow-sm border border-violet-100">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
           </div>
           <div>
@@ -201,7 +201,7 @@ const LatestMessagesWidget = ({ messages, onOpenChat }) => {
         </div>
         <button 
           onClick={onOpenChat}
-          className="p-2.5 rounded-xl bg-violet-50 text-violet-600 hover:bg-violet-600 hover:text-white transition-all active:scale-90 shadow-sm border border-violet-100/50"
+          className="p-2.5 rounded-md bg-violet-50 text-violet-600 hover:bg-violet-600 hover:text-white transition-all active:scale-90 shadow-sm border border-violet-100/50"
           title="Open Messages"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 5H19M19 5V11M19 5L5 19M5 19H11M5 19V13" /></svg>
@@ -210,9 +210,9 @@ const LatestMessagesWidget = ({ messages, onOpenChat }) => {
 
       <div className="space-y-3 flex-1 overflow-y-auto pr-1 -mr-1 scrollbar-none relative z-10">
         {messages?.map(m => (
-          <div key={m.id} className="flex gap-4 p-4 rounded-2xl bg-slate-50/50 border border-slate-100 hover:bg-white hover:border-violet-200 hover:shadow-md transition-all cursor-pointer group/msg" onClick={onOpenChat}>
+          <div key={m.id} className="flex gap-4 p-4 rounded-lg bg-slate-50/50 border border-slate-100 hover:bg-white hover:border-violet-200 hover:shadow-md transition-all cursor-pointer group/msg" onClick={onOpenChat}>
             <div className="relative shrink-0">
-              <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center text-slate-600 font-black text-xs shadow-sm border border-white group-hover/msg:rotate-6 transition-transform overflow-hidden">
+              <div className="w-11 h-11 rounded-lg bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center text-slate-600 font-black text-xs shadow-sm border border-white group-hover/msg:rotate-6 transition-transform overflow-hidden">
                 {m.sender_profile_picture
                   ? <img src={m.sender_profile_picture} alt="" className="w-full h-full object-cover" />
                   : m.sender ? m.sender[0].toUpperCase() : '?'}
@@ -222,7 +222,7 @@ const LatestMessagesWidget = ({ messages, onOpenChat }) => {
             <div className="min-w-0 flex-1">
               <div className="flex justify-between items-center gap-2">
                 <h4 className="text-xs font-black text-slate-800 truncate group-hover/msg:text-violet-600 transition-colors">{m.sender || 'Unknown'}</h4>
-                <span className="text-[9px] font-black text-slate-400 uppercase tracking-tighter shrink-0 bg-slate-100 px-1.5 py-0.5 rounded-md">
+                <span className="text-[9px] font-black text-slate-400 uppercase tracking-tighter shrink-0 bg-slate-100 px-1.5 py-0.5 rounded-sm">
                   {new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 </span>
               </div>
@@ -303,7 +303,7 @@ const TodayScheduleWidget = ({ role }) => {
       {/* Header */}
       <div className="flex items-center justify-between mb-6 shrink-0 relative z-10">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0 shadow-sm border border-indigo-100">
+          <div className="w-10 h-10 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0 shadow-sm border border-indigo-100">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
@@ -315,7 +315,7 @@ const TodayScheduleWidget = ({ role }) => {
         </div>
         <button
           onClick={() => navigate('/schedule')}
-          className="px-3 py-1.5 rounded-lg bg-indigo-50 text-[10px] font-black text-indigo-600 hover:bg-indigo-600 hover:text-white uppercase tracking-widest transition-all active:scale-95 shadow-sm"
+          className="px-3 py-1.5 rounded bg-indigo-50 text-[10px] font-black text-indigo-600 hover:bg-indigo-600 hover:text-white uppercase tracking-widest transition-all active:scale-95 shadow-sm"
         >
           View Full
         </button>
@@ -325,11 +325,11 @@ const TodayScheduleWidget = ({ role }) => {
       <div className="flex-1 min-h-0 relative z-10">
         {loading ? (
           <div className="space-y-3">
-            {[1,2,3].map(i => <div key={i} className="h-16 rounded-2xl bg-slate-50 animate-pulse border border-slate-100/50" />)}
+            {[1,2,3].map(i => <div key={i} className="h-16 rounded-lg bg-slate-50 animate-pulse border border-slate-100/50" />)}
           </div>
         ) : schedule.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full bg-slate-50/50 rounded-2xl border border-dashed border-slate-200 p-6 text-center">
-            <div className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center mb-3 shadow-sm">
+          <div className="flex flex-col items-center justify-center h-full bg-slate-50/50 rounded-lg border border-dashed border-slate-200 p-6 text-center">
+            <div className="w-12 h-12 rounded-lg bg-white flex items-center justify-center mb-3 shadow-sm">
               <svg className="w-6 h-6 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
@@ -343,7 +343,7 @@ const TodayScheduleWidget = ({ role }) => {
               const isCurrent = idx === currentIdx;
               const isPast    = currentIdx !== -1 && idx < currentIdx;
               return (
-                <div key={s.id} className={`flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all border group/item ${
+                <div key={s.id} className={`flex items-center gap-4 px-4 py-3.5 rounded-lg transition-all border group/item ${
                   isCurrent
                     ? 'bg-indigo-600 border-indigo-600 shadow-lg shadow-indigo-200 ring-4 ring-indigo-50'
                     : isPast
@@ -376,7 +376,7 @@ const TodayScheduleWidget = ({ role }) => {
                     </div>
                   ) : (
                     !isPast && s === nextClass && (
-                      <div className="px-2 py-1 rounded-md bg-indigo-100 text-[8px] font-black text-indigo-600 uppercase tracking-tighter shrink-0">
+                      <div className="px-2 py-1 rounded-sm bg-indigo-100 text-[8px] font-black text-indigo-600 uppercase tracking-tighter shrink-0">
                         In {getCountdown(s.time_slot_detail?.start_time_display)}
                       </div>
                     )
@@ -428,14 +428,14 @@ const AdminView = () => {
           <>
             <button
               onClick={() => navigate('/announcements')}
-              className="px-5 py-3 rounded-2xl border border-slate-200 bg-white text-slate-700 font-black text-[10px] uppercase tracking-[0.15em] hover:bg-slate-50 hover:border-violet-200 hover:text-violet-600 transition-all flex items-center gap-2.5 shadow-sm active:scale-95"
+              className="px-5 py-3 rounded-lg border border-slate-200 bg-white text-slate-700 font-black text-[10px] uppercase tracking-[0.15em] hover:bg-slate-50 hover:border-violet-200 hover:text-violet-600 transition-all flex items-center gap-2.5 shadow-sm active:scale-95"
             >
               Post Announcement
             </button>
             {data?.pending_approvals > 0 && (
               <button
                 onClick={() => navigate('/account-approvals')}
-                className="px-5 py-3 rounded-2xl bg-[#1A0B2E] text-white font-black text-[10px] uppercase tracking-[0.15em] hover:bg-violet-900 shadow-lg shadow-violet-200/50 transition-all flex items-center gap-2.5 active:scale-95"
+                className="px-5 py-3 rounded-lg bg-[#1A0B2E] text-white font-black text-[10px] uppercase tracking-[0.15em] hover:bg-violet-900 shadow-lg shadow-violet-200/50 transition-all flex items-center gap-2.5 active:scale-95"
               >
                 Review Approvals ({data.pending_approvals})
               </button>
@@ -479,7 +479,7 @@ const AdminView = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-8 overflow-hidden">
         {/* Attendance Trends */}
-        <div className="lg:col-span-8 bg-white border border-slate-200/70 rounded-3xl md:rounded-[2rem] p-4 md:p-8 shadow-sm overflow-hidden flex flex-col">
+        <div className="lg:col-span-8 bg-white border border-slate-200/70 rounded-xl md:rounded-[2rem] p-4 md:p-8 shadow-sm overflow-hidden flex flex-col">
           <div className="flex items-center justify-between mb-8 shrink-0">
             <div>
               <h3 className="text-sm font-black text-slate-900 uppercase tracking-tight">Attendance Trends</h3>
@@ -531,7 +531,7 @@ const AdminView = () => {
         </div>
 
         {/* Grade Distribution */}
-        <div className="lg:col-span-4 bg-white border border-slate-200/70 rounded-3xl md:rounded-[2rem] p-4 md:p-8 shadow-sm flex flex-col">
+        <div className="lg:col-span-4 bg-white border border-slate-200/70 rounded-xl md:rounded-[2rem] p-4 md:p-8 shadow-sm flex flex-col">
           <div className="flex items-center justify-between mb-8 shrink-0">
             <div>
               <h3 className="text-sm font-black text-slate-900 uppercase tracking-tight">Grade Analysis</h3>
@@ -539,7 +539,7 @@ const AdminView = () => {
             </div>
             <button 
               onClick={() => setDistView(distView === 'general_average' ? 'all_subjects' : 'general_average')}
-              className="p-2.5 rounded-xl bg-slate-50 text-slate-400 hover:text-violet-600 hover:bg-violet-50 transition-all active:scale-90"
+              className="p-2.5 rounded-md bg-slate-50 text-slate-400 hover:text-violet-600 hover:bg-violet-50 transition-all active:scale-90"
               title="Toggle View"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
@@ -605,20 +605,20 @@ const AdminView = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8">
         {/* Recent Announcements Widget */}
-        <div className="bg-white border border-slate-200/70 rounded-3xl md:rounded-[2rem] p-4 md:p-6 shadow-sm flex flex-col">
+        <div className="bg-white border border-slate-200/70 rounded-xl md:rounded-[2rem] p-4 md:p-6 shadow-sm flex flex-col">
           <div className="flex items-center justify-between mb-6 shrink-0">
             <div>
               <h3 className="text-sm font-black text-slate-900 uppercase tracking-tight">Recent Announcements</h3>
               <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1">School-wide updates</p>
             </div>
-            <Link to="/announcements" className="p-2.5 rounded-xl bg-violet-50 text-violet-600 hover:bg-violet-600 hover:text-white transition-all active:scale-90">
+            <Link to="/announcements" className="p-2.5 rounded-md bg-violet-50 text-violet-600 hover:bg-violet-600 hover:text-white transition-all active:scale-90">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
             </Link>
           </div>
           <div className="space-y-3 flex-1 overflow-y-auto pr-1 -mr-1 scrollbar-thin">
             {data?.recent_announcements?.map(a => (
-              <div key={a.id} className="group flex gap-4 p-4 rounded-2xl bg-slate-50/50 hover:bg-white hover:shadow-md hover:shadow-violet-100 transition-all border border-transparent hover:border-violet-100 cursor-pointer">
-                <div className="flex-shrink-0 w-11 h-11 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-violet-600 font-black text-sm shadow-sm group-hover:bg-violet-600 group-hover:text-white group-hover:border-violet-600 transition-all">
+              <div key={a.id} className="group flex gap-4 p-4 rounded-lg bg-slate-50/50 hover:bg-white hover:shadow-md hover:shadow-violet-100 transition-all border border-transparent hover:border-violet-100 cursor-pointer">
+                <div className="flex-shrink-0 w-11 h-11 rounded-md bg-white border border-slate-100 flex items-center justify-center text-violet-600 font-black text-sm shadow-sm group-hover:bg-violet-600 group-hover:text-white group-hover:border-violet-600 transition-all">
                   {new Date(a.created_at).getDate()}
                 </div>
                 <div className="min-w-0 flex-1">
@@ -641,19 +641,19 @@ const AdminView = () => {
         />
 
         {/* Recent Activity Widget */}
-        <div className="bg-white border border-slate-200/70 rounded-3xl md:rounded-[2rem] p-4 md:p-6 shadow-sm flex flex-col">
+        <div className="bg-white border border-slate-200/70 rounded-xl md:rounded-[2rem] p-4 md:p-6 shadow-sm flex flex-col">
           <div className="flex items-center justify-between mb-6 shrink-0">
             <div>
               <h3 className="text-sm font-black text-slate-900 uppercase tracking-tight">System Activity</h3>
               <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1">Audit logs summary</p>
             </div>
-            <Link to="/audit-logs" className="p-2.5 rounded-xl bg-violet-50 text-violet-600 hover:bg-violet-600 hover:text-white transition-all active:scale-90">
+            <Link to="/audit-logs" className="p-2.5 rounded-md bg-violet-50 text-violet-600 hover:bg-violet-600 hover:text-white transition-all active:scale-90">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
             </Link>
           </div>
           <div className="space-y-4 flex-1 overflow-y-auto pr-1 -mr-1 scrollbar-thin">
             {data?.widgets?.recent_activity?.map(log => (
-              <div key={log.id} className="flex items-start gap-4 p-3 rounded-2xl hover:bg-slate-50 transition-all group">
+              <div key={log.id} className="flex items-start gap-4 p-3 rounded-lg hover:bg-slate-50 transition-all group">
                 <div className={`mt-1.5 w-2.5 h-2.5 rounded-full shrink-0 shadow-sm transition-transform group-hover:scale-125 ${
                   log.action === 'login' ? 'bg-emerald-500' : 
                   log.action === 'delete' ? 'bg-rose-500' : 
@@ -750,7 +750,7 @@ const TeacherView = () => {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => navigate('/announcements')}
-              className="px-3 py-2 md:px-6 md:py-3.5 rounded-xl md:rounded-2xl bg-white/10 backdrop-blur-md text-white font-black text-[9px] md:text-[11px] uppercase tracking-[0.15em] hover:bg-white/20 transition-all flex items-center gap-2 border border-white/10 shadow-xl"
+              className="px-3 py-2 md:px-6 md:py-3.5 rounded-md md:rounded-lg bg-white/10 backdrop-blur-md text-white font-black text-[9px] md:text-[11px] uppercase tracking-[0.15em] hover:bg-white/20 transition-all flex items-center gap-2 border border-white/10 shadow-xl"
             >
               <svg className="w-3 h-3 md:w-4 md:h-4 text-violet-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" /></svg>
               Announce
@@ -759,7 +759,7 @@ const TeacherView = () => {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => navigate('/grade-input')}
-              className="px-3 py-2 md:px-6 md:py-3.5 rounded-xl md:rounded-2xl bg-violet-600 text-white font-black text-[9px] md:text-[11px] uppercase tracking-[0.15em] hover:bg-violet-500 shadow-2xl shadow-violet-600/30 transition-all flex items-center gap-2 border border-violet-400/30"
+              className="px-3 py-2 md:px-6 md:py-3.5 rounded-md md:rounded-lg bg-violet-600 text-white font-black text-[9px] md:text-[11px] uppercase tracking-[0.15em] hover:bg-violet-500 shadow-2xl shadow-violet-600/30 transition-all flex items-center gap-2 border border-violet-400/30"
             >
               <svg className="w-3 h-3 md:w-4 md:h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
               Grades
@@ -772,7 +772,7 @@ const TeacherView = () => {
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15, duration: 0.5 }}
-          className={`rounded-xl md:rounded-xl px-3 py-2.5 md:px-4 md:py-3 flex items-center justify-between gap-3 border ${
+          className={`rounded-md md:rounded-md px-3 py-2.5 md:px-4 md:py-3 flex items-center justify-between gap-3 border ${
             unmarkedCount === 0
               ? 'bg-emerald-50 border-emerald-200'
               : 'bg-amber-50 border-amber-200'
@@ -796,7 +796,7 @@ const TeacherView = () => {
           {unmarkedCount > 0 && (
             <button
               onClick={() => navigate('/attendance')}
-              className="shrink-0 px-3 py-1.5 rounded-lg bg-amber-500 text-white text-[9px] md:text-[10px] font-black uppercase tracking-widest hover:bg-amber-600 transition-all active:scale-95"
+              className="shrink-0 px-3 py-1.5 rounded bg-amber-500 text-white text-[9px] md:text-[10px] font-black uppercase tracking-widest hover:bg-amber-600 transition-all active:scale-95"
             >
               Mark Now
             </button>
@@ -813,11 +813,11 @@ const TeacherView = () => {
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.2, duration: 0.6 }}
-            className="bg-white border border-slate-200/60 rounded-xl md:rounded-2xl shadow-sm overflow-hidden flex flex-col lg:h-[420px] min-h-[300px]"
+            className="bg-white border border-slate-200/60 rounded-md md:rounded-lg shadow-sm overflow-hidden flex flex-col lg:h-[420px] min-h-[300px]"
           >
             <div className="px-3 md:px-5 py-3 md:py-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2 md:gap-3 bg-gradient-to-r from-slate-50/80 to-white shrink-0">
               <div className="flex items-center gap-2 md:gap-3.5">
-                <div className="w-8 h-8 md:w-8 md:h-8 rounded-lg md:rounded-xl bg-violet-600 shadow-lg shadow-violet-200/60 flex items-center justify-center shrink-0">
+                <div className="w-8 h-8 md:w-8 md:h-8 rounded md:rounded-md bg-violet-600 shadow-lg shadow-violet-200/60 flex items-center justify-center shrink-0">
                   <svg className="w-4 h-4 md:w-5 md:h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
                 </div>
                 <div>
@@ -825,7 +825,7 @@ const TeacherView = () => {
                   <p className="text-[8px] md:text-[9px] font-semibold text-slate-400 uppercase tracking-widest mt-0.5">Active teaching sections</p>
                 </div>
               </div>
-              <Link to="/my-classes" className="px-3 py-1.5 md:px-4 md:py-2 rounded-lg bg-violet-50 text-[9px] md:text-[10px] font-black text-violet-600 hover:bg-violet-600 hover:text-white uppercase tracking-[0.15em] transition-all active:scale-95 shadow-sm border border-violet-100 text-center">
+              <Link to="/my-classes" className="px-3 py-1.5 md:px-4 md:py-2 rounded bg-violet-50 text-[9px] md:text-[10px] font-black text-violet-600 hover:bg-violet-600 hover:text-white uppercase tracking-[0.15em] transition-all active:scale-95 shadow-sm border border-violet-100 text-center">
                 Manage Classes
               </Link>
             </div>
@@ -845,7 +845,7 @@ const TeacherView = () => {
                     <tr>
                       <td colSpan="4" className="px-8 py-16 text-center">
                         <div className="flex flex-col items-center justify-center gap-4 opacity-40">
-                          <div className="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center">
+                          <div className="w-14 h-14 rounded-lg bg-slate-100 flex items-center justify-center">
                             <svg className="w-7 h-7 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
                           </div>
                           <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">No classes assigned yet</p>
@@ -859,7 +859,7 @@ const TeacherView = () => {
                         <tr key={c.id} className="hover:bg-violet-50/30 transition-colors group cursor-pointer border-b border-slate-50 last:border-0">
                           <td className="px-3 md:px-5 py-2.5 md:py-3">
                             <div className="flex items-center gap-2 md:gap-4">
-                              <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl bg-gradient-to-br from-violet-50 to-indigo-50 text-violet-600 flex items-center justify-center font-black text-xs md:text-sm shadow-sm border border-violet-100/50 group-hover:from-violet-600 group-hover:to-indigo-600 group-hover:text-white transition-all duration-300 shrink-0">
+                              <div className="w-8 h-8 md:w-10 md:h-10 rounded md:rounded-md bg-gradient-to-br from-violet-50 to-indigo-50 text-violet-600 flex items-center justify-center font-black text-xs md:text-sm shadow-sm border border-violet-100/50 group-hover:from-violet-600 group-hover:to-indigo-600 group-hover:text-white transition-all duration-300 shrink-0">
                                 {c.name?.match(/\d+/)?.[0] || 'C'}
                               </div>
                               <div>
@@ -892,8 +892,8 @@ const TeacherView = () => {
                           </td>
                           <td className="px-3 md:px-5 py-2.5 md:py-3 text-right">
                             <div className="flex items-center justify-end gap-1.5 md:gap-2">
-                              <button onClick={() => navigate('/attendance', { state: { classroomId: c.id } })} title="Mark Attendance" className="p-1.5 md:p-2.5 text-emerald-600 bg-emerald-50 hover:bg-emerald-600 hover:text-white rounded-lg transition-all shadow-sm active:scale-90 border border-emerald-100"><svg className="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 8l2 2 4-4" /></svg></button>
-                              <button onClick={() => navigate('/grade-input', { state: { classroomId: c.id } })} title="Input Grades" className="p-1.5 md:p-2.5 text-violet-600 bg-violet-50 hover:bg-violet-600 hover:text-white rounded-lg transition-all shadow-sm active:scale-90 border border-violet-100"><svg className="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg></button>
+                              <button onClick={() => navigate('/attendance', { state: { classroomId: c.id } })} title="Mark Attendance" className="p-1.5 md:p-2.5 text-emerald-600 bg-emerald-50 hover:bg-emerald-600 hover:text-white rounded transition-all shadow-sm active:scale-90 border border-emerald-100"><svg className="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 8l2 2 4-4" /></svg></button>
+                              <button onClick={() => navigate('/grade-input', { state: { classroomId: c.id } })} title="Input Grades" className="p-1.5 md:p-2.5 text-violet-600 bg-violet-50 hover:bg-violet-600 hover:text-white rounded transition-all shadow-sm active:scale-90 border border-violet-100"><svg className="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg></button>
                             </div>
                           </td>
                         </tr>
@@ -910,11 +910,11 @@ const TeacherView = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5, duration: 0.6 }}
-            className="bg-white border border-slate-200/60 rounded-xl md:rounded-2xl p-3 md:p-5 shadow-sm flex flex-col lg:h-[520px]"
+            className="bg-white border border-slate-200/60 rounded-md md:rounded-lg p-3 md:p-5 shadow-sm flex flex-col lg:h-[520px]"
           >
             <div className="flex items-center justify-between mb-4 md:mb-5 shrink-0">
               <div className="flex items-center gap-2 md:gap-3.5">
-                <div className="w-8 h-8 md:w-8 md:h-8 rounded-lg md:rounded-xl bg-emerald-500 shadow-lg shadow-emerald-100 flex items-center justify-center shrink-0">
+                <div className="w-8 h-8 md:w-8 md:h-8 rounded md:rounded-md bg-emerald-500 shadow-lg shadow-emerald-100 flex items-center justify-center shrink-0">
                   <svg className="w-4 h-4 md:w-5 md:h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                 </div>
                 <div>
@@ -922,7 +922,7 @@ const TeacherView = () => {
                   <p className="text-[8px] md:text-[9px] font-semibold text-slate-400 uppercase tracking-widest mt-0.5">Your latest school interactions</p>
                 </div>
               </div>
-              <div className="px-2 py-1 md:px-3 md:py-1.5 rounded-lg bg-emerald-50 text-[7px] md:text-[9px] font-black text-emerald-600 uppercase tracking-[0.15em] border border-emerald-100">
+              <div className="px-2 py-1 md:px-3 md:py-1.5 rounded bg-emerald-50 text-[7px] md:text-[9px] font-black text-emerald-600 uppercase tracking-[0.15em] border border-emerald-100">
                 Live Feed
               </div>
             </div>
@@ -938,10 +938,10 @@ const TeacherView = () => {
                     transition={{ delay: i * 0.1 }}
                     className="relative flex items-center gap-3 md:gap-6 group"
                   >
-                    <div className="w-10 h-10 md:w-14 md:h-14 rounded-lg md:rounded-2xl bg-white border-2 border-slate-50 shadow-sm flex items-center justify-center text-base md:text-xl shrink-0 z-10 group-hover:border-violet-200 group-hover:scale-110 transition-all duration-500">
+                    <div className="w-10 h-10 md:w-14 md:h-14 rounded md:rounded-lg bg-white border-2 border-slate-50 shadow-sm flex items-center justify-center text-base md:text-xl shrink-0 z-10 group-hover:border-violet-200 group-hover:scale-110 transition-all duration-500">
                       {act.type === 'grade' ? '📊' : act.type === 'attendance' ? '✅' : '📢'}
                     </div>
-                    <div className="flex-1 bg-slate-50/50 rounded-lg md:rounded-2xl p-2.5 md:p-5 border border-slate-100/50 group-hover:bg-white group-hover:shadow-xl transition-all duration-500">
+                    <div className="flex-1 bg-slate-50/50 rounded md:rounded-lg p-2.5 md:p-5 border border-slate-100/50 group-hover:bg-white group-hover:shadow-xl transition-all duration-500">
                       <div className="flex justify-between items-start mb-0.5">
                         <p className="text-[10px] md:text-sm font-black text-slate-800 leading-snug group-hover:text-violet-600 transition-colors">{act.message}</p>
                         <span className="text-[7px] md:text-[9px] font-black text-slate-400 uppercase tracking-widest ml-2 shrink-0">{act.time}</span>
@@ -950,7 +950,7 @@ const TeacherView = () => {
                   </motion.div>
                 )) : (
                   <div className="flex flex-col items-center justify-center py-16 opacity-40">
-                    <div className="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center mb-4">
+                    <div className="w-14 h-14 rounded-lg bg-slate-100 flex items-center justify-center mb-4">
                       <svg className="w-7 h-7 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                     </div>
                     <p className="text-xs font-black text-slate-400 uppercase tracking-widest">No recent activities</p>
@@ -977,7 +977,7 @@ const TeacherView = () => {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.4, duration: 0.6 }}
-            className="bg-[#1A0B2E] rounded-xl md:rounded-2xl p-4 md:p-5 shadow-xl border border-white/5 relative overflow-hidden group lg:h-[240px] flex flex-col justify-center"
+            className="bg-[#1A0B2E] rounded-md md:rounded-lg p-4 md:p-5 shadow-xl border border-white/5 relative overflow-hidden group lg:h-[240px] flex flex-col justify-center"
           >
             <div className="absolute -right-8 -top-8 w-40 h-40 bg-violet-600/20 rounded-full blur-[60px]" />
             <h3 className="text-white text-[10px] md:text-xs font-black uppercase tracking-[0.2em] mb-4 md:mb-5 relative z-10 flex items-center gap-2 shrink-0">
@@ -996,9 +996,9 @@ const TeacherView = () => {
                   whileHover={{ scale: 1.05, y: -2 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => navigate(a.path)}
-                  className="flex flex-col items-center justify-center gap-1.5 md:gap-2.5 p-2 md:p-3 bg-white/5 rounded-xl border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all group active:scale-95"
+                  className="flex flex-col items-center justify-center gap-1.5 md:gap-2.5 p-2 md:p-3 bg-white/5 rounded-md border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all group active:scale-95"
                 >
-                  <div className={`w-8 h-8 md:w-8 md:h-8 rounded-lg md:rounded-xl bg-${a.color}-500/10 text-${a.color}-400 flex items-center justify-center group-hover:bg-${a.color}-500 group-hover:text-white transition-all duration-300`}>
+                  <div className={`w-8 h-8 md:w-8 md:h-8 rounded md:rounded-md bg-${a.color}-500/10 text-${a.color}-400 flex items-center justify-center group-hover:bg-${a.color}-500 group-hover:text-white transition-all duration-300`}>
                     <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d={a.icon} /></svg>
                   </div>
                   <span className="text-[7px] md:text-[9px] font-black text-violet-200/80 uppercase tracking-[0.15em]">{a.label}</span>
@@ -1019,7 +1019,7 @@ const TeacherView = () => {
             </div>
             
             {/* System Status */}
-            <div className="bg-slate-50 border border-slate-200/60 rounded-lg md:rounded-xl p-3 md:p-4 shadow-sm flex items-center justify-between shrink-0">
+            <div className="bg-slate-50 border border-slate-200/60 rounded md:rounded-md p-3 md:p-4 shadow-sm flex items-center justify-between shrink-0">
               <div className="flex items-center gap-2">
                 <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                 <span className="text-[8px] md:text-[9px] font-black text-slate-500 uppercase tracking-widest">System Online</span>
@@ -1127,7 +1127,7 @@ const StudentView = () => {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => navigate('/materials')}
-              className="px-3 py-2 md:px-6 md:py-3.5 rounded-xl md:rounded-2xl bg-white/10 backdrop-blur-md text-white font-black text-[9px] md:text-[11px] uppercase tracking-[0.15em] hover:bg-white/20 transition-all flex items-center gap-2 border border-white/10 shadow-xl"
+              className="px-3 py-2 md:px-6 md:py-3.5 rounded-md md:rounded-lg bg-white/10 backdrop-blur-md text-white font-black text-[9px] md:text-[11px] uppercase tracking-[0.15em] hover:bg-white/20 transition-all flex items-center gap-2 border border-white/10 shadow-xl"
             >
               <svg className="w-3 h-3 md:w-4 md:h-4 text-violet-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
               Materials
@@ -1136,7 +1136,7 @@ const StudentView = () => {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => navigate('/student-grades')}
-              className="px-3 py-2 md:px-6 md:py-3.5 rounded-xl md:rounded-2xl bg-violet-600 text-white font-black text-[9px] md:text-[11px] uppercase tracking-[0.15em] hover:bg-violet-500 shadow-2xl shadow-violet-600/30 transition-all flex items-center gap-2 border border-violet-400/30"
+              className="px-3 py-2 md:px-6 md:py-3.5 rounded-md md:rounded-lg bg-violet-600 text-white font-black text-[9px] md:text-[11px] uppercase tracking-[0.15em] hover:bg-violet-500 shadow-2xl shadow-violet-600/30 transition-all flex items-center gap-2 border border-violet-400/30"
             >
               <svg className="w-3 h-3 md:w-4 md:h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
               My Grades
@@ -1156,11 +1156,11 @@ const StudentView = () => {
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.2, duration: 0.6 }}
-              className="bg-white border border-slate-200/60 rounded-xl md:rounded-2xl p-3 md:p-5 shadow-sm flex flex-col h-[240px] md:h-[280px]"
+              className="bg-white border border-slate-200/60 rounded-md md:rounded-lg p-3 md:p-5 shadow-sm flex flex-col h-[240px] md:h-[280px]"
             >
               <div className="flex items-center justify-between mb-3 md:mb-4 shrink-0">
                 <div className="flex items-center gap-2">
-                  <div className="w-7 h-7 md:w-8 md:h-8 rounded-lg md:rounded-xl bg-violet-50 text-violet-600 flex items-center justify-center border border-violet-100">
+                  <div className="w-7 h-7 md:w-8 md:h-8 rounded md:rounded-md bg-violet-50 text-violet-600 flex items-center justify-center border border-violet-100">
                     <svg className="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
                   </div>
                   <div>
@@ -1203,11 +1203,11 @@ const StudentView = () => {
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.3, duration: 0.6 }}
-              className="bg-white border border-slate-200/60 rounded-xl md:rounded-2xl p-3 md:p-5 shadow-sm flex flex-col h-[240px] md:h-[280px]"
+              className="bg-white border border-slate-200/60 rounded-md md:rounded-lg p-3 md:p-5 shadow-sm flex flex-col h-[240px] md:h-[280px]"
             >
               <div className="flex items-center justify-between mb-3 md:mb-3 shrink-0">
                 <div className="flex items-center gap-2">
-                  <div className="w-7 h-7 md:w-8 md:h-8 rounded-lg md:rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100">
+                  <div className="w-7 h-7 md:w-8 md:h-8 rounded md:rounded-md bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100">
                     <svg className="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                   </div>
                   <div>
@@ -1224,31 +1224,31 @@ const StudentView = () => {
               {/* Today's status badge */}
               <div className="mb-2 md:mb-4 shrink-0">
                 {todayAttStatus === 'weekend' ? (
-                  <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg bg-slate-100 border border-slate-200">
+                  <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-slate-100 border border-slate-200">
                     <span className="text-[8px] md:text-[9px] font-black text-slate-500 uppercase tracking-widest">Weekend — No class</span>
                   </div>
                 ) : todayAttStatus === 'unassigned' ? (
-                  <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg bg-amber-50 border border-amber-200">
+                  <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-amber-50 border border-amber-200">
                     <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse shrink-0" />
                     <span className="text-[8px] md:text-[9px] font-black text-amber-600 uppercase tracking-widest">Today not marked yet</span>
                   </div>
                 ) : todayAttStatus === 'present' ? (
-                  <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg bg-emerald-50 border border-emerald-200">
+                  <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-emerald-50 border border-emerald-200">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
                     <span className="text-[8px] md:text-[9px] font-black text-emerald-600 uppercase tracking-widest">Present today</span>
                   </div>
                 ) : todayAttStatus === 'late' ? (
-                  <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg bg-yellow-50 border border-yellow-200">
+                  <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-yellow-50 border border-yellow-200">
                     <span className="w-1.5 h-1.5 rounded-full bg-yellow-500 shrink-0" />
                     <span className="text-[8px] md:text-[9px] font-black text-yellow-600 uppercase tracking-widest">Late today</span>
                   </div>
                 ) : todayAttStatus === 'absent' ? (
-                  <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg bg-red-50 border border-red-200">
+                  <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-red-50 border border-red-200">
                     <span className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0" />
                     <span className="text-[8px] md:text-[9px] font-black text-red-600 uppercase tracking-widest">Absent today</span>
                   </div>
                 ) : (
-                  <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg bg-blue-50 border border-blue-200">
+                  <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-blue-50 border border-blue-200">
                     <span className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0" />
                     <span className="text-[8px] md:text-[9px] font-black text-blue-600 uppercase tracking-widest capitalize">{todayAttStatus} today</span>
                   </div>
@@ -1300,11 +1300,11 @@ const StudentView = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4, duration: 0.6 }}
-            className="bg-white border border-slate-200/60 rounded-xl md:rounded-2xl shadow-sm overflow-hidden flex flex-col lg:h-[480px]"
+            className="bg-white border border-slate-200/60 rounded-md md:rounded-lg shadow-sm overflow-hidden flex flex-col lg:h-[480px]"
           >
             <div className="px-3 md:px-5 py-3 md:py-4 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-slate-50/80 to-white shrink-0">
               <div className="flex items-center gap-2 md:gap-3.5">
-                <div className="w-8 h-8 md:w-8 md:h-8 rounded-lg md:rounded-xl bg-indigo-600 shadow-lg shadow-indigo-200/60 flex items-center justify-center shrink-0">
+                <div className="w-8 h-8 md:w-8 md:h-8 rounded md:rounded-md bg-indigo-600 shadow-lg shadow-indigo-200/60 flex items-center justify-center shrink-0">
                   <svg className="w-4 h-4 md:w-5 md:h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
                 </div>
                 <div>
@@ -1312,7 +1312,7 @@ const StudentView = () => {
                   <p className="text-[8px] md:text-[9px] font-semibold text-slate-400 uppercase tracking-widest mt-0.5">Final grade breakdown</p>
                 </div>
               </div>
-              <Link to="/student-grades" className="px-3 py-1.5 md:px-4 md:py-2 rounded-lg bg-indigo-50 text-[9px] md:text-[10px] font-black text-indigo-600 hover:bg-indigo-600 hover:text-white uppercase tracking-[0.15em] transition-all active:scale-95 shadow-sm border border-indigo-100">
+              <Link to="/student-grades" className="px-3 py-1.5 md:px-4 md:py-2 rounded bg-indigo-50 text-[9px] md:text-[10px] font-black text-indigo-600 hover:bg-indigo-600 hover:text-white uppercase tracking-[0.15em] transition-all active:scale-95 shadow-sm border border-indigo-100">
                 View All
               </Link>
             </div>
@@ -1330,7 +1330,7 @@ const StudentView = () => {
                   {finalGrades.length === 0 ? (
                     <tr><td colSpan="4" className="px-8 py-16 text-center">
                       <div className="flex flex-col items-center justify-center gap-4 opacity-40">
-                        <div className="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center">
+                        <div className="w-14 h-14 rounded-lg bg-slate-100 flex items-center justify-center">
                           <svg className="w-7 h-7 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
                         </div>
                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">No grades posted yet</p>
@@ -1340,7 +1340,7 @@ const StudentView = () => {
                     <tr key={g.id} className="hover:bg-indigo-50/30 transition-colors group cursor-pointer">
                       <td className="px-3 md:px-5 py-2.5 md:py-3">
                         <div className="flex items-center gap-2 md:gap-4">
-                          <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl bg-gradient-to-br from-indigo-50 to-violet-50 text-indigo-600 flex items-center justify-center font-black text-xs md:text-sm shadow-sm border border-indigo-100/50 group-hover:from-indigo-600 group-hover:to-violet-600 group-hover:text-white transition-all duration-300 shrink-0">
+                          <div className="w-8 h-8 md:w-10 md:h-10 rounded md:rounded-md bg-gradient-to-br from-indigo-50 to-violet-50 text-indigo-600 flex items-center justify-center font-black text-xs md:text-sm shadow-sm border border-indigo-100/50 group-hover:from-indigo-600 group-hover:to-violet-600 group-hover:text-white transition-all duration-300 shrink-0">
                             {g.subject_name?.[0] || 'S'}
                           </div>
                           <span className="text-xs md:text-sm font-bold text-slate-800 tracking-tight">{g.subject_name}</span>
@@ -1383,7 +1383,7 @@ const StudentView = () => {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.5, duration: 0.6 }}
-            className="bg-[#1A0B2E] rounded-xl md:rounded-2xl p-4 md:p-5 shadow-xl border border-white/5 relative overflow-hidden group lg:h-[220px] flex flex-col justify-center"
+            className="bg-[#1A0B2E] rounded-md md:rounded-lg p-4 md:p-5 shadow-xl border border-white/5 relative overflow-hidden group lg:h-[220px] flex flex-col justify-center"
           >
             <div className="absolute -right-8 -top-8 w-40 h-40 bg-indigo-600/20 rounded-full blur-[60px]" />
             <h3 className="text-white text-[10px] md:text-xs font-black uppercase tracking-[0.2em] mb-4 md:mb-5 relative z-10 flex items-center gap-2 shrink-0">
@@ -1402,9 +1402,9 @@ const StudentView = () => {
                   whileHover={{ scale: 1.05, y: -2 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => navigate(a.path)}
-                  className="flex flex-col items-center justify-center gap-1.5 md:gap-2.5 p-2 md:p-3 bg-white/5 rounded-xl border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all group active:scale-95"
+                  className="flex flex-col items-center justify-center gap-1.5 md:gap-2.5 p-2 md:p-3 bg-white/5 rounded-md border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all group active:scale-95"
                 >
-                  <div className={`w-8 h-8 md:w-8 md:h-8 rounded-lg md:rounded-xl bg-${a.color}-500/10 text-${a.color}-400 flex items-center justify-center group-hover:bg-${a.color}-500 group-hover:text-white transition-all duration-300`}>
+                  <div className={`w-8 h-8 md:w-8 md:h-8 rounded md:rounded-md bg-${a.color}-500/10 text-${a.color}-400 flex items-center justify-center group-hover:bg-${a.color}-500 group-hover:text-white transition-all duration-300`}>
                     <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d={a.icon} /></svg>
                   </div>
                   <span className="text-[7px] md:text-[9px] font-black text-indigo-200/80 uppercase tracking-[0.15em]">{a.label}</span>
@@ -1421,7 +1421,7 @@ const StudentView = () => {
             <div className="lg:h-[260px]">
               <LatestMessagesWidget messages={stats?.latest_messages} onOpenChat={() => navigate('/messages')} />
             </div>
-            <div className="bg-slate-50 border border-slate-200/60 rounded-lg md:rounded-xl p-3 md:p-4 shadow-sm flex items-center justify-between shrink-0">
+            <div className="bg-slate-50 border border-slate-200/60 rounded md:rounded-md p-3 md:p-4 shadow-sm flex items-center justify-between shrink-0">
               <div className="flex items-center gap-2">
                 <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                 <span className="text-[8px] md:text-[9px] font-black text-slate-500 uppercase tracking-widest">Portal Connected</span>

@@ -76,7 +76,7 @@ export default function ParentDashboard() {
   return (
     <div className="space-y-6 page-bottom-safe">
       {/* Welcome Banner */}
-      <div className="bg-white rounded-2xl p-5 md:p-8 border border-slate-200 shadow-sm relative overflow-hidden">
+      <div className="bg-white rounded-lg p-5 md:p-8 border border-slate-200 shadow-sm relative overflow-hidden">
         <div className="absolute top-0 right-0 w-64 h-64 bg-violet-50 rounded-full blur-3xl -mr-32 -mt-32 opacity-60" />
         <div className="relative flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div className="space-y-1.5">
@@ -100,8 +100,8 @@ export default function ParentDashboard() {
       </div>
 
       {children.length === 0 ? (
-        <div className="bg-white border border-slate-200 rounded-2xl p-12 text-center">
-          <div className="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center mx-auto mb-4">
+        <div className="bg-white border border-slate-200 rounded-lg p-12 text-center">
+          <div className="w-16 h-16 rounded-lg bg-slate-100 flex items-center justify-center mx-auto mb-4">
             <svg className="w-8 h-8 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
           </div>
           <p className="text-slate-500 font-bold text-sm">No linked students found.</p>
@@ -114,12 +114,12 @@ export default function ParentDashboard() {
             <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-none">
               {children.map(c => (
                 <button key={c.id} onClick={() => { setSelectedChild(c); setActiveTab('overview'); }}
-                  className={`flex-shrink-0 flex items-center gap-3 px-4 py-3 rounded-2xl border transition-all ${
+                  className={`flex-shrink-0 flex items-center gap-3 px-4 py-3 rounded-lg border transition-all ${
                     selectedChild?.id === c.id
                       ? 'bg-violet-600 border-violet-600 text-white shadow-lg shadow-violet-200'
                       : 'bg-white border-slate-200 text-slate-700 hover:border-violet-300'
                   }`}>
-                  <div className={`w-8 h-8 rounded-xl flex items-center justify-center font-black text-xs overflow-hidden ${selectedChild?.id === c.id ? 'bg-white/20' : 'bg-violet-100 text-violet-600'}`}>
+                  <div className={`w-8 h-8 rounded-md flex items-center justify-center font-black text-xs overflow-hidden ${selectedChild?.id === c.id ? 'bg-white/20' : 'bg-violet-100 text-violet-600'}`}>
                     {c.profile_picture
                       ? <img src={c.profile_picture} alt="" className="w-full h-full object-cover" />
                       : `${c.first_name?.[0] || ''}${c.last_name?.[0] || ''}`}
@@ -137,32 +137,32 @@ export default function ParentDashboard() {
             <>
               {/* Quick Stats for selected child */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="bg-white border border-slate-200 rounded-2xl p-4 hover:shadow-md transition-all">
-                  <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center mb-3">
+                <div className="bg-white border border-slate-200 rounded-lg p-4 hover:shadow-md transition-all">
+                  <div className="w-10 h-10 rounded-md bg-emerald-50 flex items-center justify-center mb-3">
                     <svg className="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 8l2 2 4-4" /></svg>
                   </div>
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Attendance</p>
                   <p className="text-2xl font-black text-slate-900 mt-1">{child.attendance_rate != null ? `${child.attendance_rate}%` : '—'}</p>
                   <p className="text-[10px] text-slate-400 mt-0.5">{child.attendance_present}/{child.attendance_total} days this month</p>
                 </div>
-                <div className="bg-white border border-slate-200 rounded-2xl p-4 hover:shadow-md transition-all">
-                  <div className="w-10 h-10 rounded-xl bg-violet-50 flex items-center justify-center mb-3">
+                <div className="bg-white border border-slate-200 rounded-lg p-4 hover:shadow-md transition-all">
+                  <div className="w-10 h-10 rounded-md bg-violet-50 flex items-center justify-center mb-3">
                     <svg className="w-5 h-5 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
                   </div>
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">General Average</p>
                   <p className="text-2xl font-black text-slate-900 mt-1">{child.general_average ?? '—'}</p>
                   <p className="text-[10px] text-slate-400 mt-0.5">{child.grades?.length || 0} subjects graded</p>
                 </div>
-                <div className="bg-white border border-slate-200 rounded-2xl p-4 hover:shadow-md transition-all">
-                  <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center mb-3">
+                <div className="bg-white border border-slate-200 rounded-lg p-4 hover:shadow-md transition-all">
+                  <div className="w-10 h-10 rounded-md bg-blue-50 flex items-center justify-center mb-3">
                     <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
                   </div>
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Classroom</p>
                   <p className="text-sm font-black text-slate-900 mt-1 truncate">{child.classroom_name || '—'}</p>
                   <p className="text-[10px] text-slate-400 mt-0.5 truncate">Adviser: {child.adviser_name || '—'}</p>
                 </div>
-                <div className="bg-white border border-slate-200 rounded-2xl p-4 hover:shadow-md transition-all">
-                  <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center mb-3">
+                <div className="bg-white border border-slate-200 rounded-lg p-4 hover:shadow-md transition-all">
+                  <div className="w-10 h-10 rounded-md bg-amber-50 flex items-center justify-center mb-3">
                     <svg className="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
                   </div>
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Alerts</p>
@@ -172,7 +172,7 @@ export default function ParentDashboard() {
               </div>
 
               {/* Tabs */}
-              <div className="flex gap-1 bg-slate-100 rounded-2xl p-1 overflow-x-auto scrollbar-none">
+              <div className="flex gap-1 bg-slate-100 rounded-lg p-1 overflow-x-auto scrollbar-none">
                 {[
                   { id:'overview', label:'Overview' },
                   { id:'grades', label:'Grades' },
@@ -181,7 +181,7 @@ export default function ParentDashboard() {
                   { id:'assignments', label:'Assignments' },
                 ].map(t => (
                   <button key={t.id} onClick={() => setActiveTab(t.id)}
-                    className={`flex-shrink-0 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
+                    className={`flex-shrink-0 px-4 py-2 rounded-md text-xs font-black uppercase tracking-widest transition-all ${
                       activeTab === t.id ? 'bg-white text-violet-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'
                     }`}>
                     {t.label}
@@ -193,12 +193,12 @@ export default function ParentDashboard() {
               {activeTab === 'overview' && (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   {/* Today's Schedule */}
-                  <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+                  <div className="bg-white border border-slate-200 rounded-lg p-6 shadow-sm">
                     <h3 className="text-sm font-black text-slate-900 uppercase tracking-tight mb-4">Today's Classes</h3>
                     {child.today_schedule?.length === 0 ? (
                       <p className="text-slate-400 text-xs py-4 text-center">No classes today</p>
                     ) : child.today_schedule?.map((s, i) => (
-                      <div key={i} className="flex gap-3 p-3 rounded-xl bg-slate-50 mb-2">
+                      <div key={i} className="flex gap-3 p-3 rounded-md bg-slate-50 mb-2">
                         <div className="text-center min-w-[52px]">
                           <p className="text-xs font-black text-violet-600">{s.start_time}</p>
                           <p className="text-[9px] text-slate-400">{s.end_time}</p>
@@ -212,7 +212,7 @@ export default function ParentDashboard() {
                   </div>
 
                   {/* Recent Attendance */}
-                  <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+                  <div className="bg-white border border-slate-200 rounded-lg p-6 shadow-sm">
                     <h3 className="text-sm font-black text-slate-900 uppercase tracking-tight mb-4">Recent Attendance</h3>
                     {child.recent_attendance?.length === 0 ? (
                       <p className="text-slate-400 text-xs py-4 text-center">No attendance records</p>
@@ -229,7 +229,7 @@ export default function ParentDashboard() {
                   </div>
 
                   {/* Recent Grades */}
-                  <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+                  <div className="bg-white border border-slate-200 rounded-lg p-6 shadow-sm">
                     <h3 className="text-sm font-black text-slate-900 uppercase tracking-tight mb-4">Recent Grades</h3>
                     {child.grades?.length === 0 ? (
                       <p className="text-slate-400 text-xs py-4 text-center">No grades yet</p>
@@ -252,13 +252,13 @@ export default function ParentDashboard() {
                   </div>
 
                   {/* Notifications */}
-                  <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+                  <div className="bg-white border border-slate-200 rounded-lg p-6 shadow-sm">
                     <h3 className="text-sm font-black text-slate-900 uppercase tracking-tight mb-4">Recent Alerts</h3>
                     {child.recent_notifications?.length === 0 ? (
                       <p className="text-slate-400 text-xs py-4 text-center">No new alerts</p>
                     ) : child.recent_notifications?.map((n, i) => (
-                      <div key={i} className="flex gap-3 p-3 rounded-xl bg-slate-50 mb-2">
-                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 text-xs ${
+                      <div key={i} className="flex gap-3 p-3 rounded-md bg-slate-50 mb-2">
+                        <div className={`w-8 h-8 rounded flex items-center justify-center flex-shrink-0 text-xs ${
                           n.type === 'grade' ? 'bg-violet-100 text-violet-600' :
                           n.type === 'attendance' ? 'bg-amber-100 text-amber-600' : 'bg-blue-100 text-blue-600'
                         }`}>
@@ -275,7 +275,7 @@ export default function ParentDashboard() {
               )}
 
               {activeTab === 'grades' && (
-                <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+                <div className="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
                   <div className="p-6 border-b border-slate-100">
                     <h3 className="text-sm font-black text-slate-900 uppercase tracking-tight">Grade Report</h3>
                     {child.general_average && (
@@ -314,7 +314,7 @@ export default function ParentDashboard() {
               )}
 
               {activeTab === 'attendance' && (
-                <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+                <div className="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
                   <div className="p-6 border-b border-slate-100 flex items-center justify-between">
                     <h3 className="text-sm font-black text-slate-900 uppercase tracking-tight">Attendance History</h3>
                     {child.attendance_rate != null && (
@@ -362,7 +362,7 @@ export default function ParentDashboard() {
                       const daySchedule = (detail?.weekly_schedule || []).filter(s => s.day === day);
                       if (daySchedule.length === 0) return null;
                       return (
-                        <div key={day} className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+                        <div key={day} className="bg-white border border-slate-200 rounded-lg overflow-hidden shadow-sm">
                           <div className="px-5 py-3 bg-slate-50 border-b border-slate-100">
                             <p className="text-xs font-black text-slate-700 uppercase tracking-widest">{DAY_FULL[day]}</p>
                           </div>
@@ -386,7 +386,7 @@ export default function ParentDashboard() {
                     })
                   )}
                   {!detailLoading && (detail?.weekly_schedule || []).length === 0 && (
-                    <div className="bg-white border border-slate-200 rounded-2xl p-10 text-center">
+                    <div className="bg-white border border-slate-200 rounded-lg p-10 text-center">
                       <p className="text-slate-400 text-sm">No schedule available yet.</p>
                     </div>
                   )}
@@ -394,7 +394,7 @@ export default function ParentDashboard() {
               )}
 
               {activeTab === 'assignments' && (
-                <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+                <div className="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
                   <div className="p-6 border-b border-slate-100">
                     <h3 className="text-sm font-black text-slate-900 uppercase tracking-tight">Assignments</h3>
                   </div>
@@ -407,7 +407,7 @@ export default function ParentDashboard() {
                         const isPast = due < new Date();
                         return (
                           <div key={i} className="flex items-center gap-4 px-5 py-4">
-                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${isPast ? 'bg-slate-100 text-slate-400' : 'bg-violet-100 text-violet-600'}`}>
+                            <div className={`w-10 h-10 rounded-md flex items-center justify-center flex-shrink-0 ${isPast ? 'bg-slate-100 text-slate-400' : 'bg-violet-100 text-violet-600'}`}>
                               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
                             </div>
                             <div className="flex-1 min-w-0">
@@ -434,7 +434,7 @@ export default function ParentDashboard() {
 
       {/* School Announcements */}
       {announcements.length > 0 && (
-        <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+        <div className="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
           <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
             <h3 className="text-sm font-black text-slate-900 uppercase tracking-tight">School Announcements</h3>
             <button onClick={() => navigate('/announcements')} className="text-[10px] font-black text-violet-600 uppercase tracking-widest hover:underline">View All</button>
@@ -442,7 +442,7 @@ export default function ParentDashboard() {
           <div className="divide-y divide-slate-50">
             {announcements.map(a => (
               <div key={a.id} className="flex gap-4 px-5 py-4 hover:bg-slate-50 transition-colors">
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-xs font-black ${a.priority === 'critical' ? 'bg-rose-100 text-rose-600' : 'bg-violet-100 text-violet-600'}`}>
+                <div className={`w-10 h-10 rounded-md flex items-center justify-center flex-shrink-0 text-xs font-black ${a.priority === 'critical' ? 'bg-rose-100 text-rose-600' : 'bg-violet-100 text-violet-600'}`}>
                   {new Date(a.created_at).getDate()}
                 </div>
                 <div className="flex-1 min-w-0">
