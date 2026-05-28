@@ -11,7 +11,7 @@ const FriendActionButton = ({ targetUser, status, onStartChat, onSendRequest, on
   if (status === 'friends') return (
     <button onClick={() => onStartChat(targetUser.id)}
       className="p-2 text-green-600 bg-green-50 rounded-lg hover:bg-green-600 hover:text-white transition-all shadow-sm active:scale-95" title="Message">
-      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.001 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
     </button>
   );
   if (status === 'sent') return (
@@ -39,41 +39,41 @@ const Messages = () => {
   const navigate = useNavigate();
 
   // ── Refs ──────────────────────────────────────────────────────────────────
-  const messagesEndRef       = useRef(null);
-  const socketRef            = useRef(null);
-  const typingTimeoutRef     = useRef(null);
-  const selectedRoomRef      = useRef(null); // always current selectedRoom for WS closures
+  const messagesEndRef = useRef(null);
+  const socketRef = useRef(null);
+  const typingTimeoutRef = useRef(null);
+  const selectedRoomRef = useRef(null); // always current selectedRoom for WS closures
 
   // ── State ─────────────────────────────────────────────────────────────────
-  const [activeTab, setActiveTab]           = useState('chats');
-  const [rooms, setRooms]                   = useState([]);
-  const [selectedRoom, setSelectedRoom]     = useState(null);
-  const [messages, setMessages]             = useState([]);
-  const [newMessage, setNewMessage]         = useState('');
-  const [loading, setLoading]               = useState(true);
+  const [activeTab, setActiveTab] = useState('chats');
+  const [rooms, setRooms] = useState([]);
+  const [selectedRoom, setSelectedRoom] = useState(null);
+  const [messages, setMessages] = useState([]);
+  const [newMessage, setNewMessage] = useState('');
+  const [loading, setLoading] = useState(true);
   const [loadingMessages, setLoadingMessages] = useState(false);
-  const [searchQuery, setSearchQuery]       = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Friendship
-  const [friends, setFriends]               = useState([]);
-  const [requests, setRequests]             = useState([]);
+  const [friends, setFriends] = useState([]);
+  const [requests, setRequests] = useState([]);
   const [allFriendships, setAllFriendships] = useState([]);
-  const [searchResults, setSearchResults]   = useState([]);
+  const [searchResults, setSearchResults] = useState([]);
   const [userSearchQuery, setUserSearchQuery] = useState('');
-  const [isSearching, setIsSearching]       = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
 
   // Group creation
   const [showGroupModal, setShowGroupModal] = useState(false);
-  const [groupName, setGroupName]           = useState('');
+  const [groupName, setGroupName] = useState('');
   const [selectedFriends, setSelectedFriends] = useState([]);
 
   // Edit / delete
   const [editingMessage, setEditingMessage] = useState(null);
-  const [editContent, setEditContent]       = useState('');
+  const [editContent, setEditContent] = useState('');
 
   // Typing
-  const lastTypingSentRef           = useRef(0);
-  const [peerTyping, setPeerTyping]         = useState(false);
+  const lastTypingSentRef = useRef(0);
+  const [peerTyping, setPeerTyping] = useState(false);
   const [peerTypingName, setPeerTypingName] = useState('');
 
   // Group settings panel state
@@ -84,17 +84,17 @@ const Messages = () => {
   const [activeMoreMenu, setActiveMoreMenu] = useState(null);
 
   const COMMON_EMOJIS = ['👍', '❤️', '😂', '😮', '😢', '😡', '🔥', '✨'];
-  const [addMemberSearch, setAddMemberSearch]     = useState('');
-  const [addMemberResults, setAddMemberResults]   = useState([]);
+  const [addMemberSearch, setAddMemberSearch] = useState('');
+  const [addMemberResults, setAddMemberResults] = useState([]);
   const [isSearchingMembers, setIsSearchingMembers] = useState(false);
-  const [newGroupName, setNewGroupName]           = useState('');
-  const [savingGroupName, setSavingGroupName]     = useState(false);
+  const [newGroupName, setNewGroupName] = useState('');
+  const [savingGroupName, setSavingGroupName] = useState(false);
 
   // Members panel (read-only, for all group members)
-  const [showMembersPanel, setShowMembersPanel]   = useState(false);
+  const [showMembersPanel, setShowMembersPanel] = useState(false);
 
   // Pinned messages panel
-  const [showPinnedPanel, setShowPinnedPanel]     = useState(false);
+  const [showPinnedPanel, setShowPinnedPanel] = useState(false);
 
   // ── Helpers ───────────────────────────────────────────────────────────────
   const scrollToBottom = () => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -108,7 +108,7 @@ const Messages = () => {
   };
 
   // ── Effects ───────────────────────────────────────────────────────────────
-  useEffect(() => { 
+  useEffect(() => {
     // Only scroll if the last message is new or if we're at the bottom
     const lastMsg = messages[messages.length - 1];
     if (lastMsg) {
@@ -152,6 +152,7 @@ const Messages = () => {
   useEffect(() => {
     if (!selectedRoom) return;
 
+    setMessages([]); // Clear previous room's messages immediately to avoid stale flash
     fetchMessages(selectedRoom.id);
     setRooms(prev => prev.map(r => r.id === selectedRoom.id ? { ...r, unread_count: 0 } : r));
 
@@ -244,7 +245,7 @@ const Messages = () => {
       const hours = Math.floor(remaining / (1000 * 60 * 60));
       const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
       const timeStr = hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
-      
+
       Swal.fire({
         title: 'Messaging Muted',
         text: remaining > 0 ? `You are currently muted. Remaining time: ${timeStr}` : 'You are currently muted.',
@@ -257,12 +258,12 @@ const Messages = () => {
 
     const content = newMessage.trim();
     setNewMessage('');
-    
+
     // Clear typing timeout and send "not typing" signal
     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
     safeSend({ type: 'typing', is_typing: false });
     lastTypingSentRef.current = 0;
-    
+
     const msgPayload = {
       type: 'message',
       message: content,
@@ -317,7 +318,7 @@ const Messages = () => {
     try {
       if (isPinned) await api.post(`/chat/rooms/${room.id}/unpin/`);
       else await api.post(`/chat/rooms/${room.id}/pin/`);
-      
+
       setRooms(prev => prev.map(r => r.id === room.id ? { ...r, is_pinned: !isPinned } : r));
       if (selectedRoom?.id === room.id) {
         setSelectedRoom(prev => ({ ...prev, is_pinned: !isPinned }));
@@ -689,17 +690,17 @@ const Messages = () => {
           setRooms(prev => prev.map(r =>
             r.id === data.room_id
               ? {
-                  ...r,
-                  last_message: msg,
-                  last_action_type: 'message',
-                  last_action_sender: msg.sender,
-                  last_action_sender_name: msg.sender_name,
-                  last_action_content: msg.content,
-                  updated_at: msg.timestamp,
-                  unread_count: (msg.sender !== user?.id && selectedRoomRef.current?.id !== data.room_id)
-                    ? (r.unread_count || 0) + 1
-                    : r.unread_count,
-                }
+                ...r,
+                last_message: msg,
+                last_action_type: 'message',
+                last_action_sender: msg.sender,
+                last_action_sender_name: msg.sender_name,
+                last_action_content: msg.content,
+                updated_at: msg.timestamp,
+                unread_count: (msg.sender !== user?.id && selectedRoomRef.current?.id !== data.room_id)
+                  ? (r.unread_count || 0) + 1
+                  : r.unread_count,
+              }
               : r
           ));
         }
@@ -853,7 +854,10 @@ const Messages = () => {
       console.error('Chat WS error', err);
       ws.close();
     };
-  }, [user?.id, selectedRoom]);
+  }, [user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+  // NOTE: selectedRoom is intentionally NOT in deps — connectWebSocket takes roomId as a
+  // parameter and must NOT be recreated on every room change, as that would break the
+  // exponential-backoff reconnect closure which captures roomId from the call site.
 
   // ── Loading screen ────────────────────────────────────────────────────────
   if (loading) return (
@@ -883,11 +887,10 @@ const Messages = () => {
           <div className="grid grid-cols-4 gap-1 mb-2 md:mb-4 bg-slate-100/50 p-1 rounded-xl shrink-0">
             {['chats', 'friends', 'requests', 'search'].map(tab => (
               <button key={tab} onClick={() => setActiveTab(tab)}
-                className={`relative py-1.5 md:py-2 rounded-lg text-[8px] md:text-[10px] font-black uppercase tracking-widest transition-all ${
-                  activeTab === tab 
-                    ? 'bg-white text-violet-600 shadow-sm' 
-                    : 'text-slate-400 hover:text-slate-600 hover:bg-white/50'
-                }`}>
+                className={`relative py-1.5 md:py-2 rounded-lg text-[8px] md:text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === tab
+                  ? 'bg-white text-violet-600 shadow-sm'
+                  : 'text-slate-400 hover:text-slate-600 hover:bg-white/50'
+                  }`}>
                 {tab}
                 {tab === 'requests' && requests.length > 0 && (
                   <span className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-3.5 h-3.5 flex items-center justify-center text-[7px] border-2 border-white animate-pulse">
@@ -919,104 +922,104 @@ const Messages = () => {
             filteredRooms.length === 0
               ? <div className="p-8 text-center"><p className="text-sm text-slate-400 font-medium">No conversations found</p></div>
               : filteredRooms.map(room => {
-                  const otherUser   = !room.is_group ? room.participants_details.find(p => p.id !== user?.id) : null;
-                  const displayName = room.is_group ? room.name : otherUser?.full_name;
-                  const initials    = displayName?.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
-                  const isSelected  = selectedRoom?.id === room.id;
-                  const memberCount = room.participants_details?.length || 0;
+                const otherUser = !room.is_group ? room.participants_details.find(p => p.id !== user?.id) : null;
+                const displayName = room.is_group ? room.name : otherUser?.full_name;
+                const initials = displayName?.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+                const isSelected = selectedRoom?.id === room.id;
+                const memberCount = room.participants_details?.length || 0;
 
-                  return (
-                    <button key={room.id} onClick={() => setSelectedRoom(room)}
-                      className={`w-full p-2 md:p-3 flex items-center gap-2 md:gap-2.5 transition-all border-b border-slate-50 min-w-0 overflow-hidden ${isSelected ? 'bg-violet-50/80 border-l-4 border-l-violet-500' : 'hover:bg-white'}`}>
+                return (
+                  <button key={room.id} onClick={() => setSelectedRoom(room)}
+                    className={`w-full p-2 md:p-3 flex items-center gap-2 md:gap-2.5 transition-all border-b border-slate-50 min-w-0 overflow-hidden ${isSelected ? 'bg-violet-50/80 border-l-4 border-l-violet-500' : 'hover:bg-white'}`}>
 
-                      {/* Avatar */}
-                      <div className="relative shrink-0">
-                        {room.is_group ? (
-                          /* Group — stacked people icon on indigo */
-                          <div className="h-8 w-8 md:h-10 md:w-10 rounded-lg md:rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-md">
-                            <svg className="w-4 h-4 md:w-5 md:h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                            </svg>
-                          </div>
-                        ) : (
-                          /* Private — profile pic or initials */
-                          <div className="h-8 w-8 md:h-10 md:w-10 rounded-lg md:rounded-xl bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center text-white font-bold text-[10px] md:text-sm shadow-md overflow-hidden">
-                            {otherUser?.profile?.profile_picture
-                              ? <img src={otherUser.profile.profile_picture} alt="" className="w-full h-full object-cover" />
-                              : initials}
-                          </div>
-                        )}
-                        {/* Pin indicator */}
-                        {room.is_pinned && (
-                          <div className="absolute -top-1 -right-1 bg-amber-500 text-white rounded-full p-0.5 border-2 border-white shadow-sm z-10">
-                            <svg className="w-2 h-2" fill="currentColor" viewBox="0 0 20 20">
-                              <path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 18V4z" />
-                            </svg>
-                          </div>
-                        )}
-                        {/* Online dot for private chats */}
-                        {!room.is_group && otherUser?.is_online && (
-                          <span className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-white ${room.is_pinned ? 'mr-0' : ''}`} />
-                        )}
-                        {/* Member count badge for groups */}
-                        {room.is_group && (
-                          <span className="absolute -bottom-1 -right-1 bg-indigo-600 text-white text-[7px] md:text-[8px] font-black rounded-full px-1 py-0.5 border border-white leading-none">
-                            {memberCount}
-                          </span>
-                        )}
-                      </div>
-
-                      {/* Text */}
-                      <div className="flex-1 text-left min-w-0">
-                        <div className="flex justify-between items-center mb-0.5">
-                          <div className="flex items-center gap-1 min-w-0">
-                            <h4 className={`text-[11px] md:text-sm truncate uppercase tracking-tight ${room.unread_count > 0 ? 'font-black text-slate-900' : 'font-black text-slate-800'}`}>{displayName}</h4>
-                            {room.is_group && (
-                              <span className="shrink-0 text-[6px] font-black bg-indigo-100 text-indigo-600 px-1 py-0.5 rounded-full uppercase tracking-widest">Grp</span>
-                            )}
-                          </div>
-                          <div className="flex items-center gap-1 shrink-0 ml-1">
-                            {room.last_message && (
-                              <span className={`text-[8px] font-bold ${room.unread_count > 0 ? 'text-violet-500' : 'text-slate-400'}`}>
-                                {new Date(room.last_message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                              </span>
-                            )}
-                            {/* Unread badge */}
-                            {room.unread_count > 0 && (
-                              <span className="bg-violet-600 text-white text-[7px] md:text-[9px] font-black rounded-full min-w-[14px] h-[14px] flex items-center justify-center px-1 leading-none shadow-sm shadow-violet-300">
-                                {room.unread_count > 99 ? '99+' : `+${room.unread_count}`}
-                              </span>
-                            )}
-                          </div>
+                    {/* Avatar */}
+                    <div className="relative shrink-0">
+                      {room.is_group ? (
+                        /* Group — stacked people icon on indigo */
+                        <div className="h-8 w-8 md:h-10 md:w-10 rounded-lg md:rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-md">
+                          <svg className="w-4 h-4 md:w-5 md:h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                          </svg>
                         </div>
-                        <p className={`text-[10px] md:text-xs truncate font-medium max-w-[120px] xs:max-w-[160px] sm:max-w-[200px] md:max-w-full ${room.unread_count > 0 ? 'text-slate-700 font-semibold' : 'text-slate-500'}`}>
-                          {(() => {
-                            const sender = room.last_action_sender === user?.id ? 'You' : (room.last_action_sender_name?.split(' ')[0] || 'Someone');
-                            
-                            if (room.last_action_type === 'reaction') {
-                              return `${sender} reacted ${room.last_action_content} to a message`;
-                            }
-                            if (room.last_action_type === 'unsend') {
-                              return `${sender} unsent a message`;
-                            }
-                            if (room.last_action_type === 'edit') {
-                              return `${sender} edited a message: ${room.last_action_content}`;
-                            }
-                            
-                            // Default message display
-                            if (room.last_message) {
-                              return room.is_group 
-                                ? `${room.last_message.sender_name?.split(' ')[0] || 'Someone'}: ${room.last_message.content}`
-                                : room.last_message.content;
-                            }
-                            
-                            return room.is_group ? `${memberCount} members` : 'No messages yet';
-                          })()}
-                        </p>
+                      ) : (
+                        /* Private — profile pic or initials */
+                        <div className="h-8 w-8 md:h-10 md:w-10 rounded-lg md:rounded-xl bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center text-white font-bold text-[10px] md:text-sm shadow-md overflow-hidden">
+                          {otherUser?.profile?.profile_picture
+                            ? <img src={otherUser.profile.profile_picture} alt="" className="w-full h-full object-cover" />
+                            : initials}
+                        </div>
+                      )}
+                      {/* Pin indicator */}
+                      {room.is_pinned && (
+                        <div className="absolute -top-1 -right-1 bg-amber-500 text-white rounded-full p-0.5 border-2 border-white shadow-sm z-10">
+                          <svg className="w-2 h-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 18V4z" />
+                          </svg>
+                        </div>
+                      )}
+                      {/* Online dot for private chats */}
+                      {!room.is_group && otherUser?.is_online && (
+                        <span className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-white ${room.is_pinned ? 'mr-0' : ''}`} />
+                      )}
+                      {/* Member count badge for groups */}
+                      {room.is_group && (
+                        <span className="absolute -bottom-1 -right-1 bg-indigo-600 text-white text-[7px] md:text-[8px] font-black rounded-full px-1 py-0.5 border border-white leading-none">
+                          {memberCount}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Text */}
+                    <div className="flex-1 text-left min-w-0">
+                      <div className="flex justify-between items-center mb-0.5">
+                        <div className="flex items-center gap-1 min-w-0">
+                          <h4 className={`text-[11px] md:text-sm truncate uppercase tracking-tight ${room.unread_count > 0 ? 'font-black text-slate-900' : 'font-black text-slate-800'}`}>{displayName}</h4>
+                          {room.is_group && (
+                            <span className="shrink-0 text-[6px] font-black bg-indigo-100 text-indigo-600 px-1 py-0.5 rounded-full uppercase tracking-widest">Grp</span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-1 shrink-0 ml-1">
+                          {room.last_message && (
+                            <span className={`text-[8px] font-bold ${room.unread_count > 0 ? 'text-violet-500' : 'text-slate-400'}`}>
+                              {new Date(room.last_message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                          )}
+                          {/* Unread badge */}
+                          {room.unread_count > 0 && (
+                            <span className="bg-violet-600 text-white text-[7px] md:text-[9px] font-black rounded-full min-w-[14px] h-[14px] flex items-center justify-center px-1 leading-none shadow-sm shadow-violet-300">
+                              {room.unread_count > 99 ? '99+' : `+${room.unread_count}`}
+                            </span>
+                          )}
+                        </div>
                       </div>
-                    </button>
-                  );
-                })
+                      <p className={`text-[10px] md:text-xs truncate font-medium max-w-[120px] xs:max-w-[160px] sm:max-w-[200px] md:max-w-full ${room.unread_count > 0 ? 'text-slate-700 font-semibold' : 'text-slate-500'}`}>
+                        {(() => {
+                          const sender = room.last_action_sender === user?.id ? 'You' : (room.last_action_sender_name?.split(' ')[0] || 'Someone');
+
+                          if (room.last_action_type === 'reaction') {
+                            return `${sender} reacted ${room.last_action_content} to a message`;
+                          }
+                          if (room.last_action_type === 'unsend') {
+                            return `${sender} unsent a message`;
+                          }
+                          if (room.last_action_type === 'edit') {
+                            return `${sender} edited a message: ${room.last_action_content}`;
+                          }
+
+                          // Default message display
+                          if (room.last_message) {
+                            return room.is_group
+                              ? `${room.last_message.sender_name?.split(' ')[0] || 'Someone'}: ${room.last_message.content}`
+                              : room.last_message.content;
+                          }
+
+                          return room.is_group ? `${memberCount} members` : 'No messages yet';
+                        })()}
+                      </p>
+                    </div>
+                  </button>
+                );
+              })
           )}
 
           {/* FRIENDS */}
@@ -1024,23 +1027,23 @@ const Messages = () => {
             friends.length === 0
               ? <div className="p-8 text-center"><p className="text-sm text-slate-400 font-medium">No friends yet</p></div>
               : friends.map(friend => (
-                  <div key={friend.id} className="p-3 md:p-4 flex items-center gap-3 md:gap-4 border-b border-slate-50 hover:bg-white transition-all group min-w-0 overflow-hidden">
-                    <div className="relative shrink-0">
-                      <div className="h-10 w-10 rounded-xl bg-slate-200 flex items-center justify-center text-slate-600 font-bold shadow-sm">
-                        {friend.first_name?.[0]}{friend.last_name?.[0]}
-                      </div>
-                      <div className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-white shadow-sm ${friend.is_online ? 'bg-green-500' : 'bg-slate-300'}`} />
+                <div key={friend.id} className="p-3 md:p-4 flex items-center gap-3 md:gap-4 border-b border-slate-50 hover:bg-white transition-all group min-w-0 overflow-hidden">
+                  <div className="relative shrink-0">
+                    <div className="h-10 w-10 rounded-xl bg-slate-200 flex items-center justify-center text-slate-600 font-bold shadow-sm">
+                      {friend.first_name?.[0]}{friend.last_name?.[0]}
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <h4 className="text-sm font-bold text-slate-800 truncate">{friend.full_name}</h4>
-                      <p className="text-[10px] text-slate-400 uppercase tracking-widest font-black truncate">{friend.role} • {friend.is_online ? 'Online' : 'Offline'}</p>
-                    </div>
-                    <button onClick={() => startPrivateChat(friend.id)}
-                      className="p-2 text-violet-600 bg-violet-50 rounded-lg hover:bg-violet-600 hover:text-white transition-all sm:opacity-0 md:group-hover:opacity-100 active:scale-95 shrink-0">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.001 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
-                    </button>
+                    <div className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-white shadow-sm ${friend.is_online ? 'bg-green-500' : 'bg-slate-300'}`} />
                   </div>
-                ))
+                  <div className="flex-1 min-w-0">
+                    <h4 className="text-sm font-bold text-slate-800 truncate">{friend.full_name}</h4>
+                    <p className="text-[10px] text-slate-400 uppercase tracking-widest font-black truncate">{friend.role} • {friend.is_online ? 'Online' : 'Offline'}</p>
+                  </div>
+                  <button onClick={() => startPrivateChat(friend.id)}
+                    className="p-2 text-violet-600 bg-violet-50 rounded-lg hover:bg-violet-600 hover:text-white transition-all sm:opacity-0 md:group-hover:opacity-100 active:scale-95 shrink-0">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.001 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
+                  </button>
+                </div>
+              ))
           )}
 
           {/* REQUESTS */}
@@ -1048,23 +1051,23 @@ const Messages = () => {
             requests.length === 0
               ? <div className="p-8 text-center"><p className="text-sm text-slate-400 font-medium">No pending requests</p></div>
               : requests.map(req => (
-                  <div key={req.id} className="p-3 md:p-4 border-b border-slate-50 bg-violet-50/30 min-w-0">
-                    <div className="flex items-center gap-3 mb-3 min-w-0">
-                      <div className="h-10 w-10 rounded-xl bg-violet-200 flex items-center justify-center text-violet-700 font-bold shadow-sm shrink-0">
-                        {req.from_user_details.first_name?.[0]}{req.from_user_details.last_name?.[0]}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h4 className="text-sm font-bold text-slate-800 truncate">{req.from_user_details.full_name}</h4>
-                        <p className="text-[9px] text-slate-400 uppercase tracking-widest font-black truncate">{req.from_user_details.role}</p>
-                      </div>
+                <div key={req.id} className="p-3 md:p-4 border-b border-slate-50 bg-violet-50/30 min-w-0">
+                  <div className="flex items-center gap-3 mb-3 min-w-0">
+                    <div className="h-10 w-10 rounded-xl bg-violet-200 flex items-center justify-center text-violet-700 font-bold shadow-sm shrink-0">
+                      {req.from_user_details.first_name?.[0]}{req.from_user_details.last_name?.[0]}
                     </div>
-                    <div className="flex gap-2">
-                      <button onClick={() => handleAcceptRequest(req.id)}
-                        className="flex-1 py-1.5 bg-violet-600 text-white rounded-lg text-xs font-bold hover:bg-violet-700 transition-all shadow-md shadow-violet-200">Accept</button>
-                      <button className="flex-1 py-1.5 bg-white text-slate-600 border border-slate-200 rounded-lg text-xs font-bold hover:bg-slate-50 transition-all">Ignore</button>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="text-sm font-bold text-slate-800 truncate">{req.from_user_details.full_name}</h4>
+                      <p className="text-[9px] text-slate-400 uppercase tracking-widest font-black truncate">{req.from_user_details.role}</p>
                     </div>
                   </div>
-                ))
+                  <div className="flex gap-2">
+                    <button onClick={() => handleAcceptRequest(req.id)}
+                      className="flex-1 py-1.5 bg-violet-600 text-white rounded-lg text-xs font-bold hover:bg-violet-700 transition-all shadow-md shadow-violet-200">Accept</button>
+                    <button className="flex-1 py-1.5 bg-white text-slate-600 border border-slate-200 rounded-lg text-xs font-bold hover:bg-slate-50 transition-all">Ignore</button>
+                  </div>
+                </div>
+              ))
           )}
 
           {/* SEARCH */}
@@ -1154,12 +1157,11 @@ const Messages = () => {
                     <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
-                  ) : (() => {
-                    const other = selectedRoom.participants_details.find(p => p.id !== user?.id);
-                    return other?.profile?.profile_picture
-                      ? <img src={other.profile.profile_picture} alt="" className="w-full h-full object-cover" />
-                      : other?.full_name?.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
-                  })()}
+                  ) : selectedRoom.participants_details.find(p => p.id !== user?.id)?.profile?.profile_picture ? (
+                    <img src={selectedRoom.participants_details.find(p => p.id !== user?.id).profile.profile_picture} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    selectedRoom.participants_details.find(p => p.id !== user?.id)?.full_name?.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2)
+                  )}
                 </div>
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
@@ -1247,12 +1249,11 @@ const Messages = () => {
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
-                  ) : (() => {
-                    const other = selectedRoom.participants_details.find(p => p.id !== user?.id);
-                    return other?.profile?.profile_picture
-                      ? <img src={other.profile.profile_picture} alt="" className="w-full h-full object-cover" />
-                      : other?.full_name?.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
-                  })()}
+                  ) : selectedRoom.participants_details.find(p => p.id !== user?.id)?.profile?.profile_picture ? (
+                    <img src={selectedRoom.participants_details.find(p => p.id !== user?.id).profile.profile_picture} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    selectedRoom.participants_details.find(p => p.id !== user?.id)?.full_name?.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2)
+                  )}
                 </div>
                 <div className="min-w-0">
                   <h3 className="text-sm font-bold text-slate-900 truncate leading-tight">
@@ -1307,169 +1308,215 @@ const Messages = () => {
                 </div>
               ) : (
                 messages.map((msg, i) => {
-                  const isMine    = msg.sender === user?.id;
+                  const isMine = msg.sender === user?.id;
                   const showAvatar = i === 0 || messages[i - 1].sender !== msg.sender;
-                  const isEditing  = editingMessage?.id === msg.id;
+                  const isEditing = editingMessage?.id === msg.id;
+
+                  // ── Date Separator Logic ───────────────────────────────────
+                  const showDateSeparator = (() => {
+                    if (i === 0) return true;
+                    const prevMsg = messages[i - 1];
+                    const currDate = new Date(msg.timestamp);
+                    const prevDate = new Date(prevMsg.timestamp);
+
+                    // Show if different day
+                    if (currDate.toDateString() !== prevDate.toDateString()) return true;
+
+                    // Show if gap > 1 hour
+                    const diff = currDate - prevDate;
+                    if (diff > 1000 * 60 * 60) return true;
+
+                    return false;
+                  })();
+
+                  const formatSeparatorDate = (timestamp) => {
+                    const date = new Date(timestamp);
+                    const now = new Date();
+                    const isToday = date.toDateString() === now.toDateString();
+
+                    const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+                    if (isToday) return timeStr;
+
+                    const yesterday = new Date();
+                    yesterday.setDate(now.getDate() - 1);
+                    if (date.toDateString() === yesterday.toDateString()) return `Yesterday ${timeStr}`;
+
+                    // Within a week
+                    const oneWeekAgo = new Date();
+                    oneWeekAgo.setDate(now.getDate() - 7);
+                    if (date > oneWeekAgo) {
+                      return date.toLocaleDateString([], { weekday: 'short' }) + ' ' + timeStr;
+                    }
+
+                    return date.toLocaleDateString([], { month: 'short', day: 'numeric' }) + ' ' + timeStr;
+                  };
 
                   return (
-                    <div key={msg.id} className={`flex ${isMine ? 'justify-end' : 'justify-start'} items-end gap-2 group overflow-visible`}>
-                      {/* Avatar for other person */}
-                      {!isMine && (
-                        <div className={`w-7 h-7 rounded-lg shrink-0 flex items-center justify-center text-[10px] font-bold text-white shadow-sm overflow-hidden ${showAvatar ? 'bg-gradient-to-br from-slate-400 to-slate-600' : 'opacity-0'}`}>
-                          {showAvatar && (msg.sender_profile_picture
-                            ? <img src={msg.sender_profile_picture} alt="" className="w-full h-full object-cover" />
-                            : msg.sender_name?.charAt(0).toUpperCase())}
+                    <div key={msg.id}>
+                      {showDateSeparator && (
+                        <div className="flex justify-center my-6 md:my-8">
+                          <div className="px-4 py-1.5 bg-slate-100/50 backdrop-blur-sm border border-slate-200/50 rounded-full text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] shadow-sm">
+                            {formatSeparatorDate(msg.timestamp)}
+                          </div>
                         </div>
                       )}
-
-                      <div className="max-w-[82%] md:max-w-[58%] flex flex-col min-w-0">
-                        {/* Sender name for group chats */}
-                        {!isMine && showAvatar && selectedRoom.is_group && (
-                          <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-1 mb-0.5">{msg.sender_name}</span>
+                      <div className={`flex ${isMine ? 'justify-end' : 'justify-start'} items-end gap-2 group overflow-visible`}>
+                        {/* Avatar for other person */}
+                        {!isMine && (
+                          <div className={`w-7 h-7 rounded-lg shrink-0 flex items-center justify-center text-[10px] font-bold text-white shadow-sm overflow-hidden ${showAvatar ? 'bg-gradient-to-br from-slate-400 to-slate-600' : 'opacity-0'}`}>
+                            {showAvatar && (msg.sender_profile_picture
+                              ? <img src={msg.sender_profile_picture} alt="" className="w-full h-full object-cover" />
+                              : msg.sender_name?.charAt(0).toUpperCase())}
+                          </div>
                         )}
 
-                        {/* Edit mode */}
-                        {isEditing ? (
-                          <div className="flex flex-col gap-2">
-                            <input
-                              autoFocus
-                              value={editContent}
-                              onChange={e => setEditContent(e.target.value)}
-                              onKeyDown={e => {
-                                if (e.key === 'Enter') handleEditMessage(msg.id);
-                                if (e.key === 'Escape') { setEditingMessage(null); setEditContent(''); }
-                              }}
-                              className="px-3 py-2 rounded-xl border border-violet-300 text-base md:text-sm outline-none focus:ring-2 focus:ring-violet-400 bg-white"
-                            />
-                            <div className="flex gap-2 justify-end">
-                              <button onClick={() => { setEditingMessage(null); setEditContent(''); }}
-                                className="px-2.5 py-1 text-[10px] md:text-xs font-bold text-slate-500 bg-slate-100 rounded-lg hover:bg-slate-200 transition-all">
-                                Cancel
-                              </button>
-                              <button onClick={() => handleEditMessage(msg.id)}
-                                className="px-2.5 py-1 text-[10px] md:text-xs font-bold text-white bg-violet-600 rounded-lg hover:bg-violet-700 transition-all">
-                                Save
-                              </button>
+                        <div className="max-w-[82%] md:max-w-[58%] flex flex-col min-w-0">
+                          {/* Sender name for group chats */}
+                          {!isMine && showAvatar && selectedRoom.is_group && (
+                            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-1 mb-0.5">{msg.sender_name}</span>
+                          )}
+
+                          {/* Edit mode */}
+                          {isEditing ? (
+                            <div className="flex flex-col gap-2">
+                              <input
+                                autoFocus
+                                value={editContent}
+                                onChange={e => setEditContent(e.target.value)}
+                                onKeyDown={e => {
+                                  if (e.key === 'Enter') handleEditMessage(msg.id);
+                                  if (e.key === 'Escape') { setEditingMessage(null); setEditContent(''); }
+                                }}
+                                className="px-3 py-2 rounded-xl border border-violet-300 text-base md:text-sm outline-none focus:ring-2 focus:ring-violet-400 bg-white"
+                              />
+                              <div className="flex gap-2 justify-end">
+                                <button onClick={() => { setEditingMessage(null); setEditContent(''); }}
+                                  className="px-2.5 py-1 text-[10px] md:text-xs font-bold text-slate-500 bg-slate-100 rounded-lg hover:bg-slate-200 transition-all">
+                                  Cancel
+                                </button>
+                                <button onClick={() => handleEditMessage(msg.id)}
+                                  className="px-2.5 py-1 text-[10px] md:text-xs font-bold text-white bg-violet-600 rounded-lg hover:bg-violet-700 transition-all">
+                                  Save
+                                </button>
+                              </div>
                             </div>
-                          </div>
-                        ) : (
-                          <div className="relative">
-                            {/* Reply quote — attached to top of bubble, no gap */}
-                            {msg.parent_message_details && (
-                              <button
-                                onClick={() => scrollToMessage(msg.parent_message_details.id)}
-                                className={`w-full flex ${isMine ? 'justify-end' : 'justify-start'} active:opacity-70 transition-opacity`}>
-                                <div className={`max-w-full px-3 py-1.5 text-[10px] rounded-t-xl rounded-b-none border-l-2 truncate hover:opacity-80 transition-opacity ${
-                                  isMine
+                          ) : (
+                            <div className="relative">
+                              {/* Reply quote — attached to top of bubble, no gap */}
+                              {msg.parent_message_details && (
+                                <button
+                                  onClick={() => scrollToMessage(msg.parent_message_details.id)}
+                                  className={`w-full flex ${isMine ? 'justify-end' : 'justify-start'} active:opacity-70 transition-opacity`}>
+                                  <div className={`max-w-full px-3 py-1.5 text-[10px] rounded-t-xl rounded-b-none border-l-2 truncate hover:opacity-80 transition-opacity ${isMine
                                     ? 'bg-violet-700/40 text-violet-100 border-violet-300/60'
                                     : 'bg-slate-100 text-slate-500 border-slate-300'
-                                }`}>
-                                  <span className="font-bold">↩ {msg.parent_message_details.sender_name}:</span>{' '}
-                                  <span className="opacity-80">{msg.parent_message_details.content}</span>
-                                </div>
-                              </button>
-                            )}
-
-                            {/* Hover/Tap actions — desktop only (hover), mobile uses tap on bubble */}
-                            <div className={`absolute top-1/2 -translate-y-1/2 flex items-center gap-0.5 ${isMine ? '-left-[72px]' : '-right-[72px]'} transition-all z-20 opacity-0 invisible md:group-hover:opacity-100 md:group-hover:visible`}>
-                              {/* React Button */}
-                              <button
-                                onClick={() => setShowReactionPicker(showReactionPicker === msg.id ? null : msg.id)}
-                                className="p-1.5 bg-white border border-slate-200 rounded-lg text-slate-400 hover:text-amber-500 hover:border-amber-200 shadow-sm transition-all no-min"
-                                title="React">
-                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                              </button>
-
-                              {/* Reply Button */}
-                              <button
-                                onClick={() => setReplyingTo(msg)}
-                                className="p-1.5 bg-white border border-slate-200 rounded-lg text-slate-400 hover:text-blue-500 hover:border-blue-200 shadow-sm transition-all no-min"
-                                title="Reply">
-                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
-                                </svg>
-                              </button>
-
-                              {/* More Button */}
-                              <button
-                                onClick={() => setActiveMoreMenu(activeMoreMenu === msg.id ? null : msg.id)}
-                                className={`p-1.5 bg-white border rounded-lg shadow-sm transition-all no-min ${activeMoreMenu === msg.id ? 'text-violet-600 border-violet-200 bg-violet-50' : 'text-slate-400 border-slate-200 hover:text-violet-600 hover:border-violet-200'}`}
-                                title="More">
-                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z" />
-                                </svg>
-                              </button>
-                            </div>
-
-                            {/* Bubble */}
-                            <div
-                              id={`msg-${msg.id}`}
-                              onClick={() => {
-                                if (window.innerWidth < 768) {
-                                  setActiveMoreMenu(activeMoreMenu === msg.id ? null : msg.id);
-                                }
-                              }}
-                              className={`px-3 py-2 md:px-4 md:py-2.5 text-sm font-medium shadow-sm relative transition-all duration-200 break-words whitespace-pre-wrap max-w-full select-none md:select-text cursor-pointer md:cursor-default ${
-                                msg.parent_message_details ? 'rounded-b-2xl rounded-t-none' : 'rounded-2xl'
-                              } ${
-                                isMine
-                                  ? `bg-violet-600 text-white ${msg.parent_message_details ? '' : 'rounded-br-none'}`
-                                  : `bg-white text-slate-700 border border-slate-100 ${msg.parent_message_details ? '' : 'rounded-bl-none'}`
-                              } ${msg.is_pinned ? 'ring-2 ring-amber-400 ring-offset-1' : ''}`}>
-                              {msg.is_pinned && (
-                                <span className="block text-[8px] md:text-[9px] font-black uppercase tracking-widest mb-1 opacity-60">📌 Pinned</span>
-                              )}
-                              {msg.content}
-                              {msg.is_edited && (
-                                <span className="ml-1.5 text-[9px] md:text-[10px] opacity-60 italic">edited</span>
+                                    }`}>
+                                    <span className="font-bold">↩ {msg.parent_message_details.sender_name}:</span>{' '}
+                                    <span className="opacity-80">{msg.parent_message_details.content}</span>
+                                  </div>
+                                </button>
                               )}
 
-                              {/* Reactions display */}
-                              {msg.reactions && Object.keys(msg.reactions).length > 0 && (
-                                <div className={`absolute -bottom-2.5 ${isMine ? '-right-1' : '-left-1'} flex items-center gap-0.5 bg-white border border-slate-100 rounded-full px-1.5 py-0.5 shadow-sm z-10 animate-in zoom-in duration-200`}>
-                                  {Object.entries(msg.reactions).map(([emoji, users]) => (
-                                    <span key={emoji} className="text-[10px] md:text-xs cursor-default flex items-center gap-0.5" title={users.map(u => u.user_name).join(', ')}>
-                                      {emoji} 
-                                      {users.length > 1 && (
-                                        <span className="text-[8px] md:text-[9px] font-black text-slate-400">{users.length}</span>
-                                      )}
-                                    </span>
-                                  ))}
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        )}
+                              {/* Hover/Tap actions — desktop only (hover), mobile uses tap on bubble */}
+                              <div className={`absolute top-1/2 -translate-y-1/2 flex items-center gap-0.5 ${isMine ? '-left-[72px]' : '-right-[72px]'} transition-all z-20 opacity-0 invisible md:group-hover:opacity-100 md:group-hover:visible`}>
+                                {/* React Button */}
+                                <button
+                                  onClick={() => setShowReactionPicker(showReactionPicker === msg.id ? null : msg.id)}
+                                  className="p-1.5 bg-white border border-slate-200 rounded-lg text-slate-400 hover:text-amber-500 hover:border-amber-200 shadow-sm transition-all no-min"
+                                  title="React">
+                                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                  </svg>
+                                </button>
 
-                        {/* Timestamp + receipt */}
-                        {!isEditing && (
-                          <div className={`flex items-center gap-1 mt-0.5 ${isMine ? 'justify-end' : 'justify-start'}`}>
-                            <span className="text-[8px] md:text-[9px] font-bold text-slate-400 uppercase tracking-tighter">
-                              {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                            </span>
-                            {isMine && (
-                              <span title={msg.is_read ? 'Read' : msg.is_delivered ? 'Delivered' : 'Sent'}>
-                                {msg.is_read ? (
-                                  <svg className="w-3 md:w-3.5 h-3 md:h-3.5 text-blue-400" viewBox="0 0 16 11" fill="currentColor">
-                                    <path d="M11.071.653a.75.75 0 0 1 .025 1.06l-6.5 7a.75.75 0 0 1-1.085 0l-3-3.5a.75.75 0 1 1 1.138-.976L4.5 7.06l5.965-6.382a.75.75 0 0 1 1.06-.025z"/>
-                                    <path d="M14.571.653a.75.75 0 0 1 .025 1.06l-6.5 7a.75.75 0 0 1-1.085 0l-.5-.583a.75.75 0 1 1 1.138-.976l.007.008 5.855-6.484a.75.75 0 0 1 1.06-.025z"/>
+                                {/* Reply Button */}
+                                <button
+                                  onClick={() => setReplyingTo(msg)}
+                                  className="p-1.5 bg-white border border-slate-200 rounded-lg text-slate-400 hover:text-blue-500 hover:border-blue-200 shadow-sm transition-all no-min"
+                                  title="Reply">
+                                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
                                   </svg>
-                                ) : msg.is_delivered ? (
-                                  <svg className="w-3 md:w-3.5 h-3 md:h-3.5 text-slate-400" viewBox="0 0 16 11" fill="currentColor">
-                                    <path d="M11.071.653a.75.75 0 0 1 .025 1.06l-6.5 7a.75.75 0 0 1-1.085 0l-3-3.5a.75.75 0 1 1 1.138-.976L4.5 7.06l5.965-6.382a.75.75 0 0 1 1.06-.025z"/>
-                                    <path d="M14.571.653a.75.75 0 0 1 .025 1.06l-6.5 7a.75.75 0 0 1-1.085 0l-.5-.583a.75.75 0 1 1 1.138-.976l.007.008 5.855-6.484a.75.75 0 0 1 1.06-.025z"/>
+                                </button>
+
+                                {/* More Button */}
+                                <button
+                                  onClick={() => setActiveMoreMenu(activeMoreMenu === msg.id ? null : msg.id)}
+                                  className={`p-1.5 bg-white border rounded-lg shadow-sm transition-all no-min ${activeMoreMenu === msg.id ? 'text-violet-600 border-violet-200 bg-violet-50' : 'text-slate-400 border-slate-200 hover:text-violet-600 hover:border-violet-200'}`}
+                                  title="More">
+                                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z" />
                                   </svg>
-                                ) : (
-                                  <svg className="w-2.5 md:w-3 h-2.5 md:h-3 text-slate-400" viewBox="0 0 12 11" fill="currentColor">
-                                    <path d="M11.071.653a.75.75 0 0 1 .025 1.06l-6.5 7a.75.75 0 0 1-1.085 0l-3-3.5a.75.75 0 1 1 1.138-.976L4.5 7.06l5.965-6.382a.75.75 0 0 1 1.06-.025z"/>
-                                  </svg>
+                                </button>
+                              </div>
+
+                              {/* Bubble */}
+                              <div
+                                id={`msg-${msg.id}`}
+                                onClick={() => {
+                                  if (window.innerWidth < 768) {
+                                    setActiveMoreMenu(activeMoreMenu === msg.id ? null : msg.id);
+                                  }
+                                }}
+                                className={`px-3 py-2 md:px-4 md:py-2.5 text-sm font-medium shadow-sm relative transition-all duration-200 break-words whitespace-pre-wrap max-w-full select-none md:select-text cursor-pointer md:cursor-default ${msg.parent_message_details ? 'rounded-b-2xl rounded-t-none' : 'rounded-2xl'
+                                  } ${isMine
+                                    ? `bg-violet-600 text-white ${msg.parent_message_details ? '' : 'rounded-br-none'}`
+                                    : `bg-white text-slate-700 border border-slate-100 ${msg.parent_message_details ? '' : 'rounded-bl-none'}`
+                                  } ${msg.is_pinned ? 'ring-2 ring-amber-400 ring-offset-1' : ''}`}>
+                                {msg.is_pinned && (
+                                  <span className="block text-[8px] md:text-[9px] font-black uppercase tracking-widest mb-1 opacity-60">📌 Pinned</span>
                                 )}
+                                {msg.content}
+                                {msg.is_edited && (
+                                  <span className="ml-1.5 text-[9px] md:text-[10px] opacity-60 italic">edited</span>
+                                )}
+
+                                {/* Reactions display */}
+                                {msg.reactions && Object.keys(msg.reactions).length > 0 && (
+                                  <div className={`absolute -bottom-2.5 ${isMine ? '-right-1' : '-left-1'} flex items-center gap-0.5 bg-white border border-slate-100 rounded-full px-1.5 py-0.5 shadow-sm z-10 animate-in zoom-in duration-200`}>
+                                    {Object.entries(msg.reactions).map(([emoji, users]) => (
+                                      <span key={emoji} className="text-[10px] md:text-xs cursor-default flex items-center gap-0.5" title={users.map(u => u.user_name).join(', ')}>
+                                        {emoji}
+                                        {users.length > 1 && (
+                                          <span className="text-[8px] md:text-[9px] font-black text-slate-400">{users.length}</span>
+                                        )}
+                                      </span>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Timestamp + receipt */}
+                          {!isEditing && (
+                            <div className={`flex items-center gap-1 mt-0.5 ${isMine ? 'justify-end' : 'justify-start'}`}>
+                              <span className="text-[8px] md:text-[9px] font-bold text-slate-400 uppercase tracking-tighter">
+                                {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                               </span>
-                            )}
-                          </div>
-                        )}
+                              {isMine && (
+                                <span title={msg.is_read ? 'Read' : msg.is_delivered ? 'Delivered' : 'Sent'}>
+                                  {msg.is_read ? (
+                                    <svg className="w-3 md:w-3.5 h-3 md:h-3.5 text-blue-400" viewBox="0 0 16 11" fill="currentColor">
+                                      <path d="M11.071.653a.75.75 0 0 1 .025 1.06l-6.5 7a.75.75 0 0 1-1.085 0l-3-3.5a.75.75 0 1 1 1.138-.976L4.5 7.06l5.965-6.382a.75.75 0 0 1 1.06-.025z" />
+                                      <path d="M14.571.653a.75.75 0 0 1 .025 1.06l-6.5 7a.75.75 0 0 1-1.085 0l-.5-.583a.75.75 0 1 1 1.138-.976l.007.008 5.855-6.484a.75.75 0 0 1 1.06-.025z" />
+                                    </svg>
+                                  ) : msg.is_delivered ? (
+                                    <svg className="w-3 md:w-3.5 h-3 md:h-3.5 text-slate-400" viewBox="0 0 16 11" fill="currentColor">
+                                      <path d="M11.071.653a.75.75 0 0 1 .025 1.06l-6.5 7a.75.75 0 0 1-1.085 0l-3-3.5a.75.75 0 1 1 1.138-.976L4.5 7.06l5.965-6.382a.75.75 0 0 1 1.06-.025z" />
+                                      <path d="M14.571.653a.75.75 0 0 1 .025 1.06l-6.5 7a.75.75 0 0 1-1.085 0l-.5-.583a.75.75 0 1 1 1.138-.976l.007.008 5.855-6.484a.75.75 0 0 1 1.06-.025z" />
+                                    </svg>
+                                  ) : (
+                                    <svg className="w-2.5 md:w-3 h-2.5 md:h-3 text-slate-400" viewBox="0 0 12 11" fill="currentColor">
+                                      <path d="M11.071.653a.75.75 0 0 1 .025 1.06l-6.5 7a.75.75 0 0 1-1.085 0l-3-3.5a.75.75 0 1 1 1.138-.976L4.5 7.06l5.965-6.382a.75.75 0 0 1 1.06-.025z" />
+                                    </svg>
+                                  )}
+                                </span>
+                              )}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
                   );
@@ -1728,7 +1775,7 @@ const Messages = () => {
           <div className="flex-1 flex flex-col items-center justify-center text-center p-8 bg-slate-50/30">
             <div className="w-20 h-20 md:w-24 md:h-24 bg-white rounded-3xl shadow-xl flex items-center justify-center text-violet-500 mb-5">
               <svg className="w-10 h-10 md:w-12 md:h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.001 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
               </svg>
             </div>
             <h3 className="text-xl md:text-2xl font-black text-slate-800 tracking-tight mb-2">Your Inbox</h3>
@@ -2019,27 +2066,27 @@ const Messages = () => {
                   {friends.length === 0
                     ? <p className="text-xs text-slate-400 py-4 text-center">Add friends first to create groups</p>
                     : friends.map(friend => (
-                        <label key={friend.id}
-                          className={`flex items-center gap-2 md:gap-3 p-2 md:p-3 rounded-xl border cursor-pointer transition-all min-w-0 ${selectedFriends.includes(friend.id) ? 'bg-violet-50 border-violet-200 shadow-sm' : 'border-slate-100 hover:bg-slate-50'}`}>
-                          <input type="checkbox" className="hidden"
-                            checked={selectedFriends.includes(friend.id)}
-                            onChange={() => setSelectedFriends(prev =>
-                              prev.includes(friend.id) ? prev.filter(id => id !== friend.id) : [...prev, friend.id]
-                            )} />
-                          <div className={`h-8 w-8 rounded-lg flex items-center justify-center text-xs font-bold shrink-0 ${selectedFriends.includes(friend.id) ? 'bg-violet-600 text-white' : 'bg-slate-200 text-slate-500'}`}>
-                            {friend.first_name?.[0]}{friend.last_name?.[0]}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-bold text-slate-700 truncate">{friend.full_name}</p>
-                            <p className="text-[9px] text-slate-400 font-black uppercase tracking-widest truncate">{friend.role}</p>
-                          </div>
-                          {selectedFriends.includes(friend.id) && (
-                            <svg className="w-5 h-5 text-violet-600 shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                            </svg>
-                          )}
-                        </label>
-                      ))
+                      <label key={friend.id}
+                        className={`flex items-center gap-2 md:gap-3 p-2 md:p-3 rounded-xl border cursor-pointer transition-all min-w-0 ${selectedFriends.includes(friend.id) ? 'bg-violet-50 border-violet-200 shadow-sm' : 'border-slate-100 hover:bg-slate-50'}`}>
+                        <input type="checkbox" className="hidden"
+                          checked={selectedFriends.includes(friend.id)}
+                          onChange={() => setSelectedFriends(prev =>
+                            prev.includes(friend.id) ? prev.filter(id => id !== friend.id) : [...prev, friend.id]
+                          )} />
+                        <div className={`h-8 w-8 rounded-lg flex items-center justify-center text-xs font-bold shrink-0 ${selectedFriends.includes(friend.id) ? 'bg-violet-600 text-white' : 'bg-slate-200 text-slate-500'}`}>
+                          {friend.first_name?.[0]}{friend.last_name?.[0]}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-bold text-slate-700 truncate">{friend.full_name}</p>
+                          <p className="text-[9px] text-slate-400 font-black uppercase tracking-widest truncate">{friend.role}</p>
+                        </div>
+                        {selectedFriends.includes(friend.id) && (
+                          <svg className="w-5 h-5 text-violet-600 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                          </svg>
+                        )}
+                      </label>
+                    ))
                   }
                 </div>
               </div>

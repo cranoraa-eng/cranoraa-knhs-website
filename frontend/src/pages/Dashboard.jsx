@@ -1056,16 +1056,13 @@ const StudentView = () => {
 
   if (loading) return <Spinner />;
 
-  const thisMonth = getLocalDateStr().slice(0, 7);
-  const monthAtt = Array.isArray(attendance) ? attendance.filter(r => {
-    return r.date?.startsWith(thisMonth) && !isWeekend(r.date);
-  }) : [];
+  const validAtt = Array.isArray(attendance) ? attendance.filter(r => !isWeekend(r.date)) : [];
   
-  const presentCount = monthAtt.filter(r => r.status === 'present').length;
-  const lateCount = monthAtt.filter(r => r.status === 'late').length;
-  const absentCount = monthAtt.filter(r => r.status === 'absent').length;
-  const totalPresentForRate = monthAtt.filter(r => ['present', 'late'].includes(r.status)).length;
-  const attRate = monthAtt.length > 0 ? Math.round((totalPresentForRate / monthAtt.length) * 100) : 0;
+  const presentCount = validAtt.filter(r => r.status === 'present').length;
+  const lateCount = validAtt.filter(r => r.status === 'late').length;
+  const absentCount = validAtt.filter(r => r.status === 'absent').length;
+  const totalPresentForRate = validAtt.filter(r => ['present', 'late'].includes(r.status)).length;
+  const attRate = validAtt.length > 0 ? Math.round((totalPresentForRate / validAtt.length) * 100) : 0;
 
   // Streak Calculation — skips weekends, stops at first absent weekday
   const { streak, hasData: hasAttData } = computeStreak(attendance);
@@ -1108,7 +1105,7 @@ const StudentView = () => {
 
   const statusChips = [
     { label: 'Grade Level', value: user?.profile?.grade_level || 'N/A', color: 'violet' },
-    { label: 'Attendance', value: monthAtt.length > 0 ? `${attRate}%` : '—', color: 'emerald' },
+    { label: 'Attendance', value: validAtt.length > 0 ? `${attRate}%` : '—', color: 'emerald' },
     { label: 'Avg Grade', value: overallAvg || '—', color: 'indigo' },
     { label: 'Today', value: todayStatusLabel, color: todayStatusColor },
   ];
@@ -1215,12 +1212,12 @@ const StudentView = () => {
                   </div>
                   <div>
                     <h3 className="text-[10px] md:text-xs font-black text-slate-900 tracking-tight">Attendance</h3>
-                    <p className="text-[7px] md:text-[9px] font-semibold text-slate-400 uppercase tracking-widest mt-0.5 hidden md:block">Monthly streak tracker</p>
+                    <p className="text-[7px] md:text-[9px] font-semibold text-slate-400 uppercase tracking-widest mt-0.5 hidden md:block">Overall streak tracker</p>
                   </div>
                 </div>
                 <div className="flex flex-col items-end">
                   <span className="text-lg md:text-lg font-black text-emerald-600 leading-none">{attRate}%</span>
-                  <span className="text-[7px] md:text-[8px] font-semibold text-slate-400 uppercase tracking-widest mt-0.5">Monthly</span>
+                  <span className="text-[7px] md:text-[8px] font-semibold text-slate-400 uppercase tracking-widest mt-0.5">Overall</span>
                 </div>
               </div>
 
