@@ -15,7 +15,7 @@ const AttBadge = ({ status }) => {
     excused: 'bg-blue-100 text-blue-700',
   };
   return (
-    <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest ${cfg[status] || 'bg-slate-100 text-slate-500'}`}>
+    <span className={`px-2 py-0.5 rounded-full text-xs font-black uppercase tracking-widest ${cfg[status] || 'bg-slate-100 text-slate-500'}`}>
       {status}
     </span>
   );
@@ -126,7 +126,7 @@ export default function ParentDashboard() {
                   </div>
                   <div className="text-left">
                     <p className="text-xs font-black leading-none">{c.first_name} {c.last_name}</p>
-                    <p className={`text-[9px] font-bold mt-0.5 ${selectedChild?.id === c.id ? 'text-violet-200' : 'text-slate-400'}`}>{c.grade_level || 'Student'}</p>
+                    <p className={`text-xs font-bold mt-0.5 ${selectedChild?.id === c.id ? 'text-violet-200' : 'text-slate-400'}`}>{c.grade_level || 'Student'}</p>
                   </div>
                 </button>
               ))}
@@ -141,33 +141,33 @@ export default function ParentDashboard() {
                   <div className="w-10 h-10 rounded-md bg-emerald-50 flex items-center justify-center mb-3">
                     <svg className="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 8l2 2 4-4" /></svg>
                   </div>
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Attendance</p>
+                  <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Attendance</p>
                   <p className="text-2xl font-black text-slate-900 mt-1">{child.attendance_rate != null ? `${child.attendance_rate}%` : '—'}</p>
-                  <p className="text-[10px] text-slate-400 mt-0.5">{child.attendance_present}/{child.attendance_total} days this month</p>
+                  <p className="text-xs text-slate-400 mt-0.5">{child.attendance_present}/{child.attendance_total} days this month</p>
                 </div>
                 <div className="bg-white border border-slate-200 rounded-lg p-4 hover:shadow-md transition-all">
                   <div className="w-10 h-10 rounded-md bg-violet-50 flex items-center justify-center mb-3">
                     <svg className="w-5 h-5 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
                   </div>
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">General Average</p>
+                  <p className="text-xs font-black text-slate-400 uppercase tracking-widest">General Average</p>
                   <p className="text-2xl font-black text-slate-900 mt-1">{child.general_average ?? '—'}</p>
-                  <p className="text-[10px] text-slate-400 mt-0.5">{child.grades?.length || 0} subjects graded</p>
+                  <p className="text-xs text-slate-400 mt-0.5">{child.grades?.length || 0} subjects graded</p>
                 </div>
                 <div className="bg-white border border-slate-200 rounded-lg p-4 hover:shadow-md transition-all">
                   <div className="w-10 h-10 rounded-md bg-blue-50 flex items-center justify-center mb-3">
                     <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
                   </div>
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Classroom</p>
+                  <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Classroom</p>
                   <p className="text-sm font-black text-slate-900 mt-1 truncate">{child.classroom_name || '—'}</p>
-                  <p className="text-[10px] text-slate-400 mt-0.5 truncate">Adviser: {child.adviser_name || '—'}</p>
+                  <p className="text-xs text-slate-400 mt-0.5 truncate">Adviser: {child.adviser_name || '—'}</p>
                 </div>
                 <div className="bg-white border border-slate-200 rounded-lg p-4 hover:shadow-md transition-all">
                   <div className="w-10 h-10 rounded-md bg-amber-50 flex items-center justify-center mb-3">
                     <svg className="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
                   </div>
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Alerts</p>
+                  <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Alerts</p>
                   <p className="text-2xl font-black text-slate-900 mt-1">{child.recent_notifications?.length || 0}</p>
-                  <p className="text-[10px] text-slate-400 mt-0.5">Unread notices</p>
+                  <p className="text-xs text-slate-400 mt-0.5">Unread notices</p>
                 </div>
               </div>
 
@@ -201,11 +201,11 @@ export default function ParentDashboard() {
                       <div key={i} className="flex gap-3 p-3 rounded-md bg-slate-50 mb-2">
                         <div className="text-center min-w-[52px]">
                           <p className="text-xs font-black text-violet-600">{s.start_time}</p>
-                          <p className="text-[9px] text-slate-400">{s.end_time}</p>
+                          <p className="text-xs text-slate-400">{s.end_time}</p>
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-xs font-bold text-slate-800 truncate">{s.subject}</p>
-                          <p className="text-[10px] text-slate-500 truncate">{s.teacher}{s.room ? ` · 📍 ${s.room}` : ''}</p>
+                          <p className="text-xs text-slate-500 truncate">{s.teacher}{s.room ? ` · 📍 ${s.room}` : ''}</p>
                         </div>
                       </div>
                     ))}
@@ -239,11 +239,11 @@ export default function ParentDashboard() {
                           <div key={i} className="flex items-center justify-between py-1.5 border-b border-slate-50 last:border-0">
                             <div>
                               <p className="text-xs font-bold text-slate-800">{g.subject_name}</p>
-                              <p className="text-[9px] text-slate-400">Q{g.quarter} · {g.subject_code}</p>
+                              <p className="text-xs text-slate-400">Q{g.quarter} · {g.subject_code}</p>
                             </div>
                             <div className="text-right">
                               <GradeBadge score={g.score} />
-                              <p className="text-[9px] text-slate-400 mt-0.5">{g.remarks}</p>
+                              <p className="text-xs text-slate-400 mt-0.5">{g.remarks}</p>
                             </div>
                           </div>
                         ))}
@@ -266,7 +266,7 @@ export default function ParentDashboard() {
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-xs font-bold text-slate-800 truncate">{n.title}</p>
-                          <p className="text-[10px] text-slate-500 line-clamp-1">{n.message}</p>
+                          <p className="text-xs text-slate-500 line-clamp-1">{n.message}</p>
                         </div>
                       </div>
                     ))}
@@ -287,11 +287,11 @@ export default function ParentDashboard() {
                       <table className="w-full text-left border-separate border-spacing-0 min-w-[480px]">
                         <thead className="bg-slate-50 border-b border-slate-200">
                           <tr>
-                            <th className="px-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Subject</th>
-                            <th className="px-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest hidden sm:table-cell">Code</th>
-                            <th className="px-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Quarter</th>
-                            <th className="px-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Score</th>
-                            <th className="px-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest hidden sm:table-cell">Remarks</th>
+                            <th className="px-4 py-3 text-xs font-black text-slate-400 uppercase tracking-widest">Subject</th>
+                            <th className="px-4 py-3 text-xs font-black text-slate-400 uppercase tracking-widest hidden sm:table-cell">Code</th>
+                            <th className="px-4 py-3 text-xs font-black text-slate-400 uppercase tracking-widest">Quarter</th>
+                            <th className="px-4 py-3 text-xs font-black text-slate-400 uppercase tracking-widest">Score</th>
+                            <th className="px-4 py-3 text-xs font-black text-slate-400 uppercase tracking-widest hidden sm:table-cell">Remarks</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-50">
@@ -300,10 +300,10 @@ export default function ParentDashboard() {
                           ) : (detail?.grades || child.grades || []).map((g, i) => (
                             <tr key={i} className="hover:bg-slate-50 transition-colors">
                               <td className="px-4 py-3 text-xs font-bold text-slate-800">{g.subject_name}</td>
-                              <td className="px-4 py-3 text-[10px] text-slate-500 hidden sm:table-cell">{g.subject_code}</td>
+                              <td className="px-4 py-3 text-xs text-slate-500 hidden sm:table-cell">{g.subject_code}</td>
                               <td className="px-4 py-3 text-xs text-slate-600">Q{g.quarter}</td>
                               <td className="px-4 py-3"><GradeBadge score={g.score} /></td>
-                              <td className="px-4 py-3 text-[10px] text-slate-500 hidden sm:table-cell">{g.remarks}</td>
+                              <td className="px-4 py-3 text-xs text-slate-500 hidden sm:table-cell">{g.remarks}</td>
                             </tr>
                           ))}
                         </tbody>
@@ -328,10 +328,10 @@ export default function ParentDashboard() {
                       <table className="w-full text-left border-separate border-spacing-0 min-w-[360px]">
                         <thead className="bg-slate-50 border-b border-slate-200">
                           <tr>
-                            <th className="px-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Date</th>
-                            <th className="px-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest hidden sm:table-cell">Day</th>
-                            <th className="px-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Status</th>
-                            <th className="px-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest hidden sm:table-cell">Remarks</th>
+                            <th className="px-4 py-3 text-xs font-black text-slate-400 uppercase tracking-widest">Date</th>
+                            <th className="px-4 py-3 text-xs font-black text-slate-400 uppercase tracking-widest hidden sm:table-cell">Day</th>
+                            <th className="px-4 py-3 text-xs font-black text-slate-400 uppercase tracking-widest">Status</th>
+                            <th className="px-4 py-3 text-xs font-black text-slate-400 uppercase tracking-widest hidden sm:table-cell">Remarks</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-50">
@@ -344,7 +344,7 @@ export default function ParentDashboard() {
                                 <td className="px-4 py-3 text-xs font-medium text-slate-700">{d.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' })}</td>
                                 <td className="px-4 py-3 text-xs text-slate-500 hidden sm:table-cell">{d.toLocaleDateString('en-US', { weekday:'long' })}</td>
                                 <td className="px-4 py-3"><AttBadge status={r.status} /></td>
-                                <td className="px-4 py-3 text-[10px] text-slate-400 hidden sm:table-cell">{r.remarks || '—'}</td>
+                                <td className="px-4 py-3 text-xs text-slate-400 hidden sm:table-cell">{r.remarks || '—'}</td>
                               </tr>
                             );
                           })}
@@ -371,13 +371,13 @@ export default function ParentDashboard() {
                               <div key={i} className="flex items-center gap-4 px-5 py-3">
                                 <div className="text-center min-w-[60px]">
                                   <p className="text-xs font-black text-violet-600">{s.start_time}</p>
-                                  <p className="text-[9px] text-slate-400">{s.end_time}</p>
+                                  <p className="text-xs text-slate-400">{s.end_time}</p>
                                 </div>
                                 <div className="flex-1 min-w-0">
                                   <p className="text-xs font-bold text-slate-800 truncate">{s.subject}</p>
-                                  <p className="text-[10px] text-slate-500 truncate">Teacher: {s.teacher}</p>
+                                  <p className="text-xs text-slate-500 truncate">Teacher: {s.teacher}</p>
                                 </div>
-                                {s.room && <p className="text-[10px] text-slate-400 flex-shrink-0">📍 {s.room}</p>}
+                                {s.room && <p className="text-xs text-slate-400 flex-shrink-0">📍 {s.room}</p>}
                               </div>
                             ))}
                           </div>
@@ -412,13 +412,13 @@ export default function ParentDashboard() {
                             </div>
                             <div className="flex-1 min-w-0">
                               <p className="text-xs font-bold text-slate-800 truncate">{a.title}</p>
-                              <p className="text-[10px] text-slate-500">{a.subject} · {a.points} pts</p>
+                              <p className="text-xs text-slate-500">{a.subject} · {a.points} pts</p>
                             </div>
                             <div className="text-right flex-shrink-0">
-                              <p className={`text-[10px] font-black ${isPast ? 'text-rose-500' : 'text-emerald-600'}`}>
+                              <p className={`text-xs font-black ${isPast ? 'text-rose-500' : 'text-emerald-600'}`}>
                                 {isPast ? 'Past Due' : 'Due'}
                               </p>
-                              <p className="text-[10px] text-slate-400">{due.toLocaleDateString('en-US', { month:'short', day:'numeric' })}</p>
+                              <p className="text-xs text-slate-400">{due.toLocaleDateString('en-US', { month:'short', day:'numeric' })}</p>
                             </div>
                           </div>
                         );
@@ -437,7 +437,7 @@ export default function ParentDashboard() {
         <div className="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
           <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
             <h3 className="text-sm font-black text-slate-900 uppercase tracking-tight">School Announcements</h3>
-            <button onClick={() => navigate('/announcements')} className="text-[10px] font-black text-violet-600 uppercase tracking-widest hover:underline">View All</button>
+            <button onClick={() => navigate('/announcements')} className="text-xs font-black text-violet-600 uppercase tracking-widest hover:underline">View All</button>
           </div>
           <div className="divide-y divide-slate-50">
             {announcements.map(a => (
@@ -447,11 +447,11 @@ export default function ParentDashboard() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-bold text-slate-800 truncate">{a.title}</p>
-                  <p className="text-[10px] text-slate-500 line-clamp-1 mt-0.5">{a.content}</p>
-                  <p className="text-[9px] text-slate-400 mt-1">{a.author_name} · {new Date(a.created_at).toLocaleDateString()}</p>
+                  <p className="text-xs text-slate-500 line-clamp-1 mt-0.5">{a.content}</p>
+                  <p className="text-xs text-slate-400 mt-1">{a.author_name} · {new Date(a.created_at).toLocaleDateString()}</p>
                 </div>
                 {a.priority === 'critical' && (
-                  <span className="flex-shrink-0 px-2 py-0.5 rounded-full bg-rose-100 text-rose-600 text-[9px] font-black uppercase">Critical</span>
+                  <span className="flex-shrink-0 px-2 py-0.5 rounded-full bg-rose-100 text-rose-600 text-xs font-black uppercase">Critical</span>
                 )}
               </div>
             ))}
