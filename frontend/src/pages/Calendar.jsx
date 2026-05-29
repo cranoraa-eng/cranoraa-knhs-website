@@ -100,23 +100,27 @@ const Calendar = ({ mode = 'public' }) => {
 
   const days = getDaysInMonth(currentMonth);
 
+  const isPortal = mode === 'portal';
+
   return (
-    <div className="bg-slate-50/50 p-3 md:p-8">
+    <div className={`${isPortal ? 'bg-transparent p-0' : 'bg-slate-50/50 p-3 md:p-8'} page-bottom-safe max-w-full overflow-x-hidden`}>
       {/* Header */}
-      <div className="max-w-6xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-3 mb-6 md:mb-8 text-center md:text-left">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight uppercase">School Calendar</h1>
+      <div className={`max-w-6xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4 sm:mb-6 md:mb-8 ${isPortal ? 'text-left' : 'text-center md:text-left'}`}>
+        <div className="min-w-0">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-black text-slate-900 tracking-tight uppercase">School Calendar</h1>
           <p className="text-[11px] md:text-sm text-slate-500 font-medium mt-0.5 md:mt-1">Events, holidays, and academic schedules</p>
         </div>
-        <Link 
-          to="/" 
-          className="inline-flex items-center justify-center gap-2 px-3 py-1.5 md:px-4 md:py-2 rounded-lg md:rounded-xl bg-white border border-slate-200 text-slate-600 font-bold text-[11px] md:text-sm hover:bg-slate-50 transition-all shadow-sm mx-auto md:mx-0 w-fit"
-        >
-          <svg className="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-          </svg>
-          Back to Website
-        </Link>
+        {!isPortal && (
+          <Link 
+            to="/" 
+            className="inline-flex items-center justify-center gap-2 px-3 py-1.5 md:px-4 md:py-2 rounded-lg md:rounded-xl bg-white border border-slate-200 text-slate-600 font-bold text-[11px] md:text-sm hover:bg-slate-50 transition-all shadow-sm mx-auto md:mx-0 w-fit"
+          >
+            <svg className="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            Back to Website
+          </Link>
+        )}
       </div>
       
       <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
@@ -248,12 +252,14 @@ const Calendar = ({ mode = 'public' }) => {
               </div>
             )}
 
-            <Link 
-              to="/enroll" 
-              className="mt-6 md:mt-8 w-full py-3 md:py-4 rounded-xl md:rounded-2xl bg-slate-900 text-white font-black text-[10px] md:text-xs uppercase tracking-widest hover:bg-slate-800 transition-all shadow-lg block text-center"
-            >
-              Enroll Now
-            </Link>
+            {!isPortal && (
+              <Link 
+                to="/enroll" 
+                className="mt-6 md:mt-8 w-full py-3 md:py-4 rounded-xl md:rounded-2xl bg-slate-900 text-white font-black text-[10px] md:text-xs uppercase tracking-widest hover:bg-slate-800 transition-all shadow-lg block text-center"
+              >
+                Enroll Now
+              </Link>
+            )}
           </div>
         </div>
       </div>

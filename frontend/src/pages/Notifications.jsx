@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
 import { useNotifications } from '../context/NotificationContext';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import { getNotifConfig, formatNotifTime, TYPE_CONFIG } from '../utils/notificationConfig';
 
 // ── Type config (local badge/dot colours, extends shared config) ──────────────
@@ -36,6 +37,7 @@ const formatTime = formatNotifTime;
 
 const Notifications = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { setUnreadCount, unreadCount } = useNotifications();
 
   const [notifications, setNotifications] = useState([]);
@@ -192,9 +194,9 @@ const Notifications = () => {
     <div className="space-y-5 animate-fade-in page-bottom-safe">
 
       {/* ── Page Header ── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-black text-slate-900 tracking-tight">Notifications</h1>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+        <div className="min-w-0">
+          <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">Notifications</h1>
           <p className="text-sm text-slate-500 mt-0.5">
             {totalCount > 0 ? `${totalCount} total` : 'Your activity feed'}
             {unreadCount > 0 && (
@@ -204,21 +206,23 @@ const Notifications = () => {
             )}
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={handleTestPush}
-            disabled={processing || loading}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-violet-600 text-sm font-bold text-white hover:bg-violet-700 transition-all disabled:opacity-40 shadow-sm"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-            </svg>
-            Send Test
-          </button>
+        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+          {user?.role === 'admin' && (
+            <button
+              onClick={handleTestPush}
+              disabled={processing || loading}
+              className="inline-flex flex-1 sm:flex-none items-center justify-center gap-2 px-3 sm:px-4 py-2.5 rounded-xl bg-violet-600 text-xs sm:text-sm font-bold text-white hover:bg-violet-700 transition-all disabled:opacity-40 shadow-sm min-h-[44px]"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+              </svg>
+              Send Test
+            </button>
+          )}
           <button
             onClick={markAllRead}
             disabled={processing || loading || !hasUnread}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-slate-200 text-sm font-bold text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-sm"
+            className="inline-flex flex-1 sm:flex-none items-center justify-center gap-2 px-3 sm:px-4 py-2.5 rounded-xl bg-white border border-slate-200 text-xs sm:text-sm font-bold text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-sm min-h-[44px]"
           >
             <svg className="w-4 h-4 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />

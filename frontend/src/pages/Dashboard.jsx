@@ -180,9 +180,9 @@ const StatCard = ({ label, value, sub, icon, color = 'violet', onClick, badge })
 
 const LatestMessagesWidget = ({ messages, onOpenChat }) => {
   return (
-    <div className="bg-white border border-slate-200/70 rounded-xl p-4 shadow-sm flex flex-col h-full relative overflow-hidden group">
+    <div className="bg-white border border-slate-200/70 rounded-lg md:rounded-xl p-3 md:p-4 shadow-sm flex flex-col h-full relative overflow-hidden group">
       <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-violet-500/5 to-transparent rounded-full -mr-16 -mt-16 blur-2xl opacity-50" />
-      <div className="flex items-center justify-between mb-3 shrink-0 relative z-10">
+      <div className="flex items-center justify-between mb-2 md:mb-3 shrink-0 relative z-10 gap-2">
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-lg bg-violet-50 text-violet-600 flex items-center justify-center shrink-0 shadow-sm border border-violet-100">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
@@ -285,12 +285,12 @@ const TodayScheduleWidget = ({ role }) => {
   };
 
   return (
-    <div className="bg-white border border-slate-200/70 rounded-xl p-6 shadow-sm flex flex-col h-full relative overflow-hidden group">
+    <div className="bg-white border border-slate-200/70 rounded-lg md:rounded-xl p-3 md:p-6 shadow-sm flex flex-col h-full relative overflow-hidden group">
       {/* Decorative background element */}
       <div className="absolute top-0 left-0 w-24 h-24 bg-gradient-to-br from-indigo-500/5 to-transparent rounded-full -ml-12 -mt-12 blur-2xl opacity-50" />
       
       {/* Header */}
-      <div className="flex items-center justify-between mb-6 shrink-0 relative z-10">
+      <div className="flex items-center justify-between mb-3 md:mb-6 shrink-0 relative z-10 gap-2">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0 shadow-sm border border-indigo-100">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -407,33 +407,38 @@ const AdminView = () => {
   const COLORS = ['#10b981', '#3b82f6', '#8b5cf6', '#f59e0b', '#ef4444'];
 
   return (
-    <div className="space-y-3 page-bottom-safe">
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: 'easeOut' }}
+      className="space-y-3 md:space-y-4 page-bottom-safe max-w-[1600px] mx-auto px-2 py-2 md:px-6 md:py-6"
+    >
       <WelcomeBanner
         user={user}
         today={today}
         stats={data}
         subtitle="System Administrator • Portal Management"
         actions={
-          <>
+          <div className="flex flex-wrap gap-2 md:gap-3">
             <button
               onClick={() => navigate('/announcements')}
-              className="px-4 py-2 rounded-lg border border-slate-200 bg-white text-slate-700 font-black text-xs uppercase tracking-[0.15em] hover:bg-slate-50 hover:border-violet-200 hover:text-violet-600 transition-all flex items-center gap-2 shadow-sm active:scale-95"
+              className="px-3 py-2 md:px-4 md:py-2 rounded-md md:rounded-lg border border-slate-200 bg-white text-slate-700 font-black text-[10px] md:text-xs uppercase tracking-[0.15em] hover:bg-slate-50 hover:border-violet-200 hover:text-violet-600 transition-all flex items-center gap-2 shadow-sm active:scale-95"
             >
               Post Announcement
             </button>
             {data?.pending_approvals > 0 && (
               <button
                 onClick={() => navigate('/account-approvals')}
-                className="px-4 py-2 rounded-lg bg-[#1A0B2E] text-white font-black text-xs uppercase tracking-[0.15em] hover:bg-violet-900 shadow-lg shadow-violet-200/50 transition-all flex items-center gap-2 active:scale-95"
+                className="px-3 py-2 md:px-4 md:py-2 rounded-md md:rounded-lg bg-[#1A0B2E] text-white font-black text-[10px] md:text-xs uppercase tracking-[0.15em] hover:bg-violet-900 shadow-lg shadow-violet-200/50 transition-all flex items-center gap-2 active:scale-95"
               >
                 Approvals ({data.pending_approvals})
               </button>
             )}
-          </>
+          </div>
         }
       />
 
-      <div className="grid grid-cols-3 xl:grid-cols-6 gap-2.5">
+      <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-2 md:gap-2.5">
         <StatCard label="Total Students" value={data?.total_students} sub="Enrolled" color="blue" onClick={() => navigate('/student-management')} icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>} />
         <StatCard label="Faculty" value={data?.total_teachers} sub="Verified" color="emerald" onClick={() => navigate('/teachers')} icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" /></svg>} />
         <StatCard label="Classrooms" value={data?.total_classes} sub="Sections" color="violet" onClick={() => navigate('/class-management')} icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>} />
@@ -442,9 +447,9 @@ const AdminView = () => {
         <StatCard label="Attendance" value={`${data?.today_rate || 0}%`} sub="Today's Rate" color={data?.today_rate >= 75 ? 'emerald' : 'rose'} onClick={() => navigate('/attendance')} icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>} />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 overflow-hidden">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 md:gap-4 overflow-hidden">
         {/* Attendance Trends */}
-        <div className="lg:col-span-8 bg-white border border-slate-200/70 rounded-xl p-4 shadow-sm overflow-hidden flex flex-col">
+        <div className="lg:col-span-8 bg-white border border-slate-200/70 rounded-lg md:rounded-xl p-3 md:p-4 shadow-sm overflow-hidden flex flex-col min-h-[220px] md:min-h-0">
           <div className="flex items-center justify-between mb-3 shrink-0">
             <div>
               <h3 className="text-xs font-black text-slate-900 uppercase tracking-tight">Attendance Trends</h3>
@@ -454,9 +459,9 @@ const AdminView = () => {
               <span className="w-2 h-2 rounded-full bg-violet-500 shadow-[0_0_8px_rgba(139,92,246,0.5)]" /> Rate (%)
             </span>
           </div>
-          <div className="flex-1 min-h-[200px] w-full">
+          <div className="flex-1 min-h-[180px] sm:min-h-[200px] w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={attendanceTrends} margin={{ top: 5, right: 5, left: -25, bottom: 0 }}>
+              <AreaChart data={attendanceTrends} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorRate" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.15}/>
@@ -481,9 +486,9 @@ const AdminView = () => {
         </div>
 
         {/* Grade Distribution */}
-        <div className="lg:col-span-4 bg-white border border-slate-200/70 rounded-xl p-4 shadow-sm flex flex-col">
-          <div className="flex items-center justify-between mb-3 shrink-0">
-            <div>
+        <div className="lg:col-span-4 bg-white border border-slate-200/70 rounded-lg md:rounded-xl p-3 md:p-4 shadow-sm flex flex-col min-h-[280px] md:min-h-0">
+          <div className="flex items-center justify-between mb-3 shrink-0 gap-2">
+            <div className="min-w-0">
               <h3 className="text-xs font-black text-slate-900 uppercase tracking-tight">Grade Analysis</h3>
               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-0.5">{distView === 'general_average' ? 'General Average' : 'All Subjects'}</p>
             </div>
@@ -535,9 +540,9 @@ const AdminView = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
         {/* Recent Announcements */}
-        <div className="bg-white border border-slate-200/70 rounded-xl p-4 shadow-sm flex flex-col">
+        <div className="bg-white border border-slate-200/70 rounded-lg md:rounded-xl p-3 md:p-4 shadow-sm flex flex-col min-h-[200px]">
           <div className="flex items-center justify-between mb-3 shrink-0">
             <div>
               <h3 className="text-xs font-black text-slate-900 uppercase tracking-tight">Recent Announcements</h3>
@@ -610,7 +615,7 @@ const AdminView = () => {
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

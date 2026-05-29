@@ -71,16 +71,16 @@ const PasswordReset = () => {
   );
 
   return (
-    <div className="max-w-lg mx-auto space-y-5 animate-fade-in">
+    <div className="max-w-lg mx-auto space-y-4 sm:space-y-5 animate-fade-in page-bottom-safe px-0.5 sm:px-0">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-black text-slate-900 tracking-tight">Change Password</h1>
+        <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">Change Password</h1>
         <p className="text-sm text-slate-500 mt-0.5">Update your account password to keep it secure.</p>
       </div>
 
       {/* Form card */}
       <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
-        <form onSubmit={handleSubmit} className="p-6 space-y-5">
+        <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-4 sm:space-y-5">
           <PasswordInput
             label="Current Password"
             field="current_password"
