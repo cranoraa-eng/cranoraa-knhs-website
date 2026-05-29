@@ -295,11 +295,7 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # 5 failures per 15-minute window before lockout (matches auth throttle)
 AXES_FAILURE_LIMIT = int(os.environ.get('AXES_FAILURE_LIMIT', 5))
 AXES_COOLOFF_TIME = timedelta(minutes=int(os.environ.get('AXES_COOLOFF_TIME', 15)))
-AXES_LOCKOUT_TEMPLATE = None
-AXES_RESET_ON_SUCCESS = False
-AXES_RESET_COOL_OFF_ON_FAILURE_DURING_LOCKOUT = True
-AXES_LOCKOUT_CALLABLE = 'axes.helpers.get_lockout_response'
-AXES_VERBOSE = DEBUG
+AXES_RESET_ON_SUCCESS = True
 AXES_LOCKOUT_PARAMETERS = ['username', 'ip_address']
 
 # Security Headers
