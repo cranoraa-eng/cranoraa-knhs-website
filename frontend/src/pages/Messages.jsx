@@ -863,14 +863,14 @@ const Messages = () => {
 
   // ── Loading screen ────────────────────────────────────────────────────────
   if (loading) return (
-    <div className="flex items-center justify-center h-[calc(100vh-10rem)]">
+    <div className="flex items-center justify-center h-[calc(100vh-8rem)]">
       <div className="w-12 h-12 border-4 border-violet-500 border-t-transparent rounded-full animate-spin" />
     </div>
   );
 
   // ── JSX ───────────────────────────────────────────────────────────────────
   return (
-    <div className="flex h-[calc(100dvh-11rem)] md:h-[750px] lg:h-[850px] md:max-h-[calc(100vh-9rem)] bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-200 relative" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
+    <div className="flex h-[calc(100dvh-9rem)] md:h-[calc(100vh-8rem)] md:max-h-[calc(100vh-8rem)] bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-200 relative" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
 
       {/* ── Sidebar (Room List) ── */}
       <div className={`${selectedRoom ? 'hidden md:flex' : 'flex'} w-full md:w-64 border-r border-slate-100 flex-col bg-slate-50/30 min-w-0 overflow-hidden`}>
