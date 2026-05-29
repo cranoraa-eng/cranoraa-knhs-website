@@ -205,12 +205,11 @@ class AnnouncementAttachmentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = AnnouncementAttachment
-        fields = ['id', 'filename', 'url', 'is_image', 'uploaded_at']
+        fields = ['id', 'filename', 'url', 'is_image', 'file_size_bytes', 'content_type', 'uploaded_at']
 
     def get_url(self, obj):
-        if obj.file:
-            return obj.file.url
-        return None
+        # file is now a URLField — return it directly
+        return obj.file or None
 
     def get_is_image(self, obj):
         return obj.is_image
@@ -237,9 +236,8 @@ class AnnouncementSerializer(serializers.ModelSerializer):
 
     def get_author_name(self, obj): return full_name(obj.author)
     def get_attachment_url(self, obj):
-        if obj.attachment:
-            return obj.attachment.url
-        return None
+        # attachment is now a URLField — return it directly
+        return obj.attachment or None
     def get_read_count(self, obj): return obj.read_by.count()
 
 
@@ -391,11 +389,12 @@ class WebsiteContentSerializer(serializers.ModelSerializer):
     section_display = serializers.CharField(source='get_section_display', read_only=True)
     category_display = serializers.CharField(source='get_category_display', read_only=True)
     updated_by_name = serializers.SerializerMethodField()
-    image = serializers.ImageField(required=False, allow_null=True)
+    # image is now a URLField — the view handles the upload and passes the URL
+    image = serializers.URLField(required=False, allow_null=True, allow_blank=True)
 
     class Meta:
         model = WebsiteContent
-        fields = ['id', 'section', 'section_display', 'category', 'category_display', 
+        fields = ['id', 'section', 'section_display', 'category', 'category_display',
                   'content', 'image', 'updated_at', 'updated_by', 'updated_by_name']
         read_only_fields = ['section', 'category', 'updated_at', 'updated_by']
 
