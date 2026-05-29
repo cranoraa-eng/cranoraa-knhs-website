@@ -55,6 +55,29 @@ const BANNER_BTN_SECONDARY = 'inline-flex items-center justify-center gap-2 px-3
 const CHART_STROKE = '#7c3aed';
 const CHART_FILL = '#ede9fe';
 
+/** Admin grade distribution — one color per performance band */
+const GRADE_CATEGORY_COLORS = {
+  Outstanding: '#059669',
+  'Very Satisfactory': '#2563eb',
+  Satisfactory: '#7c3aed',
+  'Fairly Satisfactory': '#d97706',
+  'Did Not Meet': '#e11d48',
+};
+const GRADE_CATEGORY_FALLBACK = ['#059669', '#2563eb', '#7c3aed', '#d97706', '#e11d48'];
+const GRADE_CATEGORY_LEGEND = {
+  Outstanding: 'border-emerald-200 bg-emerald-50/80',
+  'Very Satisfactory': 'border-blue-200 bg-blue-50/80',
+  Satisfactory: 'border-violet-200 bg-violet-50/80',
+  'Fairly Satisfactory': 'border-amber-200 bg-amber-50/80',
+  'Did Not Meet': 'border-rose-200 bg-rose-50/80',
+};
+
+const getGradeCategoryColor = (name, index) =>
+  GRADE_CATEGORY_COLORS[name] || GRADE_CATEGORY_FALLBACK[index % GRADE_CATEGORY_FALLBACK.length];
+
+const getGradeCategoryLegendClass = (name) =>
+  GRADE_CATEGORY_LEGEND[name] || 'border-slate-200 bg-slate-50/80';
+
 const BANNER_PERIOD_THEME = {
   morning: {
     shell: 'bg-violet-700 border-violet-500',
@@ -506,8 +529,6 @@ const AdminView = () => {
   const attendanceTrends = data?.dashboard?.charts?.attendance_trends || [];
   const today = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
-  const COLORS = ['#7c3aed', '#8b5cf6', '#a78bfa', '#c4b5fd', '#6d28d9'];
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
@@ -588,8 +609,12 @@ const AdminView = () => {
               <h3 className="text-xs font-black text-slate-900 uppercase tracking-tight">Grade Analysis</h3>
               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-0.5">{distView === 'general_average' ? 'General Average' : 'All Subjects'}</p>
             </div>
-            <button onClick={() => setDistView(distView === 'general_average' ? 'all_subjects' : 'general_average')}
-              className={`${DASH_ICON_BTN} text-violet-600 hover:text-white`}>
+            <button
+              type="button"
+              onClick={() => setDistView(distView === 'general_average' ? 'all_subjects' : 'general_average')}
+              className={`${DASH_ICON_BTN} text-violet-600 hover:text-white`}
+              title={distView === 'general_average' ? 'Switch to all subjects' : 'Switch to general average'}
+            >
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
             </button>
           </div>
@@ -598,35 +623,42 @@ const AdminView = () => {
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie data={gradeData} cx="50%" cy="50%" innerRadius={45} outerRadius={65}
-                    paddingAngle={6} dataKey="value" animationDuration={1200}>
-                    {gradeData.map((_, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} stroke="none" />
+                    paddingAngle={4} dataKey="value" animationDuration={1200}>
+                    {gradeData.map((item, index) => (
+                      <Cell key={`cell-${item.name}`} fill={getGradeCategoryColor(item.name, index)} stroke="#fff" strokeWidth={2} />
                     ))}
                   </Pie>
-                  <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 25px -5px rgb(0 0 0 / 0.1)' }}
-                    itemStyle={{ fontWeight: 900, fontSize: '10px', textTransform: 'uppercase' }} />
+                  <Tooltip
+                    contentStyle={{ borderRadius: '8px', border: '1px solid #e2e8f0', boxShadow: '0 10px 25px -5px rgb(0 0 0 / 0.1)' }}
+                    itemStyle={{ fontWeight: 800, fontSize: '10px', textTransform: 'uppercase' }}
+                    formatter={(value, _name, props) => [value, props.payload.name]}
+                  />
                 </PieChart>
               </ResponsiveContainer>
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center justify-center pointer-events-none">
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center justify-center pointer-events-none rounded-full bg-white/90 border border-violet-100 w-16 h-16 shadow-sm">
                 <p className="text-base font-black text-slate-900 leading-none">{dist?.total_count || 0}</p>
-                <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mt-1">
+                <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mt-0.5">
                   {distView === 'general_average' ? 'Students' : 'Entries'}
                 </p>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-x-3 gap-y-2 px-1">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 px-0.5 mt-1">
               {gradeData.map((item, index) => {
                 const total = gradeData.reduce((sum, d) => sum + d.value, 0);
                 const percentage = total > 0 ? ((item.value / total) * 100).toFixed(1) : 0;
+                const sliceColor = getGradeCategoryColor(item.name, index);
                 return (
-                  <div key={item.name} className="flex flex-col gap-0.5">
+                  <div
+                    key={item.name}
+                    className={`flex items-center justify-between gap-2 rounded-sm border px-2 py-1.5 ${getGradeCategoryLegendClass(item.name)}`}
+                  >
                     <div className="flex items-center gap-1.5 min-w-0">
-                      <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
-                      <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest truncate leading-none">{item.name}</span>
+                      <div className="w-2.5 h-2.5 rounded-sm shrink-0" style={{ backgroundColor: sliceColor }} />
+                      <span className="text-[9px] font-bold text-slate-700 uppercase tracking-wide truncate leading-tight">{item.name}</span>
                     </div>
-                    <div className="flex items-baseline gap-1 pl-3.5">
-                      <span className="text-xs font-black text-slate-900 leading-none">{percentage}%</span>
-                      <span className="text-[9px] font-bold text-slate-400 leading-none">({item.value})</span>
+                    <div className="flex items-baseline gap-1 shrink-0">
+                      <span className="text-[10px] font-black text-slate-900 leading-none">{percentage}%</span>
+                      <span className="text-[9px] font-semibold text-slate-500 leading-none">({item.value})</span>
                     </div>
                   </div>
                 );
