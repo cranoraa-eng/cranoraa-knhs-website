@@ -45,10 +45,11 @@ const computeStreak = (records) => {
 // Formal dashboard surface tokens — purple theme (admin / teacher / student only)
 const DASH_PANEL = 'bg-white border border-violet-200/90 shadow-[0_1px_2px_rgba(91,33,182,0.07),0_3px_10px_rgba(91,33,182,0.05)] rounded-sm';
 const DASH_PANEL_HEADER = 'border-b border-violet-200 bg-violet-50/70';
-const DASH_BTN_PRIMARY = 'inline-flex items-center gap-2 px-3 py-2 md:px-4 md:py-2.5 rounded-sm bg-violet-700 text-white text-[10px] md:text-xs font-bold uppercase tracking-wide border border-violet-800 hover:bg-violet-800 transition-colors active:scale-[0.98]';
-const DASH_BTN_SECONDARY = 'inline-flex items-center gap-2 px-3 py-2 md:px-4 md:py-2.5 rounded-sm bg-white text-violet-900 text-[10px] md:text-xs font-bold uppercase tracking-wide border border-violet-300 hover:bg-violet-50 hover:border-violet-400 transition-colors active:scale-[0.98]';
+const DASH_BTN_PRIMARY = 'inline-flex items-center justify-center gap-2 px-3 py-2 md:px-4 md:py-2.5 rounded-sm bg-violet-700 text-white text-[10px] md:text-xs font-bold uppercase tracking-wide border border-violet-800 hover:bg-violet-800 transition-colors active:scale-[0.98]';
+const DASH_BTN_SECONDARY = 'inline-flex items-center justify-center gap-2 px-3 py-2 md:px-4 md:py-2.5 rounded-sm bg-white text-violet-900 text-[10px] md:text-xs font-bold uppercase tracking-wide border border-violet-300 hover:bg-violet-50 hover:border-violet-400 transition-colors active:scale-[0.98]';
 const DASH_ICON_BOX = 'rounded-sm bg-violet-50 text-violet-700 flex items-center justify-center border border-violet-200';
-const DASH_ICON_BTN = 'p-2 rounded-sm border border-violet-200 bg-white text-violet-700 hover:bg-violet-700 hover:text-white hover:border-violet-700 transition-colors active:scale-95';
+const DASH_ICON_BTN = 'inline-flex items-center justify-center p-2 rounded-sm border border-violet-200 bg-white text-violet-700 hover:bg-violet-700 hover:text-white hover:border-violet-700 transition-colors active:scale-95';
+const DASH_ACTIONS_ROW = 'flex flex-wrap items-center justify-center gap-2';
 const CHART_STROKE = '#7c3aed';
 const CHART_FILL = '#ede9fe';
 
@@ -65,12 +66,56 @@ const CHIP_DOT = {
 
 // ─── Shared UI Components ───────────────────────────────────────────────────
 
-const WelcomeBanner = ({ user, today, actions, subtitle, stats, statusChips }) => {
+const GreetingIcon = ({ period, className = 'w-3 h-3 text-violet-600' }) => {
+  if (period === 'morning') {
+    return (
+      <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+      </svg>
+    );
+  }
+  if (period === 'afternoon') {
+    return (
+      <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
+      </svg>
+    );
+  }
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+    </svg>
+  );
+};
+
+const TeacherActivityIcon = ({ type, className = 'w-4 h-4 md:w-5 md:h-5 text-violet-600' }) => {
+  if (type === 'grade') {
+    return (
+      <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+      </svg>
+    );
+  }
+  if (type === 'attendance') {
+    return (
+      <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+    );
+  }
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
+    </svg>
+  );
+};
+
+const WelcomeBanner = ({ user, today, actions, subtitle, stats, statusChips, useSvgGreeting = false }) => {
   const getGreetingData = () => {
     const hours = new Date().getHours();
-    if (hours < 12) return { text: 'Good Morning', icon: '☀️', color: 'emerald', message: "Ready to conquer your classes today?" };
-    if (hours < 17) return { text: 'Good Afternoon', icon: '🌤️', color: 'amber', message: "Keep up the great momentum!" };
-    return { text: 'Good Evening', icon: '🌙', color: 'indigo', message: "Time to review and recharge." };
+    if (hours < 12) return { text: 'Good Morning', period: 'morning', icon: '☀️', color: 'emerald', message: "Ready to conquer your classes today?" };
+    if (hours < 17) return { text: 'Good Afternoon', period: 'afternoon', icon: '🌤️', color: 'amber', message: "Keep up the great momentum!" };
+    return { text: 'Good Evening', period: 'evening', icon: '🌙', color: 'indigo', message: "Time to review and recharge." };
   };
 
   const greeting = getGreetingData();
@@ -82,8 +127,8 @@ const WelcomeBanner = ({ user, today, actions, subtitle, stats, statusChips }) =
       <div className="flex flex-row items-start justify-between gap-3 md:gap-5">
         <div className="flex-1 space-y-2 md:space-y-3 min-w-0">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 border border-violet-200 bg-violet-50 px-2 py-1 text-[9px] md:text-[10px] font-bold uppercase tracking-wide text-violet-800">
-              <span aria-hidden="true">{greeting.icon}</span>
+            <span className="inline-flex items-center justify-center gap-1.5 border border-violet-200 bg-violet-50 px-2 py-1 text-[9px] md:text-[10px] font-bold uppercase tracking-wide text-violet-800">
+              {useSvgGreeting ? <GreetingIcon period={greeting.period} /> : <span aria-hidden="true">{greeting.icon}</span>}
               {greeting.text}
             </span>
             <span className="hidden sm:inline-flex items-center gap-1.5 border border-violet-200 bg-violet-50 px-2 py-1 text-[9px] md:text-[10px] font-bold uppercase tracking-wide text-violet-700">
@@ -118,12 +163,12 @@ const WelcomeBanner = ({ user, today, actions, subtitle, stats, statusChips }) =
             </div>
           )}
 
-          <div className="flex flex-wrap gap-2 md:hidden pt-0.5">
+          <div className={`${DASH_ACTIONS_ROW} md:hidden pt-0.5`}>
             {actions}
           </div>
         </div>
 
-        <div className="flex flex-col items-end gap-2 md:gap-3 shrink-0">
+        <div className="flex flex-col items-center md:items-end gap-2 md:gap-3 shrink-0">
           <div className="relative">
             <div className="w-12 h-12 md:w-20 md:h-20 rounded-sm border-2 border-violet-200 bg-violet-50 overflow-hidden shadow-[inset_0_1px_2px_rgba(91,33,182,0.06)] flex items-center justify-center">
               {user?.profile_picture ? (
@@ -134,7 +179,7 @@ const WelcomeBanner = ({ user, today, actions, subtitle, stats, statusChips }) =
             </div>
             <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 md:w-3 md:h-3 bg-emerald-600 border-2 border-white" />
           </div>
-          <div className="hidden md:flex flex-wrap justify-end gap-2">
+          <div className={`hidden md:flex ${DASH_ACTIONS_ROW}`}>
             {actions}
           </div>
         </div>
@@ -298,10 +343,10 @@ const TodayScheduleWidget = ({ role }) => {
             <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">{todayLabel}</p>
           </div>
         </div>
-        <button
-          onClick={() => navigate('/schedule')}
-          className="px-2.5 py-1.5 rounded-sm border border-violet-300 bg-white text-[10px] font-bold text-violet-800 uppercase tracking-wide hover:bg-violet-700 hover:text-white hover:border-violet-700 transition-colors active:scale-95"
-        >
+            <button
+              onClick={() => navigate('/schedule')}
+              className="inline-flex items-center justify-center px-2.5 py-1.5 rounded-sm border border-violet-300 bg-white text-[10px] font-bold text-violet-800 uppercase tracking-wide hover:bg-violet-700 hover:text-white hover:border-violet-700 transition-colors active:scale-95"
+            >
           View Full
         </button>
       </div>
@@ -436,7 +481,7 @@ const AdminView = () => {
         stats={data}
         subtitle="System Administrator • Portal Management"
         actions={
-          <div className="flex flex-wrap gap-2 md:gap-3">
+          <div className={DASH_ACTIONS_ROW}>
             <button
               onClick={() => navigate('/announcements')}
               className={DASH_BTN_SECONDARY}
@@ -504,7 +549,7 @@ const AdminView = () => {
               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-0.5">{distView === 'general_average' ? 'General Average' : 'All Subjects'}</p>
             </div>
             <button onClick={() => setDistView(distView === 'general_average' ? 'all_subjects' : 'general_average')}
-              className="p-2 rounded-sm border border-violet-200 bg-white text-violet-600 hover:text-violet-800 hover:bg-violet-50 transition-colors active:scale-[0.98]">
+              className={`${DASH_ICON_BTN} text-violet-600 hover:text-white`}>
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
             </button>
           </div>
@@ -554,7 +599,7 @@ const AdminView = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
         {/* Recent Announcements */}
         <div className={`${DASH_PANEL} p-3 md:p-4 flex flex-col min-h-[200px]`}>
-          <div className="flex items-center justify-between mb-3 shrink-0">
+          <div className="flex items-center justify-between gap-2 mb-3 shrink-0">
             <div>
               <h3 className="text-xs font-black text-slate-900 uppercase tracking-tight">Recent Announcements</h3>
               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-0.5">School-wide updates</p>
@@ -589,7 +634,7 @@ const AdminView = () => {
 
         {/* System Activity */}
         <div className={`${DASH_PANEL} p-4 flex flex-col`}>
-          <div className="flex items-center justify-between mb-3 shrink-0">
+          <div className="flex items-center justify-between gap-2 mb-3 shrink-0">
             <div>
               <h3 className="text-xs font-black text-slate-900 uppercase tracking-tight">System Activity</h3>
               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-0.5">Audit logs summary</p>
@@ -687,8 +732,9 @@ const TeacherView = () => {
         user={user}
         today={todayStr}
         statusChips={statusChips}
+        useSvgGreeting
         actions={
-          <div className="flex flex-wrap gap-2">
+          <div className={DASH_ACTIONS_ROW}>
             <button type="button" onClick={() => navigate('/announcements')} className={DASH_BTN_SECONDARY}>
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" /></svg>
               Announce
@@ -729,7 +775,7 @@ const TeacherView = () => {
           {unmarkedCount > 0 && (
             <button
               onClick={() => navigate('/attendance')}
-              className="shrink-0 px-3 py-1.5 rounded-sm bg-violet-700 text-white text-[10px] font-bold uppercase tracking-wide hover:bg-violet-800 transition-colors active:scale-95"
+              className="shrink-0 inline-flex items-center justify-center px-3 py-1.5 rounded-sm bg-violet-700 text-white text-[10px] font-bold uppercase tracking-wide hover:bg-violet-800 transition-colors active:scale-95"
             >
               Mark Now
             </button>
@@ -758,7 +804,7 @@ const TeacherView = () => {
                   <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mt-0.5">Active teaching sections</p>
                 </div>
               </div>
-              <Link to="/my-classes" className={`${DASH_BTN_SECONDARY} text-center`}>
+              <Link to="/my-classes" className={DASH_BTN_SECONDARY}>
                 Manage Classes
               </Link>
             </div>
@@ -861,7 +907,7 @@ const TeacherView = () => {
             </div>
             
             <div className="relative space-y-3 md:space-y-6 flex-1 overflow-y-auto pr-2 scrollbar-none">
-              <div className="absolute left-[19px] md:left-[27px] top-2 bottom-2 w-0.5 bg-violet-100" />
+              <div className="absolute left-[15px] md:left-[19px] top-2 bottom-2 w-0.5 bg-violet-100" />
               <AnimatePresence>
                 {data?.recent_activities?.length ? data.recent_activities.map((act, i) => (
                   <motion.div 
@@ -871,8 +917,8 @@ const TeacherView = () => {
                     transition={{ delay: i * 0.1 }}
                     className="relative flex items-center gap-3 md:gap-6 group"
                   >
-                    <div className="w-8 h-8 md:w-14 md:h-14 rounded-sm bg-white border border-violet-200 shadow-sm flex items-center justify-center text-sm md:text-xl shrink-0 z-10 group-hover:border-violet-400 transition-colors">
-                      {act.type === 'grade' ? '📊' : act.type === 'attendance' ? '✅' : '📢'}
+                    <div className="w-8 h-8 md:w-10 md:h-10 rounded-sm bg-white border border-violet-200 shadow-sm flex items-center justify-center shrink-0 z-10 group-hover:border-violet-400 transition-colors">
+                      <TeacherActivityIcon type={act.type} />
                     </div>
                     <div className="flex-1 bg-violet-50/50 border border-violet-100 p-2.5 md:p-4 group-hover:bg-white group-hover:border-violet-200 group-hover:shadow-sm transition-all">
                       <div className="flex justify-between items-start mb-0.5">
@@ -1031,7 +1077,7 @@ const StudentView = () => {
         today={today}
         statusChips={statusChips}
         actions={
-          <div className="flex flex-wrap gap-2">
+          <div className={DASH_ACTIONS_ROW}>
             <button type="button" onClick={() => navigate('/materials')} className={DASH_BTN_SECONDARY}>
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
               Materials
@@ -1195,7 +1241,7 @@ const StudentView = () => {
             transition={{ delay: 0.4, duration: 0.6 }}
             className={`${DASH_PANEL} overflow-hidden flex flex-col lg:h-[480px]`}
           >
-            <div className={`px-3 md:px-5 py-3 md:py-4 ${DASH_PANEL_HEADER} flex items-center justify-between shrink-0`}>
+            <div className={`px-3 md:px-5 py-3 md:py-4 ${DASH_PANEL_HEADER} flex flex-wrap items-center justify-between gap-2 shrink-0`}>
               <div className="flex items-center gap-2 md:gap-3.5">
                 <div className="w-8 h-8 rounded-sm bg-violet-700 flex items-center justify-center shrink-0">
                   <svg className="w-4 h-4 md:w-5 md:h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>

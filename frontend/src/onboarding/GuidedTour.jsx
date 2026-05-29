@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { useOnboarding } from './OnboardingContext';
@@ -48,6 +48,7 @@ const GuidedTour = () => {
   const reduceMotion = useReducedMotion();
   const dialogRef = useRef(null);
   const [targetRect, setTargetRect] = useState(null);
+  const [popoverHeight, setPopoverHeight] = useState(320);
 
   const step = activeTour?.steps?.[activeStepIndex];
   const totalSteps = activeTour?.steps?.length || 0;
@@ -68,7 +69,12 @@ const GuidedTour = () => {
       if (cancelled) return;
       const element = step.target ? document.querySelector(step.target) : null;
       if (element && attempts === 0) {
-        element.scrollIntoView({ block: 'center', inline: 'center', behavior: reduceMotion ? 'auto' : 'smooth' });
+        const inSidebar = element.getBoundingClientRect().left < 280;
+        element.scrollIntoView({
+          block: inSidebar ? 'nearest' : 'center',
+          inline: 'nearest',
+          behavior: reduceMotion ? 'auto' : 'smooth',
+        });
       }
 
       window.setTimeout(() => {
@@ -107,24 +113,66 @@ const GuidedTour = () => {
     };
   }, [activeTour, endTour]);
 
+  useLayoutEffect(() => {
+    const node = dialogRef.current;
+    if (!node) return undefined;
+
+    const updateHeight = () => {
+      setPopoverHeight(node.offsetHeight || 320);
+    };
+
+    updateHeight();
+    const observer = new ResizeObserver(updateHeight);
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [step, activeStepIndex, targetRect]);
+
   const popoverStyle = useMemo(() => {
     const margin = 16;
+    const gap = 12;
     const width = Math.min(420, window.innerWidth - margin * 2);
+    const height = popoverHeight;
+    const viewportBottom = window.innerHeight - margin;
 
     if (!targetRect || window.innerWidth < 640) {
       return {
         left: margin,
         right: margin,
         bottom: 'calc(1rem + env(safe-area-inset-bottom))',
+        top: 'auto',
         width: 'auto',
+        maxHeight: 'min(85vh, calc(100dvh - 2rem - env(safe-area-inset-bottom)))',
       };
     }
 
-    const topCandidate = targetRect.bottom + 16;
-    const top = clamp(topCandidate, margin, window.innerHeight - 310);
-    const left = clamp(targetRect.left + targetRect.width / 2 - width / 2, margin, window.innerWidth - width - margin);
-    return { top, left, width };
-  }, [targetRect]);
+    const isSidebarTarget = targetRect.left < 280 && targetRect.width < 300;
+    let top;
+    let left;
+
+    if (isSidebarTarget) {
+      left = clamp(targetRect.right + gap, margin, window.innerWidth - width - margin);
+      top = targetRect.top + targetRect.height / 2 - height / 2;
+    } else {
+      const spaceBelow = viewportBottom - targetRect.bottom;
+      const spaceAbove = targetRect.top - margin;
+
+      if (spaceBelow >= height + gap) {
+        top = targetRect.bottom + gap;
+      } else if (spaceAbove >= height + gap) {
+        top = targetRect.top - height - gap;
+      } else {
+        top = spaceBelow >= spaceAbove
+          ? targetRect.bottom + gap
+          : targetRect.top - height - gap;
+      }
+
+      left = clamp(targetRect.left + targetRect.width / 2 - width / 2, margin, window.innerWidth - width - margin);
+    }
+
+    top = clamp(top, margin, viewportBottom - height);
+
+    return { top, left, width, maxHeight: 'min(85vh, calc(100dvh - 2rem))' };
+  }, [targetRect, popoverHeight]);
 
   if (!activeTour || !step) return null;
 
