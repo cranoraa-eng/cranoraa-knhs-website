@@ -228,23 +228,100 @@ const Login = () => {
         </svg>
       </button>
 
-      {/* Loading Overlay */}
+      {/* ── Login Loading Skeleton ── */}
       {loading && (
-        <div className={`fixed inset-0 z-[100] flex flex-col items-center justify-center backdrop-blur-md transition-all duration-500 ${isAdmin ? 'bg-black/90' : 'bg-[#0F071E]/80'}`}>
-          <div className="relative mb-8">
-            <div className={`absolute -inset-4 bg-${currentRole.color}-600 rounded-full blur-xl opacity-40 animate-pulse`} />
-            <div className={`relative w-24 h-24 rounded-full flex items-center justify-center p-1 shadow-2xl transition-all duration-500 ${isAdmin ? 'bg-slate-900 border border-emerald-500/30' : 'bg-white'}`}>
-              <div className={`absolute inset-0 rounded-full border-4 ${isAdmin ? 'border-emerald-900/30 border-t-emerald-500' : `border-${currentRole.color}-100 border-t-${currentRole.color}-600`} animate-spin`} />
-              <div className={`relative w-full h-full rounded-full flex items-center justify-center ${isAdmin ? 'bg-emerald-500/10' : `bg-${currentRole.color}-50`}`}>
-                <svg className={`w-10 h-10 transition-colors duration-500 ${isAdmin ? 'text-emerald-500' : `text-${currentRole.color}-600`}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={currentRole.loadingIcon} />
-                </svg>
-              </div>
+        <div className={`fixed inset-0 z-[100] flex flex-col overflow-auto transition-all duration-300 ${isAdmin ? 'bg-slate-950' : 'bg-[#0F071E]'}`}>
+
+          {/* Top nav skeleton */}
+          <div className={`flex items-center justify-between px-6 py-4 border-b ${isAdmin ? 'border-slate-800' : 'border-white/5'}`}>
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-white/10 animate-pulse" />
+              <div className="w-32 h-4 rounded-full bg-white/10 animate-pulse" />
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-full bg-white/10 animate-pulse" />
+              <div className="w-8 h-8 rounded-full bg-white/10 animate-pulse" />
+              <div className="w-24 h-8 rounded-xl bg-white/10 animate-pulse" />
             </div>
           </div>
-          <div className="text-center space-y-2 max-w-xs px-6">
-            <h3 className="text-xl font-black text-white uppercase tracking-tighter animate-pulse">{currentRole.loadingTitle}</h3>
-            <p className={`text-[10px] font-bold text-${currentRole.color}-400 uppercase tracking-[0.3em] leading-relaxed`}>{currentRole.loadingDesc}</p>
+
+          <div className="flex flex-1 overflow-hidden">
+            {/* Sidebar skeleton */}
+            <div className={`hidden md:flex flex-col w-56 shrink-0 border-r p-4 gap-3 ${isAdmin ? 'border-slate-800' : 'border-white/5'}`}>
+              {/* Avatar */}
+              <div className="flex items-center gap-3 mb-4 px-1">
+                <div className="w-10 h-10 rounded-full bg-white/10 animate-pulse" />
+                <div className="flex-1 space-y-1.5">
+                  <div className="w-24 h-3 rounded-full bg-white/10 animate-pulse" />
+                  <div className="w-16 h-2.5 rounded-full bg-white/8 animate-pulse" />
+                </div>
+              </div>
+              {/* Nav items */}
+              {[1,2,3,4,5,6].map(i => (
+                <div key={i} className="flex items-center gap-3 px-3 py-2.5 rounded-xl">
+                  <div className="w-4 h-4 rounded bg-white/10 animate-pulse" />
+                  <div className={`h-3 rounded-full bg-white/10 animate-pulse`} style={{ width: `${50 + i * 8}px` }} />
+                </div>
+              ))}
+            </div>
+
+            {/* Main content skeleton */}
+            <div className="flex-1 p-6 space-y-6 overflow-auto">
+
+              {/* Welcome banner */}
+              <div className={`rounded-2xl p-5 ${isAdmin ? 'bg-slate-900' : 'bg-white/5'} animate-pulse`}>
+                <div className="w-48 h-5 rounded-full bg-white/10 mb-2" />
+                <div className="w-72 h-3.5 rounded-full bg-white/8" />
+              </div>
+
+              {/* Stats row */}
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                {[1,2,3,4].map(i => (
+                  <div key={i} className={`rounded-2xl p-4 space-y-3 ${isAdmin ? 'bg-slate-900' : 'bg-white/5'} animate-pulse`}>
+                    <div className="flex items-center justify-between">
+                      <div className="w-8 h-8 rounded-xl bg-white/10" />
+                      <div className="w-12 h-3 rounded-full bg-white/8" />
+                    </div>
+                    <div className="w-16 h-6 rounded-lg bg-white/10" />
+                    <div className="w-24 h-2.5 rounded-full bg-white/8" />
+                  </div>
+                ))}
+              </div>
+
+              {/* Two-column content */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                {/* Chart placeholder */}
+                <div className={`lg:col-span-2 rounded-2xl p-5 ${isAdmin ? 'bg-slate-900' : 'bg-white/5'} animate-pulse`}>
+                  <div className="w-36 h-4 rounded-full bg-white/10 mb-4" />
+                  <div className="flex items-end gap-2 h-32">
+                    {[40,65,45,80,55,70,50,85,60,75,45,90].map((h, i) => (
+                      <div key={i} className="flex-1 rounded-t-lg bg-white/10" style={{ height: `${h}%` }} />
+                    ))}
+                  </div>
+                </div>
+                {/* List placeholder */}
+                <div className={`rounded-2xl p-5 space-y-3 ${isAdmin ? 'bg-slate-900' : 'bg-white/5'} animate-pulse`}>
+                  <div className="w-28 h-4 rounded-full bg-white/10 mb-4" />
+                  {[1,2,3,4].map(i => (
+                    <div key={i} className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-white/10 shrink-0" />
+                      <div className="flex-1 space-y-1.5">
+                        <div className="w-full h-2.5 rounded-full bg-white/10" />
+                        <div className="w-2/3 h-2 rounded-full bg-white/8" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          {/* Role label at bottom */}
+          <div className="text-center py-3">
+            <p className={`text-[10px] font-bold uppercase tracking-[0.3em] animate-pulse ${isAdmin ? 'text-emerald-500/60' : `text-${currentRole.color}-400/60`}`}>
+              {currentRole.loadingTitle}…
+            </p>
           </div>
         </div>
       )}
