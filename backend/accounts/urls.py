@@ -15,6 +15,7 @@ from .views import (
     RoomViewSet, TimeSlotViewSet, ScheduleViewSet,
     parent_dashboard_view, parent_child_detail_view,
     fcm_token_register, fcm_token_delete, test_push_notification,
+    storage_analytics_view,
 )
 
 router = DefaultRouter()
@@ -58,6 +59,7 @@ urlpatterns = [
     path('attendance/summary/', AttendanceViewSet.as_view({'get': 'summary'}), name='attendance_summary'),
     path('grades/summary/', GradeViewSet.as_view({'get': 'summary'}), name='grade_summary'),
     path('admin/grade-distribution/', grade_distribution_stats, name='grade_distribution_stats'),
+    path('admin/storage-analytics/', storage_analytics_view, name='storage_analytics'),
     path('check-result/', check_result, name='check_result'),
     path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh/', cookie_token_refresh_view, name='token_refresh'),  # httpOnly cookie-based refresh

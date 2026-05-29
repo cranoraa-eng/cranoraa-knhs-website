@@ -52,68 +52,11 @@ def get_mailjet_health_status():
 
 def upload_to_supabase(file, folder="profiles"):
     """
-    Uploads a file to Supabase Storage and returns the public URL.
-    Returns (url, error_message).
+    Backward-compatible wrapper — uploads to the 'profile-pictures' bucket.
+    New code should call accounts.storage.upload_file() directly.
     """
-    url = (settings.SUPABASE_URL or "").strip().strip("'").strip('"')
-    key = (settings.SUPABASE_KEY or "").strip().strip("'").strip('"')
-    bucket = (settings.SUPABASE_BUCKET or "profile-pictures").strip().strip("'").strip('"')
-
-    if not url or not key:
-        missing = []
-        if not url:
-            missing.append("SUPABASE_URL")
-        if not key:
-            missing.append("SUPABASE_KEY (or SUPABASE_SERVICE_ROLE_KEY)")
-        return None, f"Supabase configuration missing: {', '.join(missing)}"
-
-    if not url.startswith(('http://', 'https://')):
-        return None, f"Storage Error: Invalid URL format. SUPABASE_URL must start with https://."
-
-    try:
-        from supabase import create_client, Client as SupabaseClient
-
-        supabase: SupabaseClient = create_client(url, key)
-
-        ext = os.path.splitext(file.name)[1].lower() or '.jpg'
-        filename = f"{folder}/{secrets.token_hex(8)}{ext}"
-
-        file.seek(0)
-        content = file.read()
-
-        if len(content) > 5 * 1024 * 1024:
-            return None, "File too large (max 5MB)"
-
-        try:
-            storage_client = supabase.storage.from_(bucket)
-            res = storage_client.upload(
-                path=filename,
-                file=content,
-                file_options={"content-type": file.content_type or "image/jpeg"}
-            )
-
-            if isinstance(res, dict) and 'error' in res:
-                return None, f"Supabase Error: {res.get('message', res.get('error'))}"
-
-            if hasattr(res, 'error') and res.error:
-                err_msg = res.error.get('message', str(res.error)) if isinstance(res.error, dict) else str(res.error)
-                return None, f"Supabase Error: {err_msg}"
-
-        except Exception as upload_err:
-            err_msg = str(upload_err)
-            if "'dict' object has no attribute 'text'" in err_msg:
-                return None, "Storage Error: Supabase client internal error — check SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, and that the bucket is set to Public."
-            if "bucket" in err_msg.lower() or "not found" in err_msg.lower():
-                return None, f"Storage bucket '{bucket}' not found. Create it in Supabase and set it to Public."
-            return None, f"Upload Failed: {err_msg}"
-
-        public_url = f"{url.rstrip('/')}/storage/v1/object/public/{bucket}/{filename}"
-        logger.info(f"Successfully uploaded file: {public_url}")
-        return public_url, None
-
-    except Exception as e:
-        logger.error(f"Supabase upload error: {str(e)}", exc_info=True)
-        return None, "File upload failed. Please try again."
+    from .storage import upload_file
+    return upload_file(file, bucket_key='profile-pictures', folder=folder)
 
 
 # ─── Moderation check ─────────────────────────────────────────────────────────

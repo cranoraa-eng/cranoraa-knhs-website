@@ -142,7 +142,8 @@ const Materials = () => {
 
   const getFileUrl = (path) => {
     if (!path) return '#';
-    return path.startsWith('http') ? path : `http://127.0.0.1:8000${path}`;
+    // Files are now Supabase URLs (absolute). Legacy local paths are no longer generated.
+    return path.startsWith('http') ? path : `${import.meta.env.VITE_API_URL?.replace('/api', '') || ''}${path}`;
   };
 
   return (

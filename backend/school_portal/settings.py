@@ -319,18 +319,29 @@ CSRF_COOKIE_SAMESITE = 'Lax'
 # Frontend URL for verification links
 FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:5173')
 
-# Supabase Configuration
+# ─── Supabase Configuration ───────────────────────────────────────────────────
 SUPABASE_URL = os.environ.get('SUPABASE_URL')
 SUPABASE_KEY = os.environ.get('SUPABASE_SERVICE_ROLE_KEY') or os.environ.get('SUPABASE_KEY')
+
+# Legacy single-bucket setting (kept for backward compat)
 SUPABASE_BUCKET = os.environ.get('SUPABASE_STORAGE_BUCKET', 'profile-pictures')
+
+# Per-bucket overrides — defaults match the bucket names in accounts/storage.py
+# Set these in Render env vars only if you rename a bucket.
+SUPABASE_BUCKET_PROFILES     = os.environ.get('SUPABASE_BUCKET_PROFILES',     'profile-pictures')
+SUPABASE_BUCKET_ANNOUNCEMENTS= os.environ.get('SUPABASE_BUCKET_ANNOUNCEMENTS','announcements')
+SUPABASE_BUCKET_ASSIGNMENTS  = os.environ.get('SUPABASE_BUCKET_ASSIGNMENTS',  'assignments')
+SUPABASE_BUCKET_SUBMISSIONS  = os.environ.get('SUPABASE_BUCKET_SUBMISSIONS',  'submissions')
+SUPABASE_BUCKET_MATERIALS    = os.environ.get('SUPABASE_BUCKET_MATERIALS',    'learning-materials')
+SUPABASE_BUCKET_REPORTS      = os.environ.get('SUPABASE_BUCKET_REPORTS',      'reports')
+SUPABASE_BUCKET_ENROLLMENT   = os.environ.get('SUPABASE_BUCKET_ENROLLMENT',   'enrollment-docs')
+SUPABASE_BUCKET_BRANDING     = os.environ.get('SUPABASE_BUCKET_BRANDING',     'branding')
 
 if not SUPABASE_URL or not SUPABASE_KEY:
     import logging as _logging
     _logging.getLogger(__name__).warning("SUPABASE_URL or SUPABASE_KEY not set — file uploads will fail.")
 
 # Email sending has been removed from this portal.
-# RESEND_API_KEY and RESEND_FROM_EMAIL are kept as None to avoid
-# AttributeError in any code that still references them.
 RESEND_API_KEY = None
 RESEND_FROM_EMAIL = ''
 

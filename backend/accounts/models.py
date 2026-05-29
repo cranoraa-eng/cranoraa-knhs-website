@@ -312,7 +312,7 @@ class SystemSetting(models.Model):
     school_address = models.TextField(blank=True, null=True)
     school_phone = models.CharField(max_length=20, blank=True, null=True)
     school_email = models.EmailField(blank=True, null=True)
-    school_logo = models.ImageField(upload_to='branding/', null=True, blank=True)
+    school_logo = models.URLField(max_length=1000, null=True, blank=True, help_text="Supabase Storage URL")
     
     # Branding
     primary_color = models.CharField(max_length=7, default='#2D1B4D')
@@ -480,7 +480,7 @@ class Announcement(models.Model):
     is_public = models.BooleanField(default=False)
     event_date = models.DateTimeField(null=True, blank=True)
     end_date = models.DateTimeField(null=True, blank=True)
-    attachment = models.FileField(upload_to='announcements/attachments/', null=True, blank=True)
+    attachment = models.URLField(max_length=1000, null=True, blank=True, help_text="Supabase Storage URL")
     read_by = models.ManyToManyField(User, related_name='read_announcements', blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -504,13 +504,14 @@ class AnnouncementAttachment(models.Model):
     announcement = models.ForeignKey(
         Announcement, on_delete=models.CASCADE, related_name='attachments'
     )
-    file = models.FileField(upload_to='announcements/attachments/')
+    file = models.URLField(max_length=1000, blank=False, help_text="Supabase Storage URL")
     filename = models.CharField(max_length=255, blank=True)
+    file_size_bytes = models.PositiveIntegerField(null=True, blank=True)
+    content_type = models.CharField(max_length=100, blank=True)
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
     def save(self, *args, **kwargs):
-        if not self.filename and self.file:
-            self.filename = self.file.name.split('/')[-1]
+        # filename is set by the view before saving
         super().save(*args, **kwargs)
 
     def __str__(self):
@@ -522,7 +523,7 @@ class AnnouncementAttachment(models.Model):
 
     @property
     def url(self):
-        return self.file.url if self.file else ''
+        return self.file or ''
 
 
 class Attendance(models.Model):
@@ -565,7 +566,9 @@ class LearningMaterial(models.Model):
     material_type = models.CharField(max_length=20, choices=MATERIAL_TYPE_CHOICES, default='dlp')
     classroom = models.ForeignKey(Classroom, on_delete=models.CASCADE, related_name='materials', null=True, blank=True)
     uploaded_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='uploaded_materials')
-    file = models.FileField(upload_to='materials/', null=True, blank=True)
+    file = models.URLField(max_length=1000, null=True, blank=True, help_text="Supabase Storage URL")
+    file_size_bytes = models.PositiveIntegerField(null=True, blank=True)
+    original_filename = models.CharField(max_length=255, blank=True)
     quarter = models.IntegerField(null=True, blank=True, help_text="Quarter (1-4)")
     week = models.IntegerField(null=True, blank=True, help_text="Week number")
     created_at = models.DateTimeField(auto_now_add=True)
@@ -817,13 +820,13 @@ class EnrollmentApplication(models.Model):
     lrn = models.CharField(max_length=12, blank=True, null=True, help_text="Learner Reference Number")
     is_als = models.BooleanField(default=False, help_text="Alternative Learning System applicant")
     
-    # Document Uploads
-    birth_certificate = models.FileField(upload_to='enrollment_documents/birth_certificates/', blank=True, null=True)
-    report_card = models.FileField(upload_to='enrollment_documents/report_cards/', blank=True, null=True)
-    form_138 = models.FileField(upload_to='enrollment_documents/form_138/', blank=True, null=True, help_text="Grade 6 Candidate for Graduation Certificate")
-    certificate_of_completion = models.FileField(upload_to='enrollment_documents/completion_certificates/', blank=True, null=True, help_text="Grade 10 Candidate for Completion Certificate")
-    good_moral_certificate = models.FileField(upload_to='enrollment_documents/good_moral/', blank=True, null=True)
-    last_school_attended_cert = models.FileField(upload_to='enrollment_documents/last_school/', blank=True, null=True, help_text="For ALS applicants")
+    # Document Uploads — stored in Supabase 'enrollment-docs' bucket
+    birth_certificate = models.URLField(max_length=1000, blank=True, null=True)
+    report_card = models.URLField(max_length=1000, blank=True, null=True)
+    form_138 = models.URLField(max_length=1000, blank=True, null=True, help_text="Grade 6 Candidate for Graduation Certificate")
+    certificate_of_completion = models.URLField(max_length=1000, blank=True, null=True, help_text="Grade 10 Candidate for Completion Certificate")
+    good_moral_certificate = models.URLField(max_length=1000, blank=True, null=True)
+    last_school_attended_cert = models.URLField(max_length=1000, blank=True, null=True, help_text="For ALS applicants")
     
     # Contact Information
     email = models.EmailField()
@@ -903,7 +906,7 @@ class WebsiteContent(models.Model):
     section = models.CharField(max_length=100, unique=True, null=True, blank=True)
     category = models.CharField(max_length=50, choices=CATEGORY_CHOICES, default='other')
     content = models.TextField(blank=True, null=True)
-    image = models.ImageField(upload_to='website_content/', null=True, blank=True)
+    image = models.URLField(max_length=1000, null=True, blank=True, help_text="Supabase Storage URL")
     updated_at = models.DateTimeField(auto_now=True)
     updated_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     
@@ -922,7 +925,9 @@ class Assignment(models.Model):
     classroom = models.ForeignKey(Classroom, on_delete=models.CASCADE, related_name='assignments')
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name='assignments')
     teacher = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_assignments')
-    file = models.FileField(upload_to='assignments/', null=True, blank=True)
+    file = models.URLField(max_length=1000, null=True, blank=True, help_text="Supabase Storage URL")
+    original_filename = models.CharField(max_length=255, blank=True)
+    file_size_bytes = models.PositiveIntegerField(null=True, blank=True)
     due_date = models.DateTimeField()
     points = models.IntegerField(default=100)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -937,7 +942,9 @@ class Assignment(models.Model):
 class Submission(models.Model):
     assignment = models.ForeignKey(Assignment, on_delete=models.CASCADE, related_name='submissions')
     student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='submissions')
-    file = models.FileField(upload_to='submissions/')
+    file = models.URLField(max_length=1000, help_text="Supabase Storage URL")
+    original_filename = models.CharField(max_length=255, blank=True)
+    file_size_bytes = models.PositiveIntegerField(null=True, blank=True)
     submitted_at = models.DateTimeField(auto_now_add=True)
     grade = models.IntegerField(null=True, blank=True)
     feedback = models.TextField(blank=True, null=True)

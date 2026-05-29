@@ -1420,19 +1420,26 @@ class AnnouncementViewSet(viewsets.ModelViewSet):
             announcement = serializer.save(author=self.request.user)
             logger.info(f"Announcement created: {announcement.title}")
 
-            # Save multiple attachments
+            # Save multiple attachments to Supabase 'announcements' bucket
             files = self.request.FILES.getlist('attachments')
             logger.info(f"Found {len(files)} attachment(s)")
+            from .storage import upload_file, StorageValidationError
             for f in files:
                 try:
-                    AnnouncementAttachment.objects.create(
-                        announcement=announcement,
-                        file=f,
-                        filename=f.name
-                    )
-                    logger.info(f"Saved attachment: {f.name}")
+                    url, err = upload_file(f, bucket_key='announcements', folder='attachments')
+                    if url:
+                        AnnouncementAttachment.objects.create(
+                            announcement=announcement,
+                            file=url,
+                            filename=f.name,
+                            file_size_bytes=f.size,
+                            content_type=getattr(f, 'content_type', '') or '',
+                        )
+                        logger.info(f"Uploaded announcement attachment: {f.name}")
+                    else:
+                        logger.error(f"Failed to upload attachment {f.name}: {err}")
                 except Exception as e:
-                    logger.error(f"Error saving attachment: {str(e)}")
+                    logger.error(f"Error uploading attachment {f.name}: {str(e)}")
 
             # Log announcement creation
             from portal.views import log_audit_action
@@ -1535,15 +1542,22 @@ class AnnouncementViewSet(viewsets.ModelViewSet):
 
     def perform_update(self, serializer):
         announcement = serializer.save()
-        # Append any new attachments (don't delete existing ones)
+        # Append any new attachments to Supabase (don't delete existing ones)
         files = self.request.FILES.getlist('attachments')
+        from .storage import upload_file
         for f in files:
-            from .models import AnnouncementAttachment
-            AnnouncementAttachment.objects.create(
-                announcement=announcement,
-                file=f,
-                filename=f.name
-            )
+            url, err = upload_file(f, bucket_key='announcements', folder='attachments')
+            if url:
+                from .models import AnnouncementAttachment
+                AnnouncementAttachment.objects.create(
+                    announcement=announcement,
+                    file=url,
+                    filename=f.name,
+                    file_size_bytes=f.size,
+                    content_type=getattr(f, 'content_type', '') or '',
+                )
+            else:
+                logger.error(f"Failed to upload attachment {f.name}: {err}")
         from portal.views import log_audit_action
         log_audit_action(
             user=self.request.user,
@@ -1880,13 +1894,33 @@ class LearningMaterialViewSet(viewsets.ModelViewSet):
         return queryset.order_by('-created_at')
     
     def perform_create(self, serializer):
-        # Only teachers and admins can upload materials
         if self.request.user.role not in ['teacher', 'admin']:
             from rest_framework.exceptions import PermissionDenied
             raise PermissionDenied("Only teachers and admins can upload materials")
-        material = serializer.save(uploaded_by=self.request.user)
-        
-        # Log material upload
+
+        # Upload file to Supabase before saving the record
+        file_url = None
+        original_filename = ''
+        file_size_bytes = None
+        uploaded_file = self.request.FILES.get('file')
+        if uploaded_file:
+            from .storage import upload_file
+            url, err = upload_file(uploaded_file, bucket_key='learning-materials',
+                                   folder=f"classroom_{self.request.data.get('classroom', 'general')}")
+            if err:
+                from rest_framework.exceptions import ValidationError
+                raise ValidationError({'file': f'Upload failed: {err}'})
+            file_url = url
+            original_filename = uploaded_file.name
+            file_size_bytes = uploaded_file.size
+
+        material = serializer.save(
+            uploaded_by=self.request.user,
+            file=file_url,
+            original_filename=original_filename,
+            file_size_bytes=file_size_bytes,
+        )
+
         from portal.views import log_audit_action
         log_audit_action(
             user=self.request.user,
@@ -2087,30 +2121,44 @@ class FeeViewSet(viewsets.ModelViewSet):
 
 @api_view(['GET', 'POST', 'PATCH'])
 @permission_classes([IsAuthenticated])
+@parser_classes([parsers.MultiPartParser, parsers.FormParser, parsers.JSONParser])
 def system_settings_view(request):
     """View to get or update global system settings (Admin only for updates)"""
     logger.info(f"System settings request: {request.method} by {request.user.username}")
-    settings = SystemSetting.get_settings()
-    
+    sys_settings = SystemSetting.get_settings()
+
     if request.method in ['POST', 'PATCH']:
         try:
             if request.user.role != 'admin':
                 return Response({'error': 'Only administrators can update system settings'}, status=status.HTTP_403_FORBIDDEN)
-            
-            serializer = SystemSettingSerializer(settings, data=request.data, partial=True)
+
+            # Handle school_logo upload to Supabase branding bucket
+            if 'school_logo' in request.FILES:
+                from .storage import upload_file
+                logo_file = request.FILES['school_logo']
+                url, err = upload_file(logo_file, bucket_key='branding', folder='logos')
+                if err:
+                    return Response({'error': f'Logo upload failed: {err}'}, status=400)
+                sys_settings.school_logo = url
+                sys_settings.save(update_fields=['school_logo'])
+                # Remove from data so serializer doesn't try to process it as a field
+                data = request.data.copy()
+                data.pop('school_logo', None)
+            else:
+                data = request.data
+
+            serializer = SystemSettingSerializer(sys_settings, data=data, partial=True)
             if serializer.is_valid():
                 serializer.save()
-                response_data = dict(serializer.data)
-                return Response(response_data)
+                return Response(dict(serializer.data))
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             logger.error(f"Error updating system settings: {str(e)}", exc_info=True)
             return Response({'error': 'Failed to update system settings.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-    
+
     # GET
-    serializer = SystemSettingSerializer(settings)
-    response_data = dict(serializer.data)
-    return Response(response_data)
+    serializer = SystemSettingSerializer(sys_settings)
+    return Response(dict(serializer.data))
 
 
 @api_view(['GET'])
@@ -2459,6 +2507,19 @@ def admin_dashboard_stats(request):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
+def storage_analytics_view(request):
+    """
+    Returns file counts and sizes per Supabase bucket.
+    Admin only.
+    """
+    if request.user.role != 'admin':
+        return Response({'error': 'Admin access required.'}, status=403)
+    from .storage import get_storage_stats
+    return Response(get_storage_stats())
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def grade_distribution_stats(request):
     """
     Detailed statistics for grade distribution across the school.
@@ -2732,11 +2793,11 @@ def student_profile(request):
     
     if request.method == 'POST':
         if 'profile_picture' in request.FILES:
-            from .utils import upload_to_supabase
+            from .storage import upload_file
             pic_file = request.FILES['profile_picture']
             try:
-                url, error = upload_to_supabase(pic_file)
-                
+                url, error = upload_file(pic_file, bucket_key='profile-pictures',
+                                         folder=f"user_{target_user.id}")
                 if url:
                     profile.profile_picture = url
                     profile.save()
@@ -2985,7 +3046,37 @@ class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
     
     def create(self, request, *args, **kwargs):
         try:
-            serializer = self.get_serializer(data=request.data)
+            # Upload document files to Supabase before validating/saving
+            from .storage import upload_file
+            doc_fields = [
+                'birth_certificate', 'report_card', 'form_138',
+                'certificate_of_completion', 'good_moral_certificate',
+                'last_school_attended_cert',
+            ]
+            uploaded_urls = {}
+            upload_errors = []
+            for field_name in doc_fields:
+                if field_name in request.FILES:
+                    f = request.FILES[field_name]
+                    url, err = upload_file(f, bucket_key='enrollment-docs',
+                                           folder=f"applications/{field_name}")
+                    if err:
+                        upload_errors.append(f"{field_name}: {err}")
+                    else:
+                        uploaded_urls[field_name] = url
+
+            if upload_errors:
+                return Response(
+                    {'error': 'Some documents failed to upload.', 'details': upload_errors},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # Build mutable data with Supabase URLs replacing file objects
+            data = request.data.copy()
+            for field_name, url in uploaded_urls.items():
+                data[field_name] = url
+
+            serializer = self.get_serializer(data=data)
             serializer.is_valid(raise_exception=True)
             self.perform_create(serializer)
             headers = self.get_success_headers(serializer.data)
@@ -3024,7 +3115,17 @@ class WebsiteContentViewSet(viewsets.ModelViewSet):
         return WebsiteContent.objects.none()
     
     def perform_update(self, serializer):
-        serializer.save(updated_by=self.request.user)
+        # Handle image upload to Supabase branding bucket
+        if 'image' in self.request.FILES:
+            from .storage import upload_file
+            img_file = self.request.FILES['image']
+            url, err = upload_file(img_file, bucket_key='branding', folder='website-content')
+            if err:
+                from rest_framework.exceptions import ValidationError
+                raise ValidationError({'image': f'Image upload failed: {err}'})
+            serializer.save(updated_by=self.request.user, image=url)
+        else:
+            serializer.save(updated_by=self.request.user)
     
     @action(detail=False, methods=['get'], permission_classes=[AllowAny])
     def public(self, request):
@@ -3645,7 +3746,28 @@ class AssignmentViewSet(viewsets.ModelViewSet):
         if self.request.user.role not in ['admin', 'teacher']:
             from rest_framework.exceptions import PermissionDenied
             raise PermissionDenied("Only teachers and admins can create assignments")
-        serializer.save(teacher=self.request.user)
+
+        file_url = None
+        original_filename = ''
+        file_size_bytes = None
+        uploaded_file = self.request.FILES.get('file')
+        if uploaded_file:
+            from .storage import upload_file
+            url, err = upload_file(uploaded_file, bucket_key='assignments',
+                                   folder=f"teacher_{self.request.user.id}")
+            if err:
+                from rest_framework.exceptions import ValidationError
+                raise ValidationError({'file': f'Upload failed: {err}'})
+            file_url = url
+            original_filename = uploaded_file.name
+            file_size_bytes = uploaded_file.size
+
+        serializer.save(
+            teacher=self.request.user,
+            file=file_url,
+            original_filename=original_filename,
+            file_size_bytes=file_size_bytes,
+        )
 
     @action(detail=False, methods=['get'])
     def analytics(self, request):
@@ -3707,7 +3829,25 @@ class SubmissionViewSet(viewsets.ModelViewSet):
         if self.request.user.role != 'student':
             from rest_framework.exceptions import PermissionDenied
             raise PermissionDenied("Only students can submit assignments")
-        serializer.save(student=self.request.user)
+
+        uploaded_file = self.request.FILES.get('file')
+        if not uploaded_file:
+            from rest_framework.exceptions import ValidationError
+            raise ValidationError({'file': 'A file is required for submission.'})
+
+        from .storage import upload_file
+        url, err = upload_file(uploaded_file, bucket_key='submissions',
+                               folder=f"student_{self.request.user.id}")
+        if err:
+            from rest_framework.exceptions import ValidationError
+            raise ValidationError({'file': f'Upload failed: {err}'})
+
+        serializer.save(
+            student=self.request.user,
+            file=url,
+            original_filename=uploaded_file.name,
+            file_size_bytes=uploaded_file.size,
+        )
 
 
 class GradeReportViewSet(viewsets.ModelViewSet):
