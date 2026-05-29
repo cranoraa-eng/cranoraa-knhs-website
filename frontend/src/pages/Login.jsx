@@ -73,7 +73,7 @@ const SystemMonitor = ({ isAdmin, uptime, serverLoad, securityEvents }) => {
 };
 
 const Login = () => {
-  const { user, signIn } = useAuth();
+  const { user, signIn, refreshUser } = useAuth();
   const navigate = useNavigate();
 
   const [identifier, setIdentifier] = useState('');
@@ -185,6 +185,9 @@ const Login = () => {
         return;
       }
       signIn(userData);
+      // Fetch full profile (including profile picture) before navigating
+      // so the avatar is ready the moment the dashboard renders.
+      await refreshUser();
       toast.success('Welcome back!');
       if (userData.role === 'parent') navigate('/parent-dashboard', { replace: true });
       else navigate('/dashboard', { replace: true });
