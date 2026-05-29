@@ -185,57 +185,51 @@ const StatCard = ({ label, value, sub, icon, color = 'violet', onClick, badge })
 
 const LatestMessagesWidget = ({ messages, onOpenChat }) => {
   return (
-    <div className="bg-white border border-slate-200/70 rounded-[2rem] p-6 shadow-sm flex flex-col h-full relative overflow-hidden group">
-      {/* Decorative Gradient */}
+    <div className="bg-white border border-slate-200/70 rounded-xl p-4 shadow-sm flex flex-col h-full relative overflow-hidden group">
       <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-violet-500/5 to-transparent rounded-full -mr-16 -mt-16 blur-2xl opacity-50" />
-      
-      <div className="flex items-center justify-between mb-6 shrink-0 relative z-10">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-violet-50 text-violet-600 flex items-center justify-center shrink-0 shadow-sm border border-violet-100">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
+      <div className="flex items-center justify-between mb-3 shrink-0 relative z-10">
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-lg bg-violet-50 text-violet-600 flex items-center justify-center shrink-0 shadow-sm border border-violet-100">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
           </div>
           <div>
-            <h3 className="text-sm font-black text-slate-900 uppercase tracking-tight">Latest Messages</h3>
-            <p className="text-xs font-black text-slate-400 uppercase tracking-widest mt-0.5">Communication hub</p>
+            <h3 className="text-xs font-black text-slate-900 uppercase tracking-tight">Latest Messages</h3>
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-0.5">Communication hub</p>
           </div>
         </div>
-        <button 
-          onClick={onOpenChat}
-          className="p-2.5 rounded-md bg-violet-50 text-violet-600 hover:bg-violet-600 hover:text-white transition-all active:scale-90 shadow-sm border border-violet-100/50"
-          title="Open Messages"
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 5H19M19 5V11M19 5L5 19M5 19H11M5 19V13" /></svg>
+        <button onClick={onOpenChat}
+          className="p-2 rounded-md bg-violet-50 text-violet-600 hover:bg-violet-600 hover:text-white transition-all active:scale-90 shadow-sm border border-violet-100/50">
+          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 5H19M19 5V11M19 5L5 19M5 19H11M5 19V13" /></svg>
         </button>
       </div>
-
-      <div className="space-y-3 flex-1 overflow-y-auto pr-1 -mr-1 scrollbar-none relative z-10">
+      <div className="space-y-2 flex-1 overflow-y-auto scrollbar-none relative z-10">
         {messages?.map(m => (
-          <div key={m.id} className="flex gap-4 p-4 rounded-lg bg-slate-50/50 border border-slate-100 hover:bg-white hover:border-violet-200 hover:shadow-md transition-all cursor-pointer group/msg" onClick={onOpenChat}>
+          <div key={m.id} className="flex gap-3 p-3 rounded-lg bg-slate-50/50 border border-slate-100 hover:bg-white hover:border-violet-200 hover:shadow-md transition-all cursor-pointer group/msg" onClick={onOpenChat}>
             <div className="relative shrink-0">
-              <div className="w-11 h-11 rounded-lg bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center text-slate-600 font-black text-xs shadow-sm border border-white group-hover/msg:rotate-6 transition-transform overflow-hidden">
+              <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center text-slate-600 font-black text-xs shadow-sm border border-white group-hover/msg:rotate-6 transition-transform overflow-hidden">
                 {m.sender_profile_picture
                   ? <img src={m.sender_profile_picture} alt="" className="w-full h-full object-cover" />
                   : m.sender ? m.sender[0].toUpperCase() : '?'}
               </div>
-              <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-emerald-500 border-2 border-white rounded-full shadow-sm" />
+              <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full" />
             </div>
             <div className="min-w-0 flex-1">
               <div className="flex justify-between items-center gap-2">
                 <h4 className="text-xs font-black text-slate-800 truncate group-hover/msg:text-violet-600 transition-colors">{m.sender || 'Unknown'}</h4>
-                <span className="text-xs font-black text-slate-400 uppercase tracking-tighter shrink-0 bg-slate-100 px-1.5 py-0.5 rounded-sm">
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-tighter shrink-0 bg-slate-100 px-1.5 py-0.5 rounded-sm">
                   {new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 </span>
               </div>
-              <p className="text-xs text-slate-500 line-clamp-1 mt-1.5 font-bold tracking-tight">{m.content}</p>
+              <p className="text-[10px] text-slate-500 line-clamp-1 mt-1 font-bold tracking-tight">{m.content}</p>
             </div>
           </div>
         ))}
         {!messages?.length && (
-          <div className="flex flex-col items-center justify-center py-12 opacity-40">
-            <div className="w-16 h-16 rounded-[2rem] bg-slate-50 flex items-center justify-center mb-4">
-              <svg className="w-8 h-8 text-slate-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
+          <div className="flex flex-col items-center justify-center py-8 opacity-40">
+            <div className="w-12 h-12 rounded-xl bg-slate-50 flex items-center justify-center mb-3">
+              <svg className="w-6 h-6 text-slate-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
             </div>
-            <p className="text-xs font-black text-slate-400 uppercase tracking-widest">No recent messages</p>
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">No recent messages</p>
           </div>
         )}
       </div>
@@ -296,7 +290,7 @@ const TodayScheduleWidget = ({ role }) => {
   };
 
   return (
-    <div className="bg-white border border-slate-200/70 rounded-[2rem] p-6 shadow-sm flex flex-col h-full relative overflow-hidden group">
+    <div className="bg-white border border-slate-200/70 rounded-xl p-6 shadow-sm flex flex-col h-full relative overflow-hidden group">
       {/* Decorative background element */}
       <div className="absolute top-0 left-0 w-24 h-24 bg-gradient-to-br from-indigo-500/5 to-transparent rounded-full -ml-12 -mt-12 blur-2xl opacity-50" />
       
@@ -418,7 +412,7 @@ const AdminView = () => {
   const COLORS = ['#10b981', '#3b82f6', '#8b5cf6', '#f59e0b', '#ef4444'];
 
   return (
-    <div className="space-y-4 md:space-y-6 page-bottom-safe">
+    <div className="space-y-3 page-bottom-safe">
       <WelcomeBanner
         user={user}
         today={today}
@@ -428,72 +422,46 @@ const AdminView = () => {
           <>
             <button
               onClick={() => navigate('/announcements')}
-              className="px-5 py-3 rounded-lg border border-slate-200 bg-white text-slate-700 font-black text-xs uppercase tracking-[0.15em] hover:bg-slate-50 hover:border-violet-200 hover:text-violet-600 transition-all flex items-center gap-2.5 shadow-sm active:scale-95"
+              className="px-4 py-2 rounded-lg border border-slate-200 bg-white text-slate-700 font-black text-xs uppercase tracking-[0.15em] hover:bg-slate-50 hover:border-violet-200 hover:text-violet-600 transition-all flex items-center gap-2 shadow-sm active:scale-95"
             >
               Post Announcement
             </button>
             {data?.pending_approvals > 0 && (
               <button
                 onClick={() => navigate('/account-approvals')}
-                className="px-5 py-3 rounded-lg bg-[#1A0B2E] text-white font-black text-xs uppercase tracking-[0.15em] hover:bg-violet-900 shadow-lg shadow-violet-200/50 transition-all flex items-center gap-2.5 active:scale-95"
+                className="px-4 py-2 rounded-lg bg-[#1A0B2E] text-white font-black text-xs uppercase tracking-[0.15em] hover:bg-violet-900 shadow-lg shadow-violet-200/50 transition-all flex items-center gap-2 active:scale-95"
               >
-                Review Approvals ({data.pending_approvals})
+                Approvals ({data.pending_approvals})
               </button>
             )}
           </>
         }
       />
 
-      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 md:gap-5">
-        <StatCard
-          label="Total Students" value={data?.total_students} sub="Enrolled"
-          color="blue" onClick={() => navigate('/student-management')}
-          icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>}
-        />
-        <StatCard
-          label="Faculty" value={data?.total_teachers} sub="Verified"
-          color="emerald" onClick={() => navigate('/teachers')}
-          icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" /></svg>}
-        />
-        <StatCard
-          label="Classrooms" value={data?.total_classes} sub="Sections"
-          color="violet" onClick={() => navigate('/class-management')}
-          icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>}
-        />
-        <StatCard
-          label="Announcements" value={data?.total_announcements} sub="Live"
-          color="amber" onClick={() => navigate('/announcements')}
-          icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" /></svg>}
-        />
-        <StatCard
-          label="Active Users" value={data?.active_users} sub="Realtime"
-          color="indigo"
-          icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>}
-        />
-        <StatCard
-          label="Attendance" value={`${data?.today_rate || 0}%`} sub="Today's Rate"
-          color={data?.today_rate >= 75 ? 'emerald' : 'rose'} onClick={() => navigate('/attendance')}
-          icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
-        />
+      <div className="grid grid-cols-3 xl:grid-cols-6 gap-2.5">
+        <StatCard label="Total Students" value={data?.total_students} sub="Enrolled" color="blue" onClick={() => navigate('/student-management')} icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>} />
+        <StatCard label="Faculty" value={data?.total_teachers} sub="Verified" color="emerald" onClick={() => navigate('/teachers')} icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" /></svg>} />
+        <StatCard label="Classrooms" value={data?.total_classes} sub="Sections" color="violet" onClick={() => navigate('/class-management')} icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>} />
+        <StatCard label="Announcements" value={data?.total_announcements} sub="Live" color="amber" onClick={() => navigate('/announcements')} icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" /></svg>} />
+        <StatCard label="Active Users" value={data?.active_users} sub="Realtime" color="indigo" icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>} />
+        <StatCard label="Attendance" value={`${data?.today_rate || 0}%`} sub="Today's Rate" color={data?.today_rate >= 75 ? 'emerald' : 'rose'} onClick={() => navigate('/attendance')} icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>} />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-8 overflow-hidden">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 overflow-hidden">
         {/* Attendance Trends */}
-        <div className="lg:col-span-8 bg-white border border-slate-200/70 rounded-xl md:rounded-[2rem] p-4 md:p-8 shadow-sm overflow-hidden flex flex-col">
-          <div className="flex items-center justify-between mb-8 shrink-0">
+        <div className="lg:col-span-8 bg-white border border-slate-200/70 rounded-xl p-4 shadow-sm overflow-hidden flex flex-col">
+          <div className="flex items-center justify-between mb-3 shrink-0">
             <div>
-              <h3 className="text-sm font-black text-slate-900 uppercase tracking-tight">Attendance Trends</h3>
-              <p className="text-xs font-black text-slate-400 uppercase tracking-widest mt-1">Last 30 Days Presence rate</p>
+              <h3 className="text-xs font-black text-slate-900 uppercase tracking-tight">Attendance Trends</h3>
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-0.5">Last 30 Days · Presence Rate</p>
             </div>
-            <div className="flex gap-4">
-               <span className="flex items-center gap-2 text-xs font-black text-slate-500 uppercase tracking-widest">
-                 <span className="w-2 h-2 rounded-full bg-violet-500 shadow-[0_0_10px_rgba(139,92,246,0.5)]" /> Rate (%)
-               </span>
-            </div>
+            <span className="flex items-center gap-1.5 text-[10px] font-black text-slate-500 uppercase tracking-widest">
+              <span className="w-2 h-2 rounded-full bg-violet-500 shadow-[0_0_8px_rgba(139,92,246,0.5)]" /> Rate (%)
+            </span>
           </div>
-          <div className="flex-1 h-64 min-h-[300px] w-full">
+          <div className="flex-1 min-h-[200px] w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={attendanceTrends} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+              <AreaChart data={attendanceTrends} margin={{ top: 5, right: 5, left: -25, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorRate" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.15}/>
@@ -501,99 +469,68 @@ const AdminView = () => {
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                <XAxis 
-                  dataKey="date" 
-                  axisLine={false} 
-                  tickLine={false} 
-                  tick={{fontSize: 10, fontWeight: 800, fill: '#94a3b8'}}
-                  tickFormatter={(str) => {
-                    const d = new Date(str);
-                    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-                  }}
-                  dy={10}
+                <XAxis dataKey="date" axisLine={false} tickLine={false}
+                  tick={{ fontSize: 9, fontWeight: 800, fill: '#94a3b8' }} dy={8}
+                  tickFormatter={str => { const d = new Date(str); return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }); }}
                 />
-                <YAxis 
-                  axisLine={false} 
-                  tickLine={false} 
-                  tick={{fontSize: 10, fontWeight: 800, fill: '#94a3b8'}}
-                  unit="%"
-                  dx={-5}
+                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 9, fontWeight: 800, fill: '#94a3b8' }} unit="%" dx={-3} />
+                <Tooltip
+                  contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 25px -5px rgb(0 0 0 / 0.1)', padding: '10px' }}
+                  labelStyle={{ fontWeight: 900, color: '#1e293b', fontSize: '10px', textTransform: 'uppercase', marginBottom: '4px' }}
+                  itemStyle={{ fontWeight: 800, fontSize: '11px', color: '#8b5cf6' }}
                 />
-                <Tooltip 
-                  contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)', padding: '12px' }}
-                  labelStyle={{ fontWeight: 900, color: '#1e293b', fontSize: '11px', textTransform: 'uppercase', marginBottom: '4px' }}
-                  itemStyle={{ fontWeight: 800, fontSize: '12px', color: '#8b5cf6' }}
-                />
-                <Area type="monotone" dataKey="rate" stroke="#8b5cf6" strokeWidth={4} fillOpacity={1} fill="url(#colorRate)" animationDuration={1500} />
+                <Area type="monotone" dataKey="rate" stroke="#8b5cf6" strokeWidth={3} fillOpacity={1} fill="url(#colorRate)" animationDuration={1200} />
               </AreaChart>
             </ResponsiveContainer>
           </div>
         </div>
 
         {/* Grade Distribution */}
-        <div className="lg:col-span-4 bg-white border border-slate-200/70 rounded-xl md:rounded-[2rem] p-4 md:p-8 shadow-sm flex flex-col">
-          <div className="flex items-center justify-between mb-8 shrink-0">
+        <div className="lg:col-span-4 bg-white border border-slate-200/70 rounded-xl p-4 shadow-sm flex flex-col">
+          <div className="flex items-center justify-between mb-3 shrink-0">
             <div>
-              <h3 className="text-sm font-black text-slate-900 uppercase tracking-tight">Grade Analysis</h3>
-              <p className="text-xs font-black text-slate-400 uppercase tracking-widest mt-1">{distView === 'general_average' ? 'General Average' : 'All Subjects'}</p>
+              <h3 className="text-xs font-black text-slate-900 uppercase tracking-tight">Grade Analysis</h3>
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-0.5">{distView === 'general_average' ? 'General Average' : 'All Subjects'}</p>
             </div>
-            <button 
-              onClick={() => setDistView(distView === 'general_average' ? 'all_subjects' : 'general_average')}
-              className="p-2.5 rounded-md bg-slate-50 text-slate-400 hover:text-violet-600 hover:bg-violet-50 transition-all active:scale-90"
-              title="Toggle View"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+            <button onClick={() => setDistView(distView === 'general_average' ? 'all_subjects' : 'general_average')}
+              className="p-2 rounded-md bg-slate-50 text-slate-400 hover:text-violet-600 hover:bg-violet-50 transition-all active:scale-90">
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
             </button>
           </div>
-          <div className="flex-1 flex flex-col justify-center gap-8 min-h-[300px]">
-            {/* Chart */}
-            <div className="h-48 relative shrink-0">
+          <div className="flex-1 flex flex-col justify-between min-h-[200px]">
+            <div className="h-36 relative shrink-0">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
-                  <Pie
-                    data={gradeData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={85}
-                    paddingAngle={8}
-                    dataKey="value"
-                    animationDuration={1500}
-                  >
-                    {gradeData.map((entry, index) => (
+                  <Pie data={gradeData} cx="50%" cy="50%" innerRadius={45} outerRadius={65}
+                    paddingAngle={6} dataKey="value" animationDuration={1200}>
+                    {gradeData.map((_, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} stroke="none" />
                     ))}
                   </Pie>
-                  <Tooltip 
-                    contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)' }}
-                    itemStyle={{ fontWeight: 900, fontSize: '11px', textTransform: 'uppercase' }}
-                  />
+                  <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 25px -5px rgb(0 0 0 / 0.1)' }}
+                    itemStyle={{ fontWeight: 900, fontSize: '10px', textTransform: 'uppercase' }} />
                 </PieChart>
               </ResponsiveContainer>
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center justify-center pointer-events-none">
-                <p className="text-3xl font-black text-slate-900 leading-none">{dist?.total_count || 0}</p>
-                <p className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] mt-1.5">
+                <p className="text-xl font-black text-slate-900 leading-none">{dist?.total_count || 0}</p>
+                <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mt-1">
                   {distView === 'general_average' ? 'Students' : 'Entries'}
                 </p>
               </div>
             </div>
-
-            {/* Legends */}
-            <div className="grid grid-cols-2 gap-y-4 gap-x-6 px-2">
+            <div className="grid grid-cols-2 gap-x-3 gap-y-2 px-1">
               {gradeData.map((item, index) => {
                 const total = gradeData.reduce((sum, d) => sum + d.value, 0);
                 const percentage = total > 0 ? ((item.value / total) * 100).toFixed(1) : 0;
                 return (
-                  <div key={item.name} className="flex flex-col gap-1">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <div className="w-2 h-2 rounded-full shrink-0 shadow-sm" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
-                      <span className="text-xs font-black text-slate-500 uppercase tracking-widest truncate leading-none">
-                        {item.name}
-                      </span>
+                  <div key={item.name} className="flex flex-col gap-0.5">
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
+                      <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest truncate leading-none">{item.name}</span>
                     </div>
-                    <div className="flex items-baseline gap-1.5 pl-4">
-                      <span className="text-sm font-black text-slate-900 leading-none">{percentage}%</span>
-                      <span className="text-xs font-bold text-slate-400 leading-none">({item.value})</span>
+                    <div className="flex items-baseline gap-1 pl-3.5">
+                      <span className="text-xs font-black text-slate-900 leading-none">{percentage}%</span>
+                      <span className="text-[9px] font-bold text-slate-400 leading-none">({item.value})</span>
                     </div>
                   </div>
                 );
@@ -603,30 +540,32 @@ const AdminView = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8">
-        {/* Recent Announcements Widget */}
-        <div className="bg-white border border-slate-200/70 rounded-xl md:rounded-[2rem] p-4 md:p-6 shadow-sm flex flex-col">
-          <div className="flex items-center justify-between mb-6 shrink-0">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+        {/* Recent Announcements */}
+        <div className="bg-white border border-slate-200/70 rounded-xl p-4 shadow-sm flex flex-col">
+          <div className="flex items-center justify-between mb-3 shrink-0">
             <div>
-              <h3 className="text-sm font-black text-slate-900 uppercase tracking-tight">Recent Announcements</h3>
-              <p className="text-xs font-black text-slate-400 uppercase tracking-widest mt-1">School-wide updates</p>
+              <h3 className="text-xs font-black text-slate-900 uppercase tracking-tight">Recent Announcements</h3>
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-0.5">School-wide updates</p>
             </div>
-            <Link to="/announcements" className="p-2.5 rounded-md bg-violet-50 text-violet-600 hover:bg-violet-600 hover:text-white transition-all active:scale-90">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+            <Link to="/announcements" className="p-2 rounded-md bg-violet-50 text-violet-600 hover:bg-violet-600 hover:text-white transition-all active:scale-90">
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
             </Link>
           </div>
-          <div className="space-y-3 flex-1 overflow-y-auto pr-1 -mr-1 scrollbar-thin">
+          <div className="space-y-2 flex-1 overflow-y-auto scrollbar-none">
             {data?.recent_announcements?.map(a => (
-              <div key={a.id} className="group flex gap-4 p-4 rounded-lg bg-slate-50/50 hover:bg-white hover:shadow-md hover:shadow-violet-100 transition-all border border-transparent hover:border-violet-100 cursor-pointer">
-                <div className="flex-shrink-0 w-11 h-11 rounded-md bg-white border border-slate-100 flex items-center justify-center text-violet-600 font-black text-sm shadow-sm group-hover:bg-violet-600 group-hover:text-white group-hover:border-violet-600 transition-all">
+              <div key={a.id} className="group flex gap-3 p-3 rounded-lg bg-slate-50/50 hover:bg-white hover:shadow-md hover:shadow-violet-100 transition-all border border-transparent hover:border-violet-100 cursor-pointer">
+                <div className="shrink-0 w-9 h-9 rounded-md bg-white border border-slate-100 flex items-center justify-center text-violet-600 font-black text-xs shadow-sm group-hover:bg-violet-600 group-hover:text-white group-hover:border-violet-600 transition-all">
                   {new Date(a.created_at).getDate()}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <h4 className="text-xs font-black text-slate-800 line-clamp-1 group-hover:text-violet-600 transition-colors leading-snug">{a.title}</h4>
-                  <div className="flex items-center gap-2 mt-1.5">
-                    <p className="text-xs text-slate-400 font-black uppercase tracking-widest">{a.author_name}</p>
-                    <span className="w-1 h-1 rounded-full bg-slate-300" />
-                    <p className="text-xs text-slate-400 font-black uppercase tracking-widest">{new Date(a.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</p>
+                  <h4 className="text-xs font-black text-slate-800 line-clamp-1 group-hover:text-violet-600 transition-colors">{a.title}</h4>
+                  <div className="flex items-center gap-1.5 mt-1">
+                    <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest truncate">{a.author_name}</p>
+                    <span className="w-1 h-1 rounded-full bg-slate-300 shrink-0" />
+                    <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest shrink-0">
+                      {new Date(a.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -634,50 +573,43 @@ const AdminView = () => {
           </div>
         </div>
 
-        {/* Latest Messages Widget */}
-        <LatestMessagesWidget 
-          messages={data?.latest_messages} 
-          onOpenChat={() => navigate('/messages')} 
-        />
+        {/* Latest Messages */}
+        <LatestMessagesWidget messages={data?.latest_messages} onOpenChat={() => navigate('/messages')} />
 
-        {/* Recent Activity Widget */}
-        <div className="bg-white border border-slate-200/70 rounded-xl md:rounded-[2rem] p-4 md:p-6 shadow-sm flex flex-col">
-          <div className="flex items-center justify-between mb-6 shrink-0">
+        {/* System Activity */}
+        <div className="bg-white border border-slate-200/70 rounded-xl p-4 shadow-sm flex flex-col">
+          <div className="flex items-center justify-between mb-3 shrink-0">
             <div>
-              <h3 className="text-sm font-black text-slate-900 uppercase tracking-tight">System Activity</h3>
-              <p className="text-xs font-black text-slate-400 uppercase tracking-widest mt-1">Audit logs summary</p>
+              <h3 className="text-xs font-black text-slate-900 uppercase tracking-tight">System Activity</h3>
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-0.5">Audit logs summary</p>
             </div>
-            <Link to="/audit-logs" className="p-2.5 rounded-md bg-violet-50 text-violet-600 hover:bg-violet-600 hover:text-white transition-all active:scale-90">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
+            <Link to="/audit-logs" className="p-2 rounded-md bg-violet-50 text-violet-600 hover:bg-violet-600 hover:text-white transition-all active:scale-90">
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
             </Link>
           </div>
-          <div className="space-y-4 flex-1 overflow-y-auto pr-1 -mr-1 scrollbar-thin">
+          <div className="space-y-2 flex-1 overflow-y-auto scrollbar-none">
             {data?.widgets?.recent_activity?.map(log => (
-              <div key={log.id} className="flex items-start gap-4 p-3 rounded-lg hover:bg-slate-50 transition-all group">
-                <div className={`mt-1.5 w-2.5 h-2.5 rounded-full shrink-0 shadow-sm transition-transform group-hover:scale-125 ${
-                  log.action === 'login' ? 'bg-emerald-500' : 
-                  log.action === 'delete' ? 'bg-rose-500' : 
-                  log.action === 'create' ? 'bg-blue-500' : 'bg-amber-500'
+              <div key={log.id} className="flex items-start gap-3 p-2.5 rounded-lg hover:bg-slate-50 transition-all group">
+                <div className={`mt-1.5 w-2 h-2 rounded-full shrink-0 transition-transform group-hover:scale-125 ${
+                  log.action === 'login'  ? 'bg-emerald-500' :
+                  log.action === 'delete' ? 'bg-rose-500'    :
+                  log.action === 'create' ? 'bg-blue-500'    : 'bg-amber-500'
                 }`} />
                 <div className="min-w-0">
-                  <h4 className="text-xs font-bold text-slate-800 leading-relaxed">
-                    <span className="text-violet-600 font-black">{log.user}</span> <span className="text-slate-500">{log.description}</span>
-                  </h4>
-                  <p className="text-xs text-slate-400 font-black mt-1.5 uppercase tracking-widest">
-                    {new Date(log.timestamp).toLocaleString(undefined, { 
-                      month: 'short', 
-                      day: 'numeric', 
-                      hour: '2-digit', 
-                      minute: '2-digit' 
-                    })}
+                  <p className="text-xs font-bold text-slate-800 leading-snug line-clamp-2">
+                    <span className="text-violet-600 font-black">{log.user}</span>{' '}
+                    <span className="text-slate-500">{log.description}</span>
+                  </p>
+                  <p className="text-[10px] text-slate-400 font-black mt-1 uppercase tracking-widest">
+                    {new Date(log.timestamp).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                   </p>
                 </div>
               </div>
             ))}
             {!data?.widgets?.recent_activity?.length && (
-              <div className="flex flex-col items-center justify-center py-10 opacity-40">
-                <svg className="w-8 h-8 text-slate-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-                <p className="text-xs font-black text-slate-400 uppercase tracking-widest">No activity</p>
+              <div className="flex flex-col items-center justify-center py-8 opacity-40">
+                <svg className="w-7 h-7 text-slate-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">No activity</p>
               </div>
             )}
           </div>
