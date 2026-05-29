@@ -170,7 +170,7 @@ def login_view(request):
     except Exception as e:
         logger.error(f"Login error: {str(e)}", exc_info=True)
         return Response(
-            {'error': 'An unexpected error occurred. Please try again.'},
+            {'error': f'Server error: {type(e).__name__}: {str(e)}'},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
 
