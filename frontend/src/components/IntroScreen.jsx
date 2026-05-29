@@ -1,88 +1,66 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 
-const IntroScreen = () => {
-  const [isVisible, setIsVisible] = useState(true);
-  const [shouldRender, setShouldRender] = useState(false);
+const roleLabels = {
+  student: 'Student Portal',
+  teacher: 'Teacher Portal',
+  parent: 'Parent Portal',
+  admin: 'Admin Portal',
+};
 
+const IntroScreen = ({ open = false, user = null, duration = 900, onComplete }) => {
   useEffect(() => {
-    const hasSeenIntro = sessionStorage.getItem('hasSeenIntro');
-    if (!hasSeenIntro) {
-      setShouldRender(true);
-      // Auto-hide after 3 seconds
-      const timer = setTimeout(() => {
-        handleClose();
-      }, 3500);
-      return () => clearTimeout(timer);
-    }
-  }, []);
+    if (!open) return undefined;
 
-  const handleClose = () => {
-    setIsVisible(false);
-    sessionStorage.setItem('hasSeenIntro', 'true');
-    // Remove from DOM after animation
-    setTimeout(() => {
-      setShouldRender(false);
-    }, 500);
-  };
+    const timer = window.setTimeout(() => {
+      onComplete?.();
+    }, duration);
 
-  if (!shouldRender) return null;
+    return () => window.clearTimeout(timer);
+  }, [duration, onComplete, open]);
+
+  if (!open) return null;
+
+  const displayName =
+    [user?.first_name, user?.last_name].filter(Boolean).join(' ') ||
+    user?.email ||
+    'Welcome';
+
+  const portalLabel = roleLabels[user?.role] || 'KNHS Portal';
 
   return (
-    <div 
-      className={`fixed inset-0 z-[9999] flex items-center justify-center bg-[#0F071E] transition-opacity duration-700 ease-in-out ${isVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
-    >
-      {/* SaaS-style Background Accents */}
-      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-to-br from-violet-600/20 via-fuchsia-600/10 to-transparent rounded-full blur-[120px] -mr-64 -mt-64" />
-      <div className="absolute -bottom-32 -left-32 w-96 h-96 bg-indigo-600/20 rounded-full blur-[100px]" />
-      
-      <div className="relative flex flex-col items-center text-center px-6">
-        {/* Animated Logo Container */}
-        <div className="relative mb-8 group">
-          <div className="absolute -inset-4 bg-gradient-to-r from-violet-600 to-indigo-600 rounded-full blur-xl opacity-40 group-hover:opacity-60 animate-pulse transition-opacity" />
-          <div className="relative w-24 h-24 md:w-32 md:h-32 bg-white rounded-full shadow-2xl flex items-center justify-center p-1 transform rotate-3 hover:rotate-0 transition-transform duration-500 border-4 border-white/20">
-            <div className="w-full h-full rounded-full bg-white flex items-center justify-center overflow-hidden p-3">
-               <img src="/icons/school-logo-source.png" alt="KNHS Logo" className="w-full h-full object-contain" />
-            </div>
-          </div>
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center overflow-hidden bg-[#0F071E]">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(139,92,246,0.24),_transparent_35%),radial-gradient(circle_at_bottom_left,_rgba(59,130,246,0.18),_transparent_30%)]" />
+      <div className="relative mx-6 w-full max-w-md rounded-3xl border border-white/10 bg-white/5 px-8 py-10 text-center shadow-2xl backdrop-blur-xl">
+        <div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-white p-3 shadow-lg ring-4 ring-violet-500/20">
+          <img src="/icons/school-logo-source.png" alt="KNHS Logo" className="h-full w-full object-contain" />
         </div>
-
-        {/* Text Content */}
-        <div className="space-y-4 animate-fade-in-up" style={{ animation: 'fadeInUp 1s ease-out forwards', animationDelay: '0.3s', opacity: 0 }}>
-          <h1 className="text-3xl md:text-5xl font-black text-white tracking-tighter uppercase leading-none">
-            KNHS <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-indigo-300">Portal</span>
-          </h1>
-          <p className="text-slate-400 text-xs md:text-sm font-bold uppercase tracking-[0.3em] max-w-xs mx-auto">
-            Innovating Education Through Intelligence
-          </p>
-        </div>
-
-        {/* Progress Bar */}
-        <div className="mt-12 w-48 h-1 bg-white/5 rounded-full overflow-hidden">
-          <div 
-            className="h-full bg-gradient-to-r from-violet-500 to-indigo-500" 
-            style={{ animation: 'progress 3s ease-in-out forwards', width: '0%' }} 
+        <p className="mb-2 text-[11px] font-black uppercase tracking-[0.35em] text-violet-300">
+          {portalLabel}
+        </p>
+        <h1 className="text-3xl font-black tracking-tight text-white">
+          Welcome, {displayName}
+        </h1>
+        <p className="mt-2 text-sm text-slate-300">
+          Taking you to your dashboard...
+        </p>
+        <div className="mt-6 h-1.5 overflow-hidden rounded-full bg-white/10">
+          <div
+            className="h-full rounded-full bg-gradient-to-r from-violet-500 to-indigo-400"
+            style={{ animation: `intro-progress ${duration}ms linear forwards`, width: '0%' }}
           />
         </div>
-
-        {/* Skip Button (Optional but good for UX) */}
-        <button 
-          onClick={handleClose}
-          className="mt-8 text-[10px] font-black text-slate-500 uppercase tracking-widest hover:text-white transition-colors"
-        >
-          Skip Intro
-        </button>
       </div>
 
-      <style dangerouslySetInnerHTML={{ __html: `
-        @keyframes progress {
-          0% { width: 0%; }
-          100% { width: 100%; }
-        }
-        @keyframes fadeInUp {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-      `}} />
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
+            @keyframes intro-progress {
+              from { width: 0%; }
+              to { width: 100%; }
+            }
+          `,
+        }}
+      />
     </div>
   );
 };

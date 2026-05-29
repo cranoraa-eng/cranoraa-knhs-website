@@ -4,7 +4,6 @@ import { NotificationProvider } from './context/NotificationContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Layout from './components/Layout';
 import PublicLayout from './components/PublicLayout';
-import IntroScreen from './components/IntroScreen';
 import { lazy, Suspense } from 'react';
 import { useState, useEffect } from 'react';
 import api from './utils/api';
@@ -129,7 +128,6 @@ function App() {
     <AuthProvider>
       <NotificationProvider>
         <BrowserRouter>
-          <IntroScreen />
           <Suspense fallback={<PageLoader />}>
             <Routes>
               {/* Auth Routes */}
