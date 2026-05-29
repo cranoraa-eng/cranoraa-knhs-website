@@ -547,6 +547,24 @@ class AnnouncementAttachment(models.Model):
         return self.file or ''
 
 
+class AnnouncementComment(models.Model):
+    announcement = models.ForeignKey(
+        Announcement, on_delete=models.CASCADE, related_name='comments'
+    )
+    author = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='announcement_comments'
+    )
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['created_at']
+
+    def __str__(self):
+        return f"Comment by {self.author_id} on announcement {self.announcement_id}"
+
+
 class Attendance(models.Model):
     STATUS_CHOICES = [
         ('present', 'Present'),

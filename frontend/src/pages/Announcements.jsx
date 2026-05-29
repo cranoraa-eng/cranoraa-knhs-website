@@ -1,9 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import api, { MEDIA_ROOT } from '../utils/api';
 import { getUser } from '../utils/auth';
 import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
 import { useScrollLock } from '../hooks/useScrollLock';
+import PostComposerModal from '../components/announcements/PostComposerModal';
+import AnnouncementCommentsPanel from '../components/announcements/AnnouncementCommentsPanel';
 
 const CATEGORY_CONFIG = {
   general:       { label: 'General',       color: 'bg-slate-50 text-slate-700 border-slate-200' },
@@ -63,6 +65,7 @@ const EMPTY_FORM = {
 const Announcements = () => {
   const user = getUser();
   const canManage = user?.role === 'admin' || user?.role === 'teacher';
+  const canComment = ['student', 'teacher', 'admin'].includes(user?.role);
 
   const [announcements, setAnnouncements] = useState([]);
   const [classrooms, setClassrooms]     = useState([]);
@@ -79,6 +82,7 @@ const Announcements = () => {
 
   const [selectedIds, setSelectedIds]     = useState([]);
   const [processing, setProcessing]       = useState(false);
+  const [liveCommentCount, setLiveCommentCount] = useState(0);
 
   useScrollLock(showModal || showView || zoomedImage);
 
@@ -147,6 +151,8 @@ const Announcements = () => {
           }
         } else if (k === 'event_date' || k === 'end_date') {
           if (v && v.trim() !== '') fd.append(k, v);
+        } else if (typeof v === 'boolean') {
+          fd.append(k, v ? 'true' : 'false');
         } else if (v !== null && v !== undefined) {
           fd.append(k, v);
         }
@@ -288,9 +294,20 @@ const Announcements = () => {
 
   const openPost = (a) => {
     setSelected(a);
+    setLiveCommentCount(a.comment_count || 0);
     setShowView(true);
     if (!a.is_read) handleRead(a);
   };
+
+  const handleCommentCountChange = useCallback((count) => {
+    setLiveCommentCount(count);
+    if (selected?.id) {
+      setAnnouncements((prev) =>
+        prev.map((item) => (item.id === selected.id ? { ...item, comment_count: count } : item))
+      );
+      setSelected((s) => (s ? { ...s, comment_count: count } : s));
+    }
+  }, [selected?.id]);
 
   const authorInitial = (name) => (name || 'S').charAt(0).toUpperCase();
 
@@ -601,14 +618,19 @@ const Announcements = () => {
 
                   {/* Engagement stats */}
                   <div className="px-3 md:px-4 py-2 flex items-center justify-between text-xs text-slate-500 border-b border-slate-100">
-                    <span className="flex items-center gap-1">
-                      <span className="w-4 h-4 rounded-full bg-violet-600 flex items-center justify-center">
-                        <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                          <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                          <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
-                        </svg>
+                    <span className="flex items-center gap-3">
+                      <span className="flex items-center gap-1">
+                        <span className="w-4 h-4 rounded-full bg-violet-600 flex items-center justify-center">
+                          <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                            <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
+                          </svg>
+                        </span>
+                        {a.read_count || 0} view{(a.read_count || 0) === 1 ? '' : 's'}
                       </span>
-                      {a.read_count || 0} view{(a.read_count || 0) === 1 ? '' : 's'}
+                      {(a.comment_count || 0) > 0 && (
+                        <span>{a.comment_count} comment{(a.comment_count || 0) === 1 ? '' : 's'}</span>
+                      )}
                     </span>
                   </div>
 
@@ -633,7 +655,7 @@ const Announcements = () => {
                       <svg className="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                       </svg>
-                      Details
+                      Comment{(a.comment_count || 0) > 0 ? ` (${a.comment_count})` : ''}
                     </button>
                     <button
                       type="button"
@@ -653,200 +675,27 @@ const Announcements = () => {
         )}
       </div>
 
-      {/* ── Create / Edit Modal ── */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-[100] p-4 animate-in fade-in duration-300">
-          <div className="bg-white rounded-3xl shadow-xl w-full max-w-lg max-h-[90vh] flex flex-col overflow-hidden border border-slate-200/60 animate-in zoom-in-95 duration-300">
-            <div className="flex items-center justify-between px-6 py-5 bg-slate-50/60 border-b border-slate-200/60 flex-shrink-0">
-              <div>
-                <h2 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-0.5">Internal Communication Hub</h2>
-                <h3 className="text-lg font-black text-slate-900 tracking-tight leading-none">{isEditing ? 'Edit Broadcast' : 'New Broadcast'}</h3>
-              </div>
-              <button
-                onClick={() => setShowModal(false)}
-                className="p-2 rounded-xl text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-all active:scale-90"
-                aria-label="Close"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-            
-            <form onSubmit={handleSave} className="flex-1 overflow-y-auto p-5 space-y-4 scrollbar-none">
-              <div className="space-y-1">
-                <div className="flex justify-between items-center px-1">
-                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.15em]">Headline <span className="text-rose-400">*</span></label>
-                  <span className="text-[9px] font-bold text-slate-300">{form.title.length}/100</span>
-                </div>
-                <input type="text" value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
-                  placeholder="Clear and concise title" required maxLength={100}
-                  className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-400 focus:bg-white text-xs font-bold transition-all placeholder:text-slate-300" />
-              </div>
-
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                <div className="space-y-1">
-                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.15em] ml-1">Type</label>
-                  <select value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))}
-                    className="w-full px-2 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-400 text-[10px] font-black uppercase tracking-tight cursor-pointer">
-                    {Object.entries(CATEGORY_CONFIG).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
-                  </select>
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.15em] ml-1">Priority</label>
-                  <select value={form.priority} onChange={e => setForm(f => ({ ...f, priority: e.target.value }))}
-                    className="w-full px-2 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-400 text-[10px] font-black uppercase tracking-tight cursor-pointer">
-                    <option value="info">Normal</option>
-                    <option value="critical">Urgent</option>
-                  </select>
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.15em] ml-1">Group</label>
-                  <select value={form.target_audience} onChange={e => setForm(f => ({ ...f, target_audience: e.target.value }))}
-                    className="w-full px-2 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-400 text-[10px] font-black uppercase tracking-tight cursor-pointer">
-                    <option value="all">Everyone</option>
-                    <option value="students">Students</option>
-                    <option value="teachers">Teachers</option>
-                  </select>
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.15em] ml-1">Status</label>
-                  <select value={form.status} onChange={e => setForm(f => ({ ...f, status: e.target.value }))}
-                    className="w-full px-2 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-400 text-[10px] font-black uppercase tracking-tight cursor-pointer">
-                    <option value="draft">Draft</option>
-                    <option value="live">Live</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.15em] ml-1 flex items-center gap-1.5">
-                  Target Sections 
-                  <span className="text-[8px] font-bold text-slate-400 lowercase opacity-70">(Optional: Click to select)</span>
-                </label>
-                <div className="flex flex-wrap gap-1 p-2 bg-slate-50/50 rounded-xl border border-slate-100 max-h-[80px] overflow-y-auto scrollbar-none">
-                  {classrooms.map(cls => (
-                    <button
-                      key={cls.id}
-                      type="button"
-                      onClick={() => {
-                        const current = form.target_classrooms || [];
-                        const updated = current.includes(cls.id) ? current.filter(id => id !== cls.id) : [...current, cls.id];
-                        setForm(f => ({ ...f, target_classrooms: updated }));
-                      }}
-                      className={`px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest transition-all border ${
-                        (form.target_classrooms || []).includes(cls.id)
-                          ? 'bg-slate-900 text-white border-slate-900 shadow-sm scale-95'
-                          : 'bg-white text-slate-500 border-slate-200 hover:border-slate-300 hover:text-slate-900'
-                      }`}
-                    >
-                      {cls.name}
-                    </button>
-                  ))}
-                  {classrooms.length === 0 && <span className="text-[8px] font-bold text-slate-300 uppercase tracking-widest p-1">No sections available</span>}
-                </div>
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.15em] ml-1">Message Content <span className="text-rose-400">*</span></label>
-                <textarea value={form.content} onChange={e => setForm(f => ({ ...f, content: e.target.value }))}
-                  rows={3} required placeholder="What do you want to announce?"
-                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-400 focus:bg-white text-xs font-medium leading-relaxed resize-none scrollbar-none" />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.15em] ml-1">Event Date</label>
-                  <input type="datetime-local" value={form.event_date}
-                    onChange={e => setForm(f => ({ ...f, event_date: e.target.value }))}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-400 text-[10px] font-bold uppercase" />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.15em] ml-1">Expiry Date</label>
-                  <input type="datetime-local" value={form.end_date}
-                    onChange={e => setForm(f => ({ ...f, end_date: e.target.value }))}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-400 text-[10px] font-bold uppercase" />
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.15em] ml-1">Media & Documents</label>
-                <div className="relative group/upload">
-                  <input type="file" accept=".jpg,.jpeg,.png,.gif,.webp,.pdf" multiple
-                    onChange={e => setForm(f => ({ ...f, attachments: Array.from(e.target.files) }))}
-                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
-                  <div className="w-full px-4 py-2.5 bg-slate-50 border border-dashed border-slate-300 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover/upload:border-slate-400 group-hover/upload:text-slate-700 group-hover/upload:bg-white transition-all flex items-center justify-center gap-2">
-                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" /></svg>
-                    Upload Attachments
-                  </div>
-                </div>
-                
-                {/* File list indicators */}
-                {(form.attachments?.length > 0 || (isEditing && selected?.attachments?.length > 0)) && (
-                  <div className="flex flex-wrap gap-1.5">
-                    {form.attachments?.map((file, i) => (
-                      <div key={i} className="flex items-center gap-1.5 bg-slate-50 text-slate-700 px-2 py-1 rounded-lg border border-slate-200 text-[8px] font-black uppercase tracking-tighter">
-                        <span className="truncate max-w-[80px]">{file.name}</span>
-                        <button type="button" onClick={() => setForm(f => ({ ...f, attachments: f.attachments.filter((_, idx) => idx !== i) }))} className="hover:text-rose-500 transition-colors">
-                          <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" /></svg>
-                        </button>
-                      </div>
-                    ))}
-                    {isEditing && selected?.attachments?.map((att, i) => (
-                      <div key={`old-${i}`} className="flex items-center gap-1.5 bg-slate-100 text-slate-600 px-2 py-1 rounded-lg border border-slate-200 text-[8px] font-black uppercase tracking-tighter">
-                        <span className="truncate max-w-[80px]">{att.filename}</span>
-                        <button type="button" onClick={() => handleDeleteAttachment(att.id)} className="hover:text-rose-500 transition-colors">
-                          <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              <div className="grid grid-cols-2 gap-2">
-                <label className="flex items-center gap-2.5 p-2.5 bg-slate-50/80 border border-slate-100 rounded-xl cursor-pointer hover:bg-white hover:border-slate-200 transition-all group">
-                  <div className={`w-4 h-4 rounded-md border flex items-center justify-center transition-all ${form.is_pinned ? 'bg-slate-900 border-slate-900' : 'bg-white border-slate-300'}`}>
-                    {form.is_pinned && (
-                      <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" />
-                      </svg>
-                    )}
-                  </div>
-                  <input type="checkbox" checked={form.is_pinned} className="hidden"
-                    onChange={e => setForm(f => ({ ...f, is_pinned: e.target.checked }))} />
-                  <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest group-hover:text-slate-900">Pin Post</span>
-                </label>
-
-                <label className="flex items-center gap-2.5 p-2.5 bg-slate-50/80 border border-slate-100 rounded-xl cursor-pointer hover:bg-white hover:border-slate-200 transition-all group">
-                  <div className={`w-4 h-4 rounded-md border flex items-center justify-center transition-all ${form.is_public ? 'bg-slate-900 border-slate-900' : 'bg-white border-slate-300'}`}>
-                    {form.is_public && (
-                      <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" />
-                      </svg>
-                    )}
-                  </div>
-                  <input type="checkbox" checked={form.is_public} className="hidden"
-                    onChange={e => setForm(f => ({ ...f, is_public: e.target.checked }))} />
-                  <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest group-hover:text-slate-900">Public Access</span>
-                </label>
-              </div>
-
-              <div className="flex gap-2.5 pt-4 border-t border-slate-100">
-                <button type="button" onClick={() => setShowModal(false)}
-                  className="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-500 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] transition-all">
-                  Cancel
-                </button>
-                <button type="submit" disabled={saving}
-                  className="flex-[2.5] bg-slate-900 hover:bg-slate-800 disabled:opacity-60 text-white font-black py-3 rounded-2xl shadow-sm shadow-slate-900/10 transition-all active:scale-[0.98] text-[10px] uppercase tracking-[0.2em] flex items-center justify-center gap-2">
-                  {saving ? (
-                    <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-                  ) : isEditing ? 'Update Broadcast' : 'Deploy Post'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+      {canManage && (
+        <PostComposerModal
+          open={showModal}
+          onClose={() => setShowModal(false)}
+          form={form}
+          setForm={setForm}
+          isEditing={isEditing}
+          saving={saving}
+          onSubmit={handleSave}
+          classrooms={classrooms}
+          authorInitial={authorInitial(user?.full_name || user?.username)}
+          existingAttachments={
+            isEditing && selected?.attachments
+              ? selected.attachments.map((att) => ({
+                  ...att,
+                  url: attachUrl(att.url),
+                }))
+              : []
+          }
+          onRemoveExistingAttachment={isEditing ? handleDeleteAttachment : undefined}
+        />
       )}
 
 
@@ -962,9 +811,18 @@ const Announcements = () => {
                   )}
                 </div>
               )}
+
+              <AnnouncementCommentsPanel
+                announcementId={selected.id}
+                canComment={canComment}
+                currentUserId={user?.id}
+                currentUserRole={user?.role}
+                initialCount={liveCommentCount}
+                onCountChange={handleCommentCountChange}
+              />
             </div>
-            <div className="px-6 py-4 border-t border-slate-100 flex justify-end">
-              <button onClick={() => setShowView(false)}
+            <div className="px-6 py-4 border-t border-slate-100 flex justify-end shrink-0">
+              <button type="button" onClick={() => setShowView(false)}
                 className="px-5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-lg transition-colors text-sm">
                 Close
               </button>

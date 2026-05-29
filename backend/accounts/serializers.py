@@ -2,7 +2,7 @@ from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 from .models import (Profile, Classroom, StudentClassEnrollment, Announcement,
-    AnnouncementAttachment, Attendance, LearningMaterial,
+    AnnouncementAttachment, AnnouncementComment, Attendance, LearningMaterial,
     Subject, ClassroomSubject, ScratchCard, Fee,
     Notification, EnrollmentApplication, WebsiteContent, Grade, GradeReport,
     ChatRoom, ChatMessage, MessageReaction, Friendship, SystemSetting,
@@ -259,11 +259,26 @@ class AnnouncementAttachmentSerializer(serializers.ModelSerializer):
         return obj.is_image
 
 
+class AnnouncementCommentSerializer(serializers.ModelSerializer):
+    author_name = serializers.SerializerMethodField()
+    author_role = serializers.CharField(source='author.role', read_only=True)
+
+    class Meta:
+        model = AnnouncementComment
+        fields = ['id', 'announcement', 'author', 'author_name', 'author_role', 'content', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'announcement', 'author', 'author_name', 'author_role', 'created_at', 'updated_at']
+
+    def get_author_name(self, obj):
+        return full_name(obj.author)
+
+
 class AnnouncementSerializer(serializers.ModelSerializer):
     author_name = serializers.SerializerMethodField()
     author_email = serializers.CharField(source='author.email', read_only=True)
     attachment_url = serializers.SerializerMethodField()
     read_count = serializers.SerializerMethodField()
+    comment_count = serializers.SerializerMethodField()
+    is_read = serializers.SerializerMethodField()
     is_expired = serializers.BooleanField(read_only=True)
     attachments = AnnouncementAttachmentSerializer(many=True, read_only=True)
 
@@ -273,16 +288,27 @@ class AnnouncementSerializer(serializers.ModelSerializer):
             'id', 'title', 'content', 'category', 'priority', 'status',
             'target_audience', 'target_classrooms', 'author', 'author_name', 'author_email',
             'is_pinned', 'is_public', 'event_date', 'end_date', 'attachment',
-            'attachment_url', 'attachments', 'read_by', 'read_count', 'is_expired',
-            'created_at', 'updated_at'
+            'attachment_url', 'attachments', 'read_by', 'read_count', 'comment_count',
+            'is_read', 'is_expired', 'created_at', 'updated_at'
         ]
-        read_only_fields = ['author', 'read_count', 'is_expired', 'attachments']
+        read_only_fields = ['author', 'read_count', 'comment_count', 'is_read', 'is_expired', 'attachments']
 
     def get_author_name(self, obj): return full_name(obj.author)
     def get_attachment_url(self, obj):
         # attachment is now a URLField — return it directly
         return obj.attachment or None
     def get_read_count(self, obj): return obj.read_by.count()
+    def get_comment_count(self, obj):
+        if hasattr(obj, 'comment_count_annotated'):
+            return obj.comment_count_annotated
+        return obj.comments.count()
+    def get_is_read(self, obj):
+        request = self.context.get('request')
+        if not request or not request.user.is_authenticated:
+            return False
+        if hasattr(obj, '_prefetched_objects_cache') and 'read_by' in obj._prefetched_objects_cache:
+            return any(u.id == request.user.id for u in obj.read_by.all())
+        return obj.read_by.filter(id=request.user.id).exists()
 
 
 class AttendanceSerializer(serializers.ModelSerializer):

@@ -9,7 +9,7 @@ from datetime import timedelta
 import datetime
 from django.db.models import Q, Avg, Count, Max, Min, Sum
 from .serializers import (UserSerializer, ClassroomSerializer, StudentClassEnrollmentSerializer,
-    AnnouncementSerializer, AttendanceSerializer, LearningMaterialSerializer,
+    AnnouncementSerializer, AnnouncementCommentSerializer, AttendanceSerializer, LearningMaterialSerializer,
     SubjectSerializer, ClassroomSubjectSerializer, ScratchCardSerializer, FeeSerializer,
     NotificationSerializer, EnrollmentApplicationSerializer, WebsiteContentSerializer,
     GradeSerializer, GradeReportSerializer, ChatRoomSerializer, ChatMessageSerializer, FriendshipSerializer,
@@ -17,7 +17,7 @@ from .serializers import (UserSerializer, ClassroomSerializer, StudentClassEnrol
     RoomSerializer, TimeSlotSerializer, ScheduleSerializer, ParentChildSummarySerializer,
     OnboardingStateSerializer,
     full_name)
-from .models import User, Classroom, StudentClassEnrollment, Announcement, AnnouncementAttachment, Attendance, LearningMaterial, Subject, ClassroomSubject, ScratchCard, Fee, Notification, EnrollmentApplication, WebsiteContent, Grade, GradeReport, ChatRoom, ChatMessage, MessageReaction, Friendship, SystemSetting, Assignment, Submission, ReportedMessage, Room, TimeSlot, Schedule, FCMToken, OnboardingState
+from .models import User, Classroom, StudentClassEnrollment, Announcement, AnnouncementAttachment, AnnouncementComment, Attendance, LearningMaterial, Subject, ClassroomSubject, ScratchCard, Fee, Notification, EnrollmentApplication, WebsiteContent, Grade, GradeReport, ChatRoom, ChatMessage, MessageReaction, Friendship, SystemSetting, Assignment, Submission, ReportedMessage, Room, TimeSlot, Schedule, FCMToken, OnboardingState
 from .permissions import IsAdmin, IsTeacher, IsStudent, IsParent, IsAdminOrTeacher, IsAdminOrReadOnly
 from .throttles import AuthRateThrottle, CheckResultRateThrottle, EnrollmentRateThrottle
 # Moved portal imports inside functions to avoid circular dependencies
@@ -1436,7 +1436,7 @@ class AnnouncementViewSet(viewsets.ModelViewSet):
         if category and category != 'all':
             queryset = queryset.filter(category=category)
 
-        return queryset.order_by('-is_pinned', '-created_at')
+        return queryset.annotate(comment_count_annotated=Count('comments')).order_by('-is_pinned', '-created_at')
     
     def perform_create(self, serializer):
         try:
@@ -1691,6 +1691,55 @@ class AnnouncementViewSet(viewsets.ModelViewSet):
             return Response({'status': 'attachment deleted'})
         except AnnouncementAttachment.DoesNotExist:
             return Response({'error': 'Attachment not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    def _can_comment_on(self, user, announcement):
+        if user.role not in ('student', 'teacher', 'admin'):
+            return False
+        if user.role == 'student':
+            return announcement.status == 'live'
+        return True
+
+    @action(detail=True, methods=['get', 'post'], url_path='comments')
+    def comments(self, request, pk=None):
+        """List or create comments on an announcement."""
+        announcement = self.get_object()
+        if request.method == 'GET':
+            qs = announcement.comments.select_related('author').order_by('created_at')
+            return Response(AnnouncementCommentSerializer(qs, many=True).data)
+
+        if not self._can_comment_on(request.user, announcement):
+            return Response({'error': 'You cannot comment on this post.'}, status=status.HTTP_403_FORBIDDEN)
+
+        content = (request.data.get('content') or '').strip()
+        if not content:
+            return Response({'error': 'Comment cannot be empty.'}, status=status.HTTP_400_BAD_REQUEST)
+        if len(content) > 2000:
+            return Response({'error': 'Comment is too long (max 2000 characters).'}, status=status.HTTP_400_BAD_REQUEST)
+
+        comment = AnnouncementComment.objects.create(
+            announcement=announcement,
+            author=request.user,
+            content=content,
+        )
+        return Response(
+            AnnouncementCommentSerializer(comment).data,
+            status=status.HTTP_201_CREATED,
+        )
+
+    @action(detail=True, methods=['delete'], url_path=r'comments/(?P<comment_id>[^/.]+)')
+    def delete_comment(self, request, pk=None, comment_id=None):
+        """Delete a comment (author or admin)."""
+        announcement = self.get_object()
+        try:
+            comment = announcement.comments.get(id=comment_id)
+        except AnnouncementComment.DoesNotExist:
+            return Response({'error': 'Comment not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        if request.user.role != 'admin' and comment.author_id != request.user.id:
+            return Response({'error': 'Not allowed to delete this comment.'}, status=status.HTTP_403_FORBIDDEN)
+
+        comment.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class AttendanceViewSet(viewsets.ModelViewSet):
