@@ -50,8 +50,40 @@ const DASH_BTN_SECONDARY = 'inline-flex items-center justify-center gap-2 px-3 p
 const DASH_ICON_BOX = 'rounded-sm bg-violet-50 text-violet-700 flex items-center justify-center border border-violet-200';
 const DASH_ICON_BTN = 'inline-flex items-center justify-center p-2 rounded-sm border border-violet-200 bg-white text-violet-700 hover:bg-violet-700 hover:text-white hover:border-violet-700 transition-colors active:scale-95';
 const DASH_ACTIONS_ROW = 'flex flex-wrap items-center justify-center gap-2';
+const BANNER_BTN_PRIMARY = 'inline-flex items-center justify-center gap-2 px-3 py-2 md:px-4 md:py-2.5 rounded-sm bg-white text-violet-900 text-[10px] md:text-xs font-bold uppercase tracking-wide border border-white shadow-sm hover:bg-violet-50 transition-colors active:scale-[0.98]';
+const BANNER_BTN_SECONDARY = 'inline-flex items-center justify-center gap-2 px-3 py-2 md:px-4 md:py-2.5 rounded-sm bg-violet-600/50 text-white text-[10px] md:text-xs font-bold uppercase tracking-wide border border-violet-400/70 hover:bg-violet-600/80 hover:border-violet-300 transition-colors active:scale-[0.98]';
 const CHART_STROKE = '#7c3aed';
 const CHART_FILL = '#ede9fe';
+
+const BANNER_PERIOD_THEME = {
+  morning: {
+    shell: 'bg-violet-700 border-violet-500',
+    orbA: 'bg-amber-300/25',
+    orbB: 'bg-violet-500/35',
+    chip: 'bg-white/15 border-white/25 text-white',
+    chipIcon: 'text-amber-200',
+    subtitle: 'text-violet-200',
+    message: 'text-violet-100',
+  },
+  afternoon: {
+    shell: 'bg-violet-800 border-violet-600',
+    orbA: 'bg-violet-400/20',
+    orbB: 'bg-fuchsia-400/15',
+    chip: 'bg-white/12 border-white/20 text-white',
+    chipIcon: 'text-violet-200',
+    subtitle: 'text-violet-200',
+    message: 'text-violet-100',
+  },
+  evening: {
+    shell: 'bg-violet-950 border-violet-700',
+    orbA: 'bg-indigo-400/20',
+    orbB: 'bg-violet-600/30',
+    chip: 'bg-white/10 border-white/20 text-white',
+    chipIcon: 'text-indigo-200',
+    subtitle: 'text-violet-300',
+    message: 'text-violet-200',
+  },
+};
 
 const CHIP_DOT = {
   violet: 'bg-violet-600',
@@ -110,41 +142,49 @@ const TeacherActivityIcon = ({ type, className = 'w-4 h-4 md:w-5 md:h-5 text-vio
   );
 };
 
-const WelcomeBanner = ({ user, today, actions, subtitle, stats, statusChips, useSvgGreeting = false }) => {
+const WelcomeBanner = ({ user, today, actions, subtitle, statusChips, useSvgGreeting = true }) => {
   const getGreetingData = () => {
     const hours = new Date().getHours();
-    if (hours < 12) return { text: 'Good Morning', period: 'morning', icon: '☀️', color: 'emerald', message: "Ready to conquer your classes today?" };
-    if (hours < 17) return { text: 'Good Afternoon', period: 'afternoon', icon: '🌤️', color: 'amber', message: "Keep up the great momentum!" };
-    return { text: 'Good Evening', period: 'evening', icon: '🌙', color: 'indigo', message: "Time to review and recharge." };
+    if (hours < 12) return { text: 'Good Morning', period: 'morning', message: 'Ready to conquer your classes today?' };
+    if (hours < 17) return { text: 'Good Afternoon', period: 'afternoon', message: 'Keep up the great momentum!' };
+    return { text: 'Good Evening', period: 'evening', message: 'Time to review and recharge.' };
   };
 
   const greeting = getGreetingData();
+  const theme = BANNER_PERIOD_THEME[greeting.period];
   const initials = [user?.first_name, user?.last_name]
     .filter(Boolean).map(n => n[0].toUpperCase()).join('') || '?';
 
   return (
-    <div className={`${DASH_PANEL} border-violet-300/80 p-3 md:p-5`}>
-      <div className="flex flex-row items-start justify-between gap-3 md:gap-5">
-        <div className="flex-1 space-y-2 md:space-y-3 min-w-0">
+    <div
+      className={`relative overflow-hidden rounded-sm border shadow-[0_4px_20px_rgba(91,33,182,0.25),0_1px_3px_rgba(15,23,42,0.08)] ${theme.shell} p-4 md:p-6`}
+    >
+      <div className={`pointer-events-none absolute -right-10 -top-10 h-36 w-36 rounded-full ${theme.orbA}`} aria-hidden="true" />
+      <div className={`pointer-events-none absolute -bottom-14 -left-8 h-44 w-44 rounded-full ${theme.orbB}`} aria-hidden="true" />
+      <div className="pointer-events-none absolute inset-y-0 right-0 w-1 bg-white/20" aria-hidden="true" />
+
+      <div className="relative z-10 flex flex-row items-start justify-between gap-4 md:gap-6">
+        <div className="flex-1 space-y-2.5 md:space-y-3.5 min-w-0">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="inline-flex items-center justify-center gap-1.5 border border-violet-200 bg-violet-50 px-2 py-1 text-[9px] md:text-[10px] font-bold uppercase tracking-wide text-violet-800">
-              {useSvgGreeting ? <GreetingIcon period={greeting.period} /> : <span aria-hidden="true">{greeting.icon}</span>}
+            <span className={`inline-flex items-center justify-center gap-1.5 px-2.5 py-1 text-[9px] md:text-[10px] font-bold uppercase tracking-wide border ${theme.chip}`}>
+              <GreetingIcon period={greeting.period} className={`w-3.5 h-3.5 ${theme.chipIcon}`} />
               {greeting.text}
             </span>
-            <span className="hidden sm:inline-flex items-center gap-1.5 border border-violet-200 bg-violet-50 px-2 py-1 text-[9px] md:text-[10px] font-bold uppercase tracking-wide text-violet-700">
-              <svg className="w-3 h-3 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            <span className={`hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 text-[9px] md:text-[10px] font-bold uppercase tracking-wide border ${theme.chip}`}>
+              <svg className={`w-3 h-3 ${theme.chipIcon}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
               {today}
             </span>
           </div>
 
           <div className="space-y-1 md:space-y-1.5">
-            <h1 className="text-base md:text-2xl font-bold text-slate-900 tracking-tight leading-tight">
-              Welcome back, <span className="text-violet-700">{user?.first_name || 'User'}</span>
+            <h1 className="text-lg md:text-2xl font-bold text-white tracking-tight leading-tight">
+              Welcome back,{' '}
+              <span className="text-violet-100">{user?.first_name || 'User'}</span>
             </h1>
             {subtitle && (
-              <p className="text-[10px] md:text-xs font-semibold uppercase tracking-wide text-slate-500">{subtitle}</p>
+              <p className={`text-[10px] md:text-xs font-semibold uppercase tracking-wide ${theme.subtitle}`}>{subtitle}</p>
             )}
-            <p className="text-[11px] md:text-sm text-slate-600 max-w-lg leading-relaxed hidden sm:block">
+            <p className={`text-[11px] md:text-sm max-w-lg leading-relaxed hidden sm:block ${theme.message}`}>
               {greeting.message}
             </p>
           </div>
@@ -152,32 +192,32 @@ const WelcomeBanner = ({ user, today, actions, subtitle, stats, statusChips, use
           {statusChips?.length > 0 && (
             <div className="flex flex-wrap gap-1.5 md:gap-2 pt-0.5">
               {statusChips.map((chip, idx) => (
-                <div key={idx} className="flex items-center gap-2 border border-violet-200 bg-violet-50/80 px-2 py-1.5 md:px-3 md:py-2">
-                  <div className={`w-1.5 h-1.5 shrink-0 ${CHIP_DOT[chip.color] || 'bg-slate-400'}`} />
+                <div key={idx} className="flex items-center gap-2 border border-white/20 bg-white/10 px-2.5 py-1.5 md:px-3 md:py-2 backdrop-blur-[2px]">
+                  <div className={`w-1.5 h-1.5 shrink-0 ${CHIP_DOT[chip.color] || 'bg-white'}`} />
                   <div className="flex flex-col min-w-0">
-                    <span className="text-[10px] md:text-xs font-bold text-slate-900 leading-none">{chip.value}</span>
-                    <span className="text-[9px] md:text-[10px] font-semibold text-slate-500 uppercase tracking-wide mt-0.5 hidden sm:block">{chip.label}</span>
+                    <span className="text-[10px] md:text-xs font-bold text-white leading-none">{chip.value}</span>
+                    <span className="text-[9px] md:text-[10px] font-semibold text-violet-200 uppercase tracking-wide mt-0.5 hidden sm:block">{chip.label}</span>
                   </div>
                 </div>
               ))}
             </div>
           )}
 
-          <div className={`${DASH_ACTIONS_ROW} md:hidden pt-0.5`}>
+          <div className={`${DASH_ACTIONS_ROW} md:hidden pt-1`}>
             {actions}
           </div>
         </div>
 
-        <div className="flex flex-col items-center md:items-end gap-2 md:gap-3 shrink-0">
+        <div className="flex flex-col items-center md:items-end gap-2.5 md:gap-3 shrink-0">
           <div className="relative">
-            <div className="w-12 h-12 md:w-20 md:h-20 rounded-sm border-2 border-violet-200 bg-violet-50 overflow-hidden shadow-[inset_0_1px_2px_rgba(91,33,182,0.06)] flex items-center justify-center">
+            <div className="w-14 h-14 md:w-[5.25rem] md:h-[5.25rem] rounded-sm border-2 border-white/40 bg-white/15 overflow-hidden shadow-lg flex items-center justify-center backdrop-blur-sm">
               {user?.profile_picture ? (
                 <img src={user.profile_picture} alt="Profile" className="w-full h-full object-cover" />
               ) : (
-                <span className="text-sm md:text-xl font-bold text-violet-700">{initials}</span>
+                <span className="text-base md:text-2xl font-bold text-white">{initials}</span>
               )}
             </div>
-            <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 md:w-3 md:h-3 bg-emerald-600 border-2 border-white" />
+            <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 md:w-3 md:h-3 bg-emerald-400 border-2 border-violet-900 shadow-sm" />
           </div>
           <div className={`hidden md:flex ${DASH_ACTIONS_ROW}`}>
             {actions}
@@ -484,14 +524,14 @@ const AdminView = () => {
           <div className={DASH_ACTIONS_ROW}>
             <button
               onClick={() => navigate('/announcements')}
-              className={DASH_BTN_SECONDARY}
+              className={BANNER_BTN_SECONDARY}
             >
               Post Announcement
             </button>
             {data?.pending_approvals > 0 && (
               <button
                 onClick={() => navigate('/account-approvals')}
-                className={DASH_BTN_PRIMARY}
+                className={BANNER_BTN_PRIMARY}
               >
                 Approvals ({data.pending_approvals})
               </button>
@@ -732,14 +772,13 @@ const TeacherView = () => {
         user={user}
         today={todayStr}
         statusChips={statusChips}
-        useSvgGreeting
         actions={
           <div className={DASH_ACTIONS_ROW}>
-            <button type="button" onClick={() => navigate('/announcements')} className={DASH_BTN_SECONDARY}>
+            <button type="button" onClick={() => navigate('/announcements')} className={BANNER_BTN_SECONDARY}>
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" /></svg>
               Announce
             </button>
-            <button type="button" onClick={() => navigate('/grade-input')} className={DASH_BTN_PRIMARY}>
+            <button type="button" onClick={() => navigate('/grade-input')} className={BANNER_BTN_PRIMARY}>
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
               Grades
             </button>
@@ -1078,11 +1117,11 @@ const StudentView = () => {
         statusChips={statusChips}
         actions={
           <div className={DASH_ACTIONS_ROW}>
-            <button type="button" onClick={() => navigate('/materials')} className={DASH_BTN_SECONDARY}>
+            <button type="button" onClick={() => navigate('/materials')} className={BANNER_BTN_SECONDARY}>
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
               Materials
             </button>
-            <button type="button" onClick={() => navigate('/student-grades')} className={DASH_BTN_PRIMARY}>
+            <button type="button" onClick={() => navigate('/student-grades')} className={BANNER_BTN_PRIMARY}>
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
               My Grades
             </button>
