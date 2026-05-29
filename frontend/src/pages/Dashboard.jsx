@@ -57,75 +57,71 @@ const WelcomeBanner = ({ user, today, actions, subtitle, stats, statusChips }) =
     .filter(Boolean).map(n => n[0].toUpperCase()).join('') || '?';
 
   return (
-    <div className="bg-[#1A0B2E] rounded-md md:rounded-lg p-3 md:p-5 shadow-2xl relative overflow-hidden group border border-white/5">
-      {/* Premium Background Effects */}
+    <div className="bg-[#1A0B2E] rounded-md md:rounded-lg p-2.5 md:p-5 shadow-2xl relative overflow-hidden group border border-white/5">
       <div className="absolute top-0 right-0 w-[700px] h-[700px] bg-gradient-to-br from-violet-600/25 via-fuchsia-600/15 to-transparent rounded-full blur-[140px] -mr-64 -mt-64 opacity-90 group-hover:opacity-100 transition-opacity duration-1000" />
       <div className="absolute -bottom-32 -left-32 w-96 h-96 bg-indigo-600/20 rounded-full blur-[100px] opacity-70" />
-      <div className="absolute top-1/2 left-1/3 w-64 h-64 bg-fuchsia-600/10 rounded-full blur-[80px] opacity-50" />
-      
-      {/* Subtle Mesh Pattern */}
       <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: `radial-gradient(#ffffff 1px, transparent 1px)`, backgroundSize: '30px 30px' }} />
 
       <div className="relative flex flex-row items-center justify-between gap-2 md:gap-5">
-        <div className="flex-1 space-y-2 md:space-y-3 min-w-0">
-          <div className="flex flex-wrap items-center gap-1.5 md:gap-2">
-            <div className="flex items-center gap-1 md:gap-1.5 px-2 py-1 md:px-3 md:py-1.5 rounded-full bg-white/5 backdrop-blur-xl border border-white/10">
-              <span className="text-xs">{greeting.icon}</span>
-              <p className="text-xs font-black text-violet-200 uppercase tracking-[0.15em]">{greeting.text}</p>
+        <div className="flex-1 space-y-1.5 md:space-y-3 min-w-0">
+          {/* Greeting chips */}
+          <div className="flex flex-wrap items-center gap-1 md:gap-2">
+            <div className="flex items-center gap-1 px-1.5 py-0.5 md:px-3 md:py-1.5 rounded-full bg-white/5 backdrop-blur-xl border border-white/10">
+              <span className="text-[10px] md:text-xs">{greeting.icon}</span>
+              <p className="text-[9px] md:text-xs font-black text-violet-200 uppercase tracking-[0.1em]">{greeting.text}</p>
             </div>
-            <div className="hidden sm:flex items-center gap-1 md:gap-1.5 px-2 py-1 md:px-3 md:py-1.5 rounded-full bg-white/5 backdrop-blur-xl border border-white/10">
-              <svg className="w-2.5 md:w-3 h-2.5 md:h-3 text-violet-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-              <p className="text-xs font-black text-violet-200 uppercase tracking-[0.15em]">{today}</p>
+            <div className="hidden sm:flex items-center gap-1 px-1.5 py-0.5 md:px-3 md:py-1.5 rounded-full bg-white/5 backdrop-blur-xl border border-white/10">
+              <svg className="w-2 md:w-3 h-2 md:h-3 text-violet-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+              <p className="text-[9px] md:text-xs font-black text-violet-200 uppercase tracking-[0.1em]">{today}</p>
             </div>
           </div>
 
-          <div className="space-y-1 md:space-y-2">
-            <h1 className="text-lg md:text-3xl font-black text-white tracking-tighter leading-tight md:leading-[1]">
+          {/* Name */}
+          <div className="space-y-0.5 md:space-y-2">
+            <h1 className="text-sm md:text-3xl font-black text-white tracking-tighter leading-tight md:leading-[1]">
               Welcome back,<br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 via-fuchsia-300 to-indigo-300">{user?.first_name || 'User'}</span>
             </h1>
-            <p className="text-violet-200/60 font-semibold text-xs md:text-sm tracking-tight max-w-lg leading-normal md:leading-relaxed hidden sm:block">
+            <p className="text-violet-200/60 font-semibold text-[10px] md:text-sm tracking-tight max-w-lg leading-normal hidden sm:block">
               {greeting.message}
             </p>
           </div>
 
-          {/* Status Chips Section */}
-          <div className="flex flex-wrap gap-1.5 md:gap-2 pt-0.5 md:pt-2">
+          {/* Status Chips */}
+          <div className="flex flex-wrap gap-1 md:gap-2 pt-0.5 md:pt-2">
             {statusChips?.map((chip, idx) => (
-              <div key={idx} className="flex items-center gap-1.5 md:gap-2 px-2 py-1 md:px-3 md:py-2 rounded md:rounded-md bg-white/5 border border-white/10 backdrop-blur-md hover:bg-white/10 hover:border-white/20 transition-all cursor-default group/chip">
-                <div className={`w-1 h-1 md:w-1.5 md:h-1.5 rounded-full bg-${chip.color}-400 group-hover/chip:scale-125 transition-transform shrink-0`} />
+              <div key={idx} className="flex items-center gap-1 md:gap-2 px-1.5 py-0.5 md:px-3 md:py-2 rounded bg-white/5 border border-white/10 backdrop-blur-md">
+                <div className={`w-1 h-1 md:w-1.5 md:h-1.5 rounded-full bg-${chip.color}-400 shrink-0`} />
                 <div className="flex flex-col">
-                  <span className="text-xs font-black text-white leading-none">{chip.value}</span>
-                  <span className="text-xs font-bold text-violet-300/60 uppercase tracking-widest mt-0.5">{chip.label}</span>
+                  <span className="text-[9px] md:text-xs font-black text-white leading-none">{chip.value}</span>
+                  <span className="text-[8px] md:text-xs font-bold text-violet-300/60 uppercase tracking-widest mt-0.5 hidden sm:block">{chip.label}</span>
                 </div>
               </div>
             ))}
           </div>
 
-          {/* Actions on mobile — shown below chips */}
-          <div className="flex flex-wrap gap-2 md:hidden">
+          {/* Mobile actions */}
+          <div className="flex flex-wrap gap-1.5 md:hidden">
             {actions}
           </div>
         </div>
 
-        <div className="flex flex-col items-end gap-3 md:gap-4 shrink-0">
-          {/* Avatar Section */}
+        <div className="flex flex-col items-end gap-2 md:gap-4 shrink-0">
+          {/* Avatar */}
           <div className="relative group/avatar">
-            <div className="w-14 h-14 md:w-24 md:h-24 rounded-md md:rounded-lg bg-gradient-to-br from-violet-500 to-fuchsia-500 p-0.5 md:p-1 shadow-2xl transition-transform duration-700 group-hover/avatar:rotate-3">
-              <div className="w-full h-full rounded-[10px] md:rounded-md bg-[#1A0B2E] overflow-hidden flex items-center justify-center border-2 md:border-4 border-white/10 relative">
+            <div className="w-12 h-12 md:w-24 md:h-24 rounded-md md:rounded-lg bg-gradient-to-br from-violet-500 to-fuchsia-500 p-0.5 md:p-1 shadow-2xl transition-transform duration-700 group-hover/avatar:rotate-3">
+              <div className="w-full h-full rounded-[8px] md:rounded-md bg-[#1A0B2E] overflow-hidden flex items-center justify-center border-2 md:border-4 border-white/10 relative">
                 {user?.profile_picture ? (
                   <img src={user.profile_picture} alt="Profile" className="w-full h-full object-cover group-hover/avatar:scale-110 transition-transform duration-700" />
                 ) : (
-                  <span className="text-lg md:text-3xl font-black text-white">
-                    {initials}
-                  </span>
+                  <span className="text-sm md:text-3xl font-black text-white">{initials}</span>
                 )}
               </div>
             </div>
-            <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 md:w-8 md:h-8 rounded-full bg-emerald-500 border-2 md:border-4 border-[#1A0B2E] shadow-xl z-10" />
+            <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 md:w-8 md:h-8 rounded-full bg-emerald-500 border-2 md:border-4 border-[#1A0B2E] shadow-xl z-10" />
           </div>
 
-          {/* Actions on desktop */}
+          {/* Desktop actions */}
           <div className="hidden md:flex flex-wrap justify-end gap-3">
             {actions}
           </div>
@@ -157,27 +153,26 @@ const StatCard = ({ label, value, sub, icon, color = 'violet', onClick, badge })
   return (
     <div
       onClick={onClick}
-      className={`group bg-white border border-slate-200/70 rounded-md md:rounded-lg p-2.5 md:p-6 transition-all duration-300 hover:border-transparent hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] hover:-translate-y-0.5 flex flex-col justify-between min-h-[80px] md:min-h-[140px] relative overflow-hidden ${onClick ? 'cursor-pointer' : ''}`}
+      className={`group bg-white border border-slate-200/70 rounded-md md:rounded-lg p-2 md:p-6 transition-all duration-300 hover:border-transparent hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] hover:-translate-y-0.5 flex flex-col justify-between min-h-[70px] md:min-h-[140px] relative overflow-hidden ${onClick ? 'cursor-pointer' : ''}`}
     >
-      {/* Subtle background gradient */}
       <div className={`absolute top-0 right-0 w-40 h-40 bg-gradient-to-br ${bgGradients[color]} rounded-full -mr-20 -mt-20 blur-2xl opacity-60 group-hover:opacity-100 transition-opacity duration-300`} />
-      
+
       <div className="relative z-10 flex items-start justify-between">
-        <div className={`w-7 h-7 md:w-11 md:h-11 rounded md:rounded-md flex items-center justify-center transition-all duration-300 shadow-sm border ${themes[color]}`}>
-          {React.cloneElement(icon, { className: "w-3.5 h-3.5 md:w-5 md:h-5" })}
+        <div className={`w-6 h-6 md:w-11 md:h-11 rounded md:rounded-md flex items-center justify-center transition-all duration-300 shadow-sm border ${themes[color]}`}>
+          {React.cloneElement(icon, { className: "w-3 h-3 md:w-5 md:h-5" })}
         </div>
         {badge > 0 && (
-          <span className="px-1.5 py-0.5 rounded-full bg-rose-100 text-rose-600 text-xs font-black uppercase tracking-wider animate-bounce">
+          <span className="px-1 py-0.5 rounded-full bg-rose-100 text-rose-600 text-[9px] md:text-xs font-black uppercase tracking-wider animate-bounce">
             {badge}
           </span>
         )}
       </div>
-      <div className="relative z-10 mt-1.5 md:mt-3">
-        <p className="text-xs font-black text-slate-400 uppercase tracking-[0.15em] mb-0.5 md:mb-1">{label}</p>
-        <h3 className="text-base md:text-2xl font-black text-slate-900 tracking-tight transition-colors group-hover:text-violet-600 leading-none">
+      <div className="relative z-10 mt-1 md:mt-3">
+        <p className="text-[8px] md:text-xs font-black text-slate-400 uppercase tracking-[0.1em] mb-0.5 md:mb-1 truncate">{label}</p>
+        <h3 className="text-sm md:text-2xl font-black text-slate-900 tracking-tight transition-colors group-hover:text-violet-600 leading-none truncate">
           {value ?? '—'}
         </h3>
-        {sub && <p className="text-xs font-semibold text-slate-400 mt-0.5 md:mt-1.5 uppercase tracking-tight line-clamp-1">{sub}</p>}
+        {sub && <p className="text-[8px] md:text-xs font-semibold text-slate-400 mt-0.5 md:mt-1.5 uppercase tracking-tight truncate">{sub}</p>}
       </div>
     </div>
   );
@@ -512,7 +507,7 @@ const AdminView = () => {
                 </PieChart>
               </ResponsiveContainer>
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center justify-center pointer-events-none">
-                <p className="text-xl font-black text-slate-900 leading-none">{dist?.total_count || 0}</p>
+                <p className="text-base font-black text-slate-900 leading-none">{dist?.total_count || 0}</p>
                 <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mt-1">
                   {distView === 'general_average' ? 'Students' : 'Entries'}
                 </p>
@@ -870,7 +865,7 @@ const TeacherView = () => {
                     transition={{ delay: i * 0.1 }}
                     className="relative flex items-center gap-3 md:gap-6 group"
                   >
-                    <div className="w-10 h-10 md:w-14 md:h-14 rounded md:rounded-lg bg-white border-2 border-slate-50 shadow-sm flex items-center justify-center text-base md:text-xl shrink-0 z-10 group-hover:border-violet-200 group-hover:scale-110 transition-all duration-500">
+                    <div className="w-8 h-8 md:w-14 md:h-14 rounded md:rounded-lg bg-white border-2 border-slate-50 shadow-sm flex items-center justify-center text-sm md:text-xl shrink-0 z-10 group-hover:border-violet-200 group-hover:scale-110 transition-all duration-500">
                       {act.type === 'grade' ? '📊' : act.type === 'attendance' ? '✅' : '📢'}
                     </div>
                     <div className="flex-1 bg-slate-50/50 rounded md:rounded-lg p-2.5 md:p-5 border border-slate-100/50 group-hover:bg-white group-hover:shadow-xl transition-all duration-500">
@@ -1148,7 +1143,7 @@ const StudentView = () => {
                   </div>
                 </div>
                 <div className="flex flex-col items-end">
-                  <span className="text-lg md:text-lg font-black text-emerald-600 leading-none">{attRate}%</span>
+                  <span className="text-sm md:text-lg font-black text-emerald-600 leading-none">{attRate}%</span>
                   <span className="text-xs font-semibold text-slate-400 uppercase tracking-widest mt-0.5">Overall</span>
                 </div>
               </div>
@@ -1213,7 +1208,7 @@ const StudentView = () => {
                       </PieChart>
                     </ResponsiveContainer>
                     <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                      <span className="text-2xl md:text-4xl font-black text-slate-900">{streak}</span>
+                      <span className="text-xl md:text-4xl font-black text-slate-900">{streak}</span>
                       <span className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] mt-0.5">Day Streak</span>
                       <div className="flex gap-1 mt-2 md:mt-4">
                         {[1,2,3,4,5].map(i => (
@@ -1282,7 +1277,7 @@ const StudentView = () => {
                         <p className="text-xs md:text-sm font-semibold text-slate-600">{g.teacher_name || 'Instructor'}</p>
                       </td>
                       <td className="px-3 md:px-5 py-2.5 md:py-3">
-                        <span className={`text-base md:text-lg font-black ${(g.transmuted_score || g.raw_score) >= 90 ? 'text-emerald-600' : (g.transmuted_score || g.raw_score) >= 75 ? 'text-indigo-600' : 'text-rose-600'}`}>
+                        <span className={`text-sm md:text-lg font-black ${(g.transmuted_score || g.raw_score) >= 90 ? 'text-emerald-600' : (g.transmuted_score || g.raw_score) >= 75 ? 'text-indigo-600' : 'text-rose-600'}`}>
                           {g.transmuted_score || g.raw_score}
                         </span>
                       </td>
