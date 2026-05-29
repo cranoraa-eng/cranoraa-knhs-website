@@ -38,7 +38,7 @@ const sharedHelpArticles = [
     category: 'Getting started',
     body: 'You can restart onboarding whenever you need a refresher—nothing is locked after the first visit.',
     bullets: [
-      'Tap the floating Need help button (bottom-right on mobile).',
+      'Tap Need help in the header (top bar).',
       'Press Tour to launch the full guided walkthrough for your role.',
       'Use Reset in the help panel to clear checklist progress and see the welcome screen again.',
     ],

@@ -12,6 +12,7 @@ import { usePushNotifications } from '../hooks/usePushNotifications';
 import { getNotifConfig, formatNotifTime } from '../utils/notificationConfig';
 import { OnboardingProvider } from '../onboarding/OnboardingContext';
 import OnboardingShell from '../onboarding/OnboardingShell';
+import { HelpHeaderButton } from '../onboarding/HelpCenter';
 import { getNavTourId } from '../onboarding/onboardingConfig';
 
 const PUSH_DISMISSED_KEY = 'push_prompt_dismissed';
@@ -484,7 +485,9 @@ const Layout = () => {
               <h1 className="text-sm font-black text-slate-900 sm:hidden tracking-tight">{pageTitle}</h1>
             </div>
 
-            <div className="flex items-center space-x-2 lg:space-x-4">
+            <div className="flex items-center space-x-2 lg:space-x-3">
+              <HelpHeaderButton />
+
               {/* Notification bell */}
               <div className="relative" data-notif-dropdown ref={notifDropdownRef}>
                 <button 

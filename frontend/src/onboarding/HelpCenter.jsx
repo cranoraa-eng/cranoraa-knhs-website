@@ -4,6 +4,30 @@ import { useOnboarding } from './OnboardingContext';
 import OnboardingChecklist from './OnboardingChecklist';
 import GuideContent from './GuideContent';
 
+export const HelpHeaderButton = () => {
+  const { helpOpen, setHelpOpen } = useOnboarding();
+
+  return (
+    <button
+      type="button"
+      data-tour="help-center"
+      onClick={() => setHelpOpen(true)}
+      aria-label="Open help center"
+      aria-expanded={helpOpen}
+      className={`inline-flex items-center gap-1.5 rounded-sm border px-2.5 py-2 text-[10px] font-bold uppercase tracking-wide transition-all focus:outline-none focus:ring-2 focus:ring-slate-400/40 focus:ring-offset-1 ${
+        helpOpen
+          ? 'border-slate-400 bg-slate-100 text-slate-800'
+          : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50'
+      }`}
+    >
+      <svg className="h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M8.228 9.228a4 4 0 117.544 1.886c-.847.706-1.522 1.249-1.522 2.386M12 17h.01M12 3a9 9 0 110 18 9 9 0 010-18z" />
+      </svg>
+      <span className="hidden sm:inline">Help</span>
+    </button>
+  );
+};
+
 const HelpCenter = () => {
   const {
     checklistPercent,
@@ -51,20 +75,6 @@ const HelpCenter = () => {
 
   return (
     <>
-      <button
-        type="button"
-        data-tour="help-center"
-        onClick={() => setHelpOpen(true)}
-        className="fixed right-4 z-50 inline-flex items-center gap-2 rounded-2xl border border-white/70 bg-slate-950 px-4 py-3 text-xs font-black uppercase tracking-widest text-white shadow-2xl shadow-slate-900/20 transition-all hover:-translate-y-0.5 hover:bg-violet-700 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2"
-        style={{ bottom: 'calc(5rem + env(safe-area-inset-bottom))' }}
-        aria-label="Open help center"
-      >
-        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M8.228 9.228a4 4 0 117.544 1.886c-.847.706-1.522 1.249-1.522 2.386M12 17h.01M12 3a9 9 0 110 18 9 9 0 010-18z" />
-        </svg>
-        <span className="hidden sm:inline">Need help?</span>
-      </button>
-
       <AnimatePresence>
         {helpOpen && (
           <motion.div
