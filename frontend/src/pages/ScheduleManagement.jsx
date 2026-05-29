@@ -9,6 +9,32 @@ const DAYS = ['monday','tuesday','wednesday','thursday','friday','saturday'];
 const DAY_FULL = { monday:'Monday', tuesday:'Tuesday', wednesday:'Wednesday', thursday:'Thursday', friday:'Friday', saturday:'Saturday' };
 const DAY_SHORT = { monday:'Mon', tuesday:'Tue', wednesday:'Wed', thursday:'Thu', friday:'Fri', saturday:'Sat' };
 
+const WEEKDAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
+const DEFAULT_BELL_PERIODS = [
+  { start_time: '07:30', end_time: '08:30', label: 'Period 1' },
+  { start_time: '08:30', end_time: '09:30', label: 'Period 2' },
+  { start_time: '09:30', end_time: '10:30', label: 'Period 3' },
+  { start_time: '10:45', end_time: '11:45', label: 'Period 4' },
+  { start_time: '11:45', end_time: '12:45', label: 'Period 5' },
+  { start_time: '13:30', end_time: '14:30', label: 'Period 6' },
+  { start_time: '14:30', end_time: '15:30', label: 'Period 7' },
+];
+
+const normalizeTime = (value) => {
+  if (!value) return '';
+  const str = String(value);
+  const match = str.match(/(\d{1,2}):(\d{2})/);
+  if (!match) return str.slice(0, 5);
+  return `${match[1].padStart(2, '0')}:${match[2]}`;
+};
+
+const periodKey = (start, end) => `${normalizeTime(start)}-${normalizeTime(end)}`;
+
+const slotExists = (slots, day, start, end) =>
+  slots.some(
+    (ts) => ts.day === day && periodKey(ts.start_time, ts.end_time) === periodKey(start, end)
+  );
+
 const SUBJECT_COLORS = [
   'bg-violet-50 border-violet-200 text-violet-800',
   'bg-blue-50 border-blue-200 text-blue-800',
@@ -74,11 +100,13 @@ const SectionTimetableGrid = ({
   days,
   periods,
   getCellSchedules,
+  hasSlotForCell,
   subjectColorMap,
   onAdd,
   onEdit,
   onDelete,
   singleSection,
+  addingCell,
 }) => (
   <>
     {/* Mobile: day cards */}
@@ -89,16 +117,27 @@ const SectionTimetableGrid = ({
           <div className="space-y-2">
             {periods.map((period) => {
               const entries = getCellSchedules(d, period);
+              const slotReady = hasSlotForCell(d, period);
+              const cellKey = `${d}-${period.start_time}-${period.end_time}`;
+              const isAdding = addingCell === cellKey;
+
               if (singleSection && entries.length === 0) {
                 return (
                   <button
-                    key={`${d}-${period.start_time}`}
+                    key={cellKey}
                     type="button"
                     onClick={() => onAdd(d, period)}
-                    className="w-full py-3 px-3 rounded-sm border border-dashed border-violet-200 text-left hover:border-violet-400 hover:bg-violet-50/50 transition-all"
+                    disabled={isAdding}
+                    className={`w-full py-3 px-3 rounded-sm border text-left transition-all ${
+                      slotReady
+                        ? 'border-dashed border-violet-200 hover:border-violet-400 hover:bg-violet-50/50'
+                        : 'border-dashed border-amber-200 bg-amber-50/40 hover:border-amber-400 hover:bg-amber-50'
+                    } ${isAdding ? 'opacity-60 cursor-wait' : ''}`}
                   >
                     <p className="text-xs font-bold text-slate-700">{period.start_display} – {period.end_display}</p>
-                    <p className="text-[10px] text-violet-600 mt-0.5">Tap to add class</p>
+                    <p className="text-[10px] mt-0.5 font-semibold text-violet-600">
+                      {isAdding ? 'Setting up…' : slotReady ? 'Tap to assign class' : 'Tap to enable period'}
+                    </p>
                   </button>
                 );
               }
@@ -146,6 +185,11 @@ const SectionTimetableGrid = ({
               </td>
               {days.map((d) => {
                 const entries = getCellSchedules(d, period);
+                const slotReady = hasSlotForCell(d, period);
+                const cellKey = `${d}-${period.start_time}-${period.end_time}`;
+                const isAdding = addingCell === cellKey;
+                const showAdd = singleSection || entries.length === 0;
+
                 return (
                   <td key={d} className="px-1.5 py-1.5 align-top border-r border-violet-100 min-h-[72px] group/cell">
                     <div className="space-y-1 min-h-[64px]">
@@ -159,18 +203,29 @@ const SectionTimetableGrid = ({
                           compact={!singleSection}
                         />
                       ))}
-                      {(singleSection || entries.length === 0) && (
+                      {showAdd && (
                         <button
                           type="button"
                           onClick={() => onAdd(d, period)}
-                          className={`w-full py-1.5 border border-dashed rounded-sm flex items-center justify-center transition-all text-slate-300 hover:border-violet-300 hover:text-violet-500 hover:bg-violet-50/40 ${
-                            singleSection
-                              ? entries.length ? 'opacity-0 group-hover/cell:opacity-100' : 'opacity-60 hover:opacity-100'
-                              : 'opacity-0 group-hover/cell:opacity-100'
+                          disabled={isAdding}
+                          title={slotReady ? 'Assign class' : 'Create period & assign class'}
+                          className={`w-full py-1.5 border border-dashed rounded-sm flex flex-col items-center justify-center gap-0.5 transition-all text-[9px] font-bold uppercase tracking-wide ${
+                            isAdding ? 'opacity-50 cursor-wait border-violet-200 text-violet-400' :
+                            slotReady
+                              ? `text-slate-300 hover:border-violet-300 hover:text-violet-500 hover:bg-violet-50/40 ${entries.length ? 'opacity-0 group-hover/cell:opacity-100' : 'opacity-60 hover:opacity-100'}`
+                              : 'border-amber-200 text-amber-600 bg-amber-50/50 hover:border-amber-400 hover:bg-amber-50 opacity-80 hover:opacity-100'
                           }`}
-                          title="Add class"
                         >
-                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" /></svg>
+                          {isAdding ? (
+                            <span>…</span>
+                          ) : slotReady ? (
+                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" /></svg>
+                          ) : (
+                            <>
+                              <span>Enable</span>
+                              <span className="font-normal normal-case text-[8px]">+ assign</span>
+                            </>
+                          )}
                         </button>
                       )}
                     </div>
@@ -216,10 +271,12 @@ export default function ScheduleManagement() {
   const [showRoomPanel, setShowRoomPanel] = useState(false);
   const [showSlotPanel, setShowSlotPanel] = useState(false);
   const [roomForm, setRoomForm]         = useState({ name:'', building:'', capacity:40, room_type:'classroom' });
-  const [slotForm, setSlotForm]         = useState({ day:'monday', start_time:'07:00', end_time:'08:00', label:'' });
+  const [slotForm, setSlotForm]         = useState({ days: [...WEEKDAYS], start_time:'07:30', end_time:'08:30', label:'' });
   const [savingRoom, setSavingRoom]     = useState(false);
   const [savingSlot, setSavingSlot]     = useState(false);
-  const [slotFilterDay, setSlotFilterDay] = useState(''); // Added for time slot filtering
+  const [slotFilterDay, setSlotFilterDay] = useState('');
+  const [quickAddContext, setQuickAddContext] = useState(null);
+  const [addingCell, setAddingCell]     = useState('');
 
   // Classroom → subject/teacher assignments (from ClassroomSubject)
   const [classroomAssignments, setClassroomAssignments] = useState([]); // [{subject, subject_name, subject_code, teacher, teacher_name}]
@@ -325,14 +382,14 @@ export default function ScheduleManagement() {
   const uniquePeriods = useMemo(() => {
     const map = new Map();
     sortedSlots.forEach((ts) => {
-      const key = `${ts.start_time}-${ts.end_time}`;
+      const key = periodKey(ts.start_time, ts.end_time);
       if (!map.has(key)) {
         map.set(key, {
           start_time: ts.start_time,
           end_time: ts.end_time,
           label: ts.label,
-          start_display: ts.start_time_display || ts.start_time?.slice(0, 5),
-          end_display: ts.end_time_display || ts.end_time?.slice(0, 5),
+          start_display: ts.start_time_display || normalizeTime(ts.start_time),
+          end_display: ts.end_time_display || normalizeTime(ts.end_time),
         });
       }
     });
@@ -341,9 +398,32 @@ export default function ScheduleManagement() {
 
   const getSlotForCell = useCallback((day, period) =>
     timeSlots.find(
-      (ts) => ts.day === day && ts.start_time === period.start_time && ts.end_time === period.end_time
+      (ts) => ts.day === day
+        && periodKey(ts.start_time, ts.end_time) === periodKey(period.start_time, period.end_time)
     ),
   [timeSlots]);
+
+  const hasSlotForCell = useCallback(
+    (day, period) => Boolean(getSlotForCell(day, period)),
+    [getSlotForCell]
+  );
+
+  const periodCoverage = useMemo(() =>
+    uniquePeriods.map((period) => ({
+      ...period,
+      coveredDays: DAYS.filter((d) => hasSlotForCell(d, period)).length,
+    })),
+  [uniquePeriods, hasSlotForCell]);
+
+  const missingSlotCount = useMemo(() => {
+    let missing = 0;
+    uniquePeriods.forEach((period) => {
+      DAYS.forEach((d) => {
+        if (!hasSlotForCell(d, period)) missing++;
+      });
+    });
+    return missing;
+  }, [uniquePeriods, hasSlotForCell]);
 
   const getCellSchedules = useCallback((day, period, classroomId = filterClassroom) => {
     const slot = getSlotForCell(day, period);
@@ -371,9 +451,29 @@ export default function ScheduleManagement() {
   };
 
   // ── Actions ───────────────────────────────────────────────────────────────
-  const openCreate = useCallback((slotId = '', prefill = {}) => {
+  const ensureTimeSlot = useCallback(async (day, period) => {
+    const existing = getSlotForCell(day, period);
+    if (existing) return existing;
+    try {
+      const res = await api.post('/time-slots/', {
+        day,
+        start_time: normalizeTime(period.start_time),
+        end_time: normalizeTime(period.end_time),
+        label: period.label || '',
+      });
+      const created = res.data;
+      setTimeSlots((prev) => [...prev, created]);
+      return created;
+    } catch (err) {
+      toast.error(err.response?.data?.non_field_errors?.[0] || 'Could not create time slot');
+      return null;
+    }
+  }, [getSlotForCell]);
+
+  const openCreate = useCallback((slotId = '', prefill = {}, quickContext = null) => {
     const ay = academicYears.find((a) => String(a.id) === activeAY) || academicYears.find((a) => a.is_active);
     setEditItem(null);
+    setQuickAddContext(quickContext);
     setForm({
       ...emptyForm,
       time_slot: slotId,
@@ -384,27 +484,29 @@ export default function ScheduleManagement() {
     setShowForm(true);
   }, [academicYears, activeAY, filterClassroom]);
 
-  const openCreateAtCell = useCallback((day, period) => {
-    const slot = getSlotForCell(day, period);
-    if (!slot) {
-      toast.error(`No time slot for ${DAY_FULL[day]} at ${period.start_display}. Add one in Time Slots.`);
-      setSlotForm((f) => ({
-        ...f,
-        day,
-        start_time: period.start_time?.slice(0, 5) || '07:00',
-        end_time: period.end_time?.slice(0, 5) || '08:00',
-      }));
-      setShowSlotPanel(true);
-      return;
-    }
+  const openCreateAtCell = useCallback(async (day, period) => {
     if (activeTab === 'section' && !filterClassroom) {
       toast.error('Select a section first');
       return;
     }
-    openCreate(String(slot.id), { classroom: filterClassroom || '' });
-  }, [getSlotForCell, openCreate, activeTab, filterClassroom]);
+    const cellKey = `${day}-${period.start_time}-${period.end_time}`;
+    setAddingCell(cellKey);
+    try {
+      const slot = await ensureTimeSlot(day, period);
+      if (!slot) return;
+      const section = classrooms.find((c) => String(c.id) === filterClassroom);
+      openCreate(String(slot.id), { classroom: filterClassroom || '' }, {
+        dayLabel: DAY_FULL[day],
+        timeLabel: `${period.start_display} – ${period.end_display}`,
+        sectionName: section?.name || 'Section',
+      });
+    } finally {
+      setAddingCell('');
+    }
+  }, [activeTab, filterClassroom, ensureTimeSlot, openCreate, classrooms]);
 
   const openEdit = useCallback((s) => {
+    setQuickAddContext(null);
     setEditItem(s);
     setForm({
       classroom: String(s.classroom), subject: String(s.subject),
@@ -430,6 +532,7 @@ export default function ScheduleManagement() {
         toast.success('Schedule added');
       }
       setShowForm(false);
+      setQuickAddContext(null);
       fetchAll();
     } catch (err) {
       const d = err.response?.data;
@@ -485,22 +588,111 @@ export default function ScheduleManagement() {
     catch { toast.error('Failed to delete room'); }
   };
 
-  const saveSlot = async (e) => {
-    e.preventDefault(); setSavingSlot(true);
+  const saveSlotBulk = async (e) => {
+    e.preventDefault();
+    if (!slotForm.days.length) {
+      toast.error('Select at least one day');
+      return;
+    }
+    setSavingSlot(true);
+    let created = 0;
+    let skipped = 0;
+    const newSlots = [];
     try {
-      await api.post('/time-slots/', slotForm);
-      toast.success('Time slot added');
-      setSlotForm({ day:'monday', start_time:'07:00', end_time:'08:00', label:'' });
-      fetchAll();
+      for (const day of slotForm.days) {
+        if (slotExists(timeSlots, day, slotForm.start_time, slotForm.end_time)) {
+          skipped++;
+          continue;
+        }
+        const res = await api.post('/time-slots/', {
+          day,
+          start_time: slotForm.start_time,
+          end_time: slotForm.end_time,
+          label: slotForm.label,
+        });
+        newSlots.push(res.data);
+        created++;
+      }
+      if (created) {
+        setTimeSlots((prev) => [...prev, ...newSlots]);
+        toast.success(`Added ${created} period${created > 1 ? 's' : ''}${skipped ? ` · ${skipped} skipped (exist)` : ''}`);
+        setSlotForm((f) => ({ ...f, label: '' }));
+      } else {
+        toast.error('This period already exists on all selected days');
+      }
     } catch (err) {
-      toast.error(err.response?.data?.non_field_errors?.[0] || 'Failed to add time slot');
-    } finally { setSavingSlot(false); }
+      toast.error(err.response?.data?.non_field_errors?.[0] || 'Failed to add time slots');
+    } finally {
+      setSavingSlot(false);
+    }
+  };
+
+  const applyStandardBellSchedule = async (includeSaturday = false) => {
+    const targetDays = includeSaturday ? DAYS : WEEKDAYS;
+    setSavingSlot(true);
+    let created = 0;
+    const newSlots = [];
+    try {
+      for (const period of DEFAULT_BELL_PERIODS) {
+        for (const day of targetDays) {
+          if (slotExists(timeSlots, day, period.start_time, period.end_time)) continue;
+          const res = await api.post('/time-slots/', { day, ...period });
+          newSlots.push(res.data);
+          created++;
+        }
+      }
+      if (created) {
+        setTimeSlots((prev) => [...prev, ...newSlots]);
+        toast.success(`Created ${created} bell period slots`);
+      } else {
+        toast.success('Standard bell schedule is already set up');
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.non_field_errors?.[0] || 'Failed to apply bell schedule');
+    } finally {
+      setSavingSlot(false);
+    }
+  };
+
+  const fillMissingPeriodSlots = async () => {
+    if (!uniquePeriods.length) {
+      toast.error('Add at least one period first');
+      return;
+    }
+    setSavingSlot(true);
+    let created = 0;
+    const newSlots = [];
+    try {
+      for (const period of uniquePeriods) {
+        for (const day of WEEKDAYS) {
+          if (hasSlotForCell(day, period)) continue;
+          const res = await api.post('/time-slots/', {
+            day,
+            start_time: normalizeTime(period.start_time),
+            end_time: normalizeTime(period.end_time),
+            label: period.label || '',
+          });
+          newSlots.push(res.data);
+          created++;
+        }
+      }
+      if (created) {
+        setTimeSlots((prev) => [...prev, ...newSlots]);
+        toast.success(`Filled ${created} missing day slots`);
+      } else {
+        toast.success('All weekday periods are already complete');
+      }
+    } catch (err) {
+      toast.error('Failed to fill missing slots');
+    } finally {
+      setSavingSlot(false);
+    }
   };
 
   const deleteSlot = async (id, label) => {
     const r = await Swal.fire({ title: `Delete "${label}"?`, text: 'Schedules using this slot will be affected.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'Delete', customClass: { popup: 'rounded-2xl' } });
     if (!r.isConfirmed) return;
-    try { await api.delete(`/time-slots/${id}/`); toast.success('Time slot deleted'); fetchAll(); }
+    try { await api.delete(`/time-slots/${id}/`); toast.success('Time slot deleted'); setTimeSlots((prev) => prev.filter((ts) => ts.id !== id)); }
     catch { toast.error('Failed to delete time slot'); }
   };
 
@@ -633,9 +825,9 @@ export default function ScheduleManagement() {
               <p className="text-xs text-blue-600 mt-0.5">You need at least one time slot and one classroom to create a schedule.</p>
               <div className="flex flex-wrap gap-2 mt-3">
                 {timeSlots.length === 0 && (
-                  <button onClick={() => setShowSlotPanel(true)}
-                    className="px-3 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 transition-all">
-                    + Add Time Slots
+                  <button type="button" onClick={() => applyStandardBellSchedule(false)}
+                    className="px-3 py-1.5 rounded-sm bg-violet-700 text-white text-xs font-bold hover:bg-violet-800 transition-all">
+                    Apply Standard Bell Schedule
                   </button>
                 )}
                 {classrooms.length === 0 && (
@@ -686,18 +878,23 @@ export default function ScheduleManagement() {
         </div>
       )}
       {showConflicts && conflicts.length === 0 && (
-        <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 flex items-center gap-3">
-          <svg className="w-5 h-5 text-emerald-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-          <p className="text-sm font-bold text-emerald-700">No scheduling conflicts found.</p>
-          <button onClick={() => setShowConflicts(false)} className="ml-auto text-emerald-500 hover:text-emerald-700 text-xs font-bold">Dismiss</button>
-        </div>
-      )}
-
-      {showConflicts && conflicts.length === 0 && (
         <div className="bg-emerald-50 border border-emerald-200 rounded-sm p-4 flex items-center gap-3">
           <svg className="w-5 h-5 text-emerald-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
           <p className="text-sm font-bold text-emerald-700">No scheduling conflicts found.</p>
           <button type="button" onClick={() => setShowConflicts(false)} className="ml-auto text-emerald-500 hover:text-emerald-700 text-xs font-bold">Dismiss</button>
+        </div>
+      )}
+
+      {missingSlotCount > 0 && timeSlots.length > 0 && (
+        <div className="bg-amber-50 border border-amber-200 rounded-sm p-4 flex flex-col sm:flex-row sm:items-center gap-3">
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-bold text-amber-900">{missingSlotCount} timetable cell{missingSlotCount > 1 ? 's' : ''} missing a time slot</p>
+            <p className="text-xs text-amber-700 mt-0.5">Some periods exist on one day but not others. Fill gaps or click amber cells in the grid to auto-create.</p>
+          </div>
+          <button type="button" onClick={fillMissingPeriodSlots} disabled={savingSlot}
+            className="shrink-0 px-3 py-2 rounded-sm bg-amber-600 text-white text-[10px] font-bold uppercase tracking-wide hover:bg-amber-700 disabled:opacity-50">
+            Fill Weekday Gaps
+          </button>
         </div>
       )}
 
@@ -734,11 +931,18 @@ export default function ScheduleManagement() {
             </div>
           ) : uniquePeriods.length === 0 ? (
             <div className="py-16 text-center px-4">
-              <p className="text-slate-600 font-bold text-sm">No time slots configured</p>
-              <p className="text-slate-400 text-xs mt-1">Add bell periods in Setup → Time Slots</p>
-              <button type="button" onClick={() => setShowSlotPanel(true)} className="mt-4 px-4 py-2 rounded-sm bg-violet-700 text-white text-xs font-bold hover:bg-violet-800">
-                + Add Time Slots
-              </button>
+              <p className="text-slate-600 font-bold text-sm">No bell periods configured yet</p>
+              <p className="text-slate-400 text-xs mt-1 max-w-md mx-auto">Apply the standard 7-period school day to get started in one click, or add custom periods in Setup.</p>
+              <div className="flex flex-wrap justify-center gap-2 mt-4">
+                <button type="button" onClick={() => applyStandardBellSchedule(false)} disabled={savingSlot}
+                  className="px-4 py-2 rounded-sm bg-violet-700 text-white text-xs font-bold hover:bg-violet-800 disabled:opacity-50">
+                  Apply Standard Schedule (Mon–Fri)
+                </button>
+                <button type="button" onClick={() => setShowSlotPanel(true)}
+                  className="px-4 py-2 rounded-sm border border-violet-300 text-violet-800 text-xs font-bold hover:bg-violet-50">
+                  Custom Periods
+                </button>
+              </div>
             </div>
           ) : (
             <>
@@ -757,11 +961,13 @@ export default function ScheduleManagement() {
                 days={filterDay ? [filterDay] : DAYS}
                 periods={uniquePeriods}
                 getCellSchedules={getCellSchedules}
+                hasSlotForCell={hasSlotForCell}
                 subjectColorMap={subjectColorMap}
-                onAdd={(day, period) => openCreateAtCell(day, period)}
+                onAdd={openCreateAtCell}
                 onEdit={openEdit}
                 onDelete={handleDelete}
                 singleSection
+                addingCell={addingCell}
               />
             </>
           )}
@@ -785,11 +991,13 @@ export default function ScheduleManagement() {
                 days={filterDay ? [filterDay] : DAYS}
                 periods={uniquePeriods}
                 getCellSchedules={getCellSchedules}
+                hasSlotForCell={hasSlotForCell}
                 subjectColorMap={subjectColorMap}
-                onAdd={(day, period) => openCreateAtCell(day, period)}
+                onAdd={openCreateAtCell}
                 onEdit={openEdit}
                 onDelete={handleDelete}
                 singleSection={false}
+                addingCell={addingCell}
               />
             </>
           )}
@@ -940,39 +1148,58 @@ export default function ScheduleManagement() {
       ══════════════════════════════════════════════════════════════════════ */}
       <Modal
         open={showForm}
-        onClose={() => setShowForm(false)}
-        title={editItem ? 'Edit Schedule' : 'New Schedule'}
-        subtitle={editItem ? 'Update assignment details' : 'Assign a class to a time slot'}
+        onClose={() => { setShowForm(false); setQuickAddContext(null); }}
+        title={editItem ? 'Edit Class' : quickAddContext ? 'Assign Class' : 'New Class'}
+        subtitle={quickAddContext
+          ? `${quickAddContext.sectionName} · ${quickAddContext.dayLabel} · ${quickAddContext.timeLabel}`
+          : editItem ? 'Update assignment details' : 'Assign subject to a time slot'}
         size="md"
         footer={
           <div className="flex items-center justify-end gap-3">
-            <button type="button" onClick={() => setShowForm(false)}
-              className="flex-1 sm:flex-none px-8 py-3.5 rounded-2xl border border-slate-200 text-slate-600 font-black text-[11px] uppercase tracking-[0.2em] hover:bg-white transition-all active:scale-95">
+            <button type="button" onClick={() => { setShowForm(false); setQuickAddContext(null); }}
+              className="flex-1 sm:flex-none px-6 py-2.5 rounded-sm border border-violet-200 text-slate-600 font-bold text-[10px] uppercase tracking-wide hover:bg-violet-50 transition-all">
               Cancel
             </button>
             <button type="submit" form="schedule-form" disabled={saving}
-              className="flex-[2] sm:flex-none px-10 py-3.5 rounded-sm bg-violet-700 text-white font-bold text-[11px] uppercase tracking-wide hover:bg-violet-800 disabled:opacity-50 flex items-center justify-center gap-2 transition-all shadow-sm active:scale-95">
+              className="flex-[2] sm:flex-none px-8 py-2.5 rounded-sm bg-violet-700 text-white font-bold text-[10px] uppercase tracking-wide hover:bg-violet-800 disabled:opacity-50 flex items-center justify-center gap-2 transition-all">
               {saving && <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>}
-              {saving ? 'Processing…' : editItem ? 'Update Assignment' : 'Create Assignment'}
+              {saving ? 'Saving…' : editItem ? 'Save Changes' : 'Assign Class'}
             </button>
           </div>
         }
       >
-        <form id="schedule-form" onSubmit={handleSave} className="px-8 py-8 space-y-8">
-          {/* Core */}
-          <div className="space-y-6">
-            <div className="flex items-center gap-4">
-              <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] whitespace-nowrap">Core Assignment</h4>
-              <div className="h-px w-full bg-slate-100"></div>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-              <Field label="Classroom" required>
-                <Select required value={form.classroom} onChange={e => setForm(f => ({ ...f, classroom: e.target.value, subject: '', teacher: '' }))}>
+        <form id="schedule-form" onSubmit={handleSave} className="px-6 py-6 space-y-6">
+          {(!quickAddContext || editItem) && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Field label="Section" required>
+                <Select required value={form.classroom} onChange={(e) => setForm((f) => ({ ...f, classroom: e.target.value, subject: '', teacher: '' }))}>
                   <option value="">Select section…</option>
-                  {classrooms.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                  {classrooms.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </Select>
               </Field>
-              <Field label="Subject" required>
+              <Field label="Time Slot" required>
+                <Select required value={form.time_slot} onChange={(e) => setForm((f) => ({ ...f, time_slot: e.target.value }))}>
+                  <option value="">Select time…</option>
+                  {DAYS.map((d) => {
+                    const daySlots = sortedSlots.filter((ts) => ts.day === d);
+                    if (!daySlots.length) return null;
+                    return (
+                      <optgroup key={d} label={DAY_FULL[d]}>
+                        {daySlots.map((ts) => (
+                          <option key={ts.id} value={ts.id}>
+                            {ts.start_time_display || normalizeTime(ts.start_time)} – {ts.end_time_display || normalizeTime(ts.end_time)}{ts.label ? ` (${ts.label})` : ''}
+                          </option>
+                        ))}
+                      </optgroup>
+                    );
+                  })}
+                </Select>
+              </Field>
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Field label="Subject" required>
                 {loadingAssignments ? (
                   <div className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-[13px] font-bold text-slate-400 bg-slate-50 flex items-center gap-2">
                     <svg className="w-4 h-4 animate-spin text-violet-400" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
@@ -1002,89 +1229,47 @@ export default function ScheduleManagement() {
                   </Select>
                 )}
               </Field>
-            </div>
+            <Field label="Teacher" required>
+              <Select required value={form.teacher} onChange={(e) => setForm((f) => ({ ...f, teacher: e.target.value }))}>
+                <option value="">Select teacher…</option>
+                {(form.classroom && form.subject
+                  ? classroomAssignments.filter((a) => String(a.subject) === String(form.subject))
+                  : teachers
+                ).map((a) => (
+                  <option key={a.teacher || a.id} value={a.teacher || a.id}>{a.teacher_name || a.full_name}</option>
+                ))}
+              </Select>
+            </Field>
+            <Field label="Room (optional)">
+              <Select value={form.room} onChange={(e) => setForm((f) => ({ ...f, room: e.target.value }))}>
+                <option value="">No room</option>
+                {rooms.map((r) => <option key={r.id} value={r.id}>{r.name}{r.building ? ` · ${r.building}` : ''}</option>)}
+              </Select>
+            </Field>
           </div>
 
-          <div className="space-y-6">
-            <div className="flex items-center gap-4">
-              <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] whitespace-nowrap">Teacher & Room</h4>
-              <div className="h-px w-full bg-slate-100"></div>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-              <div className="sm:col-span-2">
-                <Field label="Teacher" required>
-                  <Select required value={form.teacher} onChange={e => setForm(f => ({ ...f, teacher: e.target.value }))}>
-                    <option value="">Select teacher…</option>
-                    {(form.classroom && form.subject
-                      ? classroomAssignments.filter(a => String(a.subject) === String(form.subject))
-                      : teachers
-                    ).map(a => (
-                      <option key={a.teacher || a.id} value={a.teacher || a.id}>{a.teacher_name || a.full_name}</option>
-                    ))}
-                  </Select>
-                </Field>
-              </div>
-              <Field label="Time Slot" required>
-                <Select required value={form.time_slot} onChange={e => setForm(f => ({ ...f, time_slot: e.target.value }))}>
-                  <option value="">Select time…</option>
-                  {DAYS.map(d => {
-                    const daySlots = sortedSlots.filter(ts => ts.day === d);
-                    if (!daySlots.length) return null;
-                    return (
-                      <optgroup key={d} label={DAY_FULL[d]}>
-                        {daySlots.map(ts => (
-                          <option key={ts.id} value={ts.id}>
-                            {ts.start_time_display} – {ts.end_time_display}{ts.label ? ` (${ts.label})` : ''}
-                          </option>
-                        ))}
-                      </optgroup>
-                    );
-                  })}
-                </Select>
-              </Field>
-              <Field label="Room (optional)">
-                <Select value={form.room} onChange={e => setForm(f => ({ ...f, room: e.target.value }))}>
-                  <option value="">No room assigned</option>
-                  {rooms.map(r => <option key={r.id} value={r.id}>{r.name}{r.building ? ` · ${r.building}` : ''}</option>)}
-                </Select>
-              </Field>
-            </div>
-          </div>
-
-          <div className="space-y-6">
-            <div className="flex items-center gap-4">
-              <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] whitespace-nowrap">Context & Notes</h4>
-              <div className="h-px w-full bg-slate-100"></div>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          {!quickAddContext && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-violet-100">
               <Field label="Academic Year" required>
-                <Select required value={form.academic_year} onChange={e => setForm(f => ({ ...f, academic_year: e.target.value, semester: '' }))}>
+                <Select required value={form.academic_year} onChange={(e) => setForm((f) => ({ ...f, academic_year: e.target.value, semester: '' }))}>
                   <option value="">Select year…</option>
-                  {academicYears.map(a => <option key={a.id} value={a.id}>{a.name}{a.is_active ? ' ★' : ''}</option>)}
+                  {academicYears.map((a) => <option key={a.id} value={a.id}>{a.name}{a.is_active ? ' ★' : ''}</option>)}
                 </Select>
               </Field>
               <Field label="Semester (optional)">
-                <Select value={form.semester} onChange={e => setForm(f => ({ ...f, semester: e.target.value }))}>
+                <Select value={form.semester} onChange={(e) => setForm((f) => ({ ...f, semester: e.target.value }))}>
                   <option value="">None</option>
-                  {semesters.map(s => <option key={s.id} value={s.id}>{s.semester_type}</option>)}
+                  {semesters.map((s) => <option key={s.id} value={s.id}>{s.semester_type}</option>)}
                 </Select>
               </Field>
-              <div className="sm:col-span-2">
-                <Field label="Notes (optional)">
-                  <textarea value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
-                    rows={2} placeholder="Any additional instructions…"
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 text-[13px] font-bold text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500/10 focus:border-violet-400 transition-all resize-none shadow-sm" />
-                </Field>
-              </div>
             </div>
-          </div>
+          )}
 
-          <div className="bg-amber-50/50 border border-amber-100 rounded-2xl p-4 flex items-start gap-3">
-            <svg className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-            <p className="text-[11px] text-amber-700 font-bold leading-relaxed uppercase tracking-tight">
-              Conflicts (teacher, room, or section overlapping) are validated automatically upon saving.
-            </p>
-          </div>
+          <Field label="Notes (optional)">
+            <textarea value={form.notes} onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
+              rows={2} placeholder="Optional notes…"
+              className="w-full px-3 py-2.5 rounded-sm border border-violet-200 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-400/30 focus:border-violet-400 resize-none" />
+          </Field>
         </form>
       </Modal>
 
@@ -1094,91 +1279,121 @@ export default function ScheduleManagement() {
       <Modal
         open={showSlotPanel}
         onClose={() => setShowSlotPanel(false)}
-        title="Time Slots"
-        subtitle={`${timeSlots.length} Slots Configured`}
+        title="Bell Periods"
+        subtitle={`${timeSlots.length} slots · ${uniquePeriods.length} unique periods`}
         size="lg"
       >
-        <div className="flex flex-col md:flex-row min-h-0">
-          {/* Left: Add form */}
-          <div className="w-full md:w-[320px] p-8 border-b md:border-b-0 md:border-r border-slate-100 bg-violet-50/20 overflow-y-auto scrollbar-none shrink-0">
-            <form onSubmit={saveSlot} className="space-y-6">
-              <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Register New Slot</h4>
-              <div className="grid grid-cols-1 gap-5">
-                <Field label="Day of Week" required>
-                  <Select required value={slotForm.day} onChange={e => setSlotForm(f => ({ ...f, day: e.target.value }))}>
-                    {DAYS.map(d => <option key={d} value={d}>{DAY_FULL[d]}</option>)}
-                  </Select>
+        <div className="flex flex-col md:flex-row min-h-0 max-h-[70vh]">
+          <div className="w-full md:w-[340px] p-5 border-b md:border-b-0 md:border-r border-violet-100 bg-violet-50/30 overflow-y-auto shrink-0 space-y-4">
+            <div className="space-y-2">
+              <p className="text-[10px] font-bold text-violet-800 uppercase tracking-wide">Quick setup</p>
+              <button type="button" onClick={() => applyStandardBellSchedule(false)} disabled={savingSlot}
+                className="w-full py-2.5 rounded-sm bg-violet-700 text-white text-[10px] font-bold uppercase tracking-wide hover:bg-violet-800 disabled:opacity-50">
+                Apply Standard Day (Mon–Fri)
+              </button>
+              <button type="button" onClick={fillMissingPeriodSlots} disabled={savingSlot || !uniquePeriods.length}
+                className="w-full py-2.5 rounded-sm border border-violet-300 bg-white text-violet-800 text-[10px] font-bold uppercase tracking-wide hover:bg-violet-50 disabled:opacity-50">
+                Fill Missing Weekday Slots
+              </button>
+            </div>
+
+            <form onSubmit={saveSlotBulk} className="space-y-4 pt-4 border-t border-violet-200">
+              <p className="text-[10px] font-bold text-slate-600 uppercase tracking-wide">Add one period</p>
+              <Field label="Period label">
+                <input value={slotForm.label} onChange={(e) => setSlotForm((f) => ({ ...f, label: e.target.value }))}
+                  placeholder="e.g. Period 1"
+                  className="w-full px-3 py-2 rounded-sm border border-violet-200 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400/30" />
+              </Field>
+              <div className="grid grid-cols-2 gap-3">
+                <Field label="Start" required>
+                  <input required type="time" value={slotForm.start_time} onChange={(e) => setSlotForm((f) => ({ ...f, start_time: e.target.value }))}
+                    className="w-full px-3 py-2 rounded-sm border border-violet-200 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400/30" />
                 </Field>
-                <Field label="Slot Label">
-                  <input value={slotForm.label} onChange={e => setSlotForm(f => ({ ...f, label: e.target.value }))}
-                    placeholder="e.g. 1st Period"
-                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-[13px] font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-500/10 focus:border-violet-400 transition-all" />
+                <Field label="End" required>
+                  <input required type="time" value={slotForm.end_time} onChange={(e) => setSlotForm((f) => ({ ...f, end_time: e.target.value }))}
+                    className="w-full px-3 py-2 rounded-sm border border-violet-200 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400/30" />
                 </Field>
-                <div className="grid grid-cols-2 gap-4">
-                  <Field label="Start Time" required>
-                    <input required type="time" value={slotForm.start_time} onChange={e => setSlotForm(f => ({ ...f, start_time: e.target.value }))}
-                      className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-[13px] font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-500/10 focus:border-violet-400 transition-all" />
-                  </Field>
-                  <Field label="End Time" required>
-                    <input required type="time" value={slotForm.end_time} onChange={e => setSlotForm(f => ({ ...f, end_time: e.target.value }))}
-                      className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-[13px] font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-500/10 focus:border-violet-400 transition-all" />
-                  </Field>
-                </div>
               </div>
+              <Field label="Apply to days">
+                <div className="flex flex-wrap gap-1.5">
+                  {DAYS.map((d) => {
+                    const selected = slotForm.days.includes(d);
+                    return (
+                      <button
+                        key={d}
+                        type="button"
+                        onClick={() => setSlotForm((f) => ({
+                          ...f,
+                          days: selected ? f.days.filter((x) => x !== d) : [...f.days, d],
+                        }))}
+                        className={`px-2 py-1 rounded-sm text-[10px] font-bold uppercase border transition-colors ${
+                          selected ? 'bg-violet-700 text-white border-violet-800' : 'bg-white text-slate-600 border-violet-200 hover:border-violet-400'
+                        }`}
+                      >
+                        {DAY_SHORT[d]}
+                      </button>
+                    );
+                  })}
+                </div>
+                <div className="flex gap-2 mt-2">
+                  <button type="button" onClick={() => setSlotForm((f) => ({ ...f, days: [...WEEKDAYS] }))} className="text-[10px] font-bold text-violet-600 hover:underline">Mon–Fri</button>
+                  <button type="button" onClick={() => setSlotForm((f) => ({ ...f, days: [...DAYS] }))} className="text-[10px] font-bold text-violet-600 hover:underline">All days</button>
+                </div>
+              </Field>
               <button type="submit" disabled={savingSlot}
-                className="w-full py-3.5 rounded-2xl bg-violet-600 text-white font-black text-[11px] uppercase tracking-[0.2em] hover:bg-violet-700 disabled:opacity-50 transition-all shadow-lg shadow-violet-200 active:scale-95">
-                {savingSlot ? 'Registering…' : '+ Register Slot'}
+                className="w-full py-2.5 rounded-sm bg-violet-700 text-white text-[10px] font-bold uppercase tracking-wide hover:bg-violet-800 disabled:opacity-50">
+                {savingSlot ? 'Adding…' : `Add to ${slotForm.days.length} day${slotForm.days.length === 1 ? '' : 's'}`}
               </button>
             </form>
           </div>
 
-          {/* Right: Existing slots */}
-          <div className="flex-1 overflow-y-auto p-8 space-y-6 bg-white scrollbar-thin">
-            <div className="flex items-center justify-between mb-2">
-              <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Registered Slots</h4>
-              <select 
-                value={slotFilterDay} 
-                onChange={e => setSlotFilterDay(e.target.value)}
-                className="px-3 py-1.5 rounded-lg border border-slate-200 text-[11px] font-black uppercase tracking-widest bg-slate-50 focus:outline-none focus:ring-2 focus:ring-violet-500/10 focus:border-violet-400 transition-all cursor-pointer"
-              >
-                <option value="">All Days</option>
-                {DAYS.map(d => <option key={d} value={d}>{DAY_FULL[d]}</option>)}
+          <div className="flex-1 overflow-y-auto p-5 space-y-4 bg-white">
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Period overview</p>
+              <select value={slotFilterDay} onChange={(e) => setSlotFilterDay(e.target.value)}
+                className="px-2 py-1 rounded-sm border border-violet-200 text-[10px] font-bold uppercase bg-white">
+                <option value="">All days</option>
+                {DAYS.map((d) => <option key={d} value={d}>{DAY_FULL[d]}</option>)}
               </select>
             </div>
 
-            {(slotFilterDay ? [slotFilterDay] : DAYS).map(d => {
-              const daySlots = sortedSlots.filter(ts => ts.day === d);
-              if (!daySlots.length) return null;
-              return (
-                <div key={d} className="space-y-3">
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4 flex items-center gap-3">
-                    {DAY_FULL[d]}
-                    <div className="h-px w-full bg-slate-50"></div>
-                  </p>
-                  <div className="grid grid-cols-1 gap-2">
-                    {daySlots.map(ts => (
-                      <div key={ts.id} className="flex items-center justify-between py-3 px-4 rounded-2xl bg-slate-50 hover:bg-violet-50 transition-all group border border-transparent hover:border-violet-100">
-                        <div>
-                          <p className="text-[13px] font-bold text-slate-800 tracking-tight">{ts.start_time?.slice(0,5)} – {ts.end_time?.slice(0,5)}</p>
-                          {ts.label && <p className="text-[9px] text-violet-500 font-black uppercase tracking-widest mt-0.5">{ts.label}</p>}
+            {periodCoverage.length === 0 ? (
+              <p className="text-sm text-slate-500 text-center py-12">No periods yet. Use quick setup on the left.</p>
+            ) : (
+              periodCoverage.map((period) => (
+                <div key={periodKey(period.start_time, period.end_time)} className="rounded-sm border border-violet-100 p-3">
+                  <div className="flex items-center justify-between gap-2 mb-2">
+                    <div>
+                      <p className="text-sm font-bold text-slate-800">{period.start_display} – {period.end_display}</p>
+                      {period.label && <p className="text-[10px] text-violet-600 font-semibold">{period.label}</p>}
+                    </div>
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-sm ${
+                      period.coveredDays === DAYS.length ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
+                    }`}>
+                      {period.coveredDays}/{DAYS.length} days
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap gap-1">
+                    {(slotFilterDay ? [slotFilterDay] : DAYS).map((d) => {
+                      const has = hasSlotForCell(d, period);
+                      const daySlots = sortedSlots.filter(
+                        (ts) => ts.day === d && periodKey(ts.start_time, ts.end_time) === periodKey(period.start_time, period.end_time)
+                      );
+                      return (
+                        <div key={d} className={`flex items-center gap-1 px-2 py-1 rounded-sm text-[10px] font-bold border ${
+                          has ? 'bg-violet-50 border-violet-200 text-violet-800' : 'bg-slate-50 border-dashed border-slate-200 text-slate-400'
+                        }`}>
+                          {DAY_SHORT[d]}
+                          {daySlots.map((ts) => (
+                            <button key={ts.id} type="button" onClick={() => deleteSlot(ts.id, `${DAY_SHORT[d]} ${normalizeTime(ts.start_time)}`)}
+                              className="ml-1 text-rose-500 hover:text-rose-700" title="Delete">×</button>
+                          ))}
                         </div>
-                        <button onClick={() => deleteSlot(ts.id, `${DAY_SHORT[ts.day]} ${ts.start_time?.slice(0,5)}`)}
-                          className="p-2 rounded-xl text-rose-400 hover:text-rose-600 hover:bg-rose-100 opacity-0 group-hover:opacity-100 transition-all active:scale-90">
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                        </button>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
-              );
-            })}
-            {timeSlots.length === 0 && (
-              <div className="flex flex-col items-center justify-center py-20 text-center">
-                <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center mb-4">
-                  <svg className="w-6 h-6 text-slate-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                </div>
-                <p className="text-slate-400 font-bold text-xs uppercase tracking-widest">No slots registered</p>
-              </div>
+              ))
             )}
           </div>
         </div>
