@@ -1,5 +1,4 @@
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
-import { getStoredUser } from '../utils/auth';
 import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
 import { useState, useEffect, useRef } from 'react';
@@ -9,16 +8,20 @@ import toast from 'react-hot-toast';
 import { useNetworkStatus } from '../hooks/useNetworkStatus';
 import { getMuted, toggleMute, playSound } from '../utils/sounds';
 import PullToRefresh from './PullToRefresh';
-import { useScrollLock } from '../hooks/useScrollLock';
 import { usePushNotifications } from '../hooks/usePushNotifications';
 import { getNotifConfig, formatNotifTime } from '../utils/notificationConfig';
+import { OnboardingProvider } from '../onboarding/OnboardingContext';
+import OnboardingShell from '../onboarding/OnboardingShell';
+import { getNavTourId } from '../onboarding/onboardingConfig';
 
 const PUSH_DISMISSED_KEY = 'push_prompt_dismissed';
 
-const NavItem = ({ to, label, isActive, icon, onClick }) => (
+const NavItem = ({ to, label, isActive, icon, onClick, tourId }) => (
   <Link
     to={to}
     onClick={onClick}
+    data-tour={tourId}
+    aria-current={isActive(to) ? 'page' : undefined}
     className={`flex items-center px-2.5 py-2 rounded-lg transition-all duration-150 mb-0.5 text-xs group ${
       isActive(to)
         ? 'bg-violet-600 text-white font-semibold shadow-md shadow-violet-200'
@@ -360,7 +363,8 @@ const Layout = () => {
   const currentNav = NAV_STRUCTURE[user?.role] || [];
 
   return (
-    <div className="h-screen overflow-hidden bg-slate-50 font-sans antialiased [overscroll-behavior:none]">
+    <OnboardingProvider>
+      <div className="h-screen overflow-hidden bg-slate-50 font-sans antialiased [overscroll-behavior:none]">
       <div className="flex h-full">
 
         {/* Mobile Sidebar Overlay */}
@@ -372,7 +376,7 @@ const Layout = () => {
         )}
 
         {/* ── Sidebar ── */}
-        <aside className={`fixed inset-y-0 left-0 z-50 flex h-screen w-56 transform flex-col overflow-hidden border-r border-white/10 bg-[#1A0B2E] text-white shadow-2xl transition-all duration-300 ease-in-out lg:static lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        <aside data-tour="portal-sidebar" className={`fixed inset-y-0 left-0 z-50 flex h-screen w-56 transform flex-col overflow-hidden border-r border-white/10 bg-[#1A0B2E] text-white shadow-2xl transition-all duration-300 ease-in-out lg:static lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
 
           {/* Logo Section */}
           <div className="flex items-center gap-2.5 px-4 py-4">
@@ -387,7 +391,7 @@ const Layout = () => {
 
           {/* Profile Summary */}
           <div className="flex-shrink-0 px-3 mb-3">
-            <div onClick={() => navigate('/profile')}
+            <div data-tour="sidebar-profile" onClick={() => navigate('/profile')}
               className="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors cursor-pointer group">
               <div className="h-9 w-9 rounded-lg bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-white font-black shadow-lg group-hover:scale-105 transition-transform uppercase overflow-hidden border border-white/10 shrink-0">
                 {user?.profile_picture ? (
@@ -416,6 +420,7 @@ const Layout = () => {
                       label={item.label} 
                       isActive={isActive} 
                       icon={item.icon}
+                      tourId={getNavTourId(item.to)}
                       onClick={() => setSidebarOpen(false)}
                     />
                   ))}
@@ -448,9 +453,9 @@ const Layout = () => {
         </aside>
 
         {/* ── Main Content ── */}
-        <main className="flex-1 flex flex-col min-h-0 bg-[#F8FAFC]">
+        <main data-tour="portal-main" className="flex-1 flex flex-col min-h-0 bg-[#F8FAFC]">
           {/* Top bar */}
-          <header className="sticky top-0 z-30 flex items-center justify-between border-b border-slate-200/60 bg-white/80 px-3 py-1.5 backdrop-blur-xl lg:px-5 shadow-sm">
+          <header data-tour="portal-header" className="sticky top-0 z-30 flex items-center justify-between border-b border-slate-200/60 bg-white/80 px-3 py-1.5 backdrop-blur-xl lg:px-5 shadow-sm">
             <div className="flex items-center gap-4 lg:gap-8">
               <button 
                 onClick={() => { playSound('click'); setSidebarOpen(!sidebarOpen); }} 
@@ -482,6 +487,7 @@ const Layout = () => {
               <div className="relative" data-notif-dropdown ref={notifDropdownRef}>
                 <button 
                   onClick={() => { playSound('click'); setShowNotifications(!showNotifications); }} 
+                  data-tour="notifications"
                   className={`relative rounded-xl p-2.5 transition-all duration-200 ${showNotifications ? 'bg-violet-100 text-violet-700 shadow-inner scale-95' : 'text-slate-400 hover:bg-slate-100 hover:text-slate-600'}`}
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -589,7 +595,7 @@ const Layout = () => {
                   <span className="text-sm font-bold text-slate-900 leading-none">{user?.first_name}</span>
                   <span className="text-[10px] font-bold text-violet-600 uppercase tracking-widest mt-1">{user?.role}</span>
                 </div>
-                <div className="relative group cursor-pointer" onClick={() => navigate('/profile')}>
+                <div data-tour="user-profile" className="relative group cursor-pointer" onClick={() => navigate('/profile')}>
                   <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-white shadow-lg group-hover:rotate-3 transition-all overflow-hidden border border-slate-200">
                     {user?.profile_picture ? (
                       <img src={user.profile_picture} alt="Avatar" className="w-full h-full object-cover" />
@@ -665,6 +671,8 @@ const Layout = () => {
         </main>
       </div>
 
+      <OnboardingShell />
+
       {/* ── Mobile Bottom Navigation Bar ── */}
       {/* Only shown on small screens as a quick-access nav */}
       <nav
@@ -676,6 +684,7 @@ const Layout = () => {
           {/* Dashboard */}
           <Link
             to="/dashboard"
+            data-tour={getNavTourId('/dashboard')}
             className={`flex flex-col items-center gap-0.5 px-3 py-2 rounded-xl transition-all active:scale-90 min-w-[56px] ${
               isActive('/dashboard') ? 'text-violet-600' : 'text-slate-400'
             }`}
@@ -689,6 +698,7 @@ const Layout = () => {
           {/* Announcements */}
           <Link
             to="/announcements"
+            data-tour={getNavTourId('/announcements')}
             className={`flex flex-col items-center gap-0.5 px-3 py-2 rounded-xl transition-all active:scale-90 min-w-[56px] ${
               isActive('/announcements') ? 'text-violet-600' : 'text-slate-400'
             }`}
@@ -702,6 +712,7 @@ const Layout = () => {
           {/* Messages */}
           <Link
             to="/messages"
+            data-tour={getNavTourId('/messages')}
             className={`flex flex-col items-center gap-0.5 px-3 py-2 rounded-xl transition-all active:scale-90 min-w-[56px] ${
               isActive('/messages') ? 'text-violet-600' : 'text-slate-400'
             }`}
@@ -715,6 +726,7 @@ const Layout = () => {
           {/* Notifications */}
           <Link
             to="/notifications"
+            data-tour={getNavTourId('/notifications')}
             className={`relative flex flex-col items-center gap-0.5 px-3 py-2 rounded-xl transition-all active:scale-90 min-w-[56px] ${
               isActive('/notifications') ? 'text-violet-600' : 'text-slate-400'
             }`}
@@ -745,7 +757,8 @@ const Layout = () => {
           </button>
         </div>
       </nav>
-    </div>
+      </div>
+    </OnboardingProvider>
   );
 };
 

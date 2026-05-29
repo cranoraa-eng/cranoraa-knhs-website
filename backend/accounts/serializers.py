@@ -7,7 +7,7 @@ from .models import (Profile, Classroom, StudentClassEnrollment, Announcement,
     Notification, EnrollmentApplication, WebsiteContent, Grade, GradeReport,
     ChatRoom, ChatMessage, MessageReaction, Friendship, SystemSetting,
     Assignment, Submission, ReportedMessage,
-    Room, TimeSlot, Schedule)
+    Room, TimeSlot, Schedule, OnboardingState)
 
 User = get_user_model()
 
@@ -101,6 +101,50 @@ class UserSerializer(serializers.ModelSerializer):
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField(write_only=True)
+
+
+class OnboardingStateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OnboardingState
+        fields = [
+            'has_seen_welcome',
+            'completed_tutorials',
+            'skipped_tutorials',
+            'dismissed_tips',
+            'checklist_progress',
+            'last_tutorial',
+            'last_step_id',
+            'metadata',
+            'role',
+            'updated_at',
+        ]
+        read_only_fields = ['role', 'updated_at']
+
+    def validate_completed_tutorials(self, value):
+        return self._validate_string_list(value, 'completed_tutorials')
+
+    def validate_skipped_tutorials(self, value):
+        return self._validate_string_list(value, 'skipped_tutorials')
+
+    def validate_dismissed_tips(self, value):
+        return self._validate_string_list(value, 'dismissed_tips')
+
+    def validate_checklist_progress(self, value):
+        if not isinstance(value, dict):
+            raise serializers.ValidationError('Expected an object.')
+        return value
+
+    def validate_metadata(self, value):
+        if not isinstance(value, dict):
+            raise serializers.ValidationError('Expected an object.')
+        return value
+
+    def _validate_string_list(self, value, field_name):
+        if not isinstance(value, list):
+            raise serializers.ValidationError(f'{field_name} must be a list.')
+        if not all(isinstance(item, str) for item in value):
+            raise serializers.ValidationError(f'{field_name} may only contain strings.')
+        return value
 
 
 class ClassroomSerializer(serializers.ModelSerializer):

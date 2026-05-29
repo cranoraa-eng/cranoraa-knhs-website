@@ -16,6 +16,7 @@ from .views import (
     parent_dashboard_view, parent_child_detail_view,
     fcm_token_register, fcm_token_delete, test_push_notification,
     storage_analytics_view,
+    onboarding_state_view,
 )
 
 router = DefaultRouter()
@@ -51,6 +52,7 @@ urlpatterns = [
     path('force-password-change/', force_password_change_view, name='force_password_change'),
     path('profile/', user_profile, name='profile'),
     path('student/profile/', student_profile, name='student_profile'),
+    path('onboarding/state/', onboarding_state_view, name='onboarding_state'),
     path('student/calendar/', student_calendar_view, name='student_calendar'),
     path('notifications/polling/', notifications_polling_view, name='notifications_polling'),
     path('teacher/stats/', teacher_dashboard_stats, name='teacher_stats'),
