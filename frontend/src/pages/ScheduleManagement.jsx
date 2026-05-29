@@ -40,10 +40,149 @@ const Select = ({ value, onChange, children, required }) => (
     required={required}
     value={value}
     onChange={onChange}
-    className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm font-medium text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-violet-400/30 focus:border-violet-400 transition-all"
+    className="w-full px-3 py-2.5 rounded-sm border border-violet-200 text-sm font-medium text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-violet-400/30 focus:border-violet-400 transition-all"
   >
     {children}
   </select>
+);
+
+const ScheduleEntryCard = ({ entry, subjectColorMap, onEdit, onDelete, compact }) => (
+  <div
+    className={`${compact ? 'p-2' : 'p-2.5'} rounded-sm border ${subjectColorMap[entry.subject] || SUBJECT_COLORS[0]} relative group shadow-sm hover:shadow-md transition-all`}
+  >
+    <p className="text-[10px] font-bold uppercase tracking-tight leading-none">{entry.subject_code}</p>
+    <p className={`${compact ? 'text-[10px]' : 'text-[11px]'} font-bold leading-tight line-clamp-1`}>{entry.subject_name}</p>
+    {!compact && entry.classroom_name && (
+      <p className="text-[9px] opacity-70 mt-0.5 truncate">{entry.classroom_name}</p>
+    )}
+    {entry.teacher_name && <p className="text-[9px] opacity-60 truncate">{entry.teacher_name}</p>}
+    {entry.room_name && (
+      <p className="text-[9px] opacity-60 mt-0.5 truncate">{entry.room_name}</p>
+    )}
+    <div className="absolute top-1 right-1 flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+      <button type="button" onClick={() => onEdit(entry)} className="w-5 h-5 rounded-sm bg-white/90 flex items-center justify-center hover:bg-white shadow-sm" title="Edit">
+        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+      </button>
+      <button type="button" onClick={() => onDelete(entry.id, `${entry.subject_name} — ${entry.classroom_name}`)} className="w-5 h-5 rounded-sm bg-rose-500 flex items-center justify-center hover:bg-rose-600 shadow-sm" title="Delete">
+        <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" /></svg>
+      </button>
+    </div>
+  </div>
+);
+
+const SectionTimetableGrid = ({
+  days,
+  periods,
+  getCellSchedules,
+  subjectColorMap,
+  onAdd,
+  onEdit,
+  onDelete,
+  singleSection,
+}) => (
+  <>
+    {/* Mobile: day cards */}
+    <div className="md:hidden p-3 space-y-4">
+      {days.map((d) => (
+        <div key={d}>
+          <p className="text-[10px] font-bold text-violet-700 uppercase tracking-wide mb-2">{DAY_FULL[d]}</p>
+          <div className="space-y-2">
+            {periods.map((period) => {
+              const entries = getCellSchedules(d, period);
+              if (singleSection && entries.length === 0) {
+                return (
+                  <button
+                    key={`${d}-${period.start_time}`}
+                    type="button"
+                    onClick={() => onAdd(d, period)}
+                    className="w-full py-3 px-3 rounded-sm border border-dashed border-violet-200 text-left hover:border-violet-400 hover:bg-violet-50/50 transition-all"
+                  >
+                    <p className="text-xs font-bold text-slate-700">{period.start_display} – {period.end_display}</p>
+                    <p className="text-[10px] text-violet-600 mt-0.5">Tap to add class</p>
+                  </button>
+                );
+              }
+              if (entries.length === 0) return null;
+              return entries.map((s) => (
+                <div key={s.id} className="flex gap-2 items-stretch">
+                  <div className="text-[10px] font-bold text-slate-500 w-14 shrink-0 pt-2 leading-tight">
+                    {period.start_display}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <ScheduleEntryCard entry={s} subjectColorMap={subjectColorMap} onEdit={onEdit} onDelete={onDelete} compact={!singleSection} />
+                  </div>
+                </div>
+              ));
+            })}
+          </div>
+        </div>
+      ))}
+    </div>
+
+    {/* Desktop grid */}
+    <div className="hidden md:block overflow-x-auto">
+      <table className="w-full border-separate border-spacing-0" style={{ minWidth: 720 }}>
+        <thead>
+          <tr className="bg-violet-800">
+            <th className="px-3 py-2.5 text-left w-24 border-r border-violet-700">
+              <span className="text-[10px] font-bold text-violet-200 uppercase tracking-wide">Period</span>
+            </th>
+            {days.map((d) => (
+              <th key={d} className="px-2 py-2.5 text-left border-r border-violet-700/50 min-w-[120px]">
+                <span className="text-[10px] font-bold text-violet-100 uppercase tracking-wide">{DAY_SHORT[d]}</span>
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {periods.map((period, rowIdx) => (
+            <tr key={`${period.start_time}-${period.end_time}`} className={rowIdx % 2 === 0 ? 'bg-white' : 'bg-violet-50/30'}>
+              <td className="px-3 py-2 border-r border-violet-100 align-top">
+                <p className="text-xs font-bold text-slate-800">{period.start_display}</p>
+                <p className="text-[10px] text-slate-400">{period.end_display}</p>
+                {period.label && (
+                  <span className="mt-1 inline-block text-[9px] font-bold text-violet-600 uppercase">{period.label}</span>
+                )}
+              </td>
+              {days.map((d) => {
+                const entries = getCellSchedules(d, period);
+                return (
+                  <td key={d} className="px-1.5 py-1.5 align-top border-r border-violet-100 min-h-[72px] group/cell">
+                    <div className="space-y-1 min-h-[64px]">
+                      {entries.map((s) => (
+                        <ScheduleEntryCard
+                          key={s.id}
+                          entry={s}
+                          subjectColorMap={subjectColorMap}
+                          onEdit={onEdit}
+                          onDelete={onDelete}
+                          compact={!singleSection}
+                        />
+                      ))}
+                      {(singleSection || entries.length === 0) && (
+                        <button
+                          type="button"
+                          onClick={() => onAdd(d, period)}
+                          className={`w-full py-1.5 border border-dashed rounded-sm flex items-center justify-center transition-all text-slate-300 hover:border-violet-300 hover:text-violet-500 hover:bg-violet-50/40 ${
+                            singleSection
+                              ? entries.length ? 'opacity-0 group-hover/cell:opacity-100' : 'opacity-60 hover:opacity-100'
+                              : 'opacity-0 group-hover/cell:opacity-100'
+                          }`}
+                          title="Add class"
+                        >
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" /></svg>
+                        </button>
+                      )}
+                    </div>
+                  </td>
+                );
+              })}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </>
 );
 
 export default function ScheduleManagement() {
@@ -59,7 +198,8 @@ export default function ScheduleManagement() {
   const [loading, setLoading]           = useState(true);
 
   // ── UI state ──────────────────────────────────────────────────────────────
-  const [activeTab, setActiveTab]       = useState('grid');
+  const [activeTab, setActiveTab]       = useState('section');
+  const [showSetupMenu, setShowSetupMenu] = useState(false);
   const [activeAY, setActiveAY]         = useState('');   // selected academic year filter
   const [filterDay, setFilterDay]       = useState('');
   const [filterClassroom, setFilterClassroom] = useState('');
@@ -173,32 +313,96 @@ export default function ScheduleManagement() {
     return true;
   }), [schedules, activeAY, filterDay, filterClassroom, filterTeacher, search]);
 
-  // ── Grid data ─────────────────────────────────────────────────────────────
-  const gridData = useMemo(() => {
-    const g = {};
-    DAYS.forEach(d => { g[d] = {}; });
-    filtered.forEach(s => {
-      const d = s.time_slot_detail?.day;
-      const sid = s.time_slot;
-      if (d && sid) {
-        if (!g[d][sid]) g[d][sid] = [];
-        g[d][sid].push(s);
-      }
-    });
-    return g;
-  }, [filtered]);
-
   const sortedSlots = useMemo(() =>
-    [...timeSlots].sort((a, b) => a.start_time.localeCompare(b.start_time)),
+    [...timeSlots].sort((a, b) => {
+      const dayDiff = DAYS.indexOf(a.day) - DAYS.indexOf(b.day);
+      if (dayDiff !== 0) return dayDiff;
+      return a.start_time.localeCompare(b.start_time);
+    }),
   [timeSlots]);
 
+  // Rows = unique bell periods (same start/end across days), columns = weekdays
+  const uniquePeriods = useMemo(() => {
+    const map = new Map();
+    sortedSlots.forEach((ts) => {
+      const key = `${ts.start_time}-${ts.end_time}`;
+      if (!map.has(key)) {
+        map.set(key, {
+          start_time: ts.start_time,
+          end_time: ts.end_time,
+          label: ts.label,
+          start_display: ts.start_time_display || ts.start_time?.slice(0, 5),
+          end_display: ts.end_time_display || ts.end_time?.slice(0, 5),
+        });
+      }
+    });
+    return [...map.values()].sort((a, b) => a.start_time.localeCompare(b.start_time));
+  }, [sortedSlots]);
+
+  const getSlotForCell = useCallback((day, period) =>
+    timeSlots.find(
+      (ts) => ts.day === day && ts.start_time === period.start_time && ts.end_time === period.end_time
+    ),
+  [timeSlots]);
+
+  const getCellSchedules = useCallback((day, period, classroomId = filterClassroom) => {
+    const slot = getSlotForCell(day, period);
+    if (!slot) return [];
+    return filtered.filter((s) => String(s.time_slot) === String(slot.id) && (
+      !classroomId || String(s.classroom) === String(classroomId)
+    ));
+  }, [filtered, filterClassroom, getSlotForCell]);
+
+  const classroomScheduleCounts = useMemo(() => {
+    const counts = {};
+    filtered.forEach((s) => {
+      counts[s.classroom] = (counts[s.classroom] || 0) + 1;
+    });
+    return counts;
+  }, [filtered]);
+
+  const hasFilters = Boolean(search || filterDay || filterClassroom || filterTeacher);
+
+  const clearFilters = () => {
+    setSearch('');
+    setFilterDay('');
+    setFilterClassroom('');
+    setFilterTeacher('');
+  };
+
   // ── Actions ───────────────────────────────────────────────────────────────
-  const openCreate = useCallback((slotId = '', day = '') => {
-    const ay = academicYears.find(a => a.is_active);
+  const openCreate = useCallback((slotId = '', prefill = {}) => {
+    const ay = academicYears.find((a) => String(a.id) === activeAY) || academicYears.find((a) => a.is_active);
     setEditItem(null);
-    setForm({ ...emptyForm, time_slot: slotId, academic_year: ay ? String(ay.id) : '' });
+    setForm({
+      ...emptyForm,
+      time_slot: slotId,
+      academic_year: ay ? String(ay.id) : '',
+      classroom: prefill.classroom || filterClassroom || '',
+      ...prefill,
+    });
     setShowForm(true);
-  }, [academicYears]);
+  }, [academicYears, activeAY, filterClassroom]);
+
+  const openCreateAtCell = useCallback((day, period) => {
+    const slot = getSlotForCell(day, period);
+    if (!slot) {
+      toast.error(`No time slot for ${DAY_FULL[day]} at ${period.start_display}. Add one in Time Slots.`);
+      setSlotForm((f) => ({
+        ...f,
+        day,
+        start_time: period.start_time?.slice(0, 5) || '07:00',
+        end_time: period.end_time?.slice(0, 5) || '08:00',
+      }));
+      setShowSlotPanel(true);
+      return;
+    }
+    if (activeTab === 'section' && !filterClassroom) {
+      toast.error('Select a section first');
+      return;
+    }
+    openCreate(String(slot.id), { classroom: filterClassroom || '' });
+  }, [getSlotForCell, openCreate, activeTab, filterClassroom]);
 
   const openEdit = useCallback((s) => {
     setEditItem(s);
@@ -314,35 +518,106 @@ export default function ScheduleManagement() {
   const needsSetup = timeSlots.length === 0 || classrooms.length === 0;
 
   return (
-    <div className="space-y-5 page-bottom-safe">
+    <div className="space-y-4 md:space-y-5 page-bottom-safe max-w-[1600px] mx-auto">
 
-      {/* ── Header ── */}
-      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-black text-slate-900 tracking-tight">Schedule Management</h1>
-          <p className="text-slate-500 text-sm mt-0.5">Build and manage class timetables for all sections</p>
+      {/* ── Sticky toolbar ── */}
+      <div className="sticky top-0 z-20 -mx-3 px-3 md:-mx-6 md:px-6 py-3 bg-violet-50/95 backdrop-blur-sm border-b border-violet-100 space-y-3">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+          <div className="min-w-0">
+            <h1 className="text-xl md:text-2xl font-bold text-slate-900 tracking-tight">Schedule Management</h1>
+            <p className="text-slate-500 text-xs md:text-sm mt-0.5">Build section timetables, assign teachers, and resolve conflicts</p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setShowSetupMenu((v) => !v)}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-sm border border-violet-200 bg-white text-violet-800 text-[10px] font-bold uppercase tracking-wide hover:bg-violet-50 transition-colors"
+              >
+                Setup
+                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" /></svg>
+              </button>
+              {showSetupMenu && (
+                <>
+                  <button type="button" className="fixed inset-0 z-10" aria-label="Close menu" onClick={() => setShowSetupMenu(false)} />
+                  <div className="absolute right-0 mt-1 w-44 py-1 bg-white border border-violet-200 rounded-sm shadow-lg z-20">
+                    <button type="button" onClick={() => { setShowSlotPanel(true); setShowSetupMenu(false); }} className="w-full px-3 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-violet-50">Time Slots</button>
+                    <button type="button" onClick={() => { setShowRoomPanel(true); setShowSetupMenu(false); }} className="w-full px-3 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-violet-50">Rooms</button>
+                  </div>
+                </>
+              )}
+            </div>
+            <button type="button" onClick={checkConflicts}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-sm border border-amber-200 bg-amber-50 text-amber-800 text-[10px] font-bold uppercase tracking-wide hover:bg-amber-100 transition-colors">
+              Check Conflicts
+            </button>
+            <button type="button" onClick={() => openCreate()}
+              className="flex items-center gap-1.5 px-4 py-2 rounded-sm bg-violet-700 text-white text-[10px] font-bold uppercase tracking-wide hover:bg-violet-800 shadow-sm transition-colors">
+              + Add Class
+            </button>
+          </div>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <button onClick={() => setShowSlotPanel(true)}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-slate-200 bg-white text-slate-600 font-bold text-xs uppercase tracking-widest hover:bg-slate-50 transition-all">
-            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-            Time Slots
-          </button>
-          <button onClick={() => setShowRoomPanel(true)}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-slate-200 bg-white text-slate-600 font-bold text-xs uppercase tracking-widest hover:bg-slate-50 transition-all">
-            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
-            Rooms
-          </button>
-          <button onClick={checkConflicts}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-amber-200 bg-amber-50 text-amber-700 font-bold text-xs uppercase tracking-widest hover:bg-amber-100 transition-all">
-            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
-            Check Conflicts
-          </button>
-          <button onClick={() => openCreate()}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-violet-600 text-white font-bold text-xs uppercase tracking-widest hover:bg-violet-700 shadow-sm transition-all">
-            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" /></svg>
-            Add Schedule
-          </button>
+
+        {/* Filters row */}
+        <div className="flex flex-wrap gap-2 items-center">
+          <div className="relative flex-1 min-w-[160px] max-w-xs">
+            <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+            <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search…"
+              className="w-full pl-8 pr-3 py-2 bg-white border border-violet-200 rounded-sm text-sm focus:outline-none focus:ring-2 focus:ring-violet-300/40 focus:border-violet-400" />
+          </div>
+          <select value={activeAY} onChange={(e) => setActiveAY(e.target.value)}
+            className="px-3 py-2 rounded-sm border border-violet-200 text-sm font-medium bg-white focus:outline-none focus:ring-2 focus:ring-violet-300/40 min-w-[140px]">
+            <option value="">All Years</option>
+            {academicYears.map((a) => <option key={a.id} value={String(a.id)}>{a.name}{a.is_active ? ' ★' : ''}</option>)}
+          </select>
+          <select value={filterClassroom} onChange={(e) => setFilterClassroom(e.target.value)}
+            className="px-3 py-2 rounded-sm border border-violet-300 text-sm font-semibold bg-violet-50 text-violet-900 focus:outline-none focus:ring-2 focus:ring-violet-400/40 min-w-[160px]">
+            <option value="">All Sections</option>
+            {classrooms.map((c) => (
+              <option key={c.id} value={String(c.id)}>
+                {c.name}{classroomScheduleCounts[c.id] ? ` (${classroomScheduleCounts[c.id]})` : ''}
+              </option>
+            ))}
+          </select>
+          <select value={filterDay} onChange={(e) => setFilterDay(e.target.value)}
+            className="px-3 py-2 rounded-sm border border-violet-200 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-violet-300/40">
+            <option value="">All Days</option>
+            {DAYS.map((d) => <option key={d} value={d}>{DAY_FULL[d]}</option>)}
+          </select>
+          <select value={filterTeacher} onChange={(e) => setFilterTeacher(e.target.value)}
+            className="px-3 py-2 rounded-sm border border-violet-200 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-violet-300/40 min-w-[140px]">
+            <option value="">All Teachers</option>
+            {teachers.map((t) => <option key={t.id} value={String(t.id)}>{t.full_name || `${t.first_name} ${t.last_name}`}</option>)}
+          </select>
+          {hasFilters && (
+            <button type="button" onClick={clearFilters}
+              className="px-3 py-2 rounded-sm text-[10px] font-bold uppercase tracking-wide text-rose-600 hover:bg-rose-50 border border-rose-200">
+              Clear
+            </button>
+          )}
+        </div>
+
+        {/* View tabs + compact stats */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div className="flex gap-1 bg-violet-100/80 rounded-sm p-1 w-fit">
+            {[
+              { id: 'section', label: 'Section Timetable' },
+              { id: 'master', label: 'School Overview' },
+              { id: 'list', label: 'List' },
+            ].map((t) => (
+              <button key={t.id} type="button" onClick={() => setActiveTab(t.id)}
+                className={`px-3 py-1.5 rounded-sm text-[10px] font-bold uppercase tracking-wide transition-all ${
+                  activeTab === t.id ? 'bg-white text-violet-800 shadow-sm' : 'text-violet-600 hover:text-violet-900'
+                }`}>
+                {t.label}
+              </button>
+            ))}
+          </div>
+          <div className="flex flex-wrap gap-2 text-[10px] font-bold uppercase tracking-wide text-slate-500">
+            <span className="px-2 py-1 rounded-sm bg-white border border-violet-100">{stats.total} classes</span>
+            <span className="px-2 py-1 rounded-sm bg-white border border-violet-100">{stats.classrooms} sections</span>
+            <span className="px-2 py-1 rounded-sm bg-white border border-violet-100">{stats.teachers} teachers</span>
+          </div>
         </div>
       </div>
 
@@ -418,267 +693,104 @@ export default function ScheduleManagement() {
         </div>
       )}
 
-      {/* ── Stats row ── */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        {[
-          { label: 'Total Classes', value: stats.total, color: 'text-violet-600', bg: 'bg-violet-50' },
-          { label: 'Sections', value: stats.classrooms, color: 'text-blue-600', bg: 'bg-blue-50' },
-          { label: 'Teachers', value: stats.teachers, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-          { label: 'With Room', value: stats.rooms, color: 'text-amber-600', bg: 'bg-amber-50' },
-        ].map(s => (
-          <div key={s.label} className="bg-white border border-slate-200 rounded-2xl p-4 flex items-center gap-3">
-            <div className={`w-10 h-10 rounded-xl ${s.bg} flex items-center justify-center flex-shrink-0`}>
-              <span className={`text-lg font-black ${s.color}`}>{s.value}</span>
-            </div>
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-tight">{s.label}</p>
-          </div>
-        ))}
-      </div>
-
-      {/* ── Filters ── */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-4 flex flex-wrap gap-3 items-center">
-        {/* Search */}
-        <div className="relative flex-1 min-w-[180px]">
-          <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search subject, teacher, room…"
-            className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-300 focus:bg-white transition-all" />
+      {showConflicts && conflicts.length === 0 && (
+        <div className="bg-emerald-50 border border-emerald-200 rounded-sm p-4 flex items-center gap-3">
+          <svg className="w-5 h-5 text-emerald-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+          <p className="text-sm font-bold text-emerald-700">No scheduling conflicts found.</p>
+          <button type="button" onClick={() => setShowConflicts(false)} className="ml-auto text-emerald-500 hover:text-emerald-700 text-xs font-bold">Dismiss</button>
         </div>
-        {/* Academic Year */}
-        <select value={activeAY} onChange={e => setActiveAY(e.target.value)}
-          className="px-3 py-2 rounded-xl border border-slate-200 text-sm font-medium bg-white focus:outline-none focus:ring-2 focus:ring-violet-300">
-          <option value="">All Years</option>
-          {academicYears.map(a => <option key={a.id} value={String(a.id)}>{a.name}{a.is_active ? ' ★' : ''}</option>)}
-        </select>
-        {/* Day */}
-        <select value={filterDay} onChange={e => setFilterDay(e.target.value)}
-          className="px-3 py-2 rounded-xl border border-slate-200 text-sm font-medium bg-white focus:outline-none focus:ring-2 focus:ring-violet-300">
-          <option value="">All Days</option>
-          {DAYS.map(d => <option key={d} value={d}>{DAY_FULL[d]}</option>)}
-        </select>
-        {/* Classroom */}
-        <select value={filterClassroom} onChange={e => setFilterClassroom(e.target.value)}
-          className="px-3 py-2 rounded-xl border border-slate-200 text-sm font-medium bg-white focus:outline-none focus:ring-2 focus:ring-violet-300">
-          <option value="">All Sections</option>
-          {classrooms.map(c => <option key={c.id} value={String(c.id)}>{c.name}</option>)}
-        </select>
-        {/* Teacher */}
-        <select value={filterTeacher} onChange={e => setFilterTeacher(e.target.value)}
-          className="px-3 py-2 rounded-xl border border-slate-200 text-sm font-medium bg-white focus:outline-none focus:ring-2 focus:ring-violet-300">
-          <option value="">All Teachers</option>
-          {teachers.map(t => <option key={t.id} value={String(t.id)}>{t.full_name || `${t.first_name} ${t.last_name}`}</option>)}
-        </select>
-        {/* Clear filters */}
-        {(search || filterDay || filterClassroom || filterTeacher) && (
-          <button onClick={() => { setSearch(''); setFilterDay(''); setFilterClassroom(''); setFilterTeacher(''); }}
-            className="px-3 py-2 rounded-xl text-xs font-bold text-slate-500 hover:text-rose-600 hover:bg-rose-50 transition-all">
-            Clear ✕
-          </button>
-        )}
-      </div>
+      )}
 
-      {/* ── View tabs ── */}
-      <div className="flex gap-1 bg-slate-100 rounded-2xl p-1 w-fit">
-        {[
-          { id: 'grid', label: 'Timetable Grid', icon: 'M3 10h18M3 14h18M10 3v18M14 3v18' },
-          { id: 'list', label: 'List View', icon: 'M4 6h16M4 10h16M4 14h16M4 18h16' },
-        ].map(t => (
-          <button key={t.id} onClick={() => setActiveTab(t.id)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
-              activeTab === t.id ? 'bg-white text-violet-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'
-            }`}>
-            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={t.icon} /></svg>
-            {t.label}
-          </button>
-        ))}
-      </div>
-
-      {/* ── TIMETABLE GRID ── */}
-      {activeTab === 'grid' && (
-        <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
-          {sortedSlots.length === 0 ? (
-            <div className="py-20 text-center">
-              <div className="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+      {/* ── SECTION TIMETABLE ── */}
+      {activeTab === 'section' && (
+        <div className="bg-white border border-violet-200 rounded-sm shadow-sm overflow-hidden">
+          {!filterClassroom ? (
+            <div className="p-5 md:p-8">
+              <div className="max-w-xl mb-6">
+                <h2 className="text-sm font-bold text-slate-900">Select a section to edit its timetable</h2>
+                <p className="text-xs text-slate-500 mt-1">Pick a classroom section below or use the section filter above. Each section gets its own weekly grid.</p>
               </div>
-              <p className="text-slate-500 font-bold text-sm">No time slots yet</p>
-              <p className="text-slate-400 text-xs mt-1">Add time slots to build the timetable grid</p>
-              <button onClick={() => setShowSlotPanel(true)}
-                className="mt-4 px-4 py-2 rounded-xl bg-violet-600 text-white text-xs font-bold hover:bg-violet-700 transition-all">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+                {classrooms.map((c) => {
+                  const count = classroomScheduleCounts[c.id] || 0;
+                  return (
+                    <button
+                      key={c.id}
+                      type="button"
+                      onClick={() => setFilterClassroom(String(c.id))}
+                      className="text-left p-4 rounded-sm border border-violet-200 bg-violet-50/40 hover:bg-white hover:border-violet-400 hover:shadow-sm transition-all group"
+                    >
+                      <p className="text-sm font-bold text-slate-900 group-hover:text-violet-800">{c.name}</p>
+                      <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide mt-1">
+                        {count ? `${count} scheduled class${count === 1 ? '' : 'es'}` : 'No classes yet'}
+                      </p>
+                    </button>
+                  );
+                })}
+              </div>
+              {classrooms.length === 0 && (
+                <p className="text-sm text-slate-500 text-center py-12">Create classrooms in Class Management first.</p>
+              )}
+            </div>
+          ) : uniquePeriods.length === 0 ? (
+            <div className="py-16 text-center px-4">
+              <p className="text-slate-600 font-bold text-sm">No time slots configured</p>
+              <p className="text-slate-400 text-xs mt-1">Add bell periods in Setup → Time Slots</p>
+              <button type="button" onClick={() => setShowSlotPanel(true)} className="mt-4 px-4 py-2 rounded-sm bg-violet-700 text-white text-xs font-bold hover:bg-violet-800">
                 + Add Time Slots
               </button>
             </div>
           ) : (
             <>
-              {/* ── MOBILE: day-by-day card stack (hidden on md+) ── */}
-              <div className="md:hidden">
-                {/* Day selector tabs */}
-                <div className="flex overflow-x-auto scrollbar-none border-b border-slate-100 bg-slate-50">
-                  {DAYS.map(d => {
-                    const hasEntries = sortedSlots.some(slot => (gridData[d]?.[slot.id] || []).length > 0);
-                    return (
-                      <button
-                        key={d}
-                        onClick={() => setFilterDay(filterDay === d ? '' : d)}
-                        className={`flex-shrink-0 px-4 py-3 text-[10px] font-black uppercase tracking-widest border-b-2 transition-all relative ${
-                          filterDay === d
-                            ? 'border-violet-600 text-violet-600 bg-white'
-                            : 'border-transparent text-slate-400'
-                        }`}
-                      >
-                        {DAY_SHORT[d]}
-                        {hasEntries && (
-                          <span className="absolute top-2 right-1.5 w-1.5 h-1.5 rounded-full bg-violet-400" />
-                        )}
-                      </button>
-                    );
-                  })}
+              <div className="px-4 py-3 border-b border-violet-100 bg-violet-50/60 flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <p className="text-sm font-bold text-violet-900">
+                    {classrooms.find((c) => String(c.id) === filterClassroom)?.name || 'Section'}
+                  </p>
+                  <p className="text-[10px] font-semibold text-violet-600 uppercase tracking-wide">Weekly timetable</p>
                 </div>
-
-                {/* Cards for the selected day (or all days if none selected) */}
-                <div className="p-3 space-y-3">
-                  {(filterDay ? [filterDay] : DAYS).map(d => {
-                    const daySlots = sortedSlots.filter(slot => (gridData[d]?.[slot.id] || []).length > 0);
-                    if (daySlots.length === 0 && filterDay) {
-                      return (
-                        <div key={d} className="py-10 text-center">
-                          <p className="text-slate-400 text-sm font-bold">No classes on {DAY_FULL[d]}</p>
-                          <button onClick={() => openCreate('')}
-                            className="mt-3 px-4 py-2 rounded-xl bg-violet-50 text-violet-600 text-xs font-bold border border-violet-200 hover:bg-violet-100 transition-all">
-                            + Add Class
-                          </button>
-                        </div>
-                      );
-                    }
-                    if (daySlots.length === 0) return null;
-                    return (
-                      <div key={d}>
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1">{DAY_FULL[d]}</p>
-                        <div className="space-y-2">
-                          {daySlots.map(slot => {
-                            const entries = gridData[d][slot.id] || [];
-                            return entries.map(s => (
-                              <div key={s.id}
-                                className={`flex gap-3 p-3 rounded-2xl border ${subjectColorMap[s.subject] || SUBJECT_COLORS[0]} shadow-sm`}>
-                                {/* Time */}
-                                <div className="text-center min-w-[52px] flex-shrink-0">
-                                  <p className="text-xs font-black leading-none">{slot.start_time?.slice(0,5)}</p>
-                                  <p className="text-[9px] opacity-60 mt-0.5">{slot.end_time?.slice(0,5)}</p>
-                                  {slot.label && (
-                                    <span className="mt-1 inline-block text-[8px] font-black opacity-70 uppercase">{slot.label}</span>
-                                  )}
-                                </div>
-                                {/* Divider */}
-                                <div className="w-px bg-current opacity-20 self-stretch" />
-                                {/* Content */}
-                                <div className="flex-1 min-w-0">
-                                  <p className="text-[10px] font-black uppercase tracking-tight opacity-70 leading-none mb-0.5">{s.subject_code}</p>
-                                  <p className="text-sm font-bold leading-tight truncate">{s.subject_name}</p>
-                                  <p className="text-[10px] opacity-70 mt-1 truncate">{s.classroom_name}</p>
-                                  {s.room_name && (
-                                    <p className="text-[9px] opacity-60 mt-0.5 flex items-center gap-0.5">
-                                      <svg className="w-2.5 h-2.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /></svg>
-                                      {s.room_name}
-                                    </p>
-                                  )}
-                                </div>
-                                {/* Actions */}
-                                <div className="flex flex-col gap-1 flex-shrink-0">
-                                  <button onClick={() => openEdit(s)}
-                                    className="w-8 h-8 rounded-xl bg-white/60 flex items-center justify-center hover:bg-white transition-all active:scale-90"
-                                    title="Edit">
-                                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
-                                  </button>
-                                  <button onClick={() => handleDelete(s.id, `${s.subject_name} — ${s.classroom_name}`)}
-                                    className="w-8 h-8 rounded-xl bg-rose-500 flex items-center justify-center hover:bg-rose-600 transition-all active:scale-90"
-                                    title="Delete">
-                                    <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" /></svg>
-                                  </button>
-                                </div>
-                              </div>
-                            ));
-                          })}
-                        </div>
-                      </div>
-                    );
-                  })}
-
-                  {/* Add button */}
-                  <button onClick={() => openCreate('')}
-                    className="w-full py-3 border-2 border-dashed border-slate-200 rounded-2xl text-slate-400 flex items-center justify-center gap-2 hover:border-violet-300 hover:text-violet-500 hover:bg-violet-50/30 transition-all text-xs font-bold">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" /></svg>
-                    Add Schedule
-                  </button>
-                </div>
+                <button type="button" onClick={() => setFilterClassroom('')} className="text-[10px] font-bold uppercase tracking-wide text-violet-600 hover:text-violet-800">
+                  Change section
+                </button>
               </div>
+              <SectionTimetableGrid
+                days={filterDay ? [filterDay] : DAYS}
+                periods={uniquePeriods}
+                getCellSchedules={getCellSchedules}
+                subjectColorMap={subjectColorMap}
+                onAdd={(day, period) => openCreateAtCell(day, period)}
+                onEdit={openEdit}
+                onDelete={handleDelete}
+                singleSection
+              />
+            </>
+          )}
+        </div>
+      )}
 
-              {/* ── DESKTOP: full 7-column grid (hidden on mobile) ── */}
-              <div className="hidden md:block overflow-x-auto">
-                <table className="w-full border-separate border-spacing-0" style={{ minWidth: 700 }}>
-                  <thead>
-                    <tr className="bg-gradient-to-r from-[#1A0B2E] to-[#2D1452]">
-                      <th className="px-4 py-3 text-left w-28">
-                        <span className="text-[10px] font-black text-violet-300 uppercase tracking-widest">Time</span>
-                      </th>
-                      {DAYS.map(d => (
-                        <th key={d} className="px-3 py-3 text-left">
-                          <span className="text-[10px] font-black text-violet-200 uppercase tracking-widest">{DAY_FULL[d]}</span>
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {sortedSlots.map((slot, rowIdx) => (
-                      <tr key={slot.id} className={rowIdx % 2 === 0 ? 'bg-white' : 'bg-slate-50/40'}>
-                        <td className="px-4 py-3 border-r border-slate-100 align-top">
-                          <p className="text-xs font-black text-slate-800">{slot.start_time?.slice(0,5)}</p>
-                          <p className="text-[10px] text-slate-400 mt-0.5">{slot.end_time?.slice(0,5)}</p>
-                          {slot.label && (
-                            <span className="mt-1 inline-block px-1.5 py-0.5 rounded-md bg-violet-100 text-violet-600 text-[9px] font-black uppercase tracking-widest">
-                              {slot.label}
-                            </span>
-                          )}
-                        </td>
-                        {DAYS.map(d => {
-                          const entries = gridData[d]?.[slot.id] || [];
-                          return (
-                            <td key={d} className="px-2 py-2 align-top border-r border-slate-100 min-w-[130px] group/cell">
-                              {entries.map(s => (
-                                <div key={s.id}
-                                  className={`mb-1.5 p-2.5 rounded-xl border ${subjectColorMap[s.subject] || SUBJECT_COLORS[0]} relative group shadow-sm hover:shadow-md transition-all`}>
-                                  <p className="text-[10px] font-black uppercase tracking-tight leading-none mb-1">{s.subject_code}</p>
-                                  <p className="text-[11px] font-bold leading-tight line-clamp-1">{s.subject_name}</p>
-                                  <p className="text-[9px] opacity-70 mt-1 truncate">{s.classroom_name}</p>
-                                  {s.teacher_name && <p className="text-[9px] opacity-60 truncate">{s.teacher_name}</p>}
-                                  {s.room_name && (
-                                    <p className="text-[9px] opacity-60 mt-0.5 flex items-center gap-0.5">
-                                      <svg className="w-2.5 h-2.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /></svg>
-                                      {s.room_name}
-                                    </p>
-                                  )}
-                                  <div className="absolute top-1 right-1 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <button onClick={() => openEdit(s)}
-                                      className="w-5 h-5 rounded-md bg-white/80 flex items-center justify-center hover:bg-white shadow-sm" title="Edit">
-                                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
-                                    </button>
-                                    <button onClick={() => handleDelete(s.id, `${s.subject_name} — ${s.classroom_name}`)}
-                                      className="w-5 h-5 rounded-md bg-rose-500 flex items-center justify-center hover:bg-rose-600 shadow-sm" title="Delete">
-                                      <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" /></svg>
-                                    </button>
-                                  </div>
-                                </div>
-                              ))}
-                              <button onClick={() => openCreate(String(slot.id))}
-                                className="w-full py-1.5 border-2 border-dashed border-slate-100 rounded-xl text-slate-300 flex items-center justify-center opacity-0 group-hover/cell:opacity-100 hover:border-violet-300 hover:text-violet-400 hover:bg-violet-50/30 transition-all text-xs">
-                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" /></svg>
-                              </button>
-                            </td>
-                          );
-                        })}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+      {/* ── SCHOOL OVERVIEW (master grid) ── */}
+      {activeTab === 'master' && (
+        <div className="bg-white border border-violet-200 rounded-sm shadow-sm overflow-hidden">
+          {uniquePeriods.length === 0 ? (
+            <div className="py-16 text-center">
+              <p className="text-slate-500 font-bold text-sm">No time slots yet</p>
+              <button type="button" onClick={() => setShowSlotPanel(true)} className="mt-4 px-4 py-2 rounded-sm bg-violet-700 text-white text-xs font-bold">+ Add Time Slots</button>
+            </div>
+          ) : (
+            <>
+              <div className="px-4 py-3 border-b border-violet-100 bg-slate-50">
+                <p className="text-xs text-slate-600">All sections at a glance — click a class to edit. Use Section Timetable to add entries faster.</p>
               </div>
+              <SectionTimetableGrid
+                days={filterDay ? [filterDay] : DAYS}
+                periods={uniquePeriods}
+                getCellSchedules={getCellSchedules}
+                subjectColorMap={subjectColorMap}
+                onAdd={(day, period) => openCreateAtCell(day, period)}
+                onEdit={openEdit}
+                onDelete={handleDelete}
+                singleSection={false}
+              />
             </>
           )}
         </div>
@@ -838,15 +950,15 @@ export default function ScheduleManagement() {
               className="flex-1 sm:flex-none px-8 py-3.5 rounded-2xl border border-slate-200 text-slate-600 font-black text-[11px] uppercase tracking-[0.2em] hover:bg-white transition-all active:scale-95">
               Cancel
             </button>
-            <button onClick={handleSave} disabled={saving}
-              className="flex-[2] sm:flex-none px-10 py-3.5 rounded-2xl bg-violet-600 text-white font-black text-[11px] uppercase tracking-[0.2em] hover:bg-violet-700 disabled:opacity-50 flex items-center justify-center gap-2 transition-all shadow-lg shadow-violet-200 active:scale-95">
+            <button type="submit" form="schedule-form" disabled={saving}
+              className="flex-[2] sm:flex-none px-10 py-3.5 rounded-sm bg-violet-700 text-white font-bold text-[11px] uppercase tracking-wide hover:bg-violet-800 disabled:opacity-50 flex items-center justify-center gap-2 transition-all shadow-sm active:scale-95">
               {saving && <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>}
               {saving ? 'Processing…' : editItem ? 'Update Assignment' : 'Create Assignment'}
             </button>
           </div>
         }
       >
-        <form onSubmit={handleSave} className="px-8 py-8 space-y-8">
+        <form id="schedule-form" onSubmit={handleSave} className="px-8 py-8 space-y-8">
           {/* Core */}
           <div className="space-y-6">
             <div className="flex items-center gap-4">
