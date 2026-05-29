@@ -55,9 +55,11 @@ const OnboardingChecklist = ({ compact = false }) => {
                 <span className={`block text-xs font-black ${checked ? 'text-slate-500 line-through decoration-slate-300' : 'text-slate-900'}`}>
                   {item.title}
                 </span>
-                <span className="mt-1 block text-[11px] font-medium leading-relaxed text-slate-500">
-                  {item.description}
-                </span>
+                {item.description && (
+                  <span className="mt-1 block text-[11px] font-medium leading-relaxed text-slate-500">
+                    {item.description}
+                  </span>
+                )}
               </span>
               <svg className="mt-1 h-4 w-4 shrink-0 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.4} d="M9 5l7 7-7 7" />

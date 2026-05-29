@@ -77,14 +77,23 @@ const OnboardingWelcome = () => {
                 </div>
 
                 <div className="mt-auto grid gap-3 pt-10 sm:grid-cols-3">
-                  {['Guided tour', 'Smart tips', 'Help center'].map((label) => (
-                    <div key={label} className="rounded-2xl border border-white/10 bg-white/[0.08] p-4">
-                      <p className="text-xs font-black text-white">{label}</p>
-                      <p className="mt-2 text-[11px] font-medium leading-relaxed text-slate-300">
-                        {label === 'Guided tour' && 'Step through the portal with highlights.'}
-                        {label === 'Smart tips' && 'See relevant advice only on useful pages.'}
-                        {label === 'Help center' && 'Replay guides and search quick answers.'}
-                      </p>
+                  {[
+                    {
+                      label: 'Guided tour',
+                      body: 'Walk through each main menu item with numbered steps, highlights, and what to do on that page.',
+                    },
+                    {
+                      label: 'Smart tips',
+                      body: 'Context tips appear on the page you are viewing—open them for short how-to steps, then dismiss when done.',
+                    },
+                    {
+                      label: 'Help center',
+                      body: 'Search detailed guides anytime from Need help, replay the tour, or reset onboarding to start over.',
+                    },
+                  ].map((item) => (
+                    <div key={item.label} className="rounded-2xl border border-white/10 bg-white/[0.08] p-4">
+                      <p className="text-xs font-black text-white">{item.label}</p>
+                      <p className="mt-2 text-[11px] font-medium leading-relaxed text-slate-300">{item.body}</p>
                     </div>
                   ))}
                 </div>
@@ -97,7 +106,7 @@ const OnboardingWelcome = () => {
                 <p className="text-[10px] font-black uppercase tracking-[0.22em] text-slate-400">Recommended</p>
                 <p className="mt-1 text-sm font-black text-slate-900">Take the 2-minute tour</p>
                 <p className="mt-2 text-xs font-medium leading-6 text-slate-500">
-                  You can skip it now and replay it later from the Need help button.
+                  The tour takes about 3–5 minutes and explains where to click and what each section is for. You can skip now and replay anytime from <strong className="text-slate-700">Need help</strong> → <strong className="text-slate-700">Tour</strong>.
                 </p>
                 <div className="mt-4 flex flex-col gap-2 sm:flex-row">
                   <button

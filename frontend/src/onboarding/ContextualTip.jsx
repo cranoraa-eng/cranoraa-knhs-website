@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { useOnboarding } from './OnboardingContext';
+import GuideContent from './GuideContent';
 
 const ContextualTip = () => {
   const location = useLocation();
@@ -54,7 +55,7 @@ const ContextualTip = () => {
             <div className="min-w-0 flex-1">
               <p className="text-[10px] font-black uppercase tracking-[0.2em] text-violet-500">Smart tip</p>
               <h3 className="mt-1 text-sm font-black leading-tight text-slate-900">{tip.title}</h3>
-              <p className="mt-2 text-xs font-medium leading-5 text-slate-600">{tip.body}</p>
+              <GuideContent className="mt-2" body={tip.body} bullets={tip.bullets} note={tip.note} />
               <div className="mt-3 flex flex-wrap gap-2">
                 <button
                   type="button"

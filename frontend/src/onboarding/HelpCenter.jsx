@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { useOnboarding } from './OnboardingContext';
 import OnboardingChecklist from './OnboardingChecklist';
+import GuideContent from './GuideContent';
 
 const HelpCenter = () => {
   const {
@@ -20,11 +21,16 @@ const HelpCenter = () => {
   const filteredArticles = useMemo(() => {
     const normalized = query.trim().toLowerCase();
     if (!normalized) return config.helpArticles;
-    return config.helpArticles.filter((article) => (
-      article.title.toLowerCase().includes(normalized) ||
-      article.category.toLowerCase().includes(normalized) ||
-      article.body.toLowerCase().includes(normalized)
-    ));
+    return config.helpArticles.filter((article) => {
+      const haystack = [
+        article.title,
+        article.category,
+        article.body,
+        article.note,
+        ...(article.bullets || []),
+      ].filter(Boolean).join(' ').toLowerCase();
+      return haystack.includes(normalized);
+    });
   }, [config.helpArticles, query]);
 
   useEffect(() => {
@@ -168,7 +174,12 @@ const HelpCenter = () => {
                       <article key={article.id} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
                         <p className="text-[9px] font-black uppercase tracking-[0.22em] text-violet-500">{article.category}</p>
                         <h4 className="mt-1 text-sm font-black text-slate-900">{article.title}</h4>
-                        <p className="mt-2 text-xs font-medium leading-6 text-slate-600">{article.body}</p>
+                        <GuideContent
+                          className="mt-2"
+                          body={article.body}
+                          bullets={article.bullets}
+                          note={article.note}
+                        />
                         {article.videoUrl && (
                           <a
                             href={article.videoUrl}

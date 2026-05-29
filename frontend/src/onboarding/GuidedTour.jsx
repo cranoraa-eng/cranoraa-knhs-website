@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { useOnboarding } from './OnboardingContext';
+import GuideContent from './GuideContent';
 
 const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
 
@@ -108,7 +109,7 @@ const GuidedTour = () => {
 
   const popoverStyle = useMemo(() => {
     const margin = 16;
-    const width = Math.min(380, window.innerWidth - margin * 2);
+    const width = Math.min(420, window.innerWidth - margin * 2);
 
     if (!targetRect || window.innerWidth < 640) {
       return {
@@ -158,7 +159,7 @@ const GuidedTour = () => {
           aria-modal="true"
           aria-live="polite"
           aria-labelledby="tour-step-title"
-          className="fixed rounded-2xl border border-white/70 bg-white p-4 shadow-2xl outline-none sm:p-5"
+          className="fixed flex max-h-[min(85vh,560px)] flex-col rounded-2xl border border-white/70 bg-white p-4 shadow-2xl outline-none sm:p-5"
           style={popoverStyle}
           initial={reduceMotion ? false : { y: 14, opacity: 0, scale: 0.98 }}
           animate={{ y: 0, opacity: 1, scale: 1 }}
@@ -188,14 +189,20 @@ const GuidedTour = () => {
             </button>
           </div>
 
-          <h2 id="tour-step-title" className="text-lg font-black leading-tight text-slate-900">
-            {step.title}
-          </h2>
-          <p className="mt-2 text-sm font-medium leading-6 text-slate-600">
-            {step.body}
-          </p>
+          <div className="min-h-0 flex-1 overflow-y-auto pr-0.5">
+            <h2 id="tour-step-title" className="text-lg font-black leading-tight text-slate-900">
+              {step.title}
+            </h2>
+            <GuideContent
+              className="mt-2"
+              body={step.body}
+              bullets={step.bullets}
+              note={step.note}
+              size="sm"
+            />
+          </div>
 
-          <div className="mt-5 flex items-center gap-1.5" aria-hidden="true">
+          <div className="mt-4 flex shrink-0 items-center gap-1.5" aria-hidden="true">
             {activeTour.steps.map((item, index) => (
               <span
                 key={item.id}
