@@ -1,9 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
+import html2canvas from 'html2canvas';
+import { jsPDF } from 'jspdf';
 import api from '../utils/api';
 import { getCurrentAcademicYear } from '../utils/dateHelpers';
 import { 
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, 
-  PieChart, Pie, Cell, BarChart, Bar, Legend 
+  PieChart, Pie, Cell, BarChart, Bar
 } from 'recharts';
 import { Spinner } from '../components/Spinner';
 
@@ -14,9 +16,6 @@ const COLORS = ['#8b5cf6', '#10b981', '#3b82f6', '#f59e0b', '#ef4444'];
 const exportToPDF = async (ref, filename, title, subtitle, meta = {}) => {
   if (!ref.current) return;
   try {
-    const { default: html2canvas } = await import('html2canvas');
-    const { jsPDF } = await import('jspdf');
-
     // ── Fix transparency and prepare for capture ─────────────────────
     const el = ref.current;
     
@@ -30,62 +29,63 @@ const exportToPDF = async (ref, filename, title, subtitle, meta = {}) => {
     const prevBg = el.style.background;
     el.style.background = '#ffffff';
 
-    const canvas = await html2canvas(el, {
+    const canvasOptions = {
       scale: 2,
       useCORS: true,
       allowTaint: true,
       backgroundColor: '#ffffff',
       logging: false,
       windowWidth: 1200,
-      onclone: (cloneDoc) => {
-        // Find the element in the clone
-        const clonedEl = cloneDoc.querySelector(`[data-pdf-content="${el.dataset.pdfContent}"]`);
-        if (clonedEl) {
-          clonedEl.style.background = '#ffffff';
-          clonedEl.style.padding = '0px';
-          clonedEl.style.margin = '0px';
-          clonedEl.style.boxShadow = 'none';
-          clonedEl.style.width = '1200px';
-        }
+    };
+
+    canvasOptions['onclone'] = (cloneDoc) => {
+      // Find the element in the clone
+      const clonedEl = cloneDoc.querySelector(`[data-pdf-content="${el.dataset.pdfContent}"]`);
+      if (clonedEl) {
+        clonedEl.style.background = '#ffffff';
+        clonedEl.style.padding = '0px';
+        clonedEl.style.margin = '0px';
+        clonedEl.style.boxShadow = 'none';
+        clonedEl.style.width = '1200px';
+      }
+      
+      // Hide interactive elements
+      cloneDoc.querySelectorAll('button, select, .YearSelector, .FilterSelect, .TabNavigation').forEach(n => {
+        n.style.display = 'none';
+      });
+
+      // Convert dark sections to light for PDF and reduce padding
+      cloneDoc.querySelectorAll('.bg-slate-900, .bg-slate-800').forEach(n => {
+        n.style.background = '#ffffff';
+        n.style.color = '#0f172a';
+        n.style.border = '1px solid #e2e8f0';
+        n.style.padding = '20px'; // Reduced from p-8
+        n.style.boxShadow = 'none';
         
-        // Hide interactive elements
-        cloneDoc.querySelectorAll('button, select, .YearSelector, .FilterSelect, .TabNavigation').forEach(n => {
-          n.style.display = 'none';
+        // Fix nested text colors
+        n.querySelectorAll('.text-slate-50, .text-slate-100, .text-slate-200, .text-slate-300').forEach(t => {
+          t.style.color = '#1e293b';
         });
+      });
 
-        // Convert dark sections to light for PDF and reduce padding
-        cloneDoc.querySelectorAll('.bg-slate-900, .bg-slate-800').forEach(n => {
-          n.style.background = '#ffffff';
-          n.style.color = '#0f172a';
-          n.style.border = '1px solid #e2e8f0';
-          n.style.padding = '20px'; // Reduced from p-8
-          n.style.boxShadow = 'none';
-          
-          // Fix nested text colors
-          n.querySelectorAll('.text-slate-50, .text-slate-100, .text-slate-200, .text-slate-300').forEach(t => {
-            t.style.color = '#1e293b';
-          });
-        });
+      // Ensure all text is dark and remove shadows
+      cloneDoc.querySelectorAll('*').forEach(n => {
+        n.style.backdropFilter = 'none';
+        n.style.webkitBackdropFilter = 'none';
+        n.style.boxShadow = 'none';
+        if (n.classList.contains('text-slate-400') || n.classList.contains('text-slate-500')) {
+          n.style.color = '#64748b';
+        }
+      });
+    };
 
-        // Ensure all text is dark and remove shadows
-        cloneDoc.querySelectorAll('*').forEach(n => {
-          n.style.backdropFilter = 'none';
-          n.style.webkitBackdropFilter = 'none';
-          n.style.boxShadow = 'none';
-          if (n.classList.contains('text-slate-400') || n.classList.contains('text-slate-500')) {
-            n.style.color = '#64748b';
-          }
-        });
-      },
-    });
+    const canvas = await html2canvas(el, canvasOptions);
 
     // Restore styles
     el.style.background = prevBg;
     interactiveElements.forEach(item => {
       item.style.opacity = item.dataset.originalOpacity || '';
     });
-
-    const imgData = canvas.toDataURL('image/png', 1.0);
 
     // ── PDF setup ────────────────────────────────────────────────────────────
     const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
@@ -505,35 +505,48 @@ const MiniCard = ({ title, value, icon, alert }) => (
   </div>
 );
 
-const CustomTooltip = ({ active, payload, label, unit = '' }) => {
-  if (active && payload && payload.length) {
+const CustomTooltip = (props) => {
+  const { active, label, unit = '' } = props;
+  const tooltipPayload = props['payload'];
+
+  if (active && tooltipPayload && tooltipPayload.length) {
+    const firstItem = tooltipPayload[0];
     return (
       <div className="bg-slate-900 border border-slate-800 p-2.5 rounded-lg shadow-2xl backdrop-blur-md bg-opacity-95">
         <p className="text-[8px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">{label}</p>
-        <p className="text-xs font-black text-white flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-indigo-500" />{payload[0].value}{unit}<span className="text-[8px] font-bold text-slate-500 uppercase tracking-widest ml-1">{payload[0].name}</span></p>
+        <p className="text-xs font-black text-white flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-indigo-500" />{firstItem.value}{unit}<span className="text-[8px] font-bold text-slate-500 uppercase tracking-widest ml-1">{firstItem.name}</span></p>
       </div>
     );
   }
   return null;
 };
 
-const CustomPieTooltip = ({ active, payload }) => {
-  if (active && payload && payload.length) {
+const CustomPieTooltip = (props) => {
+  const { active } = props;
+  const tooltipPayload = props['payload'];
+
+  if (active && tooltipPayload && tooltipPayload.length) {
+    const firstItem = tooltipPayload[0];
+    const markerColor = firstItem['payload']?.fill;
+
     return (
       <div className="bg-slate-900 border border-slate-800 p-2.5 rounded-lg shadow-2xl backdrop-blur-md bg-opacity-95">
-        <p className="text-xs font-black text-white flex items-center gap-2"><span className="w-2 h-2 rounded-full" style={{ backgroundColor: payload[0].payload.fill }} />{payload[0].value}<span className="text-[8px] font-bold text-slate-500 uppercase tracking-widest ml-1">{payload[0].name}</span></p>
+        <p className="text-xs font-black text-white flex items-center gap-2"><span className="w-2 h-2 rounded-full" style={{ backgroundColor: markerColor }} />{firstItem.value}<span className="text-[8px] font-bold text-slate-500 uppercase tracking-widest ml-1">{firstItem.name}</span></p>
       </div>
     );
   }
   return null;
 };
 
-const AttendanceTooltip = ({ active, payload, label }) => {
-  if (active && payload && payload.length) {
+const AttendanceTooltip = (props) => {
+  const { active, label } = props;
+  const tooltipPayload = props['payload'];
+
+  if (active && tooltipPayload && tooltipPayload.length) {
     return (
       <div className="bg-slate-900 border border-slate-800 p-2 rounded-lg shadow-2xl backdrop-blur-md bg-opacity-95">
         <p className="text-[8px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1.5">{label}</p>
-        <div className="space-y-1">{payload.map((entry, index) => (<div key={index} className="flex items-center justify-between gap-4"><div className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: entry.color }} /><span className="text-[8px] font-bold text-slate-500 uppercase tracking-widest">{entry.name}</span></div><span className="text-[10px] font-black text-white">{entry.value}</span></div>))}</div>
+        <div className="space-y-1">{tooltipPayload.map((entry, index) => (<div key={index} className="flex items-center justify-between gap-4"><div className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: entry.color }} /><span className="text-[8px] font-bold text-slate-500 uppercase tracking-widest">{entry.name}</span></div><span className="text-[10px] font-black text-white">{entry.value}</span></div>))}</div>
       </div>
     );
   }
@@ -947,53 +960,55 @@ const Analytics = () => {
 
   const handleExport = async (ref, tab) => {
     setExporting(true);
-    const now = new Date();
-    const titles = {
-      system:     ['System Overview',        `Academic Year ${academicYear}`],
-      grades:     ['Academic Performance',   `${academicYear} · ${filterLevel !== 'all' ? filterLevel : 'All Levels'} · ${filterQuarter !== 'all' ? 'Q' + filterQuarter : 'All Quarters'}`],
-      attendance: ['Attendance Dynamics',    `${academicYear} · ${attendanceTimeframe === 'all' ? 'All-Time' : attendanceTimeframe === 'today' ? 'Today' : 'Past 7 Days'}`],
-    };
-    const [title, subtitle] = titles[tab] || ['Analytics Report', academicYear];
+    try {
+      const titles = {
+        system:     ['System Overview',        `Academic Year ${academicYear}`],
+        grades:     ['Academic Performance',   `${academicYear} · ${filterLevel !== 'all' ? filterLevel : 'All Levels'} · ${filterQuarter !== 'all' ? 'Q' + filterQuarter : 'All Quarters'}`],
+        attendance: ['Attendance Dynamics',    `${academicYear} · ${attendanceTimeframe === 'all' ? 'All-Time' : attendanceTimeframe === 'today' ? 'Today' : 'Past 7 Days'}`],
+      };
+      const [title, subtitle] = titles[tab] || ['Analytics Report', academicYear];
 
-    // Build stats chips per tab
-    const statsMap = {
-      system: data ? [
-        { label: 'Total Students', value: data.dashboard?.total_students ?? '—', color: [59, 130, 246] },
-        { label: 'Total Faculty',  value: data.dashboard?.total_teachers ?? '—', color: [16, 185, 129] },
-        { label: 'Avg Grade',      value: data.dashboard?.average_grade ? `${data.dashboard.average_grade}%` : '—', color: [139, 92, 246] },
-        { label: "Today's Rate",   value: `${data.dashboard?.today_rate ?? 0}%`, color: [245, 158, 11] },
-        { label: 'Active Users',   value: data.dashboard?.active_users ?? '—', color: [99, 102, 241] },
-      ] : [],
-      grades: gradeData ? [
-        { label: 'Avg Score',   value: `${gradeData.overall_average ?? 0}%`, color: [99, 102, 241] },
-        { label: 'Students',    value: gradeData.total_students ?? 0,         color: [16, 185, 129] },
-        { label: 'Grade Entries', value: gradeData.total_entries ?? 0,        color: [59, 130, 246] },
-      ] : [],
-      attendance: attendanceAnalytics ? [
-        { label: 'Present',  value: attendanceAnalytics.pie_data?.find(d => d.name === 'Present')?.value ?? 0,  color: [16, 185, 129] },
-        { label: 'Absent',   value: attendanceAnalytics.pie_data?.find(d => d.name === 'Absent')?.value ?? 0,   color: [239, 68, 68] },
-        { label: 'Late',     value: attendanceAnalytics.pie_data?.find(d => d.name === 'Late')?.value ?? 0,     color: [245, 158, 11] },
-        { label: 'Excused',  value: attendanceAnalytics.pie_data?.find(d => d.name === 'Excused')?.value ?? 0,  color: [99, 102, 241] },
-      ] : [],
-    };
+      // Build stats chips per tab
+      const statsMap = {
+        system: data ? [
+          { label: 'Total Students', value: data.dashboard?.total_students ?? '—', color: [59, 130, 246] },
+          { label: 'Total Faculty',  value: data.dashboard?.total_teachers ?? '—', color: [16, 185, 129] },
+          { label: 'Avg Grade',      value: data.dashboard?.average_grade ? `${data.dashboard.average_grade}%` : '—', color: [139, 92, 246] },
+          { label: "Today's Rate",   value: `${data.dashboard?.today_rate ?? 0}%`, color: [245, 158, 11] },
+          { label: 'Active Users',   value: data.dashboard?.active_users ?? '—', color: [99, 102, 241] },
+        ] : [],
+        grades: gradeData ? [
+          { label: 'Avg Score',   value: `${gradeData.overall_average ?? 0}%`, color: [99, 102, 241] },
+          { label: 'Students',    value: gradeData.total_students ?? 0,         color: [16, 185, 129] },
+          { label: 'Grade Entries', value: gradeData.total_entries ?? 0,        color: [59, 130, 246] },
+        ] : [],
+        attendance: attendanceAnalytics ? [
+          { label: 'Present',  value: attendanceAnalytics.pie_data?.find(d => d.name === 'Present')?.value ?? 0,  color: [16, 185, 129] },
+          { label: 'Absent',   value: attendanceAnalytics.pie_data?.find(d => d.name === 'Absent')?.value ?? 0,   color: [239, 68, 68] },
+          { label: 'Late',     value: attendanceAnalytics.pie_data?.find(d => d.name === 'Late')?.value ?? 0,     color: [245, 158, 11] },
+          { label: 'Excused',  value: attendanceAnalytics.pie_data?.find(d => d.name === 'Excused')?.value ?? 0,  color: [99, 102, 241] },
+        ] : [],
+      };
 
-    // Build interpretations per tab
-    const interpMap = {
-      system:     interpretSystemData(data),
-      grades:     interpretGradeData(gradeData, filterLevel, filterSubject, filterQuarter),
-      attendance: interpretAttendanceData(attendanceAnalytics),
-    };
+      // Build interpretations per tab
+      const interpMap = {
+        system:     interpretSystemData(data),
+        grades:     interpretGradeData(gradeData, filterLevel, filterSubject, filterQuarter),
+        attendance: interpretAttendanceData(attendanceAnalytics),
+      };
 
-    const meta = {
-      schoolName:      'Kiwalan National High School',
-      academicYear,
-      preparedBy:      'School Administrator',
-      stats:           statsMap[tab] || [],
-      interpretations: interpMap[tab] || [],
-    };
+      const meta = {
+        schoolName:      'Kiwalan National High School',
+        academicYear,
+        preparedBy:      'School Administrator',
+        stats:           statsMap[tab] || [],
+        interpretations: interpMap[tab] || [],
+      };
 
-    await exportToPDF(ref, `knhs-${tab}-analytics-${academicYear}.pdf`, title, subtitle, meta);
-    setExporting(false);
+      await exportToPDF(ref, `knhs-${tab}-analytics-${academicYear}.pdf`, title, subtitle, meta);
+    } finally {
+      setExporting(false);
+    }
   };
   
   // Grade specific filters
@@ -1012,15 +1027,15 @@ const Analytics = () => {
   const [attendanceTimeframe, setAttendanceTimeframe] = useState('all'); // 'all', 'today', 'weekly'
 
   useEffect(() => {
-    if (activeTab === 'system') fetchAnalytics();
+    if (activeTab === 'system') void fetchAnalytics();
   }, [activeTab, academicYear]);
 
   useEffect(() => {
-    if (activeTab === 'grades') fetchGradeStats();
+    if (activeTab === 'grades') void fetchGradeStats();
   }, [activeTab, academicYear, filterLevel, filterSubject, filterQuarter, distributionMode, gradeTimeframe]);
 
   useEffect(() => {
-    if (activeTab === 'attendance') fetchAttendanceAnalytics();
+    if (activeTab === 'attendance') void fetchAttendanceAnalytics();
   }, [activeTab, academicYear, attendanceTimeframe]);
 
   const fetchAnalytics = async () => {
@@ -1089,7 +1104,7 @@ const Analytics = () => {
   ];
 
   const hasAttendanceData = attendanceAnalytics && (
-    (attendanceAnalytics.daily_trends?.length > 0) ||
+    (attendanceAnalytics['daily_trends']?.length > 0) ||
     (attendanceAnalytics.section_rankings?.length > 0) ||
     (attendanceAnalytics.pie_data?.some(d => d.value > 0)) ||
     (attendanceAnalytics.grade_trends?.length > 0)
@@ -1121,7 +1136,7 @@ const Analytics = () => {
           loading={exporting}
           onClick={() => {
             const refMap = { system: systemRef, grades: gradesRef, attendance: attendanceRef };
-            handleExport(refMap[activeTab], activeTab);
+            void handleExport(refMap[activeTab], activeTab);
           }}
         />
       </div>
@@ -1160,10 +1175,10 @@ const Analytics = () => {
               ) : (
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
                   <div className="lg:col-span-12">
-                    <AttendanceTrendsSection data={data?.attendance?.daily_trends} />
+                    <AttendanceTrendsSection data={data?.attendance?.['daily_trends']} />
                   </div>
                   <div className="lg:col-span-7">
-                    <SubjectPerformanceSection data={data?.grades?.subject_stats} />
+                    <SubjectPerformanceSection data={data?.grades?.['subject_stats']} />
                   </div>
                   <div className="lg:col-span-5">
                     <TrafficIntelligenceSection data={data?.dashboard?.charts?.active_users_trends} />
@@ -1307,7 +1322,7 @@ const Analytics = () => {
               ) : (
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
                   <div className="lg:col-span-8">
-                    <AttendanceTrendsSection data={attendanceAnalytics.daily_trends} />
+                    <AttendanceTrendsSection data={attendanceAnalytics['daily_trends']} />
                   </div>
                   <div className="lg:col-span-4">
                     <AttendanceStatusPieSection data={attendanceAnalytics.pie_data} />
