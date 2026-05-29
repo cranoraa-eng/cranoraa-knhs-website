@@ -16,9 +16,43 @@ const CATEGORY_CONFIG = {
 
 const STATUS_CONFIG = {
   draft:   { label: 'Draft',   color: 'bg-slate-100 text-slate-600 border-slate-200' },
-  live:    { label: 'Live',    color: 'bg-slate-900 text-white border-slate-900' },
+  live:    { label: 'Live',    color: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
   expired: { label: 'Expired', color: 'bg-red-50 text-red-700 border-red-200' },
 };
+
+const formatFeedTime = (dateStr) => {
+  if (!dateStr) return '';
+  const date = new Date(dateStr);
+  const now = new Date();
+  const diffMs = now - date;
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+  if (diffMins < 1) return 'Just now';
+  if (diffMins < 60) return `${diffMins}m`;
+  if (diffHours < 24) return `${diffHours}h`;
+  if (diffDays === 1) return 'Yesterday';
+  if (diffDays < 7) return `${diffDays}d`;
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined });
+};
+
+const getFeedImages = (announcement, attachUrlFn) => {
+  const images = [];
+  if (announcement.attachments?.length) {
+    announcement.attachments.forEach((att) => {
+      if (att.is_image && att.url) images.push({ url: attachUrlFn(att.url), filename: att.filename });
+    });
+  }
+  if (images.length === 0 && announcement.attachment_url) {
+    const url = announcement.attachment_url;
+    if (/\.(jpg|jpeg|png|gif|webp)$/i.test(url)) {
+      images.push({ url: attachUrlFn(url), filename: 'Attachment' });
+    }
+  }
+  return images;
+};
+
+const shouldClampContent = (text) => (text || '').length > 280;
 
 const EMPTY_FORM = {
   title: '', category: 'general', priority: 'info', status: 'live',
@@ -252,273 +286,372 @@ const Announcements = () => {
   const regular = announcements.filter(a => !a.is_pinned);
   const sorted = [...pinned, ...regular];
 
+  const openPost = (a) => {
+    setSelected(a);
+    setShowView(true);
+    if (!a.is_read) handleRead(a);
+  };
+
+  const authorInitial = (name) => (name || 'S').charAt(0).toUpperCase();
+
   return (
-    <div className="space-y-5 animate-fade-in page-bottom-safe">
-      {/* ── Page Header ── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
-        <div className="min-w-0">
-          <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">Announcements</h1>
-          <p className="text-xs sm:text-sm text-slate-500 mt-0.5">School news, updates, and notices</p>
-        </div>
-        {canManage && (
-          <button
-            onClick={openCreate}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-violet-600 text-white text-sm font-bold hover:bg-violet-700 active:scale-95 transition-all shadow-sm"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
-            </svg>
-            New Announcement
-          </button>
-        )}
-      </div>
-
-      {/* ── Filters & Bulk Actions ── */}
-      <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-4 space-y-3">
-        <div className="flex flex-col sm:flex-row gap-3">
-          {/* Search */}
-          <div className="relative flex-1">
-            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none"
-              fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-            <input
-              type="text"
-              placeholder="Search announcements…"
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              className="w-full pl-9 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-400 focus:bg-white transition-all"
-            />
+    <div className="animate-fade-in page-bottom-safe min-h-0 -mx-3 md:-mx-6 px-3 md:px-6 py-3 md:py-4 bg-[#f0f2f5]">
+      <div className="max-w-[680px] mx-auto space-y-3 md:space-y-4">
+        {/* Feed header */}
+        <div className="flex items-center justify-between gap-3 px-1">
+          <div className="min-w-0">
+            <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">Announcements</h1>
+            <p className="text-xs sm:text-sm text-slate-500 mt-0.5">School feed — news and updates</p>
           </div>
-          {/* Category filter */}
-          <select
-            value={categoryFilter}
-            onChange={e => setCategoryFilter(e.target.value)}
-            className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-400 transition-all"
-          >
-            <option value="all">All Categories</option>
-            {Object.entries(CATEGORY_CONFIG).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
-          </select>
         </div>
 
-        {/* Bulk actions */}
-        {canManage && sorted.length > 0 && (
-          <div className="flex flex-wrap items-center gap-3 pt-3 border-t border-slate-100">
-            <label className="flex items-center gap-2 cursor-pointer no-min">
+        {/* Search & filters — compact feed toolbar */}
+        <div className="bg-white rounded-lg shadow-sm border border-slate-200/80 p-3 space-y-3">
+          <div className="flex flex-col sm:flex-row gap-2">
+            <div className="relative flex-1">
+              <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none"
+                fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
               <input
-                type="checkbox"
-                checked={selectedIds.length === sorted.length && sorted.length > 0}
-                onChange={toggleSelectAll}
-                className="w-4 h-4 rounded border-slate-300 text-violet-600 focus:ring-violet-500 cursor-pointer"
+                type="text"
+                placeholder="Search posts…"
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                className="w-full pl-9 pr-4 py-2 bg-slate-100 border-0 rounded-full text-sm text-slate-800 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-violet-500/30 focus:bg-white transition-all"
               />
-              <span className="text-xs font-bold text-slate-600 uppercase tracking-wider">
-                {selectedIds.length === sorted.length ? 'Deselect all' : 'Select all'}
-              </span>
-            </label>
+            </div>
+            <select
+              value={categoryFilter}
+              onChange={e => setCategoryFilter(e.target.value)}
+              className="px-4 py-2 bg-slate-100 border-0 rounded-full text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-500/30 cursor-pointer"
+            >
+              <option value="all">All posts</option>
+              {Object.entries(CATEGORY_CONFIG).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
+            </select>
+          </div>
 
-            {selectedIds.length > 0 && (
-              <>
-                <div className="h-4 w-px bg-slate-200" />
+          {canManage && sorted.length > 0 && (
+            <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-100 text-xs">
+              <label className="flex items-center gap-2 cursor-pointer no-min font-semibold text-slate-600">
+                <input
+                  type="checkbox"
+                  checked={selectedIds.length === sorted.length && sorted.length > 0}
+                  onChange={toggleSelectAll}
+                  className="w-4 h-4 rounded border-slate-300 text-violet-600 focus:ring-violet-500 cursor-pointer"
+                />
+                {selectedIds.length === sorted.length ? 'Deselect all' : 'Select all'}
+              </label>
+              {selectedIds.length > 0 && (
                 <button
                   onClick={handleBulkDelete}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-50 text-red-600 text-xs font-bold hover:bg-red-100 transition-all no-min"
+                  className="px-3 py-1 rounded-full bg-red-50 text-red-600 font-semibold hover:bg-red-100 transition-colors no-min"
                 >
-                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                  </svg>
-                  Delete selected ({selectedIds.length})
+                  Delete ({selectedIds.length})
                 </button>
-              </>
-            )}
+              )}
+              {user?.role === 'admin' && (
+                <button
+                  onClick={handleDeleteAll}
+                  className="ml-auto text-red-500 font-semibold hover:underline no-min"
+                >
+                  Delete all
+                </button>
+              )}
+            </div>
+          )}
+        </div>
 
-            {user?.role === 'admin' && (
+        {/* Composer — Facebook "What's on your mind?" */}
+        {canManage && (
+          <div className="bg-white rounded-lg shadow-sm border border-slate-200/80 p-3 md:p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center text-white text-sm font-bold shrink-0">
+                {authorInitial(user?.full_name || user?.username)}
+              </div>
               <button
-                onClick={handleDeleteAll}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-red-400 text-xs font-bold hover:bg-red-50 hover:text-red-600 transition-all no-min ml-auto"
+                type="button"
+                onClick={openCreate}
+                className="flex-1 text-left px-4 py-2.5 rounded-full bg-slate-100 hover:bg-slate-200/80 text-slate-500 text-sm font-medium transition-colors"
               >
-                Delete all
+                What would you like to announce?
               </button>
-            )}
+            </div>
+            <div className="flex items-center justify-around mt-3 pt-3 border-t border-slate-100">
+              <button
+                type="button"
+                onClick={openCreate}
+                className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-slate-600 hover:bg-slate-50 text-sm font-semibold transition-colors no-min"
+              >
+                <span className="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center">
+                  <svg className="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                </span>
+                Photo
+              </button>
+              <button
+                type="button"
+                onClick={openCreate}
+                className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-slate-600 hover:bg-slate-50 text-sm font-semibold transition-colors no-min"
+              >
+                <span className="w-6 h-6 rounded-full bg-rose-100 flex items-center justify-center">
+                  <svg className="w-3.5 h-3.5 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
+                  </svg>
+                </span>
+                Announce
+              </button>
+            </div>
           </div>
         )}
-      </div>
 
-      {/* ── List ── */}
-      {loading ? (
-        <div className="space-y-3">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="bg-white border border-slate-200 rounded-2xl p-5 animate-pulse">
-              <div className="flex gap-4">
-                <div className="flex-1 space-y-3">
-                  <div className="flex gap-2">
-                    <div className="h-5 w-16 bg-slate-100 rounded-full" />
-                    <div className="h-5 w-12 bg-slate-100 rounded-full" />
+        {/* Feed posts */}
+        {loading ? (
+          <div className="space-y-3">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="bg-white rounded-lg shadow-sm p-4 animate-pulse">
+                <div className="flex gap-3 mb-4">
+                  <div className="w-10 h-10 rounded-full bg-slate-200" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-3 w-28 bg-slate-200 rounded" />
+                    <div className="h-2 w-16 bg-slate-100 rounded" />
                   </div>
-                  <div className="h-5 w-2/3 bg-slate-100 rounded" />
-                  <div className="h-4 w-full bg-slate-100 rounded" />
-                  <div className="h-4 w-4/5 bg-slate-100 rounded" />
                 </div>
+                <div className="h-4 w-full bg-slate-100 rounded mb-2" />
+                <div className="h-4 w-4/5 bg-slate-100 rounded" />
+                <div className="h-48 w-full bg-slate-100 rounded-lg mt-4" />
               </div>
-            </div>
-          ))}
-        </div>
-      ) : sorted.length === 0 ? (
-        <div className="bg-white border border-slate-200 rounded-2xl shadow-sm">
-          <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
-            <div className="w-14 h-14 rounded-2xl bg-violet-50 flex items-center justify-center mb-4">
-              <svg className="w-7 h-7 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
-                  d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
-              </svg>
-            </div>
-            <h3 className="text-base font-bold text-slate-700 mb-1">No announcements yet</h3>
-            <p className="text-sm text-slate-400">School updates and notices will appear here.</p>
+            ))}
           </div>
-        </div>
-      ) : (
-        <div className="space-y-3">
-          {sorted.map(a => {
-            const cat = CATEGORY_CONFIG[a.category] || CATEGORY_CONFIG.general;
-            const stat = STATUS_CONFIG[a.status] || STATUS_CONFIG.draft;
-            const isSelected = selectedIds.includes(a.id);
+        ) : sorted.length === 0 ? (
+          <div className="bg-white rounded-lg shadow-sm border border-slate-200/80">
+            <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
+              <div className="w-14 h-14 rounded-full bg-violet-100 flex items-center justify-center mb-4">
+                <svg className="w-7 h-7 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
+                    d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
+                </svg>
+              </div>
+              <h3 className="text-base font-bold text-slate-800 mb-1">No posts in your feed</h3>
+              <p className="text-sm text-slate-500">School updates will show up here when they are published.</p>
+              {canManage && (
+                <button
+                  type="button"
+                  onClick={openCreate}
+                  className="mt-4 px-5 py-2 rounded-lg bg-violet-600 text-white text-sm font-semibold hover:bg-violet-700 transition-colors"
+                >
+                  Create first post
+                </button>
+              )}
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-3 md:space-y-4">
+            {sorted.map(a => {
+              const cat = CATEGORY_CONFIG[a.category] || CATEGORY_CONFIG.general;
+              const stat = STATUS_CONFIG[a.status] || STATUS_CONFIG.draft;
+              const isSelected = selectedIds.includes(a.id);
+              const feedImages = getFeedImages(a, attachUrl);
+              const clamped = shouldClampContent(a.content);
+              const attachmentCount = (a.attachments?.length || 0) + (a.attachment_url && !a.attachments?.length ? 1 : 0);
 
-            return (
-              <div
-                key={a.id}
-                className={`bg-white border rounded-2xl shadow-sm overflow-hidden transition-all hover:shadow-md
-                  ${a.priority === 'critical' ? 'border-l-4 border-l-red-500 border-slate-200' : 'border-l-4 border-l-violet-500 border-slate-200'}
-                  ${isSelected ? 'ring-2 ring-violet-400 ring-offset-1 bg-violet-50/20' : ''}`}
-              >
-                <div className="p-5 flex gap-4">
-                  {canManage && (
-                    <div className="flex-shrink-0 pt-1">
+              return (
+                <article
+                  key={a.id}
+                  className={`bg-white rounded-lg shadow-sm border border-slate-200/80 overflow-hidden transition-shadow hover:shadow-md
+                    ${a.priority === 'critical' ? 'ring-2 ring-red-200 ring-offset-0' : ''}
+                    ${isSelected ? 'ring-2 ring-violet-400' : ''}`}
+                >
+                  {/* Post header — avatar, name, time */}
+                  <div className="px-3 md:px-4 pt-3 md:pt-4 pb-2 flex items-start gap-2">
+                    {canManage && (
                       <input
                         type="checkbox"
                         checked={isSelected}
                         onChange={() => toggleSelect(a.id)}
-                        className="w-4 h-4 rounded border-slate-300 text-violet-600 focus:ring-violet-500 cursor-pointer"
+                        className="mt-2.5 w-4 h-4 rounded border-slate-300 text-violet-600 focus:ring-violet-500 cursor-pointer shrink-0"
                       />
+                    )}
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center text-white text-sm font-bold shrink-0">
+                      {authorInitial(a.author_name)}
                     </div>
-                  )}
-                  <div className="flex-1 min-w-0">
-                    {/* Top row */}
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex flex-wrap items-center gap-1.5 mb-2">
-                          {a.is_pinned && (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-[10px] font-bold uppercase tracking-wider">
-                              📌 Pinned
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0">
+                          <p className="text-[15px] font-semibold text-slate-900 leading-tight truncate">
+                            {a.author_name || 'School Admin'}
+                          </p>
+                          <p className="text-xs text-slate-500 flex flex-wrap items-center gap-1 mt-0.5">
+                            <span>{formatFeedTime(a.created_at)}</span>
+                            <span aria-hidden="true">·</span>
+                            <span className={`inline-flex px-1.5 py-0.5 rounded text-[10px] font-semibold border ${cat.color}`}>
+                              {cat.label}
                             </span>
-                          )}
-                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full border text-[10px] font-bold uppercase tracking-wider ${cat.color}`}>
-                            {cat.label}
-                          </span>
+                            {a.is_pinned && (
+                              <>
+                                <span aria-hidden="true">·</span>
+                                <span className="text-amber-600 font-semibold">Pinned</span>
+                              </>
+                            )}
+                          </p>
+                        </div>
+                        {canManage && (
+                          <div className="flex items-center gap-0.5 shrink-0">
+                            <button onClick={() => handlePin(a)} title={a.is_pinned ? 'Unpin' : 'Pin'}
+                              className={`p-2 rounded-full transition-colors no-min ${a.is_pinned ? 'text-amber-600 bg-amber-50' : 'text-slate-500 hover:bg-slate-100'}`}>
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 18V4z" />
+                              </svg>
+                            </button>
+                            {a.status === 'draft' && (
+                              <button onClick={() => handlePublish(a)} title="Publish"
+                                className="p-2 rounded-full text-emerald-600 hover:bg-emerald-50 no-min">
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                </svg>
+                              </button>
+                            )}
+                            {a.status === 'live' && (
+                              <button onClick={() => handleArchive(a)} title="Archive"
+                                className="p-2 rounded-full text-amber-600 hover:bg-amber-50 no-min">
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                                </svg>
+                              </button>
+                            )}
+                            <button onClick={() => openEdit(a)} title="Edit"
+                              className="p-2 rounded-full text-slate-500 hover:bg-slate-100 no-min">
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                              </svg>
+                            </button>
+                            <button onClick={() => handleDelete(a)} title="Delete"
+                              className="p-2 rounded-full text-slate-500 hover:bg-red-50 hover:text-red-600 no-min">
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                              </svg>
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                      {(a.priority === 'critical' || a.is_public || stat.label !== 'Live') && (
+                        <div className="flex flex-wrap gap-1 mt-2">
                           {a.priority === 'critical' && (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-red-100 text-red-700 border border-red-200 text-[10px] font-bold uppercase tracking-wider">
-                              🚨 Critical
-                            </span>
+                            <span className="px-2 py-0.5 rounded-full bg-red-50 text-red-700 text-[10px] font-bold uppercase">Urgent</span>
                           )}
                           {a.is_public && (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-100 text-[10px] font-bold uppercase tracking-wider">
-                              🌐 Public
-                            </span>
+                            <span className="px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 text-[10px] font-bold uppercase">Public</span>
                           )}
-                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full border text-[10px] font-bold uppercase tracking-wider ${stat.color}`}>
-                            {stat.label}
-                          </span>
-                        </div>
-                        <h2 className="text-base font-bold text-slate-900 leading-snug">{a.title}</h2>
-                        <p className="text-slate-500 text-sm mt-1 line-clamp-2">{a.content}</p>
-                      </div>
-
-                      {/* Actions */}
-                      {canManage && (
-                        <div className="flex items-center gap-0.5 flex-shrink-0">
-                          <button
-                            onClick={() => handlePin(a)}
-                            title={a.is_pinned ? 'Unpin' : 'Pin'}
-                            className={`p-2 rounded-lg transition-all no-min ${a.is_pinned ? 'text-amber-600 bg-amber-50 hover:bg-amber-100' : 'text-slate-400 hover:bg-slate-100 hover:text-slate-600'}`}
-                          >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 18V4z" />
-                            </svg>
-                          </button>
-                          {a.status === 'draft' && (
-                            <button onClick={() => handlePublish(a)} title="Publish"
-                              className="p-2 rounded-lg text-emerald-500 hover:bg-emerald-50 transition-all no-min">
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                              </svg>
-                            </button>
+                          {stat.label !== 'Live' && (
+                            <span className={`px-2 py-0.5 rounded-full border text-[10px] font-bold uppercase ${stat.color}`}>{stat.label}</span>
                           )}
-                          {a.status === 'live' && (
-                            <button onClick={() => handleArchive(a)} title="Archive"
-                              className="p-2 rounded-lg text-amber-500 hover:bg-amber-50 transition-all no-min">
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
-                              </svg>
-                            </button>
-                          )}
-                          <button onClick={() => openEdit(a)} title="Edit"
-                            className="p-2 rounded-lg text-blue-500 hover:bg-blue-50 transition-all no-min">
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                            </svg>
-                          </button>
-                          <button onClick={() => handleDelete(a)} title="Delete"
-                            className="p-2 rounded-lg text-slate-400 hover:bg-red-50 hover:text-red-500 transition-all no-min">
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                            </svg>
-                          </button>
                         </div>
                       )}
                     </div>
-
-                    {/* Footer */}
-                    <div className="flex items-center justify-between mt-4 pt-3 border-t border-slate-100">
-                      <div className="flex items-center gap-2.5">
-                        <div className="w-7 h-7 rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
-                          {(a.author_name || 'A').charAt(0).toUpperCase()}
-                        </div>
-                        <div>
-                          <p className="text-xs font-bold text-slate-700">{a.author_name || 'Admin'}</p>
-                          <p className="text-[10px] text-slate-400">
-                            {new Date(a.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <span className="flex items-center gap-1 text-[10px] font-bold text-slate-400">
-                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                          </svg>
-                          {a.read_count || 0}
-                        </span>
-                        {(a.attachment_url || (a.attachments && a.attachments.length > 0)) && (
-                          <span className="flex items-center gap-1 text-[10px] font-bold text-slate-400">
-                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
-                            </svg>
-                            {a.attachments?.length > 0 ? `${a.attachments.length} file${a.attachments.length > 1 ? 's' : ''}` : '1 file'}
-                          </span>
-                        )}
-                        <button
-                          onClick={() => { setSelected(a); setShowView(true); if (!a.is_read) handleRead(a); }}
-                          className="text-xs font-bold text-violet-600 hover:text-violet-800 transition-colors no-min"
-                        >
-                          Read more →
-                        </button>
-                      </div>
-                    </div>
                   </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
+
+                  {/* Post body */}
+                  <div className="px-3 md:px-4 pb-2">
+                    <h2 className="text-[17px] font-semibold text-slate-900 leading-snug mb-1.5">{a.title}</h2>
+                    <p className={`text-[15px] text-slate-800 leading-relaxed whitespace-pre-wrap ${clamped ? 'line-clamp-5' : ''}`}>
+                      {a.content}
+                    </p>
+                    {clamped && (
+                      <button
+                        type="button"
+                        onClick={() => openPost(a)}
+                        className="text-sm font-semibold text-slate-500 hover:text-violet-700 mt-1 no-min"
+                      >
+                        See more
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Media — full-width like Facebook */}
+                  {feedImages.length > 0 && (
+                    <div className="border-y border-slate-100 bg-slate-50">
+                      <button
+                        type="button"
+                        onClick={() => feedImages[0]?.url && setZoomedImage(feedImages[0].url)}
+                        className="block w-full no-min"
+                      >
+                        <img
+                          src={feedImages[0].url}
+                          alt={feedImages[0].filename || 'Post image'}
+                          className="w-full max-h-[420px] object-cover object-center"
+                        />
+                      </button>
+                      {feedImages.length > 1 && (
+                        <p className="px-4 py-2 text-xs font-semibold text-slate-500">
+                          +{feedImages.length - 1} more photo{feedImages.length > 2 ? 's' : ''} — open post to view all
+                        </p>
+                      )}
+                    </div>
+                  )}
+
+                  {!feedImages.length && attachmentCount > 0 && (
+                    <div className="mx-3 md:mx-4 mb-2 px-3 py-2 rounded-lg bg-slate-100 flex items-center gap-2 text-sm text-slate-600">
+                      <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                      </svg>
+                      {attachmentCount} attachment{attachmentCount > 1 ? 's' : ''}
+                    </div>
+                  )}
+
+                  {/* Engagement stats */}
+                  <div className="px-3 md:px-4 py-2 flex items-center justify-between text-xs text-slate-500 border-b border-slate-100">
+                    <span className="flex items-center gap-1">
+                      <span className="w-4 h-4 rounded-full bg-violet-600 flex items-center justify-center">
+                        <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                          <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
+                        </svg>
+                      </span>
+                      {a.read_count || 0} view{(a.read_count || 0) === 1 ? '' : 's'}
+                    </span>
+                  </div>
+
+                  {/* Action bar */}
+                  <div className="px-2 py-1 grid grid-cols-3 divide-x divide-slate-100">
+                    <button
+                      type="button"
+                      onClick={() => openPost(a)}
+                      className="flex items-center justify-center gap-2 py-2.5 rounded-lg text-slate-600 hover:bg-slate-50 text-sm font-semibold transition-colors no-min"
+                    >
+                      <svg className="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                      View
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => openPost(a)}
+                      className="flex items-center justify-center gap-2 py-2.5 rounded-lg text-slate-600 hover:bg-slate-50 text-sm font-semibold transition-colors no-min"
+                    >
+                      <svg className="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                      </svg>
+                      Details
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { navigator.clipboard?.writeText(window.location.origin + `/announcements/${a.id}`).catch(() => {}); toast.success('Link copied'); }}
+                      className="flex items-center justify-center gap-2 py-2.5 rounded-lg text-slate-600 hover:bg-slate-50 text-sm font-semibold transition-colors no-min"
+                    >
+                      <svg className="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                      </svg>
+                      Share
+                    </button>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        )}
+      </div>
 
       {/* ── Create / Edit Modal ── */}
       {showModal && (

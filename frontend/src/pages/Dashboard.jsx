@@ -132,8 +132,8 @@ const StudentAttendanceCard = ({
     dot: 'bg-blue-500',
   };
 
-  const ringSize = 96;
-  const stroke = 7;
+  const ringSize = 108;
+  const stroke = 8;
   const radius = (ringSize - stroke) / 2;
   const circumference = 2 * Math.PI * radius;
   const dashOffset = circumference - (Math.min(100, Math.max(0, attRate)) / 100) * circumference;
@@ -141,7 +141,7 @@ const StudentAttendanceCard = ({
   const streakDots = 7;
 
   return (
-    <div className={`${DASH_PANEL} p-3 md:p-5 flex flex-col h-[240px] md:h-[280px]`}>
+    <div className={`${DASH_PANEL} p-4 md:p-5 flex flex-col min-h-[320px] md:min-h-[360px] h-full`}>
       <PanelHeader
         title="Attendance"
         subtitle="Overall streak tracker"
@@ -159,7 +159,7 @@ const StudentAttendanceCard = ({
         )}
       />
 
-      <div className={`inline-flex items-center gap-1.5 w-full sm:w-auto px-2.5 py-1.5 rounded-sm border text-[10px] font-bold uppercase tracking-wide shrink-0 mb-3 ${todayStyle.wrap}`}>
+      <div className={`inline-flex items-center gap-1.5 w-full sm:w-auto px-3 py-2 rounded-sm border text-[10px] font-bold uppercase tracking-wide shrink-0 mb-4 ${todayStyle.wrap}`}>
         <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${todayStyle.dot}`} />
         <span className="truncate">{todayStyle.label}</span>
       </div>
@@ -175,24 +175,24 @@ const StudentAttendanceCard = ({
           title="No attendance records yet"
         />
       ) : (
-        <div className="flex-1 flex flex-col justify-center gap-3 min-h-0">
-          <div className="grid grid-cols-2 gap-2 md:gap-3">
-            <div className="flex flex-col items-center justify-center rounded-sm border border-violet-200 bg-violet-50/60 px-2 py-3 md:py-4">
-              <span className="text-2xl md:text-3xl font-black text-violet-800 leading-none tabular-nums">{streakDisplay}</span>
-              <span className="text-[9px] md:text-[10px] font-bold text-violet-600 uppercase tracking-wide mt-1.5 text-center">
+        <div className="flex-1 flex flex-col justify-between gap-4 min-h-0">
+          <div className="grid grid-cols-2 gap-3 md:gap-4 flex-1 min-h-[140px]">
+            <div className="flex flex-col items-center justify-center rounded-sm border border-violet-200 bg-violet-50/60 px-3 py-4 md:py-5">
+              <span className="text-3xl md:text-4xl font-black text-violet-800 leading-none tabular-nums">{streakDisplay}</span>
+              <span className="text-[10px] md:text-xs font-bold text-violet-600 uppercase tracking-wide mt-2 text-center">
                 Day{streakDisplay === 1 ? '' : 's'} streak
               </span>
-              <div className="flex gap-1 mt-2" aria-hidden="true">
+              <div className="flex gap-1.5 mt-3" aria-hidden="true">
                 {Array.from({ length: streakDots }, (_, i) => (
                   <div
                     key={i}
-                    className={`h-1.5 w-1.5 rounded-full ${i < Math.min(streak, streakDots) ? 'bg-emerald-500' : 'bg-violet-200'}`}
+                    className={`h-2 w-2 rounded-full ${i < Math.min(streak, streakDots) ? 'bg-emerald-500' : 'bg-violet-200'}`}
                   />
                 ))}
               </div>
             </div>
 
-            <div className="flex flex-col items-center justify-center rounded-sm border border-violet-200 bg-white px-2 py-2 md:py-3">
+            <div className="flex flex-col items-center justify-center rounded-sm border border-violet-200 bg-white px-3 py-3 md:py-4">
               <div className="relative flex items-center justify-center" style={{ width: ringSize, height: ringSize }}>
                 <svg width={ringSize} height={ringSize} className="-rotate-90" aria-hidden="true">
                   <circle
@@ -217,22 +217,22 @@ const StudentAttendanceCard = ({
                   />
                 </svg>
                 <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                  <span className="text-lg md:text-xl font-black text-slate-900 leading-none tabular-nums">{attRate}%</span>
-                  <span className="text-[8px] font-bold text-slate-400 uppercase tracking-wide mt-0.5">Overall</span>
+                  <span className="text-xl md:text-2xl font-black text-slate-900 leading-none tabular-nums">{attRate}%</span>
+                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wide mt-1">Overall</span>
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-1.5 border-t border-violet-100 pt-2.5">
+          <div className="grid grid-cols-3 gap-2 border-t border-violet-100 pt-3 shrink-0">
             {[
-              { label: 'Present', value: presentCount, bar: 'bg-emerald-500', text: 'text-emerald-700', bg: 'bg-emerald-50 border-emerald-100' },
-              { label: 'Late', value: lateCount, bar: 'bg-amber-500', text: 'text-amber-700', bg: 'bg-amber-50 border-amber-100' },
-              { label: 'Absent', value: absentCount, bar: 'bg-rose-500', text: 'text-rose-700', bg: 'bg-rose-50 border-rose-100' },
+              { label: 'Present', value: presentCount, text: 'text-emerald-700', bg: 'bg-emerald-50 border-emerald-100' },
+              { label: 'Late', value: lateCount, text: 'text-amber-700', bg: 'bg-amber-50 border-amber-100' },
+              { label: 'Absent', value: absentCount, text: 'text-rose-700', bg: 'bg-rose-50 border-rose-100' },
             ].map((row) => (
-              <div key={row.label} className={`rounded-sm border px-2 py-1.5 text-center ${row.bg}`}>
-                <p className={`text-sm md:text-base font-black leading-none tabular-nums ${row.text}`}>{row.value}</p>
-                <p className="text-[8px] font-bold text-slate-500 uppercase tracking-wide mt-0.5">{row.label}</p>
+              <div key={row.label} className={`rounded-sm border px-2 py-2.5 md:py-3 text-center ${row.bg}`}>
+                <p className={`text-base md:text-lg font-black leading-none tabular-nums ${row.text}`}>{row.value}</p>
+                <p className="text-[9px] font-bold text-slate-500 uppercase tracking-wide mt-1">{row.label}</p>
               </div>
             ))}
           </div>
@@ -1405,7 +1405,7 @@ const StudentView = () => {
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.2, duration: 0.6 }}
-              className={`${DASH_PANEL} p-3 md:p-5 flex flex-col h-[240px] md:h-[280px]`}
+              className={`${DASH_PANEL} p-4 md:p-5 flex flex-col min-h-[320px] md:min-h-[360px] h-full`}
             >
               <PanelHeader
                 title="Grade Analysis"
@@ -1448,6 +1448,7 @@ const StudentView = () => {
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.3, duration: 0.6 }}
+              className="h-full min-h-[320px] md:min-h-[360px]"
             >
               <StudentAttendanceCard
                 attRate={attRate}
