@@ -70,3 +70,62 @@ class APIRequestLoggingMiddleware(MiddlewareMixin):
         else:
             ip = request.META.get('REMOTE_ADDR')
         return ip
+
+
+class ContentSecurityPolicyMiddleware(MiddlewareMixin):
+    """
+    Injects a Content-Security-Policy header on every response.
+    Policy values are read from Django settings (CSP_* keys).
+    Falls back to a strict default if settings are not configured.
+    """
+
+    def process_response(self, request, response):
+        from django.conf import settings
+
+        directives = {
+            'default-src': getattr(settings, 'CSP_DEFAULT_SRC', ("'self'",)),
+            'script-src':  getattr(settings, 'CSP_SCRIPT_SRC',  ("'self'",)),
+            'style-src':   getattr(settings, 'CSP_STYLE_SRC',   ("'self'", "'unsafe-inline'")),
+            'font-src':    getattr(settings, 'CSP_FONT_SRC',    ("'self'",)),
+            'img-src':     getattr(settings, 'CSP_IMG_SRC',     ("'self'", "data:", "https:", "blob:")),
+            'connect-src': getattr(settings, 'CSP_CONNECT_SRC', ("'self'",)),
+            'worker-src':  getattr(settings, 'CSP_WORKER_SRC',  ("'self'", "blob:")),
+            'frame-ancestors': getattr(settings, 'CSP_FRAME_ANCESTORS', ("'none'",)),
+        }
+
+        policy_parts = []
+        for directive, sources in directives.items():
+            policy_parts.append(f"{directive} {' '.join(sources)}")
+
+        response['Content-Security-Policy'] = '; '.join(policy_parts)
+        return response
+
+
+class RequestSizeLimitMiddleware(MiddlewareMixin):
+    """
+    Rejects requests whose Content-Length exceeds MAX_UPLOAD_SIZE before
+    the body is read into memory. This is a defence-in-depth layer on top
+    of Django's DATA_UPLOAD_MAX_MEMORY_SIZE setting.
+
+    Default limit: 10 MB (covers multipart file uploads for enrollment docs).
+    Override with settings.MAX_REQUEST_BODY_SIZE (bytes).
+    """
+
+    def process_request(self, request):
+        from django.conf import settings
+        from django.http import JsonResponse
+
+        max_size = getattr(settings, 'MAX_REQUEST_BODY_SIZE', 10 * 1024 * 1024)  # 10 MB
+        content_length = request.META.get('CONTENT_LENGTH')
+
+        if content_length:
+            try:
+                if int(content_length) > max_size:
+                    return JsonResponse(
+                        {'error': f'Request body too large. Maximum allowed size is {max_size // (1024*1024)} MB.'},
+                        status=413
+                    )
+            except (ValueError, TypeError):
+                pass  # Malformed Content-Length — let Django handle it
+
+        return None

@@ -341,8 +341,9 @@ class DatabaseBackupViewSet(viewsets.ModelViewSet):
             return Response(serializer.data, status=201)
             
         except Exception as e:
+            logger.error(f"Backup create error: {str(e)}", exc_info=True)
             return Response(
-                {'error': str(e)}, 
+                {'error': 'Failed to create backup.'},
                 status=500
             )
     
@@ -402,8 +403,9 @@ class DatabaseBackupViewSet(viewsets.ModelViewSet):
             return Response({'status': 'Backup restored successfully'})
             
         except Exception as e:
+            logger.error(f"Backup restore error: {str(e)}", exc_info=True)
             return Response(
-                {'error': str(e)}, 
+                {'error': 'Failed to restore backup.'},
                 status=500
             )
     
@@ -417,7 +419,15 @@ class DatabaseBackupViewSet(viewsets.ModelViewSet):
 
             backup = self.get_object()
             backup_dir = os.path.join(settings.BASE_DIR, 'backups')
-            backup_path = os.path.join(backup_dir, backup.filename)
+
+            # Sanitize filename — strip any directory components to prevent path traversal
+            safe_filename = os.path.basename(backup.filename)
+            backup_path = os.path.join(backup_dir, safe_filename)
+
+            # Ensure the resolved path is still inside the backups directory
+            if not os.path.realpath(backup_path).startswith(os.path.realpath(backup_dir)):
+                logger.warning(f"Path traversal attempt blocked for backup id={pk}")
+                return Response({'error': 'Invalid backup file.'}, status=400)
 
             if not os.path.exists(backup_path):
                 return Response(
@@ -430,12 +440,13 @@ class DatabaseBackupViewSet(viewsets.ModelViewSet):
             return FileResponse(
                 fh,
                 as_attachment=True,
-                filename=backup.filename
+                filename=safe_filename
             )
 
         except Exception as e:
+            logger.error(f"Backup download error: {str(e)}", exc_info=True)
             return Response(
-                {'error': str(e)},
+                {'error': 'Failed to download backup.'},
                 status=500
             )
 

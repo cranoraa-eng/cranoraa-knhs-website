@@ -25,7 +25,6 @@ class User(AbstractUser):
     
     # School System Fields
     must_change_password = models.BooleanField(default=False)
-    temp_password_storage = models.CharField(max_length=128, null=True, blank=True, help_text="Stored temporary password until first login/change")
     account_status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active')
     
     USERNAME_FIELD = 'username'

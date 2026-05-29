@@ -27,9 +27,9 @@ const ForcePasswordChange = () => {
     try {
       const response = await api.post('/force-password-change/', { password });
 
-      // Update local storage with new tokens if returned
+      // Update local storage with new access token (refresh token is in httpOnly cookie)
       if (response.data.access) {
-        updateTokens(response.data.access, response.data.refresh);
+        updateTokens(response.data.access);
       }
 
       // Update user state and localStorage (must_change_password is now false)

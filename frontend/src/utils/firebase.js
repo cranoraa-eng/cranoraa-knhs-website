@@ -12,18 +12,39 @@
  *   VITE_FIREBASE_VAPID_KEY   ← Web Push certificate public key
  *                               (Firebase Console → Project Settings →
  *                                Cloud Messaging → Web Push certificates)
+ *
+ * SECURITY: Never add hardcoded fallback values here.
+ * All config must come from environment variables only.
  */
 
 import { initializeApp, getApps } from 'firebase/app';
 import { getMessaging, getToken, onMessage, isSupported } from 'firebase/messaging';
 
+// Validate that all required Firebase config vars are present
+const _requiredVars = [
+  'VITE_FIREBASE_API_KEY',
+  'VITE_FIREBASE_AUTH_DOMAIN',
+  'VITE_FIREBASE_PROJECT_ID',
+  'VITE_FIREBASE_STORAGE_BUCKET',
+  'VITE_FIREBASE_MESSAGING_SENDER_ID',
+  'VITE_FIREBASE_APP_ID',
+];
+
+const _missing = _requiredVars.filter((k) => !import.meta.env[k]);
+if (_missing.length > 0) {
+  console.warn(
+    `FCM: Missing environment variables: ${_missing.join(', ')}.\n` +
+    'Copy frontend/.env.example to frontend/.env and fill in the values.'
+  );
+}
+
 const firebaseConfig = {
-  apiKey:            import.meta.env.VITE_FIREBASE_API_KEY            || 'AIzaSyD5JKllrVK6oZrBmRaHEVKWdz2xTdtMqVY',
-  authDomain:        import.meta.env.VITE_FIREBASE_AUTH_DOMAIN        || 'notification-knhs.firebaseapp.com',
-  projectId:         import.meta.env.VITE_FIREBASE_PROJECT_ID         || 'notification-knhs',
-  storageBucket:     import.meta.env.VITE_FIREBASE_STORAGE_BUCKET     || 'notification-knhs.firebasestorage.app',
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID|| '117715050118',
-  appId:             import.meta.env.VITE_FIREBASE_APP_ID             || '1:117715050118:web:cb20ddaa193e9ac286fb07',
+  apiKey:            import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain:        import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId:         import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket:     import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId:             import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
 // Initialise once — guard against HMR double-init in dev

@@ -21,8 +21,8 @@ const PublicLayout = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [location.pathname]);
 
-  const handleLogout = () => {
-    signOut();
+  const handleLogout = async () => {
+    await signOut();
     navigate('/', { replace: true });
   };
 

@@ -650,7 +650,9 @@ const Messages = () => {
             confirmButtonColor: '#ef4444',
             allowOutsideClick: false,
             confirmButtonText: 'Logout'
-          }).then(() => {
+          }).then(async () => {
+            // Blacklist the refresh token on the backend before clearing local state
+            try { await api.post('/logout/'); } catch { /* ignore */ }
             window.dispatchEvent(new CustomEvent('auth:logout'));
             navigate('/login');
           });

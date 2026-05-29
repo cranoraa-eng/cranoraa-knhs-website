@@ -13,8 +13,18 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 # SECURITY WARNING: keep the secret key used in production secret!
-# In production, load from environment variable
-SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-development-key-change-in-production')
+# Must be set via environment variable — no insecure fallback.
+_secret_key = os.environ.get('DJANGO_SECRET_KEY')
+if not _secret_key:
+    if os.environ.get('DEBUG', 'False').lower() in ('true', '1', 't'):
+        # Allow a dev-only fallback so local dev still boots without .env
+        _secret_key = 'django-insecure-local-dev-only-do-not-use-in-production'
+    else:
+        raise RuntimeError(
+            "DJANGO_SECRET_KEY environment variable is not set. "
+            "Generate one with: python -c \"import secrets; print(secrets.token_hex(50))\""
+        )
+SECRET_KEY = _secret_key
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'False').lower() in ('true', '1', 't')
@@ -59,7 +69,9 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'axes.middleware.AxesMiddleware',
+    'portal.middleware.RequestSizeLimitMiddleware',
     'portal.middleware.APIRequestLoggingMiddleware',
+    'portal.middleware.ContentSecurityPolicyMiddleware',
 ]
 
 ROOT_URLCONF = 'school_portal.urls'
@@ -192,6 +204,18 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
     ],
+    # Global rate limiting — auth-specific throttles are applied per-view
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle',
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '60/minute',          # general anonymous limit
+        'user': '300/minute',         # general authenticated limit
+        'auth': '5/15minute',         # login / OTP / password-reset (5 per 15 min)
+        'check_result': '10/hour',    # scratch-card grade lookup
+        'enrollment': '20/hour',      # public enrollment form submissions
+    },
 }
 
 # JWT Configuration
@@ -230,7 +254,7 @@ if _cors_env:
         if o.strip() and o.strip() not in CORS_ALLOWED_ORIGINS:
             CORS_ALLOWED_ORIGINS.append(o.strip())
 
-CORS_ALLOW_ALL_ORIGINS = DEBUG
+CORS_ALLOW_ALL_ORIGINS = False  # Never allow all origins — explicit list only
 CORS_ALLOW_CREDENTIALS = True
 
 CORS_ALLOW_HEADERS = list(default_headers) + [
@@ -261,12 +285,12 @@ MAILJET_SECRET_KEY = os.environ.get('MAILJET_SECRET_KEY')
 MAILJET_SENDER_EMAIL = os.environ.get('MAILJET_SENDER_EMAIL', 'noreply@knhsportal.dedyn.io')
 
 if not MAILJET_API_KEY or not MAILJET_SECRET_KEY:
-    print("CRITICAL WARNING: MAILJET credentials are not set in environment variables!")
+    import logging as _logging
+    _logging.getLogger(__name__).warning("MAILJET credentials are not set in environment variables.")
 else:
-    # Masked print for debugging in Render logs
+    import logging as _logging
     masked_key = f"{MAILJET_API_KEY[:4]}...{MAILJET_API_KEY[-4:]}" if len(MAILJET_API_KEY) > 8 else "INVALID_LENGTH"
-    print(f"DEBUG: MAILJET_API_KEY loaded: {masked_key}")
-    print(f"DEBUG: MAILJET_SECRET_KEY loaded: {len(MAILJET_SECRET_KEY)} characters")
+    _logging.getLogger(__name__).debug(f"MAILJET_API_KEY loaded: {masked_key}")
 
 DEFAULT_FROM_EMAIL = MAILJET_SENDER_EMAIL
 
@@ -275,8 +299,9 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 # Django Axes Configuration (Rate Limiting & Account Lockout)
-AXES_FAILURE_LIMIT = int(os.environ.get('AXES_FAILURE_LIMIT', 20))
-AXES_COOLOFF_TIME = timedelta(minutes=int(os.environ.get('AXES_COOLOFF_TIME', 30)))
+# 5 failures per 15-minute window before lockout (matches auth throttle)
+AXES_FAILURE_LIMIT = int(os.environ.get('AXES_FAILURE_LIMIT', 5))
+AXES_COOLOFF_TIME = timedelta(minutes=int(os.environ.get('AXES_COOLOFF_TIME', 15)))
 AXES_LOCKOUT_TEMPLATE = None
 AXES_RESET_ON_SUCCESS = False
 AXES_RESET_COOL_OFF_ON_FAILURE_DURING_LOCKOUT = True
@@ -311,7 +336,8 @@ SUPABASE_KEY = os.environ.get('SUPABASE_SERVICE_ROLE_KEY') or os.environ.get('SU
 SUPABASE_BUCKET = os.environ.get('SUPABASE_STORAGE_BUCKET', 'profile-pictures')
 
 if not SUPABASE_URL or not SUPABASE_KEY:
-    print("WARNING: SUPABASE_URL or SUPABASE_KEY not set — file uploads will fail.")
+    import logging as _logging
+    _logging.getLogger(__name__).warning("SUPABASE_URL or SUPABASE_KEY not set — file uploads will fail.")
 
 # Resend Email Configuration (primary email provider — works on Render free tier)
 # Get a free API key at https://resend.com — 3,000 emails/month free
@@ -321,3 +347,32 @@ if not SUPABASE_URL or not SUPABASE_KEY:
 # To use your own domain, verify it in Resend dashboard and set RESEND_FROM_EMAIL.
 RESEND_API_KEY = os.environ.get('RESEND_API_KEY')
 RESEND_FROM_EMAIL = os.environ.get('RESEND_FROM_EMAIL', 'KNHS Portal <onboarding@resend.dev>')
+
+# ─── Content Security Policy ─────────────────────────────────────────────────
+# Restricts which resources the browser may load, mitigating XSS.
+# Adjust script/style/connect sources to match your actual CDN/API domains.
+SECURE_REFERRER_POLICY = 'strict-origin-when-cross-origin'
+
+# Custom CSP header injected via SecurityMiddleware extension (see portal/middleware.py)
+CSP_DEFAULT_SRC = ("'self'",)
+CSP_SCRIPT_SRC = ("'self'", "https://www.gstatic.com", "https://www.googleapis.com")
+CSP_STYLE_SRC = ("'self'", "'unsafe-inline'", "https://fonts.googleapis.com")
+CSP_FONT_SRC = ("'self'", "https://fonts.gstatic.com")
+CSP_IMG_SRC = ("'self'", "data:", "https:", "blob:")
+CSP_CONNECT_SRC = (
+    "'self'",
+    "https://fcm.googleapis.com",
+    "https://firebaseinstallations.googleapis.com",
+    "https://*.supabase.co",
+    _vercel_url,
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+)
+CSP_WORKER_SRC = ("'self'", "blob:")
+CSP_FRAME_ANCESTORS = ("'none'",)
+
+# ─── Request size limits ──────────────────────────────────────────────────────
+# Reject oversized payloads before they reach view logic.
+DATA_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024   # 5 MB for JSON/form data
+FILE_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024   # 5 MB in-memory file threshold
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 200              # Prevent hash-flood DoS via many fields

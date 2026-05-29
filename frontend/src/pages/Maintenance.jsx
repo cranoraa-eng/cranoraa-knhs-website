@@ -5,9 +5,9 @@ const Maintenance = ({ message }) => {
   const navigate = useNavigate();
   const { signOut, user } = useAuth();
 
-  const handleAction = () => {
+  const handleAction = async () => {
     if (user) {
-      signOut();
+      await signOut();
       navigate('/login');
     } else {
       navigate('/');

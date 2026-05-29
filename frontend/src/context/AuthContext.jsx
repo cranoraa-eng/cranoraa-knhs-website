@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { hasToken, getStoredUser, clearSession } from '../utils/auth';
+import { hasToken, getStoredUser, logoutRequest } from '../utils/auth';
 import api from '../utils/api';
 
 const AuthContext = createContext(null);
@@ -43,7 +43,7 @@ export const AuthProvider = ({ children }) => {
     setReady(true);
   }, [refreshUser]);
 
-  // Listen for the custom logout event fired by api.js interceptor
+  // Listen for the custom logout event fired by api.js interceptor (e.g. 401 on refresh)
   useEffect(() => {
     const handleForceLogout = () => {
       setUser(null);
@@ -56,8 +56,10 @@ export const AuthProvider = ({ children }) => {
     setUser(userData);
   }, []);
 
-  const signOut = useCallback(() => {
-    clearSession();
+  // Calls the backend to blacklist the refresh token + clear the httpOnly cookie,
+  // then clears local state. Always awaited so the cookie is gone before navigation.
+  const signOut = useCallback(async () => {
+    await logoutRequest();
     setUser(null);
   }, []);
 

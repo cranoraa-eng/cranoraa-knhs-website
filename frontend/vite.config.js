@@ -1,10 +1,49 @@
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
-export default defineConfig({
+/**
+ * Vite plugin: injects Firebase config into the service worker at build time.
+ * Replaces the __FIREBASE_CONFIG_PLACEHOLDER__ token in firebase-messaging-sw.js
+ * with the actual env values so no secrets are hardcoded in source.
+ */
+function injectFirebaseConfigIntoSW() {
+  let env = {}
+  return {
+    name: 'inject-firebase-config-sw',
+    configResolved(config) {
+      env = config.env
+    },
+    transformIndexHtml: {
+      order: 'pre',
+      handler() { return [] },
+    },
+    generateBundle(_, bundle) {
+      const swFile = bundle['firebase-messaging-sw.js']
+      if (swFile && swFile.type === 'asset') {
+        const config = JSON.stringify({
+          apiKey:            env.VITE_FIREBASE_API_KEY            || '',
+          authDomain:        env.VITE_FIREBASE_AUTH_DOMAIN        || '',
+          projectId:         env.VITE_FIREBASE_PROJECT_ID         || '',
+          storageBucket:     env.VITE_FIREBASE_STORAGE_BUCKET     || '',
+          messagingSenderId: env.VITE_FIREBASE_MESSAGING_SENDER_ID || '',
+          appId:             env.VITE_FIREBASE_APP_ID             || '',
+        })
+        swFile.source = String(swFile.source).replace(
+          '__FIREBASE_CONFIG_PLACEHOLDER__',
+          config
+        )
+      }
+    },
+  }
+}
+
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), '')
+  return {
   plugins: [
     react(),
+    injectFirebaseConfigIntoSW(),
     VitePWA({
       // 'prompt' = new SW installs but waits; our UpdateModal controls when it activates.
       // This prevents silent mid-session reloads and gives users control.
@@ -239,4 +278,5 @@ export default defineConfig({
     // Raise warning threshold slightly since we're splitting properly
     chunkSizeWarningLimit: 600,
   },
+  }
 })

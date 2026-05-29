@@ -8,27 +8,18 @@
  * or the app is not in focus. Foreground messages are handled in the app
  * itself via onMessage() in src/utils/firebase.js.
  *
- * The Firebase config values below are injected at build time via
- * Vite's import.meta.env, but service workers cannot use ES modules or
- * import.meta, so we read them from a self.__FIREBASE_CONFIG object that
- * we write into the HTML via a <script> tag, OR we hard-code them here.
+ * SECURITY: Firebase config is injected at build time by the
+ * injectFirebaseConfigIntoSW Vite plugin (see vite.config.js).
+ * The __FIREBASE_CONFIG_PLACEHOLDER__ token is replaced with the actual
+ * values from VITE_FIREBASE_* environment variables during `vite build`.
  *
- * SIMPLEST APPROACH: hard-code the public (non-secret) Firebase config
- * directly in this file. These values are safe to expose — they only
- * identify your Firebase project, not grant admin access.
+ * For local development, the SW is disabled (devOptions.enabled = false in
+ * vite.config.js), so this file is not executed during `vite dev`.
  */
 
-// ─── Replace these with your actual Firebase project config ──────────────────
-// You can find them in Firebase Console → Project Settings → General → Your apps
-const FIREBASE_CONFIG = {
-  apiKey:            'AIzaSyD5JKllrVK6oZrBmRaHEVKWdz2xTdtMqVY',
-  authDomain:        'notification-knhs.firebaseapp.com',
-  projectId:         'notification-knhs',
-  storageBucket:     'notification-knhs.firebasestorage.app',
-  messagingSenderId: '117715050118',
-  appId:             '1:117715050118:web:cb20ddaa193e9ac286fb07',
-};
-// ─────────────────────────────────────────────────────────────────────────────
+// ─── Firebase config injected at build time ───────────────────────────────────
+// DO NOT hardcode values here. Set VITE_FIREBASE_* in your .env file.
+const FIREBASE_CONFIG = __FIREBASE_CONFIG_PLACEHOLDER__;
 
 importScripts('https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js');

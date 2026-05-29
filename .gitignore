@@ -27,8 +27,16 @@ Thumbs.db
 __pycache__/
 *.so
 
-# Environment
+# Environment — never commit secrets
 .env
+.env.*
+!.env.example
 .venv
 venv/
 ENV/
+frontend/.env
+frontend/.env.*
+!frontend/.env.example
+backend/.env
+backend/.env.*
+!backend/.env.example

@@ -1,10 +1,9 @@
 from rest_framework import viewsets, status, filters, parsers, serializers
-from rest_framework.decorators import action, permission_classes, api_view, parser_classes
+from rest_framework.decorators import action, permission_classes, api_view, parser_classes, throttle_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
-from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
 from datetime import timedelta
 import datetime
@@ -19,6 +18,7 @@ from .serializers import (UserSerializer, ClassroomSerializer, StudentClassEnrol
     full_name)
 from .models import User, Classroom, StudentClassEnrollment, Announcement, AnnouncementAttachment, Attendance, LearningMaterial, Subject, ClassroomSubject, ScratchCard, Fee, Notification, EnrollmentApplication, WebsiteContent, Grade, GradeReport, ChatRoom, ChatMessage, MessageReaction, Friendship, SystemSetting, Assignment, Submission, ReportedMessage, Room, TimeSlot, Schedule, FCMToken
 from .permissions import IsAdmin, IsTeacher, IsStudent, IsParent, IsAdminOrTeacher, IsAdminOrReadOnly
+from .throttles import AuthRateThrottle, CheckResultRateThrottle, EnrollmentRateThrottle
 # Moved portal imports inside functions to avoid circular dependencies
 import logging
 import secrets
@@ -35,9 +35,37 @@ from .utils import (
     check_user_moderation,
 )
 
-@csrf_exempt
+# ─── Cookie helpers ───────────────────────────────────────────────────────────
+
+def _set_refresh_cookie(response, refresh_token: str):
+    """
+    Store the JWT refresh token in an httpOnly, Secure, SameSite=Lax cookie.
+    httpOnly prevents JavaScript from reading it, which eliminates XSS token theft.
+    The access token (short-lived, 15 min) stays in memory on the frontend.
+    """
+    from django.conf import settings as _settings
+    response.set_cookie(
+        key='refresh_token',
+        value=refresh_token,
+        httponly=True,
+        secure=not _settings.DEBUG,   # HTTPS-only in production
+        samesite='Lax',               # Protects against CSRF while allowing normal navigation
+        max_age=7 * 24 * 60 * 60,     # 7 days — matches SIMPLE_JWT REFRESH_TOKEN_LIFETIME
+        path='/api/token/',           # Scoped: only sent to the refresh endpoint
+    )
+
+
+def _clear_refresh_cookie(response):
+    """Delete the refresh token cookie on logout."""
+    response.delete_cookie(
+        key='refresh_token',
+        path='/api/token/',
+        samesite='Lax',
+    )
+
 @api_view(['POST'])
 @permission_classes([AllowAny])
+@throttle_classes([AuthRateThrottle])
 def login_view(request):
     try:
         # Support both email and username (Student ID) in the same field
@@ -110,19 +138,15 @@ def login_view(request):
         
         # Check if password change is forced
         if user.must_change_password:
-            # We still issue a temporary token but with a flag
+            # Issue a temporary token but flag the client to redirect to password change
             refresh = RefreshToken.for_user(user)
-            return Response({
+            response = Response({
                 'must_change_password': True,
                 'access': str(refresh.access_token),
-                'refresh': str(refresh),
                 'user': UserSerializer(user).data
             }, status=status.HTTP_200_OK)
-
-        # Clear the plaintext temp password now that the user has successfully authenticated
-        if user.temp_password_storage:
-            user.temp_password_storage = None
-            user.save(update_fields=['temp_password_storage'])
+            _set_refresh_cookie(response, str(refresh))
+            return response
 
         refresh = RefreshToken.for_user(user)
 
@@ -137,16 +161,17 @@ def login_view(request):
             description=f'User {user.username} logged in successfully',
             request=request
         )
-        
-        return Response({
-            'refresh': str(refresh),
+
+        response = Response({
             'access': str(refresh.access_token),
             'user': UserSerializer(user).data
         })
+        _set_refresh_cookie(response, str(refresh))
+        return response
     except Exception as e:
         logger.error(f"Login error: {str(e)}", exc_info=True)
         return Response(
-            {'error': f'Server error: {str(e)}'},
+            {'error': 'An unexpected error occurred. Please try again.'},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
 
@@ -168,22 +193,80 @@ def force_password_change_view(request):
         
     user.set_password(new_password)
     user.must_change_password = False
-    user.temp_password_storage = None # Clear temporary password storage
     user.save()
-    
-    # Update session or return new tokens if needed, but SimpleJWT tokens remain valid 
-    # for the user until expiry unless blacklisted. 
-    # We can issue fresh ones here for a clean state.
+
+    # Issue fresh tokens — blacklist the old refresh token implicitly via rotation
     refresh = RefreshToken.for_user(user)
-    
-    return Response({
+
+    response = Response({
         'message': 'Password changed successfully!',
         'access': str(refresh.access_token),
-        'refresh': str(refresh)
     })
+    _set_refresh_cookie(response, str(refresh))
+    return response
 
 
-@csrf_exempt
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def logout_view(request):
+    """
+    Blacklist the refresh token and clear the httpOnly cookie.
+    Accepts the refresh token from the cookie (preferred) or request body (fallback).
+    """
+    refresh_token = request.COOKIES.get('refresh_token') or request.data.get('refresh')
+    if refresh_token:
+        try:
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+        except Exception:
+            pass  # Already invalid/expired — still clear the cookie
+
+    response = Response({'message': 'Logged out successfully.'})
+    _clear_refresh_cookie(response)
+    return response
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+@throttle_classes([AuthRateThrottle])
+def cookie_token_refresh_view(request):
+    """
+    Custom token refresh endpoint that reads the refresh token from the
+    httpOnly cookie instead of the request body.
+    Falls back to request body for backward compatibility during transition.
+    """
+    from rest_framework_simplejwt.exceptions import TokenError, InvalidToken
+
+    refresh_token = request.COOKIES.get('refresh_token') or request.data.get('refresh')
+
+    if not refresh_token:
+        return Response(
+            {'error': 'Refresh token not found. Please log in again.'},
+            status=status.HTTP_401_UNAUTHORIZED
+        )
+
+    try:
+        token = RefreshToken(refresh_token)
+        access = str(token.access_token)
+
+        # Rotate: blacklist old, issue new refresh
+        if hasattr(token, 'blacklist'):
+            token.blacklist()
+        new_refresh = RefreshToken.for_user(
+            User.objects.get(id=token['user_id'])
+        )
+
+        response = Response({'access': access})
+        _set_refresh_cookie(response, str(new_refresh))
+        return response
+
+    except TokenError as e:
+        return Response({'error': 'Invalid or expired refresh token.'}, status=status.HTTP_401_UNAUTHORIZED)
+    except Exception:
+        logger.error("Token refresh error", exc_info=True)
+        return Response({'error': 'Token refresh failed.'}, status=status.HTTP_401_UNAUTHORIZED)
+
+
 @api_view(['POST'])
 @permission_classes([IsAdminOrTeacher])
 def admin_create_user_view(request):
@@ -246,7 +329,6 @@ def admin_create_user_view(request):
         user.is_verified = True if email else False
         user.is_approved = True  # Admin/Teacher-created accounts are auto-approved
         user.must_change_password = True  # Force password change on first login
-        user.temp_password_storage = password  # Store temporary password
         user.account_status = 'active'
         user.save()
         
@@ -305,8 +387,8 @@ def admin_create_user_view(request):
         }, status=status.HTTP_201_CREATED)
 
     except Exception as e:
-        logger.error(f"User creation error: {str(e)}")
-        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        logger.error(f"User creation error: {str(e)}", exc_info=True)
+        return Response({'error': 'Failed to create user account. Please check the provided data.'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['GET'])
@@ -413,7 +495,7 @@ def teacher_dashboard_stats(request):
     except Exception as e:
         logger.error(f"Teacher stats error: {str(e)}", exc_info=True)
         return Response(
-            {'error': f'Server error: {str(e)}'},
+            {'error': 'Failed to load dashboard statistics.'},
             status=500
         )
 
@@ -470,7 +552,7 @@ def student_dashboard_stats(request):
         })
     except Exception as e:
         logger.error(f"Student dashboard stats error: {str(e)}", exc_info=True)
-        return Response({'error': f'Server error: {str(e)}'}, status=500)
+        return Response({'error': 'Failed to load dashboard statistics.'}, status=500)
 
 
 class ClassroomViewSet(viewsets.ModelViewSet):
@@ -881,7 +963,6 @@ class UserViewSet(viewsets.ModelViewSet):
             
         user.set_password(new_password)
         user.must_change_password = True # Force them to change it again
-        user.temp_password_storage = new_password # Store it
         user.save()
         
         return Response({
@@ -915,7 +996,8 @@ class UserViewSet(viewsets.ModelViewSet):
             io_string = io.StringIO(decoded_file)
             reader = csv.DictReader(io_string)
         except Exception as e:
-            return Response({'error': f'Failed to parse CSV: {str(e)}'}, status=400)
+            logger.error(f"CSV parse error: {str(e)}")
+            return Response({'error': 'Failed to parse CSV file. Ensure it is UTF-8 encoded with the correct columns.'}, status=400)
         
         created_count = 0
         created_users = []
@@ -980,7 +1062,6 @@ class UserViewSet(viewsets.ModelViewSet):
                     is_approved=True,
                     is_verified=True if email else False,
                     must_change_password=True,
-                    temp_password_storage=temp_password,
                     account_status='active'
                 )
                 user.set_password(temp_password)
@@ -1041,7 +1122,8 @@ class UserViewSet(viewsets.ModelViewSet):
             io_string = io.StringIO(decoded_file)
             reader = csv.DictReader(io_string)
         except Exception as e:
-            return Response({'error': f'Failed to parse CSV: {str(e)}'}, status=400)
+            logger.error(f"CSV parse error: {str(e)}")
+            return Response({'error': 'Failed to parse CSV file. Ensure it is UTF-8 encoded with the correct columns.'}, status=400)
         
         created_count = 0
         created_users = []
@@ -1086,7 +1168,6 @@ class UserViewSet(viewsets.ModelViewSet):
                     is_approved=True,
                     is_verified=False,
                     must_change_password=True,
-                    temp_password_storage=temp_password,
                     account_status='active'
                 )
                 user.set_password(temp_password)
@@ -1234,7 +1315,7 @@ class UserViewSet(viewsets.ModelViewSet):
             return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
             logger.error(f"Error in approve action: {str(e)}")
-            return Response({'error': f'Failed to approve account: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({'error': 'Failed to approve account.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     @action(detail=True, methods=['post'])
     def reject(self, request, pk=None):
@@ -1287,7 +1368,7 @@ class UserViewSet(viewsets.ModelViewSet):
             return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
             logger.error(f"Error in reject action: {str(e)}")
-            return Response({'error': f'Failed to reject account: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({'error': 'Failed to reject account.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     @action(detail=False, methods=['get'])
     def search(self, request):
@@ -2041,7 +2122,6 @@ class FeeViewSet(viewsets.ModelViewSet):
         return queryset
 
 
-@csrf_exempt
 @api_view(['GET', 'POST', 'PATCH'])
 @permission_classes([IsAuthenticated])
 def system_settings_view(request):
@@ -2064,7 +2144,7 @@ def system_settings_view(request):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             logger.error(f"Error updating system settings: {str(e)}", exc_info=True)
-            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({'error': 'Failed to update system settings.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
     # GET
     serializer = SystemSettingSerializer(settings)
@@ -2415,7 +2495,7 @@ def admin_dashboard_stats(request):
         import traceback
         logger.error(f"Admin stats error: {str(e)}")
         logger.error(traceback.format_exc())
-        return Response({'error': f'Server error: {str(e)}'}, status=500)
+        return Response({'error': 'Failed to load admin statistics.'}, status=500)
 
 
 @api_view(['GET'])
@@ -2606,30 +2686,39 @@ def grade_distribution_stats(request):
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
+@throttle_classes([CheckResultRateThrottle])
 def check_result(request):
-    registration_number = request.data.get('registration_number')
-    scratch_card = request.data.get('scratch_card')
-    
+    registration_number = request.data.get('registration_number', '').strip()
+    scratch_card = request.data.get('scratch_card', '').strip()
+
+    # Input validation — reject obviously malformed values early
     if not registration_number or not scratch_card:
         return Response({'error': 'Registration number and scratch card are required'}, status=400)
-    
+
+    if len(registration_number) > 30 or len(scratch_card) > 30:
+        return Response({'error': 'Invalid input'}, status=400)
+
+    # Only allow alphanumeric characters to prevent injection
+    if not registration_number.replace('-', '').isalnum() or not scratch_card.replace('-', '').isalnum():
+        return Response({'error': 'Invalid input format'}, status=400)
+
     try:
         profile = Profile.objects.get(registration_number=registration_number)
         student = profile.user
-        
+
         if student.role != 'student':
             return Response({'error': 'Invalid registration number'}, status=400)
-        
+
         card = ScratchCard.objects.filter(serial_number=scratch_card, student=student, is_used=False).first()
-        
+
         if not card:
             return Response({'error': 'Invalid or used scratch card'}, status=400)
-        
+
         # Mark card as used
         card.is_used = True
         card.used_at = timezone.now()
         card.save()
-        
+
         # Get student's grades
         enrollments = StudentClassEnrollment.objects.filter(student=student)
         grades_data = []
@@ -2644,18 +2733,20 @@ def check_result(request):
                 'transmuted_average': enrollment.calculate_transmuted_average(),
                 'descriptive_equivalent': enrollment.get_descriptive_equivalent(),
             })
-        
+
         return Response({
             'student': {
-                'name': student.username,
-                'email': student.email,
+                'name': student.get_full_name() or student.username,
                 'registration_number': registration_number,
             },
             'grades': grades_data,
         })
-        
+
     except Profile.DoesNotExist:
         return Response({'error': 'Invalid registration number'}, status=400)
+    except Exception as e:
+        logger.error(f"check_result error: {str(e)}", exc_info=True)
+        return Response({'error': 'An error occurred processing your request.'}, status=500)
 
 
 @api_view(['GET', 'PUT', 'POST'])
@@ -2695,7 +2786,7 @@ def student_profile(request):
                     return Response({'error': error or 'Failed to upload picture to storage.'}, status=500)
             except Exception as e:
                 logger.error(f"Error in student_profile POST: {str(e)}", exc_info=True)
-                return Response({'error': f'Internal Server Error: {str(e)}'}, status=500)
+                return Response({'error': 'Failed to upload profile picture.'}, status=500)
         return Response({'error': 'No file provided'}, status=400)
 
     if request.method == 'GET':
@@ -2812,10 +2903,7 @@ def student_profile(request):
             import logging
             logger = logging.getLogger(__name__)
             logger.error(f"Error updating profile for user {target_user.username}: {str(e)}\n{traceback.format_exc()}")
-            return Response({
-                'error': str(e),
-                'details': str(e),
-            }, status=500)
+            return Response({'error': 'Failed to update profile. Please check your input.'}, status=500)
 
 
 class NotificationViewSet(viewsets.ModelViewSet):
@@ -2904,18 +2992,37 @@ class NotificationViewSet(viewsets.ModelViewSet):
 
 class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
     serializer_class = EnrollmentApplicationSerializer
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]  # Default: require auth
     parser_classes = [parsers.MultiPartParser, parsers.FormParser, parsers.JSONParser]
     filter_backends = [filters.SearchFilter]
     search_fields = ['first_name', 'last_name', 'email']
-    
+
+    def get_permissions(self):
+        """
+        Public enrollment form submission (create) is open to anyone.
+        All other actions (list, retrieve, update, destroy) require authentication.
+        Approve/reject actions require admin.
+        """
+        if self.action == 'create':
+            return [AllowAny()]
+        if self.action in ('approve', 'reject', 'destroy', 'update', 'partial_update'):
+            return [IsAdminUser()]
+        return [IsAuthenticated()]
+
+    def get_throttles(self):
+        """Apply strict throttle only to the public create action."""
+        if self.action == 'create':
+            return [EnrollmentRateThrottle()]
+        return super().get_throttles()
+
     def get_queryset(self):
         user = self.request.user
-        if user.is_authenticated and user.role == 'admin':
+        if not user.is_authenticated:
+            return EnrollmentApplication.objects.none()
+        if user.role == 'admin' or user.is_staff:
             return EnrollmentApplication.objects.all()
-        elif user.is_authenticated:
-            return EnrollmentApplication.objects.filter(email=user.email)
-        return EnrollmentApplication.objects.none()
+        # Authenticated non-admin users can only see their own applications
+        return EnrollmentApplication.objects.filter(email=user.email)
     
     def create(self, request, *args, **kwargs):
         try:
@@ -2928,8 +3035,8 @@ class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
             import traceback
             logger.error(f"Enrollment application error: {str(e)}\n{traceback.format_exc()}")
             if hasattr(e, 'detail'):
-                return Response({'error': str(e.detail)}, status=status.HTTP_400_BAD_REQUEST)
-            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'error': e.detail}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'Failed to submit enrollment application. Please check your input.'}, status=status.HTTP_400_BAD_REQUEST)
     
     @action(detail=True, methods=['post'], permission_classes=[IsAdminUser])
     def approve(self, request, pk=None):
@@ -3148,7 +3255,6 @@ def _get_time_ago(timestamp):
         return f'{diff.days} days ago'
 
 
-@csrf_exempt
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def force_sync_view(request):
@@ -3170,7 +3276,6 @@ def force_sync_view(request):
         }, status=500)
 
 
-@csrf_exempt
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def run_backup_view(request):
@@ -3189,7 +3294,6 @@ def run_backup_view(request):
         }, status=500)
 
 
-@csrf_exempt
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def clear_cache_view(request):
@@ -4465,7 +4569,7 @@ class FriendshipViewSet(viewsets.ModelViewSet):
             return Response(serialized)
         except Exception as e:
             logger.error(f"Friendship accept error: {str(e)}")
-            return Response({'error': str(e)}, status=500)
+            return Response({'error': 'Failed to process friend request.'}, status=500)
 
     @action(detail=True, methods=['post'])
     def reject(self, request, pk=None):
@@ -5278,4 +5382,5 @@ def test_push_notification(request):
             'note': 'If you still dont see it, check your Windows "Do Not Disturb" settings or Chrome notification permissions.'
         })
     except Exception as e:
-        return Response({'error': f'Firebase error: {str(e)}'}, status=500)
+        logger.error(f"Firebase error: {str(e)}", exc_info=True)
+        return Response({'error': 'Failed to process notification request.'}, status=500)

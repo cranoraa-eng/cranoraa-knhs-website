@@ -7,14 +7,10 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api'
 function deriveWsRoot(apiUrl) {
   try {
     const url = new URL(apiUrl);
-    // Strip the /api suffix from the pathname
     url.pathname = url.pathname.replace(/\/api\/?$/, '') || '/';
-    // Switch protocol: http -> ws, https -> wss
     url.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
-    // Remove trailing slash
     return url.toString().replace(/\/$/, '');
   } catch {
-    // Fallback for relative or malformed URLs
     return apiUrl.replace(/\/api\/?$/, '').replace(/^http/, 'ws');
   }
 }
@@ -35,9 +31,12 @@ export const MEDIA_ROOT = deriveMediaRoot(API_BASE_URL);
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: { 'Content-Type': 'application/json' },
+  // Send the httpOnly refresh-token cookie on same-origin requests to /api/token/
+  withCredentials: true,
 });
 
-// Attach access token to every request
+// Attach the short-lived access token (kept in memory via auth.js) to every request.
+// The refresh token lives in an httpOnly cookie — JS never touches it directly.
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('access_token');
   if (token) {
@@ -46,16 +45,16 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// On 401, try to refresh the access token once, then give up
+// On 401, ask the backend to rotate the refresh token (cookie → cookie) and
+// return a new access token. If that also fails, clear the session.
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const original = error.config;
 
-    // If there is no config (e.g. network error before request), just reject
     if (!original) return Promise.reject(error);
 
-    // Never retry the refresh endpoint itself
+    // Never retry the refresh endpoint itself — avoids infinite loops
     if (original.url?.includes('/token/refresh/')) {
       clearSession();
       return Promise.reject(error);
@@ -64,16 +63,17 @@ api.interceptors.response.use(
     if (error.response?.status === 401 && !original._retry) {
       original._retry = true;
 
-      const refresh = localStorage.getItem('refresh_token');
-      if (!refresh) {
-        clearSession();
-        return Promise.reject(error);
-      }
-
       try {
-        const { data } = await axios.post(`${API_BASE_URL}/token/refresh/`, { refresh });
+        // POST with no body — the backend reads the refresh token from the httpOnly cookie.
+        // withCredentials ensures the cookie is sent cross-origin in production.
+        const { data } = await axios.post(
+          `${API_BASE_URL}/token/refresh/`,
+          {},
+          { withCredentials: true }
+        );
+
+        // Store only the short-lived access token in localStorage
         localStorage.setItem('access_token', data.access);
-        if (data.refresh) localStorage.setItem('refresh_token', data.refresh);
         original.headers.Authorization = `Bearer ${data.access}`;
         return api(original);
       } catch {
@@ -86,9 +86,8 @@ api.interceptors.response.use(
   }
 );
 
-function clearSession() {
+export function clearSession() {
   localStorage.removeItem('access_token');
-  localStorage.removeItem('refresh_token');
   localStorage.removeItem('user');
   // Dispatch a custom event so AuthContext can react without a hard reload
   window.dispatchEvent(new Event('auth:logout'));

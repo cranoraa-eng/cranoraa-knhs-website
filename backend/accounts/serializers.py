@@ -383,6 +383,51 @@ class EnrollmentApplicationSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['status', 'submitted_at', 'updated_at']
 
+    # Allowed MIME types and extensions for uploaded documents
+    _ALLOWED_CONTENT_TYPES = {'application/pdf', 'image/jpeg', 'image/png', 'image/webp'}
+    _ALLOWED_EXTENSIONS = {'.pdf', '.jpg', '.jpeg', '.png', '.webp'}
+    _MAX_FILE_SIZE = 5 * 1024 * 1024  # 5 MB
+
+    _FILE_FIELDS = [
+        'birth_certificate', 'report_card', 'form_138',
+        'certificate_of_completion', 'good_moral_certificate',
+        'last_school_attended_cert',
+    ]
+
+    def _validate_uploaded_file(self, file, field_name):
+        """Validate file type and size for document uploads."""
+        import os
+        if file is None:
+            return file
+
+        # Size check
+        if file.size > self._MAX_FILE_SIZE:
+            raise serializers.ValidationError(
+                {field_name: f'File size must not exceed 5 MB. Received: {file.size // (1024*1024)} MB.'}
+            )
+
+        # Extension check
+        ext = os.path.splitext(file.name)[1].lower()
+        if ext not in self._ALLOWED_EXTENSIONS:
+            raise serializers.ValidationError(
+                {field_name: f'Unsupported file type "{ext}". Allowed: PDF, JPG, PNG, WEBP.'}
+            )
+
+        # MIME type check (from browser-reported content type)
+        content_type = getattr(file, 'content_type', '')
+        if content_type and content_type not in self._ALLOWED_CONTENT_TYPES:
+            raise serializers.ValidationError(
+                {field_name: f'Unsupported content type "{content_type}". Allowed: PDF, JPEG, PNG, WEBP.'}
+            )
+
+        return file
+
+    def validate(self, data):
+        for field_name in self._FILE_FIELDS:
+            if field_name in data and data[field_name]:
+                data[field_name] = self._validate_uploaded_file(data[field_name], field_name)
+        return data
+
 
 class WebsiteContentSerializer(serializers.ModelSerializer):
     section_display = serializers.CharField(source='get_section_display', read_only=True)

@@ -141,7 +141,7 @@ const Layout = () => {
     });
 
     if (result.isConfirmed) {
-      signOut();
+      await signOut();
       navigate('/login');
       toast.success('Logged out successfully');
     }
