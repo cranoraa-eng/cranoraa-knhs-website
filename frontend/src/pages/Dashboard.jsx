@@ -43,8 +43,13 @@ const computeStreak = (records) => {
 };
 
 // Formal dashboard surface tokens — purple theme (admin / teacher / student only)
-const DASH_PANEL = 'bg-white border border-violet-200/90 shadow-[0_1px_2px_rgba(91,33,182,0.07),0_3px_10px_rgba(91,33,182,0.05)] rounded-sm';
-const DASH_PANEL_HEADER = 'border-b border-violet-200 bg-violet-50/70';
+const DASH_PAGE = 'page-bottom-safe max-w-[1600px] mx-auto min-h-0 bg-violet-50/40 px-3 py-3 md:px-6 md:py-6 space-y-4 md:space-y-5';
+const DASH_PANEL = 'bg-white border border-violet-200/90 shadow-[0_1px_2px_rgba(91,33,182,0.07),0_3px_10px_rgba(91,33,182,0.05)] rounded-sm transition-shadow';
+const DASH_PANEL_HEADER = 'border-b border-violet-200 bg-violet-50/80';
+const DASH_SECTION_LABEL = 'text-[10px] font-bold text-violet-700 uppercase tracking-wide px-0.5';
+const DASH_TABLE_TH = 'px-3 md:px-5 py-2.5 text-[10px] font-bold text-violet-800/80 uppercase tracking-wide';
+const DASH_LINK_BTN = 'inline-flex items-center justify-center px-2.5 py-1.5 rounded-sm border border-violet-300 bg-white text-[10px] font-bold text-violet-800 uppercase tracking-wide hover:bg-violet-700 hover:text-white hover:border-violet-700 transition-colors active:scale-[0.98]';
+const DASH_LIST_ITEM = 'rounded-sm border border-violet-100 bg-violet-50/40 hover:bg-white hover:border-violet-200 hover:shadow-sm transition-all';
 const DASH_BTN_PRIMARY = 'inline-flex items-center justify-center gap-2 px-3 py-2 md:px-4 md:py-2.5 rounded-sm bg-violet-700 text-white text-[10px] md:text-xs font-bold uppercase tracking-wide border border-violet-800 hover:bg-violet-800 transition-colors active:scale-[0.98]';
 const DASH_BTN_SECONDARY = 'inline-flex items-center justify-center gap-2 px-3 py-2 md:px-4 md:py-2.5 rounded-sm bg-white text-violet-900 text-[10px] md:text-xs font-bold uppercase tracking-wide border border-violet-300 hover:bg-violet-50 hover:border-violet-400 transition-colors active:scale-[0.98]';
 const DASH_ICON_BOX = 'rounded-sm bg-violet-50 text-violet-700 flex items-center justify-center border border-violet-200';
@@ -137,28 +142,22 @@ const StudentAttendanceCard = ({
 
   return (
     <div className={`${DASH_PANEL} p-3 md:p-5 flex flex-col h-[240px] md:h-[280px]`}>
-      <div className="flex items-start justify-between gap-2 mb-3 shrink-0">
-        <div className="flex items-center gap-2 min-w-0">
-          <div className={`w-7 h-7 md:w-8 md:h-8 shrink-0 ${DASH_ICON_BOX}`}>
-            <svg className="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-          </div>
-          <div className="min-w-0">
-            <h3 className="text-xs font-black text-slate-900 tracking-tight">Attendance</h3>
-            <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide mt-0.5 truncate">
-              Overall streak tracker
-            </p>
-          </div>
-        </div>
-        {onViewAttendance && (
+      <PanelHeader
+        title="Attendance"
+        subtitle="Overall streak tracker"
+        icon={
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        }
+        action={onViewAttendance && (
           <button type="button" onClick={onViewAttendance} className={DASH_ICON_BTN} title="View attendance">
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 5H19M19 5V11M19 5L5 19M5 19H11M5 19V13" />
             </svg>
           </button>
         )}
-      </div>
+      />
 
       <div className={`inline-flex items-center gap-1.5 w-full sm:w-auto px-2.5 py-1.5 rounded-sm border text-[10px] font-bold uppercase tracking-wide shrink-0 mb-3 ${todayStyle.wrap}`}>
         <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${todayStyle.dot}`} />
@@ -166,12 +165,15 @@ const StudentAttendanceCard = ({
       </div>
 
       {!hasAttData ? (
-        <div className="flex-1 flex flex-col items-center justify-center gap-2 border border-dashed border-violet-200 rounded-sm bg-violet-50/40 px-4 py-6">
-          <svg className="w-9 h-9 text-violet-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wide text-center">No attendance records yet</p>
-        </div>
+        <DashEmptyState
+          className="flex-1"
+          icon={
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          }
+          title="No attendance records yet"
+        />
       ) : (
         <div className="flex-1 flex flex-col justify-center gap-3 min-h-0">
           <div className="grid grid-cols-2 gap-2 md:gap-3">
@@ -280,6 +282,33 @@ const CHIP_DOT = {
   yellow: 'bg-yellow-600',
   slate: 'bg-slate-500',
 };
+
+const PanelHeader = ({ title, subtitle, icon, action, className = '', bordered = false, iconClassName }) => (
+  <div
+    className={`flex items-start justify-between gap-2 shrink-0 ${
+      bordered ? `${DASH_PANEL_HEADER} px-3 md:px-5 py-3 md:py-3.5 -mx-3 md:-mx-5 -mt-3 md:-mt-5 mb-3 md:mb-4` : 'mb-3'
+    } ${className}`}
+  >
+    <div className="flex items-center gap-2.5 min-w-0">
+      {icon && <div className={`w-8 h-8 shrink-0 flex items-center justify-center ${iconClassName || DASH_ICON_BOX}`}>{icon}</div>}
+      <div className="min-w-0">
+        <h3 className="text-xs md:text-sm font-bold text-slate-900 tracking-tight">{title}</h3>
+        {subtitle && (
+          <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide mt-0.5 truncate">{subtitle}</p>
+        )}
+      </div>
+    </div>
+    {action && <div className="shrink-0 flex items-center">{action}</div>}
+  </div>
+);
+
+const DashEmptyState = ({ icon, title, description = '', className = '' }) => (
+  <div className={`flex flex-col items-center justify-center gap-2 rounded-sm border border-dashed border-violet-200 bg-violet-50/50 px-4 py-8 text-center ${className}`}>
+    <div className={`w-11 h-11 ${DASH_ICON_BOX}`}>{icon}</div>
+    <p className="text-[10px] font-bold text-slate-600 uppercase tracking-wide">{title}</p>
+    {description && <p className="text-[10px] text-slate-500 max-w-[200px]">{description}</p>}
+  </div>
+);
 
 // ─── Shared UI Components ───────────────────────────────────────────────────
 
@@ -426,7 +455,7 @@ const StatCard = ({ label, value, sub, icon, color = 'violet', onClick, badge })
   return (
     <div
       onClick={onClick}
-      className={`group ${DASH_PANEL} p-2.5 md:p-5 transition-all hover:border-violet-300 hover:shadow-[0_2px_8px_rgba(91,33,182,0.1),0_6px_16px_rgba(91,33,182,0.06)] flex flex-col justify-between min-h-[72px] md:min-h-[132px] ${onClick ? 'cursor-pointer' : ''}`}
+      className={`group ${DASH_PANEL} border-l-[3px] border-l-violet-200 p-2.5 md:p-4 transition-all hover:border-violet-300 hover:border-l-violet-600 hover:shadow-[0_4px_14px_rgba(91,33,182,0.1)] flex flex-col justify-between min-h-[76px] md:min-h-[120px] ${onClick ? 'cursor-pointer' : ''}`}
     >
       <div className="flex items-start justify-between">
         <div className={`w-7 h-7 md:w-10 md:h-10 rounded-sm flex items-center justify-center border ${themes[color]}`}>
@@ -452,24 +481,23 @@ const StatCard = ({ label, value, sub, icon, color = 'violet', onClick, badge })
 const LatestMessagesWidget = ({ messages, onOpenChat }) => {
   return (
     <div className={`${DASH_PANEL} p-3 md:p-4 flex flex-col h-full`}>
-      <div className="flex items-center justify-between mb-2 md:mb-3 shrink-0 gap-2">
-        <div className="flex items-center gap-2.5">
-          <div className={`w-8 h-8 shrink-0 ${DASH_ICON_BOX}`}>
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
-          </div>
-          <div>
-            <h3 className="text-xs font-black text-slate-900 uppercase tracking-tight">Latest Messages</h3>
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-0.5">Communication hub</p>
-          </div>
-        </div>
-        <button onClick={onOpenChat}
-          className={DASH_ICON_BTN}>
-          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 5H19M19 5V11M19 5L5 19M5 19H11M5 19V13" /></svg>
-        </button>
-      </div>
-      <div className="space-y-2 flex-1 overflow-y-auto scrollbar-none">
+      <PanelHeader
+        title="Latest Messages"
+        subtitle="Communication hub"
+        icon={
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+          </svg>
+        }
+        action={
+          <button type="button" onClick={onOpenChat} className={DASH_ICON_BTN} aria-label="Open messages">
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 5H19M19 5V11M19 5L5 19M5 19H11M5 19V13" /></svg>
+          </button>
+        }
+      />
+      <div className="space-y-2 flex-1 overflow-y-auto scrollbar-none min-h-0">
         {messages?.map(m => (
-          <div key={m.id} className="flex gap-3 p-2.5 border border-violet-100 bg-violet-50/50 hover:bg-white hover:border-violet-200 hover:shadow-sm transition-all cursor-pointer group/msg" onClick={onOpenChat}>
+          <div key={m.id} className={`flex gap-3 p-2.5 cursor-pointer group/msg ${DASH_LIST_ITEM}`} onClick={onOpenChat}>
             <div className="relative shrink-0">
               <div className="w-9 h-9 rounded-sm bg-white flex items-center justify-center text-slate-600 font-bold text-xs border border-slate-200 overflow-hidden">
                 {m.sender_profile_picture
@@ -480,8 +508,8 @@ const LatestMessagesWidget = ({ messages, onOpenChat }) => {
             </div>
             <div className="min-w-0 flex-1">
               <div className="flex justify-between items-center gap-2">
-                <h4 className="text-xs font-black text-slate-800 truncate group-hover/msg:text-violet-600 transition-colors">{m.sender || 'Unknown'}</h4>
-                <span className="text-[10px] font-black text-slate-400 uppercase tracking-tighter shrink-0 bg-slate-100 px-1.5 py-0.5 rounded-sm">
+                <h4 className="text-xs font-bold text-slate-800 truncate group-hover/msg:text-violet-700 transition-colors">{m.sender || 'Unknown'}</h4>
+                <span className="text-[10px] font-semibold text-slate-500 shrink-0 bg-violet-50 border border-violet-100 px-1.5 py-0.5 rounded-sm">
                   {new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 </span>
               </div>
@@ -490,12 +518,14 @@ const LatestMessagesWidget = ({ messages, onOpenChat }) => {
           </div>
         ))}
         {!messages?.length && (
-          <div className="flex flex-col items-center justify-center py-8 opacity-40">
-            <div className="w-12 h-12 rounded-xl bg-slate-50 flex items-center justify-center mb-3">
-              <svg className="w-6 h-6 text-slate-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
-            </div>
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">No recent messages</p>
-          </div>
+          <DashEmptyState
+            icon={
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+              </svg>
+            }
+            title="No recent messages"
+          />
         )}
       </div>
     </div>
@@ -556,25 +586,20 @@ const TodayScheduleWidget = ({ role }) => {
 
   return (
     <div className={`${DASH_PANEL} p-3 md:p-5 flex flex-col h-full`}>
-      <div className="flex items-center justify-between mb-3 md:mb-4 shrink-0 gap-2">
-        <div className="flex items-center gap-3">
-          <div className={`w-9 h-9 shrink-0 ${DASH_ICON_BOX}`}>
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
-          </div>
-          <div>
-            <h3 className="text-sm font-black text-slate-900 uppercase tracking-tight leading-none">Today's Schedule</h3>
-            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">{todayLabel}</p>
-          </div>
-        </div>
-            <button
-              onClick={() => navigate('/schedule')}
-              className="inline-flex items-center justify-center px-2.5 py-1.5 rounded-sm border border-violet-300 bg-white text-[10px] font-bold text-violet-800 uppercase tracking-wide hover:bg-violet-700 hover:text-white hover:border-violet-700 transition-colors active:scale-95"
-            >
-          View Full
-        </button>
-      </div>
+      <PanelHeader
+        title="Today's Schedule"
+        subtitle={todayLabel}
+        icon={
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+        }
+        action={
+          <button type="button" onClick={() => navigate('/schedule')} className={DASH_LINK_BTN}>
+            View Full
+          </button>
+        }
+      />
 
       {/* Content */}
       <div className="flex-1 min-h-0">
@@ -583,15 +608,16 @@ const TodayScheduleWidget = ({ role }) => {
             {[1,2,3].map(i => <div key={i} className="h-16 rounded-lg bg-slate-50 animate-pulse border border-slate-100/50" />)}
           </div>
         ) : schedule.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full bg-slate-50/50 rounded-lg border border-dashed border-slate-200 p-6 text-center">
-            <div className="w-12 h-12 rounded-lg bg-white flex items-center justify-center mb-3 shadow-sm">
-              <svg className="w-6 h-6 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <DashEmptyState
+            className="h-full min-h-[140px]"
+            icon={
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-            </div>
-            <p className="text-xs font-black text-slate-500 uppercase tracking-widest">No classes scheduled</p>
-            <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">Enjoy your free time!</p>
-          </div>
+            }
+            title="No classes scheduled"
+            description="Enjoy your free time."
+          />
         ) : (
           <div className="space-y-2.5 h-full overflow-y-auto pr-1 -mr-1 scrollbar-none pb-2">
             {schedule.map((s, idx) => {
@@ -647,15 +673,24 @@ const TodayScheduleWidget = ({ role }) => {
 };
 
 const DashboardQuickActions = ({ title, items, navigate }) => (
-  <div className={`${DASH_PANEL} p-4 md:p-5`}>
-    <h3 className="text-[10px] font-bold uppercase tracking-wide text-violet-700 border-b border-violet-200 pb-2 mb-3">{title}</h3>
-    <div className="grid grid-cols-4 gap-2">
+  <div className={`${DASH_PANEL} p-3 md:p-5`}>
+    <PanelHeader
+      title={title}
+      subtitle="Shortcuts"
+      icon={
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
+        </svg>
+      }
+      className="mb-3"
+    />
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
       {items.map((a) => (
         <button
           key={a.path}
           type="button"
           onClick={() => navigate(a.path)}
-          className="flex flex-col items-center justify-center gap-1.5 p-2 min-h-[72px] border border-violet-200 bg-violet-50/60 hover:bg-white hover:border-violet-400 hover:text-violet-800 rounded-sm transition-colors"
+          className="flex flex-col items-center justify-center gap-1.5 p-2.5 min-h-[76px] border border-violet-200 bg-violet-50/60 hover:bg-white hover:border-violet-400 hover:shadow-sm rounded-sm transition-all active:scale-[0.98]"
         >
           <svg className="w-4 h-4 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={a.icon} />
@@ -696,7 +731,7 @@ const AdminView = () => {
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: 'easeOut' }}
-      className="space-y-3 md:space-y-4 page-bottom-safe max-w-[1600px] mx-auto px-2 py-2 md:px-6 md:py-6"
+      className={DASH_PAGE}
     >
       <WelcomeBanner
         user={user}
@@ -723,27 +758,38 @@ const AdminView = () => {
         }
       />
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-2 md:gap-2.5">
+      <div className="space-y-2">
+        <p className={DASH_SECTION_LABEL}>School overview</p>
+        <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-2 md:gap-3">
         <StatCard label="Total Students" value={data?.total_students} sub="Enrolled" color="blue" onClick={() => navigate('/student-management')} icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>} />
         <StatCard label="Faculty" value={data?.total_teachers} sub="Verified" color="emerald" onClick={() => navigate('/teachers')} icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" /></svg>} />
         <StatCard label="Classrooms" value={data?.total_classes} sub="Sections" color="violet" onClick={() => navigate('/class-management')} icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>} />
         <StatCard label="Announcements" value={data?.total_announcements} sub="Live" color="amber" onClick={() => navigate('/announcements')} icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" /></svg>} />
         <StatCard label="Active Users" value={data?.active_users} sub="Realtime" color="indigo" icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>} />
         <StatCard label="Attendance" value={`${data?.today_rate || 0}%`} sub="Today's Rate" color={data?.today_rate >= 75 ? 'emerald' : 'rose'} onClick={() => navigate('/attendance')} icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>} />
+        </div>
       </div>
 
+      <div className="space-y-2">
+        <p className={DASH_SECTION_LABEL}>Analytics</p>
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 md:gap-4 overflow-hidden">
         {/* Attendance Trends */}
         <div className={`lg:col-span-8 ${DASH_PANEL} p-3 md:p-4 overflow-hidden flex flex-col min-h-[220px] md:min-h-0`}>
-          <div className="flex items-center justify-between mb-3 shrink-0">
-            <div>
-              <h3 className="text-xs font-black text-slate-900 uppercase tracking-tight">Attendance Trends</h3>
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-0.5">Last 30 Days · Presence Rate</p>
-            </div>
-            <span className="flex items-center gap-1.5 text-[10px] font-black text-slate-500 uppercase tracking-widest">
-              <span className="w-2 h-2 bg-violet-600" /> Rate (%)
-            </span>
-          </div>
+          <PanelHeader
+            title="Attendance Trends"
+            subtitle="Last 30 days · presence rate"
+            icon={
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+            }
+            action={
+              <span className="inline-flex items-center gap-1.5 rounded-sm border border-violet-200 bg-violet-50 px-2 py-1 text-[10px] font-bold text-violet-700 uppercase tracking-wide">
+                <span className="w-2 h-2 rounded-full bg-violet-600" />
+                Rate %
+              </span>
+            }
+          />
           <div className="flex-1 min-h-[180px] sm:min-h-[200px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={attendanceTrends} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
@@ -766,20 +812,25 @@ const AdminView = () => {
 
         {/* Grade Distribution */}
         <div className={`lg:col-span-4 ${DASH_PANEL} p-3 md:p-4 flex flex-col min-h-[280px] md:min-h-0`}>
-          <div className="flex items-center justify-between mb-3 shrink-0 gap-2">
-            <div className="min-w-0">
-              <h3 className="text-xs font-black text-slate-900 uppercase tracking-tight">Grade Analysis</h3>
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-0.5">{distView === 'general_average' ? 'General Average' : 'All Subjects'}</p>
-            </div>
-            <button
-              type="button"
-              onClick={() => setDistView(distView === 'general_average' ? 'all_subjects' : 'general_average')}
-              className={`${DASH_ICON_BTN} text-violet-600 hover:text-white`}
-              title={distView === 'general_average' ? 'Switch to all subjects' : 'Switch to general average'}
-            >
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
-            </button>
-          </div>
+          <PanelHeader
+            title="Grade Analysis"
+            subtitle={distView === 'general_average' ? 'General average' : 'All subjects'}
+            icon={
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
+              </svg>
+            }
+            action={
+              <button
+                type="button"
+                onClick={() => setDistView(distView === 'general_average' ? 'all_subjects' : 'general_average')}
+                className={DASH_ICON_BTN}
+                title={distView === 'general_average' ? 'Switch to all subjects' : 'Switch to general average'}
+              >
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+              </button>
+            }
+          />
           <div className="flex-1 flex flex-col justify-between min-h-[200px]">
             <div className="h-36 relative shrink-0">
               <ResponsiveContainer width="100%" height="100%">
@@ -829,22 +880,30 @@ const AdminView = () => {
           </div>
         </div>
       </div>
+      </div>
 
+      <div className="space-y-2">
+        <p className={DASH_SECTION_LABEL}>Updates & activity</p>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
         {/* Recent Announcements */}
         <div className={`${DASH_PANEL} p-3 md:p-4 flex flex-col min-h-[200px]`}>
-          <div className="flex items-center justify-between gap-2 mb-3 shrink-0">
-            <div>
-              <h3 className="text-xs font-black text-slate-900 uppercase tracking-tight">Recent Announcements</h3>
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-0.5">School-wide updates</p>
-            </div>
-            <Link to="/announcements" className={DASH_ICON_BTN}>
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
-            </Link>
-          </div>
-          <div className="space-y-2 flex-1 overflow-y-auto scrollbar-none">
+          <PanelHeader
+            title="Recent Announcements"
+            subtitle="School-wide updates"
+            icon={
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
+              </svg>
+            }
+            action={
+              <Link to="/announcements" className={DASH_ICON_BTN} aria-label="View announcements">
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+              </Link>
+            }
+          />
+          <div className="space-y-2 flex-1 overflow-y-auto scrollbar-none min-h-0">
             {data?.recent_announcements?.map(a => (
-              <div key={a.id} className="group flex gap-3 p-2.5 border border-violet-100 bg-violet-50/50 hover:bg-white hover:border-violet-200 hover:shadow-sm transition-all cursor-pointer">
+              <div key={a.id} className={`group flex gap-3 p-2.5 cursor-pointer ${DASH_LIST_ITEM}`}>
                 <div className="shrink-0 w-9 h-9 rounded-sm bg-white border border-violet-200 flex items-center justify-center text-violet-800 font-bold text-xs group-hover:bg-violet-700 group-hover:text-white group-hover:border-violet-700 transition-colors">
                   {new Date(a.created_at).getDate()}
                 </div>
@@ -867,19 +926,24 @@ const AdminView = () => {
         <LatestMessagesWidget messages={data?.latest_messages} onOpenChat={() => navigate('/messages')} />
 
         {/* System Activity */}
-        <div className={`${DASH_PANEL} p-4 flex flex-col`}>
-          <div className="flex items-center justify-between gap-2 mb-3 shrink-0">
-            <div>
-              <h3 className="text-xs font-black text-slate-900 uppercase tracking-tight">System Activity</h3>
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-0.5">Audit logs summary</p>
-            </div>
-            <Link to="/audit-logs" className={DASH_ICON_BTN}>
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
-            </Link>
-          </div>
-          <div className="space-y-2 flex-1 overflow-y-auto scrollbar-none">
+        <div className={`${DASH_PANEL} p-3 md:p-4 flex flex-col min-h-[200px]`}>
+          <PanelHeader
+            title="System Activity"
+            subtitle="Audit logs summary"
+            icon={
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+              </svg>
+            }
+            action={
+              <Link to="/audit-logs" className={DASH_ICON_BTN} aria-label="View audit logs">
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
+              </Link>
+            }
+          />
+          <div className="space-y-2 flex-1 overflow-y-auto scrollbar-none min-h-0">
             {data?.widgets?.recent_activity?.map(log => (
-              <div key={log.id} className="flex items-start gap-3 p-2.5 border-b border-slate-100 last:border-0 hover:bg-slate-50 transition-colors group">
+              <div key={log.id} className={`flex items-start gap-3 p-2.5 ${DASH_LIST_ITEM}`}>
                 <div className={`mt-1.5 w-2 h-2 rounded-full shrink-0 transition-transform group-hover:scale-125 ${
                   log.action === 'login'  ? 'bg-emerald-500' :
                   log.action === 'delete' ? 'bg-rose-500'    :
@@ -897,13 +961,18 @@ const AdminView = () => {
               </div>
             ))}
             {!data?.widgets?.recent_activity?.length && (
-              <div className="flex flex-col items-center justify-center py-8 opacity-40">
-                <svg className="w-7 h-7 text-slate-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">No activity</p>
-              </div>
+              <DashEmptyState
+                icon={
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                }
+                title="No activity"
+              />
             )}
           </div>
         </div>
+      </div>
       </div>
     </motion.div>
   );
@@ -960,7 +1029,7 @@ const TeacherView = () => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.8, ease: "easeOut" }}
-      className="space-y-3 md:space-y-4 page-bottom-safe max-w-[1600px] mx-auto px-2 py-2 md:px-6 md:py-6"
+      className={DASH_PAGE}
     >
       <WelcomeBanner
         user={user}
@@ -984,22 +1053,22 @@ const TeacherView = () => {
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15, duration: 0.5 }}
-          className={`${DASH_PANEL} px-3 py-2.5 md:px-4 md:py-3 flex items-center justify-between gap-3 ${
+          className={`${DASH_PANEL} px-3 py-3 md:px-4 md:py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
             unmarkedCount === 0
-              ? 'border-emerald-300 bg-emerald-50'
-              : 'border-amber-300 bg-amber-50'
+              ? 'border-emerald-300 bg-emerald-50/90'
+              : 'border-amber-300 bg-amber-50/90'
           }`}
         >
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2.5 min-w-0">
             <div className={`w-2 h-2 rounded-full shrink-0 ${unmarkedCount === 0 ? 'bg-emerald-500' : 'bg-amber-500 animate-pulse'}`} />
-            <div>
-              <p className={`text-xs font-black uppercase tracking-widest ${unmarkedCount === 0 ? 'text-emerald-700' : 'text-amber-700'}`}>
+            <div className="min-w-0">
+              <p className={`text-xs font-bold uppercase tracking-wide ${unmarkedCount === 0 ? 'text-emerald-800' : 'text-amber-800'}`}>
                 {unmarkedCount === 0
                   ? 'All attendance marked for today'
                   : `${unmarkedCount} class${unmarkedCount > 1 ? 'es' : ''} without attendance today`}
               </p>
               {unmarkedCount > 0 && (
-                <p className="text-xs font-bold text-amber-500 uppercase tracking-widest mt-0.5">
+                <p className="text-[10px] font-semibold text-amber-700 mt-0.5 truncate">
                   {classrooms.filter(c => !todayAttendance[c.id]).map(c => c.name).join(', ')}
                 </p>
               )}
@@ -1027,41 +1096,42 @@ const TeacherView = () => {
             transition={{ delay: 0.2, duration: 0.6 }}
             className={`${DASH_PANEL} overflow-hidden flex flex-col lg:h-[420px] min-h-[300px]`}
           >
-            <div className={`px-3 md:px-5 py-3 md:py-4 ${DASH_PANEL_HEADER} flex flex-col sm:flex-row sm:items-center justify-between gap-2 md:gap-3 shrink-0`}>
-              <div className="flex items-center gap-2 md:gap-3.5">
-                <div className="w-8 h-8 rounded-sm bg-violet-700 flex items-center justify-center shrink-0">
-                  <svg className="w-4 h-4 md:w-5 md:h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
-                </div>
-                <div>
-                  <h3 className="text-sm md:text-base font-black text-slate-900 tracking-tight">Academic Overview</h3>
-                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mt-0.5">Active teaching sections</p>
-                </div>
-              </div>
-              <Link to="/my-classes" className={DASH_BTN_SECONDARY}>
-                Manage Classes
-              </Link>
-            </div>
+            <PanelHeader
+              bordered
+              title="Academic Overview"
+              subtitle="Active teaching sections"
+              iconClassName="rounded-sm bg-violet-700 border border-violet-800 text-white"
+              icon={
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                </svg>
+              }
+              action={<Link to="/my-classes" className={DASH_BTN_SECONDARY}>Manage Classes</Link>}
+            />
             
             <div className="flex-1 overflow-x-auto overflow-y-auto scrollbar-none">
               <table className="w-full text-left border-separate border-spacing-0 min-w-[480px]">
                 <thead className="bg-violet-50/80 border-b border-violet-100 sticky top-0 z-10">
                   <tr>
-                    <th className="px-3 md:px-5 py-2 md:py-3 text-xs font-black text-slate-400 uppercase tracking-[0.15em]">Section</th>
-                    <th className="px-3 md:px-5 py-2 md:py-3 text-xs font-black text-slate-400 uppercase tracking-[0.15em]">Subject</th>
-                    <th className="px-3 md:px-5 py-2 md:py-3 text-xs font-black text-slate-400 uppercase tracking-[0.15em]">Today's Attendance</th>
-                    <th className="px-3 md:px-5 py-2 md:py-3 text-xs font-black text-slate-400 uppercase tracking-[0.15em] text-right">Actions</th>
+                    <th className={`${DASH_TABLE_TH} text-left`}>Section</th>
+                    <th className={`${DASH_TABLE_TH} text-left`}>Subject</th>
+                    <th className={`${DASH_TABLE_TH} text-left`}>Today's Attendance</th>
+                    <th className={`${DASH_TABLE_TH} text-right`}>Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-50">
+                <tbody className="divide-y divide-violet-100">
                   {classrooms.length === 0 ? (
                     <tr>
-                      <td colSpan="4" className="px-8 py-16 text-center">
-                        <div className="flex flex-col items-center justify-center gap-4 opacity-40">
-                          <div className="w-14 h-14 rounded-lg bg-slate-100 flex items-center justify-center">
-                            <svg className="w-7 h-7 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
-                          </div>
-                          <p className="text-xs font-black text-slate-400 uppercase tracking-widest">No classes assigned yet</p>
-                        </div>
+                      <td colSpan="4" className="px-4 md:px-6 py-8">
+                        <DashEmptyState
+                          title="No classes assigned yet"
+                          description="Classes appear here once you are assigned as instructor."
+                          icon={
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                            </svg>
+                          }
+                        />
                       </td>
                     </tr>
                   ) : (
@@ -1124,20 +1194,21 @@ const TeacherView = () => {
             transition={{ delay: 0.5, duration: 0.6 }}
             className={`${DASH_PANEL} p-3 md:p-5 flex flex-col lg:h-[520px]`}
           >
-            <div className="flex items-center justify-between mb-4 md:mb-5 shrink-0 pb-3 border-b border-violet-200">
-              <div className="flex items-center gap-2 md:gap-3.5">
-                <div className={`w-8 h-8 shrink-0 ${DASH_ICON_BOX}`}>
-                  <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                </div>
-                <div>
-                  <h3 className="text-sm md:text-base font-black text-slate-900 tracking-tight">Recent Activity</h3>
-                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mt-0.5">Your latest school interactions</p>
-                </div>
-              </div>
-              <div className="px-2 py-1 border border-violet-200 bg-violet-50 text-[10px] font-bold text-violet-700 uppercase tracking-wide">
-                Activity
-              </div>
-            </div>
+            <PanelHeader
+              title="Recent Activity"
+              subtitle="Your latest school interactions"
+              icon={
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              }
+              action={
+                <span className="px-2 py-1 border border-violet-200 bg-violet-50 text-[10px] font-bold text-violet-700 uppercase tracking-wide rounded-sm">
+                  Activity
+                </span>
+              }
+              className="pb-3 border-b border-violet-100 mb-4 md:mb-5"
+            />
             
             <div className="relative space-y-3 md:space-y-6 flex-1 overflow-y-auto pr-2 scrollbar-none">
               <div className="absolute left-[15px] md:left-[19px] top-2 bottom-2 w-0.5 bg-violet-100" />
@@ -1161,12 +1232,16 @@ const TeacherView = () => {
                     </div>
                   </motion.div>
                 )) : (
-                  <div className="flex flex-col items-center justify-center py-16 opacity-40">
-                    <div className="w-14 h-14 rounded-lg bg-slate-100 flex items-center justify-center mb-4">
-                      <svg className="w-7 h-7 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                    </div>
-                    <p className="text-xs font-black text-slate-400 uppercase tracking-widest">No recent activities</p>
-                  </div>
+                  <DashEmptyState
+                    className="py-12"
+                    title="No recent activities"
+                    description="Actions like attendance and grading will show up here."
+                    icon={
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    }
+                  />
                 )}
               </AnimatePresence>
             </div>
@@ -1298,7 +1373,7 @@ const StudentView = () => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.8, ease: "easeOut" }}
-      className="space-y-3 md:space-y-4 page-bottom-safe max-w-[1600px] mx-auto px-2 py-2 md:px-6 md:py-6"
+      className={DASH_PAGE}
     >
       <WelcomeBanner
         user={user}
@@ -1323,31 +1398,35 @@ const StudentView = () => {
         <div className="lg:col-span-8 space-y-3 md:space-y-5">
           
           {/* Performance Analytics & Attendance Streak */}
+          <div className="space-y-2">
+            <p className={DASH_SECTION_LABEL}>Performance</p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-5">
-            {/* Grade Analysis Chart */}
             <motion.div 
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.2, duration: 0.6 }}
               className={`${DASH_PANEL} p-3 md:p-5 flex flex-col h-[240px] md:h-[280px]`}
             >
-              <div className="flex items-center justify-between mb-3 md:mb-4 shrink-0">
-                <div className="flex items-center gap-2">
-                  <div className={`w-7 h-7 md:w-8 md:h-8 ${DASH_ICON_BOX}`}>
-                    <svg className="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
-                  </div>
-                  <div>
-                    <h3 className="text-xs font-black text-slate-900 tracking-tight">Grade Analysis</h3>
-                    <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mt-0.5 hidden md:block">Subject performance trend</p>
-                  </div>
-                </div>
-              </div>
-              <div className="flex-1 w-full">
+              <PanelHeader
+                title="Grade Analysis"
+                subtitle="Subject performance trend"
+                icon={
+                  <svg className="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  </svg>
+                }
+              />
+              <div className="flex-1 w-full min-h-0">
                 {chartData.length === 0 ? (
-                  <div className="h-full flex flex-col items-center justify-center opacity-40 gap-2">
-                    <svg className="w-8 h-8 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
-                    <p className="text-xs font-black text-slate-400 uppercase tracking-widest">No grades yet</p>
-                  </div>
+                  <DashEmptyState
+                    className="h-full min-h-[140px]"
+                    icon={
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                      </svg>
+                    }
+                    title="No grades yet"
+                  />
                 ) : (
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={chartData}>
@@ -1382,6 +1461,7 @@ const StudentView = () => {
               />
             </motion.div>
           </div>
+          </div>
 
           {/* Academic Records Table */}
           <motion.div 
@@ -1390,40 +1470,43 @@ const StudentView = () => {
             transition={{ delay: 0.4, duration: 0.6 }}
             className={`${DASH_PANEL} overflow-hidden flex flex-col lg:h-[480px]`}
           >
-            <div className={`px-3 md:px-5 py-3 md:py-4 ${DASH_PANEL_HEADER} flex flex-wrap items-center justify-between gap-2 shrink-0`}>
-              <div className="flex items-center gap-2 md:gap-3.5">
-                <div className="w-8 h-8 rounded-sm bg-violet-700 flex items-center justify-center shrink-0">
-                  <svg className="w-4 h-4 md:w-5 md:h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
-                </div>
-                <div>
-                  <h3 className="text-sm md:text-base font-black text-slate-900 tracking-tight">Subject Performance</h3>
-                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mt-0.5">Final grade breakdown</p>
-                </div>
-              </div>
-              <Link to="/student-grades" className={DASH_BTN_SECONDARY}>
-                View All
-              </Link>
-            </div>
+            <PanelHeader
+              bordered
+              title="Subject Performance"
+              subtitle="Final grade breakdown"
+              iconClassName="rounded-sm bg-violet-700 border border-violet-800 text-white"
+              icon={
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                </svg>
+              }
+              action={<Link to="/student-grades" className={DASH_BTN_SECONDARY}>View All</Link>}
+            />
             <div className="flex-1 overflow-y-auto scrollbar-none">
               <table className="w-full text-left border-separate border-spacing-0">
                 <thead className="bg-violet-50/80 border-b border-violet-100 sticky top-0 z-10">
                   <tr>
-                    <th className="px-3 md:px-5 py-2 md:py-3 text-xs font-black text-slate-400 uppercase tracking-[0.15em]">Subject</th>
-                    <th className="hidden sm:table-cell px-3 md:px-5 py-2 md:py-3 text-xs font-black text-slate-400 uppercase tracking-[0.15em]">Instructor</th>
-                    <th className="px-3 md:px-5 py-2 md:py-3 text-xs font-black text-slate-400 uppercase tracking-[0.15em]">Grade</th>
-                    <th className="px-3 md:px-5 py-2 md:py-3 text-xs font-black text-slate-400 uppercase tracking-[0.15em] text-right">Mastery</th>
+                    <th className={`${DASH_TABLE_TH} text-left`}>Subject</th>
+                    <th className={`${DASH_TABLE_TH} text-left hidden sm:table-cell`}>Instructor</th>
+                    <th className={`${DASH_TABLE_TH} text-left`}>Grade</th>
+                    <th className={`${DASH_TABLE_TH} text-right`}>Mastery</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-50">
+                <tbody className="divide-y divide-violet-100">
                   {finalGrades.length === 0 ? (
-                    <tr><td colSpan="4" className="px-8 py-16 text-center">
-                      <div className="flex flex-col items-center justify-center gap-4 opacity-40">
-                        <div className="w-14 h-14 rounded-lg bg-slate-100 flex items-center justify-center">
-                          <svg className="w-7 h-7 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
-                        </div>
-                        <p className="text-xs font-black text-slate-400 uppercase tracking-widest">No grades posted yet</p>
-                      </div>
-                    </td></tr>
+                    <tr>
+                      <td colSpan="4" className="px-4 md:px-6 py-8">
+                        <DashEmptyState
+                          title="No grades posted yet"
+                          description="Final grades will appear when your teachers post them."
+                          icon={
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                            </svg>
+                          }
+                        />
+                      </td>
+                    </tr>
                   ) : finalGrades.map(g => (
                     <tr key={g.id} className="hover:bg-violet-50/60 transition-colors group cursor-pointer">
                       <td className="px-3 md:px-5 py-2.5 md:py-3">
