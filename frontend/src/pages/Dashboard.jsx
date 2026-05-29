@@ -42,11 +42,15 @@ const computeStreak = (records) => {
   return { streak, hasData: true };
 };
 
-// Formal dashboard surface tokens (admin / teacher / student only)
-const DASH_PANEL = 'bg-white border border-slate-200 shadow-[0_1px_2px_rgba(15,23,42,0.07),0_3px_10px_rgba(15,23,42,0.04)] rounded-sm';
-const DASH_PANEL_HEADER = 'border-b border-slate-200 bg-slate-50';
-const DASH_BTN_PRIMARY = 'inline-flex items-center gap-2 px-3 py-2 md:px-4 md:py-2.5 rounded-sm bg-slate-800 text-white text-[10px] md:text-xs font-bold uppercase tracking-wide border border-slate-900 hover:bg-slate-700 transition-colors active:scale-[0.98]';
-const DASH_BTN_SECONDARY = 'inline-flex items-center gap-2 px-3 py-2 md:px-4 md:py-2.5 rounded-sm bg-white text-slate-700 text-[10px] md:text-xs font-bold uppercase tracking-wide border border-slate-300 hover:bg-slate-50 hover:border-slate-400 transition-colors active:scale-[0.98]';
+// Formal dashboard surface tokens — purple theme (admin / teacher / student only)
+const DASH_PANEL = 'bg-white border border-violet-200/90 shadow-[0_1px_2px_rgba(91,33,182,0.07),0_3px_10px_rgba(91,33,182,0.05)] rounded-sm';
+const DASH_PANEL_HEADER = 'border-b border-violet-200 bg-violet-50/70';
+const DASH_BTN_PRIMARY = 'inline-flex items-center gap-2 px-3 py-2 md:px-4 md:py-2.5 rounded-sm bg-violet-700 text-white text-[10px] md:text-xs font-bold uppercase tracking-wide border border-violet-800 hover:bg-violet-800 transition-colors active:scale-[0.98]';
+const DASH_BTN_SECONDARY = 'inline-flex items-center gap-2 px-3 py-2 md:px-4 md:py-2.5 rounded-sm bg-white text-violet-900 text-[10px] md:text-xs font-bold uppercase tracking-wide border border-violet-300 hover:bg-violet-50 hover:border-violet-400 transition-colors active:scale-[0.98]';
+const DASH_ICON_BOX = 'rounded-sm bg-violet-50 text-violet-700 flex items-center justify-center border border-violet-200';
+const DASH_ICON_BTN = 'p-2 rounded-sm border border-violet-200 bg-white text-violet-700 hover:bg-violet-700 hover:text-white hover:border-violet-700 transition-colors active:scale-95';
+const CHART_STROKE = '#7c3aed';
+const CHART_FILL = '#ede9fe';
 
 const CHIP_DOT = {
   violet: 'bg-violet-600',
@@ -74,23 +78,23 @@ const WelcomeBanner = ({ user, today, actions, subtitle, stats, statusChips }) =
     .filter(Boolean).map(n => n[0].toUpperCase()).join('') || '?';
 
   return (
-    <div className={`${DASH_PANEL} border-slate-300 p-3 md:p-5`}>
+    <div className={`${DASH_PANEL} border-violet-300/80 p-3 md:p-5`}>
       <div className="flex flex-row items-start justify-between gap-3 md:gap-5">
         <div className="flex-1 space-y-2 md:space-y-3 min-w-0">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 border border-slate-200 bg-slate-50 px-2 py-1 text-[9px] md:text-[10px] font-bold uppercase tracking-wide text-slate-600">
+            <span className="inline-flex items-center gap-1.5 border border-violet-200 bg-violet-50 px-2 py-1 text-[9px] md:text-[10px] font-bold uppercase tracking-wide text-violet-800">
               <span aria-hidden="true">{greeting.icon}</span>
               {greeting.text}
             </span>
-            <span className="hidden sm:inline-flex items-center gap-1.5 border border-slate-200 bg-slate-50 px-2 py-1 text-[9px] md:text-[10px] font-bold uppercase tracking-wide text-slate-500">
-              <svg className="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            <span className="hidden sm:inline-flex items-center gap-1.5 border border-violet-200 bg-violet-50 px-2 py-1 text-[9px] md:text-[10px] font-bold uppercase tracking-wide text-violet-700">
+              <svg className="w-3 h-3 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
               {today}
             </span>
           </div>
 
           <div className="space-y-1 md:space-y-1.5">
             <h1 className="text-base md:text-2xl font-bold text-slate-900 tracking-tight leading-tight">
-              Welcome back, <span className="text-slate-700">{user?.first_name || 'User'}</span>
+              Welcome back, <span className="text-violet-700">{user?.first_name || 'User'}</span>
             </h1>
             {subtitle && (
               <p className="text-[10px] md:text-xs font-semibold uppercase tracking-wide text-slate-500">{subtitle}</p>
@@ -103,7 +107,7 @@ const WelcomeBanner = ({ user, today, actions, subtitle, stats, statusChips }) =
           {statusChips?.length > 0 && (
             <div className="flex flex-wrap gap-1.5 md:gap-2 pt-0.5">
               {statusChips.map((chip, idx) => (
-                <div key={idx} className="flex items-center gap-2 border border-slate-200 bg-slate-50 px-2 py-1.5 md:px-3 md:py-2">
+                <div key={idx} className="flex items-center gap-2 border border-violet-200 bg-violet-50/80 px-2 py-1.5 md:px-3 md:py-2">
                   <div className={`w-1.5 h-1.5 shrink-0 ${CHIP_DOT[chip.color] || 'bg-slate-400'}`} />
                   <div className="flex flex-col min-w-0">
                     <span className="text-[10px] md:text-xs font-bold text-slate-900 leading-none">{chip.value}</span>
@@ -121,11 +125,11 @@ const WelcomeBanner = ({ user, today, actions, subtitle, stats, statusChips }) =
 
         <div className="flex flex-col items-end gap-2 md:gap-3 shrink-0">
           <div className="relative">
-            <div className="w-12 h-12 md:w-20 md:h-20 rounded-sm border-2 border-slate-200 bg-slate-100 overflow-hidden shadow-[inset_0_1px_2px_rgba(15,23,42,0.06)] flex items-center justify-center">
+            <div className="w-12 h-12 md:w-20 md:h-20 rounded-sm border-2 border-violet-200 bg-violet-50 overflow-hidden shadow-[inset_0_1px_2px_rgba(91,33,182,0.06)] flex items-center justify-center">
               {user?.profile_picture ? (
                 <img src={user.profile_picture} alt="Profile" className="w-full h-full object-cover" />
               ) : (
-                <span className="text-sm md:text-xl font-bold text-slate-600">{initials}</span>
+                <span className="text-sm md:text-xl font-bold text-violet-700">{initials}</span>
               )}
             </div>
             <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 md:w-3 md:h-3 bg-emerald-600 border-2 border-white" />
@@ -152,7 +156,7 @@ const StatCard = ({ label, value, sub, icon, color = 'violet', onClick, badge })
   return (
     <div
       onClick={onClick}
-      className={`group ${DASH_PANEL} p-2.5 md:p-5 transition-all hover:border-slate-300 hover:shadow-[0_2px_8px_rgba(15,23,42,0.08),0_6px_16px_rgba(15,23,42,0.06)] flex flex-col justify-between min-h-[72px] md:min-h-[132px] ${onClick ? 'cursor-pointer' : ''}`}
+      className={`group ${DASH_PANEL} p-2.5 md:p-5 transition-all hover:border-violet-300 hover:shadow-[0_2px_8px_rgba(91,33,182,0.1),0_6px_16px_rgba(91,33,182,0.06)] flex flex-col justify-between min-h-[72px] md:min-h-[132px] ${onClick ? 'cursor-pointer' : ''}`}
     >
       <div className="flex items-start justify-between">
         <div className={`w-7 h-7 md:w-10 md:h-10 rounded-sm flex items-center justify-center border ${themes[color]}`}>
@@ -180,7 +184,7 @@ const LatestMessagesWidget = ({ messages, onOpenChat }) => {
     <div className={`${DASH_PANEL} p-3 md:p-4 flex flex-col h-full`}>
       <div className="flex items-center justify-between mb-2 md:mb-3 shrink-0 gap-2">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-sm bg-slate-100 text-slate-600 flex items-center justify-center shrink-0 border border-slate-200">
+          <div className={`w-8 h-8 shrink-0 ${DASH_ICON_BOX}`}>
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
           </div>
           <div>
@@ -189,13 +193,13 @@ const LatestMessagesWidget = ({ messages, onOpenChat }) => {
           </div>
         </div>
         <button onClick={onOpenChat}
-          className="p-2 rounded-sm border border-slate-200 bg-white text-slate-600 hover:bg-slate-800 hover:text-white hover:border-slate-800 transition-colors active:scale-95">
+          className={DASH_ICON_BTN}>
           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 5H19M19 5V11M19 5L5 19M5 19H11M5 19V13" /></svg>
         </button>
       </div>
       <div className="space-y-2 flex-1 overflow-y-auto scrollbar-none">
         {messages?.map(m => (
-          <div key={m.id} className="flex gap-3 p-2.5 border border-slate-200 bg-slate-50 hover:bg-white hover:border-slate-300 hover:shadow-sm transition-all cursor-pointer group/msg" onClick={onOpenChat}>
+          <div key={m.id} className="flex gap-3 p-2.5 border border-violet-100 bg-violet-50/50 hover:bg-white hover:border-violet-200 hover:shadow-sm transition-all cursor-pointer group/msg" onClick={onOpenChat}>
             <div className="relative shrink-0">
               <div className="w-9 h-9 rounded-sm bg-white flex items-center justify-center text-slate-600 font-bold text-xs border border-slate-200 overflow-hidden">
                 {m.sender_profile_picture
@@ -284,7 +288,7 @@ const TodayScheduleWidget = ({ role }) => {
     <div className={`${DASH_PANEL} p-3 md:p-5 flex flex-col h-full`}>
       <div className="flex items-center justify-between mb-3 md:mb-4 shrink-0 gap-2">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-sm bg-slate-100 text-slate-600 flex items-center justify-center shrink-0 border border-slate-200">
+          <div className={`w-9 h-9 shrink-0 ${DASH_ICON_BOX}`}>
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
@@ -296,7 +300,7 @@ const TodayScheduleWidget = ({ role }) => {
         </div>
         <button
           onClick={() => navigate('/schedule')}
-          className="px-2.5 py-1.5 rounded-sm border border-slate-300 bg-white text-[10px] font-bold text-slate-700 uppercase tracking-wide hover:bg-slate-800 hover:text-white hover:border-slate-800 transition-colors active:scale-95"
+          className="px-2.5 py-1.5 rounded-sm border border-violet-300 bg-white text-[10px] font-bold text-violet-800 uppercase tracking-wide hover:bg-violet-700 hover:text-white hover:border-violet-700 transition-colors active:scale-95"
         >
           View Full
         </button>
@@ -326,10 +330,10 @@ const TodayScheduleWidget = ({ role }) => {
               return (
                 <div key={s.id} className={`flex items-center gap-4 px-3 py-3 border transition-colors group/item ${
                   isCurrent
-                    ? 'bg-slate-800 border-slate-800 text-white'
+                    ? 'bg-violet-700 border-violet-700 text-white'
                     : isPast
-                    ? 'bg-slate-50 border-slate-200 opacity-60'
-                    : 'bg-white border-slate-200 hover:border-slate-300 hover:shadow-sm'
+                    ? 'bg-violet-50/40 border-violet-100 opacity-60'
+                    : 'bg-white border-violet-200 hover:border-violet-300 hover:shadow-sm'
                 }`}>
                   <div className="text-center min-w-[50px] shrink-0">
                     <p className={`text-xs font-bold leading-none ${isCurrent ? 'text-white' : 'text-slate-700'}`}>
@@ -340,7 +344,7 @@ const TodayScheduleWidget = ({ role }) => {
                     </p>
                   </div>
                   
-                  <div className={`w-px h-8 shrink-0 ${isCurrent ? 'bg-slate-500' : 'bg-slate-200'}`} />
+                  <div className={`w-px h-8 shrink-0 ${isCurrent ? 'bg-violet-400' : 'bg-violet-200'}`} />
                   
                   <div className="flex-1 min-w-0">
                     <p className={`text-xs font-bold truncate ${isCurrent ? 'text-white' : 'text-slate-800'}`}>
@@ -357,7 +361,7 @@ const TodayScheduleWidget = ({ role }) => {
                     </div>
                   ) : (
                     !isPast && s === nextClass && (
-                      <div className="px-2 py-0.5 border border-slate-300 bg-slate-50 text-[10px] font-bold text-slate-600 uppercase tracking-wide shrink-0">
+                      <div className="px-2 py-0.5 border border-violet-200 bg-violet-50 text-[10px] font-bold text-violet-700 uppercase tracking-wide shrink-0">
                         In {getCountdown(s.time_slot_detail?.start_time_display)}
                       </div>
                     )
@@ -374,19 +378,19 @@ const TodayScheduleWidget = ({ role }) => {
 
 const DashboardQuickActions = ({ title, items, navigate }) => (
   <div className={`${DASH_PANEL} p-4 md:p-5`}>
-    <h3 className="text-[10px] font-bold uppercase tracking-wide text-slate-500 border-b border-slate-200 pb-2 mb-3">{title}</h3>
+    <h3 className="text-[10px] font-bold uppercase tracking-wide text-violet-700 border-b border-violet-200 pb-2 mb-3">{title}</h3>
     <div className="grid grid-cols-4 gap-2">
       {items.map((a) => (
         <button
           key={a.path}
           type="button"
           onClick={() => navigate(a.path)}
-          className="flex flex-col items-center justify-center gap-1.5 p-2 min-h-[72px] border border-slate-200 bg-slate-50 hover:bg-white hover:border-slate-300 rounded-sm transition-colors"
+          className="flex flex-col items-center justify-center gap-1.5 p-2 min-h-[72px] border border-violet-200 bg-violet-50/60 hover:bg-white hover:border-violet-400 hover:text-violet-800 rounded-sm transition-colors"
         >
-          <svg className="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-4 h-4 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={a.icon} />
           </svg>
-          <span className="text-[9px] font-bold text-slate-600 uppercase tracking-wide text-center leading-tight">{a.label}</span>
+          <span className="text-[9px] font-bold text-violet-700 uppercase tracking-wide text-center leading-tight">{a.label}</span>
         </button>
       ))}
     </div>
@@ -417,7 +421,7 @@ const AdminView = () => {
   const attendanceTrends = data?.dashboard?.charts?.attendance_trends || [];
   const today = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
-  const COLORS = ['#10b981', '#3b82f6', '#8b5cf6', '#f59e0b', '#ef4444'];
+  const COLORS = ['#7c3aed', '#8b5cf6', '#a78bfa', '#c4b5fd', '#6d28d9'];
 
   return (
     <motion.div
@@ -469,7 +473,7 @@ const AdminView = () => {
               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-0.5">Last 30 Days · Presence Rate</p>
             </div>
             <span className="flex items-center gap-1.5 text-[10px] font-black text-slate-500 uppercase tracking-widest">
-              <span className="w-2 h-2 bg-slate-600" /> Rate (%)
+              <span className="w-2 h-2 bg-violet-600" /> Rate (%)
             </span>
           </div>
           <div className="flex-1 min-h-[180px] sm:min-h-[200px] w-full">
@@ -486,7 +490,7 @@ const AdminView = () => {
                   labelStyle={{ fontWeight: 900, color: '#1e293b', fontSize: '10px', textTransform: 'uppercase', marginBottom: '4px' }}
                   itemStyle={{ fontWeight: 800, fontSize: '11px', color: '#8b5cf6' }}
                 />
-                <Area type="monotone" dataKey="rate" stroke="#475569" strokeWidth={2} fill="#e2e8f0" fillOpacity={0.85} animationDuration={1200} />
+                <Area type="monotone" dataKey="rate" stroke={CHART_STROKE} strokeWidth={2} fill={CHART_FILL} fillOpacity={0.9} animationDuration={1200} />
               </AreaChart>
             </ResponsiveContainer>
           </div>
@@ -500,7 +504,7 @@ const AdminView = () => {
               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-0.5">{distView === 'general_average' ? 'General Average' : 'All Subjects'}</p>
             </div>
             <button onClick={() => setDistView(distView === 'general_average' ? 'all_subjects' : 'general_average')}
-              className="p-2 rounded-sm border border-slate-200 bg-white text-slate-500 hover:text-slate-800 hover:bg-slate-50 transition-colors active:scale-[0.98]">
+              className="p-2 rounded-sm border border-violet-200 bg-white text-violet-600 hover:text-violet-800 hover:bg-violet-50 transition-colors active:scale-[0.98]">
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
             </button>
           </div>
@@ -555,14 +559,14 @@ const AdminView = () => {
               <h3 className="text-xs font-black text-slate-900 uppercase tracking-tight">Recent Announcements</h3>
               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-0.5">School-wide updates</p>
             </div>
-            <Link to="/announcements" className="p-2 rounded-sm border border-slate-200 bg-white text-slate-600 hover:bg-slate-800 hover:text-white hover:border-slate-800 transition-colors active:scale-95">
+            <Link to="/announcements" className={DASH_ICON_BTN}>
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
             </Link>
           </div>
           <div className="space-y-2 flex-1 overflow-y-auto scrollbar-none">
             {data?.recent_announcements?.map(a => (
-              <div key={a.id} className="group flex gap-3 p-2.5 border border-slate-200 bg-slate-50 hover:bg-white hover:border-slate-300 hover:shadow-sm transition-all cursor-pointer">
-                <div className="shrink-0 w-9 h-9 rounded-sm bg-white border border-slate-200 flex items-center justify-center text-slate-700 font-bold text-xs group-hover:bg-slate-800 group-hover:text-white group-hover:border-slate-800 transition-colors">
+              <div key={a.id} className="group flex gap-3 p-2.5 border border-violet-100 bg-violet-50/50 hover:bg-white hover:border-violet-200 hover:shadow-sm transition-all cursor-pointer">
+                <div className="shrink-0 w-9 h-9 rounded-sm bg-white border border-violet-200 flex items-center justify-center text-violet-800 font-bold text-xs group-hover:bg-violet-700 group-hover:text-white group-hover:border-violet-700 transition-colors">
                   {new Date(a.created_at).getDate()}
                 </div>
                 <div className="min-w-0 flex-1">
@@ -590,7 +594,7 @@ const AdminView = () => {
               <h3 className="text-xs font-black text-slate-900 uppercase tracking-tight">System Activity</h3>
               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-0.5">Audit logs summary</p>
             </div>
-            <Link to="/audit-logs" className="p-2 rounded-sm border border-slate-200 bg-white text-slate-600 hover:bg-slate-800 hover:text-white hover:border-slate-800 transition-colors active:scale-95">
+            <Link to="/audit-logs" className={DASH_ICON_BTN}>
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
             </Link>
           </div>
@@ -725,7 +729,7 @@ const TeacherView = () => {
           {unmarkedCount > 0 && (
             <button
               onClick={() => navigate('/attendance')}
-              className="shrink-0 px-3 py-1.5 rounded-sm bg-slate-800 text-white text-[10px] font-bold uppercase tracking-wide hover:bg-slate-700 transition-colors active:scale-95"
+              className="shrink-0 px-3 py-1.5 rounded-sm bg-violet-700 text-white text-[10px] font-bold uppercase tracking-wide hover:bg-violet-800 transition-colors active:scale-95"
             >
               Mark Now
             </button>
@@ -746,7 +750,7 @@ const TeacherView = () => {
           >
             <div className={`px-3 md:px-5 py-3 md:py-4 ${DASH_PANEL_HEADER} flex flex-col sm:flex-row sm:items-center justify-between gap-2 md:gap-3 shrink-0`}>
               <div className="flex items-center gap-2 md:gap-3.5">
-                <div className="w-8 h-8 rounded-sm bg-slate-800 flex items-center justify-center shrink-0">
+                <div className="w-8 h-8 rounded-sm bg-violet-700 flex items-center justify-center shrink-0">
                   <svg className="w-4 h-4 md:w-5 md:h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
                 </div>
                 <div>
@@ -761,7 +765,7 @@ const TeacherView = () => {
             
             <div className="flex-1 overflow-x-auto overflow-y-auto scrollbar-none">
               <table className="w-full text-left border-separate border-spacing-0 min-w-[480px]">
-                <thead className="bg-slate-50/80 border-b border-slate-100 sticky top-0 z-10">
+                <thead className="bg-violet-50/80 border-b border-violet-100 sticky top-0 z-10">
                   <tr>
                     <th className="px-3 md:px-5 py-2 md:py-3 text-xs font-black text-slate-400 uppercase tracking-[0.15em]">Section</th>
                     <th className="px-3 md:px-5 py-2 md:py-3 text-xs font-black text-slate-400 uppercase tracking-[0.15em]">Subject</th>
@@ -785,10 +789,10 @@ const TeacherView = () => {
                     classrooms.map(c => {
                       const marked = todayAttendance[c.id];
                       return (
-                        <tr key={c.id} className="hover:bg-slate-50 transition-colors group cursor-pointer border-b border-slate-100 last:border-0">
+                        <tr key={c.id} className="hover:bg-violet-50/60 transition-colors group cursor-pointer border-b border-violet-100 last:border-0">
                           <td className="px-3 md:px-5 py-2.5 md:py-3">
                             <div className="flex items-center gap-2 md:gap-4">
-                              <div className="w-8 h-8 md:w-10 md:h-10 rounded-sm bg-slate-100 text-slate-700 border border-slate-200 flex items-center justify-center font-bold text-xs md:text-sm shrink-0">
+                              <div className="w-8 h-8 md:w-10 md:h-10 rounded-sm bg-violet-50 text-violet-800 border border-violet-200 flex items-center justify-center font-bold text-xs md:text-sm shrink-0">
                                 {c.name?.match(/\d+/)?.[0] || 'C'}
                               </div>
                               <div>
@@ -822,7 +826,7 @@ const TeacherView = () => {
                           <td className="px-3 md:px-5 py-2.5 md:py-3 text-right">
                             <div className="flex items-center justify-end gap-1.5 md:gap-2">
                               <button onClick={() => navigate('/attendance', { state: { classroomId: c.id } })} title="Mark Attendance" className="p-1.5 md:p-2.5 text-emerald-600 bg-emerald-50 hover:bg-emerald-600 hover:text-white rounded transition-all shadow-sm active:scale-90 border border-emerald-100"><svg className="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 8l2 2 4-4" /></svg></button>
-                              <button onClick={() => navigate('/grade-input', { state: { classroomId: c.id } })} title="Input Grades" className="p-1.5 md:p-2.5 text-slate-700 bg-slate-100 hover:bg-slate-800 hover:text-white rounded-sm transition-colors active:scale-[0.98] border border-slate-200"><svg className="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg></button>
+                              <button onClick={() => navigate('/grade-input', { state: { classroomId: c.id } })} title="Input Grades" className="p-1.5 md:p-2.5 text-violet-700 bg-violet-50 hover:bg-violet-700 hover:text-white rounded-sm transition-colors active:scale-[0.98] border border-violet-200"><svg className="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg></button>
                             </div>
                           </td>
                         </tr>
@@ -841,9 +845,9 @@ const TeacherView = () => {
             transition={{ delay: 0.5, duration: 0.6 }}
             className={`${DASH_PANEL} p-3 md:p-5 flex flex-col lg:h-[520px]`}
           >
-            <div className="flex items-center justify-between mb-4 md:mb-5 shrink-0 pb-3 border-b border-slate-200">
+            <div className="flex items-center justify-between mb-4 md:mb-5 shrink-0 pb-3 border-b border-violet-200">
               <div className="flex items-center gap-2 md:gap-3.5">
-                <div className="w-8 h-8 rounded-sm bg-slate-100 border border-slate-200 text-slate-600 flex items-center justify-center shrink-0">
+                <div className={`w-8 h-8 shrink-0 ${DASH_ICON_BOX}`}>
                   <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                 </div>
                 <div>
@@ -851,13 +855,13 @@ const TeacherView = () => {
                   <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mt-0.5">Your latest school interactions</p>
                 </div>
               </div>
-              <div className="px-2 py-1 border border-slate-200 bg-slate-50 text-[10px] font-bold text-slate-600 uppercase tracking-wide">
+              <div className="px-2 py-1 border border-violet-200 bg-violet-50 text-[10px] font-bold text-violet-700 uppercase tracking-wide">
                 Activity
               </div>
             </div>
             
             <div className="relative space-y-3 md:space-y-6 flex-1 overflow-y-auto pr-2 scrollbar-none">
-              <div className="absolute left-[19px] md:left-[27px] top-2 bottom-2 w-0.5 bg-slate-100" />
+              <div className="absolute left-[19px] md:left-[27px] top-2 bottom-2 w-0.5 bg-violet-100" />
               <AnimatePresence>
                 {data?.recent_activities?.length ? data.recent_activities.map((act, i) => (
                   <motion.div 
@@ -867,10 +871,10 @@ const TeacherView = () => {
                     transition={{ delay: i * 0.1 }}
                     className="relative flex items-center gap-3 md:gap-6 group"
                   >
-                    <div className="w-8 h-8 md:w-14 md:h-14 rounded-sm bg-white border border-slate-200 shadow-sm flex items-center justify-center text-sm md:text-xl shrink-0 z-10 group-hover:border-slate-300 transition-colors">
+                    <div className="w-8 h-8 md:w-14 md:h-14 rounded-sm bg-white border border-violet-200 shadow-sm flex items-center justify-center text-sm md:text-xl shrink-0 z-10 group-hover:border-violet-400 transition-colors">
                       {act.type === 'grade' ? '📊' : act.type === 'attendance' ? '✅' : '📢'}
                     </div>
-                    <div className="flex-1 bg-slate-50 border border-slate-200 p-2.5 md:p-4 group-hover:bg-white group-hover:shadow-sm transition-all">
+                    <div className="flex-1 bg-violet-50/50 border border-violet-100 p-2.5 md:p-4 group-hover:bg-white group-hover:border-violet-200 group-hover:shadow-sm transition-all">
                       <div className="flex justify-between items-start mb-0.5">
                         <p className="text-xs md:text-sm font-semibold text-slate-800 leading-snug">{act.message}</p>
                         <span className="text-xs font-black text-slate-400 uppercase tracking-widest ml-2 shrink-0">{act.time}</span>
@@ -926,10 +930,10 @@ const TeacherView = () => {
             {/* System Status */}
             <div className={`${DASH_PANEL} p-3 md:p-4 flex items-center justify-between shrink-0`}>
               <div className="flex items-center gap-2">
-                <div className="w-1.5 h-1.5 bg-emerald-600" />
-                <span className="text-[10px] font-bold text-slate-600 uppercase tracking-wide">System online</span>
+                <div className="w-1.5 h-1.5 bg-violet-600" />
+                <span className="text-[10px] font-bold text-violet-800 uppercase tracking-wide">System online</span>
               </div>
-              <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide">v2.4.0</span>
+              <span className="text-[10px] font-semibold text-violet-400 uppercase tracking-wide">v2.4.0</span>
             </div>
           </motion.div>
 
@@ -1055,7 +1059,7 @@ const StudentView = () => {
             >
               <div className="flex items-center justify-between mb-3 md:mb-4 shrink-0">
                 <div className="flex items-center gap-2">
-                  <div className="w-7 h-7 md:w-8 md:h-8 rounded-sm bg-slate-100 text-slate-600 flex items-center justify-center border border-slate-200">
+                  <div className={`w-7 h-7 md:w-8 md:h-8 ${DASH_ICON_BOX}`}>
                     <svg className="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
                   </div>
                   <div>
@@ -1080,7 +1084,7 @@ const StudentView = () => {
                         contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)' }}
                         labelStyle={{ fontWeight: 900, color: '#1e293b', fontSize: '9px', textTransform: 'uppercase' }}
                       />
-                      <Area type="monotone" dataKey="grade" stroke="#475569" strokeWidth={2} fill="#e2e8f0" fillOpacity={0.85} animationDuration={2000} />
+                      <Area type="monotone" dataKey="grade" stroke={CHART_STROKE} strokeWidth={2} fill={CHART_FILL} fillOpacity={0.9} animationDuration={2000} />
                     </AreaChart>
                   </ResponsiveContainer>
                 )}
@@ -1096,7 +1100,7 @@ const StudentView = () => {
             >
               <div className="flex items-center justify-between mb-3 md:mb-3 shrink-0">
                 <div className="flex items-center gap-2">
-                  <div className="w-7 h-7 md:w-8 md:h-8 rounded-sm bg-slate-100 text-slate-600 flex items-center justify-center border border-slate-200">
+                  <div className={`w-7 h-7 md:w-8 md:h-8 ${DASH_ICON_BOX}`}>
                     <svg className="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                   </div>
                   <div>
@@ -1193,7 +1197,7 @@ const StudentView = () => {
           >
             <div className={`px-3 md:px-5 py-3 md:py-4 ${DASH_PANEL_HEADER} flex items-center justify-between shrink-0`}>
               <div className="flex items-center gap-2 md:gap-3.5">
-                <div className="w-8 h-8 rounded-sm bg-slate-800 flex items-center justify-center shrink-0">
+                <div className="w-8 h-8 rounded-sm bg-violet-700 flex items-center justify-center shrink-0">
                   <svg className="w-4 h-4 md:w-5 md:h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
                 </div>
                 <div>
@@ -1207,7 +1211,7 @@ const StudentView = () => {
             </div>
             <div className="flex-1 overflow-y-auto scrollbar-none">
               <table className="w-full text-left border-separate border-spacing-0">
-                <thead className="bg-slate-50/80 border-b border-slate-100 sticky top-0 z-10">
+                <thead className="bg-violet-50/80 border-b border-violet-100 sticky top-0 z-10">
                   <tr>
                     <th className="px-3 md:px-5 py-2 md:py-3 text-xs font-black text-slate-400 uppercase tracking-[0.15em]">Subject</th>
                     <th className="hidden sm:table-cell px-3 md:px-5 py-2 md:py-3 text-xs font-black text-slate-400 uppercase tracking-[0.15em]">Instructor</th>
@@ -1226,10 +1230,10 @@ const StudentView = () => {
                       </div>
                     </td></tr>
                   ) : finalGrades.map(g => (
-                    <tr key={g.id} className="hover:bg-slate-50 transition-colors group cursor-pointer">
+                    <tr key={g.id} className="hover:bg-violet-50/60 transition-colors group cursor-pointer">
                       <td className="px-3 md:px-5 py-2.5 md:py-3">
                         <div className="flex items-center gap-2 md:gap-4">
-                          <div className="w-8 h-8 md:w-10 md:h-10 rounded-sm bg-slate-100 text-slate-700 border border-slate-200 flex items-center justify-center font-bold text-xs md:text-sm shrink-0">
+                          <div className="w-8 h-8 md:w-10 md:h-10 rounded-sm bg-violet-50 text-violet-800 border border-violet-200 flex items-center justify-center font-bold text-xs md:text-sm shrink-0">
                             {g.subject_name?.[0] || 'S'}
                           </div>
                           <span className="text-xs md:text-sm font-bold text-slate-800 tracking-tight">{g.subject_name}</span>
@@ -1239,7 +1243,7 @@ const StudentView = () => {
                         <p className="text-xs md:text-sm font-semibold text-slate-600">{g.teacher_name || 'Instructor'}</p>
                       </td>
                       <td className="px-3 md:px-5 py-2.5 md:py-3">
-                        <span className={`text-sm md:text-lg font-black ${(g.transmuted_score || g.raw_score) >= 90 ? 'text-emerald-600' : (g.transmuted_score || g.raw_score) >= 75 ? 'text-indigo-600' : 'text-rose-600'}`}>
+                        <span className={`text-sm md:text-lg font-black ${(g.transmuted_score || g.raw_score) >= 90 ? 'text-emerald-600' : (g.transmuted_score || g.raw_score) >= 75 ? 'text-violet-600' : 'text-rose-600'}`}>
                           {g.transmuted_score || g.raw_score}
                         </span>
                       </td>
@@ -1250,7 +1254,7 @@ const StudentView = () => {
                               initial={{ width: 0 }}
                               animate={{ width: `${g.transmuted_score || g.raw_score}%` }}
                               transition={{ duration: 1.5, ease: "easeOut" }}
-                              className={`h-full rounded-full ${(g.transmuted_score || g.raw_score) >= 90 ? 'bg-emerald-500' : (g.transmuted_score || g.raw_score) >= 75 ? 'bg-indigo-500' : 'bg-rose-500'}`}
+                              className={`h-full rounded-full ${(g.transmuted_score || g.raw_score) >= 90 ? 'bg-emerald-500' : (g.transmuted_score || g.raw_score) >= 75 ? 'bg-violet-500' : 'bg-rose-500'}`}
                             />
                           </div>
                           <p className="text-xs font-semibold text-slate-400 mt-1 text-right">{g.transmuted_score || g.raw_score}%</p>
@@ -1288,8 +1292,8 @@ const StudentView = () => {
             </div>
             <div className={`${DASH_PANEL} p-3 md:p-4 flex items-center justify-between shrink-0`}>
               <div className="flex items-center gap-2">
-                <div className="w-1.5 h-1.5 bg-emerald-600" />
-                <span className="text-[10px] font-bold text-slate-600 uppercase tracking-wide">Portal connected</span>
+                <div className="w-1.5 h-1.5 bg-violet-600" />
+                <span className="text-[10px] font-bold text-violet-800 uppercase tracking-wide">Portal connected</span>
               </div>
               <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide">v2.4.0</span>
             </div>
