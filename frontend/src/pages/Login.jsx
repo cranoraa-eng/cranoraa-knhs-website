@@ -180,6 +180,7 @@ const Login = () => {
       }
       if (userData?.must_change_password) {
         signIn(userData);
+        setLoading(false);
         toast.success('Please update your password to continue.');
         navigate('/force-password-change', { replace: true });
         return;
@@ -188,7 +189,7 @@ const Login = () => {
       // Fetch full profile (including profile picture) before navigating
       // so the avatar is ready the moment the dashboard renders.
       await refreshUser();
-      toast.success('Welcome back!');
+      // loading stays true intentionally — skeleton shows until navigation completes
       if (userData.role === 'parent') navigate('/parent-dashboard', { replace: true });
       else navigate('/dashboard', { replace: true });
     } catch (err) {
@@ -228,100 +229,167 @@ const Login = () => {
         </svg>
       </button>
 
-      {/* ── Login Loading Skeleton ── */}
+      {/* ── Login Loading Skeleton — mirrors the actual dashboard layout ── */}
       {loading && (
-        <div className={`fixed inset-0 z-[100] flex flex-col overflow-auto transition-all duration-300 ${isAdmin ? 'bg-slate-950' : 'bg-[#0F071E]'}`}>
+        <div className="fixed inset-0 z-[100] bg-slate-100 flex overflow-hidden">
 
-          {/* Top nav skeleton */}
-          <div className={`flex items-center justify-between px-6 py-4 border-b ${isAdmin ? 'border-slate-800' : 'border-white/5'}`}>
-            <div className="flex items-center gap-3">
+          {/* ── Sidebar skeleton ── */}
+          <div className="hidden md:flex flex-col w-64 shrink-0 bg-[#1A0B2E] p-4 gap-1">
+            {/* Logo */}
+            <div className="flex items-center gap-3 px-3 py-4 mb-2">
               <div className="w-9 h-9 rounded-xl bg-white/10 animate-pulse" />
-              <div className="w-32 h-4 rounded-full bg-white/10 animate-pulse" />
+              <div className="flex-1 space-y-1.5">
+                <div className="w-28 h-3 rounded-full bg-white/10 animate-pulse" />
+                <div className="w-20 h-2 rounded-full bg-white/8 animate-pulse" />
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-white/10 animate-pulse" />
-              <div className="w-8 h-8 rounded-full bg-white/10 animate-pulse" />
-              <div className="w-24 h-8 rounded-xl bg-white/10 animate-pulse" />
+            {/* Nav items */}
+            {[1,2,3,4,5,6,7,8].map(i => (
+              <div key={i} className="flex items-center gap-3 px-3 py-2.5 rounded-xl">
+                <div className="w-4 h-4 rounded bg-white/10 animate-pulse shrink-0" />
+                <div className="h-2.5 rounded-full bg-white/10 animate-pulse" style={{ width: `${45 + i * 7}px` }} />
+              </div>
+            ))}
+            {/* Bottom user card */}
+            <div className="mt-auto flex items-center gap-3 px-3 py-3 rounded-xl bg-white/5">
+              <div className="w-9 h-9 rounded-full bg-white/10 animate-pulse shrink-0" />
+              <div className="flex-1 space-y-1.5">
+                <div className="w-20 h-2.5 rounded-full bg-white/10 animate-pulse" />
+                <div className="w-14 h-2 rounded-full bg-white/8 animate-pulse" />
+              </div>
             </div>
           </div>
 
-          <div className="flex flex-1 overflow-hidden">
-            {/* Sidebar skeleton */}
-            <div className={`hidden md:flex flex-col w-56 shrink-0 border-r p-4 gap-3 ${isAdmin ? 'border-slate-800' : 'border-white/5'}`}>
-              {/* Avatar */}
-              <div className="flex items-center gap-3 mb-4 px-1">
-                <div className="w-10 h-10 rounded-full bg-white/10 animate-pulse" />
-                <div className="flex-1 space-y-1.5">
-                  <div className="w-24 h-3 rounded-full bg-white/10 animate-pulse" />
-                  <div className="w-16 h-2.5 rounded-full bg-white/8 animate-pulse" />
-                </div>
+          {/* ── Main content ── */}
+          <div className="flex-1 flex flex-col overflow-hidden">
+
+            {/* Top bar */}
+            <div className="bg-white border-b border-slate-200 px-6 py-3 flex items-center justify-between shrink-0">
+              <div className="w-40 h-4 rounded-full bg-slate-200 animate-pulse" />
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-slate-200 animate-pulse" />
+                <div className="w-8 h-8 rounded-full bg-slate-200 animate-pulse" />
+                <div className="w-9 h-9 rounded-full bg-slate-200 animate-pulse" />
               </div>
-              {/* Nav items */}
-              {[1,2,3,4,5,6].map(i => (
-                <div key={i} className="flex items-center gap-3 px-3 py-2.5 rounded-xl">
-                  <div className="w-4 h-4 rounded bg-white/10 animate-pulse" />
-                  <div className={`h-3 rounded-full bg-white/10 animate-pulse`} style={{ width: `${50 + i * 8}px` }} />
-                </div>
-              ))}
             </div>
 
-            {/* Main content skeleton */}
-            <div className="flex-1 p-6 space-y-6 overflow-auto">
+            {/* Scrollable page content */}
+            <div className="flex-1 overflow-auto p-4 md:p-6 space-y-5">
 
-              {/* Welcome banner */}
-              <div className={`rounded-2xl p-5 ${isAdmin ? 'bg-slate-900' : 'bg-white/5'} animate-pulse`}>
-                <div className="w-48 h-5 rounded-full bg-white/10 mb-2" />
-                <div className="w-72 h-3.5 rounded-full bg-white/8" />
+              {/* Welcome banner — dark purple card */}
+              <div className="bg-[#1A0B2E] rounded-lg p-5 flex items-center justify-between animate-pulse">
+                <div className="space-y-3 flex-1">
+                  <div className="flex gap-2">
+                    <div className="w-28 h-6 rounded-full bg-white/10" />
+                    <div className="w-24 h-6 rounded-full bg-white/10" />
+                  </div>
+                  <div className="w-56 h-7 rounded-lg bg-white/10" />
+                  <div className="w-72 h-3 rounded-full bg-white/8" />
+                  <div className="flex gap-2 pt-1">
+                    {[1,2,3].map(i => (
+                      <div key={i} className="w-20 h-8 rounded bg-white/10" />
+                    ))}
+                  </div>
+                </div>
+                <div className="w-20 h-20 md:w-24 md:h-24 rounded-lg bg-white/10 shrink-0 ml-4" />
               </div>
 
-              {/* Stats row */}
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                {[1,2,3,4].map(i => (
-                  <div key={i} className={`rounded-2xl p-4 space-y-3 ${isAdmin ? 'bg-slate-900' : 'bg-white/5'} animate-pulse`}>
-                    <div className="flex items-center justify-between">
-                      <div className="w-8 h-8 rounded-xl bg-white/10" />
-                      <div className="w-12 h-3 rounded-full bg-white/8" />
+              {/* Stat cards row — white cards with colored icons */}
+              <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 md:gap-5">
+                {[
+                  'blue','emerald','violet','amber','indigo','emerald'
+                ].map((color, i) => (
+                  <div key={i} className="bg-white border border-slate-200 rounded-lg p-3 md:p-6 flex flex-col justify-between min-h-[80px] md:min-h-[140px] animate-pulse">
+                    <div className="flex items-start justify-between">
+                      <div className={`w-7 h-7 md:w-11 md:h-11 rounded md:rounded-md bg-slate-100`} />
                     </div>
-                    <div className="w-16 h-6 rounded-lg bg-white/10" />
-                    <div className="w-24 h-2.5 rounded-full bg-white/8" />
+                    <div className="mt-2 space-y-1.5">
+                      <div className="w-16 h-2 rounded-full bg-slate-200" />
+                      <div className="w-12 h-5 md:h-7 rounded-lg bg-slate-200" />
+                      <div className="w-20 h-2 rounded-full bg-slate-100" />
+                    </div>
                   </div>
                 ))}
               </div>
 
-              {/* Two-column content */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                {/* Chart placeholder */}
-                <div className={`lg:col-span-2 rounded-2xl p-5 ${isAdmin ? 'bg-slate-900' : 'bg-white/5'} animate-pulse`}>
-                  <div className="w-36 h-4 rounded-full bg-white/10 mb-4" />
-                  <div className="flex items-end gap-2 h-32">
-                    {[40,65,45,80,55,70,50,85,60,75,45,90].map((h, i) => (
-                      <div key={i} className="flex-1 rounded-t-lg bg-white/10" style={{ height: `${h}%` }} />
+              {/* Charts row */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-8">
+                {/* Area chart — lg:col-span-8 */}
+                <div className="lg:col-span-8 bg-white border border-slate-200 rounded-xl p-4 md:p-8 animate-pulse">
+                  <div className="flex items-center justify-between mb-8">
+                    <div className="space-y-2">
+                      <div className="w-36 h-3.5 rounded-full bg-slate-200" />
+                      <div className="w-48 h-2.5 rounded-full bg-slate-100" />
+                    </div>
+                    <div className="w-20 h-5 rounded-full bg-slate-100" />
+                  </div>
+                  {/* Chart bars */}
+                  <div className="flex items-end gap-1 h-48">
+                    {[55,70,45,80,60,75,50,85,65,72,48,90,58,76,42].map((h, i) => (
+                      <div key={i} className="flex-1 rounded-t bg-violet-100" style={{ height: `${h}%` }} />
+                    ))}
+                  </div>
+                  {/* X axis labels */}
+                  <div className="flex gap-1 mt-2">
+                    {[1,2,3,4,5,6,7].map(i => (
+                      <div key={i} className="flex-1 h-2 rounded-full bg-slate-100" />
                     ))}
                   </div>
                 </div>
-                {/* List placeholder */}
-                <div className={`rounded-2xl p-5 space-y-3 ${isAdmin ? 'bg-slate-900' : 'bg-white/5'} animate-pulse`}>
-                  <div className="w-28 h-4 rounded-full bg-white/10 mb-4" />
-                  {[1,2,3,4].map(i => (
-                    <div key={i} className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-white/10 shrink-0" />
-                      <div className="flex-1 space-y-1.5">
-                        <div className="w-full h-2.5 rounded-full bg-white/10" />
-                        <div className="w-2/3 h-2 rounded-full bg-white/8" />
-                      </div>
+
+                {/* Pie chart — lg:col-span-4 */}
+                <div className="lg:col-span-4 bg-white border border-slate-200 rounded-xl p-4 md:p-8 animate-pulse">
+                  <div className="space-y-2 mb-6">
+                    <div className="w-32 h-3.5 rounded-full bg-slate-200" />
+                    <div className="w-24 h-2.5 rounded-full bg-slate-100" />
+                  </div>
+                  {/* Donut circle */}
+                  <div className="flex items-center justify-center my-4">
+                    <div className="w-36 h-36 rounded-full border-[18px] border-slate-100 relative">
+                      <div className="absolute inset-0 rounded-full border-[18px] border-violet-100 border-t-violet-300 border-r-blue-200" />
                     </div>
-                  ))}
+                  </div>
+                  {/* Legend */}
+                  <div className="space-y-2.5 mt-4">
+                    {['Outstanding','Very Satisfactory','Satisfactory','Fairly Satisfactory'].map((label, i) => (
+                      <div key={i} className="flex items-center gap-2">
+                        <div className="w-2.5 h-2.5 rounded-full bg-slate-200 shrink-0" />
+                        <div className="flex-1 h-2 rounded-full bg-slate-100" />
+                        <div className="w-8 h-2 rounded-full bg-slate-200" />
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
 
-            </div>
-          </div>
+              {/* Bottom row — messages + schedule */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-8">
+                {[0,1].map(i => (
+                  <div key={i} className="bg-white border border-slate-200 rounded-xl p-6 animate-pulse">
+                    <div className="flex items-center gap-3 mb-6">
+                      <div className="w-10 h-10 rounded-lg bg-slate-100" />
+                      <div className="space-y-1.5">
+                        <div className="w-28 h-3 rounded-full bg-slate-200" />
+                        <div className="w-20 h-2 rounded-full bg-slate-100" />
+                      </div>
+                    </div>
+                    <div className="space-y-3">
+                      {[1,2,3,4].map(j => (
+                        <div key={j} className="flex items-center gap-3 p-3 rounded-lg bg-slate-50">
+                          <div className="w-10 h-10 rounded-lg bg-slate-200 shrink-0" />
+                          <div className="flex-1 space-y-1.5">
+                            <div className="w-full h-2.5 rounded-full bg-slate-200" />
+                            <div className="w-2/3 h-2 rounded-full bg-slate-100" />
+                          </div>
+                          <div className="w-10 h-2 rounded-full bg-slate-100 shrink-0" />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
 
-          {/* Role label at bottom */}
-          <div className="text-center py-3">
-            <p className={`text-[10px] font-bold uppercase tracking-[0.3em] animate-pulse ${isAdmin ? 'text-emerald-500/60' : `text-${currentRole.color}-400/60`}`}>
-              {currentRole.loadingTitle}…
-            </p>
+            </div>
           </div>
         </div>
       )}
