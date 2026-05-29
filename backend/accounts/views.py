@@ -31,7 +31,6 @@ import random
 import string
 
 from .utils import (
-    send_mailjet_email,
     check_user_moderation,
 )
 
@@ -1276,24 +1275,6 @@ class UserViewSet(viewsets.ModelViewSet):
             user.is_approved = True
             user.save()
 
-            # Notify the user by email
-            try:
-                subject = 'Your KNHS Portal Account Has Been Approved'
-                message_text = f'Hi {user.first_name or user.username},\n\nYour account has been approved by the administrator. You can now log in to the KNHS School Portal.\n\n— KNHS School Portal'
-                message_html = f'<p>Hi {user.first_name or user.username},</p><p>Your account has been approved by the administrator. You can now log in to the KNHS School Portal.</p><p>— KNHS School Portal</p>'
-                
-                sent, err = send_mailjet_email(
-                    email=user.email,
-                    subject=subject,
-                    message_html=message_html,
-                    message_text=message_text,
-                    user_name=user.first_name or user.username
-                )
-                if not sent:
-                    logger.error(f"Failed to send approval email: {err}")
-            except Exception as e:
-                logger.error(f"Failed to send approval email: {e}")
-
             # Log the action
             try:
                 from portal.views import log_audit_action
@@ -1327,24 +1308,6 @@ class UserViewSet(viewsets.ModelViewSet):
             user = User.objects.get(pk=pk)
             email = user.email
             reason = request.data.get('reason', 'Your account registration has been rejected by the administrator.')
-
-            # Notify before deleting
-            try:
-                subject = 'Your KNHS Portal Account Registration'
-                message_text = f'Hi {user.first_name or user.username},\n\n{reason}\n\nIf you believe this is a mistake, please contact the school administrator.\n\n— KNHS School Portal'
-                message_html = f'<p>Hi {user.first_name or user.username},</p><p>{reason}</p><p>If you believe this is a mistake, please contact the school administrator.</p><p>— KNHS School Portal</p>'
-                
-                sent, err = send_mailjet_email(
-                    email=email,
-                    subject=subject,
-                    message_html=message_html,
-                    message_text=message_text,
-                    user_name=user.first_name or user.username
-                )
-                if not sent:
-                    logger.error(f"Failed to send rejection email: {err}")
-            except Exception as e:
-                logger.error(f"Failed to send rejection email: {e}")
 
             # Log the action before deleting
             try:
@@ -2138,8 +2101,6 @@ def system_settings_view(request):
             if serializer.is_valid():
                 serializer.save()
                 response_data = dict(serializer.data)
-                if getattr(request.user, 'role', None) == 'admin':
-                    response_data['email_service_health'] = get_mailjet_health_status()
                 return Response(response_data)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
@@ -2149,8 +2110,6 @@ def system_settings_view(request):
     # GET
     serializer = SystemSettingSerializer(settings)
     response_data = dict(serializer.data)
-    if getattr(request.user, 'role', None) == 'admin':
-        response_data['email_service_health'] = get_mailjet_health_status()
     return Response(response_data)
 
 

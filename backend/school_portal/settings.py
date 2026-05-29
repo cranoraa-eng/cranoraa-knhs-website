@@ -279,20 +279,13 @@ if _csrf_env:
         if o.strip() and o.strip() not in CSRF_TRUSTED_ORIGINS:
             CSRF_TRUSTED_ORIGINS.append(o.strip())
 
-# Email Configuration (Mailjet API)
-MAILJET_API_KEY = os.environ.get('MAILJET_API_KEY')
-MAILJET_SECRET_KEY = os.environ.get('MAILJET_SECRET_KEY')
-MAILJET_SENDER_EMAIL = os.environ.get('MAILJET_SENDER_EMAIL', 'noreply@knhsportal.dedyn.io')
-
-if not MAILJET_API_KEY or not MAILJET_SECRET_KEY:
-    import logging as _logging
-    _logging.getLogger(__name__).warning("MAILJET credentials are not set in environment variables.")
-else:
-    import logging as _logging
-    masked_key = f"{MAILJET_API_KEY[:4]}...{MAILJET_API_KEY[-4:]}" if len(MAILJET_API_KEY) > 8 else "INVALID_LENGTH"
-    _logging.getLogger(__name__).debug(f"MAILJET_API_KEY loaded: {masked_key}")
-
-DEFAULT_FROM_EMAIL = MAILJET_SENDER_EMAIL
+# Email sending has been removed from this portal.
+# All email-related settings below are kept as empty stubs to avoid
+# import errors in any code that still references them.
+MAILJET_API_KEY = None
+MAILJET_SECRET_KEY = None
+MAILJET_SENDER_EMAIL = ''
+DEFAULT_FROM_EMAIL = 'noreply@knhsportal.dedyn.io'
 
 # Media Files Configuration
 MEDIA_URL = '/media/'
@@ -339,14 +332,11 @@ if not SUPABASE_URL or not SUPABASE_KEY:
     import logging as _logging
     _logging.getLogger(__name__).warning("SUPABASE_URL or SUPABASE_KEY not set — file uploads will fail.")
 
-# Resend Email Configuration (primary email provider — works on Render free tier)
-# Get a free API key at https://resend.com — 3,000 emails/month free
-# Set RESEND_API_KEY in Render environment variables to enable.
-# If not set, falls back to Mailjet.
-# RESEND_FROM_EMAIL defaults to onboarding@resend.dev (no domain verification needed).
-# To use your own domain, verify it in Resend dashboard and set RESEND_FROM_EMAIL.
-RESEND_API_KEY = os.environ.get('RESEND_API_KEY')
-RESEND_FROM_EMAIL = os.environ.get('RESEND_FROM_EMAIL', 'KNHS Portal <onboarding@resend.dev>')
+# Email sending has been removed from this portal.
+# RESEND_API_KEY and RESEND_FROM_EMAIL are kept as None to avoid
+# AttributeError in any code that still references them.
+RESEND_API_KEY = None
+RESEND_FROM_EMAIL = ''
 
 # ─── Content Security Policy ─────────────────────────────────────────────────
 # Restricts which resources the browser may load, mitigating XSS.

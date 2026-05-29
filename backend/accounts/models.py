@@ -684,60 +684,9 @@ _models_logger = logging.getLogger(__name__)
 
 @receiver(post_save, sender=Announcement)
 def send_announcement_email(sender, instance, created, **kwargs):
-    """Send email to users when a live announcement is created (only on first creation)."""
-    if not created or instance.status != 'live':
-        return
+    """Email sending has been removed — this signal is now a no-op."""
+    pass
 
-    # Only email for critical priority to avoid spamming users on every announcement
-    if instance.priority != 'critical':
-        return
-
-    try:
-        from .utils import broadcast_mailjet_email
-
-        subject = f'New Announcement: {instance.title}'
-        message_text = (
-            f"A new announcement has been posted on the KNHS Portal:\n\n"
-            f"Title: {instance.title}\n"
-            f"Category: {instance.get_category_display()}\n"
-            f"Priority: {instance.get_priority_display()}\n\n"
-            f"Content:\n{instance.content}\n\n"
-            f"Log in to the portal to see more details:\n{settings.FRONTEND_URL}\n\n"
-            f"— KNHS School Portal"
-        )
-        message_html = (
-            f"<h3>New Announcement: {instance.title}</h3>"
-            f"<p><strong>Category:</strong> {instance.get_category_display()}</p>"
-            f"<p><strong>Priority:</strong> {instance.get_priority_display()}</p>"
-            f"<hr/><p>{instance.content}</p><hr/>"
-            f'<p>Log in to the portal: <a href="{settings.FRONTEND_URL}">{settings.FRONTEND_URL}</a></p>'
-            f"<p>— KNHS School Portal</p>"
-        )
-
-        # Determine target audience — only users with verified emails
-        if instance.target_audience == 'all':
-            recipients = list(
-                User.objects.filter(is_active=True, is_verified=True)
-                .exclude(email__isnull=True).exclude(email='')
-                .values_list('email', flat=True)
-            )
-        else:
-            role = instance.target_audience.rstrip('s')  # 'students' -> 'student'
-            recipients = list(
-                User.objects.filter(role=role, is_active=True, is_verified=True)
-                .exclude(email__isnull=True).exclude(email='')
-                .values_list('email', flat=True)
-            )
-
-        if recipients:
-            broadcast_mailjet_email(
-                emails=recipients,
-                subject=subject,
-                message_html=message_html,
-                message_text=message_text
-            )
-    except Exception as e:
-        _models_logger.error(f"Failed to broadcast announcement email for id={instance.id}: {e}")
 
 @receiver(post_save, sender=Notification)
 def broadcast_notification(sender, instance, created, **kwargs):
