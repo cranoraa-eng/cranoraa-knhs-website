@@ -10,36 +10,12 @@ import {
 } from 'recharts';
 import Spinner from '../components/Spinner';
 import { motion, AnimatePresence } from 'framer-motion';
+import StudentDashboardView from '../components/dashboard/StudentDashboardView';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 const getLocalDateStr = () => {
   const d = new Date();
   return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().split('T')[0];
-};
-
-const isWeekend = (dateStr) => {
-  const day = new Date(dateStr + 'T00:00:00').getDay();
-  return day === 0 || day === 6;
-};
-
-/**
- * Compute consecutive-day attendance streak.
- * - Skips weekends (they don't break or extend the streak).
- * - Stops at the first absent/excused weekday.
- * - Returns { streak, hasData } where hasData=false means no records at all.
- */
-const computeStreak = (records) => {
-  if (!Array.isArray(records) || records.length === 0) return { streak: 0, hasData: false };
-  const weekdayRecords = records
-    .filter(r => r.date && !isWeekend(r.date))
-    .sort((a, b) => new Date(b.date) - new Date(a.date));
-  if (weekdayRecords.length === 0) return { streak: 0, hasData: false };
-  let streak = 0;
-  for (const r of weekdayRecords) {
-    if (['present', 'late'].includes(r.status)) streak++;
-    else break; // absent or excused breaks the streak
-  }
-  return { streak, hasData: true };
 };
 
 // Formal dashboard surface tokens — purple theme (admin / teacher / student only)
@@ -82,166 +58,6 @@ const getGradeCategoryColor = (name, index) =>
 
 const getGradeCategoryLegendClass = (name) =>
   GRADE_CATEGORY_LEGEND[name] || 'border-slate-200 bg-slate-50/80';
-
-const STUDENT_TODAY_STATUS = {
-  weekend: {
-    wrap: 'border-slate-200 bg-slate-50 text-slate-600',
-    label: 'Weekend — no class today',
-    dot: 'bg-slate-400',
-  },
-  unassigned: {
-    wrap: 'border-amber-200 bg-amber-50 text-amber-800',
-    label: 'Today not marked yet',
-    dot: 'bg-amber-500 animate-pulse',
-  },
-  present: {
-    wrap: 'border-emerald-200 bg-emerald-50 text-emerald-800',
-    label: 'Present today',
-    dot: 'bg-emerald-500',
-  },
-  late: {
-    wrap: 'border-yellow-200 bg-yellow-50 text-yellow-800',
-    label: 'Late today',
-    dot: 'bg-yellow-500',
-  },
-  absent: {
-    wrap: 'border-rose-200 bg-rose-50 text-rose-800',
-    label: 'Absent today',
-    dot: 'bg-rose-500',
-  },
-  excused: {
-    wrap: 'border-blue-200 bg-blue-50 text-blue-800',
-    label: 'Excused today',
-    dot: 'bg-blue-500',
-  },
-};
-
-const StudentAttendanceCard = ({
-  attRate,
-  streak,
-  hasAttData,
-  todayAttStatus,
-  presentCount,
-  lateCount,
-  absentCount,
-  onViewAttendance,
-}) => {
-  const todayStyle = STUDENT_TODAY_STATUS[todayAttStatus] || {
-    wrap: 'border-blue-200 bg-blue-50 text-blue-800',
-    label: `${todayAttStatus} today`,
-    dot: 'bg-blue-500',
-  };
-
-  const ringSize = 88;
-  const stroke = 6;
-  const radius = (ringSize - stroke) / 2;
-  const circumference = 2 * Math.PI * radius;
-  const dashOffset = circumference - (Math.min(100, Math.max(0, attRate)) / 100) * circumference;
-  const streakDisplay = Math.min(streak, 99);
-  const streakDots = 7;
-
-  return (
-    <div className={`${DASH_PANEL} p-4 md:p-5 flex flex-col h-full min-h-0`}>
-      <PanelHeader
-        title="Attendance"
-        subtitle="Overall streak tracker"
-        className="mb-3"
-        icon={
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-        }
-        action={onViewAttendance && (
-          <button type="button" onClick={onViewAttendance} className={DASH_ICON_BTN} title="View attendance">
-            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 5H19M19 5V11M19 5L5 19M5 19H11M5 19V13" />
-            </svg>
-          </button>
-        )}
-      />
-
-      <div className={`inline-flex items-center gap-2 w-full px-3 py-2 rounded-sm border text-[10px] font-bold uppercase tracking-wide shrink-0 mb-4 ${todayStyle.wrap}`}>
-        <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${todayStyle.dot}`} />
-        <span className="truncate">{todayStyle.label}</span>
-      </div>
-
-      {!hasAttData ? (
-        <DashEmptyState
-          className="flex-1"
-          icon={
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-          }
-          title="No attendance records yet"
-        />
-      ) : (
-        <div className="flex-1 flex flex-col justify-between gap-4 min-h-0">
-          <div className="grid grid-cols-2 gap-3 flex-1 min-h-[120px]">
-            <div className="flex flex-col items-center justify-center rounded-sm border border-violet-200 bg-violet-50/60 px-3 py-4">
-              <span className="text-2xl md:text-3xl font-black text-violet-800 leading-none tabular-nums">{streakDisplay}</span>
-              <span className="text-[10px] font-bold text-violet-600 uppercase tracking-wide mt-2 text-center">
-                Day{streakDisplay === 1 ? '' : 's'} streak
-              </span>
-              <div className="flex gap-1.5 mt-2.5" aria-hidden="true">
-                {Array.from({ length: streakDots }, (_, i) => (
-                  <div
-                    key={i}
-                    className={`h-1.5 w-1.5 rounded-full ${i < Math.min(streak, streakDots) ? 'bg-emerald-500' : 'bg-violet-200'}`}
-                  />
-                ))}
-              </div>
-            </div>
-
-            <div className="flex flex-col items-center justify-center rounded-sm border border-violet-200 bg-white px-2 py-3">
-              <div className="relative flex items-center justify-center shrink-0" style={{ width: ringSize, height: ringSize }}>
-                <svg width={ringSize} height={ringSize} className="-rotate-90" aria-hidden="true">
-                  <circle
-                    cx={ringSize / 2}
-                    cy={ringSize / 2}
-                    r={radius}
-                    fill="none"
-                    stroke="#ede9fe"
-                    strokeWidth={stroke}
-                  />
-                  <circle
-                    cx={ringSize / 2}
-                    cy={ringSize / 2}
-                    r={radius}
-                    fill="none"
-                    stroke="#7c3aed"
-                    strokeWidth={stroke}
-                    strokeLinecap="round"
-                    strokeDasharray={circumference}
-                    strokeDashoffset={dashOffset}
-                    className="transition-[stroke-dashoffset] duration-700 ease-out"
-                  />
-                </svg>
-                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                  <span className="text-xl md:text-2xl font-black text-slate-900 leading-none tabular-nums">{attRate}%</span>
-                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wide mt-1">Overall</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-3 gap-2.5 shrink-0 pt-1">
-            {[
-              { label: 'Present', value: presentCount, text: 'text-emerald-700', bg: 'bg-emerald-50 border-emerald-100' },
-              { label: 'Late', value: lateCount, text: 'text-amber-700', bg: 'bg-amber-50 border-amber-100' },
-              { label: 'Absent', value: absentCount, text: 'text-rose-700', bg: 'bg-rose-50 border-rose-100' },
-            ].map((row) => (
-              <div key={row.label} className={`rounded-sm border px-2 py-2.5 text-center ${row.bg}`}>
-                <p className={`text-sm font-black leading-none tabular-nums ${row.text}`}>{row.value}</p>
-                <p className="text-[9px] font-bold text-slate-500 uppercase tracking-wide mt-1">{row.label}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
 
 const BANNER_PERIOD_THEME = {
   morning: {
@@ -412,10 +228,10 @@ const WelcomeBanner = ({ user, today, actions, subtitle, statusChips, useSvgGree
                   <div className="flex flex-col min-w-0">
                     <span className="text-[10px] md:text-xs font-bold text-white leading-none">{chip.value}</span>
                     <span className="text-[9px] md:text-[10px] font-semibold text-violet-200 uppercase tracking-wide mt-0.5 hidden sm:block">{chip.label}</span>
-                  </div>
                 </div>
-              ))}
-            </div>
+              </div>
+            ))}
+          </div>
           )}
 
           <div className={`${DASH_ACTIONS_ROW} md:hidden pt-1`}>
@@ -426,14 +242,14 @@ const WelcomeBanner = ({ user, today, actions, subtitle, statusChips, useSvgGree
         <div className="flex flex-col items-center md:items-end gap-2.5 md:gap-3 shrink-0">
           <div className="relative">
             <div className="w-14 h-14 md:w-[5.25rem] md:h-[5.25rem] rounded-sm border-2 border-white/40 bg-white/15 overflow-hidden shadow-lg flex items-center justify-center backdrop-blur-sm">
-              {user?.profile_picture ? (
+                {user?.profile_picture ? (
                 <img src={user.profile_picture} alt="Profile" className="w-full h-full object-cover" />
-              ) : (
+                ) : (
                 <span className="text-base md:text-2xl font-bold text-white">{initials}</span>
-              )}
-            </div>
+                )}
+              </div>
             <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 md:w-3 md:h-3 bg-emerald-400 border-2 border-violet-900 shadow-sm" />
-          </div>
+            </div>
           <div className={`hidden md:flex ${DASH_ACTIONS_ROW}`}>
             {actions}
           </div>
@@ -492,8 +308,8 @@ const LatestMessagesWidget = ({ messages, onOpenChat }) => {
         }
         action={
           <button type="button" onClick={onOpenChat} className={DASH_ICON_BTN} aria-label="Open messages">
-            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 5H19M19 5V11M19 5L5 19M5 19H11M5 19V13" /></svg>
-          </button>
+          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 5H19M19 5V11M19 5L5 19M5 19H11M5 19V13" /></svg>
+        </button>
         }
       />
       <div className="space-y-2 flex-1 overflow-y-auto scrollbar-none min-h-0">
@@ -592,13 +408,13 @@ const TodayScheduleWidget = ({ role }) => {
         subtitle={todayLabel}
         icon={
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-          </svg>
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
         }
         action={
           <button type="button" onClick={() => navigate('/schedule')} className={DASH_LINK_BTN}>
-            View Full
-          </button>
+          View Full
+        </button>
         }
       />
 
@@ -788,7 +604,7 @@ const AdminView = () => {
               <span className="inline-flex items-center gap-1.5 rounded-sm border border-violet-200 bg-violet-50 px-2 py-1 text-[10px] font-bold text-violet-700 uppercase tracking-wide">
                 <span className="w-2 h-2 rounded-full bg-violet-600" />
                 Rate %
-              </span>
+            </span>
             }
           />
           <div className="flex-1 min-h-[180px] sm:min-h-[200px] w-full">
@@ -828,8 +644,8 @@ const AdminView = () => {
                 className={DASH_ICON_BTN}
                 title={distView === 'general_average' ? 'Switch to all subjects' : 'Switch to general average'}
               >
-                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
-              </button>
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+            </button>
             }
           />
           <div className="flex-1 flex flex-col justify-between min-h-[200px]">
@@ -878,9 +694,9 @@ const AdminView = () => {
                 );
               })}
             </div>
+            </div>
           </div>
         </div>
-      </div>
       </div>
 
       <div className="space-y-2">
@@ -898,8 +714,8 @@ const AdminView = () => {
             }
             action={
               <Link to="/announcements" className={DASH_ICON_BTN} aria-label="View announcements">
-                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
-              </Link>
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+            </Link>
             }
           />
           <div className="space-y-2 flex-1 overflow-y-auto scrollbar-none min-h-0">
@@ -938,8 +754,8 @@ const AdminView = () => {
             }
             action={
               <Link to="/audit-logs" className={DASH_ICON_BTN} aria-label="View audit logs">
-                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
-              </Link>
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
+            </Link>
             }
           />
           <div className="space-y-2 flex-1 overflow-y-auto scrollbar-none min-h-0">
@@ -974,7 +790,7 @@ const AdminView = () => {
           </div>
         </div>
       </div>
-      </div>
+    </div>
     </motion.div>
   );
 };
@@ -1298,291 +1114,7 @@ const TeacherView = () => {
   );
 };
 
-const StudentView = () => {
-  const navigate = useNavigate();
-  const { user } = useAuth();
-  const [grades, setGrades] = useState([]);
-  const [attendance, setAttendance] = useState([]);
-  const [stats, setStats] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    Promise.all([
-      api.get('/grades/my_grades/').catch(() => ({ data: [] })),
-      api.get('/attendance/').catch(() => ({ data: [] })),
-      api.get('/student/dashboard/stats/').catch(() => ({ data: {} })),
-    ]).then(([gradeRes, attRes, statsRes]) => {
-      setGrades(gradeRes.data);
-      setAttendance(attRes.data);
-      setStats(statsRes.data);
-    }).finally(() => setLoading(false));
-  }, []);
-
-  if (loading) return <Spinner />;
-
-  const validAtt = Array.isArray(attendance) ? attendance.filter(r => !isWeekend(r.date)) : [];
-  
-  const presentCount = validAtt.filter(r => r.status === 'present').length;
-  const lateCount = validAtt.filter(r => r.status === 'late').length;
-  const absentCount = validAtt.filter(r => r.status === 'absent').length;
-  const totalPresentForRate = validAtt.filter(r => ['present', 'late'].includes(r.status)).length;
-  const attRate = validAtt.length > 0 ? Math.round((totalPresentForRate / validAtt.length) * 100) : 0;
-
-  // Streak Calculation — skips weekends, stops at first absent weekday
-  const { streak, hasData: hasAttData } = computeStreak(attendance);
-
-  // Check if today's attendance is assigned (teacher has marked it)
-  const todayStr = getLocalDateStr();
-  const todayRecord = Array.isArray(attendance) ? attendance.find(r => r.date === todayStr) : null;
-  const todayIsWeekend = isWeekend(todayStr);
-  const todayAttStatus = todayIsWeekend ? 'weekend' : todayRecord ? todayRecord.status : 'unassigned';
-
-  const finalGrades = Array.isArray(grades) ? grades.filter(g => g.grade_type === 'final_grade' && (g.transmuted_score != null || g.raw_score != null)) : [];
-  const overallAvg = finalGrades.length > 0
-    ? (finalGrades.reduce((s, g) => s + parseFloat(g.transmuted_score || g.raw_score || 0), 0) / finalGrades.length).toFixed(1)
-    : null;
-
-  const chartData = finalGrades.map(g => ({
-    name: g.subject_name?.split(' ')[0] || 'Subj',
-    grade: parseFloat(g.transmuted_score || g.raw_score || 0),
-    full_name: g.subject_name
-  })).slice(0, 6);
-
-  const today = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
-
-  const todayStatusLabel =
-    todayIsWeekend ? 'Weekend' :
-    !todayRecord ? 'Not Marked' :
-    todayRecord.status.charAt(0).toUpperCase() + todayRecord.status.slice(1);
-
-  const todayStatusColor =
-    todayIsWeekend ? 'slate' :
-    !todayRecord ? 'amber' :
-    todayRecord.status === 'present' ? 'emerald' :
-    todayRecord.status === 'late' ? 'yellow' :
-    todayRecord.status === 'absent' ? 'rose' : 'blue';
-
-  const statusChips = [
-    { label: 'Grade Level', value: user?.profile?.grade_level || 'N/A', color: 'violet' },
-    { label: 'Attendance', value: validAtt.length > 0 ? `${attRate}%` : '—', color: 'emerald' },
-    { label: 'Avg Grade', value: overallAvg || '—', color: 'indigo' },
-    { label: 'Today', value: todayStatusLabel, color: todayStatusColor },
-  ];
-
-  return (
-    <motion.div 
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.8, ease: "easeOut" }}
-      className={DASH_PAGE}
-    >
-      <WelcomeBanner
-        user={user}
-        today={today}
-        statusChips={statusChips}
-        actions={
-          <div className={DASH_ACTIONS_ROW}>
-            <button type="button" onClick={() => navigate('/materials')} className={BANNER_BTN_SECONDARY}>
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
-              Materials
-            </button>
-            <button type="button" onClick={() => navigate('/student-grades')} className={BANNER_BTN_PRIMARY}>
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
-              My Grades
-            </button>
-          </div>
-        }
-      />
-
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 md:gap-5 lg:items-stretch">
-        <p className={`lg:col-span-12 ${DASH_SECTION_LABEL}`}>Performance</p>
-
-        {/* Top row — performance cards align with student workspace */}
-        <div className="lg:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-5 items-stretch min-h-0">
-            <motion.div 
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.2, duration: 0.6 }}
-              className={`${DASH_PANEL} p-4 md:p-5 flex flex-col h-[300px] md:h-[320px]`}
-            >
-              <PanelHeader
-                title="Grade Analysis"
-                subtitle="Subject performance trend"
-                icon={
-                  <svg className="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                  </svg>
-                }
-              />
-              <div className="flex-1 w-full min-h-[160px]">
-                {chartData.length === 0 ? (
-                  <DashEmptyState
-                    className="h-full"
-                    icon={
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                      </svg>
-                    }
-                    title="No grades yet"
-                  />
-                ) : (
-                  <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={chartData}>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                      <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fontSize: 9, fontWeight: 800, fill: '#94a3b8'}} dy={10} />
-                      <YAxis axisLine={false} tickLine={false} tick={{fontSize: 9, fontWeight: 800, fill: '#94a3b8'}} domain={[70, 100]} dx={-5} />
-                      <Tooltip 
-                        contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)' }}
-                        labelStyle={{ fontWeight: 900, color: '#1e293b', fontSize: '9px', textTransform: 'uppercase' }}
-                      />
-                      <Area type="monotone" dataKey="grade" stroke={CHART_STROKE} strokeWidth={2} fill={CHART_FILL} fillOpacity={0.9} animationDuration={2000} />
-                    </AreaChart>
-                  </ResponsiveContainer>
-                )}
-              </div>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.3, duration: 0.6 }}
-              className="h-[300px] md:h-[320px] flex flex-col"
-            >
-              <StudentAttendanceCard
-                attRate={attRate}
-                streak={streak}
-                hasAttData={hasAttData}
-                todayAttStatus={todayAttStatus}
-                presentCount={presentCount}
-                lateCount={lateCount}
-                absentCount={absentCount}
-                onViewAttendance={() => navigate('/attendance')}
-              />
-            </motion.div>
-        </div>
-
-        <div className="lg:col-span-4 flex flex-col min-h-0">
-          <DashboardQuickActions
-            title="Student workspace"
-            navigate={navigate}
-            items={[
-              { label: 'My Grades', path: '/student-grades', icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z' },
-              { label: 'Schedule', path: '/schedule', icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z' },
-              { label: 'Materials', path: '/materials', icon: 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253' },
-              { label: 'Profile', path: '/profile', icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' },
-            ]}
-          />
-        </div>
-
-        {/* Bottom row — subject table aligns with today's schedule */}
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4, duration: 0.6 }}
-          className={`lg:col-span-8 ${DASH_PANEL} p-3 md:p-5 overflow-hidden flex flex-col min-h-[320px] md:min-h-[360px] ${
-            finalGrades.length > 5 ? 'max-h-[480px]' : ''
-          }`}
-        >
-            <PanelHeader
-              bordered
-              title="Subject Performance"
-              subtitle="Final grade breakdown"
-              iconClassName="rounded-sm bg-violet-700 border border-violet-800 text-white"
-              icon={
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                </svg>
-              }
-              action={<Link to="/student-grades" className={DASH_BTN_SECONDARY}>View All</Link>}
-            />
-            <div className={`flex-1 min-h-0 ${finalGrades.length > 5 ? 'overflow-y-auto' : ''} scrollbar-none`}>
-              <table className="w-full text-left border-separate border-spacing-0">
-                <thead className="bg-violet-50/80 border-b border-violet-100 sticky top-0 z-10">
-                  <tr>
-                    <th className={`${DASH_TABLE_TH} text-left`}>Subject</th>
-                    <th className={`${DASH_TABLE_TH} text-left hidden sm:table-cell`}>Instructor</th>
-                    <th className={`${DASH_TABLE_TH} text-left`}>Grade</th>
-                    <th className={`${DASH_TABLE_TH} text-right`}>Mastery</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-violet-100">
-                  {finalGrades.length === 0 ? (
-                    <tr>
-                      <td colSpan="4" className="px-4 md:px-6 py-8">
-                        <DashEmptyState
-                          title="No grades posted yet"
-                          description="Final grades will appear when your teachers post them."
-                          icon={
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                            </svg>
-                          }
-                        />
-                      </td>
-                    </tr>
-                  ) : finalGrades.map(g => (
-                    <tr key={g.id} className="hover:bg-violet-50/60 transition-colors group cursor-pointer">
-                      <td className="px-3 md:px-5 py-2.5 md:py-3">
-                        <div className="flex items-center gap-2 md:gap-4">
-                          <div className="w-8 h-8 md:w-10 md:h-10 rounded-sm bg-violet-50 text-violet-800 border border-violet-200 flex items-center justify-center font-bold text-xs md:text-sm shrink-0">
-                            {g.subject_name?.[0] || 'S'}
-                          </div>
-                          <span className="text-xs md:text-sm font-bold text-slate-800 tracking-tight">{g.subject_name}</span>
-                        </div>
-                      </td>
-                      <td className="hidden sm:table-cell px-3 md:px-5 py-2.5 md:py-3">
-                        <p className="text-xs md:text-sm font-semibold text-slate-600">{g.teacher_name || 'Instructor'}</p>
-                      </td>
-                      <td className="px-3 md:px-5 py-2.5 md:py-3">
-                        <span className={`text-sm md:text-lg font-black ${(g.transmuted_score || g.raw_score) >= 90 ? 'text-emerald-600' : (g.transmuted_score || g.raw_score) >= 75 ? 'text-violet-600' : 'text-rose-600'}`}>
-                          {g.transmuted_score || g.raw_score}
-                        </span>
-                      </td>
-                      <td className="px-3 md:px-5 py-2.5 md:py-3 text-right">
-                        <div className="w-16 md:w-28 ml-auto">
-                          <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
-                            <motion.div 
-                              initial={{ width: 0 }}
-                              animate={{ width: `${g.transmuted_score || g.raw_score}%` }}
-                              transition={{ duration: 1.5, ease: "easeOut" }}
-                              className={`h-full rounded-full ${(g.transmuted_score || g.raw_score) >= 90 ? 'bg-emerald-500' : (g.transmuted_score || g.raw_score) >= 75 ? 'bg-violet-500' : 'bg-rose-500'}`}
-                            />
-                          </div>
-                          <p className="text-xs font-semibold text-slate-400 mt-1 text-right">{g.transmuted_score || g.raw_score}%</p>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </motion.div>
-
-        <div className="lg:col-span-4 flex flex-col min-h-[320px] md:min-h-[360px] h-full">
-          <TodayScheduleWidget role="student" />
-        </div>
-
-        <div className="lg:col-span-8 hidden lg:block" aria-hidden="true" />
-
-        <div className="lg:col-span-4 flex flex-col min-h-[240px]">
-          <LatestMessagesWidget messages={stats?.latest_messages} onOpenChat={() => navigate('/messages')} />
-        </div>
-
-        <div className="lg:col-span-8 hidden lg:block" aria-hidden="true" />
-
-        <div className="lg:col-span-4">
-          <div className={`${DASH_PANEL} p-3 md:p-4 flex items-center justify-between`}>
-            <div className="flex items-center gap-2">
-              <div className="w-1.5 h-1.5 bg-violet-600" />
-              <span className="text-[10px] font-bold text-violet-800 uppercase tracking-wide">Portal connected</span>
-            </div>
-            <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide">v2.4.0</span>
-          </div>
-        </div>
-      </div>
-    </motion.div>
-  );
-};
+const StudentView = () => <StudentDashboardView />;
 
 // ─── ROOT COMPONENT ───────────────────────────────────────────────────────────
 
