@@ -6,6 +6,7 @@ import Swal from 'sweetalert2';
 import { useScrollLock } from '../hooks/useScrollLock';
 import PostComposerModal from '../components/announcements/PostComposerModal';
 import AnnouncementCommentsPanel from '../components/announcements/AnnouncementCommentsPanel';
+import PostMediaCarousel from '../components/announcements/PostMediaCarousel';
 
 const CATEGORY_CONFIG = {
   general:       { label: 'General',       color: 'bg-slate-50 text-slate-700 border-slate-200' },
@@ -38,20 +39,28 @@ const formatFeedTime = (dateStr) => {
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined });
 };
 
-const getFeedImages = (announcement, attachUrlFn) => {
-  const images = [];
+const getFeedMedia = (announcement, attachUrlFn) => {
+  const items = [];
   if (announcement.attachments?.length) {
     announcement.attachments.forEach((att) => {
-      if (att.is_image && att.url) images.push({ url: attachUrlFn(att.url), filename: att.filename });
+      if (att.url) {
+        items.push({
+          url: attachUrlFn(att.url),
+          filename: att.filename || 'File',
+          is_image: att.is_image,
+        });
+      }
     });
   }
-  if (images.length === 0 && announcement.attachment_url) {
-    const url = announcement.attachment_url;
-    if (/\.(jpg|jpeg|png|gif|webp)$/i.test(url)) {
-      images.push({ url: attachUrlFn(url), filename: 'Attachment' });
-    }
+  if (items.length === 0 && announcement.attachment_url) {
+    const url = attachUrlFn(announcement.attachment_url);
+    items.push({
+      url,
+      filename: 'Attachment',
+      is_image: /\.(jpg|jpeg|png|gif|webp)$/i.test(url),
+    });
   }
-  return images;
+  return items;
 };
 
 const shouldClampContent = (text) => (text || '').length > 280;
@@ -78,13 +87,13 @@ const Announcements = () => {
   const [form, setForm]                   = useState(EMPTY_FORM);
   const [isEditing, setIsEditing]         = useState(false);
   const [saving, setSaving]               = useState(false);
-  const [zoomedImage, setZoomedImage]     = useState(null);
+  const [zoomGallery, setZoomGallery]     = useState(null);
 
   const [selectedIds, setSelectedIds]     = useState([]);
   const [processing, setProcessing]       = useState(false);
   const [liveCommentCount, setLiveCommentCount] = useState(0);
 
-  useScrollLock(showModal || showView || zoomedImage);
+  useScrollLock(showModal || showView || zoomGallery);
 
   useEffect(() => { 
     fetchAnnouncements(); 
@@ -285,8 +294,17 @@ const Announcements = () => {
     }
   };
 
-  const isImage = (url) => url && /\.(jpg|jpeg|png|gif|webp)$/i.test(url);
   const attachUrl = (url) => url?.startsWith('http') ? url : `${MEDIA_ROOT}${url}`;
+
+  const openImageZoom = (mediaItems, startIndex = 0) => {
+    const images = mediaItems.filter((m) => m.is_image).map((m) => m.url);
+    if (!images.length) return;
+    const imageIndex = mediaItems.slice(0, startIndex + 1).filter((m) => m.is_image).length - 1;
+    setZoomGallery({
+      urls: images,
+      index: Math.max(0, Math.min(imageIndex, images.length - 1)),
+    });
+  };
 
   const pinned = announcements.filter(a => a.is_pinned);
   const regular = announcements.filter(a => !a.is_pinned);
@@ -469,9 +487,8 @@ const Announcements = () => {
               const cat = CATEGORY_CONFIG[a.category] || CATEGORY_CONFIG.general;
               const stat = STATUS_CONFIG[a.status] || STATUS_CONFIG.draft;
               const isSelected = selectedIds.includes(a.id);
-              const feedImages = getFeedImages(a, attachUrl);
+              const feedMedia = getFeedMedia(a, attachUrl);
               const clamped = shouldClampContent(a.content);
-              const attachmentCount = (a.attachments?.length || 0) + (a.attachment_url && !a.attachments?.length ? 1 : 0);
 
               return (
                 <article
@@ -585,34 +602,12 @@ const Announcements = () => {
                     )}
                   </div>
 
-                  {/* Media — full-width like Facebook */}
-                  {feedImages.length > 0 && (
-                    <div className="border-y border-slate-100 bg-slate-50">
-                      <button
-                        type="button"
-                        onClick={() => feedImages[0]?.url && setZoomedImage(feedImages[0].url)}
-                        className="block w-full no-min"
-                      >
-                        <img
-                          src={feedImages[0].url}
-                          alt={feedImages[0].filename || 'Post image'}
-                          className="w-full max-h-[420px] object-cover object-center"
-                        />
-                      </button>
-                      {feedImages.length > 1 && (
-                        <p className="px-4 py-2 text-xs font-semibold text-slate-500">
-                          +{feedImages.length - 1} more photo{feedImages.length > 2 ? 's' : ''} — open post to view all
-                        </p>
-                      )}
-                    </div>
-                  )}
-
-                  {!feedImages.length && attachmentCount > 0 && (
-                    <div className="mx-3 md:mx-4 mb-2 px-3 py-2 rounded-lg bg-slate-100 flex items-center gap-2 text-sm text-slate-600">
-                      <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
-                      </svg>
-                      {attachmentCount} attachment{attachmentCount > 1 ? 's' : ''}
+                  {feedMedia.length > 0 && (
+                    <div className="border-y border-slate-100">
+                      <PostMediaCarousel
+                        items={feedMedia}
+                        onImageClick={(_, idx) => openImageZoom(feedMedia, idx)}
+                      />
                     </div>
                   )}
 
@@ -745,72 +740,23 @@ const Announcements = () => {
               </div>
               <div className="text-slate-700 text-sm leading-relaxed whitespace-pre-wrap">{selected.content}</div>
 
-              {(selected.attachments && selected.attachments.length > 0) && (
-                <div className="mt-5 p-4 bg-slate-50 rounded-xl border border-slate-200">
-                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">
-                    Attachments ({selected.attachments.length})
-                  </p>
-                  <div className="grid grid-cols-2 gap-3">
-                    {selected.attachments.map((att, idx) => {
-                      const url = attachUrl(att.url);
-                      return (
-                        <div key={idx} className="relative group">
-                          {att.is_image ? (
-                            <div className="cursor-pointer" onClick={() => setZoomedImage(url)}>
-                              <img src={url} alt={att.filename}
-                                className="w-full h-32 object-cover rounded-lg border border-slate-200"
-                                onError={e => { 
-                                  e.target.onerror = null; 
-                                  e.target.src = 'https://via.placeholder.com/300x200?text=Image+Not+Found'; 
-                                }} />
-                              <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
-                                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7" />
-                                </svg>
-                              </div>
-                              <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-[10px] px-2 py-1 truncate rounded-b-lg">
-                                {att.filename}
-                              </div>
-                            </div>
-                          ) : (
-                            <a href={url} target="_blank" rel="noreferrer"
-                              className="flex items-center gap-2 p-3 bg-white rounded-lg border border-slate-200 hover:border-slate-300 transition-colors shadow-sm">
-                              <div className="w-8 h-8 bg-slate-100 rounded flex items-center justify-center flex-shrink-0">
-                                <svg className="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                                </svg>
-                              </div>
-                              <div className="min-w-0 flex-1">
-                                <p className="text-[11px] font-medium text-slate-700 truncate">{att.filename}</p>
-                                <p className="text-[9px] text-slate-400">Click to download</p>
-                              </div>
-                            </a>
-                          )}
-                        </div>
-                      );
-                    })}
+              {(() => {
+                const detailMedia = getFeedMedia(selected, attachUrl);
+                if (detailMedia.length === 0) return null;
+                return (
+                  <div className="mt-5 rounded-xl border border-slate-200 overflow-hidden">
+                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider px-4 pt-3 pb-2 bg-slate-50">
+                      Attachments ({detailMedia.length})
+                    </p>
+                    <PostMediaCarousel
+                      items={detailMedia}
+                      maxHeight="360px"
+                      className="rounded-b-xl"
+                      onImageClick={(_, idx) => openImageZoom(detailMedia, idx)}
+                    />
                   </div>
-                </div>
-              )}
-
-              {selected.attachment_url && !selected.attachments?.length && (
-                <div className="mt-5 p-4 bg-slate-50 rounded-xl border border-slate-200">
-                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Attachment</p>
-                  {isImage(selected.attachment_url) ? (
-                    <img src={attachUrl(selected.attachment_url)} alt="Attachment"
-                      className="max-h-80 w-auto rounded-lg mx-auto object-contain"
-                      onError={e => { e.target.style.display = 'none'; }} />
-                  ) : (
-                    <a href={attachUrl(selected.attachment_url)} target="_blank" rel="noreferrer"
-                      className="flex items-center gap-2 text-slate-700 hover:text-slate-900 text-sm font-medium">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                      </svg>
-                      Download attachment
-                    </a>
-                  )}
-                </div>
-              )}
+                );
+              })()}
 
               <AnnouncementCommentsPanel
                 announcementId={selected.id}
@@ -831,15 +777,71 @@ const Announcements = () => {
         </div>
       )}
 
-      {/* ── Image Zoom Modal ── */}
-      {zoomedImage && (
-        <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4" onClick={() => setZoomedImage(null)}>
-          <button onClick={() => setZoomedImage(null)} className="absolute top-4 right-4 text-white hover:text-slate-300 transition-colors">
+      {/* ── Image zoom (with carousel when multiple images) ── */}
+      {zoomGallery && (
+        <div
+          className="fixed inset-0 bg-black/90 flex items-center justify-center z-[110] p-4"
+          onClick={() => setZoomGallery(null)}
+          role="dialog"
+          aria-modal="true"
+        >
+          <button
+            type="button"
+            onClick={() => setZoomGallery(null)}
+            className="absolute top-4 right-4 z-20 p-2 rounded-full bg-white/10 text-white hover:bg-white/20 no-min"
+            aria-label="Close"
+          >
             <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
-          <img src={zoomedImage} alt="Zoomed attachment" className="max-w-full max-h-full object-contain" />
+
+          {zoomGallery.urls.length > 1 && (
+            <>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setZoomGallery((g) => ({
+                    ...g,
+                    index: (g.index - 1 + g.urls.length) % g.urls.length,
+                  }));
+                }}
+                className="absolute left-3 md:left-6 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-white/15 text-white border border-white/30 flex items-center justify-center hover:bg-white/25 no-min"
+                aria-label="Previous image"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setZoomGallery((g) => ({
+                    ...g,
+                    index: (g.index + 1) % g.urls.length,
+                  }));
+                }}
+                className="absolute right-3 md:right-6 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-white/15 text-white border border-white/30 flex items-center justify-center hover:bg-white/25 no-min"
+                aria-label="Next image"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+              <span className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 px-3 py-1 rounded-full bg-black/50 text-white text-sm font-semibold tabular-nums">
+                {zoomGallery.index + 1} / {zoomGallery.urls.length}
+              </span>
+            </>
+          )}
+
+          <img
+            src={zoomGallery.urls[zoomGallery.index]}
+            alt=""
+            className="max-w-full max-h-full object-contain pointer-events-none"
+            onClick={(e) => e.stopPropagation()}
+          />
         </div>
       )}
     </div>

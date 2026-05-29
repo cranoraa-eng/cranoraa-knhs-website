@@ -132,8 +132,8 @@ const StudentAttendanceCard = ({
     dot: 'bg-blue-500',
   };
 
-  const ringSize = 92;
-  const stroke = 7;
+  const ringSize = 88;
+  const stroke = 6;
   const radius = (ringSize - stroke) / 2;
   const circumference = 2 * Math.PI * radius;
   const dashOffset = circumference - (Math.min(100, Math.max(0, attRate)) / 100) * circumference;
@@ -141,11 +141,11 @@ const StudentAttendanceCard = ({
   const streakDots = 7;
 
   return (
-    <div className={`${DASH_PANEL} p-4 md:p-5 flex flex-col h-full min-h-0 overflow-hidden`}>
+    <div className={`${DASH_PANEL} p-4 md:p-5 flex flex-col h-full min-h-0`}>
       <PanelHeader
         title="Attendance"
         subtitle="Overall streak tracker"
-        className="mb-2"
+        className="mb-3"
         icon={
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -160,7 +160,7 @@ const StudentAttendanceCard = ({
         )}
       />
 
-      <div className={`inline-flex items-center gap-1.5 w-full px-2.5 py-1.5 rounded-sm border text-[10px] font-bold uppercase tracking-wide shrink-0 mb-2 ${todayStyle.wrap}`}>
+      <div className={`inline-flex items-center gap-2 w-full px-3 py-2 rounded-sm border text-[10px] font-bold uppercase tracking-wide shrink-0 mb-4 ${todayStyle.wrap}`}>
         <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${todayStyle.dot}`} />
         <span className="truncate">{todayStyle.label}</span>
       </div>
@@ -176,14 +176,14 @@ const StudentAttendanceCard = ({
           title="No attendance records yet"
         />
       ) : (
-        <div className="flex-1 flex flex-col gap-2.5 min-h-0">
-          <div className="grid grid-cols-2 gap-2.5 flex-1 min-h-0">
-            <div className="flex flex-col items-center justify-center rounded-sm border border-violet-200 bg-violet-50/60 px-2 py-3 h-full">
+        <div className="flex-1 flex flex-col justify-between gap-4 min-h-0">
+          <div className="grid grid-cols-2 gap-3 flex-1 min-h-[120px]">
+            <div className="flex flex-col items-center justify-center rounded-sm border border-violet-200 bg-violet-50/60 px-3 py-4">
               <span className="text-2xl md:text-3xl font-black text-violet-800 leading-none tabular-nums">{streakDisplay}</span>
-              <span className="text-[10px] font-bold text-violet-600 uppercase tracking-wide mt-1.5 text-center">
+              <span className="text-[10px] font-bold text-violet-600 uppercase tracking-wide mt-2 text-center">
                 Day{streakDisplay === 1 ? '' : 's'} streak
               </span>
-              <div className="flex gap-1 mt-2" aria-hidden="true">
+              <div className="flex gap-1.5 mt-2.5" aria-hidden="true">
                 {Array.from({ length: streakDots }, (_, i) => (
                   <div
                     key={i}
@@ -193,7 +193,7 @@ const StudentAttendanceCard = ({
               </div>
             </div>
 
-            <div className="flex flex-col items-center justify-center rounded-sm border border-violet-200 bg-white px-2 py-2 h-full">
+            <div className="flex flex-col items-center justify-center rounded-sm border border-violet-200 bg-white px-2 py-3">
               <div className="relative flex items-center justify-center shrink-0" style={{ width: ringSize, height: ringSize }}>
                 <svg width={ringSize} height={ringSize} className="-rotate-90" aria-hidden="true">
                   <circle
@@ -225,15 +225,15 @@ const StudentAttendanceCard = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-2 shrink-0">
+          <div className="grid grid-cols-3 gap-2.5 shrink-0 pt-1">
             {[
               { label: 'Present', value: presentCount, text: 'text-emerald-700', bg: 'bg-emerald-50 border-emerald-100' },
               { label: 'Late', value: lateCount, text: 'text-amber-700', bg: 'bg-amber-50 border-amber-100' },
               { label: 'Absent', value: absentCount, text: 'text-rose-700', bg: 'bg-rose-50 border-rose-100' },
             ].map((row) => (
-              <div key={row.label} className={`rounded-sm border px-2 py-2 text-center ${row.bg}`}>
-                <p className={`text-sm md:text-base font-black leading-none tabular-nums ${row.text}`}>{row.value}</p>
-                <p className="text-[8px] font-bold text-slate-500 uppercase tracking-wide mt-0.5">{row.label}</p>
+              <div key={row.label} className={`rounded-sm border px-2 py-2.5 text-center ${row.bg}`}>
+                <p className={`text-sm font-black leading-none tabular-nums ${row.text}`}>{row.value}</p>
+                <p className="text-[9px] font-bold text-slate-500 uppercase tracking-wide mt-1">{row.label}</p>
               </div>
             ))}
           </div>
@@ -1395,18 +1395,15 @@ const StudentView = () => {
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 md:gap-5 lg:items-stretch">
-        {/* ── MAIN CONTENT (Left - 8 Cols) ── */}
-        <div className="lg:col-span-8 flex flex-col gap-3 md:gap-5 min-w-0">
-          
-          {/* Performance Analytics & Attendance Streak */}
-          <div className="space-y-2 shrink-0">
-            <p className={DASH_SECTION_LABEL}>Performance</p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-5 items-stretch">
+        <p className={`lg:col-span-12 ${DASH_SECTION_LABEL}`}>Performance</p>
+
+        {/* Top row — performance cards align with student workspace */}
+        <div className="lg:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-5 items-stretch min-h-0">
             <motion.div 
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.2, duration: 0.6 }}
-              className={`${DASH_PANEL} p-4 md:p-5 flex flex-col h-[280px] md:h-[300px]`}
+              className={`${DASH_PANEL} p-4 md:p-5 flex flex-col h-[300px] md:h-[320px]`}
             >
               <PanelHeader
                 title="Grade Analysis"
@@ -1449,7 +1446,7 @@ const StudentView = () => {
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.3, duration: 0.6 }}
-              className="h-[280px] md:h-[300px] flex flex-col min-h-0"
+              className="h-[300px] md:h-[320px] flex flex-col"
             >
               <StudentAttendanceCard
                 attRate={attRate}
@@ -1462,18 +1459,30 @@ const StudentView = () => {
                 onViewAttendance={() => navigate('/attendance')}
               />
             </motion.div>
-          </div>
-          </div>
+        </div>
 
-          {/* Academic Records Table — height grows with rows, caps when many */}
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4, duration: 0.6 }}
-            className={`${DASH_PANEL} overflow-hidden flex flex-col shrink-0 ${
-              finalGrades.length > 5 ? 'flex-1 min-h-0 max-h-[420px] lg:max-h-[480px]' : ''
-            }`}
-          >
+        <div className="lg:col-span-4 flex flex-col min-h-0">
+          <DashboardQuickActions
+            title="Student workspace"
+            navigate={navigate}
+            items={[
+              { label: 'My Grades', path: '/student-grades', icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z' },
+              { label: 'Schedule', path: '/schedule', icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z' },
+              { label: 'Materials', path: '/materials', icon: 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253' },
+              { label: 'Profile', path: '/profile', icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' },
+            ]}
+          />
+        </div>
+
+        {/* Bottom row — subject table aligns with today's schedule */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4, duration: 0.6 }}
+          className={`lg:col-span-8 ${DASH_PANEL} p-3 md:p-5 overflow-hidden flex flex-col min-h-[320px] md:min-h-[360px] ${
+            finalGrades.length > 5 ? 'max-h-[480px]' : ''
+          }`}
+        >
             <PanelHeader
               bordered
               title="Subject Performance"
@@ -1486,7 +1495,7 @@ const StudentView = () => {
               }
               action={<Link to="/student-grades" className={DASH_BTN_SECONDARY}>View All</Link>}
             />
-            <div className={`${finalGrades.length > 5 ? 'flex-1 min-h-0 overflow-y-auto' : ''} scrollbar-none`}>
+            <div className={`flex-1 min-h-0 ${finalGrades.length > 5 ? 'overflow-y-auto' : ''} scrollbar-none`}>
               <table className="w-full text-left border-separate border-spacing-0">
                 <thead className="bg-violet-50/80 border-b border-violet-100 sticky top-0 z-10">
                   <tr>
@@ -1548,31 +1557,21 @@ const StudentView = () => {
               </table>
             </div>
           </motion.div>
+
+        <div className="lg:col-span-4 flex flex-col min-h-[320px] md:min-h-[360px] h-full">
+          <TodayScheduleWidget role="student" />
         </div>
 
-        {/* ── SIDEBAR (Right - 4 Cols) — stretches to match left column ── */}
-        <div className="lg:col-span-4 flex flex-col gap-3 md:gap-4 min-h-0">
-          <DashboardQuickActions
-            title="Student workspace"
-            navigate={navigate}
-            items={[
-              { label: 'My Grades', path: '/student-grades', icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z' },
-              { label: 'Schedule', path: '/schedule', icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z' },
-              { label: 'Materials', path: '/materials', icon: 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253' },
-              { label: 'Profile', path: '/profile', icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' },
-            ]}
-          />
+        <div className="lg:col-span-8 hidden lg:block" aria-hidden="true" />
 
-          <div className="flex flex-col gap-3 md:gap-4 flex-1 min-h-[280px] lg:min-h-0">
-            <div className="flex-1 min-h-[200px] flex flex-col">
-              <TodayScheduleWidget role="student" />
-            </div>
-            <div className="flex-1 min-h-[200px] flex flex-col">
-              <LatestMessagesWidget messages={stats?.latest_messages} onOpenChat={() => navigate('/messages')} />
-            </div>
-          </div>
+        <div className="lg:col-span-4 flex flex-col min-h-[240px]">
+          <LatestMessagesWidget messages={stats?.latest_messages} onOpenChat={() => navigate('/messages')} />
+        </div>
 
-          <div className={`${DASH_PANEL} p-3 md:p-4 flex items-center justify-between shrink-0`}>
+        <div className="lg:col-span-8 hidden lg:block" aria-hidden="true" />
+
+        <div className="lg:col-span-4">
+          <div className={`${DASH_PANEL} p-3 md:p-4 flex items-center justify-between`}>
             <div className="flex items-center gap-2">
               <div className="w-1.5 h-1.5 bg-violet-600" />
               <span className="text-[10px] font-bold text-violet-800 uppercase tracking-wide">Portal connected</span>
