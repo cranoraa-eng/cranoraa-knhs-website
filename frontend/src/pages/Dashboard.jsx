@@ -78,6 +78,168 @@ const getGradeCategoryColor = (name, index) =>
 const getGradeCategoryLegendClass = (name) =>
   GRADE_CATEGORY_LEGEND[name] || 'border-slate-200 bg-slate-50/80';
 
+const STUDENT_TODAY_STATUS = {
+  weekend: {
+    wrap: 'border-slate-200 bg-slate-50 text-slate-600',
+    label: 'Weekend — no class today',
+    dot: 'bg-slate-400',
+  },
+  unassigned: {
+    wrap: 'border-amber-200 bg-amber-50 text-amber-800',
+    label: 'Today not marked yet',
+    dot: 'bg-amber-500 animate-pulse',
+  },
+  present: {
+    wrap: 'border-emerald-200 bg-emerald-50 text-emerald-800',
+    label: 'Present today',
+    dot: 'bg-emerald-500',
+  },
+  late: {
+    wrap: 'border-yellow-200 bg-yellow-50 text-yellow-800',
+    label: 'Late today',
+    dot: 'bg-yellow-500',
+  },
+  absent: {
+    wrap: 'border-rose-200 bg-rose-50 text-rose-800',
+    label: 'Absent today',
+    dot: 'bg-rose-500',
+  },
+  excused: {
+    wrap: 'border-blue-200 bg-blue-50 text-blue-800',
+    label: 'Excused today',
+    dot: 'bg-blue-500',
+  },
+};
+
+const StudentAttendanceCard = ({
+  attRate,
+  streak,
+  hasAttData,
+  todayAttStatus,
+  presentCount,
+  lateCount,
+  absentCount,
+  onViewAttendance,
+}) => {
+  const todayStyle = STUDENT_TODAY_STATUS[todayAttStatus] || {
+    wrap: 'border-blue-200 bg-blue-50 text-blue-800',
+    label: `${todayAttStatus} today`,
+    dot: 'bg-blue-500',
+  };
+
+  const ringSize = 96;
+  const stroke = 7;
+  const radius = (ringSize - stroke) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const dashOffset = circumference - (Math.min(100, Math.max(0, attRate)) / 100) * circumference;
+  const streakDisplay = Math.min(streak, 99);
+  const streakDots = 7;
+
+  return (
+    <div className={`${DASH_PANEL} p-3 md:p-5 flex flex-col h-[240px] md:h-[280px]`}>
+      <div className="flex items-start justify-between gap-2 mb-3 shrink-0">
+        <div className="flex items-center gap-2 min-w-0">
+          <div className={`w-7 h-7 md:w-8 md:h-8 shrink-0 ${DASH_ICON_BOX}`}>
+            <svg className="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <div className="min-w-0">
+            <h3 className="text-xs font-black text-slate-900 tracking-tight">Attendance</h3>
+            <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide mt-0.5 truncate">
+              Overall streak tracker
+            </p>
+          </div>
+        </div>
+        {onViewAttendance && (
+          <button type="button" onClick={onViewAttendance} className={DASH_ICON_BTN} title="View attendance">
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 5H19M19 5V11M19 5L5 19M5 19H11M5 19V13" />
+            </svg>
+          </button>
+        )}
+      </div>
+
+      <div className={`inline-flex items-center gap-1.5 w-full sm:w-auto px-2.5 py-1.5 rounded-sm border text-[10px] font-bold uppercase tracking-wide shrink-0 mb-3 ${todayStyle.wrap}`}>
+        <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${todayStyle.dot}`} />
+        <span className="truncate">{todayStyle.label}</span>
+      </div>
+
+      {!hasAttData ? (
+        <div className="flex-1 flex flex-col items-center justify-center gap-2 border border-dashed border-violet-200 rounded-sm bg-violet-50/40 px-4 py-6">
+          <svg className="w-9 h-9 text-violet-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wide text-center">No attendance records yet</p>
+        </div>
+      ) : (
+        <div className="flex-1 flex flex-col justify-center gap-3 min-h-0">
+          <div className="grid grid-cols-2 gap-2 md:gap-3">
+            <div className="flex flex-col items-center justify-center rounded-sm border border-violet-200 bg-violet-50/60 px-2 py-3 md:py-4">
+              <span className="text-2xl md:text-3xl font-black text-violet-800 leading-none tabular-nums">{streakDisplay}</span>
+              <span className="text-[9px] md:text-[10px] font-bold text-violet-600 uppercase tracking-wide mt-1.5 text-center">
+                Day{streakDisplay === 1 ? '' : 's'} streak
+              </span>
+              <div className="flex gap-1 mt-2" aria-hidden="true">
+                {Array.from({ length: streakDots }, (_, i) => (
+                  <div
+                    key={i}
+                    className={`h-1.5 w-1.5 rounded-full ${i < Math.min(streak, streakDots) ? 'bg-emerald-500' : 'bg-violet-200'}`}
+                  />
+                ))}
+              </div>
+            </div>
+
+            <div className="flex flex-col items-center justify-center rounded-sm border border-violet-200 bg-white px-2 py-2 md:py-3">
+              <div className="relative flex items-center justify-center" style={{ width: ringSize, height: ringSize }}>
+                <svg width={ringSize} height={ringSize} className="-rotate-90" aria-hidden="true">
+                  <circle
+                    cx={ringSize / 2}
+                    cy={ringSize / 2}
+                    r={radius}
+                    fill="none"
+                    stroke="#ede9fe"
+                    strokeWidth={stroke}
+                  />
+                  <circle
+                    cx={ringSize / 2}
+                    cy={ringSize / 2}
+                    r={radius}
+                    fill="none"
+                    stroke="#7c3aed"
+                    strokeWidth={stroke}
+                    strokeLinecap="round"
+                    strokeDasharray={circumference}
+                    strokeDashoffset={dashOffset}
+                    className="transition-[stroke-dashoffset] duration-700 ease-out"
+                  />
+                </svg>
+                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                  <span className="text-lg md:text-xl font-black text-slate-900 leading-none tabular-nums">{attRate}%</span>
+                  <span className="text-[8px] font-bold text-slate-400 uppercase tracking-wide mt-0.5">Overall</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-3 gap-1.5 border-t border-violet-100 pt-2.5">
+            {[
+              { label: 'Present', value: presentCount, bar: 'bg-emerald-500', text: 'text-emerald-700', bg: 'bg-emerald-50 border-emerald-100' },
+              { label: 'Late', value: lateCount, bar: 'bg-amber-500', text: 'text-amber-700', bg: 'bg-amber-50 border-amber-100' },
+              { label: 'Absent', value: absentCount, bar: 'bg-rose-500', text: 'text-rose-700', bg: 'bg-rose-50 border-rose-100' },
+            ].map((row) => (
+              <div key={row.label} className={`rounded-sm border px-2 py-1.5 text-center ${row.bg}`}>
+                <p className={`text-sm md:text-base font-black leading-none tabular-nums ${row.text}`}>{row.value}</p>
+                <p className="text-[8px] font-bold text-slate-500 uppercase tracking-wide mt-0.5">{row.label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 const BANNER_PERIOD_THEME = {
   morning: {
     shell: 'bg-violet-700 border-violet-500',
@@ -1110,11 +1272,6 @@ const StudentView = () => {
     full_name: g.subject_name
   })).slice(0, 6);
 
-  const radialData = [
-    { name: 'Attendance', value: attRate, fill: '#8b5cf6' },
-    { name: 'Remaining', value: 100 - attRate, fill: '#f1f5f9' }
-  ];
-
   const today = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
 
   const todayStatusLabel =
@@ -1208,100 +1365,21 @@ const StudentView = () => {
               </div>
             </motion.div>
 
-            {/* Attendance Streak Card */}
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.3, duration: 0.6 }}
-              className={`${DASH_PANEL} p-3 md:p-5 flex flex-col h-[240px] md:h-[280px]`}
             >
-              <div className="flex items-center justify-between mb-3 md:mb-3 shrink-0">
-                <div className="flex items-center gap-2">
-                  <div className={`w-7 h-7 md:w-8 md:h-8 ${DASH_ICON_BOX}`}>
-                    <svg className="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                  </div>
-                  <div>
-                    <h3 className="text-xs font-black text-slate-900 tracking-tight">Attendance</h3>
-                    <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mt-0.5 hidden md:block">Overall streak tracker</p>
-                  </div>
-                </div>
-                <div className="flex flex-col items-end">
-                  <span className="text-sm md:text-lg font-black text-emerald-600 leading-none">{attRate}%</span>
-                  <span className="text-xs font-semibold text-slate-400 uppercase tracking-widest mt-0.5">Overall</span>
-                </div>
-              </div>
-
-              {/* Today's status badge */}
-              <div className="mb-2 md:mb-4 shrink-0">
-                {todayAttStatus === 'weekend' ? (
-                  <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-slate-100 border border-slate-200">
-                    <span className="text-xs font-black text-slate-500 uppercase tracking-widest">Weekend — No class</span>
-                  </div>
-                ) : todayAttStatus === 'unassigned' ? (
-                  <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-amber-50 border border-amber-200">
-                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse shrink-0" />
-                    <span className="text-xs font-black text-amber-600 uppercase tracking-widest">Today not marked yet</span>
-                  </div>
-                ) : todayAttStatus === 'present' ? (
-                  <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-emerald-50 border border-emerald-200">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
-                    <span className="text-xs font-black text-emerald-600 uppercase tracking-widest">Present today</span>
-                  </div>
-                ) : todayAttStatus === 'late' ? (
-                  <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-yellow-50 border border-yellow-200">
-                    <span className="w-1.5 h-1.5 rounded-full bg-yellow-500 shrink-0" />
-                    <span className="text-xs font-black text-yellow-600 uppercase tracking-widest">Late today</span>
-                  </div>
-                ) : todayAttStatus === 'absent' ? (
-                  <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-red-50 border border-red-200">
-                    <span className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0" />
-                    <span className="text-xs font-black text-red-600 uppercase tracking-widest">Absent today</span>
-                  </div>
-                ) : (
-                  <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-blue-50 border border-blue-200">
-                    <span className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0" />
-                    <span className="text-xs font-black text-blue-600 uppercase tracking-widest capitalize">{todayAttStatus} today</span>
-                  </div>
-                )}
-              </div>
-
-              <div className="flex-1 flex flex-col items-center justify-center relative">
-                {!hasAttData ? (
-                  <div className="flex flex-col items-center justify-center gap-2 opacity-50">
-                    <svg className="w-10 h-10 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                    <p className="text-xs font-black text-slate-400 uppercase tracking-widest text-center">No attendance records yet</p>
-                  </div>
-                ) : (
-                  <>
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie
-                          data={radialData}
-                          innerRadius={50}
-                          outerRadius={70}
-                          startAngle={90}
-                          endAngle={450}
-                          dataKey="value"
-                          stroke="none"
-                        >
-                          {radialData.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={entry.fill} cornerRadius={8} />
-                          ))}
-                        </Pie>
-                      </PieChart>
-                    </ResponsiveContainer>
-                    <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                      <span className="text-xl md:text-4xl font-black text-slate-900">{streak}</span>
-                      <span className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] mt-0.5">Day Streak</span>
-                      <div className="flex gap-1 mt-2 md:mt-4">
-                        {[1,2,3,4,5].map(i => (
-                          <div key={i} className={`w-1 md:w-1.5 h-1 md:h-1.5 rounded-full ${i <= streak ? 'bg-emerald-500 animate-pulse' : 'bg-slate-200'}`} />
-                        ))}
-                      </div>
-                    </div>
-                  </>
-                )}
-              </div>
+              <StudentAttendanceCard
+                attRate={attRate}
+                streak={streak}
+                hasAttData={hasAttData}
+                todayAttStatus={todayAttStatus}
+                presentCount={presentCount}
+                lateCount={lateCount}
+                absentCount={absentCount}
+                onViewAttendance={() => navigate('/attendance')}
+              />
             </motion.div>
           </div>
 
