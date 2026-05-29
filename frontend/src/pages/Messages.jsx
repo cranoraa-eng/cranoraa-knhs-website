@@ -873,7 +873,7 @@ const Messages = () => {
     <div className="flex h-[calc(100dvh-9rem)] md:h-[calc(100vh-8rem)] md:max-h-[calc(100vh-8rem)] bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-200 relative" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
 
       {/* ── Sidebar (Room List) ── */}
-      <div className={`${selectedRoom ? 'hidden md:flex' : 'flex'} w-full md:w-64 border-r border-slate-100 flex-col bg-slate-50/30 min-w-0 overflow-hidden`}>
+      <div className={`${selectedRoom ? 'hidden md:flex' : 'flex'} w-full md:w-80 border-r border-slate-100 flex-col bg-slate-50/30 min-w-0 overflow-hidden`}>
 
         {/* Header */}
         <div className="p-2 md:p-4 border-b border-slate-100 bg-white shrink-0">
