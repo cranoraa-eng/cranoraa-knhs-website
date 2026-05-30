@@ -20,6 +20,7 @@ const TIMELINE_STEPS = [
 ];
 
 const stepIndex = (status) => {
+  if (status === 'rejected') return -1;
   const idx = TIMELINE_STEPS.findIndex(s => s.key === status);
   return idx >= 0 ? idx : 0;
 };
@@ -131,32 +132,46 @@ const EnrollmentTracking = () => {
 
             <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
               <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-5">Progress Timeline</p>
-              <div className="space-y-0">
-                {TIMELINE_STEPS.map((step, i) => {
-                  const isDone = i <= currentIdx;
-                  const isCurrent = i === currentIdx;
-                  return (
-                    <div key={step.key} className="flex gap-4">
-                      <div className="flex flex-col items-center">
-                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
-                          isCurrent ? 'border-violet-500 bg-violet-100 ring-4 ring-violet-100' :
-                          isDone ? 'border-violet-500 bg-violet-500' : 'border-slate-300 bg-white'
-                        }`}>
-                          {isDone && !isCurrent && (
-                            <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+              {data.status === 'rejected' ? (
+                <div className="flex items-center gap-3 p-4 rounded-xl bg-rose-50 border border-rose-100">
+                  <div className="w-8 h-8 rounded-full bg-rose-100 flex items-center justify-center flex-shrink-0">
+                    <svg className="w-4 h-4 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-rose-800">Application Rejected</p>
+                    <p className="text-xs text-rose-600">{data.remarks || 'Your application was not approved.'}</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-0">
+                  {TIMELINE_STEPS.map((step, i) => {
+                    const isDone = i <= currentIdx;
+                    const isCurrent = i === currentIdx;
+                    return (
+                      <div key={step.key} className="flex gap-4">
+                        <div className="flex flex-col items-center">
+                          <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
+                            isCurrent ? 'border-violet-500 bg-violet-100 ring-4 ring-violet-100' :
+                            isDone ? 'border-violet-500 bg-violet-500' : 'border-slate-300 bg-white'
+                          }`}>
+                            {isDone && !isCurrent && (
+                              <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+                            )}
+                          </div>
+                          {i < TIMELINE_STEPS.length - 1 && (
+                            <div className={`w-0.5 h-8 ${isDone && i < currentIdx ? 'bg-violet-500' : 'bg-slate-200'}`} />
                           )}
                         </div>
-                        {i < TIMELINE_STEPS.length - 1 && (
-                          <div className={`w-0.5 h-8 ${isDone && i < currentIdx ? 'bg-violet-500' : 'bg-slate-200'}`} />
-                        )}
+                        <div className="pb-6">
+                          <p className={`text-sm font-bold ${isDone ? 'text-slate-900' : 'text-slate-400'}`}>{step.label}</p>
+                        </div>
                       </div>
-                      <div className="pb-6">
-                        <p className={`text-sm font-bold ${isDone ? 'text-slate-900' : 'text-slate-400'}`}>{step.label}</p>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
 
             {data.remarks && (

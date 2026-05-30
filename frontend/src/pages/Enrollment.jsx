@@ -222,7 +222,7 @@ const Enrollment = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (step !== 6) return;
+    if (step !== 6 || loading) return;
     const requirements = getRequirementsForGrade();
     const missingFiles = requirements.filter(req => req.required).filter(req => {
       const map = { birthCertificate, reportCard, form138, certificateOfCompletion, goodMoralCertificate, lastSchoolAttendedCert };

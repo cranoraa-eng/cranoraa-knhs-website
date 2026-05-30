@@ -145,6 +145,7 @@ class Classroom(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True, null=True)
     grade_level = models.CharField(max_length=20, blank=True, null=True, help_text="Academic grade level for this classroom (e.g., Grade 7)")
+    capacity = models.PositiveIntegerField(default=40, help_text="Maximum number of students allowed in this classroom")
     teacher = models.OneToOneField(
         User, 
         on_delete=models.SET_NULL, 

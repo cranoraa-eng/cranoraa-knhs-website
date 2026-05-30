@@ -27,6 +27,9 @@ const EnrollmentManagement = () => {
   const [activeMenu, setActiveMenu] = useState(null);
   const [showEnrollModal, setShowEnrollModal] = useState(false);
   const [enrollApp, setEnrollApp] = useState(null);
+  const [enrollClassroom, setEnrollClassroom] = useState('');
+  const [enrollParentEmail, setEnrollParentEmail] = useState('');
+  const [enrolling, setEnrolling] = useState(false);
   const [classrooms, setClassrooms] = useState([]);
 
   const fetchAll = useCallback(async () => {
@@ -98,25 +101,30 @@ const EnrollmentManagement = () => {
   };
 
   const enrollStudent = async () => {
-    if (!enrollApp) return;
-    const selClassroom = document.getElementById('enroll-classroom')?.value;
-    const parentEmail = document.getElementById('enroll-parent-email')?.value;
-    const { username, temp_password } = await handleAction(enrollApp.id, 'enroll_student', {
-      classroom_id: selClassroom || '', parent_email: parentEmail || '',
-    }) || {};
-    if (username) {
-      Swal.fire({
-        icon: 'success', title: 'Student Enrolled!', html: `
-          <div class="text-left space-y-2">
-            <p><strong>Username:</strong> ${username}</p>
-            <p><strong>Password:</strong> ${temp_password}</p>
-            <p class="text-xs text-amber-600 font-bold">Save these credentials. They will not be shown again.</p>
-          </div>
-        `, confirmButtonText: 'OK',
-      });
+    if (!enrollApp || enrolling) return;
+    setEnrolling(true);
+    try {
+      const { username, temp_password } = await handleAction(enrollApp.id, 'enroll_student', {
+        classroom_id: enrollClassroom || '', parent_email: enrollParentEmail || '',
+      }) || {};
+      if (username) {
+        Swal.fire({
+          icon: 'success', title: 'Student Enrolled!', html: `
+            <div class="text-left space-y-2">
+              <p><strong>Username:</strong> ${username}</p>
+              <p><strong>Password:</strong> ${temp_password}</p>
+              <p class="text-xs text-amber-600 font-bold">Save these credentials. They will not be shown again.</p>
+            </div>
+          `, confirmButtonText: 'OK',
+        });
+      }
+      setShowEnrollModal(false);
+      setEnrollApp(null);
+      setEnrollClassroom('');
+      setEnrollParentEmail('');
+    } finally {
+      setEnrolling(false);
     }
-    setShowEnrollModal(false);
-    setEnrollApp(null);
   };
 
   const assignSection = async (id) => {
@@ -166,7 +174,13 @@ const EnrollmentManagement = () => {
     if (!selectedIds.length) { Swal.fire({ icon: 'warning', text: 'Select applications first.' }); return; }
     const confirmed = await Swal.fire({ title: `${action} ${selectedIds.length} application(s)?`, showCancelButton: true, confirmButtonText: 'Confirm', confirmButtonColor: action === 'reject' ? '#EF4444' : '#7C3AED' });
     if (!confirmed.isConfirmed) return;
-    for (const id of selectedIds) await handleAction(id, 'bulk_action', { action });
+    for (const id of selectedIds) {
+      if (action === 'approve') {
+        await handleAction(id, 'approve', { remarks: '' });
+      } else if (action === 'reject') {
+        await handleAction(id, 'reject', { remarks: 'Bulk rejected by admin' });
+      }
+    }
     setSelectedIds([]);
   };
 
@@ -468,7 +482,8 @@ const EnrollmentManagement = () => {
             <div className="space-y-4">
               <div>
                 <label className="block text-xs font-bold text-slate-600 mb-1">Assign Section</label>
-                <select id="enroll-classroom" className="w-full px-3 py-2.5 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400/30">
+                <select value={enrollClassroom} onChange={e => setEnrollClassroom(e.target.value)}
+                  className="w-full px-3 py-2.5 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400/30">
                   <option value="">Auto-assign</option>
                   {classrooms.filter(c => String(c.grade_level) === String(enrollApp.grade_level)).map(c => (
                     <option key={c.id} value={c.id}>{c.name} (Cap: {c.capacity || '∞'})</option>
@@ -477,15 +492,20 @@ const EnrollmentManagement = () => {
               </div>
               <div>
                 <label className="block text-xs font-bold text-slate-600 mb-1">Parent Email (optional)</label>
-                <input id="enroll-parent-email" type="email" placeholder="parent@email.com" className="w-full px-3 py-2.5 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400/30" />
+                <input type="email" value={enrollParentEmail} onChange={e => setEnrollParentEmail(e.target.value)}
+                  placeholder="parent@email.com" className="w-full px-3 py-2.5 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400/30" />
                 <p className="text-[10px] text-slate-400 mt-1">If a parent account exists with this email, it will be linked.</p>
               </div>
               <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-700">
                 <strong>Note:</strong> A student account will be created automatically. Save the credentials shown after enrollment.
               </div>
               <div className="flex gap-3">
-                <button onClick={() => { setShowEnrollModal(false); setEnrollApp(null); }} className="flex-1 py-2.5 rounded-lg border border-slate-200 text-slate-600 text-sm font-bold hover:bg-slate-50">Cancel</button>
-                <button onClick={enrollStudent} className="flex-1 py-2.5 rounded-lg bg-violet-600 text-white text-sm font-bold hover:bg-violet-700">Enroll Now</button>
+                <button onClick={() => { setShowEnrollModal(false); setEnrollApp(null); setEnrollClassroom(''); setEnrollParentEmail(''); }}
+                  className="flex-1 py-2.5 rounded-lg border border-slate-200 text-slate-600 text-sm font-bold hover:bg-slate-50">Cancel</button>
+                <button onClick={enrollStudent} disabled={enrolling}
+                  className="flex-1 py-2.5 rounded-lg bg-violet-600 text-white text-sm font-bold hover:bg-violet-700 disabled:opacity-50">
+                  {enrolling ? 'Enrolling...' : 'Enroll Now'}
+                </button>
               </div>
             </div>
           </div>

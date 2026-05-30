@@ -29,12 +29,13 @@ const StudentEnrollment = () => {
     try {
       const [classRes, studentRes] = await Promise.all([
         api.get('/classrooms/'),
-        api.get('/users/?role=student'),
+        api.get('/users/?role=student&page_size=500'),
       ]);
-      setClassrooms(classRes.data);
-      setStudents(studentRes.data);
-    } catch {
-      toast.error('Failed to load data');
+      setClassrooms(classRes.data.results || classRes.data);
+      setStudents(studentRes.data.results || studentRes.data);
+    } catch (err) {
+      const msg = err.response?.data?.error || 'Failed to load data';
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
@@ -43,9 +44,10 @@ const StudentEnrollment = () => {
   const fetchEnrollments = async (classroomId) => {
     try {
       const res = await api.get(`/enrollments/?classroom=${classroomId}`);
-      setEnrollments(res.data);
-    } catch {
-      toast.error('Failed to load enrollments');
+      setEnrollments(res.data.results || res.data);
+    } catch (err) {
+      const msg = err.response?.data?.error || 'Failed to load enrollments';
+      toast.error(msg);
     }
   };
 

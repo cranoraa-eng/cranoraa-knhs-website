@@ -3267,13 +3267,14 @@ class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
         user = request.user
         remarks = request.data.get('remarks', 'Provide reason for rejection.')
 
+        from_status = application.status
         application.status = 'rejected'
         application.remarks = remarks
         application.save()
 
         EnrollmentStatusHistory.objects.create(
             application=application,
-            from_status=application.status if application.status != 'rejected' else None,
+            from_status=from_status,
             to_status='rejected',
             changed_by=user,
             notes=remarks,
@@ -3357,7 +3358,6 @@ class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
                 StudentClassEnrollment.objects.create(
                     student=student_user,
                     classroom=classroom,
-                    academic_year=application.submitted_at.year,
                 )
                 application.assigned_classroom = classroom
 
@@ -3380,7 +3380,7 @@ class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
             notes=f'Student account created. Username: {username}',
         )
 
-        self._send_notification(application, 'Enrollment Complete',
+        self._send_notification(student_user, 'Enrollment Complete',
                                 f'Welcome to the school! Your enrollment is complete. Username: {username}',
                                 '/dashboard')
 
@@ -3393,12 +3393,13 @@ class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
         })
 
     def _auto_assign_section(self, application):
+        from django.db.models import Count, F
         available = Classroom.objects.filter(
             grade_level=application.grade_level,
         ).annotate(
-            current_count=Count('studentclassenrollment')
+            current_count=Count('enrollments')
         ).filter(
-            current_count__lt=models.F('capacity')
+            current_count__lt=F('capacity')
         ).order_by('current_count').first()
 
         if available:
@@ -3413,7 +3414,7 @@ class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
             return Response({'error': 'classroom_id is required'}, status=400)
         try:
             classroom = Classroom.objects.get(id=classroom_id)
-            current_count = StudentClassEnrollment.objects.filter(classroom=classroom).count()
+            current_count = classroom.enrollments.count()
             if classroom.capacity and current_count >= classroom.capacity:
                 return Response({'error': f'{classroom.name} is at full capacity ({classroom.capacity})'}, status=400)
             application.assigned_classroom = classroom
@@ -3458,13 +3459,14 @@ class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
         message = request.data.get('message', 'Please submit the missing requirements.')
         doc_types = request.data.get('document_types', [])
 
+        from_status = application.status
         application.status = 'pending_requirements'
         application.remarks = message
         application.save()
 
         EnrollmentStatusHistory.objects.create(
             application=application,
-            from_status=application.status,
+            from_status=from_status,
             to_status='pending_requirements',
             changed_by=user,
             notes=message,
