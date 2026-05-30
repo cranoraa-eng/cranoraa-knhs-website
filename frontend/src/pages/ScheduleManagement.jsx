@@ -88,6 +88,11 @@ export default function ScheduleManagement() {
   const [conflicts, setConflicts] = useState([]);
   const [showConflicts, setShowConflicts] = useState(false);
 
+  const [editingSlot, setEditingSlot] = useState(null);
+  const [editSlotForm, setEditSlotForm] = useState({ start_time:'', end_time:'', label:'', day:'' });
+  const [showTutorial, setShowTutorial] = useState(() => !localStorage.getItem('schedTutorialDone'));
+  const [tutorialStep, setTutorialStep] = useState(0);
+
   const fetchAll = useCallback(async () => {
     setLoading(true);
     try {
@@ -346,6 +351,63 @@ export default function ScheduleManagement() {
     } catch { toast.error('Conflict check failed'); }
   };
 
+  const startEditSlot = useCallback((slot) => {
+    setEditingSlot(slot);
+    setEditSlotForm({ start_time: slot.start_time, end_time: slot.end_time, label: slot.label || '', day: slot.day });
+  }, []);
+
+  const cancelEditSlot = useCallback(() => {
+    setEditingSlot(null);
+    setEditSlotForm({ start_time:'', end_time:'', label:'', day:'' });
+  }, []);
+
+  const saveEditSlot = async () => {
+    if (!editingSlot) return;
+    setSavingSlot(true);
+    try {
+      const res = await api.patch(`/time-slots/${editingSlot.id}/`, {
+        start_time: editSlotForm.start_time,
+        end_time: editSlotForm.end_time,
+        label: editSlotForm.label,
+      });
+      setTimeSlots(prev => prev.map(t => t.id === editingSlot.id ? { ...t, ...res.data } : t));
+      toast.success('Time slot updated');
+      cancelEditSlot();
+    } catch (err) {
+      toast.error(err.response?.data?.non_field_errors?.[0] || 'Failed to update');
+    } finally { setSavingSlot(false); }
+  };
+
+  const applyToAllDays = useCallback(async (period) => {
+    setSavingSlot(true);
+    let c = 0; const n = [];
+    try {
+      for (const d of WEEKDAYS) {
+        if (hasSlotForCell(d, period)) continue;
+        const r = await api.post('/time-slots/', { day: d, start_time: normalizeTime(period.start_time), end_time: normalizeTime(period.end_time), label: period.label||'' });
+        n.push(r.data); c++;
+      }
+      if (c) { setTimeSlots(prev => [...prev, ...n]); toast.success(`Added ${c} missing day(s)`); }
+      else toast.success('All days already present');
+    } catch { toast.error('Failed to add'); }
+    finally { setSavingSlot(false); }
+  }, [hasSlotForCell]);
+
+  const tutorialSteps = [
+    { title:'Welcome to Bell Periods', desc:'This is where you define your school\'s daily class periods. Start with the quick setup or add periods manually.' },
+    { title:'Quick Setup', desc:'Click "Apply Standard Day" to instantly create 7 periods (Mon-Fri) or include Saturday. Use "Fill Gaps" to add missing days for existing periods.' },
+    { title:'Add Custom Period', desc:'Fill in the label, start/end time, and select which days this period applies to. Use the shortcuts to select Mon-Fri or all days.' },
+    { title:'Period Overview', desc:'The grid shows all periods across the week. Each cell shows the day coverage. Click the edit icon to change a slot\'s time or label, or delete it.' },
+    { title:'You\'re all set!', desc:'Close this panel and start assigning classes to time slots. You can always come back here to add or edit periods.' },
+  ];
+
+  const nextTutorial = () => {
+    if (tutorialStep < tutorialSteps.length - 1) setTutorialStep(s => s + 1);
+    else { setShowTutorial(false); localStorage.setItem('schedTutorialDone','1'); }
+  };
+  const prevTutorial = () => setTutorialStep(s => Math.max(0, s - 1));
+  const dismissTutorial = () => { setShowTutorial(false); localStorage.setItem('schedTutorialDone','1'); };
+
   const needsTimeSlots = timeSlots.length === 0;
   const needsClassrooms = classrooms.length === 0;
   const isSetupComplete = !needsTimeSlots && !needsClassrooms;
@@ -372,6 +434,10 @@ export default function ScheduleManagement() {
             className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-slate-200 bg-white text-slate-700 text-xs font-semibold hover:bg-slate-50 transition-colors">
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
             Time Slots
+          </button>
+          <button type="button" onClick={() => { setShowSlotPanel(true); setShowTutorial(true); setTutorialStep(0); }}
+            className="flex items-center gap-1.5 px-2.5 py-2 rounded-lg border border-slate-200 bg-white text-slate-400 text-xs font-semibold hover:text-violet-600 hover:border-violet-200 transition-colors" title="Tutorial">
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
           </button>
           <button type="button" onClick={() => setShowRoomPanel(true)}
             className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-slate-200 bg-white text-slate-700 text-xs font-semibold hover:bg-slate-50 transition-colors">
@@ -793,15 +859,15 @@ export default function ScheduleManagement() {
       {/* ══════════════════════════════════════════════════════════════════════
           TIME SLOTS MODAL
       ══════════════════════════════════════════════════════════════════════ */}
-      <Modal open={showSlotPanel} onClose={() => setShowSlotPanel(false)} size="lg"
+      <Modal open={showSlotPanel} onClose={() => { setShowSlotPanel(false); cancelEditSlot(); }} size="lg"
         title="Bell Periods" subtitle={`${timeSlots.length} slots configured`}>
-        <div className="flex flex-col md:flex-row min-h-0 max-h-[70vh]">
-          {/* Left: Add form */}
-          <div className="w-full md:w-[340px] p-5 border-b md:border-b-0 md:border-r border-slate-100 bg-slate-50/50 overflow-y-auto shrink-0 space-y-4">
+        <div className="flex flex-1 min-h-0 max-h-[70vh] overflow-hidden">
+          {/* Left: Setup panel */}
+          <div className="w-[280px] shrink-0 p-4 border-r border-slate-100 bg-slate-50/50 overflow-y-auto space-y-4">
             <div className="space-y-2">
               <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Quick Setup</p>
               <button type="button" onClick={() => applyStandardBell(false)} disabled={savingSlot}
-                className="w-full py-2.5 rounded-lg bg-violet-600 text-white text-xs font-bold hover:bg-violet-700 disabled:opacity-50 transition-all">
+                className="w-full py-2.5 rounded-lg bg-violet-600 text-white text-xs font-bold hover:bg-violet-700 disabled:opacity-50 transition-all shadow-sm">
                 Apply Standard Day (Mon-Fri)
               </button>
               <button type="button" onClick={() => applyStandardBell(true)} disabled={savingSlot}
@@ -815,88 +881,221 @@ export default function ScheduleManagement() {
             </div>
 
             <div className="border-t border-slate-200 pt-4">
+              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-3">Add Custom Period</p>
               <form onSubmit={saveSlotBulk} className="space-y-3">
-                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Add Custom Period</p>
-                <Field label="Label">
-                  <input value={slotForm.label} onChange={e => setSlotForm(f => ({...f, label: e.target.value}))}
-                    placeholder="e.g. Period 1"
-                    className="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400/30" />
-                </Field>
-                <div className="grid grid-cols-2 gap-3">
-                  <Field label="Start" required>
+                <input value={slotForm.label} onChange={e => setSlotForm(f => ({...f, label: e.target.value}))}
+                  placeholder="Label (e.g. Period 1)"
+                  className="w-full px-3 py-2 rounded-lg border border-slate-200 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-violet-400/30" />
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block text-[9px] font-bold text-slate-400 uppercase mb-1">Start</label>
                     <input required type="time" value={slotForm.start_time} onChange={e => setSlotForm(f => ({...f, start_time: e.target.value}))}
-                      className="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400/30" />
-                  </Field>
-                  <Field label="End" required>
+                      className="w-full px-2 py-1.5 rounded-lg border border-slate-200 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-violet-400/30" />
+                  </div>
+                  <div>
+                    <label className="block text-[9px] font-bold text-slate-400 uppercase mb-1">End</label>
                     <input required type="time" value={slotForm.end_time} onChange={e => setSlotForm(f => ({...f, end_time: e.target.value}))}
-                      className="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400/30" />
-                  </Field>
+                      className="w-full px-2 py-1.5 rounded-lg border border-slate-200 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-violet-400/30" />
+                  </div>
                 </div>
-                <Field label="Days">
-                  <div className="flex flex-wrap gap-1.5">
+                <div>
+                  <label className="block text-[9px] font-bold text-slate-400 uppercase mb-1">Days</label>
+                  <div className="flex flex-wrap gap-1">
                     {DAYS.map(d => {
                       const sel = slotForm.days.includes(d);
                       return (
                         <button key={d} type="button"
                           onClick={() => setSlotForm(f => ({...f, days: sel ? f.days.filter(x => x !== d) : [...f.days, d]}))}
-                          className={`px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase border transition-colors ${sel ? 'bg-violet-600 text-white border-violet-700' : 'bg-white text-slate-600 border-slate-200 hover:border-violet-300'}`}>
+                          className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase border transition-colors ${sel ? 'bg-violet-600 text-white border-violet-700' : 'bg-white text-slate-500 border-slate-200 hover:border-violet-300'}`}>
                           {DAY_SHORT[d]}
                         </button>
                       );
                     })}
                   </div>
-                  <div className="flex gap-3 mt-2">
-                    <button type="button" onClick={() => setSlotForm(f => ({...f, days: [...WEEKDAYS]}))} className="text-[10px] font-bold text-violet-600 hover:underline">Mon-Fri</button>
-                    <button type="button" onClick={() => setSlotForm(f => ({...f, days: [...DAYS]}))} className="text-[10px] font-bold text-violet-600 hover:underline">All days</button>
+                  <div className="flex gap-2 mt-1.5">
+                    <button type="button" onClick={() => setSlotForm(f => ({...f, days: [...WEEKDAYS]}))} className="text-[9px] font-bold text-violet-600 hover:underline">Mon-Fri</button>
+                    <button type="button" onClick={() => setSlotForm(f => ({...f, days: [...DAYS]}))} className="text-[9px] font-bold text-violet-600 hover:underline">All</button>
                   </div>
-                </Field>
+                </div>
                 <button type="submit" disabled={savingSlot}
-                  className="w-full py-2.5 rounded-lg bg-violet-600 text-white text-xs font-bold hover:bg-violet-700 disabled:opacity-50 transition-all">
+                  className="w-full py-2 rounded-lg bg-violet-600 text-white text-[10px] font-bold hover:bg-violet-700 disabled:opacity-50 transition-all">
                   {savingSlot ? 'Adding...' : `Add to ${slotForm.days.length} day(s)`}
                 </button>
               </form>
             </div>
           </div>
 
-          {/* Right: Period overview */}
-          <div className="flex-1 overflow-y-auto p-5 space-y-3 bg-white">
-            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Period Overview</p>
+          {/* Right: Visual weekly grid with edit capability */}
+          <div className="flex-1 overflow-y-auto p-4 bg-white">
+            <div className="flex items-center justify-between gap-3 mb-4">
+              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Period Overview</p>
+              <button type="button" onClick={() => { setShowTutorial(true); setTutorialStep(0); }}
+                className="text-[9px] font-bold text-violet-600 hover:text-violet-800 flex items-center gap-1">
+                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                Tutorial
+              </button>
+            </div>
+
             {uniquePeriods.length === 0 ? (
-              <p className="text-sm text-slate-500 text-center py-12">No periods yet. Use quick setup on the left.</p>
-            ) : (
-              uniquePeriods.map(period => (
-                <div key={periodKey(period.start_time, period.end_time)} className="rounded-lg border border-slate-200 p-3">
-                  <div className="flex items-center justify-between gap-2 mb-2">
-                    <div>
-                      <p className="text-sm font-bold text-slate-800">{period.start_display} – {period.end_display}</p>
-                      {period.label && <p className="text-[10px] text-violet-600 font-semibold">{period.label}</p>}
-                    </div>
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                      DAYS.every(d => hasSlotForCell(d, period)) ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
-                    }`}>
-                      {DAYS.filter(d => hasSlotForCell(d, period)).length}/{DAYS.length} days
-                    </span>
-                  </div>
-                  <div className="flex flex-wrap gap-1">
-                    {DAYS.map(d => {
-                      const has = hasSlotForCell(d, period);
-                      const slots = sortedSlots.filter(ts => ts.day === d && periodKey(ts.start_time, ts.end_time) === periodKey(period.start_time, period.end_time));
-                      return (
-                        <div key={d} className={`flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-bold border ${has ? 'bg-violet-50 border-violet-200 text-violet-800' : 'bg-slate-50 border-dashed border-slate-200 text-slate-400'}`}>
-                          {DAY_SHORT[d]}
-                          {slots.map(ts => (
-                            <button key={ts.id} type="button" onClick={() => deleteSlot(ts.id, `${DAY_SHORT[d]} ${normalizeTime(ts.start_time)}`)}
-                              className="ml-0.5 text-rose-400 hover:text-rose-600 font-bold" title="Delete">&times;</button>
-                          ))}
-                        </div>
-                      );
-                    })}
-                  </div>
+              <div className="text-center py-16">
+                <div className="w-12 h-12 rounded-xl bg-violet-100 flex items-center justify-center mx-auto mb-3">
+                  <svg className="w-6 h-6 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 </div>
-              ))
+                <p className="text-sm font-bold text-slate-600">No periods yet</p>
+                <p className="text-xs text-slate-400 mt-1">Use quick setup on the left to get started</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {uniquePeriods.map(period => {
+                  const pk = periodKey(period.start_time, period.end_time);
+                  const isEditing = editingSlot && periodKey(editingSlot.start_time, editingSlot.end_time) === pk;
+                  const dayCount = DAYS.filter(d => hasSlotForCell(d, period)).length;
+                  const isFull = dayCount === DAYS.length;
+                  return (
+                    <div key={pk} className={`rounded-xl border transition-all ${isEditing ? 'border-violet-300 bg-violet-50/30 ring-2 ring-violet-200/50' : 'border-slate-200 bg-white hover:border-slate-300'}`}>
+                      {/* Period header */}
+                      <div className="flex items-center justify-between gap-2 px-4 py-3">
+                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                          <div className="w-1.5 h-8 rounded-full bg-violet-400 flex-shrink-0" />
+                          <div className="min-w-0">
+                            <p className="text-sm font-bold text-slate-900">{period.start_display} – {period.end_display}</p>
+                            {period.label && <p className="text-[9px] font-bold text-violet-600 uppercase tracking-wide">{period.label}</p>}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                          {!isFull && dayCount > 0 && (
+                            <button type="button" onClick={() => applyToAllDays(period)} disabled={savingSlot}
+                              className="px-2 py-1 rounded-lg border border-amber-200 bg-amber-50 text-amber-700 text-[9px] font-bold hover:bg-amber-100 disabled:opacity-50 transition-all">
+                              Fill days
+                            </button>
+                          )}
+                          <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${isFull ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
+                            {dayCount}/{DAYS.length}
+                          </span>
+                          <button type="button" onClick={() => {
+                            if (isEditing) cancelEditSlot();
+                            else { const s = sortedSlots.find(ts => periodKey(ts.start_time, ts.end_time) === pk && hasSlotForCell(ts.day, period)); if (s) startEditSlot(s); }
+                          }} className="p-1.5 rounded-lg text-slate-400 hover:text-violet-600 hover:bg-violet-50 transition-all" title={isEditing ? 'Cancel edit' : 'Edit periods'}>
+                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Day cells row */}
+                      <div className="px-4 pb-3">
+                        <div className="flex flex-wrap gap-1.5">
+                          {DAYS.map(d => {
+                            const has = hasSlotForCell(d, period);
+                            const slots = sortedSlots.filter(ts => ts.day === d && periodKey(ts.start_time, ts.end_time) === pk);
+                            const slot = slots[0];
+                            const isBeingEdited = isEditing && editingSlot?.day === d;
+                            return (
+                              <div key={d} className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] font-bold border transition-all ${isBeingEdited ? 'bg-violet-100 border-violet-400 text-violet-900 ring-1 ring-violet-400' : has ? 'bg-violet-50 border-violet-200 text-violet-800' : 'bg-slate-50 border-dashed border-slate-200 text-slate-400'}`}>
+                                <span>{DAY_SHORT[d]}</span>
+                                {has && slot ? (
+                                  <div className="flex items-center gap-0.5 ml-0.5">
+                                    {isBeingEdited ? (
+                                      <span className="w-1.5 h-1.5 rounded-full bg-violet-500 animate-pulse" />
+                                    ) : (
+                                      <>
+                                        <button type="button" onClick={() => startEditSlot(slot)}
+                                          className="text-violet-400 hover:text-violet-600 transition-colors" title="Edit this slot">
+                                          <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                        </button>
+                                        <button type="button" onClick={() => deleteSlot(slot.id, `${DAY_SHORT[d]} ${normalizeTime(slot.start_time)}`)}
+                                          className="text-rose-300 hover:text-rose-500 transition-colors" title="Delete this slot">
+                                          <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12"/></svg>
+                                        </button>
+                                      </>
+                                    )}
+                                  </div>
+                                ) : null}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Inline edit form for this period */}
+                      {isEditing && (
+                        <div className="px-4 pb-4 pt-0 border-t border-violet-200 mt-1">
+                          <div className="pt-3 flex flex-wrap items-end gap-3">
+                            <div>
+                              <label className="block text-[9px] font-bold text-slate-400 uppercase mb-1">Day</label>
+                              <select value={editSlotForm.day} onChange={e => setEditSlotForm(f => ({...f, day: e.target.value}))}
+                                className="px-2 py-1.5 rounded-lg border border-slate-200 text-xs font-medium bg-white focus:outline-none focus:ring-2 focus:ring-violet-400/30">
+                                {DAYS.map(d => <option key={d} value={d}>{DAY_FULL[d]}</option>)}
+                              </select>
+                            </div>
+                            <div>
+                              <label className="block text-[9px] font-bold text-slate-400 uppercase mb-1">Start</label>
+                              <input type="time" value={editSlotForm.start_time} onChange={e => setEditSlotForm(f => ({...f, start_time: e.target.value}))}
+                                className="px-2 py-1.5 rounded-lg border border-slate-200 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-violet-400/30" />
+                            </div>
+                            <div>
+                              <label className="block text-[9px] font-bold text-slate-400 uppercase mb-1">End</label>
+                              <input type="time" value={editSlotForm.end_time} onChange={e => setEditSlotForm(f => ({...f, end_time: e.target.value}))}
+                                className="px-2 py-1.5 rounded-lg border border-slate-200 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-violet-400/30" />
+                            </div>
+                            <div>
+                              <label className="block text-[9px] font-bold text-slate-400 uppercase mb-1">Label</label>
+                              <input value={editSlotForm.label} onChange={e => setEditSlotForm(f => ({...f, label: e.target.value}))}
+                                placeholder="Period label"
+                                className="px-2 py-1.5 rounded-lg border border-slate-200 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-violet-400/30 w-28" />
+                            </div>
+                            <div className="flex gap-1.5">
+                              <button type="button" onClick={saveEditSlot} disabled={savingSlot}
+                                className="px-3 py-1.5 rounded-lg bg-violet-600 text-white text-[10px] font-bold hover:bg-violet-700 disabled:opacity-50 transition-all">
+                                {savingSlot ? '...' : 'Save'}
+                              </button>
+                              <button type="button" onClick={cancelEditSlot}
+                                className="px-3 py-1.5 rounded-lg border border-slate-200 text-slate-500 text-[10px] font-bold hover:bg-slate-50 transition-all">
+                                Cancel
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
             )}
           </div>
         </div>
+
+        {/* Tutorial overlay */}
+        {showTutorial && (
+          <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
+            <div className="w-full max-w-sm mx-4 bg-white rounded-2xl shadow-2xl border border-slate-200 p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-8 h-8 rounded-lg bg-violet-100 flex items-center justify-center">
+                  <svg className="w-4 h-4 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-slate-900">{tutorialSteps[tutorialStep].title}</p>
+                  <p className="text-[9px] text-slate-400">Step {tutorialStep + 1} of {tutorialSteps.length}</p>
+                </div>
+                <button type="button" onClick={dismissTutorial} className="ml-auto p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+              </div>
+              <p className="text-sm text-slate-600 leading-relaxed">{tutorialSteps[tutorialStep].desc}</p>
+              <div className="flex items-center justify-between mt-6 pt-4 border-t border-slate-100">
+                <button type="button" onClick={dismissTutorial} className="text-[10px] font-bold text-slate-400 hover:text-slate-600">Skip</button>
+                <div className="flex items-center gap-2">
+                  {tutorialStep > 0 && (
+                    <button type="button" onClick={prevTutorial} className="px-4 py-2 rounded-lg border border-slate-200 text-slate-600 text-[10px] font-bold hover:bg-slate-50 transition-all">Back</button>
+                  )}
+                  <button type="button" onClick={nextTutorial}
+                    className="px-5 py-2 rounded-lg bg-violet-600 text-white text-[10px] font-bold hover:bg-violet-700 transition-all">
+                    {tutorialStep < tutorialSteps.length - 1 ? 'Next' : 'Got it!'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </Modal>
 
       {/* ══════════════════════════════════════════════════════════════════════
