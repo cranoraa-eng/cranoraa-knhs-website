@@ -212,7 +212,7 @@ REST_FRAMEWORK = {
     'DEFAULT_THROTTLE_RATES': {
         'anon': '60/minute',          # general anonymous limit
         'user': '300/minute',         # general authenticated limit
-        'auth': '5/hour',             # login / password-reset (5 per hour per IP)
+        'auth': '20/minute',            # login / password-reset (per IP + username)
         'check_result': '10/hour',    # scratch-card grade lookup
         'enrollment': '20/hour',      # public enrollment form submissions
     },

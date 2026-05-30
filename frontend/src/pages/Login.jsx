@@ -213,6 +213,14 @@ const Login = () => {
         Swal.fire({ icon: 'error', title: 'Account Suspended', text: message || 'This account has been suspended. Please contact the administrator.', confirmButtonColor: '#ef4444' });
       } else if (status === 401) {
         Swal.fire({ icon: 'error', title: 'Invalid Credentials', text: 'The ID or password you entered is incorrect.', confirmButtonText: 'Try Again', confirmButtonColor: '#9333ea' });
+      } else if (status === 429) {
+        const detail = err.response?.data?.detail;
+        Swal.fire({
+          icon: 'warning',
+          title: 'Too Many Attempts',
+          text: detail || 'Please wait a minute before trying to sign in again.',
+          confirmButtonColor: '#9333ea',
+        });
       } else if (!err.response) {
         Swal.fire({ icon: 'error', title: 'Cannot Reach Server', text: 'Make sure the backend is running and try again.', confirmButtonColor: '#9333ea' });
       } else {
