@@ -199,9 +199,20 @@ class ChatRoom(models.Model):
 
 
 class ChatMessage(models.Model):
+    MESSAGE_TYPES = [
+        ('text', 'Text'),
+        ('image', 'Image'),
+        ('file', 'File'),
+    ]
+
     room = models.ForeignKey(ChatRoom, on_delete=models.CASCADE, related_name='messages')
     sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_messages')
-    content = models.TextField()
+    content = models.TextField(blank=True)
+    message_type = models.CharField(max_length=10, choices=MESSAGE_TYPES, default='text')
+    attachment_url = models.URLField(max_length=1000, null=True, blank=True, help_text='Supabase Storage URL')
+    attachment_filename = models.CharField(max_length=255, blank=True)
+    attachment_content_type = models.CharField(max_length=120, blank=True)
+    file_size_bytes = models.PositiveIntegerField(null=True, blank=True)
     timestamp = models.DateTimeField(auto_now_add=True)
     is_delivered = models.BooleanField(default=False)
     is_read = models.BooleanField(default=False)

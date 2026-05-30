@@ -4236,6 +4236,63 @@ class ChatRoomViewSet(viewsets.ModelViewSet):
             room.delete()
         return Response({'status': 'conversation deleted'})
 
+
+def _chat_preview_content(message):
+    """Short preview for room list and push notifications."""
+    content = (message.content or '').strip()
+    if content:
+        return content
+    if message.message_type == 'image':
+        return '📷 Photo'
+    if message.message_type == 'file':
+        return f'📎 {message.attachment_filename or "File"}'
+    return ''
+
+
+def _broadcast_new_chat_message(message, serialized_data, sender):
+    """Broadcast a new chat message to room WebSocket groups and offline notifications."""
+    from channels.layers import get_channel_layer
+    from asgiref.sync import async_to_sync
+
+    channel_layer = get_channel_layer()
+    room_id = message.room_id
+    preview = _chat_preview_content(message)
+
+    async_to_sync(channel_layer.group_send)(f'chat_{room_id}', {
+        'type': 'chat_message',
+        'message_data': serialized_data,
+    })
+
+    notify_payload = {
+        'type': 'new_message_notify',
+        'room_id': room_id,
+        'sender_id': sender.id,
+        'sender_name': sender.first_name or sender.username,
+        'content': preview,
+        'timestamp': message.timestamp.isoformat(),
+    }
+    for participant in message.room.participants.all():
+        if participant.id != sender.id:
+            async_to_sync(channel_layer.group_send)(f'user_{participant.id}', notify_payload)
+
+    five_mins_ago = timezone.now() - datetime.timedelta(minutes=5)
+    sender_name = full_name(sender)
+    room = message.room
+    room_label = room.name if room.is_group else sender_name
+    preview_text = preview[:80] + ('…' if len(preview) > 80 else '')
+    offline_participants = room.participants.exclude(id=sender.id).filter(
+        last_activity__lt=five_mins_ago
+    )
+    for participant in offline_participants:
+        Notification.objects.create(
+            recipient=participant,
+            notification_type='message',
+            title=f'New message from {sender_name}',
+            message=f'{room_label}: {preview_text}',
+            link='/messages',
+        )
+
+
 class ChatMessageViewSet(viewsets.ModelViewSet):
     serializer_class = ChatMessageSerializer
     permission_classes = [IsAuthenticated]
@@ -4383,6 +4440,66 @@ class ChatMessageViewSet(viewsets.ModelViewSet):
             }
         )
         return Response({'status': 'unpinned'})
+
+    @action(detail=False, methods=['post'], parser_classes=[parsers.MultiPartParser, parsers.FormParser])
+    def send_media(self, request):
+        """Upload an image or file and send it as a chat message."""
+        is_allowed, reason = check_user_moderation(request.user)
+        if not is_allowed:
+            return Response({'error': reason}, status=status.HTTP_403_FORBIDDEN)
+
+        room_id = request.data.get('room_id')
+        if not room_id:
+            return Response({'error': 'room_id is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            room = ChatRoom.objects.get(id=room_id, participants=request.user)
+        except ChatRoom.DoesNotExist:
+            return Response({'error': 'Chat room not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        uploaded = request.FILES.get('file')
+        if not uploaded:
+            return Response({'error': 'file is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        caption = (request.data.get('caption') or '').strip()
+        parent_id = request.data.get('parent_id')
+
+        from .storage import upload_file
+        url, err = upload_file(uploaded, bucket_key='chat-attachments', folder=f'room-{room_id}')
+        if err:
+            return Response({'error': err}, status=status.HTTP_400_BAD_REQUEST)
+
+        content_type = uploaded.content_type or ''
+        message_type = 'image' if content_type.startswith('image/') else 'file'
+        preview = caption or ('📷 Photo' if message_type == 'image' else f'📎 {uploaded.name}')
+
+        parent = None
+        if parent_id:
+            try:
+                parent = ChatMessage.objects.get(id=parent_id, room=room)
+            except ChatMessage.DoesNotExist:
+                pass
+
+        room.last_action_type = 'message'
+        room.last_action_sender = request.user
+        room.last_action_content = preview
+        room.save()
+
+        message = ChatMessage.objects.create(
+            room=room,
+            sender=request.user,
+            content=caption,
+            message_type=message_type,
+            attachment_url=url,
+            attachment_filename=uploaded.name,
+            attachment_content_type=content_type,
+            file_size_bytes=uploaded.size,
+            parent_message=parent,
+        )
+
+        serialized = self.get_serializer(message).data
+        _broadcast_new_chat_message(message, serialized, request.user)
+        return Response(serialized, status=status.HTTP_201_CREATED)
 
 class ReportedMessageViewSet(viewsets.ModelViewSet):
     serializer_class = ReportedMessageSerializer

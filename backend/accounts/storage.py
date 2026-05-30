@@ -136,6 +136,26 @@ BUCKETS: dict[str, BucketConfig] = {
         allowed_ext=('.jpg', '.jpeg', '.png', '.webp', '.svg'),
         env_var='SUPABASE_BUCKET_BRANDING',
     ),
+    'chat-attachments': BucketConfig(
+        name='chat-attachments',
+        max_bytes=25 * 1024 * 1024,    # 25 MB
+        allowed_mime=(
+            'image/jpeg', 'image/png', 'image/webp', 'image/gif',
+            'application/pdf',
+            'application/msword',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'application/vnd.ms-excel',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'application/vnd.ms-powerpoint',
+            'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+            'text/plain',
+        ),
+        allowed_ext=(
+            '.jpg', '.jpeg', '.png', '.webp', '.gif', '.pdf',
+            '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx', '.txt',
+        ),
+        env_var='SUPABASE_BUCKET_CHAT',
+    ),
 }
 
 

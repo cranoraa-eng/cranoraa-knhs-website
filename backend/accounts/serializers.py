@@ -596,14 +596,23 @@ class ChatMessageSerializer(serializers.ModelSerializer):
     sender_profile_picture = serializers.SerializerMethodField()
     reactions = serializers.SerializerMethodField()
     parent_message_details = serializers.SerializerMethodField()
+    attachment_is_image = serializers.SerializerMethodField()
 
     class Meta:
         model = ChatMessage
         fields = [
-            'id', 'room', 'sender', 'sender_name', 'sender_profile_picture', 'content', 'timestamp', 
-            'is_read', 'is_delivered', 'is_pinned', 'is_edited', 
-            'parent_message', 'parent_message_details', 'reactions'
+            'id', 'room', 'sender', 'sender_name', 'sender_profile_picture', 'content', 'timestamp',
+            'is_read', 'is_delivered', 'is_pinned', 'is_edited',
+            'parent_message', 'parent_message_details', 'reactions',
+            'message_type', 'attachment_url', 'attachment_filename',
+            'attachment_content_type', 'file_size_bytes', 'attachment_is_image',
         ]
+
+    def get_attachment_is_image(self, obj):
+        if obj.message_type == 'image':
+            return True
+        ct = obj.attachment_content_type or ''
+        return ct.startswith('image/')
 
     def get_sender_name(self, obj):
         return full_name(obj.sender)
@@ -630,11 +639,19 @@ class ChatMessageSerializer(serializers.ModelSerializer):
 
     def get_parent_message_details(self, obj):
         if obj.parent_message:
+            parent = obj.parent_message
+            preview = (parent.content or '').strip()
+            if not preview:
+                if parent.message_type == 'image':
+                    preview = '📷 Photo'
+                elif parent.message_type == 'file':
+                    preview = f'📎 {parent.attachment_filename or "File"}'
             return {
-                'id': obj.parent_message.id,
-                'content': obj.parent_message.content,
-                'sender_name': full_name(obj.parent_message.sender),
-                'sender_id': obj.parent_message.sender.id
+                'id': parent.id,
+                'content': preview,
+                'sender_name': full_name(parent.sender),
+                'sender_id': parent.sender.id,
+                'message_type': parent.message_type,
             }
         return None
 

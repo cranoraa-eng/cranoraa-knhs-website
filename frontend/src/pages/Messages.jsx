@@ -34,6 +34,65 @@ const FriendActionButton = ({ targetUser, status, onStartChat, onSendRequest, on
   );
 };
 
+const formatFileSize = (bytes) => {
+  if (!bytes) return '';
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+};
+
+const formatMessagePreview = (msg) => {
+  if (!msg) return '';
+  if (msg.content) return msg.content;
+  if (msg.message_type === 'image') return '📷 Photo';
+  if (msg.message_type === 'file') return `📎 ${msg.attachment_filename || 'File'}`;
+  return '';
+};
+
+const MessageAttachmentBody = ({ msg, isMine }) => {
+  const isImage = msg.message_type === 'image' || msg.attachment_is_image;
+  if (isImage && msg.attachment_url) {
+    return (
+      <a href={msg.attachment_url} target="_blank" rel="noopener noreferrer" className="block" onClick={e => e.stopPropagation()}>
+        <img
+          src={msg.attachment_url}
+          alt={msg.attachment_filename || 'Image'}
+          className="max-w-full max-h-64 rounded-xl object-contain"
+          loading="lazy"
+        />
+      </a>
+    );
+  }
+  if (msg.message_type === 'file' && msg.attachment_url) {
+    return (
+      <a
+        href={msg.attachment_url}
+        target="_blank"
+        rel="noopener noreferrer"
+        download={msg.attachment_filename}
+        onClick={e => e.stopPropagation()}
+        className={`flex items-center gap-3 p-3 rounded-xl border transition-colors ${isMine
+          ? 'bg-violet-700/30 border-violet-400/30 hover:bg-violet-700/40'
+          : 'bg-slate-50 border-slate-200 hover:bg-slate-100'
+        }`}
+      >
+        <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${isMine ? 'bg-violet-500/40' : 'bg-violet-100'}`}>
+          <svg className={`w-5 h-5 ${isMine ? 'text-white' : 'text-violet-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className={`text-xs font-bold truncate ${isMine ? 'text-white' : 'text-slate-800'}`}>{msg.attachment_filename || 'File'}</p>
+          {msg.file_size_bytes ? (
+            <p className={`text-[10px] ${isMine ? 'text-violet-200' : 'text-slate-400'}`}>{formatFileSize(msg.file_size_bytes)}</p>
+          ) : null}
+        </div>
+      </a>
+    );
+  }
+  return null;
+};
+
 const Messages = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -43,6 +102,8 @@ const Messages = () => {
   const socketRef = useRef(null);
   const typingTimeoutRef = useRef(null);
   const selectedRoomRef = useRef(null); // always current selectedRoom for WS closures
+  const fileInputRef = useRef(null);
+  const [pendingPreviewUrl, setPendingPreviewUrl] = useState(null);
 
   // ── State ─────────────────────────────────────────────────────────────────
   const [activeTab, setActiveTab] = useState('chats');
@@ -80,6 +141,8 @@ const Messages = () => {
   const [showGroupSettings, setShowGroupSettings] = useState(false);
   const [groupSettingsTab, setGroupSettingsTab] = useState('members');
   const [replyingTo, setReplyingTo] = useState(null);
+  const [pendingFile, setPendingFile] = useState(null);
+  const [uploadingAttachment, setUploadingAttachment] = useState(false);
   const [showReactionPicker, setShowReactionPicker] = useState(null);
   const [activeMoreMenu, setActiveMoreMenu] = useState(null);
 
@@ -118,6 +181,14 @@ const Messages = () => {
 
   // Keep selectedRoomRef in sync so WS closures always see current room
   useEffect(() => { selectedRoomRef.current = selectedRoom; }, [selectedRoom]);
+
+  useEffect(() => {
+    return () => {
+      if (pendingPreviewUrl) {
+        URL.revokeObjectURL(pendingPreviewUrl);
+      }
+    };
+  }, [pendingPreviewUrl]);
 
   useEffect(() => {
     fetchRooms();
@@ -224,11 +295,7 @@ const Messages = () => {
   };
 
   // ── Handlers ──────────────────────────────────────────────────────────────
-  const handleSendMessage = (e) => {
-    e?.preventDefault();
-    if (!newMessage.trim() || !selectedRoom) return;
-
-    // Proactive check if we have the info locally
+  const checkMessagingAllowed = () => {
     if (user?.is_suspended) {
       Swal.fire({
         title: 'Account Suspended',
@@ -237,7 +304,7 @@ const Messages = () => {
         confirmButtonColor: '#ef4444',
         customClass: { popup: 'rounded-[2rem]' }
       });
-      return;
+      return false;
     }
 
     if (user?.is_muted) {
@@ -253,8 +320,92 @@ const Messages = () => {
         confirmButtonColor: '#f59e0b',
         customClass: { popup: 'rounded-[2rem]' }
       });
+      return false;
+    }
+
+    return true;
+  };
+
+  const clearPendingFile = () => {
+    setPendingPreviewUrl(prev => {
+      if (prev) URL.revokeObjectURL(prev);
+      return null;
+    });
+    setPendingFile(null);
+  };
+
+  const handleFileSelect = (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file || !selectedRoom) return;
+    if (file.size > 25 * 1024 * 1024) {
+      toast.error('File must be 25 MB or smaller');
       return;
     }
+    setPendingPreviewUrl(prev => {
+      if (prev) URL.revokeObjectURL(prev);
+      return file.type.startsWith('image/') ? URL.createObjectURL(file) : null;
+    });
+    setPendingFile(file);
+  };
+
+  const handleComposerPaste = (e) => {
+    const file = e.clipboardData?.files?.[0];
+    if (!file || !selectedRoom) return;
+    if (!file.type.startsWith('image/')) return;
+    e.preventDefault();
+    if (file.size > 25 * 1024 * 1024) {
+      toast.error('Image must be 25 MB or smaller');
+      return;
+    }
+    setPendingPreviewUrl(prev => {
+      if (prev) URL.revokeObjectURL(prev);
+      return URL.createObjectURL(file);
+    });
+    setPendingFile(file);
+  };
+
+  const handleSendAttachment = async () => {
+    if (!pendingFile || !selectedRoom || uploadingAttachment) return;
+    if (!checkMessagingAllowed()) return;
+
+    const formData = new FormData();
+    formData.append('room_id', selectedRoom.id);
+    formData.append('file', pendingFile);
+    if (newMessage.trim()) formData.append('caption', newMessage.trim());
+    if (replyingTo) formData.append('parent_id', replyingTo.id);
+
+    setUploadingAttachment(true);
+    try {
+      await api.post('/chat/messages/send_media/', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      clearPendingFile();
+      setNewMessage('');
+      setReplyingTo(null);
+      playSound('messageSent');
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed to send attachment');
+    } finally {
+      setUploadingAttachment(false);
+    }
+  };
+
+  useEffect(() => {
+    clearPendingFile();
+  }, [selectedRoom?.id]);
+
+  const handleSendMessage = (e) => {
+    e?.preventDefault();
+    if (!selectedRoom) return;
+
+    if (pendingFile) {
+      handleSendAttachment();
+      return;
+    }
+
+    if (!newMessage.trim()) return;
+    if (!checkMessagingAllowed()) return;
 
     const content = newMessage.trim();
     setNewMessage('');
@@ -697,7 +848,7 @@ const Messages = () => {
                 last_action_type: 'message',
                 last_action_sender: msg.sender,
                 last_action_sender_name: msg.sender_name,
-                last_action_content: msg.content,
+                last_action_content: formatMessagePreview(msg),
                 updated_at: msg.timestamp,
                 unread_count: (msg.sender !== user?.id && selectedRoomRef.current?.id !== data.room_id)
                   ? (r.unread_count || 0) + 1
@@ -1010,9 +1161,10 @@ const Messages = () => {
 
                           // Default message display
                           if (room.last_message) {
+                            const preview = formatMessagePreview(room.last_message);
                             return room.is_group
-                              ? `${room.last_message.sender_name?.split(' ')[0] || 'Someone'}: ${room.last_message.content}`
-                              : room.last_message.content;
+                              ? `${room.last_message.sender_name?.split(' ')[0] || 'Someone'}: ${preview}`
+                              : preview;
                           }
 
                           return room.is_group ? `${memberCount} members` : 'No messages yet';
@@ -1415,7 +1567,7 @@ const Messages = () => {
                                     : 'bg-slate-100 text-slate-500 border-slate-300'
                                     }`}>
                                     <span className="font-bold">↩ {msg.parent_message_details.sender_name}:</span>{' '}
-                                    <span className="opacity-80">{msg.parent_message_details.content}</span>
+                                    <span className="opacity-80">{formatMessagePreview(msg.parent_message_details)}</span>
                                   </div>
                                 </button>
                               )}
@@ -1461,15 +1613,20 @@ const Messages = () => {
                                     setActiveMoreMenu(activeMoreMenu === msg.id ? null : msg.id);
                                   }
                                 }}
-                                className={`px-3 py-2 md:px-4 md:py-2.5 text-sm font-medium shadow-sm relative transition-all duration-200 break-words whitespace-pre-wrap max-w-full select-none md:select-text cursor-pointer md:cursor-default ${msg.parent_message_details ? 'rounded-b-2xl rounded-t-none' : 'rounded-2xl'
+                                className={`text-sm font-medium shadow-sm relative transition-all duration-200 break-words whitespace-pre-wrap max-w-full select-none md:select-text cursor-pointer md:cursor-default ${msg.parent_message_details ? 'rounded-b-2xl rounded-t-none' : 'rounded-2xl'
                                   } ${isMine
                                     ? `bg-violet-600 text-white ${msg.parent_message_details ? '' : 'rounded-br-none'}`
                                     : `bg-white text-slate-700 border border-slate-100 ${msg.parent_message_details ? '' : 'rounded-bl-none'}`
-                                  } ${msg.is_pinned ? 'ring-2 ring-amber-400 ring-offset-1' : ''}`}>
+                                  } ${msg.is_pinned ? 'ring-2 ring-amber-400 ring-offset-1' : ''} ${(msg.attachment_url && !msg.content) ? 'p-1.5' : 'px-3 py-2 md:px-4 md:py-2.5'}`}>
                                 {msg.is_pinned && (
-                                  <span className="block text-[8px] md:text-[9px] font-black uppercase tracking-widest mb-1 opacity-60">📌 Pinned</span>
+                                  <span className="block text-[8px] md:text-[9px] font-black uppercase tracking-widest mb-1 opacity-60 px-2 pt-1">📌 Pinned</span>
                                 )}
-                                {msg.content}
+                                {(msg.message_type === 'image' || msg.message_type === 'file') && msg.attachment_url && (
+                                  <MessageAttachmentBody msg={msg} isMine={isMine} />
+                                )}
+                                {msg.content && (
+                                  <span className={msg.attachment_url ? 'block px-2 pb-1 pt-1' : ''}>{msg.content}</span>
+                                )}
                                 {msg.is_edited && (
                                   <span className="ml-1.5 text-[9px] md:text-[10px] opacity-60 italic">edited</span>
                                 )}
@@ -1549,9 +1706,29 @@ const Messages = () => {
                   <div className="w-0.5 h-8 bg-violet-500 rounded-full flex-shrink-0" />
                   <div className="flex-1 min-w-0">
                     <p className="text-[10px] font-black text-violet-600 uppercase tracking-wider">Replying to {replyingTo.sender_name}</p>
-                    <p className="text-xs text-slate-500 truncate">{replyingTo.content}</p>
+                    <p className="text-xs text-slate-500 truncate">{formatMessagePreview(replyingTo)}</p>
                   </div>
                   <button onClick={() => setReplyingTo(null)}
+                    className="p-1 text-slate-400 hover:text-red-500 transition-colors rounded no-min flex-shrink-0">
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+              )}
+              {/* Attachment preview */}
+              {pendingFile && (
+                <div className="flex items-center gap-3 px-4 py-2.5 bg-slate-50 border-b border-slate-100">
+                  {pendingPreviewUrl ? (
+                    <img src={pendingPreviewUrl} alt="" className="w-12 h-12 rounded-lg object-cover shrink-0" />
+                  ) : (
+                    <div className="w-12 h-12 rounded-lg bg-violet-100 flex items-center justify-center shrink-0 text-lg">📎</div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-bold text-slate-700 truncate">{pendingFile.name}</p>
+                    <p className="text-[10px] text-slate-400">{formatFileSize(pendingFile.size)}</p>
+                  </div>
+                  <button type="button" onClick={clearPendingFile}
                     className="p-1 text-slate-400 hover:text-red-500 transition-colors rounded no-min flex-shrink-0">
                     <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
@@ -1562,20 +1739,45 @@ const Messages = () => {
               {/* Input row */}
               <form onSubmit={handleSendMessage} className="flex items-center gap-2 px-3 py-2.5 md:px-4 md:py-2.5" style={{ paddingBottom: 'max(0.625rem, env(safe-area-inset-bottom, 0.625rem))' }}>
                 <input
+                  ref={fileInputRef}
+                  type="file"
+                  className="hidden"
+                  accept="image/jpeg,image/png,image/webp,image/gif,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt"
+                  onChange={handleFileSelect}
+                />
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploadingAttachment}
+                  className="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-violet-600 hover:bg-violet-50 rounded-xl transition-all flex-shrink-0 no-min disabled:opacity-40"
+                  title="Attach photo or file">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                  </svg>
+                </button>
+                <input
                   type="text"
-                  placeholder="Type a message..."
+                  placeholder={pendingFile ? 'Add a caption (optional)...' : 'Type a message...'}
                   value={newMessage}
                   onChange={handleTyping}
+                  onPaste={handleComposerPaste}
                   style={{ fontSize: '16px' }}
                   className="flex-1 px-4 py-2.5 bg-slate-100 rounded-xl text-slate-800 placeholder-slate-400 focus:bg-white focus:ring-2 focus:ring-violet-500/20 focus:outline-none transition-all"
                 />
                 <button
                   type="submit"
-                  disabled={!newMessage.trim()}
+                  disabled={uploadingAttachment || (!newMessage.trim() && !pendingFile)}
                   className="w-10 h-10 flex items-center justify-center bg-violet-600 text-white rounded-xl hover:bg-violet-700 transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0 no-min shadow-sm shadow-violet-200">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                  </svg>
+                  {uploadingAttachment ? (
+                    <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                    </svg>
+                  ) : (
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                    </svg>
+                  )}
                 </button>
               </form>
             </div>
@@ -1651,8 +1853,8 @@ const Messages = () => {
                         <span className="text-sm font-bold text-slate-700">Reply</span>
                       </button>
 
-                      {/* Edit — own only */}
-                      {isMsgMine && (
+                      {/* Edit — own text messages only */}
+                      {isMsgMine && (!activeMsg.message_type || activeMsg.message_type === 'text') && (
                         <button
                           onClick={() => { setEditingMessage(activeMsg); setEditContent(activeMsg.content); setActiveMoreMenu(null); }}
                           className="flex items-center gap-3 w-full px-4 py-3 hover:bg-slate-50 transition-colors text-left">
@@ -1734,7 +1936,7 @@ const Messages = () => {
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
                             </svg>
                           </button>
-                          {isMsgMine && (
+                          {isMsgMine && (!activeMsg.message_type || activeMsg.message_type === 'text') && (
                             <button onClick={() => { setEditingMessage(activeMsg); setEditContent(activeMsg.content); setActiveMoreMenu(null); }}
                               className="p-2.5 text-slate-500 hover:bg-violet-50 hover:text-violet-600 rounded-full transition-all" title="Edit">
                               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
