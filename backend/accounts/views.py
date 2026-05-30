@@ -3108,7 +3108,8 @@ class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
             return [AllowAny()]
         if self.action in ('approve', 'reject', 'enroll_student', 'assign_section',
                            'verify_document', 'reject_document', 'request_requirements',
-                           'destroy', 'update', 'partial_update', 'bulk_action'):
+                           'destroy', 'update', 'partial_update', 'bulk_action',
+                           'approve_application', 'update_classroom_capacity'):
             return [IsAdminUser()]
         if self.action == 'track':
             return [AllowAny()]
@@ -3475,6 +3476,7 @@ class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
 
     def _auto_assign_section(self, application):
         from django.db.models import Count, F
+        # Find classrooms with available capacity for this grade level
         available = Classroom.objects.filter(
             grade_level=application.grade_level,
         ).annotate(
@@ -3495,12 +3497,43 @@ class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
             return Response({'error': 'classroom_id is required'}, status=400)
         try:
             classroom = Classroom.objects.get(id=classroom_id)
-            current_count = classroom.enrollments.count()
-            if classroom.capacity and current_count >= classroom.capacity:
-                return Response({'error': f'{classroom.name} is at full capacity ({classroom.capacity})'}, status=400)
+            # Count ALL students enrolled in this classroom (including pre-existing accounts)
+            current_count = StudentClassEnrollment.objects.filter(classroom=classroom).count()
+            capacity = classroom.capacity or 40
+            if current_count >= capacity:
+                return Response({'error': f'{classroom.name} is at full capacity ({current_count}/{capacity})'}, status=400)
             application.assigned_classroom = classroom
             application.save()
-            return Response({'status': f'Section set to {classroom.name}'})
+            return Response({'status': f'Section set to {classroom.name}', 'current_count': current_count, 'capacity': capacity})
+        except Classroom.DoesNotExist:
+            return Response({'error': 'Classroom not found'}, status=404)
+
+    @action(detail=False, methods=['post'], url_path='update-classroom-capacity')
+    def update_classroom_capacity(self, request):
+        """Update classroom capacity (admin only)."""
+        if request.user.role != 'admin':
+            return Response({'error': 'Unauthorized'}, status=403)
+        classroom_id = request.data.get('classroom_id')
+        capacity = request.data.get('capacity')
+        if not classroom_id or capacity is None:
+            return Response({'error': 'classroom_id and capacity are required'}, status=400)
+        try:
+            capacity = int(capacity)
+            if capacity < 1:
+                return Response({'error': 'Capacity must be at least 1'}, status=400)
+        except (ValueError, TypeError):
+            return Response({'error': 'Invalid capacity value'}, status=400)
+        try:
+            classroom = Classroom.objects.get(id=classroom_id)
+            classroom.capacity = capacity
+            classroom.save(update_fields=['capacity'])
+            current_count = StudentClassEnrollment.objects.filter(classroom=classroom).count()
+            return Response({
+                'status': 'Capacity updated',
+                'classroom': classroom.name,
+                'capacity': capacity,
+                'current_count': current_count,
+            })
         except Classroom.DoesNotExist:
             return Response({'error': 'Classroom not found'}, status=404)
 
@@ -3576,7 +3609,7 @@ class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
             return self.enroll_student(request, pk)
         return Response({'error': 'Unknown action'}, status=400)
 
-    @action(detail=True, methods=['post'], url_path='approve-application')
+    @action(detail=True, methods=['post'])
     def approve_application(self, request, pk=None):
         """Move application from under_review to approved."""
         application = self.get_object()

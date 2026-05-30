@@ -62,13 +62,14 @@ const EnrollmentManagement = () => {
     }
   };
 
-  const promptApprove = async (id) => {
-    const { value } = await Swal.fire({
-      title: 'Move to Under Review?', input: 'textarea', inputLabel: 'Remarks',
-      inputPlaceholder: 'Optional remarks...', showCancelButton: true, confirmButtonText: 'Confirm',
-      confirmButtonColor: '#7C3AED',
-    });
-    if (value !== undefined) handleAction(id, 'approve', { remarks: value });
+  const handleView = async (app) => {
+    setSelected(app);
+    if (app.status === 'pending') {
+      try {
+        await api.post(`/enrollment-applications/${app.id}/approve/`, { remarks: '' });
+        fetchAll();
+      } catch {}
+    }
   };
 
   const promptApproveApplication = async (id) => {
@@ -138,20 +139,67 @@ const EnrollmentManagement = () => {
   };
 
   const assignSection = async (id) => {
+    const classroomOptions = classrooms.reduce((acc, c) => {
+      const count = applications.filter(a => a.assigned_classroom === c.id && a.status === 'enrolled').length;
+      acc[c.id] = `${c.name} (${count}/${c.capacity || 40})`;
+      return acc;
+    }, {});
+
     const { value } = await Swal.fire({
       title: 'Assign Section',
-      input: 'select',
-      inputOptions: classrooms.reduce((acc, c) => {
-        const count = applications.filter(a => a.assigned_classroom === c.id).length;
-        acc[c.id] = `${c.name} (${count}/${c.capacity || '∞'})`;
-        return acc;
-      }, {}),
-      inputPlaceholder: 'Select section...',
+      html: `
+        <div class="text-left">
+          <p class="text-xs text-slate-500 mb-3">Select a section for this applicant. Shows current enrollment / capacity.</p>
+          <div id="swal-select" class="swal2-select" style="width:100%;padding:8px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px;">
+            <option value="">-- Select Section --</option>
+            ${classrooms.map(c => {
+              const count = applications.filter(a => a.assigned_classroom === c.id && a.status === 'enrolled').length;
+              return `<option value="${c.id}">${c.name} (${count}/${c.capacity || 40})</option>`;
+            }).join('')}
+          </div>
+        </div>
+      `,
       showCancelButton: true,
       confirmButtonText: 'Assign',
       confirmButtonColor: '#7C3AED',
+      didOpen: () => {
+        const select = document.getElementById('swal-select');
+        if (select) {
+          select.addEventListener('change', (e) => {
+            select.value = e.target.value;
+          });
+        }
+      },
+      preConfirm: () => {
+        return document.getElementById('swal-select')?.value || '';
+      }
     });
     if (value) handleAction(id, 'assign_section', { classroom_id: value });
+  };
+
+  const editCapacity = async (classroomId, currentCapacity) => {
+    const { value } = await Swal.fire({
+      title: 'Update Classroom Capacity',
+      input: 'number',
+      inputValue: currentCapacity || 40,
+      inputAttributes: { min: 1, max: 200 },
+      inputLabel: 'Maximum students',
+      showCancelButton: true,
+      confirmButtonText: 'Update',
+      confirmButtonColor: '#7C3AED',
+    });
+    if (value) {
+      try {
+        await api.post('/enrollment-applications/update-classroom-capacity/', {
+          classroom_id: classroomId,
+          capacity: parseInt(value),
+        });
+        Swal.fire({ icon: 'success', title: 'Updated', text: 'Classroom capacity updated.' });
+        fetchAll();
+      } catch (err) {
+        Swal.fire({ icon: 'error', title: 'Error', text: err.response?.data?.error || 'Failed to update capacity.' });
+      }
+    }
   };
 
   const verifyDoc = async (appId, docId, status) => {
@@ -321,22 +369,19 @@ const EnrollmentManagement = () => {
                   <td className="px-3 py-3 text-xs text-slate-400 hidden md:table-cell">{new Date(app.submitted_at).toLocaleDateString()}</td>
                   <td className="px-3 py-3 text-center relative">
                     <div className="hidden md:flex items-center justify-center gap-1">
-                      <button onClick={() => setSelected(app)} className="p-1.5 text-slate-400 hover:text-violet-600 hover:bg-violet-50 rounded-lg transition-all" title="View">
+                      <button onClick={() => handleView(app)} className="p-1.5 text-slate-400 hover:text-violet-600 hover:bg-violet-50 rounded-lg transition-all" title="View">
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
                       </button>
                       {(app.status === 'pending' || app.status === 'under_review') && (
                         <>
-                          <button onClick={() => promptApprove(app.id)} className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg" title="Move to Review">
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                          <button onClick={() => promptReject(app.id)} className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg" title="Reject">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" /></svg>
                           </button>
                           {app.status === 'under_review' && (
                             <button onClick={() => promptApproveApplication(app.id)} className="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg" title="Approve">
                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
                             </button>
                           )}
-                          <button onClick={() => promptReject(app.id)} className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg" title="Reject">
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" /></svg>
-                          </button>
                         </>
                       )}
                       {app.status === 'approved' && (
@@ -354,14 +399,13 @@ const EnrollmentManagement = () => {
                       </button>
                       {activeMenu === app.id && (
                         <div className="absolute right-0 top-full mt-1 bg-white border border-slate-100 rounded-xl shadow-xl z-50 py-1 min-w-[130px]">
-                          <button onClick={() => { setSelected(app); setActiveMenu(null); }} className="w-full text-left px-3 py-2 text-[10px] font-bold text-slate-600 hover:bg-violet-50 flex items-center gap-2">View</button>
+                          <button onClick={() => { handleView(app); setActiveMenu(null); }} className="w-full text-left px-3 py-2 text-[10px] font-bold text-slate-600 hover:bg-violet-50 flex items-center gap-2">View</button>
                           {(app.status === 'pending' || app.status === 'under_review') && (
                             <>
-                              <button onClick={() => { promptApprove(app.id); setActiveMenu(null); }} className="w-full text-left px-3 py-2 text-[10px] font-bold text-blue-600 hover:bg-blue-50 flex items-center gap-2">Review</button>
+                              <button onClick={() => { promptReject(app.id); setActiveMenu(null); }} className="w-full text-left px-3 py-2 text-[10px] font-bold text-rose-600 hover:bg-rose-50 flex items-center gap-2">Reject</button>
                               {app.status === 'under_review' && (
                                 <button onClick={() => { promptApproveApplication(app.id); setActiveMenu(null); }} className="w-full text-left px-3 py-2 text-[10px] font-bold text-emerald-600 hover:bg-emerald-50 flex items-center gap-2">Approve</button>
                               )}
-                              <button onClick={() => { promptReject(app.id); setActiveMenu(null); }} className="w-full text-left px-3 py-2 text-[10px] font-bold text-rose-600 hover:bg-rose-50 flex items-center gap-2">Reject</button>
                             </>
                           )}
                           <button onClick={() => { promptRequestDocs(app.id); setActiveMenu(null); }} className="w-full text-left px-3 py-2 text-[10px] font-bold text-amber-600 hover:bg-amber-50 flex items-center gap-2">Request Docs</button>
@@ -496,10 +540,8 @@ const EnrollmentManagement = () => {
                 {(selected.status === 'pending' || selected.status === 'under_review') && (
                   <>
                     <button onClick={() => { promptReject(selected.id); }} className="px-4 py-2 rounded-lg border border-rose-200 bg-white text-rose-600 text-xs font-bold hover:bg-rose-50">Reject</button>
-                    {selected.status === 'under_review' ? (
+                    {selected.status === 'under_review' && (
                       <button onClick={() => { promptApproveApplication(selected.id); }} className="px-4 py-2 rounded-lg bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700">Approve</button>
-                    ) : (
-                      <button onClick={() => { promptApprove(selected.id); }} className="px-4 py-2 rounded-lg bg-blue-600 text-white text-xs font-bold hover:bg-blue-700">Review</button>
                     )}
                   </>
                 )}
@@ -524,9 +566,10 @@ const EnrollmentManagement = () => {
                 <select value={enrollClassroom} onChange={e => setEnrollClassroom(e.target.value)}
                   className="w-full px-3 py-2.5 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400/30">
                   <option value="">Auto-assign</option>
-                  {classrooms.filter(c => String(c.grade_level) === String(enrollApp.grade_level)).map(c => (
-                    <option key={c.id} value={c.id}>{c.name} (Cap: {c.capacity || '∞'})</option>
-                  ))}
+                  {classrooms.filter(c => String(c.grade_level) === String(enrollApp.grade_level)).map(c => {
+                    const count = applications.filter(a => a.assigned_classroom === c.id && a.status === 'enrolled').length;
+                    return <option key={c.id} value={c.id}>{c.name} ({count}/{c.capacity || 40})</option>;
+                  })}
                 </select>
               </div>
               <div>

@@ -167,9 +167,10 @@ const StudentEnrollment = () => {
             className="w-full px-3 py-1.5 md:px-4 md:py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-1 focus:ring-violet-500 text-[10px] md:text-sm font-bold shadow-inner uppercase tracking-wider"
           >
             <option value="">— Choose a classroom —</option>
-            {sortedClassrooms.map(c => (
-              <option key={c.id} value={c.id}>{c.name}</option>
-            ))}
+            {sortedClassrooms.map(c => {
+              const cap = c.capacity || 40;
+              return <option key={c.id} value={c.id}>{c.name} ({cap} max)</option>;
+            })}
           </select>
         )}
       </div>
@@ -180,7 +181,9 @@ const StudentEnrollment = () => {
           <div className="flex items-center justify-between px-2 py-1 md:px-6 md:py-4 border-b border-slate-100 bg-[#2D1B4D]">
             <h2 className="font-black text-[9px] md:text-base uppercase tracking-tight !text-white flex items-center gap-1">
               ENROLLED
-              <span className="text-[7px] md:text-sm font-bold !text-white">({enrollments.length})</span>
+              <span className="text-[7px] md:text-sm font-bold !text-white">
+                ({enrollments.length}{classrooms.find(c => String(c.id) === String(selectedClassroom)) ? ` / ${classrooms.find(c => String(c.id) === String(selectedClassroom)).capacity || 40}` : ''})
+              </span>
             </h2>
             <button
               onClick={openModal}
