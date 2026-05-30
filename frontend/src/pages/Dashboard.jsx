@@ -548,12 +548,13 @@ const AdminView = () => {
       .finally(() => setLoading(false));
   }, []);
 
+  const today = useMemo(() => new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }), []);
+
   if (loading || !data) return <Spinner />;
 
   const dist = distView === 'general_average' ? data?.general_average : data?.all_subjects;
   const gradeData = dist?.counts || [];
   const attendanceTrends = data?.dashboard?.charts?.attendance_trends || [];
-  const today = useMemo(() => new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }), []);
 
   return (
     <motion.div
