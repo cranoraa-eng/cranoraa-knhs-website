@@ -372,14 +372,14 @@ const Login = () => {
               <input id="identifier" type="text" autoComplete="username" value={identifier}
                 onChange={e => { setIdentifier(e.target.value); setFieldErrors(p => ({ ...p, identifier: '' })); }}
                 placeholder=" "
-                className={`peer w-full px-4 pt-6 pb-2 rounded-xl border text-sm transition-all focus:outline-none focus:ring-2 ${isAdmin ? 'bg-slate-900 border-emerald-500/20 text-white focus:ring-emerald-500/20 focus:border-emerald-500' : `bg-white border-slate-200 text-slate-900 focus:ring-${currentRole.color}-500/20 focus:border-${currentRole.color}-500`} ${fieldErrors.identifier ? 'border-red-400 bg-red-50' : ''}`}
+                className={`peer w-full px-4 py-3 rounded-xl border text-sm transition-all focus:outline-none focus:ring-2 ${isAdmin ? 'bg-slate-900 border-emerald-500/20 text-white focus:ring-emerald-500/20 focus:border-emerald-500' : `bg-white border-slate-200 text-slate-900 focus:ring-${currentRole.color}-500/20 focus:border-${currentRole.color}-500`} ${fieldErrors.identifier ? 'border-red-400 bg-red-50' : ''}`}
               />
               <label htmlFor="identifier"
-                className={`absolute left-4 top-4 text-sm transition-all pointer-events-none font-bold
-                  peer-placeholder-shown:top-4 peer-placeholder-shown:text-sm peer-placeholder-shown:font-medium
-                  peer-focus:top-2 peer-focus:text-[10px] peer-focus:font-black peer-focus:uppercase peer-focus:tracking-widest
-                  peer-[:not(:placeholder-shown)]:top-2 peer-[:not(:placeholder-shown)]:text-[10px] peer-[:not(:placeholder-shown)]:font-black peer-[:not(:placeholder-shown)]:uppercase peer-[:not(:placeholder-shown)]:tracking-widest
-                  ${isAdmin ? 'text-emerald-500/50 peer-focus:text-emerald-500 peer-[:not(:placeholder-shown)]:text-emerald-500' : `text-slate-400 peer-focus:text-${currentRole.color}-600 peer-[:not(:placeholder-shown)]:text-${currentRole.color}-600`}`}>
+                className={`absolute left-4 top-1/2 -translate-y-1/2 text-sm transition-all pointer-events-none font-bold px-1
+                  peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-sm peer-placeholder-shown:font-medium
+                  peer-focus:top-0 peer-focus:text-[10px] peer-focus:font-black peer-focus:uppercase peer-focus:tracking-widest
+                  peer-[:not(:placeholder-shown)]:top-0 peer-[:not(:placeholder-shown)]:text-[10px] peer-[:not(:placeholder-shown)]:font-black peer-[:not(:placeholder-shown)]:uppercase peer-[:not(:placeholder-shown)]:tracking-widest
+                  ${isAdmin ? 'text-emerald-500/50 peer-focus:text-emerald-500 peer-[:not(:placeholder-shown)]:text-emerald-500 bg-slate-900' : `text-slate-400 peer-focus:text-${currentRole.color}-600 peer-[:not(:placeholder-shown)]:text-${currentRole.color}-600 bg-white`}`}>
                 {currentRole.identifierLabel}
               </label>
               {fieldErrors.identifier && <p className="text-red-500 text-[11px] mt-1 font-medium px-1">{fieldErrors.identifier}</p>}
@@ -389,18 +389,18 @@ const Login = () => {
               <input id="password" type={showPassword ? 'text' : 'password'} autoComplete="current-password" value={password}
                 onChange={e => { setPassword(e.target.value); setFieldErrors(p => ({ ...p, password: '' })); }}
                 placeholder=" "
-                className={`peer w-full px-4 pt-6 pb-2 rounded-xl border text-sm transition-all focus:outline-none focus:ring-2 pr-10 ${isAdmin ? 'bg-slate-900 border-emerald-500/20 text-white focus:ring-emerald-500/20 focus:border-emerald-500' : `bg-white border-slate-200 text-slate-900 focus:ring-${currentRole.color}-500/20 focus:border-${currentRole.color}-500`} ${fieldErrors.password ? 'border-red-400 bg-red-50' : ''}`}
+                className={`peer w-full px-4 py-3 rounded-xl border text-sm transition-all focus:outline-none focus:ring-2 pr-10 ${isAdmin ? 'bg-slate-900 border-emerald-500/20 text-white focus:ring-emerald-500/20 focus:border-emerald-500' : `bg-white border-slate-200 text-slate-900 focus:ring-${currentRole.color}-500/20 focus:border-${currentRole.color}-500`} ${fieldErrors.password ? 'border-red-400 bg-red-50' : ''}`}
               />
               <label htmlFor="password"
-                className={`absolute left-4 top-4 text-sm transition-all pointer-events-none font-bold
-                  peer-placeholder-shown:top-4 peer-placeholder-shown:text-sm peer-placeholder-shown:font-medium
-                  peer-focus:top-2 peer-focus:text-[10px] peer-focus:font-black peer-focus:uppercase peer-focus:tracking-widest
-                  peer-[:not(:placeholder-shown)]:top-2 peer-[:not(:placeholder-shown)]:text-[10px] peer-[:not(:placeholder-shown)]:font-black peer-[:not(:placeholder-shown)]:uppercase peer-[:not(:placeholder-shown)]:tracking-widest
-                  ${isAdmin ? 'text-emerald-500/50 peer-focus:text-emerald-500 peer-[:not(:placeholder-shown)]:text-emerald-500' : `text-slate-400 peer-focus:text-${currentRole.color}-600 peer-[:not(:placeholder-shown)]:text-${currentRole.color}-600`}`}>
+                className={`absolute left-4 top-1/2 -translate-y-1/2 text-sm transition-all pointer-events-none font-bold px-1
+                  peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-sm peer-placeholder-shown:font-medium
+                  peer-focus:top-0 peer-focus:text-[10px] peer-focus:font-black peer-focus:uppercase peer-focus:tracking-widest
+                  peer-[:not(:placeholder-shown)]:top-0 peer-[:not(:placeholder-shown)]:text-[10px] peer-[:not(:placeholder-shown)]:font-black peer-[:not(:placeholder-shown)]:uppercase peer-[:not(:placeholder-shown)]:tracking-widest
+                  ${isAdmin ? 'text-emerald-500/50 peer-focus:text-emerald-500 peer-[:not(:placeholder-shown)]:text-emerald-500 bg-slate-900' : `text-slate-400 peer-focus:text-${currentRole.color}-600 peer-[:not(:placeholder-shown)]:text-${currentRole.color}-600 bg-white`}`}>
                 Password
               </label>
               <button type="button" onClick={() => setShowPassword(v => !v)} tabIndex={-1}
-                className={`absolute right-3 top-1/2 -translate-y-1/2 mt-1.5 transition-colors ${isAdmin ? 'text-emerald-500/30 hover:text-emerald-500' : 'text-slate-400 hover:text-slate-600'}`}>
+                className={`absolute right-3 top-1/2 -translate-y-1/2 transition-colors flex items-center justify-center ${isAdmin ? 'text-emerald-500/30 hover:text-emerald-500' : 'text-slate-400 hover:text-slate-600'}`}>
                   {showPassword ? (
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" /></svg>
                   ) : (
