@@ -879,10 +879,10 @@ class EnrollmentApplication(models.Model):
     zip_code = models.CharField(max_length=10, blank=True, null=True)
     
     # Parent/Guardian Information
-    father_name = models.CharField(max_length=200)
+    father_name = models.CharField(max_length=200, blank=True, null=True)
     father_occupation = models.CharField(max_length=100, blank=True, null=True)
     father_contact = models.CharField(max_length=20, blank=True, null=True)
-    mother_name = models.CharField(max_length=200)
+    mother_name = models.CharField(max_length=200, blank=True, null=True)
     mother_occupation = models.CharField(max_length=100, blank=True, null=True)
     mother_contact = models.CharField(max_length=20, blank=True, null=True)
     guardian_name = models.CharField(max_length=200, blank=True, null=True)

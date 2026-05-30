@@ -3145,7 +3145,11 @@ class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
             date_to = self.request.query_params.get('date_to')
             if date_to:
                 qs = qs.filter(submitted_at__lte=date_to)
-            return qs.select_related('enrolled_student', 'assigned_classroom').prefetch_related('documents', 'status_history')
+            from django.db.models import Prefetch
+            return qs.select_related('enrolled_student', 'assigned_classroom').prefetch_related(
+                'documents',
+                Prefetch('status_history', queryset=EnrollmentStatusHistory.objects.select_related('changed_by')),
+            )
         return EnrollmentApplication.objects.filter(email=user.email)
 
     def create(self, request, *args, **kwargs):
@@ -3214,7 +3218,7 @@ class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
             logger.error(f"Enrollment application error: {str(e)}\n{traceback.format_exc()}")
             if hasattr(e, 'detail'):
                 return Response({'error': e.detail}, status=status.HTTP_400_BAD_REQUEST)
-            return Response({'error': 'Failed to submit enrollment application.'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': f'Failed to submit enrollment application: {str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=False, methods=['get'], permission_classes=[AllowAny])
     def track(self, request):
