@@ -1,77 +1,79 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import api from '../utils/api';
 
 const STATUS_CONFIG = {
-  pending: { icon: '\u23F3', color: 'bg-amber-500', label: 'Pending', desc: 'Your application is awaiting review' },
-  under_review: { icon: '\uD83D\uDD0D', color: 'bg-blue-500', label: 'Under Review', desc: 'Your application is being evaluated' },
-  pending_requirements: { icon: '\uD83D\uDCCB', color: 'bg-orange-500', label: 'Pending Requirements', desc: 'Additional documents requested' },
-  approved: { icon: '\u2705', color: 'bg-emerald-500', label: 'Approved', desc: 'Your application has been approved' },
-  rejected: { icon: '\u274C', color: 'bg-rose-500', label: 'Rejected', desc: 'Your application was not approved' },
-  enrolled: { icon: '\uD83C\uDF93', color: 'bg-violet-500', label: 'Enrolled', desc: 'You are officially enrolled!' },
+  pending: { color: 'bg-amber-500', light: 'bg-amber-50 border-amber-200', text: 'text-amber-700', label: 'Pending', desc: 'Your application is awaiting review', icon: '\u23F3' },
+  under_review: { color: 'bg-blue-500', light: 'bg-blue-50 border-blue-200', text: 'text-blue-700', label: 'Under Review', desc: 'Your application is being evaluated', icon: '\uD83D\uDD0D' },
+  pending_requirements: { color: 'bg-orange-500', light: 'bg-orange-50 border-orange-200', text: 'text-orange-700', label: 'Pending Requirements', desc: 'Additional documents requested', icon: '\uD83D\uDCCB' },
+  approved: { color: 'bg-emerald-500', light: 'bg-emerald-50 border-emerald-200', text: 'text-emerald-700', label: 'Approved', desc: 'Your application has been approved!', icon: '\u2705' },
+  rejected: { color: 'bg-rose-500', light: 'bg-rose-50 border-rose-200', text: 'text-rose-700', label: 'Rejected', desc: 'Your application was not approved', icon: '\u274C' },
+  enrolled: { color: 'bg-violet-500', light: 'bg-violet-50 border-violet-200', text: 'text-violet-700', label: 'Enrolled', desc: 'You are officially enrolled!', icon: '\uD83C\uDF93' },
 };
 
 const TIMELINE_STEPS = [
-  { key: 'pending', label: 'Submitted' },
-  { key: 'under_review', label: 'Under Review' },
-  { key: 'pending_requirements', label: 'Requirements Verified' },
-  { key: 'approved', label: 'Approved' },
-  { key: 'enrolled', label: 'Enrolled' },
+  { key: 'pending', label: 'Submitted', desc: 'Application received' },
+  { key: 'under_review', label: 'Under Review', desc: 'Being evaluated by admin' },
+  { key: 'pending_requirements', label: 'Requirements Verified', desc: 'Documents checked' },
+  { key: 'approved', label: 'Approved', desc: 'Application approved' },
+  { key: 'enrolled', label: 'Enrolled', desc: 'Officially enrolled' },
 ];
 
-const stepIndex = (status) => {
-  if (status === 'rejected') return -1;
-  const idx = TIMELINE_STEPS.findIndex(s => s.key === status);
-  return idx >= 0 ? idx : 0;
-};
-
 const EnrollmentTracking = () => {
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const [number, setNumber] = useState(searchParams.get('number') || '');
   const [email, setEmail] = useState('');
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const handleTrack = async (e) => {
-    e.preventDefault();
-    if (!number && !email) { setError('Enter an enrollment number or email'); return; }
+  useEffect(() => {
+    const n = searchParams.get('number');
+    if (n) { setNumber(n); handleTrack(null, n); }
+  }, []);
+
+  const handleTrack = async (e, autoNumber) => {
+    if (e) e.preventDefault();
+    const num = autoNumber || number;
+    if (!num && !email) { setError('Enter an enrollment number or email'); return; }
     setLoading(true);
     setError('');
     setData(null);
     try {
       const params = new URLSearchParams();
-      if (number) params.set('number', number);
+      if (num) params.set('number', num);
       else params.set('email', email);
       const res = await api.get(`/enrollment-applications/track/?${params}`);
       setData(res.data);
     } catch (err) {
-      if (err.response?.status === 404) setError('No application found. Check your enrollment number or email.');
-      else setError('Failed to load. Try again later.');
+      if (err.response?.status === 404) setError('No application found. Please check your enrollment number or email.');
+      else setError('Failed to load. Please try again later.');
     } finally { setLoading(false); }
   };
 
   const cfg = data ? STATUS_CONFIG[data.status] : null;
-  const currentIdx = data ? stepIndex(data.status) : -1;
+  const currentIdx = data ? TIMELINE_STEPS.findIndex(s => s.key === data.status) : -1;
+  const isRejected = data?.status === 'rejected';
 
   return (
-    <div className="bg-slate-50 min-h-screen py-12">
+    <div className="bg-gradient-to-br from-violet-50 via-white to-slate-50 min-h-screen py-8 md:py-12">
       <div className="max-w-lg mx-auto px-4">
         <div className="text-center mb-8">
-          <Link to="/" className="text-xs font-bold text-violet-600 hover:text-violet-800 mb-3 inline-block">
-            &larr; Back to Home
+          <Link to="/" className="text-xs font-bold text-violet-600 hover:text-violet-800 mb-3 inline-flex items-center gap-1">
+            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" /></svg>
+            Back to Home
           </Link>
           <h1 className="text-3xl font-black text-slate-900 mb-1">Track Application</h1>
-          <p className="text-sm text-slate-500">Check your enrollment status</p>
+          <p className="text-sm text-slate-500">Check your enrollment status in real-time</p>
         </div>
 
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 mb-6">
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-lg p-6 mb-6">
           <form onSubmit={handleTrack} className="space-y-4">
             <div>
-              <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Enrollment Number</label>
+              <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Enrollment Number</label>
               <input value={number} onChange={e => setNumber(e.target.value)}
                 placeholder="e.g. ENR-2026-000001"
-                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500" />
+                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 font-mono" />
             </div>
             <div className="flex items-center gap-3">
               <div className="flex-1 border-t border-slate-200" />
@@ -79,69 +81,76 @@ const EnrollmentTracking = () => {
               <div className="flex-1 border-t border-slate-200" />
             </div>
             <div>
-              <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Email Address</label>
+              <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Email Address</label>
               <input type="email" value={email} onChange={e => setEmail(e.target.value)}
                 placeholder="your@email.com"
                 className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500" />
             </div>
             <button type="submit" disabled={loading}
-              className="w-full py-3 rounded-xl bg-violet-600 text-white text-sm font-bold hover:bg-violet-700 disabled:opacity-50 transition-colors">
-              {loading ? 'Searching...' : 'Track Application'}
+              className="w-full py-3 rounded-xl bg-violet-600 text-white text-sm font-bold hover:bg-violet-700 disabled:opacity-50 transition-all shadow-md shadow-violet-200">
+              {loading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
+                  Searching...
+                </span>
+              ) : 'Track Application'}
             </button>
           </form>
           {error && (
-            <div className="mt-4 p-4 rounded-xl bg-rose-50 border border-rose-100">
+            <div className="mt-4 p-4 rounded-xl bg-rose-50 border border-rose-100 flex items-start gap-3">
+              <svg className="w-5 h-5 text-rose-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
               <p className="text-sm font-medium text-rose-700">{error}</p>
             </div>
           )}
         </div>
 
         {data && cfg && (
-          <div className="space-y-6">
-            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+          <div className="space-y-5">
+            {/* Status Card */}
+            <div className={`rounded-2xl border shadow-lg p-6 ${cfg.light}`}>
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Enrollment Number</p>
-                  <p className="text-lg font-black text-slate-900">{data.enrollment_number}</p>
+                  <p className="text-xl font-black text-slate-900 font-mono tracking-wider">{data.enrollment_number}</p>
                 </div>
-                <div className={`px-3 py-1.5 rounded-xl text-xs font-bold ${cfg.color} text-white`}>
-                  {cfg.label}
+                <div className={`px-4 py-2 rounded-xl text-sm font-bold ${cfg.color} text-white shadow-md`}>
+                  {cfg.icon} {cfg.label}
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4 text-sm">
+              <p className={`text-sm font-medium ${cfg.text}`}>{cfg.desc}</p>
+              <div className="grid grid-cols-2 gap-4 text-sm mt-4">
                 <div>
                   <p className="text-[10px] font-bold text-slate-400 uppercase">Applicant</p>
                   <p className="font-semibold text-slate-800">{data.full_name}</p>
                 </div>
                 <div>
                   <p className="text-[10px] font-bold text-slate-400 uppercase">Grade Level</p>
-                  <p className="font-semibold text-slate-800">Grade {data.grade_level}{data.strand ? ` - ${data.strand}` : ''}</p>
+                  <p className="font-semibold text-slate-800">Grade {data.grade_level}{data.strand ? ` \u2014 ${data.strand}` : ''}</p>
                 </div>
                 <div>
                   <p className="text-[10px] font-bold text-slate-400 uppercase">Submitted</p>
-                  <p className="font-semibold text-slate-800">{new Date(data.submitted_at).toLocaleDateString()}</p>
+                  <p className="font-semibold text-slate-800">{new Date(data.submitted_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
                 </div>
-                {data.assigned_classroom && (
+                {data.assigned_classroom_name && (
                   <div>
                     <p className="text-[10px] font-bold text-slate-400 uppercase">Section</p>
-                    <p className="font-semibold text-slate-800">{data.assigned_classroom}</p>
+                    <p className="font-semibold text-slate-800">{data.assigned_classroom_name}</p>
                   </div>
                 )}
               </div>
             </div>
 
-            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
-              <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-5">Progress Timeline</p>
-              {data.status === 'rejected' ? (
-                <div className="flex items-center gap-3 p-4 rounded-xl bg-rose-50 border border-rose-100">
-                  <div className="w-8 h-8 rounded-full bg-rose-100 flex items-center justify-center flex-shrink-0">
-                    <svg className="w-4 h-4 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
+            {/* Timeline */}
+            <div className="bg-white rounded-2xl border border-slate-100 shadow-lg p-6">
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-6">Progress Timeline</p>
+              {isRejected ? (
+                <div className="flex items-center gap-4 p-4 rounded-xl bg-rose-50 border border-rose-100">
+                  <div className="w-10 h-10 rounded-full bg-rose-100 flex items-center justify-center flex-shrink-0">
+                    <svg className="w-5 h-5 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" /></svg>
                   </div>
                   <div>
                     <p className="text-sm font-bold text-rose-800">Application Rejected</p>
-                    <p className="text-xs text-rose-600">{data.remarks || 'Your application was not approved.'}</p>
+                    <p className="text-xs text-rose-600 mt-0.5">{data.remarks || 'Your application was not approved. Please contact the office for details.'}</p>
                   </div>
                 </div>
               ) : (
@@ -149,23 +158,28 @@ const EnrollmentTracking = () => {
                   {TIMELINE_STEPS.map((step, i) => {
                     const isDone = i <= currentIdx;
                     const isCurrent = i === currentIdx;
+                    const isFuture = i > currentIdx;
                     return (
                       <div key={step.key} className="flex gap-4">
                         <div className="flex flex-col items-center">
-                          <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
+                          <div className={`w-7 h-7 rounded-full border-2 flex items-center justify-center transition-all ${
                             isCurrent ? 'border-violet-500 bg-violet-100 ring-4 ring-violet-100' :
                             isDone ? 'border-violet-500 bg-violet-500' : 'border-slate-300 bg-white'
                           }`}>
                             {isDone && !isCurrent && (
-                              <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+                              <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+                            )}
+                            {isCurrent && (
+                              <div className="w-2 h-2 rounded-full bg-violet-500" />
                             )}
                           </div>
                           {i < TIMELINE_STEPS.length - 1 && (
-                            <div className={`w-0.5 h-8 ${isDone && i < currentIdx ? 'bg-violet-500' : 'bg-slate-200'}`} />
+                            <div className={`w-0.5 h-10 ${isDone && i < currentIdx ? 'bg-violet-500' : 'bg-slate-200'}`} />
                           )}
                         </div>
                         <div className="pb-6">
                           <p className={`text-sm font-bold ${isDone ? 'text-slate-900' : 'text-slate-400'}`}>{step.label}</p>
+                          <p className={`text-xs mt-0.5 ${isDone ? 'text-slate-500' : 'text-slate-300'}`}>{step.desc}</p>
                         </div>
                       </div>
                     );
@@ -174,25 +188,27 @@ const EnrollmentTracking = () => {
               )}
             </div>
 
-            {data.remarks && (
-              <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+            {/* Remarks */}
+            {data.remarks && !isRejected && (
+              <div className="bg-white rounded-2xl border border-slate-100 shadow-lg p-6">
                 <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Remarks</p>
                 <p className="text-sm text-slate-700">{data.remarks}</p>
               </div>
             )}
 
+            {/* Documents */}
             {data.documents && data.documents.length > 0 && (
-              <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
-                <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">Documents</p>
+              <div className="bg-white rounded-2xl border border-slate-100 shadow-lg p-6">
+                <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4">Documents</p>
                 <div className="space-y-2">
                   {data.documents.map(doc => (
-                    <div key={doc.id} className="flex items-center justify-between py-2 border-b border-slate-50 last:border-0">
+                    <div key={doc.id} className="flex items-center justify-between py-2.5 px-3 rounded-xl bg-slate-50 border border-slate-100">
                       <span className="text-sm font-medium text-slate-700">{doc.document_type_display}</span>
-                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                      <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full ${
                         doc.verification_status === 'verified' ? 'bg-emerald-100 text-emerald-700' :
                         doc.verification_status === 'rejected' ? 'bg-rose-100 text-rose-700' :
                         doc.verification_status === 'missing' ? 'bg-amber-100 text-amber-700' :
-                        'bg-slate-100 text-slate-600'
+                        'bg-slate-200 text-slate-600'
                       }`}>
                         {doc.verification_status_display}
                       </span>
@@ -202,16 +218,17 @@ const EnrollmentTracking = () => {
               </div>
             )}
 
+            {/* Status History */}
             {data.status_history && data.status_history.length > 0 && (
-              <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
-                <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">Status History</p>
+              <div className="bg-white rounded-2xl border border-slate-100 shadow-lg p-6">
+                <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4">Status History</p>
                 <div className="space-y-3">
                   {data.status_history.slice().reverse().map(h => (
                     <div key={h.id} className="flex items-start gap-3">
                       <div className="w-2 h-2 rounded-full bg-violet-400 mt-1.5 shrink-0" />
                       <div>
                         <p className="text-sm font-semibold text-slate-800">
-                          {h.from_status_display || 'New'} &rarr; {h.to_status_display}
+                          {h.from_status_display || 'Submitted'} &rarr; {h.to_status_display}
                         </p>
                         {h.notes && <p className="text-xs text-slate-500 mt-0.5">{h.notes}</p>}
                         <p className="text-[10px] text-slate-400 mt-0.5">{new Date(h.created_at).toLocaleString()}</p>
@@ -221,6 +238,16 @@ const EnrollmentTracking = () => {
                 </div>
               </div>
             )}
+
+            {/* Actions */}
+            <div className="flex gap-3">
+              <Link to="/enroll" className="flex-1 py-3 rounded-xl bg-violet-600 text-white text-sm font-bold text-center hover:bg-violet-700 transition-all shadow-md shadow-violet-200">
+                Submit New Application
+              </Link>
+              <Link to="/" className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 text-sm font-bold text-center hover:bg-slate-50 transition-colors">
+                Back to Home
+              </Link>
+            </div>
           </div>
         )}
       </div>

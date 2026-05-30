@@ -17,7 +17,7 @@ from .serializers import (UserSerializer, ClassroomSerializer, StudentClassEnrol
     RoomSerializer, TimeSlotSerializer, ScheduleSerializer, ParentChildSummarySerializer,
     OnboardingStateSerializer,
     full_name)
-from .models import User, Profile, Classroom, StudentClassEnrollment, Announcement, AnnouncementAttachment, AnnouncementComment, Attendance, LearningMaterial, Subject, ClassroomSubject, ScratchCard, Fee, Notification, EnrollmentApplication, EnrollmentDocument, EnrollmentStatusHistory, WebsiteContent, Grade, GradeReport, ChatRoom, ChatMessage, MessageReaction, Friendship, SystemSetting, Assignment, Submission, ReportedMessage, Room, TimeSlot, Schedule, FCMToken, OnboardingState
+from .models import User, Profile, Classroom, StudentClassEnrollment, Announcement, AnnouncementAttachment, AnnouncementComment, Attendance, LearningMaterial, Subject, ClassroomSubject, ScratchCard, Fee, Notification, EnrollmentApplication, EnrollmentDocument, EnrollmentStatusHistory, WebsiteContent, Grade, GradeReport, ChatRoom, ChatMessage, MessageReaction, Friendship, SystemSetting, Assignment, Submission, ReportedMessage, Room, TimeSlot, Schedule, FCMToken, OnboardingState, ParentLink
 from .permissions import IsAdmin, IsTeacher, IsStudent, IsParent, IsAdminOrTeacher, IsAdminOrReadOnly
 from .throttles import AuthRateThrottle, CheckResultRateThrottle, EnrollmentRateThrottle
 # Moved portal imports inside functions to avoid circular dependencies
@@ -3100,7 +3100,7 @@ class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
     parser_classes = [parsers.MultiPartParser, parsers.FormParser, parsers.JSONParser]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['first_name', 'last_name', 'email', 'enrollment_number', 'lrn']
-    ordering_fields = ['submitted_at', 'last_name', 'grade_level', 'status']
+    ordering_fields = ['submitted_at', 'last_name', 'grade_level', 'status', 'school_year']
     ordering = ['-submitted_at']
 
     def get_permissions(self):
@@ -3112,7 +3112,8 @@ class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
             return [IsAdminUser()]
         if self.action == 'track':
             return [AllowAny()]
-        if self.action in ('list', 'retrieve', 'analytics', 'export_csv'):
+        if self.action in ('list', 'retrieve', 'analytics', 'export_csv',
+                           'export_pdf', 'export_form_pdf', 'export_summary_pdf'):
             return [IsAuthenticated()]
         return [IsAuthenticated()]
 
@@ -3129,7 +3130,6 @@ class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
             return EnrollmentApplication.objects.none()
         if user.role == 'admin' or user.is_staff:
             qs = EnrollmentApplication.objects.all()
-            # Filter by query params
             status_filter = self.request.query_params.get('status')
             if status_filter:
                 qs = qs.filter(status=status_filter)
@@ -3139,6 +3139,9 @@ class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
             enrollment_type = self.request.query_params.get('enrollment_type')
             if enrollment_type:
                 qs = qs.filter(enrollment_type=enrollment_type)
+            school_year = self.request.query_params.get('school_year')
+            if school_year:
+                qs = qs.filter(school_year=school_year)
             date_from = self.request.query_params.get('date_from')
             if date_from:
                 qs = qs.filter(submitted_at__gte=date_from)
@@ -3146,7 +3149,7 @@ class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
             if date_to:
                 qs = qs.filter(submitted_at__lte=date_to)
             from django.db.models import Prefetch
-            return qs.select_related('enrolled_student', 'assigned_classroom').prefetch_related(
+            return qs.select_related('enrolled_student', 'assigned_classroom', 'linked_parent', 'reviewed_by').prefetch_related(
                 'documents',
                 Prefetch('status_history', queryset=EnrollmentStatusHistory.objects.select_related('changed_by')),
             )
@@ -3158,7 +3161,7 @@ class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
             doc_fields = [
                 'birth_certificate', 'report_card', 'form_138',
                 'certificate_of_completion', 'good_moral_certificate',
-                'last_school_attended_cert',
+                'id_picture', 'last_school_attended_cert',
             ]
             uploaded_urls = {}
             upload_errors = []
@@ -3184,6 +3187,23 @@ class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
 
             serializer = self.get_serializer(data=data)
             serializer.is_valid(raise_exception=True)
+
+            app_data = serializer.validated_data
+
+            # Duplicate application check
+            from django.db.models import Q
+            duplicate = EnrollmentApplication.objects.filter(
+                first_name__iexact=app_data.get('first_name', ''),
+                last_name__iexact=app_data.get('last_name', ''),
+                date_of_birth=app_data.get('date_of_birth'),
+                status__in=['pending', 'under_review', 'pending_requirements', 'approved', 'enrolled']
+            ).exists()
+            if duplicate:
+                return Response(
+                    {'error': 'A similar application already exists. Please check your details or contact the office.'},
+                    status=status.HTTP_409_CONFLICT
+                )
+
             application = serializer.save()
 
             # Create EnrollmentDocument records for uploaded files
@@ -3194,6 +3214,7 @@ class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
                     'form_138': 'form_138',
                     'certificate_of_completion': 'certificate_of_completion',
                     'good_moral_certificate': 'good_moral',
+                    'id_picture': 'id_picture',
                     'last_school_attended_cert': 'last_school_attended',
                 }
                 doc_type = doc_type_map.get(field_name, 'other')
@@ -3210,6 +3231,17 @@ class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
                 to_status='pending',
                 notes='Application submitted',
             )
+
+            # Notify admins about new application
+            admin_users = User.objects.filter(role='admin', is_active=True)
+            for admin in admin_users:
+                Notification.objects.create(
+                    recipient=admin,
+                    notification_type='system',
+                    title='New Enrollment Application',
+                    message=f'{application.full_name} submitted a Grade {application.grade_level} enrollment application ({application.enrollment_number}).',
+                    link='/enrollment-management',
+                )
 
             headers = self.get_success_headers(serializer.data)
             return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
@@ -3243,13 +3275,16 @@ class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
         user = request.user
         remarks = request.data.get('remarks', '')
 
+        from_status = application.status
         application.status = 'under_review'
         application.remarks = remarks
+        application.reviewed_by = user
+        application.reviewed_at = timezone.now()
         application.save()
 
         EnrollmentStatusHistory.objects.create(
             application=application,
-            from_status='pending',
+            from_status=from_status,
             to_status='under_review',
             changed_by=user,
             notes=remarks or 'Application moved to under review',
@@ -3257,7 +3292,7 @@ class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
 
         self._send_notification(application, 'Application Under Review',
                                 'Your enrollment application is now under review.',
-                                '/enrollment-management')
+                                '/track-enrollment')
 
         return Response({'status': 'Application moved to under review'})
 
@@ -3270,6 +3305,8 @@ class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
         from_status = application.status
         application.status = 'rejected'
         application.remarks = remarks
+        application.reviewed_by = user
+        application.reviewed_at = timezone.now()
         application.save()
 
         EnrollmentStatusHistory.objects.create(
@@ -3282,7 +3319,7 @@ class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
 
         self._send_notification(application, 'Application Rejected',
                                 f'Your enrollment application has been rejected. Reason: {remarks}',
-                                '/enrollment-management')
+                                '/track-enrollment')
 
         return Response({'status': 'Application rejected'})
 
@@ -3337,15 +3374,59 @@ class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
 
         # Link parent if parent email exists and is a registered user
         parent_email = request.data.get('parent_email', '')
+        if not parent_email:
+            # Try to find parent from application fields
+            parent_email = application.mother_email or application.father_email or application.guardian_email
+
         if parent_email:
-            parent_user = User.objects.filter(email=parent_email, role='parent').first()
-            if parent_user:
-                parent_profile = getattr(parent_user, 'profile', None)
-                if parent_profile:
-                    parent_profile.linked_students.add(student_user)
-                    self._send_notification(parent_user, 'Child Enrolled',
-                                            f'Your child {application.full_name} has been enrolled.',
-                                            '/parent-dashboard')
+            parent_user = User.objects.filter(email=parent_email).first()
+            if not parent_user:
+                # Create parent account automatically
+                import random as rnd
+                import string as s
+                parent_username = f"parent.{application.last_name.lower()}.{rnd.randint(1000, 9999)}"
+                parent_temp_password = ''.join(rnd.choices(s.ascii_letters + s.digits, k=10))
+                parent_user = User.objects.create_user(
+                    username=parent_username,
+                    email=parent_email,
+                    password=parent_temp_password,
+                    first_name=application.father_name.split()[0] if application.father_name else application.mother_name.split()[0] if application.mother_name else 'Parent',
+                    last_name=application.last_name,
+                    role='parent',
+                    is_verified=True,
+                    is_approved=True,
+                    must_change_password=True,
+                    account_status='active',
+                )
+                Profile.objects.create(
+                    user=parent_user,
+                    phone_number=application.father_contact or application.mother_contact or application.guardian_contact or '',
+                )
+                self._send_notification(parent_user, 'Parent Account Created',
+                                        f'A parent account has been created for you. Username: {parent_username}. Please change your password on first login.',
+                                        '/login')
+
+            # Link parent to student
+            parent_profile = getattr(parent_user, 'profile', None)
+            if parent_profile:
+                parent_profile.linked_students.add(student_user)
+
+            # Create ParentLink record
+            from .models import ParentLink
+            ParentLink.objects.create(
+                parent=parent_user,
+                student=student_user,
+                application=application,
+                relationship=application.guardian_relationship or 'parent',
+                is_primary=True,
+            )
+
+            application.linked_parent = parent_user
+            application.save(update_fields=['linked_parent'])
+
+            self._send_notification(parent_user, 'Child Enrolled',
+                                    f'Your child {application.full_name} has been enrolled. You can now view their grades, attendance, and schedule.',
+                                    '/parent-dashboard')
 
         # Assign section if provided or auto-assign
         classroom_id = request.data.get('classroom_id')
@@ -3494,6 +3575,75 @@ class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
         elif action_type == 'enroll':
             return self.enroll_student(request, pk)
         return Response({'error': 'Unknown action'}, status=400)
+
+    @action(detail=True, methods=['post'], url_path='approve-application')
+    def approve_application(self, request, pk=None):
+        """Move application from under_review to approved."""
+        application = self.get_object()
+        user = request.user
+        remarks = request.data.get('remarks', '')
+
+        if application.status not in ('under_review', 'pending_requirements', 'pending'):
+            return Response({'error': f'Cannot approve application with status: {application.status}'}, status=400)
+
+        from_status = application.status
+        application.status = 'approved'
+        application.remarks = remarks or application.remarks
+        application.reviewed_by = user
+        application.reviewed_at = timezone.now()
+        application.save()
+
+        EnrollmentStatusHistory.objects.create(
+            application=application,
+            from_status=from_status,
+            to_status='approved',
+            changed_by=user,
+            notes=remarks or 'Application approved',
+        )
+
+        self._send_notification(application, 'Application Approved',
+                                'Congratulations! Your enrollment application has been approved. You may now proceed to enrollment.',
+                                '/track-enrollment')
+
+        return Response({'status': 'Application approved'})
+
+    @action(detail=False, methods=['get'], url_path='export-form-pdf')
+    def export_form_pdf(self, request):
+        """Export a single enrollment form as PDF."""
+        app_id = request.query_params.get('id')
+        if not app_id:
+            return Response({'error': 'id parameter is required'}, status=400)
+        try:
+            application = EnrollmentApplication.objects.get(id=app_id)
+        except EnrollmentApplication.DoesNotExist:
+            return Response({'error': 'Application not found'}, status=404)
+
+        from .pdf_export import enrollment_form_response
+        return enrollment_form_response(application)
+
+    @action(detail=False, methods=['get'], url_path='export-summary-pdf')
+    def export_summary_pdf(self, request):
+        """Export enrollment summary report as PDF."""
+        qs = self.get_queryset()
+        status_filter = request.query_params.get('status')
+        grade_filter = request.query_params.get('grade_level')
+        school_year = request.query_params.get('school_year')
+
+        filters = {}
+        if status_filter:
+            qs = qs.filter(status=status_filter)
+            filters['status'] = status_filter
+        if grade_filter:
+            qs = qs.filter(grade_level=grade_filter)
+            filters['grade_level'] = grade_filter
+        if school_year:
+            qs = qs.filter(school_year=school_year)
+            filters['school_year'] = school_year
+
+        applications = qs[:500]
+
+        from .pdf_export import enrollment_summary_response
+        return enrollment_summary_response(applications, filters)
 
     @action(detail=False, methods=['get'])
     def analytics(self, request):

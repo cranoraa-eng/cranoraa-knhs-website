@@ -862,6 +862,7 @@ class EnrollmentApplication(models.Model):
     
     enrollment_number = models.CharField(max_length=20, unique=True, blank=True, null=True, help_text="Auto-generated ENR-YYYY-XXXXXX")
     enrollment_type = models.CharField(max_length=20, choices=ENROLLMENT_TYPE_CHOICES, default='new')
+    school_year = models.CharField(max_length=20, blank=True, null=True, help_text="School year applying for (e.g., 2026-2027)")
     
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
@@ -883,12 +884,15 @@ class EnrollmentApplication(models.Model):
     father_name = models.CharField(max_length=200, blank=True, null=True)
     father_occupation = models.CharField(max_length=100, blank=True, null=True)
     father_contact = models.CharField(max_length=20, blank=True, null=True)
+    father_email = models.EmailField(blank=True, null=True)
     mother_name = models.CharField(max_length=200, blank=True, null=True)
     mother_occupation = models.CharField(max_length=100, blank=True, null=True)
     mother_contact = models.CharField(max_length=20, blank=True, null=True)
+    mother_email = models.EmailField(blank=True, null=True)
     guardian_name = models.CharField(max_length=200, blank=True, null=True)
     guardian_relationship = models.CharField(max_length=50, blank=True, null=True)
     guardian_contact = models.CharField(max_length=20, blank=True, null=True)
+    guardian_email = models.EmailField(blank=True, null=True)
     
     # Academic Information
     grade_level = models.CharField(max_length=2, choices=GRADE_LEVEL_CHOICES)
@@ -904,6 +908,7 @@ class EnrollmentApplication(models.Model):
     form_138 = models.URLField(max_length=1000, blank=True, null=True, help_text="Grade 6 Candidate for Graduation Certificate")
     certificate_of_completion = models.URLField(max_length=1000, blank=True, null=True, help_text="Grade 10 Candidate for Completion Certificate")
     good_moral_certificate = models.URLField(max_length=1000, blank=True, null=True)
+    id_picture = models.URLField(max_length=1000, blank=True, null=True, help_text="Student ID Picture")
     last_school_attended_cert = models.URLField(max_length=1000, blank=True, null=True, help_text="For ALS applicants")
     
     # Contact Information
@@ -919,13 +924,18 @@ class EnrollmentApplication(models.Model):
     enrolled_student = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True, related_name='enrollment_applications')
     assigned_classroom = models.ForeignKey('Classroom', on_delete=models.SET_NULL, blank=True, null=True)
     
+    # Parent account linking
+    linked_parent = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True, related_name='child_enrollment_applications', help_text="Parent account linked during enrollment")
+    
     # Status
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     remarks = models.TextField(blank=True, null=True)
+    reviewed_by = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True, related_name='reviewed_applications', help_text="Admin who last reviewed this application")
     
     # Timestamps
     submitted_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    reviewed_at = models.DateTimeField(blank=True, null=True)
     
     class Meta:
         ordering = ['-submitted_at']
@@ -933,6 +943,7 @@ class EnrollmentApplication(models.Model):
             models.Index(fields=['status']),
             models.Index(fields=['enrollment_number']),
             models.Index(fields=['grade_level']),
+            models.Index(fields=['school_year']),
         ]
     
     def save(self, *args, **kwargs):
@@ -951,6 +962,33 @@ class EnrollmentApplication(models.Model):
         else:
             seq = 1
         return f"{prefix}{seq:06d}"
+    
+    @property
+    def age(self):
+        from datetime import date
+        if not self.date_of_birth:
+            return None
+        today = date.today()
+        return today.year - self.date_of_birth.year - (
+            (today.month, today.day) < (self.date_of_birth.month, self.date_of_birth.day)
+        )
+    
+    @property
+    def full_name(self):
+        parts = [self.first_name]
+        if self.middle_name:
+            parts.append(self.middle_name)
+        parts.append(self.last_name)
+        return ' '.join(parts)
+    
+    @property
+    def is_duplicate(self):
+        return EnrollmentApplication.objects.filter(
+            first_name__iexact=self.first_name,
+            last_name__iexact=self.last_name,
+            date_of_birth=self.date_of_birth,
+            status__in=['pending', 'under_review', 'pending_requirements', 'approved', 'enrolled']
+        ).exclude(pk=self.pk).exists()
     
     def __str__(self):
         return f"{self.enrollment_number or 'N/A'} - {self.last_name}, {self.first_name}"
@@ -1007,6 +1045,24 @@ class EnrollmentStatusHistory(models.Model):
     
     def __str__(self):
         return f"{self.application.enrollment_number}: {self.from_status or 'new'} → {self.to_status}"
+
+
+class ParentLink(models.Model):
+    """Links a parent account to a student through enrollment application."""
+    parent = models.ForeignKey(User, on_delete=models.CASCADE, related_name='parent_links')
+    student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='student_parent_links')
+    application = models.ForeignKey(EnrollmentApplication, on_delete=models.CASCADE, related_name='parent_links')
+    relationship = models.CharField(max_length=50, default='parent', help_text="Relationship to student (parent, guardian, etc.)")
+    is_primary = models.BooleanField(default=False, help_text="Primary contact parent")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        unique_together = ['parent', 'student']
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"{self.parent.username} → {self.student.username}"
 
 
 class WebsiteContent(models.Model):

@@ -477,45 +477,52 @@ class EnrollmentApplicationSerializer(serializers.ModelSerializer):
     status_history = EnrollmentStatusHistorySerializer(many=True, read_only=True)
     full_name = serializers.SerializerMethodField()
     age = serializers.SerializerMethodField()
+    assigned_classroom_name = serializers.CharField(source='assigned_classroom.name', read_only=True)
+    reviewed_by_name = serializers.SerializerMethodField()
+    linked_parent_email = serializers.SerializerMethodField()
     
     class Meta:
         model = EnrollmentApplication
         fields = [
-            'id', 'enrollment_number', 'enrollment_type', 'first_name', 'last_name',
-            'middle_name', 'full_name', 'sex', 'date_of_birth', 'age',
+            'id', 'enrollment_number', 'enrollment_type', 'school_year',
+            'first_name', 'last_name', 'middle_name', 'full_name', 'sex', 'date_of_birth', 'age',
             'place_of_birth', 'nationality', 'religion', 'street_address', 'barangay',
-            'city_municipality', 'province', 'zip_code', 'father_name',
-            'father_occupation', 'father_contact', 'mother_name', 'mother_occupation',
-            'mother_contact', 'guardian_name', 'guardian_relationship',
-            'guardian_contact', 'grade_level', 'strand', 'previous_school',
-            'previous_school_address', 'lrn', 'is_als', 'birth_certificate',
-            'report_card', 'form_138', 'certificate_of_completion',
-            'good_moral_certificate', 'last_school_attended_cert',
+            'city_municipality', 'province', 'zip_code',
+            'father_name', 'father_occupation', 'father_contact', 'father_email',
+            'mother_name', 'mother_occupation', 'mother_contact', 'mother_email',
+            'guardian_name', 'guardian_relationship', 'guardian_contact', 'guardian_email',
+            'grade_level', 'strand', 'previous_school', 'previous_school_address',
+            'lrn', 'is_als',
+            'birth_certificate', 'report_card', 'form_138', 'certificate_of_completion',
+            'good_moral_certificate', 'id_picture', 'last_school_attended_cert',
             'email', 'phone_number', 'emergency_contact_name',
             'emergency_contact_relationship', 'emergency_contact_phone',
-            'enrolled_student', 'assigned_classroom', 'status', 'remarks',
+            'enrolled_student', 'assigned_classroom', 'assigned_classroom_name',
+            'linked_parent', 'linked_parent_email',
+            'status', 'remarks', 'reviewed_by', 'reviewed_by_name', 'reviewed_at',
             'submitted_at', 'updated_at', 'documents', 'status_history',
         ]
         read_only_fields = [
             'enrollment_number', 'status', 'submitted_at', 'updated_at',
-            'enrolled_student', 'assigned_classroom', 'documents', 'status_history',
+            'enrolled_student', 'assigned_classroom', 'linked_parent',
+            'reviewed_by', 'reviewed_at', 'documents', 'status_history',
         ]
     
     def get_full_name(self, obj):
-        parts = [obj.first_name]
-        if obj.middle_name:
-            parts.append(obj.middle_name)
-        parts.append(obj.last_name)
-        return ' '.join(parts)
+        return obj.full_name
     
     def get_age(self, obj):
-        from datetime import date
-        if not obj.date_of_birth:
-            return None
-        today = date.today()
-        return today.year - obj.date_of_birth.year - (
-            (today.month, today.day) < (obj.date_of_birth.month, obj.date_of_birth.day)
-        )
+        return obj.age
+    
+    def get_reviewed_by_name(self, obj):
+        if obj.reviewed_by:
+            return obj.reviewed_by.get_full_name() or obj.reviewed_by.username
+        return None
+    
+    def get_linked_parent_email(self, obj):
+        if obj.linked_parent:
+            return obj.linked_parent.email
+        return None
 
 
 class WebsiteContentSerializer(serializers.ModelSerializer):
