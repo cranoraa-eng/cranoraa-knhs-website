@@ -224,6 +224,30 @@ const Login = () => {
             <h2 className={`text-4xl font-black leading-tight mb-4 whitespace-pre-line ${isAdmin ? 'text-emerald-500 drop-shadow-[0_0_10px_rgba(16,185,129,0.3)]' : 'text-white'}`}>{currentRole.title}</h2>
             <p className="text-slate-400 leading-relaxed text-sm">{currentRole.desc}</p>
           </div>
+          
+          <div className="space-y-8">
+            <div className="space-y-3" key={`features-${loginType}`}>
+              {currentRole.features && currentRole.features.map((f, i) => (
+                <div key={i} className="flex items-center gap-3 animate-fade-in" style={{ animationDelay: `${i * 100}ms` }}>
+                  <div className={`w-5 h-5 rounded-full bg-${currentRole.color}-500/20 border border-${currentRole.color}-500/30 flex items-center justify-center flex-shrink-0`}>
+                    <svg className={`w-3 h-3 text-${currentRole.color}-400`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
+                  </div>
+                  <span className="text-sm text-slate-400">{f}</span>
+                </div>
+              ))}
+            </div>
+            
+            {!isAdmin && currentRole.stats && (
+              <div className="grid grid-cols-2 gap-3 pt-2" key={`stats-${loginType}`}>
+                {currentRole.stats.map((s, i) => (
+                  <div key={i} className="bg-white/5 border border-white/10 rounded-xl p-3 animate-fade-in" style={{ animationDelay: `${(i + 5) * 100}ms` }}>
+                    <p className="text-lg font-black text-white">{s.val}</p>
+                    <p className="text-[10px] text-slate-500 font-semibold uppercase tracking-widest mt-0.5">{s.label}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="relative">
