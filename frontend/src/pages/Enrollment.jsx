@@ -24,6 +24,11 @@ const ENROLLMENT_TYPES = [
   { value: 'parent_assisted', label: 'Parent-Assisted', desc: 'Enrollment with parent assistance' },
 ];
 
+const TYPE_LABELS = {
+  new: 'New Student', returning: 'Returning Student', transferee: 'Transferee',
+  sh_applicant: 'SHS Applicant', parent_assisted: 'Parent-Assisted',
+};
+
 const Field = ({ label, required, children }) => (
   <div>
     <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
@@ -50,7 +55,7 @@ const Textarea = (props) => (
     className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-colors resize-none" />
 );
 
-const SectionCard = ({ title, children }) => (
+const SectionCard = ({ title, type, children }) => (
   <div className="bg-slate-50 rounded-2xl border border-slate-100 p-6 space-y-4">
     <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">{title}</p>
     {children}
@@ -112,7 +117,23 @@ const Enrollment = () => {
   const [goodMoralCertificate, setGoodMoralCertificate] = useState(null);
   const [lastSchoolAttendedCert, setLastSchoolAttendedCert] = useState(null);
 
+  const isTransferee = enrollmentType === 'transferee';
+  const isReturning = enrollmentType === 'returning';
+  const isSHS = enrollmentType === 'sh_applicant';
+  const isParentAssisted = enrollmentType === 'parent_assisted';
+  const isNew = enrollmentType === 'new';
+
   const getRequirementsForGrade = () => {
+    const base = [];
+    if (isSHS) {
+      base.push(
+        { key: 'birthCertificate', label: 'PSA Birth Certificate', required: true, note: '' },
+        { key: 'reportCard', label: 'Progress Report Card (Gr. 10)', required: true, note: '' },
+        { key: 'certificateOfCompletion', label: 'Grade 10 Completion Certificate', required: true, note: '' },
+      );
+      if (!isReturning) base.push({ key: 'goodMoralCertificate', label: 'Good Moral Certificate', required: true, note: '' });
+      return base;
+    }
     if (isAls) return [
       { key: 'birthCertificate', label: 'PSA Birth Certificate', required: true, note: 'If unavailable, submit Baptismal Certificate or Local Live Birth' },
       { key: 'lastSchoolAttendedCert', label: 'Certificate/Report Card of Last School Year Attended', required: true, note: '' },
@@ -123,15 +144,24 @@ const Enrollment = () => {
         { key: 'birthCertificate', label: 'PSA Birth Certificate', required: true, note: 'If unavailable, submit Baptismal Certificate or Local Live Birth' },
       ];
       case '11': return [
-        { key: 'birthCertificate', label: 'PSA Birth Certificate', required: true, note: 'If unavailable, submit Baptismal Certificate or Local Live Birth' },
+        { key: 'birthCertificate', label: 'PSA Birth Certificate', required: true, note: '' },
         { key: 'reportCard', label: 'Progress Report Card', required: true, note: '' },
         { key: 'certificateOfCompletion', label: 'Grade 10 Completion Certificate', required: true, note: '' },
       ];
-      default: return [
-        { key: 'birthCertificate', label: 'PSA Birth Certificate', required: true, note: 'If unavailable, submit Baptismal Certificate or Local Live Birth' },
-        { key: 'reportCard', label: 'Progress Report Card', required: true, note: '' },
-        { key: 'goodMoralCertificate', label: 'Good Moral Certificate', required: false, note: '' },
-      ];
+      default: {
+        const docs = [
+          { key: 'birthCertificate', label: 'PSA Birth Certificate', required: true, note: 'If unavailable, submit Baptismal Certificate or Local Live Birth' },
+        ];
+        if (isTransferee || !isReturning) {
+          docs.push({ key: 'reportCard', label: 'Progress Report Card', required: true, note: '' });
+        }
+        if (isTransferee) {
+          docs.push({ key: 'goodMoralCertificate', label: 'Good Moral Certificate', required: true, note: '' });
+        } else if (!isReturning) {
+          docs.push({ key: 'goodMoralCertificate', label: 'Good Moral Certificate', required: false, note: '' });
+        }
+        return docs;
+      }
     }
   };
 
@@ -147,7 +177,7 @@ const Enrollment = () => {
 
   const handleNextStep = () => {
     if (step === 1 && !enrollmentType) {
-      return Swal.fire({ icon: 'error', title: 'Required', text: 'Please select an enrollment type.' });
+      return Swal.fire({ icon: 'error', title: 'Required', text: 'Select an enrollment type.' });
     }
     if (step === 2 && (!firstName || !lastName || !sex || !dateOfBirth)) {
       return Swal.fire({ icon: 'error', title: 'Missing Information', text: 'Fill in all required personal fields.' });
@@ -155,15 +185,30 @@ const Enrollment = () => {
     if (step === 3 && (!streetAddress || !barangay || !cityMunicipality || !province)) {
       return Swal.fire({ icon: 'error', title: 'Missing Information', text: 'Fill in all required address fields.' });
     }
-    if (step === 4 && (!fatherName || !motherName)) {
-      return Swal.fire({ icon: 'error', title: 'Missing Information', text: 'Provide parent/guardian information.' });
+    if (step === 4) {
+      if (isParentAssisted) {
+        if (!guardianName || !guardianRelationship || !guardianContact) {
+          return Swal.fire({ icon: 'error', title: 'Missing Guardian Info', text: 'Fill in guardian fields (required for parent-assisted enrollment).' });
+        }
+      } else if (!fatherName || !motherName) {
+        return Swal.fire({ icon: 'error', title: 'Missing Information', text: 'Provide parent/guardian information.' });
+      }
     }
     if (step === 5) {
       if (!gradeLevel || !email || !phoneNumber || !emergencyContactName || !emergencyContactRelationship || !emergencyContactPhone) {
         return Swal.fire({ icon: 'error', title: 'Missing Information', text: 'Fill in all required academic and contact fields.' });
       }
+      if (isSHS && !['11','12'].includes(gradeLevel)) {
+        return Swal.fire({ icon: 'error', title: 'Invalid Grade', text: 'SHS applicants must select Grade 11 or 12.' });
+      }
       if (['11','12'].includes(gradeLevel) && !strand) {
-        return Swal.fire({ icon: 'error', title: 'Strand Required', text: 'Please select a strand for SHS.' });
+        return Swal.fire({ icon: 'error', title: 'Strand Required', text: 'Select a strand for SHS.' });
+      }
+      if (isTransferee && !previousSchool) {
+        return Swal.fire({ icon: 'error', title: 'Previous School Required', text: 'Transferees must provide their previous school.' });
+      }
+      if (isReturning && !lrn) {
+        return Swal.fire({ icon: 'error', title: 'LRN Required', text: 'Returning students must provide their LRN.' });
       }
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
         return Swal.fire({ icon: 'error', title: 'Invalid Email', text: 'Enter a valid email address.' });
@@ -273,33 +318,36 @@ const Enrollment = () => {
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-colors ${
                     done ? 'bg-violet-600 text-white' : active ? 'bg-violet-600 text-white ring-4 ring-violet-100' : 'bg-white border-2 border-slate-200 text-slate-400'
                   }`}>
-                    {done ? (
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
-                    ) : s}
+                    {done ? <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg> : s}
                   </div>
                   <span className={`text-[9px] font-bold uppercase tracking-wider hidden sm:block ${active ? 'text-violet-600' : 'text-slate-400'}`}>{label}</span>
                 </div>
-                {s < STEPS.length && (
-                  <div className={`flex-1 h-0.5 mx-2 mb-4 transition-colors ${step > s ? 'bg-violet-600' : 'bg-slate-200'}`} />
-                )}
+                {s < STEPS.length && <div className={`flex-1 h-0.5 mx-2 mb-4 transition-colors ${step > s ? 'bg-violet-600' : 'bg-slate-200'}`} />}
               </div>
             );
           })}
         </div>
 
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 md:p-8">
+          {enrollmentType && step > 1 && (
+            <div className="mb-6 inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-violet-50 border border-violet-100">
+              <span className="text-[10px] font-bold text-violet-600 uppercase tracking-wide">{TYPE_LABELS[enrollmentType]}</span>
+              <button type="button" onClick={() => { setStep(1); setEnrollmentType(''); }} className="text-violet-400 hover:text-violet-600">
+                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit}>
             {step === 1 && (
               <div className="space-y-5">
                 <h2 className="text-lg font-black text-slate-900 mb-2">Enrollment Type</h2>
-                <p className="text-sm text-slate-500 mb-4">Select the type of enrollment that applies to you.</p>
+                <p className="text-sm text-slate-500 mb-4">Select the type of enrollment that applies to you. This determines which fields and documents are required.</p>
                 <div className="grid gap-3">
                   {ENROLLMENT_TYPES.map(t => (
-                    <button key={t.value} type="button" onClick={() => setEnrollmentType(t.value)}
+                    <button key={t.value} type="button" onClick={() => { setEnrollmentType(t.value); if (t.value !== 'sh_applicant') setStrand(''); }}
                       className={`text-left p-4 rounded-2xl border-2 transition-all ${
-                        enrollmentType === t.value
-                          ? 'border-violet-500 bg-violet-50 shadow-sm'
-                          : 'border-slate-200 hover:border-slate-300 bg-white'
+                        enrollmentType === t.value ? 'border-violet-500 bg-violet-50 shadow-sm' : 'border-slate-200 hover:border-slate-300 bg-white'
                       }`}>
                       <p className="text-sm font-bold text-slate-900">{t.label}</p>
                       <p className="text-xs text-slate-500 mt-0.5">{t.desc}</p>
@@ -351,27 +399,42 @@ const Enrollment = () => {
             {step === 4 && (
               <div className="space-y-5">
                 <h2 className="text-lg font-black text-slate-900 mb-5">Parent / Guardian Information</h2>
-                <SectionCard title="Father's Information">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <Field label="Father's Name" required><Input value={fatherName} onChange={e => setFatherName(e.target.value)} /></Field>
-                    <Field label="Occupation"><Input value={fatherOccupation} onChange={e => setFatherOccupation(e.target.value)} /></Field>
-                    <Field label="Contact Number"><Input value={fatherContact} onChange={e => setFatherContact(e.target.value)} /></Field>
-                  </div>
-                </SectionCard>
-                <SectionCard title="Mother's Information">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <Field label="Mother's Name" required><Input value={motherName} onChange={e => setMotherName(e.target.value)} /></Field>
-                    <Field label="Occupation"><Input value={motherOccupation} onChange={e => setMotherOccupation(e.target.value)} /></Field>
-                    <Field label="Contact Number"><Input value={motherContact} onChange={e => setMotherContact(e.target.value)} /></Field>
-                  </div>
-                </SectionCard>
-                <SectionCard title="Guardian (if applicable)">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <Field label="Guardian's Name"><Input value={guardianName} onChange={e => setGuardianName(e.target.value)} /></Field>
-                    <Field label="Relationship"><Input value={guardianRelationship} onChange={e => setGuardianRelationship(e.target.value)} /></Field>
-                    <Field label="Contact Number"><Input value={guardianContact} onChange={e => setGuardianContact(e.target.value)} /></Field>
-                  </div>
-                </SectionCard>
+                {isParentAssisted ? (
+                  <SectionCard title="Guardian Information">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <Field label="Guardian's Full Name" required><Input value={guardianName} onChange={e => setGuardianName(e.target.value)} /></Field>
+                      <Field label="Relationship to Applicant" required><Input value={guardianRelationship} onChange={e => setGuardianRelationship(e.target.value)} placeholder="e.g. Parent, Aunt, Sibling" /></Field>
+                      <Field label="Contact Number" required><Input value={guardianContact} onChange={e => setGuardianContact(e.target.value)} /></Field>
+                    </div>
+                    <div className="mt-3 p-3 rounded-xl bg-amber-50 border border-amber-100">
+                      <p className="text-xs text-amber-700">Parent-assisted enrollment: the guardian above will be the primary contact.</p>
+                    </div>
+                  </SectionCard>
+                ) : (
+                  <>
+                    <SectionCard title="Father's Information">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <Field label="Father's Name" required><Input value={fatherName} onChange={e => setFatherName(e.target.value)} /></Field>
+                        <Field label="Occupation"><Input value={fatherOccupation} onChange={e => setFatherOccupation(e.target.value)} /></Field>
+                        <Field label="Contact Number" required={isTransferee}><Input value={fatherContact} onChange={e => setFatherContact(e.target.value)} /></Field>
+                      </div>
+                    </SectionCard>
+                    <SectionCard title="Mother's Information">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <Field label="Mother's Name" required><Input value={motherName} onChange={e => setMotherName(e.target.value)} /></Field>
+                        <Field label="Occupation"><Input value={motherOccupation} onChange={e => setMotherOccupation(e.target.value)} /></Field>
+                        <Field label="Contact Number" required={isTransferee}><Input value={motherContact} onChange={e => setMotherContact(e.target.value)} /></Field>
+                      </div>
+                    </SectionCard>
+                    <SectionCard title="Guardian (if applicable)">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <Field label="Guardian's Name"><Input value={guardianName} onChange={e => setGuardianName(e.target.value)} /></Field>
+                        <Field label="Relationship"><Input value={guardianRelationship} onChange={e => setGuardianRelationship(e.target.value)} /></Field>
+                        <Field label="Contact Number"><Input value={guardianContact} onChange={e => setGuardianContact(e.target.value)} /></Field>
+                      </div>
+                    </SectionCard>
+                  </>
+                )}
               </div>
             )}
 
@@ -383,7 +446,10 @@ const Enrollment = () => {
                     <Field label="Grade Level" required>
                       <Select value={gradeLevel} onChange={e => { setGradeLevel(e.target.value); if (!['11','12'].includes(e.target.value)) setStrand(''); }}>
                         <option value="">Select Grade</option>
-                        {['7','8','9','10','11','12'].map(g => <option key={g} value={g}>Grade {g}</option>)}
+                        {isSHS
+                          ? ['11','12'].map(g => <option key={g} value={g}>Grade {g}</option>)
+                          : ['7','8','9','10','11','12'].map(g => <option key={g} value={g}>Grade {g}</option>)
+                        }
                       </Select>
                     </Field>
                     {['11','12'].includes(gradeLevel) && (
@@ -394,9 +460,15 @@ const Enrollment = () => {
                         </Select>
                       </Field>
                     )}
-                    <Field label="LRN"><Input value={lrn} onChange={e => setLrn(e.target.value)} placeholder="12-digit LRN" /></Field>
+                    <Field label="LRN" required={isReturning}>
+                      <Input value={lrn} onChange={e => setLrn(e.target.value)} placeholder="12-digit LRN" />
+                      {isReturning && <p className="text-[10px] text-amber-600 mt-1">Required for returning students.</p>}
+                    </Field>
                     <div className="sm:col-span-2">
-                      <Field label="Previous School"><Input value={previousSchool} onChange={e => setPreviousSchool(e.target.value)} /></Field>
+                      <Field label="Previous School" required={isTransferee}>
+                        <Input value={previousSchool} onChange={e => setPreviousSchool(e.target.value)} />
+                        {isTransferee && <p className="text-[10px] text-amber-600 mt-1">Required for transferees.</p>}
+                      </Field>
                     </div>
                     <div className="sm:col-span-2">
                       <Field label="Previous School Address"><Textarea rows={2} value={previousSchoolAddress} onChange={e => setPreviousSchoolAddress(e.target.value)} /></Field>
@@ -433,7 +505,9 @@ const Enrollment = () => {
                 <div className="flex items-start gap-3 p-4 rounded-xl bg-amber-50 border border-amber-100">
                   <svg className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                   <p className="text-xs text-amber-700 font-medium">
-                    Requirements for <strong>{isAls ? 'ALS Applicants' : `Grade ${gradeLevel}`}</strong>. Accepted: PDF, JPG, PNG.
+                    Requirements for <strong>{TYPE_LABELS[enrollmentType]}</strong>
+                    {!isSHS && gradeLevel && !isAls ? ` — Grade ${gradeLevel}` : ''}
+                    {isAls ? ' — ALS' : ''}. Accepted: PDF, JPG, PNG.
                   </p>
                 </div>
                 <div className="space-y-4">
