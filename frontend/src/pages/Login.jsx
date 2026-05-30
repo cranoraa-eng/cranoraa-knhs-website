@@ -415,7 +415,6 @@ const Login = () => {
                   Forgot password? Contact admin to reset
                 </p>
               )}
-            </div>
 
             <button type="submit" disabled={loading}
               className={`w-full py-3 px-4 rounded-xl text-sm font-bold shadow-lg active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-2 ${isAdmin ? 'bg-emerald-600 text-white shadow-emerald-900/40 hover:bg-emerald-500' : `bg-${currentRole.color}-600 text-white shadow-${currentRole.color}-900/20 hover:bg-${currentRole.color}-700`}`}>
