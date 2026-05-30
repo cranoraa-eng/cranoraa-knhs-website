@@ -449,7 +449,7 @@ const EnrollmentManagement = () => {
                 <div className="bg-slate-50 p-3 rounded-xl"><p className="text-[9px] font-bold text-slate-400 uppercase">School Year</p><p className="font-bold text-slate-800">{selected.school_year || 'N/A'}</p></div>
                 <div className="bg-slate-50 p-3 rounded-xl"><p className="text-[9px] font-bold text-slate-400 uppercase">Sex</p><p className="font-bold text-slate-800">{selected.sex}</p></div>
                 <div className="bg-slate-50 p-3 rounded-xl"><p className="text-[9px] font-bold text-slate-400 uppercase">DOB</p><p className="font-bold text-slate-800">{selected.date_of_birth} ({selected.age || '?'} yrs)</p></div>
-                <div className="bg-slate-50 p-3 rounded-xl"><p className="text-[9px] font-bold text-slate-400 uppercase">LRN</p><p className="font-bold text-slate-800">{selected.lrn || 'N/A'}</p></div>
+                <div className="bg-slate-50 p-3 rounded-xl"><p className="text-[9px] font-bold text-slate-400 uppercase">LRN</p><p className="font-bold text-slate-800">{selected.lrn || (selected.lrn_request_reason ? `Requested: ${selected.lrn_request_reason.replace(/_/g, ' ')}` : 'N/A')}</p></div>
                 <div className="col-span-2 bg-slate-50 p-3 rounded-xl"><p className="text-[9px] font-bold text-slate-400 uppercase">Address</p><p className="font-bold text-slate-800">{selected.street_address}, {selected.barangay}, {selected.city_municipality}, {selected.province}</p></div>
               </div>
 

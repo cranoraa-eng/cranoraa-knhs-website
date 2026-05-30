@@ -900,6 +900,7 @@ class EnrollmentApplication(models.Model):
     previous_school = models.CharField(max_length=200, blank=True, null=True)
     previous_school_address = models.TextField(blank=True, null=True)
     lrn = models.CharField(max_length=12, blank=True, null=True, help_text="Learner Reference Number")
+    lrn_request_reason = models.CharField(max_length=50, blank=True, null=True, help_text="Reason for not having LRN")
     is_als = models.BooleanField(default=False, help_text="Alternative Learning System applicant")
     
     # Document Uploads — stored in Supabase 'enrollment-docs' bucket

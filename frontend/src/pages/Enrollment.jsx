@@ -166,6 +166,8 @@ const Enrollment = () => {
   const [previousSchool, setPreviousSchool] = useState('');
   const [previousSchoolAddress, setPreviousSchoolAddress] = useState('');
   const [lrn, setLrn] = useState('');
+  const [noLrn, setNoLrn] = useState(false);
+  const [lrnRequestReason, setLrnRequestReason] = useState('');
   const [isAls, setIsAls] = useState(false);
 
   const [email, setEmail] = useState('');
@@ -284,8 +286,12 @@ const Enrollment = () => {
         Swal.fire({ icon: 'error', title: 'Previous School Required', text: 'Transferees must provide their previous school.' });
         return false;
       }
-      if (isReturning && !lrn) {
-        Swal.fire({ icon: 'error', title: 'LRN Required', text: 'Returning students must provide their LRN.' });
+      if (!noLrn && (!lrn || lrn.length !== 12 || !/^\d{12}$/.test(lrn))) {
+        Swal.fire({ icon: 'error', title: 'LRN Required', text: 'A valid 12-digit LRN is required. Check "No LRN" if you do not have one yet.' });
+        return false;
+      }
+      if (noLrn && !lrnRequestReason) {
+        Swal.fire({ icon: 'error', title: 'Reason Required', text: 'Please provide a reason for not having an LRN.' });
         return false;
       }
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
@@ -330,10 +336,11 @@ const Enrollment = () => {
         guardian_contact: guardianContact, guardian_email: guardianEmail,
         grade_level: gradeLevel, strand: strand || '', previous_school: previousSchool,
         previous_school_address: previousSchoolAddress,
-        lrn, is_als: isAls, email, phone_number: phoneNumber,
+        lrn: noLrn ? '' : lrn, is_als: isAls, email, phone_number: phoneNumber,
         emergency_contact_name: emergencyContactName,
         emergency_contact_relationship: emergencyContactRelationship,
         emergency_contact_phone: emergencyContactPhone,
+        lrn_request_reason: noLrn ? lrnRequestReason : '',
       };
       Object.entries(fields).forEach(([k, v]) => formData.append(k, v));
 
@@ -568,10 +575,42 @@ const Enrollment = () => {
                       <option value="2026-2027">2026-2027</option>
                     </Select>
                   </Field>
-                  <Field label="LRN" required={isReturning}>
-                    <Input value={lrn} onChange={e => setLrn(e.target.value)} placeholder="12-digit LRN" />
-                    {isReturning && <p className="text-[10px] text-amber-600 mt-1">Required for returning students.</p>}
+                  <Field label="LRN (Learner Reference Number)" required={!noLrn}>
+                    <Input value={lrn} onChange={e => setLrn(e.target.value)} placeholder="12-digit LRN"
+                      disabled={noLrn} className={noLrn ? 'bg-slate-100 text-slate-400' : ''} />
+                    {!noLrn && lrn && lrn.length !== 12 && (
+                      <p className="text-[10px] text-red-500 mt-1">LRN must be exactly 12 digits</p>
+                    )}
                   </Field>
+                  <div className="sm:col-span-2">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input type="checkbox" checked={noLrn} onChange={e => { setNoLrn(e.target.checked); if (e.target.checked) setLrn(''); }}
+                        className="w-4 h-4 text-violet-600 border-slate-300 rounded focus:ring-violet-500" />
+                      <span className="text-sm text-slate-700 font-medium">I do not have an LRN yet</span>
+                    </label>
+                    {noLrn && (
+                      <div className="mt-3 p-3 rounded-xl bg-amber-50 border border-amber-200 space-y-3">
+                        <p className="text-xs text-amber-700 font-medium">
+                          No LRN? You can still apply. The school will assist you in obtaining one. Please provide a reason:
+                        </p>
+                        <Field label="Reason for no LRN" required>
+                          <Select value={lrnRequestReason} onChange={e => setLrnRequestReason(e.target.value)}>
+                            <option value="">Select reason</option>
+                            <option value="new_student">New student, never enrolled in DepEd</option>
+                            <option value="lost_lrn">LRN was lost or forgotten</option>
+                            <option value="als_graduate">ALS graduate, no LRN issued</option>
+                            <option value="transferee_no_lrn">Transferee from private school, no LRN</option>
+                            <option value="other">Other reason</option>
+                          </Select>
+                        </Field>
+                        {lrnRequestReason === 'other' && (
+                          <Field label="Please specify">
+                            <Input value={lrn} onChange={e => setLrn(e.target.value)} placeholder="Describe your situation" />
+                          </Field>
+                        )}
+                      </div>
+                    )}
+                  </div>
                   <div className="sm:col-span-2">
                     <Field label="Previous School" required={isTransferee}>
                       <Input value={previousSchool} onChange={e => setPreviousSchool(e.target.value)} placeholder={isTransferee ? 'Required for transferees' : 'Optional'} />
@@ -664,7 +703,7 @@ const Enrollment = () => {
 
               <ReviewSection title="Academic">
                 <ReviewRow label="Grade Level" value={`Grade ${gradeLevel}${strand ? ` \u2014 ${strand}` : ''}`} />
-                <ReviewRow label="LRN" value={lrn || 'N/A'} />
+                <ReviewRow label="LRN" value={noLrn ? `Not available (${lrnRequestReason.replace(/_/g, ' ')})` : (lrn || 'N/A')} />
                 <ReviewRow label="Previous School" value={previousSchool || 'N/A'} />
                 <ReviewRow label="ALS" value={isAls ? 'Yes' : 'No'} />
               </ReviewSection>

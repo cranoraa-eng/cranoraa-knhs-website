@@ -3329,16 +3329,21 @@ class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
         application = self.get_object()
         user = request.user
 
-        if application.status != 'approved' and application.status != 'under_review':
+        if application.status not in ('approved', 'under_review'):
             return Response({'error': 'Application must be approved first'}, status=400)
 
         if application.enrolled_student:
             return Response({'error': 'Student account already exists for this application'}, status=400)
 
-        # Create student user
+        # Create student username from name
+        import re
         import random
         import string
-        username_base = f"{application.first_name.lower()}.{application.last_name.lower()}"
+        clean_first = re.sub(r'[^a-z]', '', application.first_name.lower().split()[0] if application.first_name else 'student')
+        clean_last = re.sub(r'[^a-z]', '', application.last_name.lower().split()[0] if application.last_name else 'user')
+        username_base = f"{clean_first}.{clean_last}"
+        if not username_base or username_base == '.':
+            username_base = f"student.{random.randint(10000, 99999)}"
         username = username_base
         counter = 1
         while User.objects.filter(username=username).exists():
@@ -3358,40 +3363,53 @@ class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
             account_status='active',
         )
 
-        # Create profile
-        from .serializers import full_name
-        Profile.objects.create(
-            user=student_user,
-            lrn=application.lrn or '',
-            grade_level=application.grade_level,
-            phone_number=application.phone_number,
-            address=f"{application.street_address}, {application.barangay}, {application.city_municipality}, {application.province}",
-            date_of_birth=application.date_of_birth,
-            sex=application.sex,
-            middle_name=application.middle_name or '',
-            father_name=application.father_name,
-            mother_name=application.mother_name,
-        )
+        # Use LRN as username if available (student management convention)
+        lrn = application.lrn or ''
 
-        # Link parent if parent email exists and is a registered user
+        # Create or update profile
+        profile, _ = Profile.objects.get_or_create(user=student_user)
+        profile.lrn = lrn
+        profile.grade_level = application.grade_level
+        profile.phone_number = application.phone_number
+        profile.address = f"{application.street_address}, {application.barangay}, {application.city_municipality}, {application.province}"
+        profile.date_of_birth = application.date_of_birth
+        profile.sex = application.sex
+        profile.middle_name = application.middle_name or ''
+        profile.father_name = application.father_name or ''
+        profile.mother_name = application.mother_name or ''
+        profile.nationality = application.nationality or 'Filipino'
+        if lrn:
+            profile.registration_number = lrn
+        profile.save()
+
+        # Link parent if parent email exists
         parent_email = request.data.get('parent_email', '')
         if not parent_email:
-            # Try to find parent from application fields
             parent_email = application.mother_email or application.father_email or application.guardian_email
 
+        parent_user = None
         if parent_email:
             parent_user = User.objects.filter(email=parent_email).first()
             if not parent_user:
                 # Create parent account automatically
-                import random as rnd
-                import string as s
-                parent_username = f"parent.{application.last_name.lower()}.{rnd.randint(1000, 9999)}"
-                parent_temp_password = ''.join(rnd.choices(s.ascii_letters + s.digits, k=10))
+                parent_clean_last = re.sub(r'[^a-z]', '', application.last_name.lower().split()[0] if application.last_name else 'parent')
+                parent_username = f"parent.{parent_clean_last}.{random.randint(1000, 9999)}"
+                parent_temp_password = ''.join(random.choices(string.ascii_letters + string.digits, k=10))
+
+                # Determine parent first name
+                parent_first = 'Parent'
+                if application.father_name:
+                    parts = application.father_name.strip().split()
+                    parent_first = parts[0] if parts else 'Parent'
+                elif application.mother_name:
+                    parts = application.mother_name.strip().split()
+                    parent_first = parts[0] if parts else 'Parent'
+
                 parent_user = User.objects.create_user(
                     username=parent_username,
                     email=parent_email,
                     password=parent_temp_password,
-                    first_name=application.father_name.split()[0] if application.father_name else application.mother_name.split()[0] if application.mother_name else 'Parent',
+                    first_name=parent_first,
                     last_name=application.last_name,
                     role='parent',
                     is_verified=True,
@@ -3399,27 +3417,30 @@ class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
                     must_change_password=True,
                     account_status='active',
                 )
-                Profile.objects.create(
-                    user=parent_user,
-                    phone_number=application.father_contact or application.mother_contact or application.guardian_contact or '',
-                )
+                parent_profile, _ = Profile.objects.get_or_create(user=parent_user)
+                parent_profile.phone_number = application.father_contact or application.mother_contact or application.guardian_contact or ''
+                parent_profile.save()
+
                 self._send_notification(parent_user, 'Parent Account Created',
-                                        f'A parent account has been created for you. Username: {parent_username}. Please change your password on first login.',
+                                        f'A parent account has been created. Username: {parent_username}. Please change your password on first login.',
                                         '/login')
 
-            # Link parent to student
-            parent_profile = getattr(parent_user, 'profile', None)
-            if parent_profile:
-                parent_profile.linked_students.add(student_user)
+            # Link parent to student via profile
+            parent_profile_obj = getattr(parent_user, 'profile', None)
+            if parent_profile_obj:
+                parent_profile_obj.linked_students.add(student_user)
+                parent_profile_obj.save()
 
             # Create ParentLink record
             from .models import ParentLink
-            ParentLink.objects.create(
+            ParentLink.objects.get_or_create(
                 parent=parent_user,
                 student=student_user,
-                application=application,
-                relationship=application.guardian_relationship or 'parent',
-                is_primary=True,
+                defaults={
+                    'application': application,
+                    'relationship': application.guardian_relationship or 'parent',
+                    'is_primary': True,
+                }
             )
 
             application.linked_parent = parent_user
@@ -3434,14 +3455,16 @@ class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
         if not classroom_id:
             classroom_id = self._auto_assign_section(application)
 
+        classroom_name = ''
         if classroom_id:
             try:
                 classroom = Classroom.objects.get(id=classroom_id)
-                StudentClassEnrollment.objects.create(
+                StudentClassEnrollment.objects.get_or_create(
                     student=student_user,
                     classroom=classroom,
                 )
                 application.assigned_classroom = classroom
+                classroom_name = classroom.name
 
                 self._send_notification(student_user, 'Section Assigned',
                                         f'You have been assigned to {classroom.name}.',
@@ -3449,14 +3472,17 @@ class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
             except Classroom.DoesNotExist:
                 pass
 
+        from_status = application.status
         application.enrolled_student = student_user
         application.status = 'enrolled'
         application.remarks = f'Enrolled on {timezone.now().strftime("%Y-%m-%d %H:%M")}'
+        application.reviewed_by = user
+        application.reviewed_at = timezone.now()
         application.save()
 
         EnrollmentStatusHistory.objects.create(
             application=application,
-            from_status='approved',
+            from_status=from_status,
             to_status='enrolled',
             changed_by=user,
             notes=f'Student account created. Username: {username}',
@@ -3472,6 +3498,7 @@ class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
             'username': username,
             'temp_password': temp_password,
             'assigned_classroom': classroom_id,
+            'classroom_name': classroom_name,
         })
 
     def _auto_assign_section(self, application):

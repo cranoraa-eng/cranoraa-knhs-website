@@ -492,7 +492,7 @@ class EnrollmentApplicationSerializer(serializers.ModelSerializer):
             'mother_name', 'mother_occupation', 'mother_contact', 'mother_email',
             'guardian_name', 'guardian_relationship', 'guardian_contact', 'guardian_email',
             'grade_level', 'strand', 'previous_school', 'previous_school_address',
-            'lrn', 'is_als',
+            'lrn', 'lrn_request_reason', 'is_als',
             'birth_certificate', 'report_card', 'form_138', 'certificate_of_completion',
             'good_moral_certificate', 'id_picture', 'last_school_attended_cert',
             'email', 'phone_number', 'emergency_contact_name',
