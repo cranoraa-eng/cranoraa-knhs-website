@@ -3495,36 +3495,55 @@ class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['get'])
     def analytics(self, request):
+        from django.db.models.functions import TruncDate
+
         qs = EnrollmentApplication.objects.all()
 
-        status_counts = qs.values('status').annotate(count=Count('id')).order_by('status')
-        grade_level_dist = qs.values('grade_level').annotate(count=Count('id')).order_by('grade_level')
-        daily_counts = qs.extra(creation_date="date(submitted_at)").values('creation_date').annotate(count=Count('id')).order_by('-creation_date')[:30]
+        try:
+            status_counts = qs.values('status').annotate(count=Count('id')).order_by('status')
+            grade_level_dist = qs.values('grade_level').annotate(count=Count('id')).order_by('grade_level')
+            daily_counts = (
+                qs.annotate(creation_date=TruncDate('submitted_at'))
+                .values('creation_date')
+                .annotate(count=Count('id'))
+                .order_by('-creation_date')[:30]
+            )
+            enrollment_type_dist = qs.values('enrollment_type').annotate(count=Count('id'))
 
-        enrollment_type_dist = qs.values('enrollment_type').annotate(count=Count('id'))
+            total = qs.count()
+            approved = qs.filter(status='approved').count()
+            rejected = qs.filter(status='rejected').count()
+            enrolled = qs.filter(status='enrolled').count()
+            pending = qs.filter(status='pending').count()
 
-        total = qs.count()
-        approved = qs.filter(status='approved').count()
-        rejected = qs.filter(status='rejected').count()
-        enrolled = qs.filter(status='enrolled').count()
-        pending = qs.filter(status='pending').count()
+            approval_rate = round((approved + enrolled) / total * 100, 1) if total else 0
+            rejection_rate = round(rejected / total * 100, 1) if total else 0
 
-        approval_rate = round((approved + enrolled) / total * 100, 1) if total else 0
-        rejection_rate = round(rejected / total * 100, 1) if total else 0
-
-        return Response({
-            'total': total,
-            'pending': pending,
-            'approved': approved,
-            'rejected': rejected,
-            'enrolled': enrolled,
-            'approval_rate': approval_rate,
-            'rejection_rate': rejection_rate,
-            'status_breakdown': {s['status']: s['count'] for s in status_counts},
-            'grade_level_breakdown': {g['grade_level']: g['count'] for g in grade_level_dist},
-            'daily_applications': list(daily_counts),
-            'enrollment_type_breakdown': {e['enrollment_type']: e['count'] for e in enrollment_type_dist},
-        })
+            return Response({
+                'total': total,
+                'pending': pending,
+                'approved': approved,
+                'rejected': rejected,
+                'enrolled': enrolled,
+                'approval_rate': approval_rate,
+                'rejection_rate': rejection_rate,
+                'status_breakdown': {s['status']: s['count'] for s in status_counts},
+                'grade_level_breakdown': {g['grade_level']: g['count'] for g in grade_level_dist},
+                'daily_applications': [
+                    {'date': d['creation_date'].isoformat() if d['creation_date'] else None, 'count': d['count']}
+                    for d in daily_counts
+                ],
+                'enrollment_type_breakdown': {e['enrollment_type']: e['count'] for e in enrollment_type_dist},
+            })
+        except Exception as e:
+            logger.error(f"Analytics error: {e}", exc_info=True)
+            return Response({
+                'total': qs.count(),
+                'pending': 0, 'approved': 0, 'rejected': 0, 'enrolled': 0,
+                'approval_rate': 0, 'rejection_rate': 0,
+                'status_breakdown': {}, 'grade_level_breakdown': {},
+                'daily_applications': [], 'enrollment_type_breakdown': {},
+            })
 
     @action(detail=False, methods=['get'])
     def export_csv(self, request):
