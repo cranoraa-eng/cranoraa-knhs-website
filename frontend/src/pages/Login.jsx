@@ -375,11 +375,11 @@ const Login = () => {
                 className={`peer w-full px-4 py-3 rounded-xl border text-sm transition-all focus:outline-none focus:ring-2 ${isAdmin ? 'bg-slate-900 border-emerald-500/20 text-white focus:ring-emerald-500/20 focus:border-emerald-500' : `bg-white border-slate-200 text-slate-900 focus:ring-${currentRole.color}-500/20 focus:border-${currentRole.color}-500`} ${fieldErrors.identifier ? 'border-red-400 bg-red-50' : ''}`}
               />
               <label htmlFor="identifier"
-                className={`absolute left-4 top-1/2 -translate-y-1/2 text-sm transition-all pointer-events-none font-bold px-1
-                  peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-sm peer-placeholder-shown:font-medium
+                className={`absolute left-4 top-1/2 -translate-y-1/2 text-sm transition-all pointer-events-none font-bold px-0.5 rounded-sm
+                  peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-sm peer-placeholder-shown:font-medium peer-placeholder-shown:bg-transparent
                   peer-focus:top-0 peer-focus:text-[10px] peer-focus:font-black peer-focus:uppercase peer-focus:tracking-widest
                   peer-[:not(:placeholder-shown)]:top-0 peer-[:not(:placeholder-shown)]:text-[10px] peer-[:not(:placeholder-shown)]:font-black peer-[:not(:placeholder-shown)]:uppercase peer-[:not(:placeholder-shown)]:tracking-widest
-                  ${isAdmin ? 'text-emerald-500/50 peer-focus:text-emerald-500 peer-[:not(:placeholder-shown)]:text-emerald-500 bg-slate-900' : `text-slate-400 peer-focus:text-${currentRole.color}-600 peer-[:not(:placeholder-shown)]:text-${currentRole.color}-600 bg-white`}`}>
+                  ${isAdmin ? 'text-emerald-500/50 peer-focus:text-emerald-500 peer-[:not(:placeholder-shown)]:text-emerald-500 peer-focus:bg-slate-900 peer-[:not(:placeholder-shown)]:bg-slate-900' : `text-slate-400 peer-focus:text-${currentRole.color}-600 peer-[:not(:placeholder-shown)]:text-${currentRole.color}-600 peer-focus:bg-slate-50 peer-[:not(:placeholder-shown)]:bg-slate-50`}`}>
                 {currentRole.identifierLabel}
               </label>
               {fieldErrors.identifier && <p className="text-red-500 text-[11px] mt-1 font-medium px-1">{fieldErrors.identifier}</p>}
@@ -392,11 +392,11 @@ const Login = () => {
                 className={`peer w-full px-4 py-3 rounded-xl border text-sm transition-all focus:outline-none focus:ring-2 pr-10 ${isAdmin ? 'bg-slate-900 border-emerald-500/20 text-white focus:ring-emerald-500/20 focus:border-emerald-500' : `bg-white border-slate-200 text-slate-900 focus:ring-${currentRole.color}-500/20 focus:border-${currentRole.color}-500`} ${fieldErrors.password ? 'border-red-400 bg-red-50' : ''}`}
               />
               <label htmlFor="password"
-                className={`absolute left-4 top-1/2 -translate-y-1/2 text-sm transition-all pointer-events-none font-bold px-1
-                  peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-sm peer-placeholder-shown:font-medium
+                className={`absolute left-4 top-1/2 -translate-y-1/2 text-sm transition-all pointer-events-none font-bold px-0.5 rounded-sm
+                  peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-sm peer-placeholder-shown:font-medium peer-placeholder-shown:bg-transparent
                   peer-focus:top-0 peer-focus:text-[10px] peer-focus:font-black peer-focus:uppercase peer-focus:tracking-widest
                   peer-[:not(:placeholder-shown)]:top-0 peer-[:not(:placeholder-shown)]:text-[10px] peer-[:not(:placeholder-shown)]:font-black peer-[:not(:placeholder-shown)]:uppercase peer-[:not(:placeholder-shown)]:tracking-widest
-                  ${isAdmin ? 'text-emerald-500/50 peer-focus:text-emerald-500 peer-[:not(:placeholder-shown)]:text-emerald-500 bg-slate-900' : `text-slate-400 peer-focus:text-${currentRole.color}-600 peer-[:not(:placeholder-shown)]:text-${currentRole.color}-600 bg-white`}`}>
+                  ${isAdmin ? 'text-emerald-500/50 peer-focus:text-emerald-500 peer-[:not(:placeholder-shown)]:text-emerald-500 peer-focus:bg-slate-900 peer-[:not(:placeholder-shown)]:bg-slate-900' : `text-slate-400 peer-focus:text-${currentRole.color}-600 peer-[:not(:placeholder-shown)]:text-${currentRole.color}-600 peer-focus:bg-slate-50 peer-[:not(:placeholder-shown)]:bg-slate-50`}`}>
                 Password
               </label>
               <button type="button" onClick={() => setShowPassword(v => !v)} tabIndex={-1}
