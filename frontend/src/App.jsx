@@ -4,6 +4,7 @@ import { NotificationProvider } from './context/NotificationContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Layout from './components/Layout';
 import PublicLayout from './components/PublicLayout';
+import ErrorBoundary from './components/ErrorBoundary';
 import { lazy, Suspense } from 'react';
 import { useState, useEffect } from 'react';
 import api from './utils/api';
@@ -48,13 +49,12 @@ const TermsOfService = lazy(() => import('./pages/TermsOfService'));
 
 // ── Portal pages (lazy loaded for better initial bundle) ──────────────────────
 const Announcements = lazy(() => import('./pages/Announcements'));
-const Grades = lazy(() => import('./pages/Grades'));
 const Attendance = lazy(() => import('./pages/Attendance'));
 const Materials = lazy(() => import('./pages/Materials'));
 const Subjects = lazy(() => import('./pages/Subjects'));
 const Teachers = lazy(() => import('./pages/Teachers'));
 const Profile = lazy(() => import('./pages/Profile'));
-const RegisterSubjects = lazy(() => import('./pages/RegisterSubjects'));
+
 const ClassMembers = lazy(() => import('./pages/ClassMembers'));
 const PasswordReset = lazy(() => import('./pages/PasswordReset'));
 const ClassManagement = lazy(() => import('./pages/ClassManagement'));
@@ -129,6 +129,7 @@ function App() {
       <NotificationProvider>
         <BrowserRouter>
           <Suspense fallback={<PageLoader />}>
+            <ErrorBoundary>
             <Routes>
               {/* Auth Routes */}
               <Route path="/login" element={<Login />} />
@@ -172,14 +173,14 @@ function App() {
               >
                 <Route path="dashboard" element={<Dashboard />} />
                 <Route path="announcements" element={<Announcements />} />
-                <Route path="grades" element={<Grades />} />
+                <Route path="grades" element={<Navigate to="/grade-management" replace />} />
                 <Route path="attendance" element={<Attendance />} />
                 <Route path="materials" element={<Materials />} />
                 <Route path="messages" element={<Messages />} />
                 <Route path="subjects" element={<Subjects />} />
                 <Route path="teachers" element={<Teachers />} />
                 <Route path="profile" element={<Profile />} />
-                <Route path="register-subjects" element={<RegisterSubjects />} />
+
                 <Route path="class-members" element={<ClassMembers />} />
                 <Route path="portal-calendar" element={<Calendar mode="portal" />} />
                 <Route path="password-reset" element={<PasswordReset />} />
@@ -188,7 +189,7 @@ function App() {
                 <Route path="subject-assignment" element={<SubjectAssignment />} />
                 <Route path="student-enrollment" element={<StudentEnrollment />} />
                 <Route path="student-management" element={<StudentManagement />} />
-                <Route path="classroom-management" element={<ClassManagement />} />
+
                 <Route path="audit-logs" element={<AuditLogs />} />
                 <Route path="backups" element={<Backups />} />
                 <Route path="website-content" element={<WebsiteContentManagement />} />
@@ -206,6 +207,7 @@ function App() {
                 <Route path="parent-management" element={<ParentManagement />} />
               </Route>
             </Routes>
+            </ErrorBoundary>
           </Suspense>
         </BrowserRouter>
       </NotificationProvider>

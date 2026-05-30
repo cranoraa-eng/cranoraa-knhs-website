@@ -1,6 +1,6 @@
 import { getUser } from '../utils/auth';
 import { useAuth } from '../context/AuthContext';
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo, memo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../utils/api';
 import { getCurrentAcademicYear } from '../utils/dateHelpers';
@@ -100,7 +100,7 @@ const CHIP_DOT = {
   slate: 'bg-slate-500',
 };
 
-const PanelHeader = ({ title, subtitle, icon, action, className = '', bordered = false, iconClassName }) => (
+const PanelHeader = memo(({ title, subtitle, icon, action, className = '', bordered = false, iconClassName }) => (
   <div
     className={`flex items-start justify-between gap-2 shrink-0 ${
       bordered ? `${DASH_PANEL_HEADER} px-3 md:px-5 py-3 md:py-3.5 -mx-3 md:-mx-5 -mt-3 md:-mt-5 mb-3 md:mb-4` : 'mb-3'
@@ -117,15 +117,19 @@ const PanelHeader = ({ title, subtitle, icon, action, className = '', bordered =
     </div>
     {action && <div className="shrink-0 flex items-center">{action}</div>}
   </div>
-);
+));
 
-const DashEmptyState = ({ icon, title, description = '', className = '' }) => (
+PanelHeader.displayName = 'PanelHeader';
+
+const DashEmptyState = memo(({ icon, title, description = '', className = '' }) => (
   <div className={`flex flex-col items-center justify-center gap-2 rounded-sm border border-dashed border-violet-200 bg-violet-50/50 px-4 py-8 text-center ${className}`}>
     <div className={`w-11 h-11 ${DASH_ICON_BOX}`}>{icon}</div>
     <p className="text-[10px] font-bold text-slate-600 uppercase tracking-wide">{title}</p>
     {description && <p className="text-[10px] text-slate-500 max-w-[200px]">{description}</p>}
   </div>
-);
+));
+
+DashEmptyState.displayName = 'DashEmptyState';
 
 // ─── Shared UI Components ───────────────────────────────────────────────────
 
@@ -259,7 +263,7 @@ const WelcomeBanner = ({ user, today, actions, subtitle, statusChips, useSvgGree
   );
 };
 
-const StatCard = ({ label, value, sub, icon, color = 'violet', onClick, badge }) => {
+const StatCard = memo(({ label, value, sub, icon, color = 'violet', onClick, badge }) => {
   const themes = {
     violet: 'text-violet-700 bg-violet-50 border-violet-200',
     blue:   'text-blue-700 bg-blue-50 border-blue-200',
@@ -293,9 +297,11 @@ const StatCard = ({ label, value, sub, icon, color = 'violet', onClick, badge })
       </div>
     </div>
   );
-};
+});
 
-const LatestMessagesWidget = ({ messages, onOpenChat }) => {
+StatCard.displayName = 'StatCard';
+
+const LatestMessagesWidget = memo(({ messages, onOpenChat }) => {
   return (
     <div className={`${DASH_PANEL} p-3 md:p-4 flex flex-col h-full`}>
       <PanelHeader
@@ -347,11 +353,13 @@ const LatestMessagesWidget = ({ messages, onOpenChat }) => {
       </div>
     </div>
   );
-};
+});
+
+LatestMessagesWidget.displayName = 'LatestMessagesWidget';
 
 // ─── TODAY'S SCHEDULE WIDGET ─────────────────────────────────────────────────
 
-const TodayScheduleWidget = ({ role }) => {
+const TodayScheduleWidget = memo(({ role }) => {
   const navigate = useNavigate();
   const [schedule, setSchedule] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -487,9 +495,11 @@ const TodayScheduleWidget = ({ role }) => {
       </div>
     </div>
   );
-};
+});
 
-const DashboardQuickActions = ({ title, items, navigate }) => (
+TodayScheduleWidget.displayName = 'TodayScheduleWidget';
+
+const DashboardQuickActions = memo(({ title, items, navigate }) => (
   <div className={`${DASH_PANEL} p-3 md:p-5`}>
     <PanelHeader
       title={title}
@@ -517,7 +527,9 @@ const DashboardQuickActions = ({ title, items, navigate }) => (
       ))}
     </div>
   </div>
-);
+));
+
+DashboardQuickActions.displayName = 'DashboardQuickActions';
 
 // ─── ADMIN DASHBOARD ──────────────────────────────────────────────────────────
 
@@ -541,7 +553,7 @@ const AdminView = () => {
   const dist = distView === 'general_average' ? data?.general_average : data?.all_subjects;
   const gradeData = dist?.counts || [];
   const attendanceTrends = data?.dashboard?.charts?.attendance_trends || [];
-  const today = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  const today = useMemo(() => new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }), []);
 
   return (
     <motion.div

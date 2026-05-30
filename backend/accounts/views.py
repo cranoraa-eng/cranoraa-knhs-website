@@ -481,7 +481,7 @@ def teacher_dashboard_stats(request):
             recent_activities.append({
                 'message': log.description,
                 'time': log.timestamp.strftime('%I:%M %p, %b %d'),
-                'type': 'grade' if 'grade' in log.description.lower() else 'attendance' if 'attendance' in log.description.lower() else 'system'
+                'type': 'grade' if log.description and 'grade' in log.description.lower() else 'attendance' if log.description and 'attendance' in log.description.lower() else 'system'
             })
 
         # Latest messages for this teacher (exclude self, unique senders)
@@ -493,12 +493,17 @@ def teacher_dashboard_stats(request):
         seen_senders = set()
         for m in msg_objs:
             if m.sender_id not in seen_senders:
+                sender_name = ''
+                try:
+                    sender_name = m.sender.get_full_name() or m.sender.username if m.sender else 'Unknown'
+                except Exception:
+                    sender_name = 'Unknown'
                 latest_messages.append({
                     'id': m.id,
                     'content': m.content,
-                    'timestamp': m.timestamp.isoformat(),
-                    'sender': m.sender.get_full_name() or m.sender.username,
-                    'sender_profile_picture': getattr(getattr(m.sender, 'profile', None), 'profile_picture', None),
+                    'timestamp': m.timestamp.isoformat() if m.timestamp else '',
+                    'sender': sender_name,
+                    'sender_profile_picture': getattr(getattr(m.sender, 'profile', None) if m.sender else None, 'profile_picture', None),
                     'is_read': m.is_read
                 })
                 seen_senders.add(m.sender_id)
@@ -555,12 +560,17 @@ def student_dashboard_stats(request):
         seen_senders = set()
         for m in msg_objs:
             if m.sender_id not in seen_senders:
+                sender_name = ''
+                try:
+                    sender_name = m.sender.get_full_name() or m.sender.username if m.sender else 'Unknown'
+                except Exception:
+                    sender_name = 'Unknown'
                 latest_messages.append({
                     'id': m.id,
                     'content': m.content,
-                    'timestamp': m.timestamp.isoformat(),
-                    'sender': m.sender.get_full_name() or m.sender.username,
-                    'sender_profile_picture': getattr(getattr(m.sender, 'profile', None), 'profile_picture', None),
+                    'timestamp': m.timestamp.isoformat() if m.timestamp else '',
+                    'sender': sender_name,
+                    'sender_profile_picture': getattr(getattr(m.sender, 'profile', None) if m.sender else None, 'profile_picture', None),
                     'is_read': m.is_read
                 })
                 seen_senders.add(m.sender_id)
@@ -2521,7 +2531,7 @@ def admin_dashboard_stats(request):
                 'recent_activity': [
                     {
                         'id': log.id,
-                        'user': log.user.get_full_name() or log.user.username if log.user else 'System',
+                        'user': (log.user.get_full_name() or log.user.username) if log.user else 'System',
                         'timestamp': log.timestamp,
                         'description': log.description,
                         'action': log.action
@@ -2677,6 +2687,8 @@ def grade_distribution_stats(request):
         # Calculate distribution based on each student's average across filtered subjects
         for sa in student_averages:
             score = sa['avg']
+            if score is None:
+                continue
             if score >= 90: categories['Outstanding (90-100)'] += 1
             elif score >= 85: categories['Very Satisfactory (85-89)'] += 1
             elif score >= 80: categories['Satisfactory (80-84)'] += 1
@@ -2741,7 +2753,7 @@ def grade_distribution_stats(request):
             by_group.append({
                 'name': s['subject__name'],
                 'code': s['subject__code'],
-                'average': round(float(s['avg']), 2),
+                'average': round(float(s['avg']), 2) if s['avg'] else 0,
                 'count': s['count']
             })
     else:
@@ -2755,7 +2767,7 @@ def grade_distribution_stats(request):
             by_group.append({
                 'name': cs['classroom__name'],
                 'code': cs['classroom__name'], # Use name as code for chart axis
-                'average': round(float(cs['avg']), 2),
+                'average': round(float(cs['avg']), 2) if cs['avg'] else 0,
                 'count': cs['count']
             })
 
