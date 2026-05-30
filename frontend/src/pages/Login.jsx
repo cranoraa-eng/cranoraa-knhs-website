@@ -32,139 +32,6 @@ const BinaryBackground = ({ isAdmin }) => {
   );
 };
 
-const SystemMonitor = ({ isAdmin, uptime, serverLoad, securityEvents }) => {
-  if (!isAdmin) return null;
-  return (
-    <div className="space-y-6 mt-8 p-4 bg-emerald-500/5 border border-emerald-500/10 rounded-2xl backdrop-blur-sm animate-fade-in">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-          <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">Live Monitor</span>
-        </div>
-        <span className="text-[10px] font-mono text-emerald-500/50 uppercase">Kiwalan-Net v4.0</span>
-      </div>
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-1">
-          <p className="text-[9px] text-slate-500 uppercase font-bold tracking-tighter">Uptime</p>
-          <p className="text-sm font-mono text-emerald-400 font-bold">{uptime}</p>
-        </div>
-        <div className="space-y-1">
-          <p className="text-[9px] text-slate-500 uppercase font-bold tracking-tighter">Server Load</p>
-          <div className="flex items-center gap-2">
-            <div className="flex-1 h-1 bg-emerald-900/30 rounded-full overflow-hidden">
-              <div className="h-full bg-emerald-500 transition-all duration-1000" style={{ width: `${serverLoad}%` }} />
-            </div>
-            <span className="text-[10px] font-mono text-emerald-400">{serverLoad}%</span>
-          </div>
-        </div>
-      </div>
-      <div className="pt-2 border-t border-emerald-500/10 space-y-2">
-        <p className="text-[9px] text-slate-500 uppercase font-bold tracking-tighter">Security Log</p>
-        <div className="space-y-1">
-          {securityEvents.map((event, i) => (
-            <div key={i} className="flex items-center gap-2 text-[10px] font-mono text-emerald-500/60">
-              <span className="text-emerald-500 opacity-50 text-[8px] tracking-tighter">[{new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'})}]</span>
-              <span className="truncate">{event}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-};
-
-const MiniDashboard = ({ loginType, roleConfig }) => {
-  if (loginType === 'admin') return null;
-  const config = roleConfig[loginType];
-  
-  // Mock data tailored for each role matching the actual dashboard structure
-  const mockWidgets = {
-    student: [
-      { title: 'Total Subjects', value: '8', icon: 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253' },
-      { title: 'Gen. Average', value: '92.5', icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z' }
-    ],
-    teacher: [
-      { title: 'Active Classes', value: '5', icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z' },
-      { title: 'Total Students', value: '142', icon: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z' }
-    ],
-    parent: [
-      { title: 'Enrolled Children', value: '2', icon: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z' },
-      { title: 'Unread Messages', value: '1', icon: 'M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z' }
-    ]
-  };
-
-  const mockLists = {
-    student: ['Math 101 - Mr. Smith', 'Science 202 - Ms. Davis'],
-    teacher: ['Grade 10 - Section A', 'Grade 10 - Section B'],
-    parent: ['View Academic Records', 'Contact Teachers']
-  };
-
-  const widgets = mockWidgets[loginType] || [];
-  const listItems = mockLists[loginType] || [];
-
-  return (
-    <div className="w-full max-w-sm mt-8 animate-fade-in relative group" key={`mini-dash-${loginType}`}>
-      {/* Decorative background glow */}
-      <div className={`absolute -inset-1 bg-gradient-to-r from-${config.color}-500/20 to-${config.accent}-500/20 rounded-2xl blur opacity-25 group-hover:opacity-50 transition duration-500`} />
-      
-      {/* Mini Dashboard Container - mimics DASH_PANEL style */}
-      <div className={`relative bg-${config.color}-50/95 backdrop-blur-sm border border-${config.color}-200/90 rounded-sm p-4 overflow-hidden shadow-lg`}>
-        
-        {/* Mock Header (Mimics Welcome Banner) */}
-        <div className={`flex flex-col gap-2 mb-4 bg-${config.color}-700 rounded-sm p-3 border border-${config.color}-500`}>
-          <div className="flex items-center gap-2">
-            <div className={`w-8 h-8 rounded-full bg-white/20 flex items-center justify-center`}>
-              <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-              </svg>
-            </div>
-            <div>
-              <div className="h-2 w-20 bg-white/40 rounded mb-1" />
-              <div className="h-1.5 w-12 bg-white/20 rounded" />
-            </div>
-          </div>
-        </div>
-
-        {/* Mock Widgets (Mimics Stat Cards) */}
-        <div className="grid grid-cols-2 gap-3 mb-4">
-          {widgets.map((widget, i) => (
-            <div key={i} className={`bg-white rounded-sm p-3 border border-${config.color}-100 flex flex-col items-center justify-center text-center shadow-sm`}>
-              <div className={`w-6 h-6 rounded-sm bg-${config.color}-50 flex items-center justify-center mb-1.5 border border-${config.color}-100`}>
-                <svg className={`w-3.5 h-3.5 text-${config.color}-600`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={widget.icon} />
-                </svg>
-              </div>
-              <div className={`text-[10px] font-bold text-${config.color}-700 uppercase tracking-wide mb-0.5`}>{widget.title}</div>
-              <div className={`text-lg font-black text-${config.color}-900`}>{widget.value}</div>
-            </div>
-          ))}
-        </div>
-
-        {/* Mock Activity List (Mimics DASH_LIST_ITEM) */}
-        <div className="space-y-2">
-          <div className={`text-[9px] font-bold text-${config.color}-700 uppercase tracking-wide px-0.5 mb-1`}>
-            {loginType === 'student' ? 'Current Subjects' : loginType === 'teacher' ? 'Your Classes' : 'Quick Actions'}
-          </div>
-          {listItems.map((item, i) => (
-            <div key={i} className={`flex items-center justify-between bg-${config.color}-50/40 border border-${config.color}-100 rounded-sm p-2`}>
-              <div className="flex items-center gap-2">
-                <div className={`w-1.5 h-1.5 rounded-full bg-${config.color}-500`} />
-                <div className={`text-[10px] font-bold text-${config.color}-900`}>{item}</div>
-              </div>
-              <div className={`w-4 h-4 rounded bg-white border border-${config.color}-200 flex items-center justify-center`}>
-                <svg className={`w-2.5 h-2.5 text-${config.color}-400`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
-              </div>
-            </div>
-          ))}
-        </div>
-        
-        {/* Overlay gradient to fade bottom */}
-        <div className={`absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-${config.color}-50/95 to-transparent`} />
-      </div>
-    </div>
-  );
-};
-
 const Login = () => {
   const { user, signIn, refreshUser } = useAuth();
   const navigate = useNavigate();
@@ -177,29 +44,10 @@ const Login = () => {
   const [introUser, setIntroUser] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
   const [loginType, setLoginType] = useState('student');
-  const [uptime, setUptime] = useState('00:00:00');
-  const [serverLoad, setServerLoad] = useState(0);
-  const [securityEvents, setSecurityEvents] = useState([]);
   const introDestinationRef = useRef('/dashboard');
   const preventAutoRedirectRef = useRef(false);
 
   const isAdmin = loginType === 'admin';
-
-  useEffect(() => {
-    if (!isAdmin) return;
-    const startTime = Date.now();
-    const interval = setInterval(() => {
-      const diff = Date.now() - startTime;
-      const h = Math.floor(diff / 3600000).toString().padStart(2, '0');
-      const m = Math.floor((diff % 3600000) / 60000).toString().padStart(2, '0');
-      const s = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
-      setUptime(`${h}:${m}:${s}`);
-      setServerLoad(Math.floor(Math.random() * 15) + 5);
-    }, 1000);
-    const events = ['Encrypted tunnel established','Database node 01 synced','Security firewall active','Intrusion detection online','Port 443 handshake complete'];
-    setSecurityEvents(events.sort(() => Math.random() - 0.5).slice(0, 3));
-    return () => clearInterval(interval);
-  }, [isAdmin]);
 
   const roleConfig = {
     student: {
@@ -376,24 +224,6 @@ const Login = () => {
             <h2 className={`text-4xl font-black leading-tight mb-4 whitespace-pre-line ${isAdmin ? 'text-emerald-500 drop-shadow-[0_0_10px_rgba(16,185,129,0.3)]' : 'text-white'}`}>{currentRole.title}</h2>
             <p className="text-slate-400 leading-relaxed text-sm">{currentRole.desc}</p>
           </div>
-          {isAdmin ? (
-            <SystemMonitor isAdmin={isAdmin} uptime={uptime} serverLoad={serverLoad} securityEvents={securityEvents} />
-          ) : (
-            <div className="space-y-8">
-              <MiniDashboard loginType={loginType} roleConfig={roleConfig} />
-              
-              <div className="space-y-3" key={`features-${loginType}`}>
-                {currentRole.features.map((f, i) => (
-                  <div key={i} className="flex items-center gap-3 animate-fade-in" style={{ animationDelay: `${i * 100}ms` }}>
-                    <div className={`w-5 h-5 rounded-full bg-${currentRole.color}-500/20 border border-${currentRole.color}-500/30 flex items-center justify-center flex-shrink-0`}>
-                      <svg className={`w-3 h-3 text-${currentRole.color}-400`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
-                    </div>
-                    <span className="text-sm text-slate-400">{f}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
 
         <div className="relative">
