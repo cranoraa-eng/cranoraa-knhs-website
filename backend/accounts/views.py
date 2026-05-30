@@ -11,13 +11,13 @@ from django.db.models import Q, Avg, Count, Max, Min, Sum
 from .serializers import (UserSerializer, ClassroomSerializer, StudentClassEnrollmentSerializer,
     AnnouncementSerializer, AnnouncementCommentSerializer, AttendanceSerializer, LearningMaterialSerializer,
     SubjectSerializer, ClassroomSubjectSerializer, ScratchCardSerializer, FeeSerializer,
-    NotificationSerializer, EnrollmentApplicationSerializer, WebsiteContentSerializer,
+    NotificationSerializer, EnrollmentApplicationSerializer, EnrollmentDocumentSerializer, EnrollmentStatusHistorySerializer, WebsiteContentSerializer,
     GradeSerializer, GradeReportSerializer, ChatRoomSerializer, ChatMessageSerializer, FriendshipSerializer,
     SystemSettingSerializer, AssignmentSerializer, SubmissionSerializer, ReportedMessageSerializer,
     RoomSerializer, TimeSlotSerializer, ScheduleSerializer, ParentChildSummarySerializer,
     OnboardingStateSerializer,
     full_name)
-from .models import User, Classroom, StudentClassEnrollment, Announcement, AnnouncementAttachment, AnnouncementComment, Attendance, LearningMaterial, Subject, ClassroomSubject, ScratchCard, Fee, Notification, EnrollmentApplication, WebsiteContent, Grade, GradeReport, ChatRoom, ChatMessage, MessageReaction, Friendship, SystemSetting, Assignment, Submission, ReportedMessage, Room, TimeSlot, Schedule, FCMToken, OnboardingState
+from .models import User, Profile, Classroom, StudentClassEnrollment, Announcement, AnnouncementAttachment, AnnouncementComment, Attendance, LearningMaterial, Subject, ClassroomSubject, ScratchCard, Fee, Notification, EnrollmentApplication, EnrollmentDocument, EnrollmentStatusHistory, WebsiteContent, Grade, GradeReport, ChatRoom, ChatMessage, MessageReaction, Friendship, SystemSetting, Assignment, Submission, ReportedMessage, Room, TimeSlot, Schedule, FCMToken, OnboardingState
 from .permissions import IsAdmin, IsTeacher, IsStudent, IsParent, IsAdminOrTeacher, IsAdminOrReadOnly
 from .throttles import AuthRateThrottle, CheckResultRateThrottle, EnrollmentRateThrottle
 # Moved portal imports inside functions to avoid circular dependencies
@@ -3096,27 +3096,31 @@ class NotificationViewSet(viewsets.ModelViewSet):
 
 class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
     serializer_class = EnrollmentApplicationSerializer
-    permission_classes = [IsAuthenticated]  # Default: require auth
+    permission_classes = [IsAuthenticated]
     parser_classes = [parsers.MultiPartParser, parsers.FormParser, parsers.JSONParser]
-    filter_backends = [filters.SearchFilter]
-    search_fields = ['first_name', 'last_name', 'email']
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ['first_name', 'last_name', 'email', 'enrollment_number', 'lrn']
+    ordering_fields = ['submitted_at', 'last_name', 'grade_level', 'status']
+    ordering = ['-submitted_at']
 
     def get_permissions(self):
-        """
-        Public enrollment form submission (create) is open to anyone.
-        All other actions (list, retrieve, update, destroy) require authentication.
-        Approve/reject actions require admin.
-        """
         if self.action == 'create':
             return [AllowAny()]
-        if self.action in ('approve', 'reject', 'destroy', 'update', 'partial_update'):
+        if self.action in ('approve', 'reject', 'enroll_student', 'assign_section',
+                           'verify_document', 'reject_document', 'request_requirements',
+                           'destroy', 'update', 'partial_update', 'bulk_action'):
             return [IsAdminUser()]
+        if self.action == 'track':
+            return [AllowAny()]
+        if self.action in ('list', 'retrieve', 'analytics', 'export_csv'):
+            return [IsAuthenticated()]
         return [IsAuthenticated()]
 
     def get_throttles(self):
-        """Apply strict throttle only to the public create action."""
         if self.action == 'create':
             return [EnrollmentRateThrottle()]
+        if self.action == 'track':
+            return []
         return super().get_throttles()
 
     def get_queryset(self):
@@ -3124,13 +3128,28 @@ class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
         if not user.is_authenticated:
             return EnrollmentApplication.objects.none()
         if user.role == 'admin' or user.is_staff:
-            return EnrollmentApplication.objects.all()
-        # Authenticated non-admin users can only see their own applications
+            qs = EnrollmentApplication.objects.all()
+            # Filter by query params
+            status_filter = self.request.query_params.get('status')
+            if status_filter:
+                qs = qs.filter(status=status_filter)
+            grade_filter = self.request.query_params.get('grade_level')
+            if grade_filter:
+                qs = qs.filter(grade_level=grade_filter)
+            enrollment_type = self.request.query_params.get('enrollment_type')
+            if enrollment_type:
+                qs = qs.filter(enrollment_type=enrollment_type)
+            date_from = self.request.query_params.get('date_from')
+            if date_from:
+                qs = qs.filter(submitted_at__gte=date_from)
+            date_to = self.request.query_params.get('date_to')
+            if date_to:
+                qs = qs.filter(submitted_at__lte=date_to)
+            return qs.select_related('enrolled_student', 'assigned_classroom').prefetch_related('documents', 'status_history')
         return EnrollmentApplication.objects.filter(email=user.email)
-    
+
     def create(self, request, *args, **kwargs):
         try:
-            # Upload document files to Supabase before validating/saving
             from .storage import upload_file
             doc_fields = [
                 'birth_certificate', 'report_card', 'form_138',
@@ -3155,14 +3174,39 @@ class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
-            # Build mutable data with Supabase URLs replacing file objects
             data = request.data.copy()
             for field_name, url in uploaded_urls.items():
                 data[field_name] = url
 
             serializer = self.get_serializer(data=data)
             serializer.is_valid(raise_exception=True)
-            self.perform_create(serializer)
+            application = serializer.save()
+
+            # Create EnrollmentDocument records for uploaded files
+            for field_name, url in uploaded_urls.items():
+                doc_type_map = {
+                    'birth_certificate': 'birth_certificate',
+                    'report_card': 'report_card',
+                    'form_138': 'form_138',
+                    'certificate_of_completion': 'certificate_of_completion',
+                    'good_moral_certificate': 'good_moral',
+                    'last_school_attended_cert': 'last_school_attended',
+                }
+                doc_type = doc_type_map.get(field_name, 'other')
+                EnrollmentDocument.objects.create(
+                    application=application,
+                    document_type=doc_type,
+                    file_url=url,
+                    file_name=getattr(request.FILES[field_name], 'name', ''),
+                )
+
+            # Create initial status history
+            EnrollmentStatusHistory.objects.create(
+                application=application,
+                to_status='pending',
+                notes='Application submitted',
+            )
+
             headers = self.get_success_headers(serializer.data)
             return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
         except Exception as e:
@@ -3170,23 +3214,351 @@ class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
             logger.error(f"Enrollment application error: {str(e)}\n{traceback.format_exc()}")
             if hasattr(e, 'detail'):
                 return Response({'error': e.detail}, status=status.HTTP_400_BAD_REQUEST)
-            return Response({'error': 'Failed to submit enrollment application. Please check your input.'}, status=status.HTTP_400_BAD_REQUEST)
-    
-    @action(detail=True, methods=['post'], permission_classes=[IsAdminUser])
+            return Response({'error': 'Failed to submit enrollment application.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=False, methods=['get'], permission_classes=[AllowAny])
+    def track(self, request):
+        number = request.query_params.get('number', '')
+        email = request.query_params.get('email', '')
+        if not number and not email:
+            return Response({'error': 'Provide enrollment number or email'}, status=400)
+        qs = EnrollmentApplication.objects.all()
+        if number:
+            qs = qs.filter(enrollment_number__iexact=number)
+        elif email:
+            qs = qs.filter(email__iexact=email)
+        app = qs.select_related('assigned_classroom').prefetch_related('documents', 'status_history').first()
+        if not app:
+            return Response({'error': 'No application found'}, status=404)
+        serializer = self.get_serializer(app)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=['post'])
     def approve(self, request, pk=None):
         application = self.get_object()
-        application.status = 'approved'
-        application.remarks = request.data.get('remarks', '')
+        user = request.user
+        remarks = request.data.get('remarks', '')
+
+        application.status = 'under_review'
+        application.remarks = remarks
         application.save()
-        return Response({'status': 'Application approved'})
-    
-    @action(detail=True, methods=['post'], permission_classes=[IsAdminUser])
+
+        EnrollmentStatusHistory.objects.create(
+            application=application,
+            from_status='pending',
+            to_status='under_review',
+            changed_by=user,
+            notes=remarks or 'Application moved to under review',
+        )
+
+        self._send_notification(application, 'Application Under Review',
+                                'Your enrollment application is now under review.',
+                                '/enrollment-management')
+
+        return Response({'status': 'Application moved to under review'})
+
+    @action(detail=True, methods=['post'])
     def reject(self, request, pk=None):
         application = self.get_object()
+        user = request.user
+        remarks = request.data.get('remarks', 'Provide reason for rejection.')
+
         application.status = 'rejected'
-        application.remarks = request.data.get('remarks', '')
+        application.remarks = remarks
         application.save()
+
+        EnrollmentStatusHistory.objects.create(
+            application=application,
+            from_status=application.status if application.status != 'rejected' else None,
+            to_status='rejected',
+            changed_by=user,
+            notes=remarks,
+        )
+
+        self._send_notification(application, 'Application Rejected',
+                                f'Your enrollment application has been rejected. Reason: {remarks}',
+                                '/enrollment-management')
+
         return Response({'status': 'Application rejected'})
+
+    @action(detail=True, methods=['post'])
+    def enroll_student(self, request, pk=None):
+        application = self.get_object()
+        user = request.user
+
+        if application.status != 'approved' and application.status != 'under_review':
+            return Response({'error': 'Application must be approved first'}, status=400)
+
+        if application.enrolled_student:
+            return Response({'error': 'Student account already exists for this application'}, status=400)
+
+        # Create student user
+        import random
+        import string
+        username_base = f"{application.first_name.lower()}.{application.last_name.lower()}"
+        username = username_base
+        counter = 1
+        while User.objects.filter(username=username).exists():
+            username = f"{username_base}{counter}"
+            counter += 1
+
+        temp_password = ''.join(random.choices(string.ascii_letters + string.digits, k=10))
+        student_user = User.objects.create_user(
+            username=username,
+            email=application.email,
+            password=temp_password,
+            first_name=application.first_name,
+            last_name=application.last_name,
+            role='student',
+            is_verified=True,
+            is_approved=True,
+            account_status='active',
+        )
+
+        # Create profile
+        from .serializers import full_name
+        Profile.objects.create(
+            user=student_user,
+            lrn=application.lrn or '',
+            grade_level=application.grade_level,
+            phone_number=application.phone_number,
+            address=f"{application.street_address}, {application.barangay}, {application.city_municipality}, {application.province}",
+            date_of_birth=application.date_of_birth,
+            sex=application.sex,
+            middle_name=application.middle_name or '',
+            father_name=application.father_name,
+            mother_name=application.mother_name,
+        )
+
+        # Link parent if parent email exists and is a registered user
+        parent_email = request.data.get('parent_email', '')
+        if parent_email:
+            parent_user = User.objects.filter(email=parent_email, role='parent').first()
+            if parent_user:
+                parent_profile = getattr(parent_user, 'profile', None)
+                if parent_profile:
+                    parent_profile.linked_students.add(student_user)
+                    self._send_notification(parent_user, 'Child Enrolled',
+                                            f'Your child {application.full_name} has been enrolled.',
+                                            '/parent-dashboard')
+
+        # Assign section if provided or auto-assign
+        classroom_id = request.data.get('classroom_id')
+        if not classroom_id:
+            classroom_id = self._auto_assign_section(application)
+
+        if classroom_id:
+            try:
+                classroom = Classroom.objects.get(id=classroom_id)
+                StudentClassEnrollment.objects.create(
+                    student=student_user,
+                    classroom=classroom,
+                    academic_year=application.submitted_at.year,
+                )
+                application.assigned_classroom = classroom
+
+                self._send_notification(student_user, 'Section Assigned',
+                                        f'You have been assigned to {classroom.name}.',
+                                        '/my-classes')
+            except Classroom.DoesNotExist:
+                pass
+
+        application.enrolled_student = student_user
+        application.status = 'enrolled'
+        application.remarks = f'Enrolled on {timezone.now().strftime("%Y-%m-%d %H:%M")}'
+        application.save()
+
+        EnrollmentStatusHistory.objects.create(
+            application=application,
+            from_status='approved',
+            to_status='enrolled',
+            changed_by=user,
+            notes=f'Student account created. Username: {username}',
+        )
+
+        self._send_notification(application, 'Enrollment Complete',
+                                f'Welcome to the school! Your enrollment is complete. Username: {username}',
+                                '/dashboard')
+
+        return Response({
+            'status': 'Enrollment completed',
+            'student_id': student_user.id,
+            'username': username,
+            'temp_password': temp_password,
+            'assigned_classroom': classroom_id,
+        })
+
+    def _auto_assign_section(self, application):
+        available = Classroom.objects.filter(
+            grade_level=application.grade_level,
+        ).annotate(
+            current_count=Count('studentclassenrollment')
+        ).filter(
+            current_count__lt=models.F('capacity')
+        ).order_by('current_count').first()
+
+        if available:
+            return available.id
+        return None
+
+    @action(detail=True, methods=['post'])
+    def assign_section(self, request, pk=None):
+        application = self.get_object()
+        classroom_id = request.data.get('classroom_id')
+        if not classroom_id:
+            return Response({'error': 'classroom_id is required'}, status=400)
+        try:
+            classroom = Classroom.objects.get(id=classroom_id)
+            current_count = StudentClassEnrollment.objects.filter(classroom=classroom).count()
+            if classroom.capacity and current_count >= classroom.capacity:
+                return Response({'error': f'{classroom.name} is at full capacity ({classroom.capacity})'}, status=400)
+            application.assigned_classroom = classroom
+            application.save()
+            return Response({'status': f'Section set to {classroom.name}'})
+        except Classroom.DoesNotExist:
+            return Response({'error': 'Classroom not found'}, status=404)
+
+    @action(detail=True, methods=['post'])
+    def verify_document(self, request, pk=None):
+        doc_id = request.data.get('document_id')
+        if not doc_id:
+            return Response({'error': 'document_id is required'}, status=400)
+        try:
+            doc = EnrollmentDocument.objects.get(id=doc_id, application_id=pk)
+            doc.verification_status = 'verified'
+            doc.admin_notes = request.data.get('notes', doc.admin_notes or '')
+            doc.save()
+            return Response({'status': 'Document verified'})
+        except EnrollmentDocument.DoesNotExist:
+            return Response({'error': 'Document not found'}, status=404)
+
+    @action(detail=True, methods=['post'])
+    def reject_document(self, request, pk=None):
+        doc_id = request.data.get('document_id')
+        notes = request.data.get('notes', 'Document rejected')
+        if not doc_id:
+            return Response({'error': 'document_id is required'}, status=400)
+        try:
+            doc = EnrollmentDocument.objects.get(id=doc_id, application_id=pk)
+            doc.verification_status = 'rejected'
+            doc.admin_notes = notes
+            doc.save()
+            return Response({'status': 'Document rejected', 'notes': notes})
+        except EnrollmentDocument.DoesNotExist:
+            return Response({'error': 'Document not found'}, status=404)
+
+    @action(detail=True, methods=['post'])
+    def request_requirements(self, request, pk=None):
+        application = self.get_object()
+        user = request.user
+        message = request.data.get('message', 'Please submit the missing requirements.')
+        doc_types = request.data.get('document_types', [])
+
+        application.status = 'pending_requirements'
+        application.remarks = message
+        application.save()
+
+        EnrollmentStatusHistory.objects.create(
+            application=application,
+            from_status=application.status,
+            to_status='pending_requirements',
+            changed_by=user,
+            notes=message,
+        )
+
+        # Mark specified document types as missing
+        if doc_types:
+            EnrollmentDocument.objects.filter(
+                application=application,
+                document_type__in=doc_types,
+            ).update(verification_status='missing')
+
+        self._send_notification(application, 'Additional Requirements Needed',
+                                message, '/enrollment-management')
+
+        return Response({'status': 'Requirements requested', 'message': message})
+
+    @action(detail=True, methods=['post'])
+    def bulk_action(self, request, pk=None):
+        action_type = request.data.get('action')
+        if action_type == 'approve':
+            return self.approve(request, pk)
+        elif action_type == 'reject':
+            return self.reject(request, pk)
+        elif action_type == 'enroll':
+            return self.enroll_student(request, pk)
+        return Response({'error': 'Unknown action'}, status=400)
+
+    @action(detail=False, methods=['get'])
+    def analytics(self, request):
+        qs = EnrollmentApplication.objects.all()
+
+        status_counts = qs.values('status').annotate(count=Count('id')).order_by('status')
+        grade_level_dist = qs.values('grade_level').annotate(count=Count('id')).order_by('grade_level')
+        daily_counts = qs.extra(creation_date="date(submitted_at)").values('creation_date').annotate(count=Count('id')).order_by('-creation_date')[:30]
+
+        enrollment_type_dist = qs.values('enrollment_type').annotate(count=Count('id'))
+
+        total = qs.count()
+        approved = qs.filter(status='approved').count()
+        rejected = qs.filter(status='rejected').count()
+        enrolled = qs.filter(status='enrolled').count()
+        pending = qs.filter(status='pending').count()
+
+        approval_rate = round((approved + enrolled) / total * 100, 1) if total else 0
+        rejection_rate = round(rejected / total * 100, 1) if total else 0
+
+        return Response({
+            'total': total,
+            'pending': pending,
+            'approved': approved,
+            'rejected': rejected,
+            'enrolled': enrolled,
+            'approval_rate': approval_rate,
+            'rejection_rate': rejection_rate,
+            'status_breakdown': {s['status']: s['count'] for s in status_counts},
+            'grade_level_breakdown': {g['grade_level']: g['count'] for g in grade_level_dist},
+            'daily_applications': list(daily_counts),
+            'enrollment_type_breakdown': {e['enrollment_type']: e['count'] for e in enrollment_type_dist},
+        })
+
+    @action(detail=False, methods=['get'])
+    def export_csv(self, request):
+        import csv
+        from django.http import HttpResponse
+        status_filter = request.query_params.get('status', '')
+        qs = self.get_queryset()
+        if status_filter:
+            qs = qs.filter(status=status_filter)
+
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = f'attachment; filename="enrollment_applications_{timezone.now().strftime("%Y%m%d")}.csv"'
+        writer = csv.writer(response)
+        writer.writerow([
+            'Enrollment #', 'Last Name', 'First Name', 'Middle Name', 'Sex',
+            'Grade Level', 'Strand', 'Status', 'Email', 'Phone', 'Submitted',
+        ])
+        for app in qs:
+            writer.writerow([
+                app.enrollment_number, app.last_name, app.first_name, app.middle_name,
+                app.get_sex_display(), app.grade_level, app.strand or '',
+                app.get_status_display(), app.email, app.phone_number,
+                app.submitted_at.strftime('%Y-%m-%d'),
+            ])
+        return response
+
+    def _send_notification(self, application, title, message, link=''):
+        email = application.email
+        user = User.objects.filter(email=email).first()
+        if not user:
+            return
+        Notification.objects.create(
+            recipient=user,
+            notification_type='system',
+            title=title,
+            message=message,
+            link=link,
+        )
 
 
 class WebsiteContentViewSet(viewsets.ModelViewSet):

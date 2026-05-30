@@ -823,11 +823,21 @@ class EnrollmentApplication(models.Model):
         ('12', 'Grade 12'),
     ]
     
+    ENROLLMENT_TYPE_CHOICES = [
+        ('new', 'New Student'),
+        ('returning', 'Returning Student'),
+        ('transferee', 'Transferee'),
+        ('sh_applicant', 'SHS Applicant'),
+        ('parent_assisted', 'Parent-Assisted Enrollment'),
+    ]
+    
     STATUS_CHOICES = [
         ('pending', 'Pending'),
         ('under_review', 'Under Review'),
+        ('pending_requirements', 'Pending Requirements'),
         ('approved', 'Approved'),
         ('rejected', 'Rejected'),
+        ('enrolled', 'Enrolled'),
     ]
     
     SEX_CHOICES = [
@@ -835,6 +845,22 @@ class EnrollmentApplication(models.Model):
         ('female', 'Female'),
         ('other', 'Other'),
     ]
+    
+    SHS_STRAND_CHOICES = [
+        ('STEM', 'STEM'),
+        ('ABM', 'ABM'),
+        ('HUMSS', 'HUMSS'),
+        ('GAS', 'GAS'),
+        ('TVL-ICT', 'TVL-ICT'),
+        ('TVL-HE', 'TVL-HE'),
+        ('TVL-IA', 'TVL-IA'),
+        ('TVL-AFA', 'TVL-AFA'),
+        ('Sports', 'Sports'),
+        ('Arts & Design', 'Arts & Design'),
+    ]
+    
+    enrollment_number = models.CharField(max_length=20, unique=True, blank=True, null=True, help_text="Auto-generated ENR-YYYY-XXXXXX")
+    enrollment_type = models.CharField(max_length=20, choices=ENROLLMENT_TYPE_CHOICES, default='new')
     
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
@@ -865,6 +891,7 @@ class EnrollmentApplication(models.Model):
     
     # Academic Information
     grade_level = models.CharField(max_length=2, choices=GRADE_LEVEL_CHOICES)
+    strand = models.CharField(max_length=20, choices=SHS_STRAND_CHOICES, blank=True, null=True, help_text="Required for Grades 11-12")
     previous_school = models.CharField(max_length=200, blank=True, null=True)
     previous_school_address = models.TextField(blank=True, null=True)
     lrn = models.CharField(max_length=12, blank=True, null=True, help_text="Learner Reference Number")
@@ -887,6 +914,10 @@ class EnrollmentApplication(models.Model):
     emergency_contact_relationship = models.CharField(max_length=50)
     emergency_contact_phone = models.CharField(max_length=20)
     
+    # Post-approval fields
+    enrolled_student = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True, related_name='enrollment_applications')
+    assigned_classroom = models.ForeignKey('Classroom', on_delete=models.SET_NULL, blank=True, null=True)
+    
     # Status
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     remarks = models.TextField(blank=True, null=True)
@@ -897,9 +928,84 @@ class EnrollmentApplication(models.Model):
     
     class Meta:
         ordering = ['-submitted_at']
+        indexes = [
+            models.Index(fields=['status']),
+            models.Index(fields=['enrollment_number']),
+            models.Index(fields=['grade_level']),
+        ]
+    
+    def save(self, *args, **kwargs):
+        if not self.enrollment_number:
+            self.enrollment_number = self._generate_enrollment_number()
+        super().save(*args, **kwargs)
+    
+    def _generate_enrollment_number(self):
+        from django.utils import timezone
+        year = timezone.now().year
+        prefix = f"ENR-{year}-"
+        last = EnrollmentApplication.objects.filter(enrollment_number__startswith=prefix).order_by('id').last()
+        if last and last.enrollment_number:
+            parts = last.enrollment_number.split('-')
+            seq = int(parts[-1]) + 1
+        else:
+            seq = 1
+        return f"{prefix}{seq:06d}"
     
     def __str__(self):
-        return f"{self.last_name}, {self.first_name} - Grade {self.grade_level} ({self.status})"
+        return f"{self.enrollment_number or 'N/A'} - {self.last_name}, {self.first_name}"
+
+
+class EnrollmentDocument(models.Model):
+    DOCUMENT_TYPES = [
+        ('birth_certificate', 'PSA Birth Certificate'),
+        ('report_card', 'Report Card'),
+        ('form_138', 'Form 138 / Grade 6 Certificate'),
+        ('certificate_of_completion', 'Certificate of Completion'),
+        ('good_moral', 'Good Moral Certificate'),
+        ('id_picture', 'ID Picture'),
+        ('last_school_attended', 'Last School Attended Certificate'),
+        ('other', 'Other Document'),
+    ]
+    
+    VERIFICATION_STATUS = [
+        ('submitted', 'Submitted'),
+        ('verified', 'Verified'),
+        ('rejected', 'Rejected'),
+        ('missing', 'Missing'),
+    ]
+    
+    application = models.ForeignKey(EnrollmentApplication, on_delete=models.CASCADE, related_name='documents')
+    document_type = models.CharField(max_length=30, choices=DOCUMENT_TYPES)
+    file_url = models.URLField(max_length=1000)
+    file_name = models.CharField(max_length=255, blank=True, null=True)
+    verification_status = models.CharField(max_length=20, choices=VERIFICATION_STATUS, default='submitted')
+    admin_notes = models.TextField(blank=True, null=True, help_text="Admin notes about this document")
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['document_type', 'uploaded_at']
+    
+    def __str__(self):
+        return f"{self.get_document_type_display()} - {self.application.enrollment_number}"
+
+
+class EnrollmentStatusHistory(models.Model):
+    STATUS_CHOICES = EnrollmentApplication.STATUS_CHOICES
+    
+    application = models.ForeignKey(EnrollmentApplication, on_delete=models.CASCADE, related_name='status_history')
+    from_status = models.CharField(max_length=20, choices=STATUS_CHOICES, blank=True, null=True)
+    to_status = models.CharField(max_length=20, choices=STATUS_CHOICES)
+    changed_by = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True)
+    notes = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        ordering = ['created_at']
+        verbose_name_plural = 'Enrollment status histories'
+    
+    def __str__(self):
+        return f"{self.application.enrollment_number}: {self.from_status or 'new'} → {self.to_status}"
 
 
 class WebsiteContent(models.Model):

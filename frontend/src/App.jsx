@@ -46,6 +46,7 @@ const AnnouncementDetails = lazy(() => import('./pages/AnnouncementDetails'));
 const Calendar = lazy(() => import('./pages/Calendar'));
 const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
 const TermsOfService = lazy(() => import('./pages/TermsOfService'));
+const EnrollmentTracking = lazy(() => import('./pages/EnrollmentTracking'));
 
 // ── Portal pages (lazy loaded for better initial bundle) ──────────────────────
 const Announcements = lazy(() => import('./pages/Announcements'));
@@ -148,6 +149,7 @@ function App() {
                   <Route path="/calendar" element={<Navigate to="/login" replace />} />
                   <Route path="/privacy" element={<Navigate to="/login" replace />} />
                   <Route path="/terms" element={<Navigate to="/login" replace />} />
+                  <Route path="/track-enrollment" element={<Navigate to="/login" replace />} />
                 </>
               ) : (
                 <Route path="/" element={<PublicLayout />}>
@@ -160,6 +162,7 @@ function App() {
                   <Route path="calendar" element={<Calendar />} />
                   <Route path="privacy" element={<PrivacyPolicy />} />
                   <Route path="terms" element={<TermsOfService />} />
+                  <Route path="track-enrollment" element={<EnrollmentTracking />} />
                 </Route>
               )}
 

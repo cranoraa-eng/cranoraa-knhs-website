@@ -4,7 +4,8 @@ from django.utils import timezone
 from .models import (Profile, Classroom, StudentClassEnrollment, Announcement,
     AnnouncementAttachment, AnnouncementComment, Attendance, LearningMaterial,
     Subject, ClassroomSubject, ScratchCard, Fee,
-    Notification, EnrollmentApplication, WebsiteContent, Grade, GradeReport,
+    Notification, EnrollmentApplication, EnrollmentDocument, EnrollmentStatusHistory,
+    WebsiteContent, Grade, GradeReport,
     ChatRoom, ChatMessage, MessageReaction, Friendship, SystemSetting,
     Assignment, Submission, ReportedMessage,
     Room, TimeSlot, Schedule, OnboardingState)
@@ -433,26 +434,88 @@ class NotificationSerializer(serializers.ModelSerializer):
     def get_recipient_name(self, obj): return full_name(obj.recipient)
 
 
+class EnrollmentDocumentSerializer(serializers.ModelSerializer):
+    document_type_display = serializers.CharField(source='get_document_type_display', read_only=True)
+    verification_status_display = serializers.CharField(source='get_verification_status_display', read_only=True)
+    
+    class Meta:
+        model = EnrollmentDocument
+        fields = [
+            'id', 'application', 'document_type', 'document_type_display',
+            'file_url', 'file_name', 'verification_status', 'verification_status_display',
+            'admin_notes', 'uploaded_at', 'updated_at',
+        ]
+        read_only_fields = ['application', 'uploaded_at', 'updated_at']
+
+
+class EnrollmentStatusHistorySerializer(serializers.ModelSerializer):
+    changed_by_name = serializers.SerializerMethodField()
+    from_status_display = serializers.SerializerMethodField()
+    to_status_display = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = EnrollmentStatusHistory
+        fields = [
+            'id', 'application', 'from_status', 'from_status_display',
+            'to_status', 'to_status_display', 'changed_by', 'changed_by_name',
+            'notes', 'created_at',
+        ]
+        read_only_fields = ['application', 'changed_by', 'created_at']
+    
+    def get_changed_by_name(self, obj):
+        return obj.changed_by.get_full_name() or obj.changed_by.username if obj.changed_by else None
+    
+    def get_from_status_display(self, obj):
+        return obj.get_from_status_display() if obj.from_status else None
+    
+    def get_to_status_display(self, obj):
+        return obj.get_to_status_display()
+
+
 class EnrollmentApplicationSerializer(serializers.ModelSerializer):
+    documents = EnrollmentDocumentSerializer(many=True, read_only=True)
+    status_history = EnrollmentStatusHistorySerializer(many=True, read_only=True)
+    full_name = serializers.SerializerMethodField()
+    age = serializers.SerializerMethodField()
+    
     class Meta:
         model = EnrollmentApplication
         fields = [
-            'id', 'first_name', 'last_name', 'middle_name', 'sex', 'date_of_birth',
+            'id', 'enrollment_number', 'enrollment_type', 'first_name', 'last_name',
+            'middle_name', 'full_name', 'sex', 'date_of_birth', 'age',
             'place_of_birth', 'nationality', 'religion', 'street_address', 'barangay',
             'city_municipality', 'province', 'zip_code', 'father_name',
             'father_occupation', 'father_contact', 'mother_name', 'mother_occupation',
             'mother_contact', 'guardian_name', 'guardian_relationship',
-            'guardian_contact', 'grade_level', 'previous_school',
+            'guardian_contact', 'grade_level', 'strand', 'previous_school',
             'previous_school_address', 'lrn', 'is_als', 'birth_certificate',
             'report_card', 'form_138', 'certificate_of_completion',
             'good_moral_certificate', 'last_school_attended_cert',
             'email', 'phone_number', 'emergency_contact_name',
             'emergency_contact_relationship', 'emergency_contact_phone',
-            'status', 'remarks', 'submitted_at', 'updated_at'
+            'enrolled_student', 'assigned_classroom', 'status', 'remarks',
+            'submitted_at', 'updated_at', 'documents', 'status_history',
         ]
-        read_only_fields = ['status', 'submitted_at', 'updated_at']
-        # Document fields are now Supabase URLs — validation happens in the view
-        # before upload (file type, size, magic bytes checked in storage.py)
+        read_only_fields = [
+            'enrollment_number', 'status', 'submitted_at', 'updated_at',
+            'enrolled_student', 'assigned_classroom', 'documents', 'status_history',
+        ]
+    
+    def get_full_name(self, obj):
+        parts = [obj.first_name]
+        if obj.middle_name:
+            parts.append(obj.middle_name)
+        parts.append(obj.last_name)
+        return ' '.join(parts)
+    
+    def get_age(self, obj):
+        from datetime import date
+        if not obj.date_of_birth:
+            return None
+        today = date.today()
+        return today.year - obj.date_of_birth.year - (
+            (today.month, today.day) < (obj.date_of_birth.month, obj.date_of_birth.day)
+        )
 
 
 class WebsiteContentSerializer(serializers.ModelSerializer):
