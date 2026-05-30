@@ -73,6 +73,86 @@ const SystemMonitor = ({ isAdmin, uptime, serverLoad, securityEvents }) => {
   );
 };
 
+const MiniDashboard = ({ loginType, roleConfig }) => {
+  if (loginType === 'admin') return null;
+  const config = roleConfig[loginType];
+  
+  // Mock data tailored for each role
+  const mockWidgets = {
+    student: [
+      { title: 'Current GPA', value: '1.25', icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z' },
+      { title: 'Next Class', value: 'Math 101', icon: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z' }
+    ],
+    teacher: [
+      { title: 'Classes Today', value: '4 Sessions', icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z' },
+      { title: 'Pending Grades', value: '12 Tasks', icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4' }
+    ],
+    parent: [
+      { title: 'Unread Messages', value: '2 New', icon: 'M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z' },
+      { title: "Child's Status", value: 'Present', icon: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z' }
+    ]
+  };
+
+  const widgets = mockWidgets[loginType] || [];
+
+  return (
+    <div className="w-full max-w-sm mt-8 animate-fade-in relative group" key={`mini-dash-${loginType}`}>
+      {/* Decorative background glow */}
+      <div className={`absolute -inset-1 bg-gradient-to-r from-${config.color}-500/20 to-${config.accent}-500/20 rounded-2xl blur opacity-25 group-hover:opacity-50 transition duration-500`} />
+      
+      {/* Mini Dashboard Container */}
+      <div className="relative bg-[#160d2e]/80 backdrop-blur-sm border border-white/10 rounded-2xl p-4 overflow-hidden shadow-2xl">
+        
+        {/* Mock Header */}
+        <div className="flex items-center justify-between mb-4 border-b border-white/5 pb-3">
+          <div className="flex items-center gap-2">
+            <div className={`w-6 h-6 rounded-full bg-${config.color}-500/20 flex items-center justify-center`}>
+              <svg className={`w-3 h-3 text-${config.color}-400`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+            </div>
+            <div className="h-2 w-16 bg-white/10 rounded animate-pulse" />
+          </div>
+          <div className="flex gap-1.5">
+            <div className="w-4 h-4 rounded-full bg-white/5" />
+            <div className="w-4 h-4 rounded-full bg-white/5" />
+          </div>
+        </div>
+
+        {/* Mock Widgets */}
+        <div className="grid grid-cols-2 gap-3 mb-4">
+          {widgets.map((widget, i) => (
+            <div key={i} className="bg-white/5 rounded-xl p-3 border border-white/5 transition-colors hover:bg-white/10">
+              <svg className={`w-4 h-4 text-${config.color}-400 mb-2`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={widget.icon} />
+              </svg>
+              <div className="text-[10px] text-slate-400 font-medium mb-0.5">{widget.title}</div>
+              <div className="text-sm font-bold text-white">{widget.value}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* Mock Activity List */}
+        <div className="space-y-2">
+          <div className="h-1.5 w-20 bg-white/10 rounded mb-2" />
+          {[1, 2].map((_, i) => (
+            <div key={i} className="flex items-center gap-2 bg-white/5 rounded-lg p-2">
+              <div className={`w-1.5 h-1.5 rounded-full bg-${config.accent}-500/50`} />
+              <div className="flex-1 space-y-1">
+                <div className="h-1.5 w-3/4 bg-white/10 rounded" />
+                <div className="h-1 w-1/2 bg-white/5 rounded" />
+              </div>
+            </div>
+          ))}
+        </div>
+        
+        {/* Overlay gradient to fade bottom */}
+        <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-[#160d2e] to-transparent" />
+      </div>
+    </div>
+  );
+};
+
 const Login = () => {
   const { user, signIn, refreshUser } = useAuth();
   const navigate = useNavigate();
@@ -287,7 +367,9 @@ const Login = () => {
           {isAdmin ? (
             <SystemMonitor isAdmin={isAdmin} uptime={uptime} serverLoad={serverLoad} securityEvents={securityEvents} />
           ) : (
-            <>
+            <div className="space-y-8">
+              <MiniDashboard loginType={loginType} roleConfig={roleConfig} />
+              
               <div className="space-y-3" key={`features-${loginType}`}>
                 {currentRole.features.map((f, i) => (
                   <div key={i} className="flex items-center gap-3 animate-fade-in" style={{ animationDelay: `${i * 100}ms` }}>
@@ -298,15 +380,7 @@ const Login = () => {
                   </div>
                 ))}
               </div>
-              <div className="grid grid-cols-2 gap-3 pt-2" key={`stats-${loginType}`}>
-                {currentRole.stats.map((s, i) => (
-                  <div key={i} className="bg-white/5 border border-white/10 rounded-xl p-3 animate-fade-in" style={{ animationDelay: `${(i + 5) * 100}ms` }}>
-                    <p className="text-lg font-black text-white">{s.val}</p>
-                    <p className="text-[10px] text-slate-500 font-semibold uppercase tracking-widest mt-0.5">{s.label}</p>
-                  </div>
-                ))}
-              </div>
-            </>
+            </div>
           )}
         </div>
 
