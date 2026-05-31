@@ -173,7 +173,7 @@ const EnrollmentManagement = () => {
       html: `
         <div class="text-left">
           <p class="text-xs text-slate-500 mb-3">Select a section${gradeLevel ? ` for Grade ${gradeLevel}` : ''}. Shows enrolled students / capacity.</p>
-          <div id="swal-select" class="swal2-select" style="width:100%;padding:8px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px;">
+          <select id="swal-select" class="swal2-select" style="width:100%;padding:8px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px;">
             <option value="">-- Select Section --</option>
             ${filtered.map(c => {
               const count = c.student_count || 0;
@@ -181,7 +181,7 @@ const EnrollmentManagement = () => {
               const full = count >= cap;
               return `<option value="${c.id}" ${full ? 'disabled' : ''}>${c.name} (${count}/${cap})${full ? ' - FULL' : ''}</option>`;
             }).join('')}
-          </div>
+          </select>
           ${filtered.length === 0 ? '<p class="text-xs text-amber-600 mt-2">No sections available for this grade level.</p>' : ''}
         </div>
       `,
