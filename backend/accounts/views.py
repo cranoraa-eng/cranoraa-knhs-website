@@ -3257,7 +3257,7 @@ class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
             'assigned_classroom_name': app.assigned_classroom.name if app.assigned_classroom else None,
             'remarks': app.remarks,
             'lrn': app.lrn or '',
-            'enrolled_student_username': app.enrolled_student.username if app.enrolled_student else None,
+            'enrolled_student_email': app.enrolled_student.email if app.enrolled_student else None,
             'temp_password': app.temp_password_display if app.status == 'enrolled' else None,
             'documents': [{'id': d.id, 'document_type_display': d.get_document_type_display(),
                            'verification_status': d.verification_status,

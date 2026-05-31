@@ -153,13 +153,15 @@ const EnrollmentTracking = () => {
                   </div>
                 </div>
                 <div className="space-y-3">
-                  <div className="bg-white rounded-xl p-4 border border-violet-100">
-                    <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Username</p>
-                    <p className="text-lg font-black text-slate-900 font-mono">{data.enrolled_student_username}</p>
-                  </div>
+                  {data.enrolled_student_email && (
+                    <div className="bg-white rounded-xl p-4 border border-violet-100">
+                      <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Email</p>
+                      <p className="text-lg font-black text-slate-900 font-mono">{data.enrolled_student_email}</p>
+                    </div>
+                  )}
                   {data.temp_password && (
                     <div className="bg-white rounded-xl p-4 border border-violet-100">
-                      <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Temporary Password</p>
+                      <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Password</p>
                       <p className="text-lg font-black text-violet-700 font-mono tracking-wider">{data.temp_password}</p>
                       <p className="text-[10px] text-amber-600 font-bold mt-2">
                         Save this password. You will be asked to change it on first login.
