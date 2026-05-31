@@ -53,12 +53,18 @@ const EnrollmentManagement = () => {
   const handleAction = async (id, action, opts = {}) => {
     try {
       const res = await api.post(`/enrollment-applications/${id}/${action}/`, opts);
-      Swal.fire({ icon: 'success', title: 'Done', text: res.data.status || 'Action completed.' });
+      Swal.fire({ icon: 'success', title: 'Done', text: res.data.status || res.data.message || 'Action completed.' });
       fetchAll();
       if (selected?.id === id && action !== 'enroll_student') setSelected(null);
       return res.data;
     } catch (err) {
-      Swal.fire({ icon: 'error', title: 'Error', text: err.response?.data?.error || 'Action failed.' });
+      const msg = err.response?.data?.error
+        || err.response?.data?.detail
+        || err.response?.data?.message
+        || (typeof err.response?.data === 'string' ? err.response.data : '')
+        || `Action failed (${err.response?.status || 'network error'})`;
+      Swal.fire({ icon: 'error', title: 'Error', text: msg });
+      throw err;
     }
   };
 
@@ -115,24 +121,27 @@ const EnrollmentManagement = () => {
     if (!enrollApp || enrolling) return;
     setEnrolling(true);
     try {
-      const { username, temp_password } = await handleAction(enrollApp.id, 'enroll_student', {
+      const result = await handleAction(enrollApp.id, 'enroll_student', {
         classroom_id: enrollClassroom || '', parent_email: enrollParentEmail || '',
-      }) || {};
-      if (username) {
+      });
+      if (result?.username) {
         Swal.fire({
           icon: 'success', title: 'Student Enrolled!', html: `
             <div class="text-left space-y-2">
-              <p><strong>Username:</strong> ${username}</p>
-              <p><strong>Password:</strong> ${temp_password}</p>
-              <p class="text-xs text-amber-600 font-bold">Save these credentials. They will not be shown again.</p>
+              <p><strong>Username:</strong> ${result.username}</p>
+              <p><strong>Password:</strong> ${result.temp_password}</p>
+              ${result.classroom_name ? `<p><strong>Section:</strong> ${result.classroom_name}</p>` : ''}
+              <p class="text-xs text-amber-600 font-bold mt-3">Save these credentials. They will not be shown again.</p>
             </div>
-          `, confirmButtonText: 'OK',
+          `, confirmButtonText: 'OK', width: 400,
         });
       }
       setShowEnrollModal(false);
       setEnrollApp(null);
       setEnrollClassroom('');
       setEnrollParentEmail('');
+    } catch (err) {
+      // Error already shown by handleAction
     } finally {
       setEnrolling(false);
     }
