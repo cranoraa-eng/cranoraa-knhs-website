@@ -316,18 +316,10 @@ const StudentManagement = () => {
 
     if (value) {
       try {
-        // Find existing enrollment for this student
-        const enrollRes = await api.get(`/enrollments/?student=${studentId}`);
-        const enrollments = enrollRes.data.results || enrollRes.data;
-        const existing = enrollments.find(e => String(e.student) === String(studentId));
-
-        if (existing) {
-          // Update existing enrollment's classroom
-          await api.patch(`/enrollments/${existing.id}/`, { classroom: parseInt(value) });
-        } else {
-          // Create new enrollment
-          await api.post('/enrollments/', { student: parseInt(studentId), classroom: parseInt(value) });
-        }
+        await api.post('/enrollments/assign-classroom/', {
+          student: parseInt(studentId),
+          classroom: parseInt(value),
+        });
 
         const classroom = classrooms.find(c => String(c.id) === String(value));
         toast.success(`Assigned to ${classroom?.name || 'section'}`);

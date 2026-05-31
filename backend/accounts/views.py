@@ -765,7 +765,7 @@ class StudentClassEnrollmentViewSet(viewsets.ModelViewSet):
             object_repr=str(enrollment),
             description=f'Updated grades for {enrollment.student.username} in {enrollment.classroom.name}',
             request=self.request
-        )
+            )
         
         # Create notification for the student when grades are updated
         if enrollment.student:
@@ -778,6 +778,30 @@ class StudentClassEnrollmentViewSet(viewsets.ModelViewSet):
                     message=f'Your grades for {enrollment.classroom.name} have been updated.',
                     link='/result-checker'
                 )
+
+    @action(detail=False, methods=['post'], url_path='assign-classroom')
+    def assign_classroom(self, request):
+        student_id = request.data.get('student')
+        classroom_id = request.data.get('classroom')
+        if not student_id or not classroom_id:
+            return Response({'error': 'student and classroom are required'}, status=400)
+        try:
+            student = User.objects.get(pk=student_id, role='student')
+            classroom = Classroom.objects.get(pk=classroom_id)
+        except (User.DoesNotExist, Classroom.DoesNotExist):
+            return Response({'error': 'Student or classroom not found'}, status=404)
+        existing = StudentClassEnrollment.objects.filter(student=student).first()
+        if existing:
+            if existing.classroom_id == classroom.id:
+                return Response({'status': 'Already assigned to this section'})
+            old_name = existing.classroom.name
+            existing.classroom = classroom
+            existing.save()
+            msg = f'Moved from {old_name} to {classroom.name}'
+        else:
+            StudentClassEnrollment.objects.create(student=student, classroom=classroom)
+            msg = f'Assigned to {classroom.name}'
+        return Response({'status': msg})
 
 
 class UserViewSet(viewsets.ModelViewSet):
