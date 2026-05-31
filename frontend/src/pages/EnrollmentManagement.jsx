@@ -101,6 +101,15 @@ const EnrollmentManagement = () => {
     if (value !== undefined) handleAction(id, 'approve_application', { remarks: value });
   };
 
+  const promptApproveApplication = async (id) => {
+    const { value } = await Swal.fire({
+      title: 'Approve Application?', input: 'textarea', inputLabel: 'Remarks',
+      inputPlaceholder: 'Optional remarks...', showCancelButton: true, confirmButtonText: 'Approve',
+      confirmButtonColor: '#10B981',
+    });
+    if (value !== undefined) handleAction(id, 'approve_application', { remarks: value });
+  };
+
   const promptReject = async (id) => {
     const { value } = await Swal.fire({
       title: 'Reject Application', input: 'textarea', inputLabel: 'Reason for rejection',

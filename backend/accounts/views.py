@@ -17,7 +17,7 @@ from .serializers import (UserSerializer, ClassroomSerializer, StudentClassEnrol
     RoomSerializer, TimeSlotSerializer, ScheduleSerializer, ParentChildSummarySerializer,
     OnboardingStateSerializer,
     full_name)
-from .models import User, Profile, Classroom, StudentClassEnrollment, Announcement, AnnouncementAttachment, AnnouncementComment, Attendance, LearningMaterial, Subject, ClassroomSubject, ScratchCard, Fee, Notification, EnrollmentApplication, EnrollmentDocument, EnrollmentStatusHistory, WebsiteContent, Grade, GradeReport, ChatRoom, ChatMessage, MessageReaction, Friendship, SystemSetting, Assignment, Submission, ReportedMessage, Room, TimeSlot, Schedule, FCMToken, OnboardingState, ParentLink
+from .models import User, Profile, Classroom, StudentClassEnrollment, Announcement, AnnouncementAttachment, AnnouncementComment, Attendance, LearningMaterial, Subject, ClassroomSubject, ScratchCard, Fee, Notification, EnrollmentApplication, EnrollmentDocument, EnrollmentStatusHistory, WebsiteContent, Grade, GradeReport, ChatRoom, ChatMessage, MessageReaction, Friendship, SystemSetting, Assignment, Submission, ReportedMessage, Room, TimeSlot, Schedule, FCMToken, OnboardingState
 from .permissions import IsAdmin, IsTeacher, IsStudent, IsParent, IsAdminOrTeacher, IsAdminOrReadOnly
 from .throttles import AuthRateThrottle, CheckResultRateThrottle, EnrollmentRateThrottle
 # Moved portal imports inside functions to avoid circular dependencies
@@ -1293,6 +1293,1806 @@ class UserViewSet(viewsets.ModelViewSet):
         
         return Response({'status': f'User {status_str} successfully', 'is_active': user.is_active})
 
+    @action(detail=True, methods=['post'])
+    def approve(self, request, pk=None):
+        """Approve a user account (admin only)"""
+        if not request.user.is_authenticated or request.user.role != 'admin':
+            return Response({'error': 'Unauthorized. Admin access required.'}, status=status.HTTP_403_FORBIDDEN)
+        
+        try:
+            user = User.objects.get(pk=pk)
+            
+            if user.is_approved:
+                return Response({'message': f'{user.email} is already approved.'})
+
+            user.is_approved = True
+            user.save()
+
+            # Log the action
+            try:
+                from portal.views import log_audit_action
+                log_audit_action(
+                    user=request.user,
+                    action='approve',
+                    model_name='User',
+                    object_id=user.id,
+                    object_repr=str(user),
+                    description=f'Admin approved account for {user.email}',
+                    request=request,
+                )
+            except Exception as audit_err:
+                logger.error(f"Failed to log audit action for approval: {audit_err}")
+
+            return Response({'message': f'Account for {user.email} has been approved successfully.'})
+
+        except User.DoesNotExist:
+            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            logger.error(f"Error in approve action: {str(e)}")
+            return Response({'error': 'Failed to approve account.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    @action(detail=True, methods=['post'])
+    def reject(self, request, pk=None):
+        """Reject (delete) a pending user account (admin only)"""
+        if not request.user.is_authenticated or request.user.role != 'admin':
+            return Response({'error': 'Unauthorized. Admin access required.'}, status=status.HTTP_403_FORBIDDEN)
+        
+        try:
+            user = User.objects.get(pk=pk)
+            email = user.email
+            reason = request.data.get('reason', 'Your account registration has been rejected by the administrator.')
+
+            # Log the action before deleting
+            try:
+                from portal.views import log_audit_action
+                log_audit_action(
+                    user=request.user,
+                    action='reject',
+                    model_name='User',
+                    object_id=user.id,
+                    object_repr=str(user),
+                    description=f'Admin rejected account for {email}. Reason: {reason}',
+                    request=request,
+                )
+            except Exception as audit_err:
+                logger.error(f"Failed to log audit action for rejection: {audit_err}")
+
+            user.delete()
+            return Response({'message': f'Account for {email} has been rejected and removed.'})
+
+        except User.DoesNotExist:
+            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            logger.error(f"Error in reject action: {str(e)}")
+            return Response({'error': 'Failed to reject account.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    @action(detail=False, methods=['get'])
+    def search(self, request):
+        query = request.query_params.get('q', '')
+        
+        # If admin, allow searching all roles, otherwise restricted to teachers/students
+        if request.user.role == 'admin':
+            users = User.objects.all().select_related('profile')
+        else:
+            users = User.objects.filter(role__in=['teacher', 'student']).select_related('profile')
+        
+        if query:
+            users = users.filter(
+                Q(first_name__icontains=query) | 
+                Q(last_name__icontains=query) | 
+                Q(email__icontains=query) |
+                Q(username__icontains=query)
+            )
+            
+        users = users.exclude(id=request.user.id)[:50]
+        
+        return Response(UserSerializer(users, many=True).data)
+
+
+class AnnouncementViewSet(viewsets.ModelViewSet):
+    serializer_class = AnnouncementSerializer
+    permission_classes = [IsAuthenticated]
+    parser_classes = [parsers.JSONParser, parsers.MultiPartParser, parsers.FormParser]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['title', 'content']
+    
+    def get_queryset(self):
+        from django.utils import timezone
+        category = self.request.query_params.get('category')
+        status_filter = self.request.query_params.get('status')
+        queryset = Announcement.objects.all()
+
+        user = self.request.user
+
+        # RBAC and Targeting logic
+        if user.role == 'student':
+            # Students see live announcements targeted at 'all', 'students', or their classroom
+            queryset = queryset.filter(status='live')
+            queryset = queryset.filter(
+                Q(target_audience__in=['all', 'students']) | 
+                Q(target_classrooms__enrollments__student=user)
+            ).distinct()
+            queryset = queryset.exclude(event_date__lt=timezone.now())
+
+        elif user.role == 'parent':
+            # Parents see live announcements targeted at 'all', 'parents', or their linked students' classrooms
+            profile = getattr(user, 'profile', None)
+            linked_student_ids = profile.linked_students.values_list('id', flat=True) if profile else []
+            queryset = queryset.filter(status='live')
+            queryset = queryset.filter(
+                Q(target_audience__in=['all', 'parents']) |
+                Q(target_classrooms__enrollments__student_id__in=linked_student_ids)
+            ).distinct()
+            queryset = queryset.exclude(event_date__lt=timezone.now())
+
+        elif user.role == 'teacher':
+            # Teachers see live announcements targeted at 'all', 'teachers', or their own drafts
+            queryset = queryset.filter(
+                Q(status='live', target_audience__in=['all', 'teachers']) | 
+                Q(author=user)
+            ).distinct()
+            queryset = queryset.exclude(event_date__lt=timezone.now())
+
+        elif user.role == 'admin':
+            # Admins see everything
+            if status_filter:
+                queryset = queryset.filter(status=status_filter)
+            else:
+                queryset = queryset.exclude(
+                    event_date__lt=timezone.now(),
+                    status='expired'
+                )
+
+        if category and category != 'all':
+            queryset = queryset.filter(category=category)
+
+        return queryset.annotate(comment_count_annotated=Count('comments')).order_by('-is_pinned', '-created_at')
+    
+    def perform_create(self, serializer):
+        try:
+            announcement = serializer.save(author=self.request.user)
+            logger.info(f"Announcement created: {announcement.title}")
+
+            # Save multiple attachments to Supabase 'announcements' bucket
+            files = self.request.FILES.getlist('attachments')
+            logger.info(f"Found {len(files)} attachment(s)")
+            from .storage import upload_file, StorageValidationError
+            for f in files:
+                try:
+                    url, err = upload_file(f, bucket_key='announcements', folder='attachments')
+                    if url:
+                        AnnouncementAttachment.objects.create(
+                            announcement=announcement,
+                            file=url,
+                            filename=f.name,
+                            file_size_bytes=f.size,
+                            content_type=getattr(f, 'content_type', '') or '',
+                        )
+                        logger.info(f"Uploaded announcement attachment: {f.name}")
+                    else:
+                        logger.error(f"Failed to upload attachment {f.name}: {err}")
+                except Exception as e:
+                    logger.error(f"Error uploading attachment {f.name}: {str(e)}")
+
+            # Log announcement creation
+            from portal.views import log_audit_action
+            log_audit_action(
+                user=self.request.user,
+                action='create',
+                model_name='Announcement',
+                object_id=announcement.id,
+                object_repr=announcement.title,
+                description=f'Created announcement: {announcement.title}',
+                request=self.request
+            )
+
+            # Create notifications for target audience
+            from django.contrib.auth import get_user_model
+            User = get_user_model()
+            
+            # Filter users based on target audience and classrooms
+            target_users = User.objects.filter(is_active=True, is_verified=True)
+            
+            if announcement.target_audience != 'all':
+                target_users = target_users.filter(role=announcement.target_audience.rstrip('s'))
+            
+            if announcement.target_classrooms.exists():
+                target_users = target_users.filter(enrollments__classroom__in=announcement.target_classrooms.all()).distinct()
+            
+            notifications_to_create = []
+            for target_user in target_users:
+                if target_user != self.request.user:
+                    notifications_to_create.append(
+                        Notification(
+                            recipient=target_user,
+                            notification_type='announcement',
+                            title=f'New Announcement: {announcement.title}',
+                            message=announcement.content[:200] + '...' if len(announcement.content) > 200 else announcement.content,
+                            link='/announcements'
+                        )
+                    )
+            if notifications_to_create:
+                # Use individual creates so the post_save signal fires for each,
+                # triggering real-time WS broadcast to connected users.
+                # For large audiences this is slightly slower but ensures live delivery.
+                for notif in notifications_to_create:
+                    notif.save()
+        except Exception as e:
+            logger.error(f"Error in perform_create: {str(e)}")
+            raise
+
+    @action(detail=False, methods=['post', 'delete'])
+    def bulk_delete(self, request):
+        ids = request.data.get('ids', [])
+        if not ids:
+            return Response({"error": "No IDs provided"}, status=400)
+        
+        # Only admins and the author (teachers) can delete
+        queryset = Announcement.objects.filter(id__in=ids)
+        if request.user.role != 'admin':
+            queryset = queryset.filter(author=request.user)
+            
+        count = queryset.count()
+        queryset.delete()
+        
+        # Log bulk deletion
+        from portal.views import log_audit_action
+        log_audit_action(
+            user=request.user,
+            action='delete',
+            model_name='Announcement',
+            object_id=None,
+            object_repr=f"Bulk delete {count} announcements",
+            description=f'Deleted {count} announcements with IDs: {ids}',
+            request=request
+        )
+        
+        return Response({"message": f"Successfully deleted {count} announcements"}, status=200)
+
+    @action(detail=False, methods=['post'])
+    def delete_all(self, request):
+        # Only admins can delete ALL
+        if request.user.role != 'admin':
+            return Response({"error": "Unauthorized"}, status=403)
+            
+        queryset = Announcement.objects.all()
+        count = queryset.count()
+        queryset.delete()
+        
+        # Log action
+        from portal.views import log_audit_action
+        log_audit_action(
+            user=request.user,
+            action='delete',
+            model_name='Announcement',
+            object_id=None,
+            object_repr="Delete all announcements",
+            description=f'Deleted all {count} announcements from the system',
+            request=request
+        )
+        
+        return Response({"message": f"Successfully deleted all {count} announcements"}, status=200)
+
+    def perform_update(self, serializer):
+        announcement = serializer.save()
+        # Append any new attachments to Supabase (don't delete existing ones)
+        files = self.request.FILES.getlist('attachments')
+        from .storage import upload_file
+        for f in files:
+            url, err = upload_file(f, bucket_key='announcements', folder='attachments')
+            if url:
+                from .models import AnnouncementAttachment
+                AnnouncementAttachment.objects.create(
+                    announcement=announcement,
+                    file=url,
+                    filename=f.name,
+                    file_size_bytes=f.size,
+                    content_type=getattr(f, 'content_type', '') or '',
+                )
+            else:
+                logger.error(f"Failed to upload attachment {f.name}: {err}")
+        from portal.views import log_audit_action
+        log_audit_action(
+            user=self.request.user,
+            action='update',
+            model_name='Announcement',
+            object_id=announcement.id,
+            object_repr=announcement.title,
+            description=f'Updated announcement: {announcement.title}',
+            request=self.request
+        )
+        
+        # Create notifications for target audience
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
+        
+        users = User.objects.all()
+        
+        # Filter by target audience
+        if announcement.target_audience == 'admins':
+            users = users.filter(role='admin')
+        elif announcement.target_audience == 'students':
+            users = users.filter(role='student')
+        elif announcement.target_audience == 'teachers':
+            users = users.filter(role='teacher')
+        
+        notifications_to_create = []
+        
+        for user in users:
+            if user != self.request.user:  # Don't notify the author
+                notifications_to_create.append(
+                    Notification(
+                        recipient=user,
+                        notification_type='announcement',
+                        title=f'New Announcement: {announcement.title}',
+                        message=announcement.content[:200] + '...' if len(announcement.content) > 200 else announcement.content,
+                        link='/announcements'
+                    )
+                )
+        
+        # Bulk create notifications
+        if notifications_to_create:
+            Notification.objects.bulk_create(notifications_to_create)
+    
+    @action(detail=True, methods=['post'], url_path='mark-read')
+    def mark_read(self, request, pk=None):
+        """Mark announcement as read by current user"""
+        announcement = self.get_object()
+        announcement.read_by.add(request.user)
+        return Response({'status': 'marked as read'})
+
+    def perform_destroy(self, instance):
+        """Delete announcement and remove its related notifications"""
+        Notification.objects.filter(
+            notification_type='announcement',
+            link='/announcements',
+            title__icontains=instance.title[:30]
+        ).delete()
+        from portal.views import log_audit_action
+        log_audit_action(
+            user=self.request.user,
+            action='delete',
+            model_name='Announcement',
+            object_id=instance.id,
+            object_repr=instance.title,
+            description=f'Deleted announcement: {instance.title}',
+            request=self.request
+        )
+        instance.delete()
+    
+    @action(detail=True, methods=['post'])
+    def pin(self, request, pk=None):
+        """Pin or unpin announcement"""
+        announcement = self.get_object()
+        announcement.is_pinned = not announcement.is_pinned
+        announcement.save()
+        return Response({'is_pinned': announcement.is_pinned})
+    
+    @action(detail=True, methods=['post'])
+    def publish(self, request, pk=None):
+        """Publish announcement (change status to live)"""
+        announcement = self.get_object()
+        announcement.status = 'live'
+        announcement.save()
+        return Response({'status': 'published'})
+    
+    @action(detail=True, methods=['post'])
+    def archive(self, request, pk=None):
+        """Archive announcement (change status to expired) and remove its notifications"""
+        announcement = self.get_object()
+        announcement.status = 'expired'
+        announcement.save()
+        # Remove related notifications since announcement is no longer active
+        Notification.objects.filter(
+            notification_type='announcement',
+            link='/announcements',
+            title__icontains=announcement.title[:30]
+        ).delete()
+        return Response({'status': 'archived'})
+
+    @action(detail=True, methods=['post'], url_path='delete-attachment')
+    def delete_attachment(self, request, pk=None):
+        """Delete a specific attachment from an announcement"""
+        announcement = self.get_object()
+        attachment_id = request.data.get('attachment_id')
+        try:
+            attachment = announcement.attachments.get(id=attachment_id)
+            attachment.delete()
+            return Response({'status': 'attachment deleted'})
+        except AnnouncementAttachment.DoesNotExist:
+            return Response({'error': 'Attachment not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    def _can_comment_on(self, user, announcement):
+        if user.role not in ('student', 'teacher', 'admin'):
+            return False
+        if user.role == 'student':
+            return announcement.status == 'live'
+        return True
+
+    @action(detail=True, methods=['get', 'post'], url_path='comments')
+    def comments(self, request, pk=None):
+        """List or create comments on an announcement."""
+        announcement = self.get_object()
+        if request.method == 'GET':
+            qs = announcement.comments.select_related('author').order_by('created_at')
+            return Response(AnnouncementCommentSerializer(qs, many=True).data)
+
+        if not self._can_comment_on(request.user, announcement):
+            return Response({'error': 'You cannot comment on this post.'}, status=status.HTTP_403_FORBIDDEN)
+
+        content = (request.data.get('content') or '').strip()
+        if not content:
+            return Response({'error': 'Comment cannot be empty.'}, status=status.HTTP_400_BAD_REQUEST)
+        if len(content) > 2000:
+            return Response({'error': 'Comment is too long (max 2000 characters).'}, status=status.HTTP_400_BAD_REQUEST)
+
+        comment = AnnouncementComment.objects.create(
+            announcement=announcement,
+            author=request.user,
+            content=content,
+        )
+        return Response(
+            AnnouncementCommentSerializer(comment).data,
+            status=status.HTTP_201_CREATED,
+        )
+
+    @action(detail=True, methods=['delete'], url_path=r'comments/(?P<comment_id>[^/.]+)')
+    def delete_comment(self, request, pk=None, comment_id=None):
+        """Delete a comment (author or admin)."""
+        announcement = self.get_object()
+        try:
+            comment = announcement.comments.get(id=comment_id)
+        except AnnouncementComment.DoesNotExist:
+            return Response({'error': 'Comment not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        if request.user.role != 'admin' and comment.author_id != request.user.id:
+            return Response({'error': 'Not allowed to delete this comment.'}, status=status.HTTP_403_FORBIDDEN)
+
+        comment.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class AttendanceViewSet(viewsets.ModelViewSet):
+    serializer_class = AttendanceSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['student__username', 'student__email']
+    
+    def get_queryset(self):
+        user = self.request.user
+        queryset = Attendance.objects.all().select_related('student', 'classroom')
+        classroom_id = self.request.query_params.get('classroom')
+        date = self.request.query_params.get('date')
+        status = self.request.query_params.get('status')
+        academic_year = self.request.query_params.get('academic_year')
+
+        # RBAC: Students can only see their own attendance
+        if user.role == 'student':
+            queryset = queryset.filter(student=user)
+        # RBAC: Parents can see their linked students' attendance
+        elif user.role == 'parent':
+            profile = getattr(user, 'profile', None)
+            linked_student_ids = profile.linked_students.values_list('id', flat=True) if profile else []
+            queryset = queryset.filter(student_id__in=linked_student_ids)
+        # Teachers can only see attendance for their classrooms
+        elif user.role == 'teacher':
+            assigned_classrooms = ClassroomSubject.objects.filter(teacher=user).values_list('classroom_id', flat=True)
+            queryset = queryset.filter(Q(classroom__teacher=user) | Q(classroom_id__in=assigned_classrooms))
+
+        if classroom_id:
+            queryset = queryset.filter(classroom_id=classroom_id)
+        if date:
+            queryset = queryset.filter(date=date)
+        if status:
+            queryset = queryset.filter(status=status)
+        # Strict academic year filter — only show records for classrooms in that year.
+        # No isnull fallback here: unassigned classrooms bleed into every year otherwise.
+        if academic_year:
+            queryset = queryset.filter(
+                classroom__academic_year__name=academic_year
+            )
+        return queryset
+
+    @action(detail=False, methods=['get'])
+    def summary(self, request):
+        """Advanced attendance analytics (Admin/Teacher only)"""
+        if request.user.role not in ['admin', 'teacher']:
+            return Response({'error': 'Unauthorized'}, status=403)
+            
+        from django.db.models import Count, Case, When, IntegerField
+        from django.utils import timezone
+        import datetime
+        
+        # Use localtime for accurate daily filtering in GMT+8
+        now = timezone.localtime(timezone.now())
+        today = now.date()
+        
+        classroom_id = request.query_params.get('classroom')
+        timeframe = request.query_params.get('timeframe', 'all')
+        academic_year_name = request.query_params.get('academic_year')
+        
+        # Base queryset
+        base_att = Attendance.objects.all()
+
+        # Strict academic year filter — no isnull fallback to prevent year bleed-through
+        if academic_year_name:
+            base_att = base_att.filter(
+                classroom__academic_year__name=academic_year_name
+            )
+        
+        # Apply timeframe filter
+        # If 'today' is selected, we show data even if it's a weekend (e.g. for makeup classes)
+        # For 'weekly' and 'all', we strictly exclude weekends as per project requirements
+        if timeframe == 'today':
+            base_att = base_att.filter(date=today)
+        elif timeframe == 'weekly':
+            week_ago = today - datetime.timedelta(days=7)
+            base_att = base_att.filter(date__gte=week_ago).exclude(date__week_day__in=[1, 7])
+        else:
+            base_att = base_att.exclude(date__week_day__in=[1, 7])
+
+        # Sections: Trends, Pie, Grade
+        # For charts, we usually want a 30-day window if 'all' is selected
+        chart_att = base_att
+        if timeframe == 'all':
+            last_30_days = today - datetime.timedelta(days=30)
+            chart_att = chart_att.filter(date__gte=last_30_days)
+            
+        if classroom_id:
+            chart_att = chart_att.filter(classroom_id=classroom_id)
+        
+        daily_data = []
+        for day_dict in chart_att.values('date').annotate(
+            present=Count(Case(When(status='present', then=1), output_field=IntegerField())),
+            late=Count(Case(When(status='late', then=1), output_field=IntegerField())),
+            excused=Count(Case(When(status='excused', then=1), output_field=IntegerField())),
+            total_count=Count('id')
+        ).order_by('date'):
+            day_total = day_dict['total_count']
+            daily_data.append({
+                'date': day_dict['date'].strftime('%Y-%m-%d'),
+                'present': day_dict['present'],
+                'late': day_dict['late'],
+                'excused': day_dict['excused'],
+                'rate': round(((day_dict['present'] + day_dict['late'] + day_dict['excused']) / day_total * 100), 1) if day_total > 0 else 0,
+                'total': day_total
+            })
+        
+        # Overall status for Pie Chart
+        overall_status = chart_att.aggregate(
+            present=Count(Case(When(status='present', then=1), output_field=IntegerField())),
+            absent=Count(Case(When(status='absent', then=1), output_field=IntegerField())),
+            late=Count(Case(When(status='late', then=1), output_field=IntegerField())),
+            excused=Count(Case(When(status='excused', then=1), output_field=IntegerField())),
+        )
+        pie_data = [
+            {'name': 'Present', 'value': overall_status['present'] or 0},
+            {'name': 'Late', 'value': overall_status['late'] or 0},
+            {'name': 'Absent', 'value': overall_status['absent'] or 0},
+            {'name': 'Excused', 'value': overall_status['excused'] or 0},
+        ]
+
+        # Attendance by Grade for Bar Chart
+        grade_data = []
+        grade_levels = chart_att.values('student__profile__grade_level').annotate(
+            present=Count(Case(When(status__in=['present', 'late', 'excused'], then=1), output_field=IntegerField())),
+            total=Count('id')
+        ).order_by('student__profile__grade_level')
+        
+        for g in grade_levels:
+            level = g['student__profile__grade_level'] or 'Unassigned'
+            grade_data.append({
+                'level': level,
+                'rate': round(g['present'] / g['total'] * 100, 1) if g['total'] > 0 else 0
+            })
+
+        # Section Rankings (Overall Attendance Rate)
+        rankings = []
+        if request.user.role in ['admin', 'teacher']:
+            # Get all classrooms for the academic year
+            classrooms = Classroom.objects.all()
+            if academic_year_name:
+                classrooms = classrooms.filter(
+                    Q(academic_year__name=academic_year_name) |
+                    Q(academic_year__isnull=True)
+                )
+            
+            # Aggregate stats from base_att (filtered by academic year and timeframe)
+            classroom_stats = base_att.values('classroom__id').annotate(
+                total=Count('id'),
+                present=Count(Case(When(status__in=['present', 'late', 'excused'], then=1), output_field=IntegerField()))
+            )
+            stats_map = {r['classroom__id']: r for r in classroom_stats}
+
+            for c in classrooms:
+                r = stats_map.get(c.id, {'total': 0, 'present': 0})
+                rate = round(r['present'] / r['total'] * 100, 1) if r['total'] > 0 else 0
+                rankings.append({
+                    'id': c.id,
+                    'name': c.name,
+                    'rate': rate,
+                    'total_records': r['total']
+                })
+            # Sort by rate descending, then by name
+            rankings = sorted(rankings, key=lambda x: (-x['rate'], x['name']))
+
+        return Response({
+            'daily_trends': daily_data,
+            'pie_data': pie_data,
+            'grade_trends': grade_data,
+            'section_rankings': rankings,
+            'period': timeframe.capitalize()
+        })
+    
+    def perform_create(self, serializer):
+        # Teachers and admins can mark attendance
+        if self.request.user.role not in ['teacher', 'admin']:
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("Only teachers and admins can mark attendance")
+        attendance = serializer.save(marked_by=self.request.user)
+        from portal.views import log_audit_action
+        log_audit_action(
+            user=self.request.user,
+            action='create',
+            model_name='Attendance',
+            object_id=attendance.id,
+            object_repr=str(attendance),
+            description=f'Marked attendance for {attendance.student.username} on {attendance.date}',
+            request=self.request
+        )
+
+
+class LearningMaterialViewSet(viewsets.ModelViewSet):
+    serializer_class = LearningMaterialSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['title', 'description']
+    
+    def get_queryset(self):
+        user = self.request.user
+        from django.db.models import Q
+        queryset = LearningMaterial.objects.all()
+        classroom_id = self.request.query_params.get('classroom')
+        material_type = self.request.query_params.get('material_type')
+        quarter = self.request.query_params.get('quarter')
+        
+        # RBAC: Students can see materials for their enrolled classrooms + general materials
+        if user.role == 'student':
+            student_enrollments = StudentClassEnrollment.objects.filter(student=user)
+            student_classrooms = [e.classroom for e in student_enrollments]
+            queryset = queryset.filter(Q(classroom__in=student_classrooms) | Q(classroom__isnull=True))
+        # Teachers see materials for their classrooms + general materials
+        elif user.role == 'teacher':
+            teacher_classrooms = Classroom.objects.filter(teacher=user)
+            queryset = queryset.filter(Q(classroom__in=teacher_classrooms) | Q(classroom__isnull=True))
+        # Admins see everything
+        
+        if classroom_id:
+            queryset = queryset.filter(classroom_id=classroom_id)
+        if material_type:
+            queryset = queryset.filter(material_type=material_type)
+        if quarter:
+            queryset = queryset.filter(quarter=quarter)
+        return queryset.order_by('-created_at')
+    
+    def perform_create(self, serializer):
+        if self.request.user.role not in ['teacher', 'admin']:
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("Only teachers and admins can upload materials")
+
+        # Upload file to Supabase before saving the record
+        file_url = None
+        original_filename = ''
+        file_size_bytes = None
+        uploaded_file = self.request.FILES.get('file')
+        if uploaded_file:
+            from .storage import upload_file
+            url, err = upload_file(uploaded_file, bucket_key='learning-materials',
+                                   folder=f"classroom_{self.request.data.get('classroom', 'general')}")
+            if err:
+                from rest_framework.exceptions import ValidationError
+                raise ValidationError({'file': f'Upload failed: {err}'})
+            file_url = url
+            original_filename = uploaded_file.name
+            file_size_bytes = uploaded_file.size
+
+        material = serializer.save(
+            uploaded_by=self.request.user,
+            file=file_url,
+            original_filename=original_filename,
+            file_size_bytes=file_size_bytes,
+        )
+
+        from portal.views import log_audit_action
+        log_audit_action(
+            user=self.request.user,
+            action='create',
+            model_name='LearningMaterial',
+            object_id=material.id,
+            object_repr=material.title,
+            description=f'Uploaded learning material: {material.title}',
+            request=self.request
+        )
+
+
+class SubjectViewSet(viewsets.ModelViewSet):
+    serializer_class = SubjectSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['name', 'code']
+    
+    def get_queryset(self):
+        queryset = Subject.objects.all()
+        grade_level = self.request.query_params.get('grade_level')
+        if grade_level:
+            queryset = queryset.filter(grade_level=grade_level)
+        return queryset
+
+
+class ClassroomSubjectViewSet(viewsets.ModelViewSet):
+    """
+    Manages Subject assignments to Classrooms
+    Implements: Classroom contains Subject
+    """
+    serializer_class = ClassroomSubjectSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ['classroom__name', 'subject__name', 'subject__code', 'teacher__username']
+    ordering_fields = ['classroom__name', 'subject__name', 'assigned_at']
+    ordering = ['classroom__name', 'subject__name']
+    
+    def get_queryset(self):
+        user = self.request.user
+        queryset = ClassroomSubject.objects.select_related('classroom', 'subject', 'teacher')
+        
+        # Filter based on user role
+        if user.role == 'teacher':
+            # Teachers can only see subjects assigned to them
+            queryset = queryset.filter(teacher=user)
+        elif user.role == 'student':
+            # Students can see subjects for their enrolled classrooms
+            enrolled_classrooms = StudentClassEnrollment.objects.filter(student=user).values_list('classroom_id', flat=True)
+            queryset = queryset.filter(classroom_id__in=enrolled_classrooms)
+        # Admins can see all
+        
+        # Additional filters
+        classroom_id = self.request.query_params.get('classroom')
+        subject_id = self.request.query_params.get('subject')
+        teacher_id = self.request.query_params.get('teacher')
+        
+        if classroom_id:
+            queryset = queryset.filter(classroom_id=classroom_id)
+        if subject_id:
+            queryset = queryset.filter(subject_id=subject_id)
+        if teacher_id:
+            queryset = queryset.filter(teacher_id=teacher_id)
+            
+        return queryset
+    
+    def perform_create(self, serializer):
+        user = self.request.user
+        if user.role not in ['admin', 'teacher']:
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("Only admins and teachers can assign subjects to classrooms")
+        instance = serializer.save()
+        from portal.views import log_audit_action
+        log_audit_action(user, 'create', 'ClassroomSubject',
+                         object_id=instance.id,
+                         object_repr=str(instance),
+                         description=f"Assigned {instance.subject.code} to {instance.classroom.name}",
+                         request=self.request)
+
+    def perform_update(self, serializer):
+        user = self.request.user
+        if user.role not in ['admin', 'teacher']:
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("Only admins and teachers can update subject assignments")
+        if user.role == 'teacher' and serializer.instance.teacher != user:
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("You can only edit assignments for subjects assigned to you")
+        instance = serializer.save()
+        from portal.views import log_audit_action
+        log_audit_action(user, 'update', 'ClassroomSubject',
+                         object_id=instance.id,
+                         object_repr=str(instance),
+                         description=f"Updated weights for {instance.subject.code} in {instance.classroom.name}",
+                         request=self.request)
+
+    def perform_destroy(self, instance):
+        user = self.request.user
+        if user.role not in ['admin', 'teacher']:
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("Only admins and teachers can remove subject assignments")
+        if user.role == 'teacher' and instance.teacher != user:
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("You can only remove assignments for subjects assigned to you")
+        from portal.views import log_audit_action
+        log_audit_action(user, 'delete', 'ClassroomSubject',
+                         object_id=instance.id,
+                         object_repr=str(instance),
+                         description=f"Removed {instance.subject.code} from {instance.classroom.name}",
+                         request=self.request)
+        instance.delete()
+    
+    @action(detail=False, methods=['get'])
+    def by_classroom(self, request):
+        """Get all subjects assigned to a specific classroom"""
+        classroom_id = request.query_params.get('classroom_id')
+        if not classroom_id:
+            return Response({'error': 'classroom_id parameter required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        queryset = ClassroomSubject.objects.select_related(
+            'classroom', 'subject', 'teacher'
+        ).filter(classroom_id=classroom_id)
+        
+        user = request.user
+        # If teacher, only show subjects they are assigned to in this classroom
+        if user.role == 'teacher':
+            queryset = queryset.filter(teacher=user)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+    
+    @action(detail=False, methods=['get'])
+    def by_teacher(self, request):
+        """Get all subjects assigned to a specific teacher"""
+        user = request.user
+        teacher_id = request.query_params.get('teacher_id')
+        
+        # If user is a teacher, force filter to their own ID
+        if user.role == 'teacher':
+            teacher_id = user.id
+        
+        if not teacher_id:
+            return Response({'error': 'teacher_id parameter required'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        queryset = self.get_queryset().filter(teacher_id=teacher_id)
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+
+class ScratchCardViewSet(viewsets.ModelViewSet):
+    serializer_class = ScratchCardSerializer
+    permission_classes = [IsAdminUser]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['serial_number', 'student__username']
+    
+    def get_queryset(self):
+        queryset = ScratchCard.objects.all()
+        student_id = self.request.query_params.get('student')
+        is_used = self.request.query_params.get('is_used')
+        
+        if student_id:
+            queryset = queryset.filter(student_id=student_id)
+        if is_used:
+            queryset = queryset.filter(is_used=is_used == 'true')
+        return queryset
+
+
+class FeeViewSet(viewsets.ModelViewSet):
+    serializer_class = FeeSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['student__username']
+    
+    def get_queryset(self):
+        user = self.request.user
+        queryset = Fee.objects.all()
+        student_id = self.request.query_params.get('student')
+        status = self.request.query_params.get('status')
+        fee_type = self.request.query_params.get('fee_type')
+        
+        # RBAC: Students can only see their own fees
+        if user.role == 'student':
+            queryset = queryset.filter(student=user)
+        # Teachers can only see fees for their classrooms
+        elif user.role == 'teacher':
+            teacher_classrooms = Classroom.objects.filter(teacher=user)
+            student_enrollments = StudentClassEnrollment.objects.filter(classroom__in=teacher_classrooms)
+            students = [e.student for e in student_enrollments]
+            queryset = queryset.filter(student__in=students)
+        
+        if student_id:
+            queryset = queryset.filter(student_id=student_id)
+        if status:
+            queryset = queryset.filter(status=status)
+        if fee_type:
+            queryset = queryset.filter(fee_type=fee_type)
+        return queryset
+
+
+@api_view(['GET', 'POST', 'PATCH'])
+@permission_classes([IsAuthenticated])
+@parser_classes([parsers.MultiPartParser, parsers.FormParser, parsers.JSONParser])
+def system_settings_view(request):
+    """View to get or update global system settings (Admin only for updates)"""
+    logger.info(f"System settings request: {request.method} by {request.user.username}")
+    sys_settings = SystemSetting.get_settings()
+
+    if request.method in ['POST', 'PATCH']:
+        try:
+            if request.user.role != 'admin':
+                return Response({'error': 'Only administrators can update system settings'}, status=status.HTTP_403_FORBIDDEN)
+
+            # Handle school_logo upload to Supabase branding bucket
+            if 'school_logo' in request.FILES:
+                from .storage import upload_file
+                logo_file = request.FILES['school_logo']
+                url, err = upload_file(logo_file, bucket_key='branding', folder='logos')
+                if err:
+                    return Response({'error': f'Logo upload failed: {err}'}, status=400)
+                sys_settings.school_logo = url
+                sys_settings.save(update_fields=['school_logo'])
+                # Remove from data so serializer doesn't try to process it as a field
+                data = request.data.copy()
+                data.pop('school_logo', None)
+            else:
+                data = request.data
+
+            serializer = SystemSettingSerializer(sys_settings, data=data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(dict(serializer.data))
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            logger.error(f"Error updating system settings: {str(e)}", exc_info=True)
+            return Response({'error': 'Failed to update system settings.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    # GET
+    serializer = SystemSettingSerializer(sys_settings)
+    return Response(dict(serializer.data))
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def maintenance_status_view(request):
+    """Public endpoint to check if the portal is in maintenance mode"""
+    try:
+        sys_settings = SystemSetting.get_settings()
+        return Response({
+            'maintenance_mode': sys_settings.maintenance_mode,
+            'maintenance_message': sys_settings.maintenance_message
+        })
+    except Exception as e:
+        logger.error(f"Maintenance status error: {str(e)}", exc_info=True)
+        return Response({
+            'maintenance_mode': False,
+            'maintenance_message': "Unable to fetch maintenance status."
+        }, status=200) # Return 200 to avoid breaking frontend UI if possible
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def admin_dashboard_stats(request):
+    try:
+        if request.user.role not in ['admin', 'teacher']:
+            return Response({'error': 'Unauthorized access'}, status=403)
+
+        from django.db.models import Count, Avg, Q
+        from django.utils import timezone
+        import datetime
+        from datetime import timedelta
+        
+        # Use local Manila time for accurate daily stats
+        now = timezone.localtime(timezone.now())
+        today = now.date()
+        five_mins_ago = now - datetime.timedelta(minutes=5)
+        this_week_start = today - datetime.timedelta(days=today.weekday())
+        
+        academic_year_name = request.query_params.get('academic_year')
+        
+        # Safe model imports
+        try:
+            from portal.models import AuditLog
+        except ImportError:
+            AuditLog = None
+
+        # Base Attendance Filter
+        att_qs = Attendance.objects.all()
+        if academic_year_name:
+            try:
+                att_qs = att_qs.filter(
+                    classroom__academic_year__name=academic_year_name
+                )
+            except Exception as e:
+                logger.error(f"Error filtering attendance by year: {str(e)}")
+
+        # Attendance today (Local Time)
+        today_attendance = att_qs.filter(date=today)
+        today_present = today_attendance.filter(status__in=['present', 'late']).count()
+        today_total   = today_attendance.count()
+        today_rate    = round((today_present / today_total * 100), 1) if today_total > 0 else 0
+
+        # Core counts - Global Population (Independent of year for overview cards)
+        total_students = User.objects.filter(role='student', is_approved=True).count()
+        total_teachers = User.objects.filter(role='teacher', is_approved=True).count()
+        total_subjects = Subject.objects.count()
+        
+        # Classes are always year-specific or unassigned
+        classes_qs = Classroom.objects.all()
+        if academic_year_name:
+            try:
+                # Include classrooms for the selected year AND classrooms with no year assigned
+                classes_qs = classes_qs.filter(
+                    Q(academic_year__name=academic_year_name) |
+                    Q(academic_year__isnull=True)
+                )
+            except Exception as e:
+                logger.error(f"Error filtering classrooms by year: {str(e)}")
+        total_classes = classes_qs.count()
+        # Pending approvals should include all unapproved users, regardless of verification per school requirements
+        pending_approvals = User.objects.filter(is_approved=False).exclude(role='admin').count()
+        
+        active_users = User.objects.filter(last_activity__gte=five_mins_ago).count()
+
+        # Attendance Trends (Last 30 Days) - Filtered for charts
+        last_30_days_list = [today - datetime.timedelta(days=i) for i in range(29, -1, -1)]
+        attendance_trends = []
+        for day in last_30_days_list:
+            # Skip weekends in trends calculation
+            if day.weekday() in [5, 6]: continue
+            
+            day_records = att_qs.filter(date=day)
+            day_total = day_records.count()
+            day_present = day_records.filter(status='present').count()
+            day_late    = day_records.filter(status='late').count()
+            attendance_trends.append({
+                'date': day.strftime('%Y-%m-%d'),
+                'present': day_present,
+                'late': day_late,
+                'rate': round(((day_present + day_late) / day_total * 100), 1) if day_total > 0 else 0
+            })
+
+        # Grades - only count final grades
+        grades = Grade.objects.filter(transmuted_score__isnull=False, grade_type='final_grade')
+        if academic_year_name:
+            # Strict year filter — Grade.academic_year field OR classroom year, no isnull fallback
+            grades = grades.filter(
+                Q(academic_year=academic_year_name) |
+                Q(classroom__academic_year__name=academic_year_name)
+            )
+        
+        total_grades = grades.count()
+        avg_grade = grades.aggregate(avg=Avg('transmuted_score'))['avg']
+        average_grade = round(float(avg_grade), 2) if avg_grade else None
+
+        # --- ALL SUBJECTS DISTRIBUTION ---
+        outstanding = grades.filter(transmuted_score__gte=90).count()
+        very_satisfactory = grades.filter(transmuted_score__gte=85, transmuted_score__lt=90).count()
+        satisfactory = grades.filter(transmuted_score__gte=80, transmuted_score__lt=85).count()
+        fairly_satisfactory = grades.filter(transmuted_score__gte=75, transmuted_score__lt=80).count()
+        below_75 = grades.filter(transmuted_score__lt=75).count()
+
+        # --- GENERAL AVERAGE DISTRIBUTION (Student-wise, via DB aggregation) ---
+        from django.db.models import Count, Case, When, IntegerField as IF2
+        student_averages = grades.values('student').annotate(avg=Avg('transmuted_score'))
+        total_students_graded = student_averages.count()
+
+        ga_outstanding = 0
+        ga_very_satisfactory = 0
+        ga_satisfactory = 0
+        ga_fairly_satisfactory = 0
+        ga_below_75 = 0
+
+        for sa in student_averages:
+            score = sa['avg']
+            if score is None:
+                continue
+            if score >= 90: ga_outstanding += 1
+            elif score >= 85: ga_very_satisfactory += 1
+            elif score >= 80: ga_satisfactory += 1
+            elif score >= 75: ga_fairly_satisfactory += 1
+            else: ga_below_75 += 1
+
+        # Recent Activity
+        recent_activity = []
+        if AuditLog:
+            try:
+                recent_activity = AuditLog.objects.order_by('-timestamp')[:5]
+            except:
+                pass
+        
+        # Optimized Active Users Over Time (Last 24 Hours)
+        active_users_trends = []
+        if AuditLog:
+            try:
+                last_24h_start = now - timedelta(hours=24)
+                recent_login_logs = list(AuditLog.objects.filter(
+                    action='login',
+                    timestamp__gte=last_24h_start
+                ).values('user', 'timestamp'))
+
+                for i in range(23, -1, -1):
+                    hour_start = now - timedelta(hours=i+1)
+                    hour_end = now - timedelta(hours=i)
+                    # Comparison between offset-aware datetimes
+                    users_in_hour = {
+                        log['user'] for log in recent_login_logs 
+                        if log['timestamp'] and hour_start <= log['timestamp'] <= hour_end
+                    }
+                    active_users_trends.append({
+                        'time': hour_end.strftime('%H:00'),
+                        'users': len(users_in_hour)
+                    })
+            except Exception as e:
+                logger.error(f"Error calculating active users trends: {str(e)}")
+                active_users_trends = []
+
+        # --- SUBJECT PERFORMANCE INDEX (Top 10) ---
+        subject_perf = []
+        try:
+            # Use the already year-filtered 'grades' queryset
+            subject_stats = grades.values('subject__name').annotate(
+                avg_grade=Avg('transmuted_score')
+            ).order_by('-avg_grade')[:10]
+            
+            for s in subject_stats:
+                subject_perf.append({
+                    'name': s['subject__name'],
+                    'avg_grade': round(float(s['avg_grade']), 1) if s['avg_grade'] else 0
+                })
+        except Exception as e:
+            logger.error(f"Error fetching subject stats: {str(e)}")
+
+        # Prepare announcements
+        announcements_data = []
+        try:
+            recent_announcements = Announcement.objects.filter(status='live').select_related('author').order_by('-created_at')[:5]
+            for a in recent_announcements:
+                announcements_data.append({
+                    'id': a.id,
+                    'title': a.title,
+                    'content': a.content,
+                    'priority': a.priority,
+                    'is_pinned': a.is_pinned,
+                    'created_at': a.created_at,
+                    'author_name': a.author.get_full_name() or a.author.username
+                })
+        except Exception as e:
+            logger.error(f"Error fetching announcements: {str(e)}")
+
+        # Latest messages for this admin (exclude self, unique senders)
+        latest_messages = []
+        try:
+            msg_objs = ChatMessage.objects.filter(
+                room__participants=request.user
+            ).exclude(sender=request.user).select_related('sender').order_by('-timestamp')
+            
+            seen_senders = set()
+            for m in msg_objs:
+                if m.sender_id not in seen_senders:
+                    latest_messages.append({
+                        'id': m.id,
+                        'content': m.content,
+                        'timestamp': m.timestamp.isoformat(),
+                        'sender': m.sender.get_full_name() or m.sender.username,
+                        'sender_profile_picture': getattr(getattr(m.sender, 'profile', None), 'profile_picture', None),
+                        'is_read': m.is_read
+                    })
+                    seen_senders.add(m.sender_id)
+                if len(latest_messages) >= 5:
+                    break
+        except Exception as e:
+            logger.error(f"Error fetching latest messages: {str(e)}")
+
+        # Prepare response data
+        res_data = {
+            'total_students': total_students,
+            'total_teachers': total_teachers,
+            'total_classes': total_classes,
+            'total_subjects': total_subjects,
+            'pending_approvals': pending_approvals,
+            'pending_enrollments': EnrollmentApplication.objects.filter(status='pending').count() if EnrollmentApplication else 0,
+            'active_users': active_users,
+            'today_rate': today_rate,
+            'average_grade': average_grade,
+            
+            # Grouped data for Analytics.jsx
+            'attendance': {
+                'today_rate': today_rate,
+                'daily_trends': attendance_trends
+            },
+            'grades': {
+                'average': average_grade,
+                'total': total_grades,
+                'subject_stats': subject_perf
+            },
+            'dashboard': {
+                'active_users': active_users,
+                'total_students': total_students,
+                'total_teachers': total_teachers,
+                'total_classes': total_classes,
+                'pending_approvals': pending_approvals,
+                'today_rate': today_rate,
+                'average_grade': average_grade,
+                'charts': {
+                    'active_users_trends': active_users_trends,
+                    'attendance_trends': attendance_trends,
+                    'grade_distribution': [
+                        {'name': 'Outstanding', 'value': outstanding},
+                        {'name': 'Very Satisfactory', 'value': very_satisfactory},
+                        {'name': 'Satisfactory', 'value': satisfactory},
+                        {'name': 'Fairly Satisfactory', 'value': fairly_satisfactory},
+                        {'name': 'Did Not Meet', 'value': below_75},
+                    ]
+                }
+            },
+            
+            'cards': {
+                'total_students': total_students,
+                'total_teachers': total_teachers,
+                'total_classes': total_classes,
+                'total_subjects': total_subjects,
+                'active_users': active_users,
+                'attendance_rate': today_rate,
+            },
+            'widgets': {
+                'recent_announcements': announcements_data,
+                'recent_activity': [
+                    {
+                        'id': log.id,
+                        'user': (log.user.get_full_name() or log.user.username) if log.user else 'System',
+                        'timestamp': log.timestamp,
+                        'description': log.description,
+                        'action': log.action
+                    } for log in (recent_activity if 'recent_activity' in locals() else [])
+                ],
+                'latest_messages': latest_messages,
+                'active_users_trends': active_users_trends,
+                'subject_performance': subject_perf
+            },
+            'all_subjects': {
+                'counts': [
+                    {'name': 'Outstanding', 'value': outstanding},
+                    {'name': 'Very Satisfactory', 'value': very_satisfactory},
+                    {'name': 'Satisfactory', 'value': satisfactory},
+                    {'name': 'Fairly Satisfactory', 'value': fairly_satisfactory},
+                    {'name': 'Did Not Meet', 'value': below_75},
+                ],
+                'outstanding_pct': round(outstanding / total_grades * 100) if total_grades else 0,
+                'very_satisfactory_pct': round(very_satisfactory / total_grades * 100) if total_grades else 0,
+                'satisfactory_pct': round(satisfactory / total_grades * 100) if total_grades else 0,
+                'fairly_satisfactory_pct': round(fairly_satisfactory / total_grades * 100) if total_grades else 0,
+                'below_75_pct': round(below_75 / total_grades * 100) if total_grades else 0,
+                'total_count': total_grades
+            },
+            'general_average': {
+                 'counts': [
+                    {'name': 'Outstanding', 'value': ga_outstanding},
+                    {'name': 'Very Satisfactory', 'value': ga_very_satisfactory},
+                    {'name': 'Satisfactory', 'value': ga_satisfactory},
+                    {'name': 'Fairly Satisfactory', 'value': ga_fairly_satisfactory},
+                    {'name': 'Did Not Meet', 'value': ga_below_75},
+                 ],
+                 'outstanding_pct': round(ga_outstanding / total_students_graded * 100) if total_students_graded else 0,
+                 'very_satisfactory_pct': round(ga_very_satisfactory / total_students_graded * 100) if total_students_graded else 0,
+                 'satisfactory_pct': round(ga_satisfactory / total_students_graded * 100) if total_students_graded else 0,
+                 'fairly_satisfactory_pct': round(ga_fairly_satisfactory / total_students_graded * 100) if total_students_graded else 0,
+                 'below_75_pct': round(ga_below_75 / total_students_graded * 100) if total_students_graded else 0,
+                 'total_count': total_students_graded
+             },
+            
+            'system_settings': SystemSettingSerializer(SystemSetting.get_settings()).data if SystemSetting else None,
+            'recent_grades_count': Grade.objects.filter(submitted_at__date__gte=this_week_start).count(),
+            'total_announcements': Announcement.objects.filter(status='live').count(),
+            'recent_announcements': announcements_data,
+            'latest_messages': latest_messages,
+        }
+        
+        return Response(res_data)
+    except Exception as e:
+        import traceback
+        logger.error(f"Admin stats error: {str(e)}")
+        logger.error(traceback.format_exc())
+        return Response({'error': 'Failed to load admin statistics.'}, status=500)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def storage_analytics_view(request):
+    """
+    Returns file counts and sizes per Supabase bucket.
+    Admin only.
+    """
+    if request.user.role != 'admin':
+        return Response({'error': 'Admin access required.'}, status=403)
+    from .storage import get_storage_stats
+    return Response(get_storage_stats())
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def grade_distribution_stats(request):
+    """
+    Detailed statistics for grade distribution across the school.
+    Supports filtering by academic_year, grade_level, and subject.
+    """
+    from django.db.models import Avg, Count, Q
+    from .models import Grade, Classroom, Subject
+    
+    academic_year = request.query_params.get('academic_year', '2025-2026')
+    grade_level   = request.query_params.get('grade_level', 'all')
+    subject_id    = request.query_params.get('subject_id', 'all')
+    quarter       = request.query_params.get('quarter', 'all')
+    timeframe     = request.query_params.get('timeframe', 'all') # today, weekly, all
+    mode          = request.query_params.get('mode', 'student') # 'student' (General Average) or 'entry' (Cumulative)
+    
+    from django.utils import timezone
+    import datetime
+    
+    # 1. Base filtering
+    base_grades = Grade.objects.filter(
+        grade_type='final_grade',
+        transmuted_score__isnull=False
+    ).filter(
+        # Strict year filter — no isnull fallback to prevent year bleed-through
+        Q(academic_year=academic_year) |
+        Q(classroom__academic_year__name=academic_year)
+    )
+    
+    # Filter by Timeframe (submission date)
+    if timeframe == 'today':
+        base_grades = base_grades.filter(submitted_at__date=timezone.now().date())
+    elif timeframe == 'weekly':
+        week_ago = timezone.now().date() - datetime.timedelta(days=7)
+        base_grades = base_grades.filter(submitted_at__date__gte=week_ago)
+    
+    # Filter by Quarter if specified
+    if quarter != 'all':
+        base_grades = base_grades.filter(quarter=quarter)
+    
+    # Filter by Grade Level if specified
+    if grade_level != 'all':
+        level_classrooms = Classroom.objects.filter(name__icontains=grade_level)
+        base_grades = base_grades.filter(classroom__in=level_classrooms)
+        
+    # Filter by Subject if specified
+    if subject_id != 'all':
+        base_grades = base_grades.filter(subject_id=subject_id)
+
+    if not base_grades.exists():
+        # Get subjects offered in this academic year for the meta section
+        subjects_in_year = Subject.objects.filter(
+            classroom_subjects__classroom__academic_year__name=academic_year
+        ).distinct().values('id', 'name', 'code')
+        
+        return Response({
+            'total_students': 0,
+            'overall_average': 0,
+            'category_counts': [],
+            'by_level': [],
+            'by_group': [],
+            'mode': mode,
+            'meta': {
+                'subjects': list(subjects_in_year) if subjects_in_year.exists() else list(Subject.objects.values('id', 'name', 'code')[:20]),
+                'grade_levels': ["Grade 7", "Grade 8", "Grade 9", "Grade 10", "Grade 11", "Grade 12"]
+            }
+        })
+
+    # 2. Summary Stats
+    student_averages = base_grades.values('student').annotate(avg=Avg('transmuted_score'))
+    total_students = student_averages.count()
+    total_entries = base_grades.count()
+    overall_avg = base_grades.aggregate(avg=Avg('transmuted_score'))['avg']
+    
+    categories = {
+        'Outstanding (90-100)': 0,
+        'Very Satisfactory (85-89)': 0,
+        'Satisfactory (80-84)': 0,
+        'Fairly Satisfactory (75-79)': 0,
+        'Did Not Meet Expectations (<75)': 0,
+    }
+    
+    if mode == 'student':
+        # Calculate distribution based on each student's average across filtered subjects
+        for sa in student_averages:
+            score = sa['avg']
+            if score is None:
+                continue
+            if score >= 90: categories['Outstanding (90-100)'] += 1
+            elif score >= 85: categories['Very Satisfactory (85-89)'] += 1
+            elif score >= 80: categories['Satisfactory (80-84)'] += 1
+            elif score >= 75: categories['Fairly Satisfactory (75-79)'] += 1
+            else: categories['Did Not Meet Expectations (<75)'] += 1
+    else:
+        # Calculate distribution based on every individual grade entry using DB aggregation
+        from django.db.models import Count, Case, When, IntegerField as IF
+        agg = base_grades.aggregate(
+            outstanding=Count(Case(When(transmuted_score__gte=90, then=1), output_field=IF())),
+            very_sat=Count(Case(When(transmuted_score__gte=85, transmuted_score__lt=90, then=1), output_field=IF())),
+            sat=Count(Case(When(transmuted_score__gte=80, transmuted_score__lt=85, then=1), output_field=IF())),
+            fairly_sat=Count(Case(When(transmuted_score__gte=75, transmuted_score__lt=80, then=1), output_field=IF())),
+            dnm=Count(Case(When(transmuted_score__lt=75, then=1), output_field=IF())),
+        )
+        categories['Outstanding (90-100)'] = agg['outstanding']
+        categories['Very Satisfactory (85-89)'] = agg['very_sat']
+        categories['Satisfactory (80-84)'] = agg['sat']
+        categories['Fairly Satisfactory (75-79)'] = agg['fairly_sat']
+        categories['Did Not Meet Expectations (<75)'] = agg['dnm']
+
+    category_counts = [{'name': k, 'value': v} for k, v in categories.items()]
+
+    # 3. Dynamic Comparison Chart (By Level or By Classroom)
+    by_level = []
+    if grade_level == 'all':
+        # Show comparison across all grade levels
+        for level_num in range(7, 13):
+            level_label = f"Grade {level_num}"
+            level_classrooms = Classroom.objects.filter(name__icontains=level_label)
+            level_grades = base_grades.filter(classroom__in=level_classrooms)
+            if level_grades.exists():
+                avg = level_grades.aggregate(a=Avg('transmuted_score'))['a']
+                by_level.append({
+                    'label': level_label,
+                    'average': round(float(avg), 2) if avg else 0,
+                    'count': level_grades.count()
+                })
+    else:
+        # If a level is selected, show comparison across classrooms in that level
+        level_classrooms = Classroom.objects.filter(name__icontains=grade_level)
+        for c in level_classrooms:
+            c_grades = base_grades.filter(classroom=c)
+            if c_grades.exists():
+                avg = c_grades.aggregate(a=Avg('transmuted_score'))['a']
+                by_level.append({
+                    'label': c.name,
+                    'average': round(float(avg), 2) if avg else 0,
+                    'count': c_grades.count()
+                })
+
+    # 4. Top Performing Group (By Subject or By Classroom for a Subject)
+    by_group = []
+    if subject_id == 'all':
+        # Show Top 10 Performing Subjects
+        subject_stats = base_grades.values('subject__name', 'subject__code').annotate(
+            avg=Avg('transmuted_score'),
+            count=Count('id')
+        ).order_by('-avg')[:10]
+        
+        for s in subject_stats:
+            by_group.append({
+                'name': s['subject__name'],
+                'code': s['subject__code'],
+                'average': round(float(s['avg']), 2) if s['avg'] else 0,
+                'count': s['count']
+            })
+    else:
+        # If a subject is selected, show Top 10 Performing Classrooms for that subject
+        classroom_stats = base_grades.values('classroom__name').annotate(
+            avg=Avg('transmuted_score'),
+            count=Count('id')
+        ).order_by('-avg')[:10]
+        
+        for cs in classroom_stats:
+            by_group.append({
+                'name': cs['classroom__name'],
+                'code': cs['classroom__name'], # Use name as code for chart axis
+                'average': round(float(cs['avg']), 2) if cs['avg'] else 0,
+                'count': cs['count']
+            })
+
+    return Response({
+        'academic_year': academic_year,
+        'grade_level': grade_level,
+        'subject_id': subject_id,
+        'total_students': total_students,
+        'total_entries': base_grades.count(),
+        'overall_average': round(float(overall_avg), 2) if overall_avg else 0,
+        'category_counts': [{'name': k, 'value': v} for k, v in categories.items()],
+        'by_level': by_level,
+        'by_group': by_group,
+        'meta': {
+            'subjects': list(Subject.objects.values('id', 'name', 'code', 'grade_level').order_by('grade_level', 'name')),
+            'grade_levels': ["Grade 7", "Grade 8", "Grade 9", "Grade 10", "Grade 11", "Grade 12"]
+        }
+    })
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+@throttle_classes([CheckResultRateThrottle])
+def check_result(request):
+    registration_number = request.data.get('registration_number', '').strip()
+    scratch_card = request.data.get('scratch_card', '').strip()
+
+    # Input validation — reject obviously malformed values early
+    if not registration_number or not scratch_card:
+        return Response({'error': 'Registration number and scratch card are required'}, status=400)
+
+    if len(registration_number) > 30 or len(scratch_card) > 30:
+        return Response({'error': 'Invalid input'}, status=400)
+
+    # Only allow alphanumeric characters to prevent injection
+    if not registration_number.replace('-', '').isalnum() or not scratch_card.replace('-', '').isalnum():
+        return Response({'error': 'Invalid input format'}, status=400)
+
+    try:
+        profile = Profile.objects.get(registration_number=registration_number)
+        student = profile.user
+
+        if student.role != 'student':
+            return Response({'error': 'Invalid registration number'}, status=400)
+
+        card = ScratchCard.objects.filter(serial_number=scratch_card, student=student, is_used=False).first()
+
+        if not card:
+            return Response({'error': 'Invalid or used scratch card'}, status=400)
+
+        # Mark card as used
+        card.is_used = True
+        card.used_at = timezone.now()
+        card.save()
+
+        # Get student's grades
+        enrollments = StudentClassEnrollment.objects.filter(student=student)
+        grades_data = []
+        for enrollment in enrollments:
+            grades_data.append({
+                'classroom': enrollment.classroom.name,
+                'q1': enrollment.q1,
+                'q2': enrollment.q2,
+                'q3': enrollment.q3,
+                'q4': enrollment.q4,
+                'transmuted_quarters': enrollment.get_transmuted_quarters(),
+                'transmuted_average': enrollment.calculate_transmuted_average(),
+                'descriptive_equivalent': enrollment.get_descriptive_equivalent(),
+            })
+
+        return Response({
+            'student': {
+                'name': student.get_full_name() or student.username,
+                'registration_number': registration_number,
+            },
+            'grades': grades_data,
+        })
+
+    except Profile.DoesNotExist:
+        return Response({'error': 'Invalid registration number'}, status=400)
+    except Exception as e:
+        logger.error(f"check_result error: {str(e)}", exc_info=True)
+        return Response({'error': 'An error occurred processing your request.'}, status=500)
+
+
+@api_view(['GET', 'PUT', 'POST'])
+@permission_classes([IsAuthenticated])
+@parser_classes([parsers.MultiPartParser, parsers.FormParser, parsers.JSONParser])
+def student_profile(request):
+    """
+    Get, update, or upload student profile information/picture.
+    """
+    from .models import Profile
+    
+    target_user = request.user
+    student_id = request.query_params.get('student_id')
+    
+    if student_id:
+        if request.user.role not in ['teacher', 'admin']:
+            return Response({'error': 'Unauthorized'}, status=403)
+        try:
+            target_user = User.objects.get(id=student_id)
+        except User.DoesNotExist:
+            return Response({'error': 'User not found'}, status=404)
+    
+    profile, _ = Profile.objects.get_or_create(user=target_user)
+    
+    if request.method == 'POST':
+        if 'profile_picture' in request.FILES:
+            from .storage import upload_file
+            pic_file = request.FILES['profile_picture']
+            try:
+                url, error = upload_file(pic_file, bucket_key='profile-pictures',
+                                         folder=f"user_{target_user.id}")
+                if url:
+                    profile.profile_picture = url
+                    profile.save()
+                    return Response({'message': 'Profile picture updated successfully', 'profile_picture': url})
+                else:
+                    return Response({'error': error or 'Failed to upload picture to storage.'}, status=500)
+            except Exception as e:
+                logger.error(f"Error in student_profile POST: {str(e)}", exc_info=True)
+                return Response({'error': 'Failed to upload profile picture.'}, status=500)
+        return Response({'error': 'No file provided'}, status=400)
+
+    if request.method == 'GET':
+        # ... existing GET logic ...
+        grade_level = profile.grade_level
+        if not grade_level:
+            enrollment = StudentClassEnrollment.objects.filter(student=target_user).select_related('classroom').first()
+            if enrollment:
+                import re
+                match = re.search(r'Grade\s+\d+', enrollment.classroom.name, re.IGNORECASE)
+                if match:
+                    grade_level = match.group(0)
+
+        profile_data = {
+            'id': target_user.id,
+            'username': target_user.username,
+            'email': target_user.email,
+            'first_name': target_user.first_name,
+            'last_name': target_user.last_name,
+            'role': target_user.role,
+            'must_change_password': target_user.must_change_password,
+            'profile': {
+                'title': profile.title,
+                'sex': profile.sex,
+                'state': profile.state,
+                'nationality': profile.nationality,
+                'middle_name': profile.middle_name,
+                'father_name': profile.father_name,
+                'mother_name': profile.mother_name,
+                'date_of_birth': profile.date_of_birth,
+                'contact_information': profile.contact_information,
+                'phone_number': profile.phone_number,
+                'address': profile.address,
+                'grade_level': grade_level,
+                'registration_number': profile.registration_number,
+                'profile_picture': profile.profile_picture,
+                'mute_until': profile.mute_until,
+                'is_muted': profile.mute_until is not None and profile.mute_until > timezone.now(),
+                'is_suspended': profile.is_suspended or target_user.account_status == 'suspended',
+            }
+        }
+        return Response(profile_data)
+    
+    elif request.method == 'PUT':
+        if target_user != request.user:
+            return Response({'error': 'Unauthorized'}, status=403)
+            
+        try:
+            # Update email if provided (Optional linking)
+            if 'email' in request.data:
+                email_val = request.data.get('email')
+                new_email = email_val.strip() if email_val and isinstance(email_val, str) else None
+
+                if new_email:
+                    # Only reject if a DIFFERENT user already has this email
+                    if User.objects.filter(email=new_email).exclude(id=target_user.id).exists():
+                        return Response({'error': 'Email already in use'}, status=400)
+                    target_user.email = new_email
+                else:
+                    # Empty/blank → clear the email (store as NULL)
+                    target_user.email = None
+
+            if 'first_name' in request.data:
+                target_user.first_name = request.data['first_name']
+            if 'last_name' in request.data:
+                target_user.last_name = request.data['last_name']
+            target_user.save()
+
+            # Update profile fields
+            profile_fields = [
+                'title', 'sex', 'state', 'nationality', 'middle_name',
+                'father_name', 'mother_name', 'phone_number', 'address',
+                'contact_information', 'grade_level'
+            ]
+
+            for field in profile_fields:
+                if field in request.data:
+                    val = request.data[field]
+                    if not val or (isinstance(val, str) and not val.strip()):
+                        val = None
+                    setattr(profile, field, val)
+
+            # registration_number / lrn — handle separately with update_fields
+            # to avoid triggering the unique constraint on an unchanged value.
+            if 'registration_number' in request.data:
+                val = request.data['registration_number']
+                if not val or (isinstance(val, str) and not val.strip()):
+                    val = None
+                # Only update if the value actually changed
+                if val != profile.registration_number:
+                    # Check uniqueness manually before saving
+                    if val and Profile.objects.filter(registration_number=val).exclude(pk=profile.pk).exists():
+                        return Response({'error': 'This LRN is already assigned to another student.'}, status=400)
+                    profile.registration_number = val
+                    profile.lrn = val
+
+            if 'date_of_birth' in request.data:
+                dob_val = request.data['date_of_birth']
+                if dob_val:
+                    from datetime import datetime
+                    try:
+                        if isinstance(dob_val, str):
+                            profile.date_of_birth = datetime.strptime(dob_val, '%Y-%m-%d').date()
+                    except (ValueError, TypeError):
+                        pass
+                else:
+                    profile.date_of_birth = None
+
+            profile.save()
+            return Response({'message': 'Profile updated successfully'})
+            
+        except Exception as e:
+            import traceback
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Error updating profile for user {target_user.username}: {str(e)}\n{traceback.format_exc()}")
+            return Response({'error': 'Failed to update profile. Please check your input.'}, status=500)
+
+
+class NotificationViewSet(viewsets.ModelViewSet):
+    serializer_class = NotificationSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['title', 'message']
+
+    def get_queryset(self):
+        from django.utils import timezone
+        import datetime
+        cutoff = timezone.now() - datetime.timedelta(days=30)
+        queryset = Notification.objects.filter(
+            recipient=self.request.user,
+            created_at__gte=cutoff
+        ).select_related('recipient')
+
+        notification_type = self.request.query_params.get('notification_type')
+        if notification_type:
+            queryset = queryset.filter(notification_type=notification_type)
+
+        is_read = self.request.query_params.get('is_read')
+        if is_read is not None:
+            queryset = queryset.filter(is_read=is_read.lower() == 'true')
+
+        return queryset.order_by('-created_at')
+
+    def perform_create(self, serializer):
+        # Only admins/system can create notifications via API
+        if self.request.user.role != 'admin':
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("Only admins can create notifications via API.")
+        serializer.save(recipient=self.request.user)
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance.delete()
+        unread_count = Notification.objects.filter(recipient=request.user, is_read=False).count()
+        return Response({'status': 'deleted', 'unread_count': unread_count})
+
+    @action(detail=True, methods=['post'], url_path='mark-read')
+    def mark_read(self, request, pk=None):
+        # Use update() to bypass post_save signal and avoid extra DB round-trip
+        updated = Notification.objects.filter(
+            pk=pk, recipient=request.user
+        ).update(is_read=True)
+        if not updated:
+            return Response({'error': 'Not found'}, status=status.HTTP_404_NOT_FOUND)
+        unread_count = Notification.objects.filter(recipient=request.user, is_read=False).count()
+        return Response({'status': 'marked as read', 'unread_count': unread_count})
+
+    @action(detail=False, methods=['post'], url_path='mark-all-read')
+    def mark_all_read(self, request):
+        Notification.objects.filter(recipient=request.user, is_read=False).update(is_read=True)
+        return Response({'status': 'All notifications marked as read', 'unread_count': 0})
+
+    @action(detail=False, methods=['post'], url_path='mark-selected-read')
+    def mark_selected_read(self, request):
+        """Mark a list of notification IDs as read."""
+        ids = request.data.get('ids', [])
+        if not ids:
+            return Response({'error': 'ids required'}, status=status.HTTP_400_BAD_REQUEST)
+        Notification.objects.filter(
+            pk__in=ids, recipient=request.user
+        ).update(is_read=True)
+        unread_count = Notification.objects.filter(recipient=request.user, is_read=False).count()
+        return Response({'status': f'{len(ids)} marked as read', 'unread_count': unread_count})
+
+    @action(detail=False, methods=['post', 'delete'], url_path='bulk-delete')
+    def bulk_delete(self, request):
+        """Delete a list of notification IDs."""
+        ids = request.data.get('ids', [])
+        if not ids:
+            return Response({'error': 'ids required'}, status=status.HTTP_400_BAD_REQUEST)
+        deleted_count, _ = Notification.objects.filter(
+            pk__in=ids, recipient=request.user
+        ).delete()
+        unread_count = Notification.objects.filter(recipient=request.user, is_read=False).count()
+        return Response({'status': f'{deleted_count} deleted', 'unread_count': unread_count})
+
+    @action(detail=False, methods=['get'], url_path='unread-count')
+    def unread_count(self, request):
+        count = Notification.objects.filter(recipient=request.user, is_read=False).count()
+        return Response({'unread_count': count})
+
 
 class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
     serializer_class = EnrollmentApplicationSerializer
@@ -1388,21 +3188,6 @@ class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
 
             serializer = self.get_serializer(data=data)
             serializer.is_valid(raise_exception=True)
-
-            app_data = serializer.validated_data
-
-            duplicate = EnrollmentApplication.objects.filter(
-                first_name__iexact=app_data.get('first_name', ''),
-                last_name__iexact=app_data.get('last_name', ''),
-                date_of_birth=app_data.get('date_of_birth'),
-                status__in=['pending', 'under_review', 'pending_requirements', 'approved', 'enrolled']
-            ).exists()
-            if duplicate:
-                return Response(
-                    {'error': 'A similar application already exists. Please check your details.'},
-                    status=status.HTTP_409_CONFLICT
-                )
-
             application = serializer.save()
 
             for field_name, url in uploaded_urls.items():
@@ -1435,7 +3220,7 @@ class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
                     recipient=admin,
                     notification_type='system',
                     title='New Enrollment Application',
-                    message=f'{application.full_name} submitted a Grade {application.grade_level} enrollment application ({application.enrollment_number}).',
+                    message=f'{application.full_name} submitted a Grade {application.grade_level} application ({application.enrollment_number}).',
                     link='/enrollment-management',
                 )
 
@@ -1446,7 +3231,7 @@ class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
             logger.error(f"Enrollment application error: {str(e)}\n{traceback.format_exc()}")
             if hasattr(e, 'detail'):
                 return Response({'error': e.detail}, status=status.HTTP_400_BAD_REQUEST)
-            return Response({'error': f'Failed to submit enrollment application: {str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': f'Failed to submit: {str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=False, methods=['get'], permission_classes=[AllowAny])
     def track(self, request):
@@ -1471,56 +3256,31 @@ class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
             'submitted_at': app.submitted_at,
             'assigned_classroom_name': app.assigned_classroom.name if app.assigned_classroom else None,
             'remarks': app.remarks,
-            'documents': [
-                {
-                    'id': doc.id,
-                    'document_type_display': doc.get_document_type_display(),
-                    'verification_status': doc.verification_status,
-                    'verification_status_display': doc.get_verification_status_display(),
-                }
-                for doc in app.documents.all()
-            ],
-            'status_history': [
-                {
-                    'id': h.id,
-                    'from_status_display': h.get_from_status_display() if h.from_status else None,
-                    'to_status_display': h.get_to_status_display(),
-                    'notes': h.notes,
-                    'created_at': h.created_at,
-                }
-                for h in app.status_history.all()
-            ],
+            'documents': [{'id': d.id, 'document_type_display': d.get_document_type_display(),
+                           'verification_status': d.verification_status,
+                           'verification_status_display': d.get_verification_status_display()} for d in app.documents.all()],
+            'status_history': [{'id': h.id, 'from_status_display': h.get_from_status_display() if h.from_status else None,
+                                'to_status_display': h.get_to_status_display(), 'notes': h.notes,
+                                'created_at': h.created_at} for h in app.status_history.all()],
         })
 
     @action(detail=True, methods=['post'], url_path='start-review')
     def start_review(self, request, pk=None):
-        """Move application from pending to under_review (start the review process)."""
         application = self.get_object()
         user = request.user
         remarks = request.data.get('remarks', '')
-
         if application.status not in ('under_review', 'pending_requirements', 'pending'):
             return Response({'error': f'Cannot approve application with status: {application.status}'}, status=400)
-
         from_status = application.status
         application.status = 'approved'
         application.remarks = remarks or application.remarks
         application.reviewed_by = user
         application.reviewed_at = timezone.now()
         application.save()
-
-        EnrollmentStatusHistory.objects.create(
-            application=application,
-            from_status=from_status,
-            to_status='approved',
-            changed_by=user,
-            notes=remarks or 'Application approved',
-        )
-
+        EnrollmentStatusHistory.objects.create(application=application, from_status=from_status,
+            to_status='approved', changed_by=user, notes=remarks or 'Application approved')
         self._safe_notify_user(application, 'Application Approved',
-                                'Congratulations! Your enrollment application has been approved.',
-                                '/track-enrollment')
-
+            'Your enrollment application has been approved.', '/track-enrollment')
         return Response({'status': 'Application approved'})
 
     @action(detail=True, methods=['post'])
@@ -1528,57 +3288,35 @@ class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
         application = self.get_object()
         user = request.user
         remarks = request.data.get('remarks', 'Provide reason for rejection.')
-
         from_status = application.status
         application.status = 'rejected'
         application.remarks = remarks
         application.reviewed_by = user
         application.reviewed_at = timezone.now()
         application.save()
-
-        EnrollmentStatusHistory.objects.create(
-            application=application,
-            from_status=from_status,
-            to_status='rejected',
-            changed_by=user,
-            notes=remarks,
-        )
-
+        EnrollmentStatusHistory.objects.create(application=application, from_status=from_status,
+            to_status='rejected', changed_by=user, notes=remarks)
         self._safe_notify_user(application, 'Application Rejected',
-                                f'Your application has been rejected. Reason: {remarks}',
-                                '/track-enrollment')
-
+            f'Your application has been rejected. Reason: {remarks}', '/track-enrollment')
         return Response({'status': 'Application rejected'})
 
     @action(detail=True, methods=['post'])
     def approve_application(self, request, pk=None):
-        """Move application from under_review to approved."""
         application = self.get_object()
         user = request.user
         remarks = request.data.get('remarks', '')
-
         if application.status not in ('under_review', 'pending_requirements', 'pending'):
-            return Response({'error': f'Cannot approve application with status: {application.status}'}, status=400)
-
+            return Response({'error': f'Cannot approve: status is {application.status}'}, status=400)
         from_status = application.status
         application.status = 'approved'
         application.remarks = remarks or application.remarks
         application.reviewed_by = user
         application.reviewed_at = timezone.now()
         application.save()
-
-        EnrollmentStatusHistory.objects.create(
-            application=application,
-            from_status=from_status,
-            to_status='approved',
-            changed_by=user,
-            notes=remarks or 'Application approved',
-        )
-
+        EnrollmentStatusHistory.objects.create(application=application, from_status=from_status,
+            to_status='approved', changed_by=user, notes=remarks or 'Application approved')
         self._safe_notify_user(application, 'Application Approved',
-                                'Congratulations! Your application has been approved.',
-                                '/track-enrollment')
-
+            'Your application has been approved.', '/track-enrollment')
         return Response({'status': 'Application approved'})
 
     @action(detail=True, methods=['post'])
@@ -1586,62 +3324,42 @@ class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
         try:
             application = self.get_object()
             user = request.user
-
             if application.status != 'approved':
                 return Response({'error': 'Application must be approved before enrollment'}, status=400)
-
             if application.enrolled_student:
-                return Response({'error': 'Student account already exists for this application'}, status=400)
+                return Response({'error': 'Student account already exists'}, status=400)
 
-            import re
-            import secrets
+            import re, secrets
             clean_first = re.sub(r'[^a-z]', '', (application.first_name or 'student').lower().split()[0])
             clean_last = re.sub(r'[^a-z]', '', (application.last_name or 'user').lower().split()[0])
-            if not clean_first:
-                clean_first = 'student'
-            if not clean_last:
-                clean_last = 'user'
+            if not clean_first: clean_first = 'student'
+            if not clean_last: clean_last = 'user'
             username_base = f"{clean_first}.{clean_last}"
             username = username_base
             counter = 1
             while User.objects.filter(username=username).exists():
-                username = f"{username_base}{counter}"
-                counter += 1
+                username = f"{username_base}{counter}"; counter += 1
 
             temp_password = secrets.token_urlsafe(12)
-            student_user = User(
-                username=username,
-                email=application.email if application.email else None,
-                first_name=application.first_name,
-                last_name=application.last_name,
-                role='student',
-                is_verified=True,
-                is_approved=True,
-                account_status='active',
-            )
+            student_user = User(username=username, email=application.email or None,
+                first_name=application.first_name, last_name=application.last_name,
+                role='student', is_verified=True, is_approved=True, account_status='active')
             student_user.set_password(temp_password)
             student_user.save()
 
             lrn = application.lrn or ''
             profile, _ = Profile.objects.get_or_create(user=student_user)
-            profile.lrn = lrn
-            profile.grade_level = application.grade_level
+            profile.lrn = lrn; profile.grade_level = application.grade_level
             profile.phone_number = application.phone_number or ''
             profile.address = f"{application.street_address}, {application.barangay}, {application.city_municipality}, {application.province}"
-            profile.date_of_birth = application.date_of_birth
-            profile.sex = application.sex
+            profile.date_of_birth = application.date_of_birth; profile.sex = application.sex
             profile.middle_name = application.middle_name or ''
-            profile.father_name = application.father_name or ''
-            profile.mother_name = application.mother_name or ''
+            profile.father_name = application.father_name or ''; profile.mother_name = application.mother_name or ''
             profile.nationality = application.nationality or 'Filipino'
-            if lrn:
-                profile.registration_number = lrn
+            if lrn: profile.registration_number = lrn
             profile.save()
 
-            parent_email = request.data.get('parent_email', '')
-            if not parent_email:
-                parent_email = application.mother_email or application.father_email or application.guardian_email
-
+            parent_email = request.data.get('parent_email', '') or application.mother_email or application.father_email or application.guardian_email
             if parent_email:
                 try:
                     parent_user = User.objects.filter(email=parent_email).first()
@@ -1650,108 +3368,61 @@ class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
                         parent_username = f"parent.{parent_clean}.{secrets.token_hex(2)}"
                         while User.objects.filter(username=parent_username).exists():
                             parent_username = f"parent.{parent_clean}.{secrets.token_hex(2)}"
-
                         parent_first = 'Parent'
                         if application.father_name and application.father_name.strip():
                             parent_first = application.father_name.strip().split()[0]
                         elif application.mother_name and application.mother_name.strip():
                             parent_first = application.mother_name.strip().split()[0]
-
-                        parent_user = User(
-                            username=parent_username,
-                            email=parent_email,
-                            first_name=parent_first,
-                            last_name=application.last_name,
-                            role='parent',
-                            is_verified=True,
-                            is_approved=True,
-                            must_change_password=True,
-                            account_status='active',
-                        )
-                        parent_user.set_password(secrets.token_urlsafe(12))
-                        parent_user.save()
+                        parent_user = User(username=parent_username, email=parent_email,
+                            first_name=parent_first, last_name=application.last_name, role='parent',
+                            is_verified=True, is_approved=True, must_change_password=True, account_status='active')
+                        parent_user.set_password(secrets.token_urlsafe(12)); parent_user.save()
                         pp, _ = Profile.objects.get_or_create(user=parent_user)
                         pp.phone_number = application.father_contact or application.mother_contact or application.guardian_contact or ''
                         pp.save()
-
                         self._safe_notify_user(parent_user, 'Parent Account Created',
-                                          f'Parent account created. Username: {parent_username}', '/login')
-
+                            f'Parent account created. Username: {parent_username}', '/login')
                     parent_profile_obj = getattr(parent_user, 'profile', None)
                     if parent_profile_obj:
-                        parent_profile_obj.linked_students.add(student_user)
-                        parent_profile_obj.save()
-
+                        parent_profile_obj.linked_students.add(student_user); parent_profile_obj.save()
                     from .models import ParentLink
-                    ParentLink.objects.get_or_create(
-                        parent=parent_user,
-                        student=student_user,
-                        defaults={
-                            'application': application,
-                            'relationship': application.guardian_relationship or 'parent',
-                            'is_primary': True,
-                        }
-                    )
-
+                    ParentLink.objects.get_or_create(parent=parent_user, student=student_user,
+                        defaults={'application': application, 'relationship': application.guardian_relationship or 'parent', 'is_primary': True})
                     application.linked_parent = parent_user
                     application.save(update_fields=['linked_parent'])
-
                     self._safe_notify_user(parent_user, 'Child Enrolled',
-                                      f'Your child {application.full_name} has been enrolled.', '/parent-dashboard')
-                except Exception as parent_err:
-                    logger.error(f"Parent linking error: {parent_err}")
+                        f'Your child {application.full_name} has been enrolled.', '/parent-dashboard')
+                except Exception as pe:
+                    logger.error(f"Parent linking error: {pe}")
 
             classroom_id = request.data.get('classroom_id')
             if not classroom_id:
-                try:
-                    classroom_id = self._auto_assign_section(application)
-                except Exception as auto_err:
-                    logger.error(f"Auto-assign error: {auto_err}")
+                try: classroom_id = self._auto_assign_section(application)
+                except Exception as ae: logger.error(f"Auto-assign error: {ae}")
 
             classroom_name = ''
             if classroom_id:
                 try:
                     classroom = Classroom.objects.get(id=classroom_id)
-                    StudentClassEnrollment.objects.get_or_create(
-                        student=student_user,
-                        classroom=classroom,
-                    )
-                    application.assigned_classroom = classroom
-                    classroom_name = classroom.name
-
+                    StudentClassEnrollment.objects.get_or_create(student=student_user, classroom=classroom)
+                    application.assigned_classroom = classroom; classroom_name = classroom.name
                     self._safe_notify_user(student_user, 'Section Assigned',
-                                      f'You have been assigned to {classroom.name}.', '/my-classes')
-                except Exception as class_err:
-                    logger.error(f"Classroom assignment error: {class_err}")
+                        f'You have been assigned to {classroom.name}.', '/my-classes')
+                except Exception as ce: logger.error(f"Classroom error: {ce}")
 
             from_status = application.status
             application.enrolled_student = student_user
             application.status = 'enrolled'
             application.remarks = f'Enrolled on {timezone.now().strftime("%Y-%m-%d %H:%M")}'
-            application.reviewed_by = user
-            application.reviewed_at = timezone.now()
+            application.reviewed_by = user; application.reviewed_at = timezone.now()
             application.save()
-
-            EnrollmentStatusHistory.objects.create(
-                application=application,
-                from_status=from_status,
-                to_status='enrolled',
-                changed_by=user,
-                notes=f'Student account created. Username: {username}',
-            )
-
+            EnrollmentStatusHistory.objects.create(application=application, from_status=from_status,
+                to_status='enrolled', changed_by=user, notes=f'Student account created. Username: {username}')
             self._safe_notify_user(student_user, 'Enrollment Complete',
-                              f'Welcome! Your enrollment is complete. Username: {username}', '/dashboard')
-
-            return Response({
-                'status': 'Enrollment completed',
-                'student_id': student_user.id,
-                'username': username,
-                'temp_password': temp_password,
-                'assigned_classroom': classroom_id,
-                'classroom_name': classroom_name,
-            })
-
+                f'Welcome! Enrollment complete. Username: {username}', '/dashboard')
+            return Response({'status': 'Enrollment completed', 'student_id': student_user.id,
+                'username': username, 'temp_password': temp_password,
+                'assigned_classroom': classroom_id, 'classroom_name': classroom_name})
         except Exception as e:
             import traceback
             logger.error(f"enroll_student error: {str(e)}\n{traceback.format_exc()}")
@@ -1759,13 +3430,9 @@ class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
 
     def _auto_assign_section(self, application):
         from django.db.models import Count, F
-        available = Classroom.objects.filter(
-            grade_level=application.grade_level,
-        ).annotate(
-            current_count=Count('enrollments')
-        ).filter(
-            current_count__lt=F('capacity')
-        ).order_by('current_count').first()
+        available = Classroom.objects.filter(grade_level=application.grade_level
+        ).annotate(current_count=Count('enrollments')
+        ).filter(current_count__lt=F('capacity')).order_by('current_count').first()
         return available.id if available else None
 
     @action(detail=True, methods=['post'])
@@ -1780,9 +3447,8 @@ class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
             capacity = classroom.capacity or 40
             if current_count >= capacity:
                 return Response({'error': f'{classroom.name} is at full capacity ({current_count}/{capacity})'}, status=400)
-            application.assigned_classroom = classroom
-            application.save()
-            return Response({'status': f'Section set to {classroom.name}', 'current_count': current_count, 'capacity': capacity})
+            application.assigned_classroom = classroom; application.save()
+            return Response({'status': f'Section set to {classroom.name}'})
         except Classroom.DoesNotExist:
             return Response({'error': 'Classroom not found'}, status=404)
 
@@ -1808,9 +3474,7 @@ class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
             return Response({'error': 'document_id is required'}, status=400)
         try:
             doc = EnrollmentDocument.objects.get(id=doc_id, application_id=pk)
-            doc.verification_status = 'rejected'
-            doc.admin_notes = notes
-            doc.save()
+            doc.verification_status = 'rejected'; doc.admin_notes = notes; doc.save()
             return Response({'status': 'Document rejected', 'notes': notes})
         except EnrollmentDocument.DoesNotExist:
             return Response({'error': 'Document not found'}, status=404)
@@ -1821,96 +3485,58 @@ class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
         user = request.user
         message = request.data.get('message', 'Please submit the missing requirements.')
         doc_types = request.data.get('document_types', [])
-
         from_status = application.status
-        application.status = 'pending_requirements'
-        application.remarks = message
-        application.save()
-
-        EnrollmentStatusHistory.objects.create(
-            application=application,
-            from_status=from_status,
-            to_status='pending_requirements',
-            changed_by=user,
-            notes=message,
-        )
-
+        application.status = 'pending_requirements'; application.remarks = message; application.save()
+        EnrollmentStatusHistory.objects.create(application=application, from_status=from_status,
+            to_status='pending_requirements', changed_by=user, notes=message)
         if doc_types:
-            EnrollmentDocument.objects.filter(
-                application=application,
-                document_type__in=doc_types,
-            ).update(verification_status='missing')
-
-        self._safe_notify_user(application, 'Additional Requirements Needed',
-                                message, '/track-enrollment')
-
+            EnrollmentDocument.objects.filter(application=application, document_type__in=doc_types).update(verification_status='missing')
+        self._safe_notify_user(application, 'Additional Requirements Needed', message, '/track-enrollment')
         return Response({'status': 'Requirements requested', 'message': message})
 
     @action(detail=True, methods=['post'])
     def bulk_action(self, request, pk=None):
         action_type = request.data.get('action')
-        if action_type == 'start_review':
-            return self.start_review(request, pk)
-        elif action_type == 'reject':
-            return self.reject(request, pk)
-        elif action_type == 'enroll':
-            return self.enroll_student(request, pk)
+        if action_type == 'start_review': return self.start_review(request, pk)
+        elif action_type == 'reject': return self.reject(request, pk)
+        elif action_type == 'enroll': return self.enroll_student(request, pk)
         return Response({'error': 'Unknown action'}, status=400)
 
     @action(detail=True, methods=['delete'])
     def delete_application(self, request, pk=None):
-        """Delete an enrollment application (admin only)."""
         application = self.get_object()
         if application.enrolled_student:
-            return Response({'error': 'Cannot delete: student account already exists'}, status=400)
+            return Response({'error': 'Cannot delete: student account exists'}, status=400)
         enrollment_number = application.enrollment_number
         application.delete()
-        return Response({'status': f'Application {enrollment_number} deleted'})
+        return Response({'status': f'{enrollment_number} deleted'})
 
     @action(detail=False, methods=['get'])
     def analytics(self, request):
         from django.db.models.functions import TruncDate
-        if request.user.role == 'admin' or request.user.is_staff:
-            qs = EnrollmentApplication.objects.all()
-        else:
-            qs = self.get_queryset()
+        qs = EnrollmentApplication.objects.all() if (request.user.role == 'admin' or request.user.is_staff) else self.get_queryset()
         try:
             status_counts = qs.values('status').annotate(count=Count('id')).order_by('status')
             grade_level_dist = qs.values('grade_level').annotate(count=Count('id')).order_by('grade_level')
-            daily_counts = (
-                qs.annotate(creation_date=TruncDate('submitted_at'))
-                .values('creation_date')
-                .annotate(count=Count('id'))
-                .order_by('-creation_date')[:30]
-            )
+            daily_counts = qs.annotate(creation_date=TruncDate('submitted_at')).values('creation_date').annotate(count=Count('id')).order_by('-creation_date')[:30]
             enrollment_type_dist = qs.values('enrollment_type').annotate(count=Count('id'))
-            total = qs.count()
-            approved = qs.filter(status='approved').count()
-            rejected = qs.filter(status='rejected').count()
-            enrolled = qs.filter(status='enrolled').count()
+            total = qs.count(); approved = qs.filter(status='approved').count()
+            rejected = qs.filter(status='rejected').count(); enrolled = qs.filter(status='enrolled').count()
             pending = qs.filter(status='pending').count()
-            approval_rate = round((approved + enrolled) / total * 100, 1) if total else 0
-            rejection_rate = round(rejected / total * 100, 1) if total else 0
             return Response({
-                'total': total, 'pending': pending, 'approved': approved,
-                'rejected': rejected, 'enrolled': enrolled,
-                'approval_rate': approval_rate, 'rejection_rate': rejection_rate,
+                'total': total, 'pending': pending, 'approved': approved, 'rejected': rejected, 'enrolled': enrolled,
+                'approval_rate': round((approved + enrolled) / total * 100, 1) if total else 0,
+                'rejection_rate': round(rejected / total * 100, 1) if total else 0,
                 'status_breakdown': {s['status']: s['count'] for s in status_counts},
                 'grade_level_breakdown': {g['grade_level']: g['count'] for g in grade_level_dist},
-                'daily_applications': [
-                    {'date': d['creation_date'].isoformat() if d['creation_date'] else None, 'count': d['count']}
-                    for d in daily_counts
-                ],
+                'daily_applications': [{'date': d['creation_date'].isoformat() if d['creation_date'] else None, 'count': d['count']} for d in daily_counts],
                 'enrollment_type_breakdown': {e['enrollment_type']: e['count'] for e in enrollment_type_dist},
             })
         except Exception as e:
             logger.error(f"Analytics error: {e}", exc_info=True)
-            return Response({
-                'total': qs.count(), 'pending': 0, 'approved': 0, 'rejected': 0, 'enrolled': 0,
-                'approval_rate': 0, 'rejection_rate': 0,
-                'status_breakdown': {}, 'grade_level_breakdown': {},
-                'daily_applications': [], 'enrollment_type_breakdown': {},
-            })
+            return Response({'total': qs.count(), 'pending': 0, 'approved': 0, 'rejected': 0, 'enrolled': 0,
+                'approval_rate': 0, 'rejection_rate': 0, 'status_breakdown': {}, 'grade_level_breakdown': {},
+                'daily_applications': [], 'enrollment_type_breakdown': {}})
 
     @action(detail=False, methods=['get'])
     def export_csv(self, request):
@@ -1918,83 +3544,62 @@ class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
         from django.http import HttpResponse
         qs = self.get_queryset()
         status_filter = request.query_params.get('status', '')
-        if status_filter:
-            qs = qs.filter(status=status_filter)
+        if status_filter: qs = qs.filter(status=status_filter)
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = f'attachment; filename="enrollment_applications_{timezone.now().strftime("%Y%m%d")}.csv"'
         writer = csv_mod.writer(response)
         writer.writerow(['Enrollment #', 'Last Name', 'First Name', 'Middle Name', 'Sex', 'Grade Level', 'Strand', 'Status', 'Email', 'Phone', 'Submitted'])
         for app in qs:
-            writer.writerow([
-                app.enrollment_number, app.last_name, app.first_name, app.middle_name,
-                app.get_sex_display(), app.grade_level, app.strand or '',
-                app.get_status_display(), app.email, app.phone_number,
-                app.submitted_at.strftime('%Y-%m-%d'),
-            ])
+            writer.writerow([app.enrollment_number, app.last_name, app.first_name, app.middle_name,
+                app.get_sex_display(), app.grade_level, app.strand or '', app.get_status_display(),
+                app.email, app.phone_number, app.submitted_at.strftime('%Y-%m-%d')])
         return response
 
     @action(detail=False, methods=['get'], url_path='export-form-pdf')
     def export_form_pdf(self, request):
         app_id = request.query_params.get('id')
-        if not app_id:
-            return Response({'error': 'id parameter is required'}, status=400)
-        try:
-            application = self.get_queryset().get(id=app_id)
-        except EnrollmentApplication.DoesNotExist:
-            return Response({'error': 'Application not found'}, status=404)
+        if not app_id: return Response({'error': 'id required'}, status=400)
+        try: application = self.get_queryset().get(id=app_id)
+        except EnrollmentApplication.DoesNotExist: return Response({'error': 'Not found'}, status=404)
         from .pdf_export import enrollment_form_response
         return enrollment_form_response(application)
 
     @action(detail=False, methods=['get'], url_path='export-summary-pdf')
     def export_summary_pdf(self, request):
-        qs = self.get_queryset()
-        filters = {}
+        qs = self.get_queryset(); filters = {}
         for param, field in [('status', 'status'), ('grade_level', 'grade_level'), ('school_year', 'school_year')]:
             val = request.query_params.get(param)
-            if val:
-                qs = qs.filter(**{field: val})
-                filters[param] = val
+            if val: qs = qs.filter(**{field: val}); filters[param] = val
         from .pdf_export import enrollment_summary_response
         return enrollment_summary_response(qs[:500], filters)
 
     @action(detail=False, methods=['post'], url_path='update-classroom-capacity')
     def update_classroom_capacity(self, request):
-        if request.user.role != 'admin':
-            return Response({'error': 'Unauthorized'}, status=403)
-        classroom_id = request.data.get('classroom_id')
-        capacity = request.data.get('capacity')
-        if not classroom_id or capacity is None:
-            return Response({'error': 'classroom_id and capacity are required'}, status=400)
-        try:
-            capacity = int(capacity)
-            if capacity < 1:
-                return Response({'error': 'Capacity must be at least 1'}, status=400)
-        except (ValueError, TypeError):
-            return Response({'error': 'Invalid capacity value'}, status=400)
+        if request.user.role != 'admin': return Response({'error': 'Unauthorized'}, status=403)
+        classroom_id = request.data.get('classroom_id'); capacity = request.data.get('capacity')
+        if not classroom_id or capacity is None: return Response({'error': 'classroom_id and capacity required'}, status=400)
+        try: capacity = int(capacity)
+        except (ValueError, TypeError): return Response({'error': 'Invalid capacity'}, status=400)
+        if capacity < 1: return Response({'error': 'Capacity must be >= 1'}, status=400)
         try:
             classroom = Classroom.objects.get(id=classroom_id)
-            classroom.capacity = capacity
-            classroom.save(update_fields=['capacity'])
+            classroom.capacity = capacity; classroom.save(update_fields=['capacity'])
             current_count = StudentClassEnrollment.objects.filter(classroom=classroom).count()
-            return Response({'status': 'Capacity updated', 'classroom': classroom.name, 'capacity': capacity, 'current_count': current_count})
-        except Classroom.DoesNotExist:
-            return Response({'error': 'Classroom not found'}, status=404)
+            return Response({'status': 'Updated', 'classroom': classroom.name, 'capacity': capacity, 'current_count': current_count})
+        except Classroom.DoesNotExist: return Response({'error': 'Not found'}, status=404)
 
     def _send_notification(self, application, title, message, link=''):
         self._safe_notify_user(application, title, message, link)
 
     def _safe_notify_user(self, recipient, title, message, link=''):
         try:
-            if not recipient or not hasattr(recipient, 'id'):
-                return
-            if hasattr(recipient, 'email'):
-                user = User.objects.filter(email=recipient.email).first() if recipient.email else None
-                if user:
-                    Notification.objects.create(recipient=user, notification_type='system', title=title, message=message, link=link)
+            if not recipient or not hasattr(recipient, 'id'): return
+            if hasattr(recipient, 'email') and recipient.email:
+                user = User.objects.filter(email=recipient.email).first()
+                if user: Notification.objects.create(recipient=user, notification_type='system', title=title, message=message, link=link)
             elif hasattr(recipient, 'username'):
                 Notification.objects.create(recipient=recipient, notification_type='system', title=title, message=message, link=link)
-        except Exception as e:
-            logger.error(f"Notification error: {e}")
+        except Exception as e: logger.error(f"Notification error: {e}")
 
 
 class WebsiteContentViewSet(viewsets.ModelViewSet):
