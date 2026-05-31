@@ -286,8 +286,9 @@ const StudentManagement = () => {
 
   const handleAssignSection = async (studentId, currentClassroomName, gradeLevel) => {
     const hasSection = currentClassroomName && currentClassroomName !== 'No Section';
-    const filtered = (hasSection && gradeLevel)
-      ? classrooms.filter(c => String(c.grade_level) === String(gradeLevel))
+    const normalizedGrade = gradeLevel ? (/^\d+$/.test(gradeLevel) ? `Grade ${gradeLevel}` : gradeLevel) : '';
+    const filtered = (hasSection && normalizedGrade)
+      ? classrooms.filter(c => String(c.grade_level) === String(normalizedGrade))
       : classrooms;
 
     const { value } = await Swal.fire({
@@ -531,22 +532,28 @@ const StudentManagement = () => {
   };
 
   const organizedData = useMemo(() => {
+    const normalizeGrade = (g) => {
+      if (!g || g === 'Unassigned') return 'Unassigned';
+      if (/^\d+$/.test(g)) return `Grade ${g}`;
+      return g;
+    };
+
     const filtered = students.filter(s => {
       const search = searchQuery.toLowerCase();
       const fullName = `${s.first_name || ''} ${s.last_name || ''}`.toLowerCase();
       const lrn = (s.profile?.registration_number || s.username || '').toLowerCase();
       const email = (s.email || '').toLowerCase();
       const matchesSearch = !search || email.includes(search) || fullName.includes(search) || lrn.includes(search);
-      const matchesGrade = !gradeFilter || s.profile?.grade_level === gradeFilter;
+      const matchesGrade = !gradeFilter || normalizeGrade(s.profile?.grade_level) === gradeFilter;
       const matchesStatus = !statusFilter || s.account_status === statusFilter;
       return matchesSearch && matchesGrade && matchesStatus;
     });
 
     // Group by Grade -> Classroom
     const groups = {};
-    
+
     filtered.forEach(s => {
-      let grade = s.profile?.grade_level || 'Unassigned';
+      let grade = normalizeGrade(s.profile?.grade_level);
       let classroom = s.profile?.classroom_name || 'No Classroom';
       
       // For teachers, force students into their advisory classroom grouping
@@ -645,7 +652,7 @@ const StudentManagement = () => {
         <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{student.profile?.sex || '—'}</span>
       </td>
       <td className="hidden md:table-cell px-6 py-4">
-        <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded-md">{student.profile?.grade_level || '—'}</span>
+        <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded-md">{(/^\d+$/.test(student.profile?.grade_level) ? `Grade ${student.profile.grade_level}` : student.profile?.grade_level) || '—'}</span>
       </td>
       <td className="hidden md:table-cell px-6 py-4">
         <span className={`text-[10px] font-bold px-2 py-1 rounded-md ${student.profile?.classroom_name ? 'text-emerald-600 bg-emerald-50' : 'text-amber-600 bg-amber-50'}`}>{student.profile?.classroom_name || 'No Section'}</span>
