@@ -163,27 +163,26 @@ const EnrollmentManagement = () => {
     }
   };
 
-  const assignSection = async (id) => {
-    const classroomOptions = classrooms.reduce((acc, c) => {
-      const count = c.student_count || 0;
-      acc[c.id] = `${c.name} (${count}/${c.capacity || 40})`;
-      return acc;
-    }, {});
+  const assignSection = async (id, gradeLevel) => {
+    const filtered = gradeLevel
+      ? classrooms.filter(c => String(c.grade_level) === String(gradeLevel))
+      : classrooms;
 
     const { value } = await Swal.fire({
       title: 'Assign Section',
       html: `
         <div class="text-left">
-          <p class="text-xs text-slate-500 mb-3">Select a section. Shows enrolled students / capacity.</p>
+          <p class="text-xs text-slate-500 mb-3">Select a section${gradeLevel ? ` for Grade ${gradeLevel}` : ''}. Shows enrolled students / capacity.</p>
           <div id="swal-select" class="swal2-select" style="width:100%;padding:8px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px;">
             <option value="">-- Select Section --</option>
-            ${classrooms.map(c => {
+            ${filtered.map(c => {
               const count = c.student_count || 0;
               const cap = c.capacity || 40;
               const full = count >= cap;
               return `<option value="${c.id}" ${full ? 'disabled' : ''}>${c.name} (${count}/${cap})${full ? ' - FULL' : ''}</option>`;
             }).join('')}
           </div>
+          ${filtered.length === 0 ? '<p class="text-xs text-amber-600 mt-2">No sections available for this grade level.</p>' : ''}
         </div>
       `,
       showCancelButton: true,
@@ -418,6 +417,11 @@ const EnrollmentManagement = () => {
                           )}
                         </>
                       )}
+                      {(app.status === 'pending' || app.status === 'under_review' || app.status === 'approved') && (
+                        <button onClick={() => assignSection(app.id, app.grade_level)} className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg" title="Set Section">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+                        </button>
+                      )}
                       {app.status === 'approved' && (
                         <button onClick={() => { setEnrollApp(app); setShowEnrollModal(true); }} className="p-1.5 text-slate-400 hover:text-violet-600 hover:bg-violet-50 rounded-lg" title="Enroll">
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" /></svg>
@@ -449,7 +453,7 @@ const EnrollmentManagement = () => {
                           )}
                           <button onClick={() => { promptRequestDocs(app.id); setActiveMenu(null); }} className="w-full text-left px-3 py-2 text-[10px] font-bold text-amber-600 hover:bg-amber-50 flex items-center gap-2">Request Docs</button>
                           {(app.status === 'pending' || app.status === 'under_review') && (
-                            <button onClick={() => { assignSection(app.id); setActiveMenu(null); }} className="w-full text-left px-3 py-2 text-[10px] font-bold text-blue-600 hover:bg-blue-50 flex items-center gap-2">Set Section</button>
+                            <button onClick={() => { assignSection(app.id, app.grade_level); setActiveMenu(null); }} className="w-full text-left px-3 py-2 text-[10px] font-bold text-blue-600 hover:bg-blue-50 flex items-center gap-2">Set Section</button>
                           )}
                         </div>
                       )}
@@ -577,7 +581,7 @@ const EnrollmentManagement = () => {
             <div className="p-4 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between gap-2">
               <div className="flex gap-2">
                 <button onClick={() => promptRequestDocs(selected.id)} className="px-4 py-2 rounded-lg border border-amber-200 bg-amber-50 text-amber-700 text-xs font-bold hover:bg-amber-100">Request Docs</button>
-                <button onClick={() => assignSection(selected.id)} className="px-4 py-2 rounded-lg border border-blue-200 bg-blue-50 text-blue-700 text-xs font-bold hover:bg-blue-100">Set Section</button>
+                <button onClick={() => assignSection(selected.id, selected.grade_level)} className="px-4 py-2 rounded-lg border border-blue-200 bg-blue-50 text-blue-700 text-xs font-bold hover:bg-blue-100">Set Section</button>
                 <a href={`/api/enrollment-applications/export-form-pdf/?id=${selected.id}`} target="_blank" rel="noreferrer"
                   className="px-4 py-2 rounded-lg border border-slate-200 bg-white text-slate-700 text-xs font-bold hover:bg-slate-50">Print Form</a>
               </div>

@@ -284,21 +284,26 @@ const StudentManagement = () => {
     }
   };
 
-  const handleAssignSection = async (studentId, currentClassroomName) => {
+  const handleAssignSection = async (studentId, currentClassroomName, gradeLevel) => {
+    const filtered = gradeLevel
+      ? classrooms.filter(c => String(c.grade_level) === String(gradeLevel))
+      : classrooms;
+
     const { value } = await Swal.fire({
       title: 'Assign Section',
       html: `
         <div class="text-left">
-          <p class="text-xs text-slate-500 mb-3">Current: <strong>${currentClassroomName || 'No Section'}</strong></p>
+          <p class="text-xs text-slate-500 mb-3">Current: <strong>${currentClassroomName || 'No Section'}</strong>${gradeLevel ? ` | Grade: <strong>${gradeLevel}</strong>` : ''}</p>
           <div id="swal-select" class="swal2-select" style="width:100%;padding:8px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px;">
             <option value="">-- Select Section --</option>
-            ${classrooms.map(c => {
+            ${filtered.map(c => {
               const count = c.student_count || 0;
               const cap = c.capacity || 40;
               const full = count >= cap;
               return `<option value="${c.id}" ${full ? 'disabled' : ''}>${c.name} (${count}/${cap})${full ? ' - FULL' : ''}</option>`;
             }).join('')}
           </div>
+          ${filtered.length === 0 ? '<p class="text-xs text-amber-600 mt-2">No sections available for this grade level.</p>' : ''}
         </div>
       `,
       showCancelButton: true,
@@ -688,7 +693,7 @@ const StudentManagement = () => {
           </button>
           {(user?.role === 'admin' || user?.role === 'teacher') && (
             <button 
-              onClick={() => handleAssignSection(student.id, student.profile?.classroom_name)}
+              onClick={() => handleAssignSection(student.id, student.profile?.classroom_name, student.profile?.grade_level)}
               className="p-1 md:p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
               title="Set Section"
             >
