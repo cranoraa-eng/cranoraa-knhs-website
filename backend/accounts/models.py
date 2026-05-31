@@ -1,5 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.utils import timezone
 
 
 class User(AbstractUser):
@@ -953,16 +954,19 @@ class EnrollmentApplication(models.Model):
         super().save(*args, **kwargs)
     
     def _generate_enrollment_number(self):
-        from django.utils import timezone
+        from django.db import transaction
         year = timezone.now().year
         prefix = f"ENR-{year}-"
-        last = EnrollmentApplication.objects.filter(enrollment_number__startswith=prefix).order_by('id').last()
-        if last and last.enrollment_number:
-            parts = last.enrollment_number.split('-')
-            seq = int(parts[-1]) + 1
-        else:
-            seq = 1
-        return f"{prefix}{seq:06d}"
+        with transaction.atomic():
+            last = EnrollmentApplication.objects.select_for_update().filter(
+                enrollment_number__startswith=prefix
+            ).order_by('id').last()
+            if last and last.enrollment_number:
+                parts = last.enrollment_number.split('-')
+                seq = int(parts[-1]) + 1
+            else:
+                seq = 1
+            return f"{prefix}{seq:06d}"
     
     @property
     def age(self):

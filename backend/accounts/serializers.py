@@ -463,7 +463,9 @@ class EnrollmentStatusHistorySerializer(serializers.ModelSerializer):
         read_only_fields = ['application', 'changed_by', 'created_at']
     
     def get_changed_by_name(self, obj):
-        return obj.changed_by.get_full_name() or obj.changed_by.username if obj.changed_by else None
+        if not obj.changed_by:
+            return None
+        return obj.changed_by.get_full_name() or obj.changed_by.username
     
     def get_from_status_display(self, obj):
         return obj.get_from_status_display() if obj.from_status else None

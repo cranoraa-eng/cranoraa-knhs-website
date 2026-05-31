@@ -72,7 +72,7 @@ const EnrollmentManagement = () => {
     setSelected(app);
     if (app.status === 'pending') {
       try {
-        await api.post(`/enrollment-applications/${app.id}/approve/`, { remarks: '' });
+        await api.post(`/enrollment-applications/${app.id}/start-review/`, { remarks: '' });
         fetchAll();
       } catch {}
     }
@@ -244,7 +244,7 @@ const EnrollmentManagement = () => {
     if (!confirmed.isConfirmed) return;
     for (const id of selectedIds) {
       if (action === 'approve') {
-        await handleAction(id, 'approve', { remarks: '' });
+        await handleAction(id, 'start_review', { remarks: '' });
       } else if (action === 'reject') {
         await handleAction(id, 'reject', { remarks: 'Bulk rejected by admin' });
       }
@@ -449,7 +449,7 @@ const EnrollmentManagement = () => {
                 <span className={`px-3 py-1 text-xs font-bold uppercase rounded-lg border ${(STATUS_CONFIG[selected.status] || STATUS_CONFIG.pending).color}`}>
                   {(STATUS_CONFIG[selected.status] || STATUS_CONFIG.pending).label}
                 </span>
-                {selected.assigned_classroom && <span className="text-xs font-bold text-violet-600">Section: {selected.assigned_classroom}</span>}
+                {selected.assigned_classroom_name && <span className="text-xs font-bold text-violet-600">Section: {selected.assigned_classroom_name}</span>}
               </div>
 
               <div className="grid grid-cols-2 gap-4 text-sm">
