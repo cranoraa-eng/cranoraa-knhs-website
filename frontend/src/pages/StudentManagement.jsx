@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿import { useState, useEffect, useMemo } from 'react';
+﻿import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../utils/api';
 import { getUser } from '../utils/auth';
@@ -15,6 +15,8 @@ const StudentManagement = () => {
   const [advisoryClass, setAdvisoryClass] = useState(null);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [gradeFilter, setGradeFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -481,11 +483,10 @@ const StudentManagement = () => {
       const fullName = `${s.first_name || ''} ${s.last_name || ''}`.toLowerCase();
       const lrn = (s.profile?.registration_number || s.username || '').toLowerCase();
       const email = (s.email || '').toLowerCase();
-      return (
-        email.includes(search) ||
-        fullName.includes(search) ||
-        lrn.includes(search)
-      );
+      const matchesSearch = !search || email.includes(search) || fullName.includes(search) || lrn.includes(search);
+      const matchesGrade = !gradeFilter || s.profile?.grade_level === gradeFilter;
+      const matchesStatus = !statusFilter || s.account_status === statusFilter;
+      return matchesSearch && matchesGrade && matchesStatus;
     });
 
     // Group by Grade -> Classroom
@@ -538,7 +539,7 @@ const StudentManagement = () => {
         };
       })
     }));
-  }, [students, searchQuery]);
+  }, [students, searchQuery, gradeFilter, statusFilter]);
 
   if (loading) {
     return (
@@ -589,6 +590,12 @@ const StudentManagement = () => {
       </td>
       <td className="hidden md:table-cell px-6 py-4">
         <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{student.profile?.sex || '—'}</span>
+      </td>
+      <td className="hidden md:table-cell px-6 py-4">
+        <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded-md">{student.profile?.grade_level || '—'}</span>
+      </td>
+      <td className="hidden md:table-cell px-6 py-4">
+        <span className={`text-[10px] font-bold px-2 py-1 rounded-md ${student.profile?.classroom_name ? 'text-emerald-600 bg-emerald-50' : 'text-amber-600 bg-amber-50'}`}>{student.profile?.classroom_name || 'No Section'}</span>
       </td>
       <td className="hidden md:table-cell px-6 py-4">
         <p className="text-[10px] font-bold text-slate-500 truncate max-w-[150px] lowercase italic">{student.email || '—'}</p>
@@ -783,19 +790,31 @@ const StudentManagement = () => {
       </div>
 
       {/* Search Bar */}
-      <div className="bg-white p-1.5 md:p-4 rounded-xl md:rounded-2xl border border-slate-100 shadow-sm flex flex-col md:flex-row gap-4 items-center">
+      <div className="bg-white p-1.5 md:p-4 rounded-xl md:rounded-2xl border border-slate-100 shadow-sm flex flex-col md:flex-row gap-3 items-center">
         <div className="relative group flex-1 w-full">
           <svg className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 md:w-5 md:h-5 text-slate-400 group-focus-within:text-violet-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
           <input 
             type="text" 
-            placeholder="Search name or LRN..."
+            placeholder="Search name, email, or LRN..."
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
-            className="w-full pl-9 md:pl-12 pr-3 md:pr-4 py-1.5 md:py-3 bg-slate-50 border border-slate-200 rounded-lg md:rounded-xl focus:outline-none focus:ring-1 focus:ring-violet-500 focus:bg-white text-[10px] md:text-sm font-bold transition-all shadow-inner uppercase tracking-wider" 
+            className="w-full pl-9 md:pl-12 pr-3 md:pr-4 py-1.5 md:py-3 bg-slate-50 border border-slate-200 rounded-lg md:rounded-xl focus:outline-none focus:ring-1 focus:ring-violet-500 focus:bg-white text-[10px] md:text-sm font-bold transition-all shadow-inner" 
           />
         </div>
+        <select value={gradeFilter} onChange={e => setGradeFilter(e.target.value)}
+          className="px-3 py-1.5 md:py-3 bg-slate-50 border border-slate-200 rounded-lg md:rounded-xl text-[10px] md:text-sm font-bold focus:outline-none focus:ring-1 focus:ring-violet-500">
+          <option value="">All Grades</option>
+          {['Grade 7','Grade 8','Grade 9','Grade 10','Grade 11','Grade 12'].map(g => <option key={g} value={g}>{g}</option>)}
+        </select>
+        <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}
+          className="px-3 py-1.5 md:py-3 bg-slate-50 border border-slate-200 rounded-lg md:rounded-xl text-[10px] md:text-sm font-bold focus:outline-none focus:ring-1 focus:ring-violet-500">
+          <option value="">All Status</option>
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
+          <option value="suspended">Suspended</option>
+        </select>
 
         {selectedIds.length > 0 && (
           <div className="flex items-center gap-3 animate-in slide-in-from-right-4 duration-300">
@@ -875,6 +894,8 @@ const StudentManagement = () => {
                             </th>
                             <th className="px-3 py-1.5 md:px-6 md:py-4">Student</th>
                             <th className="hidden md:table-cell px-6 py-4">Sex</th>
+                            <th className="hidden md:table-cell px-6 py-4">Grade</th>
+                            <th className="hidden md:table-cell px-6 py-4">Section</th>
                             <th className="hidden md:table-cell px-6 py-4">Email</th>
                             <th className="hidden md:table-cell px-6 py-4">LRN</th>
                             <th className="px-3 py-1.5 md:px-6 md:py-4 text-center">Status</th>
@@ -885,7 +906,7 @@ const StudentManagement = () => {
                           {/* Male Students */}
                           {cls.male.length > 0 && (
                             <tr className="bg-blue-50/50">
-                              <td colSpan="7" className="px-6 py-2 text-[10px] font-black text-blue-600 uppercase tracking-widest border-y border-blue-100">
+                              <td colSpan="8" className="px-6 py-2 text-[10px] font-black text-blue-600 uppercase tracking-widest border-y border-blue-100">
                                 <div className="flex items-center gap-2">
                                   <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a8 8 0 100 16 8 8 0 000-16zM9 9H5v2h4v4h2v-4h4V9h-4V5H9v4z" /></svg>
                                   Male ({cls.male.length})
@@ -900,7 +921,7 @@ const StudentManagement = () => {
                           {/* Female Students */}
                           {cls.female.length > 0 && (
                             <tr className="bg-rose-50/50">
-                              <td colSpan="7" className="px-6 py-2 text-[10px] font-black text-rose-600 uppercase tracking-widest border-y border-rose-100">
+                              <td colSpan="8" className="px-6 py-2 text-[10px] font-black text-rose-600 uppercase tracking-widest border-y border-rose-100">
                                 <div className="flex items-center gap-2">
                                   <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a8 8 0 100 16 8 8 0 000-16zM9 9H5v2h4v4h2v-4h4V9h-4V5H9v4z" /></svg>
                                   Female ({cls.female.length})
