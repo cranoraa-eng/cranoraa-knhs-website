@@ -52,7 +52,9 @@ const EnrollmentManagement = () => {
 
   const handleAction = async (id, action, opts = {}) => {
     try {
-      const res = await api.post(`/enrollment-applications/${id}/${action}/`, opts);
+      const res = await api[action === 'delete_application' ? 'delete' : 'post'](
+        `/enrollment-applications/${id}/${action}/`, action === 'delete_application' ? {} : opts
+      );
       Swal.fire({ icon: 'success', title: 'Done', text: res.data.status || res.data.message || 'Action completed.' });
       fetchAll();
       if (selected?.id === id && action !== 'enroll_student') setSelected(null);
@@ -66,6 +68,18 @@ const EnrollmentManagement = () => {
       Swal.fire({ icon: 'error', title: 'Error', text: msg });
       throw err;
     }
+  };
+
+  const promptDelete = async (id, name) => {
+    const { isConfirmed } = await Swal.fire({
+      title: 'Delete Application?',
+      html: `<p>Are you sure you want to delete the application for <strong>${name}</strong>?</p><p class="text-xs text-rose-500 mt-2">This action cannot be undone.</p>`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Delete',
+      confirmButtonColor: '#EF4444',
+    });
+    if (isConfirmed) handleAction(id, 'delete_application');
   };
 
   const handleView = async (app) => {
@@ -401,6 +415,11 @@ const EnrollmentManagement = () => {
                       {app.enrolled_student && (
                         <span className="text-[9px] font-bold text-violet-600 bg-violet-50 px-2 py-1 rounded-lg">Enrolled</span>
                       )}
+                      {app.status !== 'enrolled' && (
+                        <button onClick={() => promptDelete(app.id, `${app.first_name} ${app.last_name}`)} className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg" title="Delete">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                        </button>
+                      )}
                     </div>
                     <div className="md:hidden">
                       <button onClick={() => setActiveMenu(activeMenu === app.id ? null : app.id)} className={`p-1 rounded-md ${activeMenu === app.id ? 'bg-violet-100 text-violet-600' : 'text-slate-400'}`}>
@@ -556,6 +575,9 @@ const EnrollmentManagement = () => {
                 )}
                 {selected.status === 'approved' && (
                   <button onClick={() => { setEnrollApp(selected); setShowEnrollModal(true); }} className="px-4 py-2 rounded-lg bg-violet-600 text-white text-xs font-bold hover:bg-violet-700">Enroll Student</button>
+                )}
+                {selected.status !== 'enrolled' && (
+                  <button onClick={() => promptDelete(selected.id, selected.full_name || `${selected.first_name} ${selected.last_name}`)} className="px-4 py-2 rounded-lg border border-rose-200 bg-white text-rose-600 text-xs font-bold hover:bg-rose-50">Delete</button>
                 )}
                 <button onClick={() => setSelected(null)} className="px-4 py-2 rounded-lg border border-slate-200 text-slate-500 text-xs font-bold hover:bg-slate-50">Close</button>
               </div>
