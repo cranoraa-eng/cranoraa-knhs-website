@@ -12,6 +12,7 @@ const StudentManagement = () => {
   const user = getUser();
   const navigate = useNavigate();
   const [students, setStudents] = useState([]);
+  const [classrooms, setClassrooms] = useState([]);
   const [advisoryClass, setAdvisoryClass] = useState(null);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -47,14 +48,13 @@ const StudentManagement = () => {
       setLoading(true);
       const [studentsRes, classesRes] = await Promise.all([
         api.get('/users/?role=student'),
-        user?.role === 'teacher' ? api.get('/classrooms/') : Promise.resolve({ data: [] })
+        api.get('/classrooms/'),
       ]);
       
       setStudents(Array.isArray(studentsRes.data) ? studentsRes.data : []);
+      setClassrooms(Array.isArray(classesRes.data) ? classesRes.data : []);
       
       if (user?.role === 'teacher' && Array.isArray(classesRes.data)) {
-        // Teacher visibility is restricted to advisory by backend
-        // Use string comparison to be safe with IDs
         const advisory = classesRes.data.find(c => String(c.teacher) === String(user.id));
         if (advisory) setAdvisoryClass(advisory);
       }
@@ -280,6 +280,53 @@ const StudentManagement = () => {
         });
       } catch (err) {
         toast.error('Failed to reset password');
+      }
+    }
+  };
+
+  const handleAssignSection = async (studentId, currentClassroomName) => {
+    const { value } = await Swal.fire({
+      title: 'Assign Section',
+      html: `
+        <div class="text-left">
+          <p class="text-xs text-slate-500 mb-3">Current: <strong>${currentClassroomName || 'No Section'}</strong></p>
+          <div id="swal-select" class="swal2-select" style="width:100%;padding:8px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px;">
+            <option value="">-- Select Section --</option>
+            ${classrooms.map(c => {
+              const count = c.student_count || 0;
+              const cap = c.capacity || 40;
+              const full = count >= cap;
+              return `<option value="${c.id}" ${full ? 'disabled' : ''}>${c.name} (${count}/${cap})${full ? ' - FULL' : ''}</option>`;
+            }).join('')}
+          </div>
+        </div>
+      `,
+      showCancelButton: true,
+      confirmButtonText: 'Assign',
+      confirmButtonColor: '#7C3AED',
+      preConfirm: () => document.getElementById('swal-select')?.value || ''
+    });
+
+    if (value) {
+      try {
+        // Find existing enrollment for this student
+        const enrollRes = await api.get(`/enrollments/?student=${studentId}`);
+        const enrollments = enrollRes.data.results || enrollRes.data;
+        const existing = enrollments.find(e => String(e.student) === String(studentId));
+
+        if (existing) {
+          // Update existing enrollment's classroom
+          await api.patch(`/enrollments/${existing.id}/`, { classroom: parseInt(value) });
+        } else {
+          // Create new enrollment
+          await api.post('/enrollments/', { student: parseInt(studentId), classroom: parseInt(value) });
+        }
+
+        const classroom = classrooms.find(c => String(c.id) === String(value));
+        toast.success(`Assigned to ${classroom?.name || 'section'}`);
+        fetchData();
+      } catch (err) {
+        toast.error(err.response?.data?.error || err.response?.data?.detail?.[0] || 'Failed to assign section');
       }
     }
   };
@@ -639,6 +686,15 @@ const StudentManagement = () => {
           >
             <svg className="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
           </button>
+          {(user?.role === 'admin' || user?.role === 'teacher') && (
+            <button 
+              onClick={() => handleAssignSection(student.id, student.profile?.classroom_name)}
+              className="p-1 md:p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+              title="Set Section"
+            >
+              <svg className="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+            </button>
+          )}
           <button 
             onClick={() => handleResetPassword(student.id)}
             className="p-1 md:p-2 text-amber-600 hover:bg-amber-50 rounded-lg transition-all"
