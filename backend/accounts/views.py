@@ -3258,7 +3258,7 @@ class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
             'remarks': app.remarks,
             'lrn': app.lrn or '',
             'enrolled_student_email': app.enrolled_student.email if app.enrolled_student else None,
-            'temp_password': app.temp_password_display if app.status == 'enrolled' else None,
+            'temp_password': app.temp_password_display if app.status == 'enrolled' and app.enrolled_student and app.enrolled_student.must_change_password else None,
             'documents': [{'id': d.id, 'document_type_display': d.get_document_type_display(),
                            'verification_status': d.verification_status,
                            'verification_status_display': d.get_verification_status_display()} for d in app.documents.all()],
