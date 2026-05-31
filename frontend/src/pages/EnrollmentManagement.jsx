@@ -157,7 +157,7 @@ const EnrollmentManagement = () => {
 
   const assignSection = async (id) => {
     const classroomOptions = classrooms.reduce((acc, c) => {
-      const count = applications.filter(a => a.assigned_classroom === c.id && a.status === 'enrolled').length;
+      const count = c.student_count || 0;
       acc[c.id] = `${c.name} (${count}/${c.capacity || 40})`;
       return acc;
     }, {});
@@ -166,12 +166,14 @@ const EnrollmentManagement = () => {
       title: 'Assign Section',
       html: `
         <div class="text-left">
-          <p class="text-xs text-slate-500 mb-3">Select a section for this applicant. Shows current enrollment / capacity.</p>
+          <p class="text-xs text-slate-500 mb-3">Select a section. Shows enrolled students / capacity.</p>
           <div id="swal-select" class="swal2-select" style="width:100%;padding:8px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px;">
             <option value="">-- Select Section --</option>
             ${classrooms.map(c => {
-              const count = applications.filter(a => a.assigned_classroom === c.id && a.status === 'enrolled').length;
-              return `<option value="${c.id}">${c.name} (${count}/${c.capacity || 40})</option>`;
+              const count = c.student_count || 0;
+              const cap = c.capacity || 40;
+              const full = count >= cap;
+              return `<option value="${c.id}" ${full ? 'disabled' : ''}>${c.name} (${count}/${cap})${full ? ' - FULL' : ''}</option>`;
             }).join('')}
           </div>
         </div>
@@ -179,14 +181,6 @@ const EnrollmentManagement = () => {
       showCancelButton: true,
       confirmButtonText: 'Assign',
       confirmButtonColor: '#7C3AED',
-      didOpen: () => {
-        const select = document.getElementById('swal-select');
-        if (select) {
-          select.addEventListener('change', (e) => {
-            select.value = e.target.value;
-          });
-        }
-      },
       preConfirm: () => {
         return document.getElementById('swal-select')?.value || '';
       }
@@ -592,8 +586,9 @@ const EnrollmentManagement = () => {
                   className="w-full px-3 py-2.5 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400/30">
                   <option value="">Auto-assign</option>
                   {classrooms.filter(c => String(c.grade_level) === String(enrollApp.grade_level)).map(c => {
-                    const count = applications.filter(a => a.assigned_classroom === c.id && a.status === 'enrolled').length;
-                    return <option key={c.id} value={c.id}>{c.name} ({count}/{c.capacity || 40})</option>;
+                    const count = c.student_count || 0;
+                    const cap = c.capacity || 40;
+                    return <option key={c.id} value={c.id}>{c.name} ({count}/{cap})</option>;
                   })}
                 </select>
               </div>
