@@ -82,8 +82,15 @@ const EnrollmentManagement = () => {
     if (isConfirmed) handleAction(id, 'delete_application');
   };
 
-  const handleView = (app) => {
+  const handleView = async (app) => {
     setSelected(app);
+    if (app.status === 'pending') {
+      try {
+        const res = await api.post(`/enrollment-applications/${app.id}/start-review/`, { remarks: '' });
+        setSelected({ ...app, status: 'under_review' });
+        fetchAll();
+      } catch {}
+    }
   };
 
   const promptApproveApplication = async (id) => {
@@ -221,7 +228,22 @@ const EnrollmentManagement = () => {
       if (!value) return;
       notes = value;
     }
-    await handleAction(appId, endpoint, { document_id: docId, notes });
+    try {
+      await api.post(`/enrollment-applications/${appId}/${endpoint}/`, { document_id: docId, notes });
+      // Update local state without refreshing
+      setSelected(prev => {
+        if (!prev || prev.id !== appId) return prev;
+        return {
+          ...prev,
+          documents: prev.documents.map(d =>
+            d.id === docId ? { ...d, verification_status: status, verification_status_display: status === 'verified' ? 'Verified' : 'Rejected' } : d
+          ),
+        };
+      });
+      Swal.fire({ icon: 'success', title: 'Done', text: `Document ${status}`, timer: 1200, showConfirmButton: false });
+    } catch (err) {
+      Swal.fire({ icon: 'error', title: 'Error', text: err.response?.data?.error || 'Failed' });
+    }
   };
 
   const filtered = applications.filter(app => {
@@ -481,6 +503,12 @@ const EnrollmentManagement = () => {
 
               <div>
                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide mb-2">Documents</p>
+                {selected.status === 'under_review' && selected.documents && selected.documents.length > 0 &&
+                  !selected.documents.every(d => d.verification_status === 'verified') && (
+                  <p className="text-[10px] text-amber-600 font-bold mb-2">
+                    Verify all documents to enable the Approve button.
+                  </p>
+                )}
                 {selected.documents && selected.documents.length > 0 ? (
                   <div className="space-y-2">
                     {selected.documents.map(doc => (
@@ -556,9 +584,24 @@ const EnrollmentManagement = () => {
                 {(selected.status === 'pending' || selected.status === 'under_review') && (
                   <>
                     <button onClick={() => { promptReject(selected.id); }} className="px-4 py-2 rounded-lg border border-rose-200 bg-white text-rose-600 text-xs font-bold hover:bg-rose-50">Reject</button>
-                    {selected.status === 'under_review' && (
-                      <button onClick={() => { promptApproveApplication(selected.id); }} className="px-4 py-2 rounded-lg bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700">Approve</button>
-                    )}
+                    {selected.status === 'under_review' && (() => {
+                      const allDocsVerified = !selected.documents || selected.documents.length === 0 ||
+                        selected.documents.every(d => d.verification_status === 'verified');
+                      return (
+                        <button
+                          onClick={() => { if (allDocsVerified) promptApproveApplication(selected.id); }}
+                          disabled={!allDocsVerified}
+                          className={`px-4 py-2 rounded-lg text-xs font-bold ${
+                            allDocsVerified
+                              ? 'bg-emerald-600 text-white hover:bg-emerald-700'
+                              : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                          }`}
+                          title={allDocsVerified ? 'Approve' : 'Verify all documents first'}
+                        >
+                          Approve
+                        </button>
+                      );
+                    })()}
                   </>
                 )}
                 {selected.status === 'approved' && (
