@@ -285,7 +285,8 @@ const StudentManagement = () => {
   };
 
   const handleAssignSection = async (studentId, currentClassroomName, gradeLevel) => {
-    const filtered = gradeLevel
+    const hasSection = currentClassroomName && currentClassroomName !== 'No Section';
+    const filtered = (hasSection && gradeLevel)
       ? classrooms.filter(c => String(c.grade_level) === String(gradeLevel))
       : classrooms;
 
