@@ -3346,7 +3346,7 @@ class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
             temp_password = secrets.token_urlsafe(12)
             student_user = User(username=username, email=application.email or None,
                 first_name=application.first_name, last_name=application.last_name,
-                role='student', is_verified=True, is_approved=True, account_status='active')
+                role='student', is_verified=True, is_approved=True, must_change_password=True, account_status='active')
             student_user.set_password(temp_password)
             student_user.save()
 

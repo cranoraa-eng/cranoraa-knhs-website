@@ -139,14 +139,15 @@ const EnrollmentManagement = () => {
       const result = await handleAction(enrollApp.id, 'enroll_student', {
         classroom_id: enrollClassroom || '', parent_email: enrollParentEmail || '',
       });
-      if (result?.username) {
+      if (result?.temp_password) {
         Swal.fire({
           icon: 'success', title: 'Student Enrolled!', html: `
             <div class="text-left space-y-2">
-              <p><strong>Username:</strong> ${result.username}</p>
+              <p><strong>Email:</strong> ${enrollApp.email}</p>
+              <p><strong>LRN:</strong> ${enrollApp.lrn || 'N/A'}</p>
               <p><strong>Password:</strong> ${result.temp_password}</p>
               ${result.classroom_name ? `<p><strong>Section:</strong> ${result.classroom_name}</p>` : ''}
-              <p class="text-xs text-amber-600 font-bold mt-3">Save these credentials. They will not be shown again.</p>
+              <p class="text-xs text-amber-600 font-bold mt-3">This is a temporary password. Student must change it on first login.</p>
             </div>
           `, confirmButtonText: 'OK', width: 400,
         });
