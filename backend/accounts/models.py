@@ -925,6 +925,7 @@ class EnrollmentApplication(models.Model):
     # Post-approval fields
     enrolled_student = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True, related_name='enrollment_applications')
     assigned_classroom = models.ForeignKey('Classroom', on_delete=models.SET_NULL, blank=True, null=True)
+    temp_password_display = models.CharField(max_length=100, blank=True, null=True, help_text="Temporary password shown to applicant after enrollment")
     
     # Parent account linking
     linked_parent = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True, related_name='child_enrollment_applications', help_text="Parent account linked during enrollment")

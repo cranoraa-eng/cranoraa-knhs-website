@@ -3256,6 +3256,9 @@ class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
             'submitted_at': app.submitted_at,
             'assigned_classroom_name': app.assigned_classroom.name if app.assigned_classroom else None,
             'remarks': app.remarks,
+            'lrn': app.lrn or '',
+            'enrolled_student_username': app.enrolled_student.username if app.enrolled_student else None,
+            'temp_password': app.temp_password_display if app.status == 'enrolled' else None,
             'documents': [{'id': d.id, 'document_type_display': d.get_document_type_display(),
                            'verification_status': d.verification_status,
                            'verification_status_display': d.get_verification_status_display()} for d in app.documents.all()],
@@ -3415,6 +3418,7 @@ class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
             application.status = 'enrolled'
             application.remarks = f'Enrolled on {timezone.now().strftime("%Y-%m-%d %H:%M")}'
             application.reviewed_by = user; application.reviewed_at = timezone.now()
+            application.temp_password_display = temp_password
             application.save()
             EnrollmentStatusHistory.objects.create(application=application, from_status=from_status,
                 to_status='enrolled', changed_by=user, notes=f'Student account created. Username: {username}')
