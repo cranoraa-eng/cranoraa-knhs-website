@@ -82,14 +82,8 @@ const EnrollmentManagement = () => {
     if (isConfirmed) handleAction(id, 'delete_application');
   };
 
-  const handleView = async (app) => {
+  const handleView = (app) => {
     setSelected(app);
-    if (app.status === 'pending') {
-      try {
-        await api.post(`/enrollment-applications/${app.id}/start-review/`, { remarks: '' });
-        fetchAll();
-      } catch {}
-    }
   };
 
   const promptApproveApplication = async (id) => {
