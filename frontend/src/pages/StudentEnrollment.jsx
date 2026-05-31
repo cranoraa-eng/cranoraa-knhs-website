@@ -117,12 +117,16 @@ const StudentEnrollment = () => {
   };
 
   const enrolledIds = new Set(enrollments.map(e => e.student));
-  const filteredStudents = students.filter(s =>
-    ((s.username || '').toLowerCase().includes(studentSearch.toLowerCase()) ||
-     (s.email || '').toLowerCase().includes(studentSearch.toLowerCase()) ||
-     (`${s.first_name || ''} ${s.last_name || ''}`).toLowerCase().includes(studentSearch.toLowerCase())) &&
-    !enrolledIds.has(s.id)
-  );
+  const filteredStudents = students.filter(s => {
+    if (enrolledIds.has(s.id)) return false;
+    if (!studentSearch) return true;
+    const q = studentSearch.toLowerCase();
+    const lrn = s.profile?.lrn || s.profile?.registration_number || '';
+    return (s.username || '').toLowerCase().includes(q) ||
+      (s.email || '').toLowerCase().includes(q) ||
+      (`${s.first_name || ''} ${s.last_name || ''}`).toLowerCase().includes(q) ||
+      lrn.toLowerCase().includes(q);
+  });
 
   // Sort classrooms by grade level (Grade 7-12)
   const sortedClassrooms = [...classrooms].sort((a, b) => {
@@ -222,6 +226,7 @@ const StudentEnrollment = () => {
                         <td className="px-2 py-1 md:px-6 md:py-4">
                           <div className="font-black text-slate-800 text-[8px] md:text-sm uppercase tracking-tighter truncate max-w-[100px] md:max-w-none">{e.student_name}</div>
                           <div className="text-[6px] md:text-xs text-slate-400 font-bold truncate max-w-[100px] md:max-w-none leading-none">{e.student_email}</div>
+                          {e.student_lrn && <div className="text-[5px] md:text-[10px] text-slate-300 font-bold">LRN: {e.student_lrn}</div>}
                         </td>
                         {['q1','q2','q3','q4'].map(q => (
                           <td key={q} className="px-1 py-1 md:px-6 md:py-4 text-center text-[8px] md:text-sm font-bold text-slate-600">
@@ -283,7 +288,7 @@ const StudentEnrollment = () => {
                   </svg>
                   <input
                     type="text"
-                    placeholder="Search name or email..."
+                    placeholder="Search name, email, or LRN..."
                     value={studentSearch}
                     onChange={e => setStudentSearch(e.target.value)}
                     className="w-full pl-9 pr-9 py-1.5 md:py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-1 focus:ring-violet-500 text-[10px] md:text-sm font-bold shadow-inner uppercase tracking-wider"
@@ -352,6 +357,7 @@ const StudentEnrollment = () => {
                                 {fullName}
                               </div>
                               <div className="text-[7px] md:text-xs text-slate-400 truncate font-bold">{s.email}</div>
+                              {s.profile?.lrn && <div className="text-[6px] md:text-[10px] text-slate-300 font-bold">LRN: {s.profile.lrn}</div>}
                             </div>
                           </button>
                         );
