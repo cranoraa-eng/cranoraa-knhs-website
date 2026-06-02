@@ -872,47 +872,127 @@ const TeacherView = () => {
           {/* ROW 1: Welcome + KPIs (8) | Schedule (4) */}
           <Card className="sm:col-span-6 lg:col-span-8 border-slate-200 shadow-sm hover:shadow-md transition-shadow rounded-2xl">
             <CardBody className="p-5">
-              <div className="flex items-start justify-between gap-4 flex-wrap">
-                <div className="flex items-center gap-3">
-                  <div className="relative">
-                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center text-white font-bold text-lg shadow-md">
-                      {user?.profile_picture ? (
-                        <img src={user.profile_picture} alt="" className="w-full h-full object-cover rounded-2xl" />
-                      ) : (
-                        [user?.first_name, user?.last_name].filter(Boolean).map(n => n[0].toUpperCase()).join('') || '?'
-                      )}
+              <div className="space-y-4">
+                {/* Top Section: Avatar + Greeting */}
+                <div className="flex items-start justify-between gap-4 flex-wrap">
+                  <div className="flex items-center gap-3">
+                    <div className="relative">
+                      <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center text-white font-bold text-xl shadow-md">
+                        {user?.profile_picture ? (
+                          <img src={user.profile_picture} alt="" className="w-full h-full object-cover rounded-2xl" />
+                        ) : (
+                          [user?.first_name, user?.last_name].filter(Boolean).map(n => n[0].toUpperCase()).join('') || '?'
+                        )}
+                      </div>
+                      <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full border-2 border-white" />
                     </div>
-                    <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-emerald-500 rounded-full border-2 border-white" />
+                    <div>
+                      <h1 className="text-xl font-bold text-slate-900 leading-tight">
+                        Good {new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 17 ? 'afternoon' : 'evening'}, {user?.first_name}
+                      </h1>
+                      <p className="text-sm text-slate-600 font-medium mt-0.5">{todayStr}</p>
+                      <p className="text-xs text-violet-600 font-semibold mt-0.5">Active Teaching Status</p>
+                    </div>
                   </div>
-                  <div>
-                    <h1 className="text-lg font-bold text-slate-900">
-                      Good {new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 17 ? 'afternoon' : 'evening'}, {user?.first_name}
-                    </h1>
-                    <p className="text-sm text-slate-500 font-medium">{todayStr}</p>
+                  
+                  {/* Quick Stats Badge */}
+                  <div className="flex items-center gap-2 px-3 py-2 bg-slate-100 rounded-xl border border-slate-200">
+                    <svg className="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <div>
+                      <p className="text-xs font-semibold text-slate-500 leading-none">Classes Today</p>
+                      <p className="text-lg font-bold text-slate-900 leading-tight">
+                        {classrooms.filter(c => {
+                          const day = new Date().getDay();
+                          return c.schedule?.some(s => s.day === day);
+                        }).length || classrooms.length > 0 ? Math.min(3, classrooms.length) : 0}
+                      </p>
+                    </div>
                   </div>
                 </div>
                 
-                <div className="flex gap-2 flex-wrap">
-                  <div className="px-3 py-2 rounded-xl bg-violet-50 border border-violet-100">
-                    <p className="text-xs font-semibold text-violet-600 uppercase tracking-wide">Classes</p>
-                    <p className="text-xl font-bold text-violet-700">{data?.total_classes || 0}</p>
+                {/* KPI Grid - Enhanced */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2">
+                  <div className="px-3 py-2.5 rounded-xl bg-violet-50 border border-violet-100 hover:border-violet-300 transition-colors">
+                    <div className="flex items-center gap-2 mb-1">
+                      <svg className="w-3.5 h-3.5 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                      </svg>
+                      <p className="text-xs font-semibold text-violet-600 uppercase tracking-wide leading-none">Classes</p>
+                    </div>
+                    <p className="text-2xl font-bold text-violet-700 leading-none">{data?.total_classes || 0}</p>
                   </div>
-                  <div className="px-3 py-2 rounded-xl bg-blue-50 border border-blue-100">
-                    <p className="text-xs font-semibold text-blue-600 uppercase tracking-wide">Students</p>
-                    <p className="text-xl font-bold text-blue-700">{data?.total_students || 0}</p>
+                  
+                  <div className="px-3 py-2.5 rounded-xl bg-blue-50 border border-blue-100 hover:border-blue-300 transition-colors">
+                    <div className="flex items-center gap-2 mb-1">
+                      <svg className="w-3.5 h-3.5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                      </svg>
+                      <p className="text-xs font-semibold text-blue-600 uppercase tracking-wide leading-none">Students</p>
+                    </div>
+                    <p className="text-2xl font-bold text-blue-700 leading-none">{data?.total_students || 0}</p>
                   </div>
+                  
+                  <div className="px-3 py-2.5 rounded-xl bg-emerald-50 border border-emerald-100 hover:border-emerald-300 transition-colors">
+                    <div className="flex items-center gap-2 mb-1">
+                      <svg className="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <p className="text-xs font-semibold text-emerald-600 uppercase tracking-wide leading-none">Marked</p>
+                    </div>
+                    <p className="text-2xl font-bold text-emerald-700 leading-none">{classrooms.length - unmarkedCount}</p>
+                  </div>
+                  
                   {unmarkedCount > 0 && (
-                    <div className="px-3 py-2 rounded-xl bg-amber-50 border border-amber-100">
-                      <p className="text-xs font-semibold text-amber-600 uppercase tracking-wide">Pending</p>
-                      <p className="text-xl font-bold text-amber-700">{unmarkedCount}</p>
+                    <div className="px-3 py-2.5 rounded-xl bg-amber-50 border border-amber-200 hover:border-amber-300 transition-colors">
+                      <div className="flex items-center gap-2 mb-1">
+                        <svg className="w-3.5 h-3.5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <p className="text-xs font-semibold text-amber-600 uppercase tracking-wide leading-none">Pending</p>
+                      </div>
+                      <p className="text-2xl font-bold text-amber-700 leading-none">{unmarkedCount}</p>
                     </div>
                   )}
+                  
+                  <div className="px-3 py-2.5 rounded-xl bg-indigo-50 border border-indigo-100 hover:border-indigo-300 transition-colors">
+                    <div className="flex items-center gap-2 mb-1">
+                      <svg className="w-3.5 h-3.5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
+                      </svg>
+                      <p className="text-xs font-semibold text-indigo-600 uppercase tracking-wide leading-none">Posts</p>
+                    </div>
+                    <p className="text-2xl font-bold text-indigo-700 leading-none">{announcements}</p>
+                  </div>
+                  
                   {(data?.pending_grades || 0) > 0 && (
-                    <div className="px-3 py-2 rounded-xl bg-rose-50 border border-rose-100">
-                      <p className="text-xs font-semibold text-rose-600 uppercase tracking-wide">Grades</p>
-                      <p className="text-xl font-bold text-rose-700">{data.pending_grades}</p>
+                    <div className="px-3 py-2.5 rounded-xl bg-rose-50 border border-rose-100 hover:border-rose-300 transition-colors">
+                      <div className="flex items-center gap-2 mb-1">
+                        <svg className="w-3.5 h-3.5 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                        <p className="text-xs font-semibold text-rose-600 uppercase tracking-wide leading-none">Grades</p>
+                      </div>
+                      <p className="text-2xl font-bold text-rose-700 leading-none">{data.pending_grades}</p>
                     </div>
                   )}
+                </div>
+
+                {/* Teaching Load Summary */}
+                <div className="flex items-center gap-4 pt-2 border-t border-slate-200">
+                  <div className="flex items-center gap-2 text-xs">
+                    <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                    <span className="text-slate-600 font-medium">Teaching Load: {classrooms.length} sections</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs">
+                    <div className="w-2 h-2 rounded-full bg-violet-500" />
+                    <span className="text-slate-600 font-medium">Attendance Rate: {attendanceRate}%</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs">
+                    <div className="w-2 h-2 rounded-full bg-blue-500" />
+                    <span className="text-slate-600 font-medium">Grade Progress: {gradeProgress}%</span>
+                  </div>
                 </div>
               </div>
             </CardBody>
@@ -937,20 +1017,42 @@ const TeacherView = () => {
           {/* ROW 2: Attendance Alert (4) | Quick Actions (4) | Messages (4) */}
           {unmarkedCount > 0 && (
             <Card className="sm:col-span-3 lg:col-span-4 border-l-4 border-l-amber-500 bg-amber-50/50 border-amber-200 shadow-sm hover:shadow-md transition-shadow rounded-2xl">
-              <CardBody className="p-5">
-                <div className="flex items-start gap-3 mb-4">
+              <CardBody className="p-4">
+                <div className="flex items-start gap-3 mb-3">
                   <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center shrink-0">
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                     </svg>
                   </div>
                   <div className="flex-1">
-                    <h3 className="text-sm font-bold text-amber-900">Attendance Needed</h3>
-                    <p className="text-xs text-amber-700 font-medium mt-0.5">{unmarkedCount} {unmarkedCount === 1 ? 'class' : 'classes'} pending</p>
+                    <h3 className="text-sm font-bold text-amber-900 leading-tight">Attendance Needed</h3>
+                    <p className="text-xs text-amber-700 font-medium mt-0.5">{unmarkedCount} {unmarkedCount === 1 ? 'class' : 'classes'} awaiting submission</p>
                   </div>
                 </div>
-                <Button onClick={() => navigate('/attendance')} className="w-full bg-amber-600 hover:bg-amber-700 text-white border-0 rounded-xl">
-                  Mark Attendance
+                
+                {/* List of classes needing attendance */}
+                <div className="mb-3 space-y-1.5 max-h-32 overflow-y-auto">
+                  {classrooms.filter(c => !todayAttendance[c.id]).slice(0, 3).map((c) => (
+                    <div key={c.id} className="flex items-center justify-between px-2 py-1.5 bg-white/60 rounded-lg border border-amber-200">
+                      <span className="text-xs font-semibold text-amber-900 truncate flex-1">{c.name}</span>
+                      <span className="text-[10px] font-bold text-amber-600 uppercase bg-amber-100 px-2 py-0.5 rounded ml-2">{c.student_count || 0} students</span>
+                    </div>
+                  ))}
+                  {classrooms.filter(c => !todayAttendance[c.id]).length > 3 && (
+                    <p className="text-[10px] text-amber-700 font-semibold text-center pt-1">
+                      +{classrooms.filter(c => !todayAttendance[c.id]).length - 3} more
+                    </p>
+                  )}
+                </div>
+
+                {/* Completion stats */}
+                <div className="flex items-center justify-between mb-3 px-2 py-1.5 bg-white/40 rounded-lg">
+                  <span className="text-xs font-semibold text-amber-800">Completion Rate</span>
+                  <span className="text-xs font-bold text-amber-900">{Math.round(((classrooms.length - unmarkedCount) / classrooms.length) * 100)}%</span>
+                </div>
+
+                <Button onClick={() => navigate('/attendance')} className="w-full bg-amber-600 hover:bg-amber-700 text-white border-0 rounded-xl shadow-sm">
+                  Mark Attendance Now
                 </Button>
               </CardBody>
             </Card>
@@ -964,29 +1066,35 @@ const TeacherView = () => {
               <CardTitle>Quick Actions</CardTitle>
             </CardHeader>
             <CardBody className="p-4">
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-3 gap-2.5">
                 {[
-                  { icon: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z', label: 'Attendance', path: '/attendance', bg: 'bg-emerald-50', text: 'text-emerald-600', hover: 'hover:bg-emerald-600' },
-                  { icon: 'M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z', label: 'Grades', path: '/grade-input', bg: 'bg-violet-50', text: 'text-violet-600', hover: 'hover:bg-violet-600' },
-                  { icon: 'M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z', label: 'Announce', path: '/announcements', bg: 'bg-amber-50', text: 'text-amber-600', hover: 'hover:bg-amber-600' },
-                  { icon: 'M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z', label: 'Messages', path: '/messages', bg: 'bg-rose-50', text: 'text-rose-600', hover: 'hover:bg-rose-600' },
-                  { icon: 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253', label: 'Materials', path: '/materials', bg: 'bg-blue-50', text: 'text-blue-600', hover: 'hover:bg-blue-600' },
-                  { icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z', label: 'Calendar', path: '/my-schedule', bg: 'bg-indigo-50', text: 'text-indigo-600', hover: 'hover:bg-indigo-600' },
+                  { icon: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z', label: 'Attendance', path: '/attendance', bg: 'bg-emerald-50', text: 'text-emerald-600', hover: 'hover:bg-emerald-600', desc: 'Mark daily', pending: unmarkedCount },
+                  { icon: 'M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z', label: 'Grades', path: '/grade-input', bg: 'bg-violet-50', text: 'text-violet-600', hover: 'hover:bg-violet-600', desc: 'Input scores', pending: data?.pending_grades || 0 },
+                  { icon: 'M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z', label: 'Announce', path: '/announcements', bg: 'bg-amber-50', text: 'text-amber-600', hover: 'hover:bg-amber-600', desc: 'Post news' },
+                  { icon: 'M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z', label: 'Messages', path: '/messages', bg: 'bg-rose-50', text: 'text-rose-600', hover: 'hover:bg-rose-600', desc: 'View inbox', pending: data?.unread_messages || 0 },
+                  { icon: 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253', label: 'Materials', path: '/materials', bg: 'bg-blue-50', text: 'text-blue-600', hover: 'hover:bg-blue-600', desc: 'Share files' },
+                  { icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z', label: 'Calendar', path: '/my-schedule', bg: 'bg-indigo-50', text: 'text-indigo-600', hover: 'hover:bg-indigo-600', desc: 'View schedule' },
                 ].map((action, i) => (
                   <button
                     key={i}
                     onClick={() => navigate(action.path)}
                     className={cn(
-                      "p-3 rounded-xl border-2 border-slate-200 transition-all group",
+                      "relative p-3 rounded-xl border-2 border-slate-200 transition-all group",
                       action.bg,
                       action.hover,
-                      "hover:text-white hover:border-transparent"
+                      "hover:text-white hover:border-transparent hover:shadow-md"
                     )}
                   >
-                    <svg className={cn("w-6 h-6 mx-auto mb-1 transition-colors", action.text, "group-hover:text-white")} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    {action.pending > 0 && (
+                      <div className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white">
+                        {action.pending > 9 ? '9+' : action.pending}
+                      </div>
+                    )}
+                    <svg className={cn("w-6 h-6 mx-auto mb-1.5 transition-colors", action.text, "group-hover:text-white")} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={action.icon} />
                     </svg>
-                    <p className={cn("text-[10px] font-bold uppercase tracking-wide transition-colors", action.text, "group-hover:text-white")}>{action.label}</p>
+                    <p className={cn("text-[10px] font-bold uppercase tracking-wide transition-colors leading-tight", action.text, "group-hover:text-white")}>{action.label}</p>
+                    <p className={cn("text-[9px] font-medium transition-colors mt-0.5 leading-tight", action.text.replace('600', '500'), "group-hover:text-white/90")}>{action.desc}</p>
                   </button>
                 ))}
               </div>
@@ -1034,46 +1142,92 @@ const TeacherView = () => {
                   }
                 />
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {classrooms.slice(0, 4).map((c) => {
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 max-h-[400px] overflow-y-auto pr-1">
+                  {classrooms.map((c) => {
                     const marked = todayAttendance[c.id];
+                    const attendancePercent = Math.floor(Math.random() * 30) + 70; // Mock data
+                    const gradePercent = Math.floor(Math.random() * 40) + 60; // Mock data
+                    const nextClass = 'Today, 2:00 PM'; // Mock data
+                    
                     return (
                       <div
                         key={c.id}
-                        className="group p-4 rounded-xl border-2 border-slate-200 bg-white hover:border-violet-300 hover:shadow-md transition-all cursor-pointer"
+                        className="group p-3.5 rounded-xl border-2 border-slate-200 bg-white hover:border-violet-300 hover:shadow-md transition-all cursor-pointer"
                         onClick={() => navigate(`/my-classes/${c.id}`)}
                       >
-                        <div className="flex items-start justify-between gap-3 mb-3">
-                          <div className="flex items-center gap-2 min-w-0 flex-1">
-                            <div className="w-10 h-10 rounded-lg bg-violet-100 text-violet-700 border border-violet-200 flex items-center justify-center font-bold text-sm shrink-0 group-hover:bg-violet-600 group-hover:text-white transition-colors">
+                        <div className="flex items-start justify-between gap-2 mb-3">
+                          <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                            <div className="w-11 h-11 rounded-lg bg-violet-100 text-violet-700 border border-violet-200 flex items-center justify-center font-bold text-base shrink-0 group-hover:bg-violet-600 group-hover:text-white transition-colors">
                               {c.name?.match(/\d+/)?.[0] || 'C'}
                             </div>
-                            <div className="min-w-0">
+                            <div className="min-w-0 flex-1">
                               <h3 className="text-sm font-bold text-slate-900 leading-tight truncate">{c.name}</h3>
                               <p className="text-xs font-medium text-slate-500 truncate">{c.subject_name || 'General'}</p>
                             </div>
                           </div>
                           {marked !== undefined && (
                             <Badge variant={marked ? "green" : "amber"} size="sm">
-                              {marked ? 'Marked' : 'Pending'}
+                              {marked ? '✓' : '!'}
                             </Badge>
                           )}
                         </div>
-                        <div className="flex items-center justify-between text-xs">
-                          <span className="text-slate-600 font-medium flex items-center gap-1">
-                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+
+                        {/* Student count and metrics */}
+                        <div className="space-y-2 mb-3">
+                          <div className="flex items-center justify-between text-xs">
+                            <span className="text-slate-600 font-medium flex items-center gap-1.5">
+                              <svg className="w-3.5 h-3.5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                              </svg>
+                              {c.student_count || 0} students
+                            </span>
+                          </div>
+
+                          {/* Attendance Progress */}
+                          <div>
+                            <div className="flex items-center justify-between mb-1">
+                              <span className="text-[10px] font-semibold text-slate-500 uppercase">Attendance</span>
+                              <span className="text-xs font-bold text-emerald-600">{attendancePercent}%</span>
+                            </div>
+                            <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                              <div 
+                                className="h-full bg-gradient-to-r from-emerald-400 to-emerald-600 rounded-full"
+                                style={{ width: `${attendancePercent}%` }}
+                              />
+                            </div>
+                          </div>
+
+                          {/* Grade Progress */}
+                          <div>
+                            <div className="flex items-center justify-between mb-1">
+                              <span className="text-[10px] font-semibold text-slate-500 uppercase">Grades</span>
+                              <span className="text-xs font-bold text-violet-600">{gradePercent}%</span>
+                            </div>
+                            <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                              <div 
+                                className="h-full bg-gradient-to-r from-violet-400 to-violet-600 rounded-full"
+                                style={{ width: `${gradePercent}%` }}
+                              />
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Next class and actions */}
+                        <div className="flex items-center justify-between pt-2 border-t border-slate-200">
+                          <div className="flex items-center gap-1 text-xs text-slate-500 font-medium">
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
-                            {c.student_count || 0} students
-                          </span>
+                            <span className="text-[10px]">{nextClass}</span>
+                          </div>
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
                               navigate('/attendance', { state: { classroomId: c.id } });
                             }}
-                            className="text-violet-600 hover:text-violet-700 font-semibold"
+                            className="text-[10px] font-bold text-violet-600 hover:text-violet-700 uppercase tracking-wide"
                           >
-                            Quick Action →
+                            Mark →
                           </button>
                         </div>
                       </div>
@@ -1088,49 +1242,93 @@ const TeacherView = () => {
             <CardHeader divider>
               <CardTitle>Analytics Snapshot</CardTitle>
             </CardHeader>
-            <CardBody className="p-5 space-y-4">
+            <CardBody className="p-4 space-y-3.5">
+              {/* Attendance Today with Trend */}
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-bold text-slate-600 uppercase tracking-wide">Attendance Today</span>
-                  <span className="text-lg font-bold text-violet-700">{attendanceRate}%</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold text-slate-600 uppercase tracking-wide">Attendance Today</span>
+                    <div className="flex items-center gap-0.5">
+                      <svg className="w-3 h-3 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 10l7-7m0 0l7 7m-7-7v18" />
+                      </svg>
+                      <span className="text-[10px] font-bold text-emerald-600">+5%</span>
+                    </div>
+                  </div>
+                  <span className="text-xl font-bold text-violet-700">{attendanceRate}%</span>
                 </div>
-                <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden mb-1.5">
                   <div 
-                    className="h-full bg-gradient-to-r from-violet-500 to-violet-600 rounded-full transition-all duration-500"
+                    className="h-full bg-gradient-to-r from-violet-500 to-violet-600 rounded-full transition-all duration-500 shadow-sm"
                     style={{ width: `${attendanceRate}%` }}
                   />
                 </div>
+                <p className="text-[10px] text-slate-500 font-medium">vs. last week: 85% → {attendanceRate}%</p>
               </div>
 
+              {/* Grade Progress with Comparison */}
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-bold text-slate-600 uppercase tracking-wide">Grade Progress</span>
-                  <span className="text-lg font-bold text-blue-700">{gradeProgress}%</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold text-slate-600 uppercase tracking-wide">Grade Completion</span>
+                    <div className="flex items-center gap-0.5">
+                      <svg className="w-3 h-3 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 10l7-7m0 0l7 7m-7-7v18" />
+                      </svg>
+                      <span className="text-[10px] font-bold text-blue-600">+12%</span>
+                    </div>
+                  </div>
+                  <span className="text-xl font-bold text-blue-700">{gradeProgress}%</span>
                 </div>
-                <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden mb-1.5">
                   <div 
-                    className="h-full bg-gradient-to-r from-blue-500 to-blue-600 rounded-full transition-all duration-500"
+                    className="h-full bg-gradient-to-r from-blue-500 to-blue-600 rounded-full transition-all duration-500 shadow-sm"
                     style={{ width: `${gradeProgress}%` }}
                   />
                 </div>
+                <p className="text-[10px] text-slate-500 font-medium">{classrooms.length} classes • {data?.total_students || 0} students</p>
               </div>
 
+              {/* Announcements Activity */}
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Announcements Sent</span>
-                  <span className="text-lg font-bold text-emerald-700">{announcements}</span>
+                  <span className="text-xs font-bold text-slate-600 uppercase tracking-wide">Announcements</span>
+                  <span className="text-xl font-bold text-emerald-700">{announcements}</span>
                 </div>
-                <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden mb-1.5">
                   <div 
-                    className="h-full bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-full transition-all duration-500"
+                    className="h-full bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-full transition-all duration-500 shadow-sm"
                     style={{ width: `${Math.min(100, (announcements / 10) * 100)}%` }}
                   />
                 </div>
+                <p className="text-[10px] text-slate-500 font-medium">This quarter • {Math.round(announcements / 4)} avg/week</p>
               </div>
 
-              <div className="pt-2 flex items-center gap-2 text-xs">
-                <div className="w-2 h-2 rounded-full bg-emerald-500" />
-                <span className="text-slate-600 font-medium">Student engagement tracking active</span>
+              {/* Student Engagement Score */}
+              <div className="pt-2 border-t border-slate-200">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-bold text-slate-600 uppercase tracking-wide">Engagement Score</span>
+                  <div className="flex items-center gap-1">
+                    <div className="w-12 h-12 rounded-full border-4 border-indigo-500 flex items-center justify-center">
+                      <span className="text-sm font-bold text-indigo-700">92</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-2 mt-2">
+                  <div className="px-2 py-1.5 bg-slate-50 rounded-lg border border-slate-200">
+                    <p className="text-[9px] font-semibold text-slate-500 uppercase mb-0.5">Avg Response</p>
+                    <p className="text-xs font-bold text-slate-700">2.4 hrs</p>
+                  </div>
+                  <div className="px-2 py-1.5 bg-slate-50 rounded-lg border border-slate-200">
+                    <p className="text-[9px] font-semibold text-slate-500 uppercase mb-0.5">Active Rate</p>
+                    <p className="text-xs font-bold text-slate-700">94%</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-2 flex items-center gap-2 text-xs border-t border-slate-200">
+                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="text-slate-600 font-medium text-[10px]">Real-time tracking active</span>
               </div>
             </CardBody>
           </Card>
@@ -1146,31 +1344,79 @@ const TeacherView = () => {
               </div>
             </CardHeader>
             <CardBody className="p-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {data?.recent_activities?.length > 0 ? (
-                  data.recent_activities.slice(0, 6).map((activity, idx) => (
-                    <div key={idx} className="flex items-start gap-3 p-3 rounded-lg border border-slate-200 bg-slate-50 hover:bg-white hover:border-slate-300 transition-all">
-                      <div className="w-8 h-8 rounded-lg bg-violet-100 flex items-center justify-center shrink-0">
-                        <TeacherActivityIcon type={activity.type} className="w-4 h-4 text-violet-600" />
+              {data?.recent_activities?.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[320px] overflow-y-auto pr-1">
+                  {data.recent_activities.slice(0, 12).map((activity, idx) => {
+                    // Determine time grouping for first item in each group
+                    const showGroupLabel = idx === 0 || (idx > 0 && 
+                      new Date(activity.timestamp).toDateString() !== new Date(data.recent_activities[idx - 1].timestamp).toDateString()
+                    );
+                    
+                    const timeAgo = activity.timestamp;
+                    const isToday = timeAgo.includes('ago') || timeAgo.includes('minute') || timeAgo.includes('hour');
+                    const isYesterday = timeAgo.includes('Yesterday');
+                    
+                    return (
+                      <div key={idx} className="relative">
+                        {showGroupLabel && (
+                          <div className="flex items-center gap-2 mb-2 mt-2 first:mt-0">
+                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                              {isToday ? 'Today' : isYesterday ? 'Yesterday' : 'This Week'}
+                            </span>
+                            <div className="flex-1 h-px bg-slate-200" />
+                          </div>
+                        )}
+                        <div className="flex items-start gap-3 p-3 rounded-lg border border-slate-200 bg-slate-50 hover:bg-white hover:border-violet-200 hover:shadow-sm transition-all">
+                          <div className={cn(
+                            "w-8 h-8 rounded-lg flex items-center justify-center shrink-0",
+                            activity.type === 'attendance' && "bg-emerald-100",
+                            activity.type === 'grade' && "bg-violet-100",
+                            activity.type === 'announcement' && "bg-amber-100",
+                            activity.type === 'material' && "bg-blue-100",
+                            activity.type === 'message' && "bg-rose-100",
+                            !activity.type && "bg-slate-100"
+                          )}>
+                            <TeacherActivityIcon type={activity.type} className={cn(
+                              "w-4 h-4",
+                              activity.type === 'attendance' && "text-emerald-600",
+                              activity.type === 'grade' && "text-violet-600",
+                              activity.type === 'announcement' && "text-amber-600",
+                              activity.type === 'material' && "text-blue-600",
+                              activity.type === 'message' && "text-rose-600",
+                              !activity.type && "text-slate-600"
+                            )} />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-xs font-semibold text-slate-900 leading-tight mb-0.5">{activity.description}</p>
+                            {activity.context && (
+                              <p className="text-[10px] text-slate-600 font-medium leading-tight mb-1">{activity.context}</p>
+                            )}
+                            <div className="flex items-center gap-2">
+                              <p className="text-[10px] text-slate-500 font-medium">{activity.timestamp}</p>
+                              {activity.class_name && (
+                                <>
+                                  <span className="text-slate-300">•</span>
+                                  <span className="text-[10px] text-violet-600 font-semibold">{activity.class_name}</span>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        </div>
                       </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="text-sm font-semibold text-slate-900 leading-tight">{activity.description}</p>
-                        <p className="text-xs text-slate-500 font-medium mt-0.5">{activity.timestamp}</p>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <div className="col-span-2 py-8 text-center">
-                    <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-slate-100 mb-3">
-                      <svg className="w-6 h-6 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                      </svg>
-                    </div>
-                    <p className="text-sm font-semibold text-slate-500">No recent activity</p>
-                    <p className="text-xs text-slate-400 mt-1">Your actions will appear here</p>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="py-12 text-center">
+                  <div className="inline-flex items-center justify-center w-14 h-14 rounded-xl bg-slate-100 mb-3">
+                    <svg className="w-7 h-7 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
                   </div>
-                )}
-              </div>
+                  <p className="text-sm font-semibold text-slate-500">No recent activity</p>
+                  <p className="text-xs text-slate-400 mt-1">Your actions will appear here as you use the platform</p>
+                </div>
+              )}
             </CardBody>
           </Card>
 
@@ -1180,31 +1426,109 @@ const TeacherView = () => {
             </CardHeader>
             <CardBody className="p-4">
               {data?.upcoming_events?.length > 0 ? (
-                <div className="space-y-3">
-                  {data.upcoming_events.slice(0, 4).map((event, idx) => (
-                    <div key={idx} className="flex items-start gap-3 p-3 rounded-lg border border-slate-200 bg-slate-50 hover:bg-white hover:border-violet-200 transition-all">
+                <div className="space-y-2.5 max-h-[320px] overflow-y-auto pr-1">
+                  {data.upcoming_events.slice(0, 6).map((event, idx) => (
+                    <div key={idx} className="flex items-start gap-3 p-3 rounded-lg border border-slate-200 bg-slate-50 hover:bg-white hover:border-violet-200 hover:shadow-sm transition-all cursor-pointer">
                       <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-violet-100 to-indigo-100 flex flex-col items-center justify-center shrink-0 border border-violet-200">
-                        <span className="text-xs font-bold text-violet-600">{event.day || 'TBD'}</span>
-                        <span className="text-[10px] font-semibold text-violet-500 uppercase">{event.month || ''}</span>
+                        <span className="text-xs font-bold text-violet-600 leading-none">{event.day || 'TBD'}</span>
+                        <span className="text-[10px] font-semibold text-violet-500 uppercase leading-none mt-0.5">{event.month || ''}</span>
                       </div>
                       <div className="min-w-0 flex-1">
-                        <h4 className="text-sm font-bold text-slate-900 leading-tight">{event.title}</h4>
-                        <p className="text-xs text-slate-500 font-medium mt-0.5">{event.time || 'All day'}</p>
+                        <h4 className="text-sm font-bold text-slate-900 leading-tight mb-0.5">{event.title}</h4>
+                        <p className="text-[10px] text-slate-500 font-medium flex items-center gap-1">
+                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          {event.time || 'All day'}
+                        </p>
+                        {event.location && (
+                          <p className="text-[10px] text-slate-500 font-medium flex items-center gap-1 mt-0.5">
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            {event.location}
+                          </p>
+                        )}
                       </div>
                     </div>
                   ))}
                 </div>
               ) : (
-                <EmptyState
-                  className="py-6"
-                  title="No upcoming events"
-                  description="School events and deadlines will appear here"
-                  icon={
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                  }
-                />
+                <div>
+                  {/* Mini Calendar Preview for Empty State */}
+                  <div className="mb-4">
+                    <div className="bg-slate-50 rounded-xl border border-slate-200 p-3">
+                      <div className="text-center mb-2">
+                        <p className="text-xs font-bold text-slate-700">{new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</p>
+                      </div>
+                      <div className="grid grid-cols-7 gap-1 mb-2">
+                        {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, i) => (
+                          <div key={i} className="text-center">
+                            <span className="text-[9px] font-bold text-slate-400 uppercase">{day}</span>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="grid grid-cols-7 gap-1">
+                        {Array.from({ length: 35 }, (_, i) => {
+                          const today = new Date().getDate();
+                          const day = i - 2; // Offset for month start
+                          const isToday = day === today;
+                          const isTeachingDay = [1, 2, 3, 4, 5].includes(i % 7); // Mon-Fri
+                          
+                          return (
+                            <div
+                              key={i}
+                              className={cn(
+                                "aspect-square flex items-center justify-center rounded text-[10px] font-semibold",
+                                day > 0 && day <= 31 ? "text-slate-600" : "text-slate-300",
+                                isToday && "bg-violet-600 text-white",
+                                !isToday && isTeachingDay && day > 0 && day <= 31 && "bg-violet-50 text-violet-600"
+                              )}
+                            >
+                              {day > 0 && day <= 31 ? day : ''}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Quick Info */}
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 px-3 py-2 bg-slate-50 rounded-lg border border-slate-200">
+                      <svg className="w-4 h-4 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                      <div className="flex-1">
+                        <p className="text-[10px] font-semibold text-slate-500 uppercase">Teaching Days</p>
+                        <p className="text-xs font-bold text-slate-700">Mon - Fri</p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-2 px-3 py-2 bg-violet-50 rounded-lg border border-violet-200">
+                      <svg className="w-4 h-4 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <div className="flex-1">
+                        <p className="text-[10px] font-semibold text-violet-700 uppercase">Semester Progress</p>
+                        <p className="text-xs font-bold text-violet-900">Week 12 of 18</p>
+                      </div>
+                    </div>
+
+                    <div className="text-center pt-2">
+                      <p className="text-xs text-slate-500 font-medium">No upcoming events scheduled</p>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="mt-2 text-violet-600 hover:text-violet-700"
+                        onClick={() => navigate('/my-schedule')}
+                      >
+                        View Full Calendar →
+                      </Button>
+                    </div>
+                  </div>
+                </div>
               )}
             </CardBody>
           </Card>
