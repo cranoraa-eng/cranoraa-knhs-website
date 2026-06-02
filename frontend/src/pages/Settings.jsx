@@ -3,6 +3,7 @@ import api from '../utils/api';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
+import { Button, LoadingSpinner } from '../components/ui';
 
 // ── Shared UI ─────────────────────────────────────────────────────────────────
 
@@ -198,7 +199,7 @@ const SchoolInfoTab = () => {
     finally { setUploadingLogo(false); }
   };
 
-  if (loading) return <div className="flex justify-center py-16"><div className="w-8 h-8 border-2 border-violet-500 border-t-transparent rounded-full animate-spin" /></div>;
+  if (loading) return <div className="flex justify-center py-16"><LoadingSpinner /></div>;
 
   return (
     <form onSubmit={save} className="space-y-6">
@@ -257,11 +258,9 @@ const SchoolInfoTab = () => {
       </SectionCard>
 
       <div className="flex justify-end">
-        <button type="submit" disabled={saving}
-          className="px-8 py-3 bg-violet-600 text-white text-sm font-black rounded-xl hover:bg-violet-700 active:scale-95 transition-all shadow-sm disabled:opacity-50 flex items-center gap-2">
-          {saving && <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
-          {saving ? 'Saving…' : 'Save School Info'}
-        </button>
+        <Button type="submit" disabled={saving} loading={saving} variant="primary">
+          Save School Info
+        </Button>
       </div>
     </form>
   );
@@ -342,17 +341,16 @@ const AcademicYearsTab = () => {
     } catch { toast.error('Failed to delete'); }
   };
 
-  if (loading) return <div className="flex justify-center py-16"><div className="w-8 h-8 border-2 border-violet-500 border-t-transparent rounded-full animate-spin" /></div>;
+  if (loading) return <div className="flex justify-center py-16"><LoadingSpinner /></div>;
 
   return (
     <div className="space-y-6">
       <SectionCard title="Academic Years" subtitle="Manage school years for classrooms and data filtering" icon="📅">
         <div className="flex justify-end mb-4">
-          <button onClick={openCreate}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-violet-600 text-white text-xs font-black rounded-xl hover:bg-violet-700 active:scale-95 transition-all shadow-sm">
+          <Button onClick={openCreate} variant="primary" size="sm">
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" /></svg>
             Add Year
-          </button>
+          </Button>
         </div>
 
         {years.length === 0 ? (
@@ -423,15 +421,12 @@ const AcademicYearsTab = () => {
                 <Toggle checked={form.is_active} onChange={e => setForm(p => ({...p, is_active: e.target.checked}))} />
               </div>
               <div className="flex gap-3 pt-1">
-                <button type="submit" disabled={saving}
-                  className="flex-1 py-2.5 bg-violet-600 text-white text-sm font-black rounded-xl hover:bg-violet-700 active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-2">
-                  {saving && <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
-                  {saving ? 'Saving…' : editingYear ? 'Update' : 'Create'}
-                </button>
-                <button type="button" onClick={() => setShowForm(false)}
-                  className="flex-1 py-2.5 bg-slate-100 text-slate-700 text-sm font-black rounded-xl hover:bg-slate-200 active:scale-95 transition-all">
+                <Button type="submit" disabled={saving} loading={saving} variant="primary" className="flex-1">
+                  {editingYear ? 'Update' : 'Create'}
+                </Button>
+                <Button type="button" onClick={() => setShowForm(false)} variant="secondary" className="flex-1">
                   Cancel
-                </button>
+                </Button>
               </div>
             </form>
           </div>
@@ -479,7 +474,7 @@ const PortalSettingsTab = () => {
     finally { setTogglingMaintenance(false); }
   };
 
-  if (loading || !settings) return <div className="flex justify-center py-16"><div className="w-8 h-8 border-2 border-violet-500 border-t-transparent rounded-full animate-spin" /></div>;
+  if (loading || !settings) return <div className="flex justify-center py-16"><LoadingSpinner /></div>;
 
   return (
     <form onSubmit={save} className="space-y-6">
@@ -556,11 +551,9 @@ const PortalSettingsTab = () => {
       </SectionCard>
 
       <div className="flex justify-end">
-        <button type="submit" disabled={saving}
-          className="px-8 py-3 bg-violet-600 text-white text-sm font-black rounded-xl hover:bg-violet-700 active:scale-95 transition-all shadow-sm disabled:opacity-50 flex items-center gap-2">
-          {saving && <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
-          {saving ? 'Saving…' : 'Save Portal Settings'}
-        </button>
+        <Button type="submit" disabled={saving} loading={saving} variant="primary">
+          Save Portal Settings
+        </Button>
       </div>
     </form>
   );
@@ -623,7 +616,7 @@ const ProfileTab = () => {
     finally { setUploadingPic(false); }
   };
 
-  if (loading) return <div className="flex justify-center py-16"><div className="w-8 h-8 border-2 border-violet-500 border-t-transparent rounded-full animate-spin" /></div>;
+  if (loading) return <div className="flex justify-center py-16"><LoadingSpinner /></div>;
 
   return (
     <form onSubmit={save} className="space-y-6">
@@ -640,7 +633,7 @@ const ProfileTab = () => {
             <button type="button" onClick={() => picRef.current?.click()} disabled={uploadingPic}
               className="absolute -bottom-1 -right-1 w-7 h-7 bg-violet-600 text-white rounded-full flex items-center justify-center shadow-md hover:bg-violet-700 transition-all disabled:opacity-50">
               {uploadingPic
-                ? <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                ? <LoadingSpinner size="xs" className="w-3 h-3" />
                 : <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
               }
             </button>
@@ -679,11 +672,9 @@ const ProfileTab = () => {
       </SectionCard>
 
       <div className="flex justify-end">
-        <button type="submit" disabled={saving}
-          className="px-8 py-3 bg-violet-600 text-white text-sm font-black rounded-xl hover:bg-violet-700 active:scale-95 transition-all shadow-sm disabled:opacity-50 flex items-center gap-2">
-          {saving && <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
-          {saving ? 'Saving…' : 'Save Profile'}
-        </button>
+        <Button type="submit" disabled={saving} loading={saving} variant="primary">
+          Save Profile
+        </Button>
       </div>
     </form>
   );
@@ -761,11 +752,15 @@ const SecurityTab = () => {
       </SectionCard>
 
       <div className="flex justify-end">
-        <button type="submit" disabled={saving || (form.confirmPassword && form.newPassword !== form.confirmPassword)}
-          className="px-8 py-3 bg-slate-900 text-white text-sm font-black rounded-xl hover:bg-black active:scale-95 transition-all shadow-sm disabled:opacity-50 flex items-center gap-2">
-          {saving && <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
-          {saving ? 'Updating…' : 'Update Password'}
-        </button>
+        <Button 
+          type="submit" 
+          disabled={saving || (form.confirmPassword && form.newPassword !== form.confirmPassword)} 
+          loading={saving} 
+          variant="primary"
+          className="bg-slate-900 hover:bg-black text-white"
+        >
+          Update Password
+        </Button>
       </div>
     </form>
   );

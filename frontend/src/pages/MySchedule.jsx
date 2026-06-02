@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import api from '../utils/api';
-import Spinner from '../components/Spinner';
+import { LoadingSpinner } from '../components/ui';
 
 const DAYS = ['monday','tuesday','wednesday','thursday','friday','saturday'];
 const DAY_FULL = { monday:'Monday', tuesday:'Tuesday', wednesday:'Wednesday', thursday:'Thursday', friday:'Friday', saturday:'Saturday' };
@@ -36,7 +36,11 @@ export default function MySchedule() {
     }).catch(() => {}).finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <Spinner />;
+  if (loading) return (
+    <div className="flex items-center justify-center h-64">
+      <LoadingSpinner />
+    </div>
+  );
 
   // Group by day
   const byDay = {};

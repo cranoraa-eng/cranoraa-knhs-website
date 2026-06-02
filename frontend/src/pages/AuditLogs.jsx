@@ -2,6 +2,7 @@
 import api from '../utils/api';
 import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
+import { LoadingSpinner, EmptyState } from '../components/ui';
 
 const AuditLogs = () => {
   const [logs, setLogs] = useState([]);
@@ -171,10 +172,7 @@ const AuditLogs = () => {
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center h-[60vh] gap-4">
-        <div className="relative w-10 h-10">
-          <div className="absolute inset-0 rounded-full border-2 border-slate-100" />
-          <div className="absolute inset-0 rounded-full border-2 border-violet-600 border-t-transparent animate-spin" />
-        </div>
+        <LoadingSpinner />
         <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">Loading audit logs…</p>
       </div>
     );

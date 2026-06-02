@@ -1,16 +1,16 @@
-import { getUser } from '../utils/auth';
 import { useAuth } from '../context/AuthContext';
-import React, { useState, useEffect, useRef, useMemo, memo } from 'react';
+import React, { useState, useEffect, useMemo, memo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../utils/api';
 import { getCurrentAcademicYear } from '../utils/dateHelpers';
 import {
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
-  PieChart, Pie, Cell, BarChart, Bar, Legend
+  PieChart, Pie, Cell
 } from 'recharts';
-import Spinner from '../components/Spinner';
 import { motion, AnimatePresence } from 'framer-motion';
 import StudentDashboardView from '../components/dashboard/StudentDashboardView';
+import { Card, CardHeader, CardBody, CardTitle, Badge, Button, EmptyState, LoadingSpinner } from '../components/ui';
+import { cn } from '../styles/designSystem';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 const getLocalDateStr = () => {
@@ -191,111 +191,128 @@ const WelcomeBanner = ({ user, today, actions, subtitle, statusChips, useSvgGree
     .filter(Boolean).map(n => n[0].toUpperCase()).join('') || '?';
 
   return (
-    <div
-      className={`relative overflow-hidden rounded-sm border shadow-[0_4px_20px_rgba(91,33,182,0.25),0_1px_3px_rgba(15,23,42,0.08)] ${theme.shell} p-4 md:p-6`}
-    >
-      <div className={`pointer-events-none absolute -right-10 -top-10 h-36 w-36 rounded-full ${theme.orbA}`} aria-hidden="true" />
-      <div className={`pointer-events-none absolute -bottom-14 -left-8 h-44 w-44 rounded-full ${theme.orbB}`} aria-hidden="true" />
+    <Card className={cn(
+      "relative overflow-hidden border-none shadow-xl",
+      theme.shell
+    )}>
+      {/* Decorative orbs */}
+      <div className={cn("pointer-events-none absolute -right-10 -top-10 h-36 w-36 rounded-full", theme.orbA)} aria-hidden="true" />
+      <div className={cn("pointer-events-none absolute -bottom-14 -left-8 h-44 w-44 rounded-full", theme.orbB)} aria-hidden="true" />
       <div className="pointer-events-none absolute inset-y-0 right-0 w-1 bg-white/20" aria-hidden="true" />
 
-      <div className="relative z-10 flex flex-row items-start justify-between gap-4 md:gap-6">
-        <div className="flex-1 space-y-2.5 md:space-y-3.5 min-w-0">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className={`inline-flex items-center justify-center gap-1.5 px-2.5 py-1 text-[9px] md:text-[10px] font-bold uppercase tracking-wide border ${theme.chip}`}>
-              <GreetingIcon period={greeting.period} className={`w-3.5 h-3.5 ${theme.chipIcon}`} />
-              {greeting.text}
-            </span>
-            <span className={`hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 text-[9px] md:text-[10px] font-bold uppercase tracking-wide border ${theme.chip}`}>
-              <svg className={`w-3 h-3 ${theme.chipIcon}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-              {today}
-            </span>
-          </div>
+      <CardBody className="relative z-10 p-4 md:p-6">
+        <div className="flex flex-row items-start justify-between gap-4 md:gap-6">
+          <div className="flex-1 space-y-2.5 md:space-y-3.5 min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge className={cn("border", theme.chip)}>
+                <GreetingIcon period={greeting.period} className={cn("w-3.5 h-3.5", theme.chipIcon)} />
+                <span>{greeting.text}</span>
+              </Badge>
+              <Badge className={cn("hidden sm:inline-flex border", theme.chip)}>
+                <svg className={cn("w-3 h-3", theme.chipIcon)} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>{today}</span>
+              </Badge>
+            </div>
 
-          <div className="space-y-1 md:space-y-1.5">
-            <h1 className="text-lg md:text-2xl font-bold text-white tracking-tight leading-tight">
-              Welcome back,{' '}
-              <span className="text-violet-100">{user?.first_name || 'User'}</span>
-            </h1>
-            {subtitle && (
-              <p className={`text-[10px] md:text-xs font-semibold uppercase tracking-wide ${theme.subtitle}`}>{subtitle}</p>
-            )}
-            <p className={`text-[11px] md:text-sm max-w-lg leading-relaxed hidden sm:block ${theme.message}`}>
-              {greeting.message}
-            </p>
-          </div>
+            <div className="space-y-1 md:space-y-1.5">
+              <h1 className="text-lg md:text-2xl font-bold text-white tracking-tight leading-tight">
+                Welcome back,{' '}
+                <span className="text-violet-100">{user?.first_name || 'User'}</span>
+              </h1>
+              {subtitle && (
+                <p className={cn("text-xs font-semibold uppercase tracking-wide", theme.subtitle)}>{subtitle}</p>
+              )}
+              <p className={cn("text-sm max-w-lg leading-relaxed hidden sm:block", theme.message)}>
+                {greeting.message}
+              </p>
+            </div>
 
-          {statusChips?.length > 0 && (
-            <div className="flex flex-wrap gap-1.5 md:gap-2 pt-0.5">
-              {statusChips.map((chip, idx) => (
-                <div key={idx} className="flex items-center gap-2 border border-white/20 bg-white/10 px-2.5 py-1.5 md:px-3 md:py-2 backdrop-blur-[2px]">
-                  <div className={`w-1.5 h-1.5 shrink-0 ${CHIP_DOT[chip.color] || 'bg-white'}`} />
-                  <div className="flex flex-col min-w-0">
-                    <span className="text-[10px] md:text-xs font-bold text-white leading-none">{chip.value}</span>
-                    <span className="text-[9px] md:text-[10px] font-semibold text-violet-200 uppercase tracking-wide mt-0.5 hidden sm:block">{chip.label}</span>
-                </div>
+            {statusChips?.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 md:gap-2 pt-0.5">
+                {statusChips.map((chip, idx) => (
+                  <div key={idx} className="flex items-center gap-2 border border-white/20 bg-white/10 px-2.5 py-1.5 md:px-3 md:py-2 backdrop-blur-[2px] rounded-lg">
+                    <div className={cn("w-1.5 h-1.5 shrink-0 rounded-full", CHIP_DOT[chip.color] || 'bg-white')} />
+                    <div className="flex flex-col min-w-0">
+                      <span className="text-xs md:text-sm font-bold text-white leading-none">{chip.value}</span>
+                      <span className="text-[10px] font-semibold text-violet-200 uppercase tracking-wide mt-0.5 hidden sm:block">{chip.label}</span>
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-          )}
+            )}
 
-          <div className={`${DASH_ACTIONS_ROW} md:hidden pt-1`}>
-            {actions}
+            <div className="flex flex-wrap gap-2 md:hidden pt-1">
+              {actions}
+            </div>
           </div>
-        </div>
 
-        <div className="flex flex-col items-center md:items-end gap-2.5 md:gap-3 shrink-0">
-          <div className="relative">
-            <div className="w-14 h-14 md:w-[5.25rem] md:h-[5.25rem] rounded-sm border-2 border-white/40 bg-white/15 overflow-hidden shadow-lg flex items-center justify-center backdrop-blur-sm">
+          <div className="flex flex-col items-center md:items-end gap-2.5 md:gap-3 shrink-0">
+            <div className="relative">
+              <div className="w-14 h-14 md:w-20 md:h-20 rounded-xl border-2 border-white/40 bg-white/15 overflow-hidden shadow-lg flex items-center justify-center backdrop-blur-sm">
                 {user?.profile_picture ? (
-                <img src={user.profile_picture} alt="Profile" className="w-full h-full object-cover" />
+                  <img src={user.profile_picture} alt="Profile" className="w-full h-full object-cover" />
                 ) : (
-                <span className="text-base md:text-2xl font-bold text-white">{initials}</span>
+                  <span className="text-base md:text-2xl font-bold text-white">{initials}</span>
                 )}
               </div>
-            <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 md:w-3 md:h-3 bg-emerald-400 border-2 border-violet-900 shadow-sm" />
+              <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 md:w-4 md:h-4 bg-emerald-400 rounded-full border-2 border-violet-900 shadow-sm" />
             </div>
-          <div className={`hidden md:flex ${DASH_ACTIONS_ROW}`}>
-            {actions}
+            <div className="hidden md:flex flex-wrap gap-2">
+              {actions}
+            </div>
           </div>
         </div>
-      </div>
-    </div>
+      </CardBody>
+    </Card>
   );
 };
 
 const StatCard = memo(({ label, value, sub, icon, color = 'violet', onClick, badge }) => {
-  const themes = {
-    violet: 'text-violet-700 bg-violet-50 border-violet-200',
-    blue:   'text-blue-700 bg-blue-50 border-blue-200',
-    emerald:'text-emerald-700 bg-emerald-50 border-emerald-200',
-    rose:   'text-rose-700 bg-rose-50 border-rose-200',
-    amber:  'text-amber-700 bg-amber-50 border-amber-200',
-    indigo: 'text-indigo-700 bg-indigo-50 border-indigo-200',
+  const iconThemes = {
+    violet: 'bg-purple-100 text-purple-600 border-purple-200',
+    blue:   'bg-blue-100 text-blue-600 border-blue-200',
+    emerald:'bg-emerald-100 text-emerald-600 border-emerald-200',
+    rose:   'bg-rose-100 text-rose-600 border-rose-200',
+    amber:  'bg-amber-100 text-amber-600 border-amber-200',
+    indigo: 'bg-indigo-100 text-indigo-600 border-indigo-200',
   };
 
   return (
-    <div
+    <Card
+      interactive={!!onClick}
       onClick={onClick}
-      className={`group ${DASH_PANEL} border-l-[3px] border-l-violet-200 p-2.5 md:p-4 transition-all hover:border-violet-300 hover:border-l-violet-600 hover:shadow-[0_4px_14px_rgba(91,33,182,0.1)] flex flex-col justify-between min-h-[76px] md:min-h-[120px] ${onClick ? 'cursor-pointer' : ''}`}
+      className={cn(
+        "border-l-4 border-l-purple-400 hover:border-l-purple-600 transition-all",
+        onClick && "cursor-pointer"
+      )}
     >
-      <div className="flex items-start justify-between">
-        <div className={`w-7 h-7 md:w-10 md:h-10 rounded-sm flex items-center justify-center border ${themes[color]}`}>
-          {React.cloneElement(icon, { className: 'w-3.5 h-3.5 md:w-5 md:h-5' })}
+      <CardBody className="p-3 md:p-4 flex flex-col justify-between min-h-[100px] md:min-h-[120px]">
+        <div className="flex items-start justify-between">
+          <div className={cn(
+            "w-9 h-9 md:w-10 md:h-10 rounded-lg flex items-center justify-center border",
+            iconThemes[color]
+          )}>
+            {React.cloneElement(icon, { className: 'w-4 h-4 md:w-5 md:h-5' })}
+          </div>
+          {badge > 0 && (
+            <Badge variant="red" size="sm">{badge}</Badge>
+          )}
         </div>
-        {badge > 0 && (
-          <span className="px-1.5 py-0.5 bg-rose-100 border border-rose-200 text-rose-700 text-[9px] md:text-[10px] font-bold uppercase tracking-wide">
-            {badge}
-          </span>
-        )}
-      </div>
-      <div className="mt-2 md:mt-4">
-        <p className="text-[9px] md:text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-0.5 md:mb-1 truncate">{label}</p>
-        <h3 className="text-base md:text-2xl font-bold text-slate-900 tracking-tight leading-none truncate">
-          {value ?? '—'}
-        </h3>
-        {sub && <p className="text-[9px] md:text-[10px] font-medium text-slate-500 mt-1 uppercase tracking-wide truncate">{sub}</p>}
-      </div>
-    </div>
+        <div className="mt-3 md:mt-4">
+          <p className="text-xs font-medium text-slate-500 mb-1 uppercase tracking-wide truncate">
+            {label}
+          </p>
+          <h3 className="text-xl md:text-2xl font-bold text-slate-900 tracking-tight leading-none truncate">
+            {value ?? '—'}
+          </h3>
+          {sub && (
+            <p className="text-xs text-slate-500 mt-1 truncate">{sub}</p>
+          )}
+        </div>
+      </CardBody>
+    </Card>
   );
 });
 
@@ -303,55 +320,59 @@ StatCard.displayName = 'StatCard';
 
 const LatestMessagesWidget = memo(({ messages, onOpenChat }) => {
   return (
-    <div className={`${DASH_PANEL} p-3 md:p-4 flex flex-col h-full`}>
-      <PanelHeader
-        title="Latest Messages"
-        subtitle="Communication hub"
-        icon={
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-          </svg>
-        }
-        action={
-          <button type="button" onClick={onOpenChat} className={DASH_ICON_BTN} aria-label="Open messages">
-          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 5H19M19 5V11M19 5L5 19M5 19H11M5 19V13" /></svg>
-        </button>
-        }
-      />
-      <div className="space-y-2 flex-1 overflow-y-auto scrollbar-none min-h-0">
-        {messages?.map(m => (
-          <div key={m.id} className={`flex gap-3 p-2.5 cursor-pointer group/msg ${DASH_LIST_ITEM}`} onClick={onOpenChat}>
-            <div className="relative shrink-0">
-              <div className="w-9 h-9 rounded-sm bg-white flex items-center justify-center text-slate-600 font-bold text-xs border border-slate-200 overflow-hidden">
-                {m.sender_profile_picture
-                  ? <img src={m.sender_profile_picture} alt="" className="w-full h-full object-cover" />
-                  : m.sender ? m.sender[0].toUpperCase() : '?'}
+    <Card>
+      <CardHeader divider>
+        <div className="flex items-center justify-between">
+          <CardTitle subtitle="Communication hub">Latest Messages</CardTitle>
+          <Button variant="ghost" size="sm" onClick={onOpenChat}>
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 5H19M19 5V11M19 5L5 19M5 19H11M5 19V13" />
+            </svg>
+          </Button>
+        </div>
+      </CardHeader>
+      <CardBody className="space-y-2 max-h-[300px] overflow-y-auto">
+        {messages?.length > 0 ? (
+          messages.map(m => (
+            <div 
+              key={m.id} 
+              className="flex gap-3 p-2.5 cursor-pointer group rounded-lg border border-slate-100 bg-slate-50/40 hover:bg-white hover:border-slate-200 hover:shadow-sm transition-all"
+              onClick={onOpenChat}
+            >
+              <div className="relative shrink-0">
+                <div className="w-9 h-9 rounded-lg bg-white flex items-center justify-center text-slate-600 font-bold text-xs border border-slate-200 overflow-hidden">
+                  {m.sender_profile_picture
+                    ? <img src={m.sender_profile_picture} alt="" className="w-full h-full object-cover" />
+                    : m.sender ? m.sender[0].toUpperCase() : '?'}
+                </div>
+                <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 rounded-full border-2 border-white" />
               </div>
-              <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="flex justify-between items-center gap-2">
-                <h4 className="text-xs font-bold text-slate-800 truncate group-hover/msg:text-violet-700 transition-colors">{m.sender || 'Unknown'}</h4>
-                <span className="text-[10px] font-semibold text-slate-500 shrink-0 bg-violet-50 border border-violet-100 px-1.5 py-0.5 rounded-sm">
-                  {new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                </span>
+              <div className="min-w-0 flex-1">
+                <div className="flex justify-between items-center gap-2">
+                  <h4 className="text-xs font-bold text-slate-800 truncate group-hover:text-purple-700 transition-colors">
+                    {m.sender || 'Unknown'}
+                  </h4>
+                  <Badge variant="slate" size="sm">
+                    {new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </Badge>
+                </div>
+                <p className="text-xs text-slate-500 line-clamp-1 mt-1 font-medium">{m.content}</p>
               </div>
-              <p className="text-[10px] text-slate-500 line-clamp-1 mt-1 font-bold tracking-tight">{m.content}</p>
             </div>
-          </div>
-        ))}
-        {!messages?.length && (
-          <DashEmptyState
+          ))
+        ) : (
+          <EmptyState
             icon={
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
               </svg>
             }
             title="No recent messages"
+            className="py-8"
           />
         )}
-      </div>
-    </div>
+      </CardBody>
+    </Card>
   );
 });
 
@@ -359,7 +380,7 @@ LatestMessagesWidget.displayName = 'LatestMessagesWidget';
 
 // ─── TODAY'S SCHEDULE WIDGET ─────────────────────────────────────────────────
 
-const TodayScheduleWidget = memo(({ role }) => {
+const TodayScheduleWidget = memo(() => {
   const navigate = useNavigate();
   const [schedule, setSchedule] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -395,8 +416,8 @@ const TodayScheduleWidget = memo(({ role }) => {
     return nowMinutes >= start && nowMinutes < end;
   });
 
-  const nextClass = schedule.find((s, idx) => {
-    const start = toMinutes(s.time_slot_detail?.start_time_display);
+  const nextClass = schedule.find(() => {
+    const start = toMinutes(schedule.time_slot_detail?.start_time_display);
     return nowMinutes < start;
   });
 
@@ -410,30 +431,23 @@ const TodayScheduleWidget = memo(({ role }) => {
   };
 
   return (
-    <div className={`${DASH_PANEL} p-3 md:p-5 flex flex-col h-full`}>
-      <PanelHeader
-        title="Today's Schedule"
-        subtitle={todayLabel}
-        icon={
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
-        }
-        action={
-          <button type="button" onClick={() => navigate('/schedule')} className={DASH_LINK_BTN}>
-          View Full
-        </button>
-        }
-      />
+    <Card className="flex flex-col h-full">
+      <CardHeader divider>
+        <div className="flex items-center justify-between">
+          <CardTitle subtitle={todayLabel}>Today's Schedule</CardTitle>
+          <Button variant="ghost" size="sm" onClick={() => navigate('/schedule')}>
+            View Full
+          </Button>
+        </div>
+      </CardHeader>
 
-      {/* Content */}
-      <div className="flex-1 min-h-0">
+      <CardBody className="flex-1 min-h-0">
         {loading ? (
           <div className="space-y-3">
             {[1,2,3].map(i => <div key={i} className="h-16 rounded-lg bg-slate-50 animate-pulse border border-slate-100/50" />)}
           </div>
         ) : schedule.length === 0 ? (
-          <DashEmptyState
+          <EmptyState
             className="h-full min-h-[140px]"
             icon={
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -449,42 +463,39 @@ const TodayScheduleWidget = memo(({ role }) => {
               const isCurrent = idx === currentIdx;
               const isPast    = currentIdx !== -1 && idx < currentIdx;
               return (
-                <div key={s.id} className={`flex items-center gap-4 px-3 py-3 border transition-colors group/item ${
-                  isCurrent
-                    ? 'bg-violet-700 border-violet-700 text-white'
-                    : isPast
-                    ? 'bg-violet-50/40 border-violet-100 opacity-60'
-                    : 'bg-white border-violet-200 hover:border-violet-300 hover:shadow-sm'
-                }`}>
+                <div key={s.id} className={cn(
+                  "flex items-center gap-4 px-3 py-3 border rounded-lg transition-colors group/item",
+                  isCurrent && 'bg-violet-700 border-violet-700 text-white',
+                  isPast && 'bg-violet-50/40 border-violet-100 opacity-60',
+                  !isCurrent && !isPast && 'bg-white border-violet-200 hover:border-violet-300 hover:shadow-sm'
+                )}>
                   <div className="text-center min-w-[50px] shrink-0">
-                    <p className={`text-xs font-bold leading-none ${isCurrent ? 'text-white' : 'text-slate-700'}`}>
+                    <p className={cn("text-xs font-bold leading-none", isCurrent ? 'text-white' : 'text-slate-700')}>
                       {s.time_slot_detail?.start_time_display}
                     </p>
-                    <p className={`text-xs font-medium mt-1 ${isCurrent ? 'text-slate-300' : 'text-slate-500'}`}>
+                    <p className={cn("text-xs font-medium mt-1", isCurrent ? 'text-slate-300' : 'text-slate-500')}>
                       {s.time_slot_detail?.end_time_display}
                     </p>
                   </div>
                   
-                  <div className={`w-px h-8 shrink-0 ${isCurrent ? 'bg-violet-400' : 'bg-violet-200'}`} />
+                  <div className={cn("w-px h-8 shrink-0", isCurrent ? 'bg-violet-400' : 'bg-violet-200')} />
                   
                   <div className="flex-1 min-w-0">
-                    <p className={`text-xs font-bold truncate ${isCurrent ? 'text-white' : 'text-slate-800'}`}>
+                    <p className={cn("text-xs font-bold truncate", isCurrent ? 'text-white' : 'text-slate-800')}>
                       {s.classroom_detail?.name}
                     </p>
-                    <p className={`text-[10px] font-medium mt-0.5 truncate uppercase tracking-wide ${isCurrent ? 'text-slate-300' : 'text-slate-500'}`}>
+                    <p className={cn("text-[10px] font-medium mt-0.5 truncate uppercase tracking-wide", isCurrent ? 'text-slate-300' : 'text-slate-500')}>
                       {s.subject_detail?.name}
                     </p>
                   </div>
 
                   {isCurrent ? (
-                    <div className="flex items-center justify-center w-2 h-2 shrink-0">
-                      <div className="w-2 h-2 bg-emerald-400" />
-                    </div>
+                    <Badge variant="green" size="sm">Live</Badge>
                   ) : (
                     !isPast && s === nextClass && (
-                      <div className="px-2 py-0.5 border border-violet-200 bg-violet-50 text-[10px] font-bold text-violet-700 uppercase tracking-wide shrink-0">
+                      <Badge variant="purple" size="sm">
                         In {getCountdown(s.time_slot_detail?.start_time_display)}
-                      </div>
+                      </Badge>
                     )
                   )}
                 </div>
@@ -492,41 +503,36 @@ const TodayScheduleWidget = memo(({ role }) => {
             })}
           </div>
         )}
-      </div>
-    </div>
+      </CardBody>
+    </Card>
   );
 });
 
 TodayScheduleWidget.displayName = 'TodayScheduleWidget';
 
 const DashboardQuickActions = memo(({ title, items, navigate }) => (
-  <div className={`${DASH_PANEL} p-3 md:p-5`}>
-    <PanelHeader
-      title={title}
-      subtitle="Shortcuts"
-      icon={
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
-        </svg>
-      }
-      className="mb-3"
-    />
-    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-      {items.map((a) => (
-        <button
-          key={a.path}
-          type="button"
-          onClick={() => navigate(a.path)}
-          className="flex flex-col items-center justify-center gap-1.5 p-2.5 min-h-[76px] border border-violet-200 bg-violet-50/60 hover:bg-white hover:border-violet-400 hover:shadow-sm rounded-sm transition-all active:scale-[0.98]"
-        >
-          <svg className="w-4 h-4 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={a.icon} />
-          </svg>
-          <span className="text-[9px] font-bold text-violet-700 uppercase tracking-wide text-center leading-tight">{a.label}</span>
-        </button>
-      ))}
-    </div>
-  </div>
+  <Card>
+    <CardHeader divider>
+      <CardTitle subtitle="Shortcuts">{title}</CardTitle>
+    </CardHeader>
+    <CardBody>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+        {items.map((a) => (
+          <Button
+            key={a.path}
+            variant="ghost"
+            onClick={() => navigate(a.path)}
+            className="flex flex-col items-center justify-center gap-1.5 p-2.5 min-h-[76px] h-auto"
+          >
+            <svg className="w-4 h-4 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={a.icon} />
+            </svg>
+            <span className="text-[9px] font-bold text-violet-700 uppercase tracking-wide text-center leading-tight">{a.label}</span>
+          </Button>
+        ))}
+      </div>
+    </CardBody>
+  </Card>
 ));
 
 DashboardQuickActions.displayName = 'DashboardQuickActions';
@@ -550,7 +556,7 @@ const AdminView = () => {
 
   const today = useMemo(() => new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }), []);
 
-  if (loading || !data) return <Spinner />;
+  if (loading || !data) return <LoadingSpinner />;
 
   const dist = distView === 'general_average' ? data?.general_average : data?.all_subjects;
   const gradeData = dist?.counts || [];
@@ -569,22 +575,22 @@ const AdminView = () => {
         stats={data}
         subtitle="System Administrator • Portal Management"
         actions={
-          <div className={DASH_ACTIONS_ROW}>
-            <button
+          <>
+            <Button
+              variant="secondary"
               onClick={() => navigate('/announcements')}
-              className={BANNER_BTN_SECONDARY}
             >
               Post Announcement
-            </button>
+            </Button>
             {data?.pending_approvals > 0 && (
-              <button
+              <Button
+                variant="primary"
                 onClick={() => navigate('/account-approvals')}
-                className={BANNER_BTN_PRIMARY}
               >
                 Approvals ({data.pending_approvals})
-              </button>
+              </Button>
             )}
-          </div>
+          </>
         }
       />
 
@@ -604,23 +610,17 @@ const AdminView = () => {
         <p className={DASH_SECTION_LABEL}>Analytics</p>
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 md:gap-4 overflow-hidden">
         {/* Attendance Trends */}
-        <div className={`lg:col-span-8 ${DASH_PANEL} p-3 md:p-4 overflow-hidden flex flex-col min-h-[220px] md:min-h-0`}>
-          <PanelHeader
-            title="Attendance Trends"
-            subtitle="Last 30 days · presence rate"
-            icon={
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-              </svg>
-            }
-            action={
-              <span className="inline-flex items-center gap-1.5 rounded-sm border border-violet-200 bg-violet-50 px-2 py-1 text-[10px] font-bold text-violet-700 uppercase tracking-wide">
+        <Card className="lg:col-span-8 overflow-hidden flex flex-col min-h-[220px] md:min-h-0">
+          <CardHeader divider>
+            <div className="flex items-center justify-between">
+              <CardTitle subtitle="Last 30 days · presence rate">Attendance Trends</CardTitle>
+              <Badge variant="purple" size="sm">
                 <span className="w-2 h-2 rounded-full bg-violet-600" />
                 Rate %
-            </span>
-            }
-          />
-          <div className="flex-1 min-h-[180px] sm:min-h-[200px] w-full">
+              </Badge>
+            </div>
+          </CardHeader>
+          <CardBody className="flex-1 min-h-[180px] sm:min-h-[200px]">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={attendanceTrends} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
@@ -637,30 +637,25 @@ const AdminView = () => {
                 <Area type="monotone" dataKey="rate" stroke={CHART_STROKE} strokeWidth={2} fill={CHART_FILL} fillOpacity={0.9} animationDuration={1200} />
               </AreaChart>
             </ResponsiveContainer>
-          </div>
-        </div>
+          </CardBody>
+        </Card>
 
         {/* Grade Distribution */}
-        <div className={`lg:col-span-4 ${DASH_PANEL} p-3 md:p-4 flex flex-col min-h-[280px] md:min-h-0`}>
-          <PanelHeader
-            title="Grade Analysis"
-            subtitle={distView === 'general_average' ? 'General average' : 'All subjects'}
-            icon={
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
-              </svg>
-            }
-            action={
-              <button
-                type="button"
+        <Card className="lg:col-span-4 flex flex-col min-h-[280px] md:min-h-0">
+          <CardHeader divider>
+            <div className="flex items-center justify-between">
+              <CardTitle subtitle={distView === 'general_average' ? 'General average' : 'All subjects'}>Grade Analysis</CardTitle>
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={() => setDistView(distView === 'general_average' ? 'all_subjects' : 'general_average')}
-                className={DASH_ICON_BTN}
                 title={distView === 'general_average' ? 'Switch to all subjects' : 'Switch to general average'}
               >
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
-            </button>
-            }
-          />
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+              </Button>
+            </div>
+          </CardHeader>
+          <CardBody className="flex-1 flex flex-col justify-between min-h-[200px]">
           <div className="flex-1 flex flex-col justify-between min-h-[200px]">
             <div className="h-36 relative shrink-0">
               <ResponsiveContainer width="100%" height="100%">
@@ -708,100 +703,113 @@ const AdminView = () => {
               })}
             </div>
             </div>
-          </div>
-        </div>
+          </CardBody>
+        </Card>
       </div>
 
       <div className="space-y-2">
         <p className={DASH_SECTION_LABEL}>Updates & activity</p>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
         {/* Recent Announcements */}
-        <div className={`${DASH_PANEL} p-3 md:p-4 flex flex-col min-h-[200px]`}>
-          <PanelHeader
-            title="Recent Announcements"
-            subtitle="School-wide updates"
-            icon={
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
-              </svg>
-            }
-            action={
-              <Link to="/announcements" className={DASH_ICON_BTN} aria-label="View announcements">
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
-            </Link>
-            }
-          />
-          <div className="space-y-2 flex-1 overflow-y-auto scrollbar-none min-h-0">
-            {data?.recent_announcements?.map(a => (
-              <div key={a.id} className={`group flex gap-3 p-2.5 cursor-pointer ${DASH_LIST_ITEM}`}>
-                <div className="shrink-0 w-9 h-9 rounded-sm bg-white border border-violet-200 flex items-center justify-center text-violet-800 font-bold text-xs group-hover:bg-violet-700 group-hover:text-white group-hover:border-violet-700 transition-colors">
-                  {new Date(a.created_at).getDate()}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <h4 className="text-xs font-bold text-slate-800 line-clamp-1">{a.title}</h4>
-                  <div className="flex items-center gap-1.5 mt-1">
-                    <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest truncate">{a.author_name}</p>
-                    <span className="w-1 h-1 rounded-full bg-slate-300 shrink-0" />
-                    <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest shrink-0">
-                      {new Date(a.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                    </p>
+        <Card className="flex flex-col min-h-[200px]">
+          <CardHeader divider>
+            <div className="flex items-center justify-between">
+              <CardTitle subtitle="School-wide updates">Recent Announcements</CardTitle>
+              <Link to="/announcements">
+                <Button variant="ghost" size="sm" aria-label="View announcements">
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  </svg>
+                </Button>
+              </Link>
+            </div>
+          </CardHeader>
+          <CardBody className="space-y-2 flex-1 overflow-y-auto scrollbar-none min-h-0">
+            {data?.recent_announcements?.length > 0 ? (
+              data.recent_announcements.map(a => (
+                <div key={a.id} className="group flex gap-3 p-2.5 cursor-pointer rounded-lg border border-slate-100 bg-slate-50/40 hover:bg-white hover:border-slate-200 hover:shadow-sm transition-all">
+                  <div className="shrink-0 w-9 h-9 rounded-lg bg-white border border-violet-200 flex items-center justify-center text-violet-800 font-bold text-xs group-hover:bg-violet-700 group-hover:text-white group-hover:border-violet-700 transition-colors">
+                    {new Date(a.created_at).getDate()}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <h4 className="text-xs font-bold text-slate-800 line-clamp-1">{a.title}</h4>
+                    <div className="flex items-center gap-1.5 mt-1">
+                      <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest truncate">{a.author_name}</p>
+                      <span className="w-1 h-1 rounded-full bg-slate-300 shrink-0" />
+                      <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest shrink-0">
+                        {new Date(a.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        </div>
+              ))
+            ) : (
+              <EmptyState
+                icon={
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
+                  </svg>
+                }
+                title="No announcements"
+                className="py-8"
+              />
+            )}
+          </CardBody>
+        </Card>
 
         {/* Latest Messages */}
         <LatestMessagesWidget messages={data?.latest_messages} onOpenChat={() => navigate('/messages')} />
 
         {/* System Activity */}
-        <div className={`${DASH_PANEL} p-3 md:p-4 flex flex-col min-h-[200px]`}>
-          <PanelHeader
-            title="System Activity"
-            subtitle="Audit logs summary"
-            icon={
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-              </svg>
-            }
-            action={
-              <Link to="/audit-logs" className={DASH_ICON_BTN} aria-label="View audit logs">
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
-            </Link>
-            }
-          />
-          <div className="space-y-2 flex-1 overflow-y-auto scrollbar-none min-h-0">
-            {data?.widgets?.recent_activity?.map(log => (
-              <div key={log.id} className={`flex items-start gap-3 p-2.5 ${DASH_LIST_ITEM}`}>
-                <div className={`mt-1.5 w-2 h-2 rounded-full shrink-0 transition-transform group-hover:scale-125 ${
-                  log.action === 'login'  ? 'bg-emerald-500' :
-                  log.action === 'delete' ? 'bg-rose-500'    :
-                  log.action === 'create' ? 'bg-blue-500'    : 'bg-amber-500'
-                }`} />
-                <div className="min-w-0">
-                  <p className="text-xs font-bold text-slate-800 leading-snug line-clamp-2">
-                    <span className="text-slate-800 font-bold">{log.user}</span>{' '}
-                    <span className="text-slate-500">{log.description}</span>
-                  </p>
-                  <p className="text-[10px] text-slate-400 font-black mt-1 uppercase tracking-widest">
-                    {new Date(log.timestamp).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                  </p>
+        <Card className="flex flex-col min-h-[200px]">
+          <CardHeader divider>
+            <div className="flex items-center justify-between">
+              <CardTitle subtitle="Audit logs summary">System Activity</CardTitle>
+              <Link to="/audit-logs">
+                <Button variant="ghost" size="sm" aria-label="View audit logs">
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                  </svg>
+                </Button>
+              </Link>
+            </div>
+          </CardHeader>
+          <CardBody className="space-y-2 flex-1 overflow-y-auto scrollbar-none min-h-0">
+            {data?.widgets?.recent_activity?.length > 0 ? (
+              data.widgets.recent_activity.map(log => (
+                <div key={log.id} className="flex items-start gap-3 p-2.5 rounded-lg border border-slate-100 bg-slate-50/40 hover:bg-white hover:border-slate-200 hover:shadow-sm transition-all">
+                  <div className={cn(
+                    "mt-1.5 w-2 h-2 rounded-full shrink-0 transition-transform group-hover:scale-125",
+                    log.action === 'login' && 'bg-emerald-500',
+                    log.action === 'delete' && 'bg-rose-500',
+                    log.action === 'create' && 'bg-blue-500',
+                    log.action !== 'login' && log.action !== 'delete' && log.action !== 'create' && 'bg-amber-500'
+                  )} />
+                  <div className="min-w-0">
+                    <p className="text-xs font-bold text-slate-800 leading-snug line-clamp-2">
+                      <span className="text-slate-800 font-bold">{log.user}</span>{' '}
+                      <span className="text-slate-500">{log.description}</span>
+                    </p>
+                    <p className="text-[10px] text-slate-400 font-black mt-1 uppercase tracking-widest">
+                      {new Date(log.timestamp).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            ))}
-            {!data?.widgets?.recent_activity?.length && (
-              <DashEmptyState
+              ))
+            ) : (
+              <EmptyState
                 icon={
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                   </svg>
                 }
                 title="No activity"
+                className="py-8"
               />
             )}
-          </div>
-        </div>
+          </CardBody>
+        </Card>
       </div>
     </div>
     </motion.div>
@@ -842,7 +850,7 @@ const TeacherView = () => {
     }).catch(() => {}).finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <Spinner />;
+  if (loading) return <LoadingSpinner />;
 
   const todayStr = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
   const unmarkedCount = classrooms.filter(c => !todayAttendance[c.id]).length;
@@ -866,16 +874,26 @@ const TeacherView = () => {
         today={todayStr}
         statusChips={statusChips}
         actions={
-          <div className={DASH_ACTIONS_ROW}>
-            <button type="button" onClick={() => navigate('/announcements')} className={BANNER_BTN_SECONDARY}>
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" /></svg>
+          <>
+            <Button 
+              variant="secondary" 
+              onClick={() => navigate('/announcements')}
+            >
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
+              </svg>
               Announce
-            </button>
-            <button type="button" onClick={() => navigate('/grade-input')} className={BANNER_BTN_PRIMARY}>
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+            </Button>
+            <Button 
+              variant="primary" 
+              onClick={() => navigate('/grade-input')}
+            >
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
               Grades
-            </button>
-          </div>
+            </Button>
+          </>
         }
       />
       {classrooms.length > 0 && (
@@ -883,35 +901,42 @@ const TeacherView = () => {
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15, duration: 0.5 }}
-          className={`${DASH_PANEL} px-3 py-3 md:px-4 md:py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
-            unmarkedCount === 0
-              ? 'border-emerald-300 bg-emerald-50/90'
-              : 'border-amber-300 bg-amber-50/90'
-          }`}
         >
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div className={`w-2 h-2 rounded-full shrink-0 ${unmarkedCount === 0 ? 'bg-emerald-500' : 'bg-amber-500 animate-pulse'}`} />
-            <div className="min-w-0">
-              <p className={`text-xs font-bold uppercase tracking-wide ${unmarkedCount === 0 ? 'text-emerald-800' : 'text-amber-800'}`}>
-                {unmarkedCount === 0
-                  ? 'All attendance marked for today'
-                  : `${unmarkedCount} class${unmarkedCount > 1 ? 'es' : ''} without attendance today`}
-              </p>
-              {unmarkedCount > 0 && (
-                <p className="text-[10px] font-semibold text-amber-700 mt-0.5 truncate">
-                  {classrooms.filter(c => !todayAttendance[c.id]).map(c => c.name).join(', ')}
+          <Card className={cn(
+            "px-3 py-3 md:px-4 md:py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3",
+            unmarkedCount === 0 ? 'border-emerald-300 bg-emerald-50/90' : 'border-amber-300 bg-amber-50/90'
+          )}>
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className={cn(
+                "w-2 h-2 rounded-full shrink-0",
+                unmarkedCount === 0 ? 'bg-emerald-500' : 'bg-amber-500 animate-pulse'
+              )} />
+              <div className="min-w-0">
+                <p className={cn(
+                  "text-xs font-bold uppercase tracking-wide",
+                  unmarkedCount === 0 ? 'text-emerald-800' : 'text-amber-800'
+                )}>
+                  {unmarkedCount === 0
+                    ? 'All attendance marked for today'
+                    : `${unmarkedCount} class${unmarkedCount > 1 ? 'es' : ''} without attendance today`}
                 </p>
-              )}
+                {unmarkedCount > 0 && (
+                  <p className="text-[10px] font-semibold text-amber-700 mt-0.5 truncate">
+                    {classrooms.filter(c => !todayAttendance[c.id]).map(c => c.name).join(', ')}
+                  </p>
+                )}
+              </div>
             </div>
-          </div>
-          {unmarkedCount > 0 && (
-            <button
-              onClick={() => navigate('/attendance')}
-              className="shrink-0 inline-flex items-center justify-center px-3 py-1.5 rounded-sm bg-violet-700 text-white text-[10px] font-bold uppercase tracking-wide hover:bg-violet-800 transition-colors active:scale-95"
-            >
-              Mark Now
-            </button>
-          )}
+            {unmarkedCount > 0 && (
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => navigate('/attendance')}
+              >
+                Mark Now
+              </Button>
+            )}
+          </Card>
         </motion.div>
       )}
 
@@ -924,22 +949,28 @@ const TeacherView = () => {
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.2, duration: 0.6 }}
-            className={`${DASH_PANEL} overflow-hidden flex flex-col lg:h-[420px] min-h-[300px]`}
           >
-            <PanelHeader
-              bordered
-              title="Academic Overview"
-              subtitle="Active teaching sections"
-              iconClassName="rounded-sm bg-violet-700 border border-violet-800 text-white"
-              icon={
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                </svg>
-              }
-              action={<Link to="/my-classes" className={DASH_BTN_SECONDARY}>Manage Classes</Link>}
-            />
+            <Card className="overflow-hidden flex flex-col lg:h-[420px] min-h-[300px]">
+              <CardHeader divider className="bg-violet-700 text-white border-violet-800">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-lg border border-violet-600 bg-violet-600 text-white flex items-center justify-center">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                      </svg>
+                    </div>
+                    <div>
+                      <CardTitle className="text-white">Academic Overview</CardTitle>
+                      <p className="text-xs font-semibold text-violet-200 uppercase tracking-wide mt-0.5">Active teaching sections</p>
+                    </div>
+                  </div>
+                  <Link to="/my-classes">
+                    <Button variant="secondary" size="sm">Manage Classes</Button>
+                  </Link>
+                </div>
+              </CardHeader>
             
-            <div className="flex-1 overflow-x-auto overflow-y-auto scrollbar-none">
+            <CardBody className="flex-1 overflow-x-auto overflow-y-auto scrollbar-none">
               <table className="w-full text-left border-separate border-spacing-0 min-w-[480px]">
                 <thead className="bg-violet-50/80 border-b border-violet-100 sticky top-0 z-10">
                   <tr>
@@ -953,7 +984,7 @@ const TeacherView = () => {
                   {classrooms.length === 0 ? (
                     <tr>
                       <td colSpan="4" className="px-4 md:px-6 py-8">
-                        <DashEmptyState
+                        <EmptyState
                           title="No classes assigned yet"
                           description="Classes appear here once you are assigned as instructor."
                           icon={
@@ -986,26 +1017,46 @@ const TeacherView = () => {
                           </td>
                           <td className="px-3 md:px-5 py-2.5 md:py-3">
                             {marked === undefined ? (
-                              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-100 border border-slate-200">
+                              <Badge variant="slate" size="sm">
                                 <div className="w-1.5 h-1.5 rounded-full bg-slate-400 animate-pulse" />
-                                <span className="text-xs font-black text-slate-500 uppercase tracking-widest">Checking</span>
-                              </div>
+                                Checking
+                              </Badge>
                             ) : marked ? (
-                              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200">
+                              <Badge variant="green" size="sm">
                                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                                <span className="text-xs font-black text-emerald-600 uppercase tracking-widest">Marked</span>
-                              </div>
+                                Marked
+                              </Badge>
                             ) : (
-                              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-50 border border-amber-200">
+                              <Badge variant="amber" size="sm">
                                 <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
-                                <span className="text-xs font-black text-amber-600 uppercase tracking-widest">Pending</span>
-                              </div>
+                                Pending
+                              </Badge>
                             )}
                           </td>
                           <td className="px-3 md:px-5 py-2.5 md:py-3 text-right">
                             <div className="flex items-center justify-end gap-1.5 md:gap-2">
-                              <button onClick={() => navigate('/attendance', { state: { classroomId: c.id } })} title="Mark Attendance" className="p-1.5 md:p-2.5 text-emerald-600 bg-emerald-50 hover:bg-emerald-600 hover:text-white rounded transition-all shadow-sm active:scale-90 border border-emerald-100"><svg className="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 8l2 2 4-4" /></svg></button>
-                              <button onClick={() => navigate('/grade-input', { state: { classroomId: c.id } })} title="Input Grades" className="p-1.5 md:p-2.5 text-violet-700 bg-violet-50 hover:bg-violet-700 hover:text-white rounded-sm transition-colors active:scale-[0.98] border border-violet-200"><svg className="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg></button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => navigate('/attendance', { state: { classroomId: c.id } })}
+                                title="Mark Attendance"
+                                className="text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
+                              >
+                                <svg className="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 8l2 2 4-4" />
+                                </svg>
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => navigate('/grade-input', { state: { classroomId: c.id } })}
+                                title="Input Grades"
+                                className="text-violet-700 hover:text-violet-800 hover:bg-violet-50"
+                              >
+                                <svg className="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                </svg>
+                              </Button>
                             </div>
                           </td>
                         </tr>
@@ -1014,7 +1065,8 @@ const TeacherView = () => {
                   )}
                 </tbody>
               </table>
-            </div>
+            </CardBody>
+          </Card>
           </motion.div>
 
           {/* Recent Activity Section */}
@@ -1022,25 +1074,16 @@ const TeacherView = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5, duration: 0.6 }}
-            className={`${DASH_PANEL} p-3 md:p-5 flex flex-col lg:h-[520px]`}
           >
-            <PanelHeader
-              title="Recent Activity"
-              subtitle="Your latest school interactions"
-              icon={
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              }
-              action={
-                <span className="px-2 py-1 border border-violet-200 bg-violet-50 text-[10px] font-bold text-violet-700 uppercase tracking-wide rounded-sm">
-                  Activity
-                </span>
-              }
-              className="pb-3 border-b border-violet-100 mb-4 md:mb-5"
-            />
+            <Card className="flex flex-col lg:h-[520px]">
+              <CardHeader divider>
+                <div className="flex items-center justify-between pb-3">
+                  <CardTitle subtitle="Your latest school interactions">Recent Activity</CardTitle>
+                  <Badge variant="purple" size="sm">Activity</Badge>
+                </div>
+              </CardHeader>
             
-            <div className="relative space-y-3 md:space-y-6 flex-1 overflow-y-auto pr-2 scrollbar-none">
+            <CardBody className="relative space-y-3 md:space-y-6 flex-1 overflow-y-auto pr-2 scrollbar-none">
               <div className="absolute left-[15px] md:left-[19px] top-2 bottom-2 w-0.5 bg-violet-100" />
               <AnimatePresence>
                 {data?.recent_activities?.length ? data.recent_activities.map((act, i) => (
@@ -1051,10 +1094,10 @@ const TeacherView = () => {
                     transition={{ delay: i * 0.1 }}
                     className="relative flex items-center gap-3 md:gap-6 group"
                   >
-                    <div className="w-8 h-8 md:w-10 md:h-10 rounded-sm bg-white border border-violet-200 shadow-sm flex items-center justify-center shrink-0 z-10 group-hover:border-violet-400 transition-colors">
+                    <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg bg-white border border-violet-200 shadow-sm flex items-center justify-center shrink-0 z-10 group-hover:border-violet-400 transition-colors">
                       <TeacherActivityIcon type={act.type} />
                     </div>
-                    <div className="flex-1 bg-violet-50/50 border border-violet-100 p-2.5 md:p-4 group-hover:bg-white group-hover:border-violet-200 group-hover:shadow-sm transition-all">
+                    <div className="flex-1 bg-violet-50/50 border border-violet-100 p-2.5 md:p-4 rounded-lg group-hover:bg-white group-hover:border-violet-200 group-hover:shadow-sm transition-all">
                       <div className="flex justify-between items-start mb-0.5">
                         <p className="text-xs md:text-sm font-semibold text-slate-800 leading-snug">{act.message}</p>
                         <span className="text-xs font-black text-slate-400 uppercase tracking-widest ml-2 shrink-0">{act.time}</span>
@@ -1062,7 +1105,7 @@ const TeacherView = () => {
                     </div>
                   </motion.div>
                 )) : (
-                  <DashEmptyState
+                  <EmptyState
                     className="py-12"
                     title="No recent activities"
                     description="Actions like attendance and grading will show up here."
@@ -1074,7 +1117,8 @@ const TeacherView = () => {
                   />
                 )}
               </AnimatePresence>
-            </div>
+            </CardBody>
+          </Card>
           </motion.div>
         </div>
 
@@ -1086,7 +1130,7 @@ const TeacherView = () => {
             transition={{ delay: 0.3, duration: 0.6 }}
             className="lg:h-[420px]"
           >
-            <TodayScheduleWidget role="teacher" />
+            <TodayScheduleWidget />
           </motion.div>
 
           <DashboardQuickActions
@@ -1112,13 +1156,15 @@ const TeacherView = () => {
             </div>
             
             {/* System Status */}
-            <div className={`${DASH_PANEL} p-3 md:p-4 flex items-center justify-between shrink-0`}>
-              <div className="flex items-center gap-2">
-                <div className="w-1.5 h-1.5 bg-violet-600" />
-                <span className="text-[10px] font-bold text-violet-800 uppercase tracking-wide">System online</span>
-              </div>
-              <span className="text-[10px] font-semibold text-violet-400 uppercase tracking-wide">v2.4.0</span>
-            </div>
+            <Card className="flex items-center justify-between shrink-0">
+              <CardBody className="flex items-center justify-between p-3 md:p-4">
+                <div className="flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 bg-violet-600 rounded-full" />
+                  <span className="text-[10px] font-bold text-violet-800 uppercase tracking-wide">System online</span>
+                </div>
+                <span className="text-[10px] font-semibold text-violet-400 uppercase tracking-wide">v2.4.0</span>
+              </CardBody>
+            </Card>
           </motion.div>
 
         </div>

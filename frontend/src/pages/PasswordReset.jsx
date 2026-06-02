@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import api from '../utils/api';
 import toast from 'react-hot-toast';
+import { Button } from '../components/ui';
 
 const PasswordReset = () => {
   const [formData, setFormData] = useState({
@@ -100,16 +101,14 @@ const PasswordReset = () => {
             onToggle={() => setShowConfirm(v => !v)}
           />
 
-          <button
+          <Button
             type="submit"
-            disabled={loading}
-            className="w-full inline-flex items-center justify-center gap-2 py-3 rounded-xl bg-violet-600 text-white text-sm font-bold hover:bg-violet-700 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed mt-2"
+            variant="primary"
+            loading={loading}
+            className="w-full mt-2"
           >
-            {loading && (
-              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-            )}
-            {loading ? 'Updating password…' : 'Update Password'}
-          </button>
+            Update Password
+          </Button>
         </form>
 
         {/* Requirements */}

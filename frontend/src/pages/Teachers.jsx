@@ -7,6 +7,7 @@ import Swal from 'sweetalert2';
 import { jsPDF } from 'jspdf';
 import * as XLSX from 'xlsx';
 import { useScrollLock } from '../hooks/useScrollLock';
+import { LoadingSpinner, EmptyState, Button } from '../components/ui';
 
 const Teachers = () => {
   const user = getUser();
@@ -387,7 +388,7 @@ const Teachers = () => {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="w-10 h-10 rounded-full border-2 border-slate-100 border-t-violet-600 animate-spin"></div>
+        <LoadingSpinner />
       </div>
     );
   }
@@ -537,15 +538,15 @@ const Teachers = () => {
       {/* Teachers List */}
       <div className="animate-fade-in-up [animation-delay:200ms]">
         {filteredTeachers.length === 0 ? (
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-10 md:p-16 text-center">
-            <div className="w-12 h-12 md:w-20 md:h-20 bg-violet-50 rounded-full flex items-center justify-center mx-auto mb-3 md:mb-6">
-              <svg className="w-6 h-6 md:w-10 md:h-10 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <EmptyState
+            icon={
+              <svg className="w-10 h-10 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
               </svg>
-            </div>
-            <h3 className="text-sm md:text-xl font-black text-slate-700 mb-1 uppercase tracking-tight">No Teachers Found</h3>
-            <p className="text-[10px] md:text-base text-slate-400 font-bold uppercase tracking-widest">Try a different search.</p>
-          </div>
+            }
+            title="No Teachers Found"
+            message="Try a different search."
+          />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
             {filteredTeachers.map((teacher) => (
@@ -780,23 +781,20 @@ const Teachers = () => {
                 </div>
               </div>
               <div className="flex justify-end gap-3 pt-6 border-t border-slate-100">
-                <button type="button" onClick={() => setShowAddModal(false)}
-                  className="px-6 py-2.5 text-slate-500 hover:text-slate-700 font-bold text-sm transition-colors">
+                <Button
+                  type="button"
+                  onClick={() => setShowAddModal(false)}
+                  variant="secondary"
+                >
                   Cancel
-                </button>
-                <button type="submit"
-                  disabled={isSubmitting}
-                  className="px-8 py-2.5 bg-violet-600 text-white rounded-xl hover:bg-violet-700 font-bold text-sm shadow-lg shadow-violet-200 transition-all active:scale-95 disabled:opacity-50 flex items-center gap-2">
-                  {isSubmitting ? (
-                    <>
-                      <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                      </svg>
-                      Creating...
-                    </>
-                  ) : 'Create Teacher Account'}
-                </button>
+                </Button>
+                <Button
+                  type="submit"
+                  variant="primary"
+                  loading={isSubmitting}
+                >
+                  Create Teacher Account
+                </Button>
               </div>
             </form>
           </div>
@@ -852,14 +850,19 @@ const Teachers = () => {
                 </div>
               </div>
               <div className="flex justify-end gap-3 pt-6 border-t border-slate-100">
-                <button type="button" onClick={() => setShowEditModal(false)}
-                  className="px-6 py-2.5 text-slate-500 hover:text-slate-700 font-bold text-sm transition-colors">
+                <Button
+                  type="button"
+                  onClick={() => setShowEditModal(false)}
+                  variant="secondary"
+                >
                   Cancel
-                </button>
-                <button type="submit"
-                  className="px-8 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 font-bold text-sm shadow-lg shadow-blue-200 transition-all active:scale-95">
+                </Button>
+                <Button
+                  type="submit"
+                  variant="primary"
+                >
                   Save Changes
-                </button>
+                </Button>
               </div>
             </form>
           </div>

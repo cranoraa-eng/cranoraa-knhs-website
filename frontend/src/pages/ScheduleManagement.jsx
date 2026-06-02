@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import api from '../utils/api';
 import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
-import Spinner from '../components/Spinner';
+import { LoadingSpinner } from '../components/ui';
 import { Modal } from '../components/ui/Modal';
 
 const DAYS = ['monday','tuesday','wednesday','thursday','friday','saturday'];
@@ -413,7 +413,11 @@ export default function ScheduleManagement() {
   const isSetupComplete = !needsTimeSlots && !needsClassrooms;
   const hasSchedules = filtered.length > 0;
 
-  if (loading) return <Spinner />;
+  if (loading) return (
+    <div className="flex items-center justify-center h-64">
+      <LoadingSpinner />
+    </div>
+  );
 
   return (
     <div className="space-y-4 md:space-y-5 page-bottom-safe max-w-[1600px] mx-auto">

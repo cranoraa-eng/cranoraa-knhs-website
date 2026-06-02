@@ -3,6 +3,7 @@ import api from '../utils/api';
 import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
 import { useScrollLock } from '../hooks/useScrollLock';
+import { LoadingSpinner, EmptyState, Button } from '../components/ui';
 
 const emptyForm = { first_name: '', last_name: '', email: '', password: '' };
 
@@ -163,7 +164,7 @@ export default function ParentManagement() {
 
   if (loading) return (
     <div className="flex justify-center items-center h-64">
-      <div className="w-10 h-10 rounded-full border-2 border-slate-100 border-t-violet-600 animate-spin" />
+      <LoadingSpinner />
     </div>
   );
 
@@ -364,12 +365,20 @@ export default function ParentManagement() {
                   className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-violet-300" />
               </div>
               <div className="flex justify-end gap-3 pt-2">
-                <button type="button" onClick={() => setShowAddModal(false)}
-                  className="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 font-bold text-sm hover:bg-slate-50">Cancel</button>
-                <button type="submit" disabled={saving}
-                  className="px-6 py-2 rounded-xl bg-violet-600 text-white font-bold text-sm hover:bg-violet-700 disabled:opacity-50">
-                  {saving ? 'Creating…' : 'Create Account'}
-                </button>
+                <Button
+                  type="button"
+                  onClick={() => setShowAddModal(false)}
+                  variant="secondary"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  variant="primary"
+                  loading={saving}
+                >
+                  Create Account
+                </Button>
               </div>
             </form>
           </div>
@@ -438,12 +447,19 @@ export default function ParentManagement() {
               })}
             </div>
             <div className="p-4 border-t border-slate-100 flex justify-end gap-3 flex-shrink-0">
-              <button onClick={() => setShowLinkModal(false)}
-                className="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 font-bold text-sm hover:bg-slate-50">Cancel</button>
-              <button onClick={saveLinks} disabled={linkSaving}
-                className="px-6 py-2 rounded-xl bg-violet-600 text-white font-bold text-sm hover:bg-violet-700 disabled:opacity-50">
-                {linkSaving ? 'Saving…' : 'Save Links'}
-              </button>
+              <Button
+                onClick={() => setShowLinkModal(false)}
+                variant="secondary"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={saveLinks}
+                variant="primary"
+                loading={linkSaving}
+              >
+                Save Links
+              </Button>
             </div>
           </div>
         </div>

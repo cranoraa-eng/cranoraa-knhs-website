@@ -1,15 +1,13 @@
 /**
- * Shared UI component library for the KNHS Portal.
- * Import from here to keep styling consistent across all pages.
+ * UI Components Index
+ * Centralized export for all reusable UI components
  */
-export { PageHeader } from './PageHeader';
-export { EmptyState } from './EmptyState';
-export { Badge } from './Badge';
-export { SearchBar } from './SearchBar';
-export { DataTable } from './DataTable';
-export { Modal } from './Modal';
-export { ActionButton, PrimaryButton, SecondaryButton, DangerButton, GhostButton } from './Buttons';
-export { FormField, FormInput, FormSelect, FormTextarea } from './FormField';
-export { StatCard } from './StatCard';
-export { SectionCard } from './SectionCard';
-export { LoadingRow, LoadingCard } from './LoadingStates';
+
+export { default as Button } from './Button';
+export { default as Badge } from './Badge';
+export { default as Card, CardHeader, CardBody, CardFooter, CardTitle } from './Card';
+export { default as Input, Textarea, Select, SearchInput, Checkbox } from './Input';
+export { default as Modal, ModalHeader, ModalBody, ModalFooter } from './Modal';
+export { default as EmptyState } from './EmptyState';
+export { default as LoadingSpinner, SkeletonLine, SkeletonCard } from './LoadingSpinner';
+export { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from './Table';

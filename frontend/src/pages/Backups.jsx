@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import api from '../utils/api';
 import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
+import { LoadingSpinner, Button } from '../components/ui';
 
 const Backups = () => {
   const [backups, setBackups] = useState([]);
@@ -95,10 +96,7 @@ const Backups = () => {
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center h-64 gap-4">
-        <div className="relative w-10 h-10">
-          <div className="absolute inset-0 rounded-full border-2 border-slate-100" />
-          <div className="absolute inset-0 rounded-full border-2 border-violet-600 border-t-transparent animate-spin" />
-        </div>
+        <LoadingSpinner />
         <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">Loading backups…</p>
       </div>
     );
@@ -113,19 +111,16 @@ const Backups = () => {
           <p className="text-sm text-slate-500 mt-0.5">Manage and restore database snapshots.</p>
         </div>
         <button
-          onClick={handleCreateBackup}
-          disabled={creating}
-          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-violet-600 text-white text-sm font-bold hover:bg-violet-700 active:scale-95 transition-all disabled:opacity-50 shadow-sm"
-        >
-          {creating ? (
-            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-          ) : (
+          <Button
+            onClick={handleCreateBackup}
+            loading={creating}
+            variant="primary"
+          >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
             </svg>
-          )}
-          {creating ? 'Creating…' : 'Create Backup'}
-        </button>
+            Create Backup
+          </Button>
       </div>
 
       {/* Info banner */}

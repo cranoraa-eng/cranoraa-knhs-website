@@ -3,6 +3,7 @@ import api from '../utils/api';
 import Swal from 'sweetalert2';
 import toast from 'react-hot-toast';
 import { useScrollLock } from '../hooks/useScrollLock';
+import { LoadingSpinner, Button } from '../components/ui';
 
 const GRADE_LEVELS = ['Grade 7', 'Grade 8', 'Grade 9', 'Grade 10', 'Grade 11', 'Grade 12'];
 
@@ -251,10 +252,7 @@ const ClassManagement = () => {
       {/* Content */}
       {loading ? (
         <div className="flex flex-col items-center justify-center h-48 gap-4">
-          <div className="relative w-10 h-10">
-            <div className="absolute inset-0 rounded-full border-2 border-slate-100" />
-            <div className="absolute inset-0 rounded-full border-2 border-violet-600 border-t-transparent animate-spin" />
-          </div>
+          <LoadingSpinner />
         </div>
       ) : filtered.length === 0 ? (
         <div className="bg-white border border-slate-200 rounded-2xl shadow-sm">
@@ -425,15 +423,12 @@ const ClassManagement = () => {
                 <p className="text-xs text-slate-400">Leave empty to assign an adviser later.</p>
               </div>
               <div className="flex gap-3 pt-2">
-                <button type="submit" disabled={saving}
-                  className="flex-1 inline-flex items-center justify-center gap-2 py-2.5 rounded-xl bg-violet-600 text-white text-sm font-bold hover:bg-violet-700 active:scale-95 transition-all disabled:opacity-50">
-                  {saving && <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
-                  {saving ? 'Saving…' : editingClass ? 'Update Class' : 'Create Class'}
-                </button>
-                <button type="button" onClick={() => setShowModal(false)}
-                  className="flex-1 py-2.5 rounded-xl bg-slate-100 text-slate-700 text-sm font-bold hover:bg-slate-200 active:scale-95 transition-all">
+                <Button type="submit" disabled={saving} loading={saving} variant="primary" className="flex-1">
+                  {editingClass ? 'Update Class' : 'Create Class'}
+                </Button>
+                <Button type="button" onClick={() => setShowModal(false)} variant="secondary" className="flex-1">
                   Cancel
-                </button>
+                </Button>
               </div>
             </form>
           </div>

@@ -3,6 +3,7 @@ import api from '../utils/api';
 import { getUser } from '../utils/auth';
 import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
+import { LoadingSpinner, Button, EmptyState } from '../components/ui';
 
 const GRADE_LEVEL_ORDER = ['Grade 7', 'Grade 8', 'Grade 9', 'Grade 10', 'Grade 11', 'Grade 12'];
 
@@ -155,15 +156,12 @@ const Materials = () => {
           <p className="text-slate-500 mt-1">Repository for lesson plans, modules, and learning resources</p>
         </div>
         {canManage && (
-          <button
-            onClick={() => setShowUploadModal(true)}
-            className="flex items-center gap-2 bg-[#2D1B4D] hover:bg-[#3D2B5D] text-white font-medium py-2.5 px-5 rounded-xl transition-all shadow-sm hover:shadow-md"
-          >
+          <Button onClick={() => setShowUploadModal(true)} variant="primary">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
             Upload Material
-          </button>
+          </Button>
         )}
       </div>
 
@@ -224,19 +222,19 @@ const Materials = () => {
       {/* Materials Grid */}
       {loading ? (
         <div className="flex flex-col items-center justify-center h-64">
-          <div className="w-10 h-10 rounded-full border-2 border-slate-100 border-t-violet-600 animate-spin mb-4"></div>
-          <p className="text-slate-500 animate-pulse">Loading materials...</p>
+          <LoadingSpinner />
+          <p className="text-slate-500 animate-pulse mt-4">Loading materials...</p>
         </div>
       ) : materials.length === 0 ? (
-        <div className="bg-white border border-slate-100 rounded-2xl shadow-sm p-20 text-center">
-          <div className="w-20 h-20 bg-violet-50 rounded-full flex items-center justify-center mx-auto mb-6">
+        <EmptyState
+          icon={
             <svg className="w-10 h-10 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
             </svg>
-          </div>
-          <h3 className="text-base font-black text-slate-900 tracking-tight mb-2">No Materials Found</h3>
-          <p className="text-slate-500 max-w-xs mx-auto">We couldn't find any learning materials matching your current filters.</p>
-        </div>
+          }
+          title="No Materials Found"
+          message="We couldn't find any learning materials matching your current filters."
+        />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
           {materials.map((material) => {
@@ -503,31 +501,27 @@ const Materials = () => {
 
               {/* Action Buttons */}
               <div className="flex items-center gap-4 pt-2">
-                <button
+                <Button
                   type="button"
                   onClick={() => setShowUploadModal(false)}
-                  className="flex-1 px-6 py-3 border border-slate-200 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all active:scale-95"
+                  variant="secondary"
+                  className="flex-1"
                 >
                   Cancel
-                </button>
-                <button
+                </Button>
+                <Button
                   type="submit"
                   disabled={saving}
-                  className="flex-[1.5] bg-[#4F46E5] text-white rounded-xl hover:bg-[#4338CA] font-bold text-sm py-3 transition-all shadow-lg shadow-indigo-200 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  loading={saving}
+                  variant="primary"
+                  className="flex-[1.5] bg-[#4F46E5] hover:bg-[#4338CA] shadow-lg shadow-indigo-200"
                 >
-                  {saving ? (
-                    <>
-                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                      <span>Publishing...</span>
-                    </>
-                  ) : (
-                    <>
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-                      </svg>
-                      <span>Publish Material</span>
-                    </>
-                  )}
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                  </svg>
+                  <span>Publish Material</span>
+                </Button>
+              </div>
                 </button>
               </div>
             </form>

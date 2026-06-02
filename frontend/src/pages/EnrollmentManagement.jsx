@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import api from '../utils/api';
 import Swal from 'sweetalert2';
+import { LoadingSpinner, Button } from '../components/ui';
 
 const STATUS_CONFIG = {
   pending: { color: 'bg-amber-100 text-amber-800 border-amber-200', label: 'Pending' },
@@ -278,7 +279,7 @@ const EnrollmentManagement = () => {
 
   if (loading) return (
     <div className="flex items-center justify-center h-64">
-      <div className="w-10 h-10 rounded-full border-2 border-slate-100 border-t-violet-600 animate-spin" />
+      <LoadingSpinner />
     </div>
   );
 
@@ -650,12 +651,21 @@ const EnrollmentManagement = () => {
                 <strong>Note:</strong> A student account will be created automatically. Save the credentials shown after enrollment.
               </div>
               <div className="flex gap-3">
-                <button onClick={() => { setShowEnrollModal(false); setEnrollApp(null); setEnrollClassroom(''); setEnrollParentEmail(''); }}
-                  className="flex-1 py-2.5 rounded-lg border border-slate-200 text-slate-600 text-sm font-bold hover:bg-slate-50">Cancel</button>
-                <button onClick={enrollStudent} disabled={enrolling}
-                  className="flex-1 py-2.5 rounded-lg bg-violet-600 text-white text-sm font-bold hover:bg-violet-700 disabled:opacity-50">
-                  {enrolling ? 'Enrolling...' : 'Enroll Now'}
-                </button>
+                <Button
+                  onClick={() => { setShowEnrollModal(false); setEnrollApp(null); setEnrollClassroom(''); setEnrollParentEmail(''); }}
+                  variant="secondary"
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={enrollStudent}
+                  variant="primary"
+                  loading={enrolling}
+                  className="flex-1"
+                >
+                  Enroll Now
+                </Button>
               </div>
             </div>
           </div>

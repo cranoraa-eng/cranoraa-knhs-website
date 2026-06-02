@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useLocation, Link } from 'react-router-dom';
 import api from '../utils/api';
+import { LoadingSpinner } from '../components/ui';
 
 const Calendar = ({ mode = 'public' }) => {
   const location = useLocation();
@@ -93,7 +94,7 @@ const Calendar = ({ mode = 'public' }) => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="w-10 h-10 rounded-full border-2 border-slate-100 border-t-violet-600 animate-spin"></div>
+        <LoadingSpinner />
       </div>
     );
   }

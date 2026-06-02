@@ -1,22 +1,64 @@
+import React from 'react';
+import { cn } from '../../styles/designSystem';
+import Button from './Button';
+
 /**
- * EmptyState — professional empty/zero-data state with icon, title, description, and optional action.
- * Usage:
- *   <EmptyState
- *     icon={<svg .../>}
- *     title="No announcements yet"
- *     description="School updates and notices will appear here."
- *     action={<PrimaryButton>Create one</PrimaryButton>}
- *   />
+ * Professional Empty State Component
+ * For when there's no data to display
  */
-export const EmptyState = ({ icon, title, description, action, className = '' }) => (
-  <div className={`flex flex-col items-center justify-center py-16 px-6 text-center ${className}`}>
-    {icon && (
-      <div className="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center mb-4 text-slate-400">
-        {icon}
-      </div>
-    )}
-    <h3 className="text-base font-bold text-slate-700 mb-1">{title}</h3>
-    {description && <p className="text-sm text-slate-400 max-w-xs">{description}</p>}
-    {action && <div className="mt-5">{action}</div>}
-  </div>
-);
+
+const EmptyState = ({
+  icon,
+  title,
+  description = null,
+  action = null,
+  actionLabel = null,
+  onAction = null,
+  className = '',
+  ...props
+}) => {
+  return (
+    <div
+      className={cn(
+        'flex flex-col items-center justify-center py-12 px-6 text-center',
+        className
+      )}
+      {...props}
+    >
+      {icon && (
+        <div className="w-14 h-14 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 mb-4">
+          {icon}
+        </div>
+      )}
+      
+      <h3 className="text-sm font-semibold text-slate-900 mb-1">
+        {title}
+      </h3>
+      
+      {description && (
+        <p className="text-xs text-slate-500 max-w-sm">
+          {description}
+        </p>
+      )}
+      
+      {action && (
+        <div className="mt-4">
+          {action}
+        </div>
+      )}
+      
+      {!action && actionLabel && onAction && (
+        <Button
+          variant="primary"
+          size="sm"
+          onClick={onAction}
+          className="mt-4"
+        >
+          {actionLabel}
+        </Button>
+      )}
+    </div>
+  );
+};
+
+export default EmptyState;

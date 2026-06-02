@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import api from '../utils/api';
+import { LoadingSpinner, Button } from '../components/ui';
 const WebsiteContentManagement = () => {
   const [content, setContent] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -138,7 +139,7 @@ const WebsiteContentManagement = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="w-10 h-10 rounded-full border-2 border-slate-100 border-t-violet-600 animate-spin"></div>
+        <LoadingSpinner />
       </div>
     );
   }

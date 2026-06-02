@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../utils/api';
 import Swal from 'sweetalert2';
+import { LoadingSpinner } from '../components/ui';
 
 const Programs = () => {
   const [content, setContent] = useState({});
@@ -43,7 +44,7 @@ const Programs = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white">
-        <div className="w-8 h-8 border-2 border-violet-600 border-t-transparent rounded-full animate-spin" />
+        <LoadingSpinner />
       </div>
     );
   }

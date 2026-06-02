@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import api from '../utils/api';
 import { getUser } from '../utils/auth';
 import toast from 'react-hot-toast';
+import { LoadingSpinner, EmptyState } from '../components/ui';
 
 const ClassMembers = () => {
   const user = getUser();
@@ -60,7 +61,7 @@ const ClassMembers = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="w-10 h-10 rounded-full border-2 border-slate-100 border-t-violet-600 animate-spin" />
+        <LoadingSpinner />
       </div>
     );
   }

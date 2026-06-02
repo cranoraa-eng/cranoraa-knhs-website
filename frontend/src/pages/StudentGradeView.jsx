@@ -4,6 +4,7 @@ import api from '../utils/api';
 import { useAuth } from '../context/AuthContext';
 import { jsPDF } from 'jspdf';
 import toast from 'react-hot-toast';
+import { LoadingSpinner, Button, EmptyState } from '../components/ui';
 
 const REMARKS_STYLE = {
   'Outstanding':               'bg-green-100 text-green-700 border-green-200',
@@ -311,7 +312,7 @@ const StudentGradeView = () => {
 
   if (loading) return (
     <div className="flex items-center justify-center h-64">
-      <div className="w-10 h-10 rounded-full border-2 border-slate-100 border-t-violet-600 animate-spin" />
+      <LoadingSpinner />
     </div>
   );
 
@@ -341,13 +342,12 @@ const StudentGradeView = () => {
           </div>
         </div>
         {grades.length > 0 && (
-          <button onClick={downloadPDF} title="Download PDF"
-            className="flex shrink-0 items-center justify-center gap-1.5 rounded-lg bg-[#2D1B4D] p-2 text-[13px] font-bold text-white shadow-md transition-all hover:bg-[#3D2B5D] active:scale-95 sm:w-auto sm:gap-2 sm:rounded-xl sm:px-6 sm:py-2.5 sm:text-sm">
+          <Button onClick={downloadPDF} variant="primary" size="md" title="Download PDF">
             <svg className="h-5 w-5 sm:h-5 sm:w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
             <span className="hidden sm:inline">Download PDF</span>
-          </button>
+          </Button>
         )}
       </div>
 
@@ -385,15 +385,15 @@ const StudentGradeView = () => {
 
       {/* Grade table */}
       {subjectEntries.length === 0 ? (
-        <div className="animate-in zoom-in-95 rounded-xl border border-slate-200 bg-white p-6 text-center shadow-sm duration-500 sm:rounded-2xl sm:p-16">
-          <div className="mb-4 mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-violet-50 sm:mb-6 sm:h-20 sm:w-20">
+        <EmptyState
+          icon={
             <svg className="h-8 w-8 text-purple-300 sm:h-10 sm:w-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
             </svg>
-          </div>
-          <h3 className="mb-2 text-base font-bold tracking-tight text-slate-700 sm:text-xl">No Final Grades Yet</h3>
-          <p className="mx-auto max-w-xs text-[13px] font-medium leading-snug text-slate-400 sm:text-sm">Final grades will appear here once encoded by your subject teachers.</p>
-        </div>
+          }
+          title="No Final Grades Yet"
+          message="Final grades will appear here once encoded by your subject teachers."
+        />
       ) : (
         <>
           <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-md sm:rounded-2xl">

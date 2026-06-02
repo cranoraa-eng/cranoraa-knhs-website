@@ -7,6 +7,7 @@ import Swal from 'sweetalert2';
 import { jsPDF } from 'jspdf';
 import * as XLSX from 'xlsx';
 import { useScrollLock } from '../hooks/useScrollLock';
+import { LoadingSpinner } from '../components/ui';
 
 const StudentManagement = () => {
   const user = getUser();
@@ -596,7 +597,7 @@ const StudentManagement = () => {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="w-10 h-10 rounded-full border-2 border-slate-100 border-t-violet-600 animate-spin"></div>
+        <LoadingSpinner />
       </div>
     );
   }

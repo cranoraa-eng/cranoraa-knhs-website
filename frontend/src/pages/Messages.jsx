@@ -5,32 +5,54 @@ import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
 import { playSound } from '../utils/sounds';
+import { Button, Badge, LoadingSpinner, EmptyState, Input, SearchInput } from '../components/ui';
+import { cn } from '../styles/designSystem';
 
 // ── FriendActionButton — defined outside Messages to avoid re-creation on every render ──
 const FriendActionButton = ({ targetUser, status, onStartChat, onSendRequest, onShowRequests }) => {
   if (status === 'friends') return (
-    <button onClick={() => onStartChat(targetUser.id)}
-      className="p-2 text-green-600 bg-green-50 rounded-lg hover:bg-green-600 hover:text-white transition-all shadow-sm active:scale-95" title="Message">
-      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
-    </button>
+    <Button
+      variant="ghost"
+      size="sm"
+      onClick={() => onStartChat(targetUser.id)}
+      className="text-green-600 hover:bg-green-50 hover:text-green-700"
+      title="Message"
+    >
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+      </svg>
+    </Button>
   );
   if (status === 'sent') return (
-    <div className="flex items-center gap-1 px-3 py-1.5 bg-slate-100 text-slate-400 rounded-lg text-[10px] font-black uppercase tracking-widest border border-slate-200">
-      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
+    <Badge variant="slate" size="sm">
+      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+      </svg>
       Sent
-    </div>
+    </Badge>
   );
   if (status === 'received') return (
-    <button onClick={onShowRequests}
-      className="px-3 py-1.5 bg-amber-50 text-amber-600 rounded-lg text-[10px] font-black uppercase tracking-widest border border-amber-100 hover:bg-amber-600 hover:text-white transition-all animate-pulse">
+    <Button
+      variant="ghost"
+      size="sm"
+      onClick={onShowRequests}
+      className="bg-amber-50 text-amber-600 hover:bg-amber-600 hover:text-white animate-pulse"
+    >
       Accept?
-    </button>
+    </Button>
   );
   return (
-    <button onClick={() => onSendRequest(targetUser.id)}
-      className="p-2 text-violet-600 bg-violet-50 rounded-lg hover:bg-violet-600 hover:text-white transition-all shadow-sm active:scale-95" title="Add Friend">
-      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" /></svg>
-    </button>
+    <Button
+      variant="ghost"
+      size="sm"
+      onClick={() => onSendRequest(targetUser.id)}
+      className="text-violet-600 hover:bg-violet-50 hover:text-violet-700"
+      title="Add Friend"
+    >
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+      </svg>
+    </Button>
   );
 };
 
@@ -1015,7 +1037,7 @@ const Messages = () => {
   // ── Loading screen ────────────────────────────────────────────────────────
   if (loading) return (
     <div className="flex items-center justify-center h-[calc(100vh-8rem)]">
-      <div className="w-12 h-12 border-4 border-violet-500 border-t-transparent rounded-full animate-spin" />
+      <LoadingSpinner />
     </div>
   );
 
@@ -1073,7 +1095,18 @@ const Messages = () => {
           {/* CHATS */}
           {activeTab === 'chats' && (
             filteredRooms.length === 0
-              ? <div className="p-8 text-center"><p className="text-sm text-slate-400 font-medium">No conversations found</p></div>
+              ? (
+                <EmptyState
+                  icon={
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                    </svg>
+                  }
+                  title="No conversations found"
+                  description={searchQuery ? "Try a different search" : "Start a conversation with friends"}
+                  className="p-8"
+                />
+              )
               : filteredRooms.map(room => {
                 const otherUser = !room.is_group ? room.participants_details.find(p => p.id !== user?.id) : null;
                 const displayName = room.is_group ? room.name : otherUser?.full_name;
@@ -1128,7 +1161,7 @@ const Messages = () => {
                         <div className="flex items-center gap-1 min-w-0">
                           <h4 className={`text-[11px] md:text-sm truncate uppercase tracking-tight ${room.unread_count > 0 ? 'font-black text-slate-900' : 'font-black text-slate-800'}`}>{displayName}</h4>
                           {room.is_group && (
-                            <span className="shrink-0 text-[6px] font-black bg-indigo-100 text-indigo-600 px-1 py-0.5 rounded-full uppercase tracking-widest">Grp</span>
+                            <Badge variant="indigo" size="sm" className="text-[6px] uppercase">Grp</Badge>
                           )}
                         </div>
                         <div className="flex items-center gap-1 shrink-0 ml-1">
@@ -1139,9 +1172,9 @@ const Messages = () => {
                           )}
                           {/* Unread badge */}
                           {room.unread_count > 0 && (
-                            <span className="bg-violet-600 text-white text-[7px] md:text-[9px] font-black rounded-full min-w-[14px] h-[14px] flex items-center justify-center px-1 leading-none shadow-sm shadow-violet-300">
+                            <Badge variant="purple" size="sm" className="min-w-[14px] h-[14px] px-1">
                               {room.unread_count > 99 ? '99+' : `+${room.unread_count}`}
-                            </span>
+                            </Badge>
                           )}
                         </div>
                       </div>
@@ -2295,14 +2328,22 @@ const Messages = () => {
                 </div>
               </div>
               <div className="flex gap-3 pt-1">
-                <button type="button" onClick={() => setShowGroupModal(false)}
-                  className="flex-1 py-3 border border-slate-200 rounded-xl text-sm font-bold text-slate-500 hover:bg-slate-50 transition-all active:scale-95">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={() => setShowGroupModal(false)}
+                  className="flex-1"
+                >
                   Cancel
-                </button>
-                <button type="submit" disabled={!groupName.trim() || selectedFriends.length === 0}
-                  className="flex-[1.5] py-3 bg-violet-600 text-white rounded-xl text-sm font-bold shadow-lg shadow-violet-200 hover:bg-violet-700 transition-all active:scale-95 disabled:opacity-50 disabled:shadow-none">
+                </Button>
+                <Button
+                  type="submit"
+                  variant="primary"
+                  disabled={!groupName.trim() || selectedFriends.length === 0}
+                  className="flex-[1.5]"
+                >
                   Create Group
-                </button>
+                </Button>
               </div>
             </form>
           </div>

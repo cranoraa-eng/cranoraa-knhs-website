@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import api from '../utils/api';
 import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
+import { LoadingSpinner, EmptyState } from '../components/ui';
 
 const Moderation = () => {
   const [reports, setReports] = useState([]);
@@ -260,7 +261,7 @@ const Moderation = () => {
         <div className="md:hidden divide-y divide-slate-100">
           {loading ? (
             <div className="px-6 py-12 text-center">
-              <div className="w-10 h-10 rounded-full border-2 border-slate-100 border-t-violet-600 animate-spin mx-auto" />
+              <LoadingSpinner />
             </div>
           ) : reports.length === 0 ? (
             <div className="px-6 py-12 text-center text-slate-400 font-bold text-xs uppercase tracking-widest">
@@ -363,7 +364,7 @@ const Moderation = () => {
               {loading ? (
                 <tr>
                   <td colSpan="7" className="px-6 py-12 text-center">
-                    <div className="w-10 h-10 rounded-full border-2 border-slate-100 border-t-violet-600 animate-spin mx-auto" />
+                    <LoadingSpinner />
                   </td>
                 </tr>
               ) : reports.length === 0 ? (

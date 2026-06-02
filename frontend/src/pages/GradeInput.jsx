@@ -4,6 +4,7 @@ import api from '../utils/api';
 import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
 import { playSound } from '../utils/sounds';
+import { LoadingSpinner, Button } from '../components/ui';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -343,18 +344,16 @@ const GradeInput = () => {
           </div>
 
           {/* Submit */}
-          <button onClick={handleSubmit}
-            disabled={submitting || !selSubject || !students.length}
-            className="flex items-center justify-center gap-1.5 bg-violet-600 hover:bg-violet-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-bold px-4 py-2 rounded-lg transition-all shadow-md active:scale-95 flex-1 md:flex-none min-w-[80px]">
-            {submitting ? (
-              <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
-              </svg>
-            ) : (
-              <><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7"/></svg>Submit</>
-            )}
-          </button>
+          <Button
+            onClick={handleSubmit}
+            disabled={!selSubject || !students.length}
+            loading={submitting}
+            variant="primary"
+            className="flex-1 md:flex-none min-w-[80px]"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7"/></svg>
+            Submit
+          </Button>
         </div>
       </div>
 
@@ -378,7 +377,7 @@ const GradeInput = () => {
       <div className="flex-1 overflow-auto min-h-0 scrollbar-thin scrollbar-thumb-slate-300 max-w-full">
         {loading ? (
           <div className="flex items-center justify-center h-full">
-            <div className="w-10 h-10 rounded-full border-2 border-slate-100 border-t-violet-600 animate-spin" />
+            <LoadingSpinner />
           </div>
         ) : !selClassroom ? (
           <div className="flex flex-col items-center justify-center h-full text-slate-300 gap-2 md:gap-4 p-4 md:p-8 text-center select-none">

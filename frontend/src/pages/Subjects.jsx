@@ -3,6 +3,7 @@ import api from '../utils/api';
 import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
 import { useScrollLock } from '../hooks/useScrollLock';
+import { LoadingSpinner, EmptyState, Button } from '../components/ui';
 
 const GRADE_LEVELS = [
   'Grade 7', 'Grade 8', 'Grade 9', 'Grade 10',
@@ -156,25 +157,18 @@ const Subjects = () => {
       {/* Content */}
       {loading ? (
         <div className="flex flex-col items-center justify-center h-48 gap-4">
-          <div className="relative w-10 h-10">
-            <div className="absolute inset-0 rounded-full border-2 border-slate-100" />
-            <div className="absolute inset-0 rounded-full border-2 border-violet-600 border-t-transparent animate-spin" />
-          </div>
+          <LoadingSpinner />
         </div>
       ) : filtered.length === 0 ? (
-        <div className="bg-white border border-slate-200 rounded-2xl shadow-sm">
-          <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
-            <div className="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center mb-4">
-              <svg className="w-7 h-7 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-              </svg>
-            </div>
-            <h3 className="text-base font-bold text-slate-700 mb-1">No subjects found</h3>
-            <p className="text-sm text-slate-400">
-              {search || filterLevel ? 'Try adjusting your filters.' : 'Add your first subject to get started.'}
-            </p>
-          </div>
-        </div>
+        <EmptyState
+          icon={
+            <svg className="w-7 h-7 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+            </svg>
+          }
+          title="No subjects found"
+          message={search || filterLevel ? 'Try adjusting your filters.' : 'Add your first subject to get started.'}
+        />
       ) : (
         <div className="space-y-4">
           {Object.entries(grouped).sort(([a], [b]) => {
@@ -314,20 +308,22 @@ const Subjects = () => {
                 />
               </div>
               <div className="flex gap-3 pt-2">
-                <button
+                <Button
                   type="submit"
-                  disabled={saving}
-                  className="flex-1 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white text-[11px] md:text-sm font-black py-3 rounded-xl transition-all hover:scale-[1.02] active:scale-[0.98] uppercase tracking-widest shadow-lg shadow-indigo-200"
+                  variant="primary"
+                  loading={saving}
+                  className="flex-1"
                 >
-                  {saving ? 'PROCESSING...' : editing ? 'SAVE CHANGES' : 'CREATE SUBJECT'}
-                </button>
-                <button
+                  {editing ? 'SAVE CHANGES' : 'CREATE SUBJECT'}
+                </Button>
+                <Button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-600 text-[11px] md:text-sm font-black py-3 rounded-xl transition-all uppercase tracking-widest"
+                  variant="secondary"
+                  className="flex-1"
                 >
                   CANCEL
-                </button>
+                </Button>
               </div>
             </form>
           </div>

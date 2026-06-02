@@ -1,89 +1,126 @@
-/**
- * Modal — consistent modal/dialog wrapper.
- * Usage:
- *   <Modal open={showModal} onClose={() => setShowModal(false)} title="Create Announcement" size="lg">
- *     ...content...
- *   </Modal>
- */
 import React, { useEffect } from 'react';
-import { createPortal } from 'react-dom';
+import { cn } from '../../styles/designSystem';
 
-export const Modal = ({ open, onClose, title, subtitle, children, footer, size = 'md', className = '' }) => {
-  // Lock body scroll when modal is open
+/**
+ * Professional Modal Component
+ * Standardized modal dialogs with consistent styling
+ */
+
+const Modal = ({
+  isOpen,
+  onClose,
+  children,
+  size = 'md',
+  className = '',
+  closeOnOverlayClick = true,
+  closeOnEscape = true,
+}) => {
   useEffect(() => {
-    if (open) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
+    if (closeOnEscape) {
+      const handleEscape = (e) => {
+        if (e.key === 'Escape') onClose();
+      };
+      if (isOpen) {
+        document.addEventListener('keydown', handleEscape);
+        document.body.style.overflow = 'hidden';
+      }
+      return () => {
+        document.removeEventListener('keydown', handleEscape);
+        document.body.style.overflow = '';
+      };
     }
-    return () => {
-      document.body.style.overflow = 'unset';
-    };
-  }, [open]);
+  }, [isOpen, onClose, closeOnEscape]);
 
-  // Close on Escape key
-  useEffect(() => {
-    if (!open) return;
-    const handler = (e) => { if (e.key === 'Escape') onClose?.(); };
-    document.addEventListener('keydown', handler);
-    return () => document.removeEventListener('keydown', handler);
-  }, [open, onClose]);
+  if (!isOpen) return null;
 
-  if (!open) return null;
+  const sizes = {
+    sm: 'max-w-sm',
+    md: 'max-w-md',
+    lg: 'max-w-2xl',
+    xl: 'max-w-4xl',
+    full: 'max-w-6xl',
+  };
 
-  const sizeClass = {
-    sm:  'max-w-sm',
-    md:  'max-w-lg',
-    lg:  'max-w-2xl',
-    xl:  'max-w-4xl',
-    full:'max-w-[95vw]',
-  }[size] || 'max-w-lg';
-
-  return createPortal(
+  return (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center p-4"
-      role="dialog"
-      aria-modal="true"
+      className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 animate-fadeIn"
+      onClick={closeOnOverlayClick ? onClose : undefined}
     >
-      {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/80 backdrop-blur-md transition-opacity animate-in fade-in duration-300"
-        onClick={onClose}
-        aria-hidden="true"
-      />
-
-      {/* Panel */}
-      <div className={`relative w-full ${sizeClass} max-h-[90vh] flex flex-col bg-white rounded-3xl shadow-2xl border border-slate-200/50 overflow-hidden animate-in zoom-in-95 duration-300 ${className}`}>
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 flex-shrink-0 bg-slate-50/50">
-          <div>
-            <h2 className="text-base font-black text-slate-900 tracking-tight uppercase">{title}</h2>
-            {subtitle && <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.2em] mt-1">{subtitle}</p>}
-          </div>
-          <button
-            onClick={onClose}
-            className="p-2.5 rounded-2xl hover:bg-slate-200 text-slate-400 transition-all active:scale-90"
-            aria-label="Close"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-
-        {/* Body */}
-        <div className="flex-1 overflow-y-auto">
-          {children}
-        </div>
-
-        {/* Footer */}
-        {footer && (
-          <div className="px-6 py-4 border-t border-slate-100 bg-slate-50/50 flex-shrink-0">
-            {footer}
-          </div>
+        className={cn(
+          'bg-white rounded-2xl shadow-2xl w-full max-h-[90vh] overflow-hidden animate-slideUp',
+          sizes[size],
+          className
         )}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {children}
       </div>
-    </div>,
-    document.body
+    </div>
   );
 };
+
+export const ModalHeader = ({
+  children,
+  onClose,
+  className = '',
+  subtitle = null,
+  ...props
+}) => {
+  return (
+    <div
+      className={cn('px-6 py-4 border-b border-slate-200 flex items-start justify-between', className)}
+      {...props}
+    >
+      <div className="flex-1 min-w-0">
+        <h3 className="text-lg font-semibold text-slate-900">{children}</h3>
+        {subtitle && (
+          <p className="text-xs text-slate-500 mt-0.5 font-medium">{subtitle}</p>
+        )}
+      </div>
+      {onClose && (
+        <button
+          type="button"
+          onClick={onClose}
+          className="ml-4 p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-all"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      )}
+    </div>
+  );
+};
+
+export const ModalBody = ({
+  children,
+  className = '',
+  ...props
+}) => {
+  return (
+    <div
+      className={cn('px-6 py-4 overflow-y-auto max-h-[60vh]', className)}
+      {...props}
+    >
+      {children}
+    </div>
+  );
+};
+
+export const ModalFooter = ({
+  children,
+  className = '',
+  ...props
+}) => {
+  return (
+    <div
+      className={cn('px-6 py-4 border-t border-slate-200 bg-slate-50 flex items-center justify-end gap-3', className)}
+      {...props}
+    >
+      {children}
+    </div>
+  );
+};
+
+export default Modal;

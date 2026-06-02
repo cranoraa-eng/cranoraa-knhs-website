@@ -9,6 +9,7 @@ import {
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
   PieChart, Pie, Cell, BarChart, Bar, Legend
 } from 'recharts';
+import { LoadingSpinner, EmptyState, Button } from '../components/ui';
 
 const STATUS_CONFIG = {
   present: { label: 'Present', short: 'P', active: 'bg-green-500 text-white border-green-500',   inactive: 'bg-white text-slate-500 border-slate-300 hover:border-green-400 hover:text-green-600' },
@@ -435,11 +436,27 @@ const Attendance = () => {
       {view === 'mark' && (
         <>
           {!selectedClassroom ? (
-            <div className="bg-white border border-slate-200 rounded-xl shadow-sm p-8 md:p-16 text-center text-slate-400 font-bold text-[9px] md:text-sm uppercase tracking-widest">Select a classroom to start marking.</div>
+            <EmptyState
+              icon={
+                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                </svg>
+              }
+              title="Select a classroom"
+              message="Choose a classroom to start marking attendance."
+            />
           ) : loadingStudents ? (
-            <div className="flex items-center justify-center h-32 md:h-48"><div className="animate-spin rounded-full h-6 w-6 md:h-10 md:w-10 border-b-2 border-violet-600" /></div>
+            <div className="flex items-center justify-center h-32 md:h-48"><LoadingSpinner /></div>
           ) : students.length === 0 ? (
-            <div className="bg-white border border-slate-200 rounded-xl shadow-sm p-8 md:p-16 text-center text-slate-400 font-bold text-[9px] md:text-sm uppercase tracking-widest">No students enrolled.</div>
+            <EmptyState
+              icon={
+                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+              }
+              title="No students enrolled"
+              message="This classroom doesn't have any students yet."
+            />
           ) : (
             <>
               {/* Stats */}
@@ -545,23 +562,18 @@ const Attendance = () => {
                     <span>E:EXCUSED</span>
                     {hasChanges && <span className="text-amber-600 animate-pulse">● UNSAVED</span>}
                   </div>
-                  <button onClick={saveAttendance} disabled={submitting || !hasChanges}
-                    className={`flex items-center justify-center gap-1 px-4 py-1.5 md:px-8 md:py-2.5 rounded-lg md:rounded-xl text-[9px] md:text-sm font-black transition-all shadow-md active:scale-95 w-full md:w-auto uppercase tracking-widest ${
-                      hasChanges
-                        ? 'bg-violet-600 hover:bg-violet-700 text-white'
-                        : 'bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200'
-                    } disabled:opacity-60`}>
-                    {submitting ? (
-                      <><svg className="animate-spin h-2.5 w-2.5 md:h-4 md:w-4" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
-                      </svg>...</>
-                    ) : (
-                      <><svg className="w-2.5 h-2.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7"/>
-                      </svg>{hasChanges ? 'SAVE CHANGES' : 'ALL SAVED'}</>
-                    )}
-                  </button>
+                  <Button
+                    onClick={saveAttendance}
+                    disabled={!hasChanges}
+                    loading={submitting}
+                    variant={hasChanges ? "primary" : "secondary"}
+                    className="w-full md:w-auto"
+                  >
+                    <svg className="w-2.5 h-2.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7"/>
+                    </svg>
+                    {hasChanges ? 'SAVE CHANGES' : 'ALL SAVED'}
+                  </Button>
                 </div>
               </div>
             </>
@@ -573,13 +585,29 @@ const Attendance = () => {
       {view === 'history' && (
         <>
           {yearLoading ? (
-            <div className="flex items-center justify-center h-24 md:h-48"><div className="animate-spin rounded-full h-5 w-5 md:h-10 md:w-10 border-b-2 border-violet-600" /></div>
+            <div className="flex items-center justify-center h-24 md:h-48"><LoadingSpinner /></div>
           ) : !selectedClassroom ? (
-            <div className="bg-white border border-slate-200 rounded-xl shadow-sm p-4 md:p-16 text-center text-slate-400 font-bold text-[8px] md:text-sm uppercase tracking-widest">Select a classroom to view history.</div>
+            <EmptyState
+              icon={
+                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                </svg>
+              }
+              title="Select a classroom"
+              message="Choose a classroom to view attendance history."
+            />
           ) : loadingHistory ? (
-            <div className="flex items-center justify-center h-24 md:h-48"><div className="animate-spin rounded-full h-5 w-5 md:h-10 md:w-10 border-b-2 border-violet-600" /></div>
+            <div className="flex items-center justify-center h-24 md:h-48"><LoadingSpinner /></div>
           ) : history.length === 0 ? (
-            <div className="bg-white border border-slate-200 rounded-xl shadow-sm p-4 md:p-16 text-center text-slate-400 font-bold text-[8px] md:text-sm uppercase tracking-widest">No records found.</div>
+            <EmptyState
+              icon={
+                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                </svg>
+              }
+              title="No attendance records"
+              message="No attendance history found for the selected filters."
+            />
           ) : (
             <div className="bg-white border border-slate-200 rounded-lg md:rounded-xl shadow-sm overflow-hidden min-w-0">
               <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-slate-300 max-w-full">
@@ -645,9 +673,17 @@ const Attendance = () => {
       {view === 'analytics' && (
         <div className="space-y-6 animate-fade-in page-bottom-safe">
           {(yearLoading || loadingAnalytics) ? (
-            <div className="flex items-center justify-center h-48"><div className="w-10 h-10 rounded-full border-2 border-slate-100 border-t-violet-600 animate-spin" /></div>
+            <div className="flex items-center justify-center h-48"><LoadingSpinner /></div>
           ) : !analytics ? (
-            <div className="bg-white border border-slate-200 rounded-xl shadow-sm p-16 text-center text-slate-400 font-bold text-sm uppercase tracking-widest">No analytics data for {academicYear || 'this year'}.</div>
+            <EmptyState
+              icon={
+                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+              }
+              title="No analytics data"
+              message={`No attendance analytics available for ${academicYear || 'this year'}.`}
+            />
           ) : (
             <>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

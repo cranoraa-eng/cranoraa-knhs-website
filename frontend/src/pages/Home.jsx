@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useState, useEffect, useMemo } from 'react';
 import api from '../utils/api';
+import { LoadingSpinner } from '../components/ui';
 
 // ── Mini Calendar (unchanged logic) ──────────────────────────────────────────
 const MiniCalendar = ({ events, onSelectDay }) => {
@@ -228,7 +229,7 @@ const Home = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white">
-        <div className="w-8 h-8 border-2 border-violet-600 border-t-transparent rounded-full animate-spin" />
+        <LoadingSpinner />
       </div>
     );
   }

@@ -4,25 +4,13 @@ import { getUser } from '../utils/auth';
 import { useAuth } from '../context/AuthContext';
 import api from '../utils/api';
 import toast from 'react-hot-toast';
+import { Card, Input as UIInput, Select, Textarea, Button, LoadingSpinner, Badge } from '../components/ui';
+import { cn } from '../styles/designSystem';
 
 const Field = ({ label, value }) => (
   <div className="min-w-0">
     <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1.5">{label}</p>
     <p className="text-[13px] font-bold text-slate-800 truncate">{value || <span className="text-slate-300 font-normal italic">Not set</span>}</p>
-  </div>
-);
-
-const Input = ({ label, value, onChange, type = 'text', required }) => (
-  <div className="min-w-0">
-    <label className="block text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-2">
-      {label}{required && <span className="text-rose-500 ml-1">*</span>}
-    </label>
-    <input
-      type={type}
-      value={value}
-      onChange={e => onChange(e.target.value)}
-      className="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-white text-[13px] font-bold text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500/10 focus:border-violet-400 transition-all shadow-sm"
-    />
   </div>
 );
 
@@ -122,10 +110,7 @@ const Profile = () => {
 
   if (loading) return (
     <div className="flex items-center justify-center h-64">
-      <div className="relative w-10 h-10">
-        <div className="absolute inset-0 rounded-full border-2 border-slate-100" />
-        <div className="absolute inset-0 rounded-full border-2 border-violet-600 border-t-transparent animate-spin" />
-      </div>
+      <LoadingSpinner />
     </div>
   );
 
@@ -152,15 +137,15 @@ const Profile = () => {
           </p>
         </div>
         {!editing && !studentId && (
-          <button
+          <Button
+            variant="primary"
             onClick={() => setEditing(true)}
-            className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-violet-600 text-white text-[13px] font-black uppercase tracking-widest hover:bg-violet-700 active:scale-95 transition-all shadow-md shadow-violet-200"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
             </svg>
             Edit Profile
-          </button>
+          </Button>
         )}
       </div>
 
@@ -199,7 +184,7 @@ const Profile = () => {
             <div className="pb-2 min-w-0">
               <h2 className="text-xl sm:text-2xl font-black text-white truncate leading-tight">{fullName}</h2>
               <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1">
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-violet-300 bg-violet-500/20 px-2 py-0.5 rounded-md">{user?.role}</span>
+                <Badge variant="purple" size="sm">{user?.role}</Badge>
                 <span className="text-[11px] font-bold text-violet-300/80 truncate">{profile?.email}</span>
                 {profile?.profile?.registration_number && (
                   <span className="text-[11px] font-black uppercase tracking-widest text-violet-300/60 hidden xs:inline">LRN: {profile.profile.registration_number}</span>
@@ -223,23 +208,26 @@ const Profile = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-4 gap-5">
                   {user?.role === 'teacher' && (
                     <div className="sm:col-span-1">
-                      <label className="block text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-2">Title</label>
-                      <select value={form.title} onChange={e => set('title')(e.target.value)}
-                        className="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-white text-[13px] font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-500/10 focus:border-violet-400 transition-all shadow-sm">
-                        <option value="">Select</option>
-                        <option value="Mr.">Mr.</option>
-                        <option value="Ms.">Ms.</option>
-                        <option value="Mrs.">Mrs.</option>
-                        <option value="Dr.">Dr.</option>
-                        <option value="Prof.">Prof.</option>
-                      </select>
+                      <Select
+                        label="Title"
+                        value={form.title}
+                        onChange={e => set('title')(e.target.value)}
+                        options={[
+                          { value: '', label: 'Select' },
+                          { value: 'Mr.', label: 'Mr.' },
+                          { value: 'Ms.', label: 'Ms.' },
+                          { value: 'Mrs.', label: 'Mrs.' },
+                          { value: 'Dr.', label: 'Dr.' },
+                          { value: 'Prof.', label: 'Prof.' },
+                        ]}
+                      />
                     </div>
                   )}
                   <div className="sm:col-span-1">
-                    <Input label="First Name" value={form.first_name} onChange={set('first_name')} required />
+                    <UIInput label="First Name" value={form.first_name} onChange={e => set('first_name')(e.target.value)} required />
                   </div>
-                  <Input label="Middle Name" value={form.middle_name} onChange={set('middle_name')} />
-                  <Input label="Last Name" value={form.last_name} onChange={set('last_name')} required />
+                  <UIInput label="Middle Name" value={form.middle_name} onChange={e => set('middle_name')(e.target.value)} />
+                  <UIInput label="Last Name" value={form.last_name} onChange={e => set('last_name')(e.target.value)} required />
                 </div>
               </div>
 
@@ -250,19 +238,20 @@ const Profile = () => {
                   <div className="h-px w-full bg-slate-100" />
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                  <div className="min-w-0">
-                    <label className="block text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-2">Sex</label>
-                    <select value={form.sex} onChange={e => set('sex')(e.target.value)}
-                      className="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-white text-[13px] font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-500/10 focus:border-violet-400 transition-all shadow-sm">
-                      <option value="">Select</option>
-                      <option value="male">Male</option>
-                      <option value="female">Female</option>
-                      <option value="other">Other</option>
-                    </select>
-                  </div>
-                  <Input label="Date of Birth" value={form.date_of_birth} onChange={set('date_of_birth')} type="date" />
-                  <Input label="Nationality" value={form.nationality} onChange={set('nationality')} />
-                  <Input label="Province / State" value={form.state} onChange={set('state')} />
+                  <Select
+                    label="Sex"
+                    value={form.sex}
+                    onChange={e => set('sex')(e.target.value)}
+                    options={[
+                      { value: '', label: 'Select' },
+                      { value: 'male', label: 'Male' },
+                      { value: 'female', label: 'Female' },
+                      { value: 'other', label: 'Other' },
+                    ]}
+                  />
+                  <UIInput label="Date of Birth" value={form.date_of_birth} onChange={e => set('date_of_birth')(e.target.value)} type="date" />
+                  <UIInput label="Nationality" value={form.nationality} onChange={e => set('nationality')(e.target.value)} />
+                  <UIInput label="Province / State" value={form.state} onChange={e => set('state')(e.target.value)} />
                 </div>
               </div>
 
@@ -273,8 +262,8 @@ const Profile = () => {
                   <div className="h-px w-full bg-slate-100" />
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                  <Input label="Father's Name" value={form.father_name} onChange={set('father_name')} />
-                  <Input label="Mother's Name" value={form.mother_name} onChange={set('mother_name')} />
+                  <UIInput label="Father's Name" value={form.father_name} onChange={e => set('father_name')(e.target.value)} />
+                  <UIInput label="Mother's Name" value={form.mother_name} onChange={e => set('mother_name')(e.target.value)} />
                 </div>
               </div>
 
@@ -285,8 +274,8 @@ const Profile = () => {
                   <div className="h-px w-full bg-slate-100" />
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                  <Input label="LRN (Learner Reference Number)" value={form.registration_number} onChange={set('registration_number')} />
-                  <Input label="Grade Level" value={form.grade_level} onChange={set('grade_level')} />
+                  <UIInput label="LRN (Learner Reference Number)" value={form.registration_number} onChange={e => set('registration_number')(e.target.value)} />
+                  <UIInput label="Grade Level" value={form.grade_level} onChange={e => set('grade_level')(e.target.value)} />
                 </div>
               </div>
 
@@ -297,33 +286,46 @@ const Profile = () => {
                   <div className="h-px w-full bg-slate-100" />
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                  <Input label="Email Address (Optional)" value={form.email} onChange={set('email')} type="email" />
-                  <Input label="Phone Number" value={form.phone_number} onChange={set('phone_number')} />
+                  <UIInput label="Email Address (Optional)" value={form.email} onChange={e => set('email')(e.target.value)} type="email" />
+                  <UIInput label="Phone Number" value={form.phone_number} onChange={e => set('phone_number')(e.target.value)} />
                   <div className="sm:col-span-2">
-                    <label className="block text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-2">Address</label>
-                    <textarea value={form.address} onChange={e => set('address')(e.target.value)} rows={2}
-                      className="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-white text-[13px] font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-500/10 focus:border-violet-400 transition-all resize-none shadow-sm" />
+                    <Textarea
+                      label="Address"
+                      value={form.address}
+                      onChange={e => set('address')(e.target.value)}
+                      rows={2}
+                    />
                   </div>
                   <div className="sm:col-span-2">
-                    <label className="block text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-2">Emergency Contact</label>
-                    <textarea value={form.contact_information} onChange={e => set('contact_information')(e.target.value)} rows={2}
-                      className="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-white text-[13px] font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-500/10 focus:border-violet-400 transition-all resize-none shadow-sm"
-                      placeholder="Name, relationship, phone number…" />
+                    <Textarea
+                      label="Emergency Contact"
+                      value={form.contact_information}
+                      onChange={e => set('contact_information')(e.target.value)}
+                      rows={2}
+                      placeholder="Name, relationship, phone number…"
+                    />
                   </div>
                 </div>
               </div>
 
               {/* Actions */}
               <div className="flex flex-col xs:flex-row gap-3 pt-4">
-                <button onClick={handleSave} disabled={saving}
-                  className="flex-1 inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl bg-violet-600 text-white text-[13px] font-black uppercase tracking-widest hover:bg-violet-700 active:scale-95 transition-all disabled:opacity-50 shadow-lg shadow-violet-200">
-                  {saving && <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
+                <Button
+                  variant="primary"
+                  onClick={handleSave}
+                  disabled={saving}
+                  loading={saving}
+                  className="flex-1"
+                >
                   {saving ? 'Saving…' : 'Save Changes'}
-                </button>
-                <button onClick={() => setEditing(false)}
-                  className="flex-1 px-8 py-3.5 rounded-xl bg-slate-100 text-slate-700 text-[13px] font-black uppercase tracking-widest hover:bg-slate-200 active:scale-95 transition-all">
+                </Button>
+                <Button
+                  variant="secondary"
+                  onClick={() => setEditing(false)}
+                  className="flex-1"
+                >
                   Cancel
-                </button>
+                </Button>
               </div>
             </div>
           ) : (
