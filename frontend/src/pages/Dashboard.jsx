@@ -1035,6 +1035,169 @@ const TeacherView = () => {
             </CardBody>
           </Card>
 
+          {/* Performance Metrics - spans 4 cols */}
+          <Card className="sm:col-span-6 lg:col-span-4 border-slate-200 shadow-sm rounded-3xl">
+            <CardHeader divider className="bg-gradient-to-r from-emerald-50 to-teal-50">
+              <CardTitle className="text-emerald-900">Performance</CardTitle>
+            </CardHeader>
+            <CardBody className="p-4 space-y-4">
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-semibold text-slate-600">Attendance Rate</span>
+                  <span className="text-sm font-bold text-emerald-600">{attendanceRate}%</span>
+                </div>
+                <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                  <div className="h-full bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-full" style={{ width: `${attendanceRate}%` }} />
+                </div>
+              </div>
+              
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-semibold text-slate-600">Grade Submission</span>
+                  <span className="text-sm font-bold text-violet-600">{data?.grade_completion || 0}%</span>
+                </div>
+                <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                  <div className="h-full bg-gradient-to-r from-violet-500 to-violet-600 rounded-full" style={{ width: `${data?.grade_completion || 0}%` }} />
+                </div>
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-semibold text-slate-600">Materials Shared</span>
+                  <span className="text-sm font-bold text-blue-600">{data?.materials_count || 0}</span>
+                </div>
+                <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                  <div className="h-full bg-gradient-to-r from-blue-500 to-blue-600 rounded-full" style={{ width: `${Math.min(100, (data?.materials_count || 0) * 10)}%` }} />
+                </div>
+              </div>
+            </CardBody>
+          </Card>
+
+          {/* Schedule Overview - spans 4 cols */}
+          <Card className="sm:col-span-6 lg:col-span-4 border-slate-200 shadow-sm rounded-3xl">
+            <CardHeader divider className="bg-gradient-to-r from-indigo-50 to-purple-50">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-indigo-900">This Week</CardTitle>
+                <Button variant="ghost" size="sm" onClick={() => navigate('/schedule')}>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                </Button>
+              </div>
+            </CardHeader>
+            <CardBody className="p-4 space-y-3">
+              {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'].map((day, idx) => {
+                const isToday = new Date().getDay() === idx + 1;
+                const classesCount = Math.floor(Math.random() * 3) + 2; // Mock data
+                return (
+                  <div key={day} className={`flex items-center justify-between p-2 rounded-lg ${isToday ? 'bg-indigo-100 border-2 border-indigo-300' : 'bg-slate-50'}`}>
+                    <div className="flex items-center gap-2">
+                      {isToday && <div className="w-2 h-2 rounded-full bg-indigo-600 animate-pulse" />}
+                      <span className={`text-xs font-semibold ${isToday ? 'text-indigo-900' : 'text-slate-600'}`}>{day}</span>
+                    </div>
+                    <span className={`text-xs font-bold ${isToday ? 'text-indigo-700' : 'text-slate-500'}`}>{classesCount} classes</span>
+                  </div>
+                );
+              })}
+            </CardBody>
+          </Card>
+
+          {/* Recent Activity - spans 4 cols */}
+          <Card className="sm:col-span-6 lg:col-span-4 border-slate-200 shadow-sm rounded-3xl">
+            <CardHeader divider>
+              <CardTitle>Recent Activity</CardTitle>
+            </CardHeader>
+            <CardBody className="p-4">
+              <div className="space-y-3 max-h-[300px] overflow-y-auto">
+                {data?.recent_activities?.length > 0 ? (
+                  data.recent_activities.slice(0, 8).map((activity, idx) => (
+                    <div key={idx} className="flex items-start gap-3 p-3 rounded-xl bg-slate-50 hover:bg-white border border-slate-100 hover:border-slate-200 transition-all">
+                      <div className="w-8 h-8 rounded-lg bg-violet-100 flex items-center justify-center flex-shrink-0">
+                        <TeacherActivityIcon type={activity.type} className="w-4 h-4 text-violet-600" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-semibold text-slate-900 leading-tight">{activity.description}</p>
+                        <p className="text-[10px] text-slate-500 mt-0.5">{activity.timestamp}</p>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <EmptyState
+                    title="No recent activity"
+                    description="Your actions will appear here"
+                    icon={
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                      </svg>
+                    }
+                  />
+                )}
+              </div>
+            </CardBody>
+          </Card>
+
+          {/* Upcoming Deadlines - spans 8 cols */}
+          <Card className="sm:col-span-6 lg:col-span-8 border-slate-200 shadow-sm rounded-3xl">
+            <CardHeader divider className="bg-gradient-to-r from-rose-50 to-pink-50">
+              <CardTitle className="text-rose-900">Upcoming Deadlines</CardTitle>
+            </CardHeader>
+            <CardBody className="p-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {[
+                  { title: 'Quarter Grades Due', date: 'March 15, 2026', type: 'grades', urgent: true },
+                  { title: 'Attendance Report', date: 'March 10, 2026', type: 'attendance', urgent: false },
+                  { title: 'Parent-Teacher Conference', date: 'March 20, 2026', type: 'event', urgent: false },
+                  { title: 'Lesson Plans Submission', date: 'March 8, 2026', type: 'materials', urgent: true },
+                ].map((deadline, idx) => (
+                  <div key={idx} className={`p-4 rounded-2xl border-2 ${deadline.urgent ? 'bg-rose-50 border-rose-200' : 'bg-slate-50 border-slate-200'} hover:shadow-md transition-all`}>
+                    <div className="flex items-start justify-between mb-2">
+                      <h3 className={`font-bold text-sm ${deadline.urgent ? 'text-rose-900' : 'text-slate-900'}`}>{deadline.title}</h3>
+                      {deadline.urgent && <Badge variant="red" size="sm">Urgent</Badge>}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <svg className={`w-4 h-4 ${deadline.urgent ? 'text-rose-600' : 'text-slate-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                      <span className={`text-xs font-semibold ${deadline.urgent ? 'text-rose-700' : 'text-slate-600'}`}>{deadline.date}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardBody>
+          </Card>
+
+          {/* Class Performance Summary - spans 4 cols */}
+          <Card className="sm:col-span-6 lg:col-span-4 border-slate-200 shadow-sm rounded-3xl">
+            <CardHeader divider className="bg-gradient-to-r from-amber-50 to-orange-50">
+              <CardTitle className="text-amber-900">Class Performance</CardTitle>
+            </CardHeader>
+            <CardBody className="p-4">
+              <div className="space-y-4">
+                <div className="text-center py-6">
+                  <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-amber-500 to-orange-500 mb-3">
+                    <span className="text-3xl font-bold text-white">B+</span>
+                  </div>
+                  <p className="text-xs font-semibold text-slate-600">Average Class Grade</p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-200 text-center">
+                    <p className="text-2xl font-bold text-emerald-700">{Math.round(attendanceRate)}%</p>
+                    <p className="text-[10px] font-semibold text-emerald-600 uppercase">Present</p>
+                  </div>
+                  <div className="p-3 bg-blue-50 rounded-xl border border-blue-200 text-center">
+                    <p className="text-2xl font-bold text-blue-700">{data?.total_students || 0}</p>
+                    <p className="text-[10px] font-semibold text-blue-600 uppercase">Students</p>
+                  </div>
+                </div>
+
+                <Button variant="primary" onClick={() => navigate('/analytics')} className="w-full">
+                  View Analytics
+                </Button>
+              </div>
+            </CardBody>
+          </Card>
+
         </div>
       </div>
     </div>
