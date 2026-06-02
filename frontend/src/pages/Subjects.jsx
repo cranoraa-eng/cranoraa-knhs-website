@@ -1,9 +1,17 @@
 import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import api from '../utils/api';
 import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
-import { useScrollLock } from '../hooks/useScrollLock';
-import { LoadingSpinner, EmptyState, Button } from '../components/ui';
+import {
+  Card, CardHeader, CardBody, CardTitle, Button, Badge,
+  LoadingSpinner, EmptyState, Modal, ModalHeader, ModalBody, ModalFooter
+} from '../components/ui';
+
+/**
+ * Subjects Page - DepEd Academic Style
+ * Professional subject/curriculum management interface for administrators
+ */
 
 const GRADE_LEVELS = [
   'Grade 7', 'Grade 8', 'Grade 9', 'Grade 10',
@@ -21,8 +29,6 @@ const Subjects = () => {
   const [form, setForm] = useState(EMPTY_FORM);
   const [search, setSearch] = useState('');
   const [filterLevel, setFilterLevel] = useState('');
-
-  useScrollLock(showModal);
 
   useEffect(() => { fetchSubjects(); }, []);
 
@@ -119,217 +125,268 @@ const Subjects = () => {
   }, {});
 
   return (
-    <div className="space-y-5 animate-fade-in page-bottom-safe">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: 'easeOut' }}
+      className="page-bottom-safe max-w-[1800px] mx-auto bg-slate-50 px-4 py-4 md:px-6 md:py-6 space-y-5 md:space-y-6"
+    >
+      {/* ══════════════════════════════════════════════════════════════ */}
+      {/* PAGE HEADER */}
+      {/* ══════════════════════════════════════════════════════════════ */}
+
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-black text-slate-900 tracking-tight">Subject Management</h1>
-          <p className="text-sm text-slate-500 mt-0.5">{subjects.length} subjects in the curriculum</p>
+          <div className="flex items-center gap-2 text-xs font-bold text-blue-700 uppercase tracking-wide mb-2">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+            </svg>
+            <span>Curriculum Management</span>
+          </div>
+          <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight">
+            Subjects
+          </h1>
+          <p className="text-xs text-slate-600 mt-1 font-semibold">
+            {subjects.length} subjects in the curriculum
+          </p>
         </div>
-        <button onClick={openCreate}
-          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-violet-600 text-white text-sm font-bold hover:bg-violet-700 active:scale-95 transition-all shadow-sm">
+        <Button variant="primary" onClick={openCreate}>
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
           </svg>
           Add Subject
-        </button>
+        </Button>
       </div>
 
-      {/* Filters */}
-      <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-4">
-        <div className="flex flex-col sm:flex-row gap-3">
-          <div className="relative flex-1">
-            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-            <input type="text" placeholder="Search by name or code…" value={search}
-              onChange={e => setSearch(e.target.value)}
-              className="w-full pl-9 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-400 focus:bg-white transition-all" />
+      {/* ══════════════════════════════════════════════════════════════ */}
+      {/* FILTERS */}
+      {/* ══════════════════════════════════════════════════════════════ */}
+
+      <Card>
+        <CardBody className="p-4">
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="relative flex-1">
+              <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              <input
+                type="text"
+                placeholder="Search by name or code..."
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                className="w-full pl-10 pr-4 py-2.5 border border-slate-300 rounded-md bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all"
+              />
+            </div>
+            <select
+              value={filterLevel}
+              onChange={e => setFilterLevel(e.target.value)}
+              className="px-4 py-2.5 border border-slate-300 rounded-md bg-white text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all"
+            >
+              <option value="">All Grade Levels</option>
+              {gradeLevels.map(l => <option key={l} value={l}>{l}</option>)}
+            </select>
           </div>
-          <select value={filterLevel} onChange={e => setFilterLevel(e.target.value)}
-            className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-400 transition-all">
-            <option value="">All Grade Levels</option>
-            {gradeLevels.map(l => <option key={l} value={l}>{l}</option>)}
-          </select>
-        </div>
-      </div>
+        </CardBody>
+      </Card>
 
-      {/* Content */}
+      {/* ══════════════════════════════════════════════════════════════ */}
+      {/* CONTENT */}
+      {/* ══════════════════════════════════════════════════════════════ */}
+
       {loading ? (
-        <div className="flex flex-col items-center justify-center h-48 gap-4">
+        <div className="flex items-center justify-center h-64">
           <LoadingSpinner />
         </div>
       ) : filtered.length === 0 ? (
-        <EmptyState
-          icon={
-            <svg className="w-7 h-7 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-            </svg>
-          }
-          title="No subjects found"
-          message={search || filterLevel ? 'Try adjusting your filters.' : 'Add your first subject to get started.'}
-        />
+        <Card>
+          <CardBody className="p-12">
+            <EmptyState
+              icon={
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                </svg>
+              }
+              title="No Subjects Found"
+              message={search || filterLevel ? 'Try adjusting your filters' : 'Add your first subject to get started'}
+            />
+          </CardBody>
+        </Card>
       ) : (
-        <div className="space-y-4">
-          {Object.entries(grouped).sort(([a], [b]) => {
-            const numA = parseInt(a.replace(/\D/g, '')) || 999;
-            const numB = parseInt(b.replace(/\D/g, '')) || 999;
-            return numA - numB;
-          }).map(([level, items]) => (
-            <div key={level} className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
-              {/* Group header */}
-              <div className="flex items-center justify-between px-5 py-3 bg-slate-50 border-b border-slate-200">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-xl bg-violet-100 flex items-center justify-center font-black text-xs text-violet-700">
-                    {parseInt(level.replace(/\D/g, '')) || level.charAt(0)}
+        <>
+          <div className="space-y-4">
+            {Object.entries(grouped).sort(([a], [b]) => {
+              const numA = parseInt(a.replace(/\D/g, '')) || 999;
+              const numB = parseInt(b.replace(/\D/g, '')) || 999;
+              return numA - numB;
+            }).map(([level, items]) => (
+              <Card key={level} className="border-l-4 border-l-blue-500">
+                <CardHeader divider className="bg-slate-50">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-md bg-blue-100 flex items-center justify-center font-extrabold text-sm text-blue-700 border border-blue-200">
+                      {parseInt(level.replace(/\D/g, '')) || level.charAt(0)}
+                    </div>
+                    <div>
+                      <CardTitle className="text-base">{level}</CardTitle>
+                      <p className="text-xs font-bold text-slate-500 uppercase tracking-wide">{items.length} Subjects</p>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardBody className="p-0">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left">
+                      <thead className="bg-slate-50 border-b border-slate-200">
+                        <tr>
+                          <th className="px-4 py-3 text-xs font-extrabold text-slate-700 uppercase tracking-wider w-32">Code</th>
+                          <th className="px-4 py-3 text-xs font-extrabold text-slate-700 uppercase tracking-wider">Subject Name</th>
+                          <th className="hidden md:table-cell px-4 py-3 text-xs font-extrabold text-slate-700 uppercase tracking-wider">Description</th>
+                          <th className="px-4 py-3 text-xs font-extrabold text-slate-700 uppercase tracking-wider text-center w-28">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100">
+                        {items.map(s => (
+                          <tr key={s.id} className="hover:bg-slate-50 transition-colors">
+                            <td className="px-4 py-3">
+                              <Badge variant="blue" className="font-mono">
+                                {s.code}
+                              </Badge>
+                            </td>
+                            <td className="px-4 py-3">
+                              <span className="text-sm font-bold text-slate-900">{s.name}</span>
+                            </td>
+                            <td className="hidden md:table-cell px-4 py-3 text-sm text-slate-600 max-w-xs">
+                              <span className="line-clamp-1">
+                                {s.description || <span className="italic text-slate-400">No description</span>}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3 text-center">
+                              <div className="flex items-center justify-center gap-2">
+                                <Button
+                                  variant="secondary"
+                                  size="sm"
+                                  onClick={() => openEdit(s)}
+                                >
+                                  Edit
+                                </Button>
+                                <Button
+                                  variant="danger"
+                                  size="sm"
+                                  onClick={() => handleDelete(s)}
+                                >
+                                  Delete
+                                </Button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </CardBody>
+              </Card>
+            ))}
+          </div>
+
+          <p className="text-xs text-slate-500 font-semibold text-center">
+            {filtered.length} entries · {Object.keys(grouped).length} grade levels
+          </p>
+        </>
+      )}
+
+      {/* ══════════════════════════════════════════════════════════════ */}
+      {/* MODAL */}
+      {/* ══════════════════════════════════════════════════════════════ */}
+
+      {showModal && (
+        <Modal onClose={() => setShowModal(false)}>
+          <ModalHeader onClose={() => setShowModal(false)}>
+            <div>
+              <h2 className="text-lg font-extrabold text-slate-900">
+                {editing ? 'Update Subject' : 'New Subject'}
+              </h2>
+              <p className="text-xs text-blue-700 font-bold uppercase tracking-wide mt-0.5">
+                Subject Curriculum Details
+              </p>
+            </div>
+          </ModalHeader>
+          <form onSubmit={handleSubmit}>
+            <ModalBody>
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-2">
+                      Subject Code <span className="text-red-600">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={form.code}
+                      onChange={e => setForm({ ...form, code: e.target.value.toUpperCase() })}
+                      placeholder="e.g. MATH7"
+                      className="w-full px-4 py-2.5 border border-slate-300 rounded-md bg-white text-sm font-semibold uppercase focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all"
+                      required
+                    />
                   </div>
                   <div>
-                    <span className="font-black text-sm text-slate-800">{level}</span>
-                    <span className="ml-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">{items.length} subjects</span>
+                    <label className="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-2">
+                      Grade Level <span className="text-red-600">*</span>
+                    </label>
+                    <select
+                      value={form.grade_level}
+                      onChange={e => setForm({ ...form, grade_level: e.target.value })}
+                      className="w-full px-4 py-2.5 border border-slate-300 rounded-md bg-white text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all"
+                      required
+                    >
+                      <option value="">Select Level</option>
+                      {GRADE_LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
+                    </select>
                   </div>
                 </div>
-              </div>
-
-              {/* Table */}
-              <div className="overflow-x-auto">
-                <table className="w-full text-left">
-                  <thead className="bg-slate-50/50 border-b border-slate-100">
-                    <tr>
-                      <th className="px-5 py-3 text-[10px] font-black text-slate-500 uppercase tracking-[0.15em] w-32">Code</th>
-                      <th className="px-5 py-3 text-[10px] font-black text-slate-500 uppercase tracking-[0.15em]">Subject Name</th>
-                      <th className="hidden md:table-cell px-5 py-3 text-[10px] font-black text-slate-500 uppercase tracking-[0.15em]">Description</th>
-                      <th className="px-5 py-3 text-[10px] font-black text-slate-500 uppercase tracking-[0.15em] text-center w-28">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {items.map(s => (
-                      <tr key={s.id} className="hover:bg-violet-50/40 transition-colors group">
-                        <td className="px-5 py-3.5">
-                          <span className="font-mono text-xs font-black text-violet-700 bg-violet-50 px-2 py-0.5 rounded-lg border border-violet-100">
-                            {s.code}
-                          </span>
-                        </td>
-                        <td className="px-5 py-3.5">
-                          <span className="text-sm font-bold text-slate-800">{s.name}</span>
-                        </td>
-                        <td className="hidden md:table-cell px-5 py-3.5 text-sm text-slate-500 max-w-xs">
-                          <span className="line-clamp-1">{s.description || <span className="italic text-slate-300 text-xs">No description</span>}</span>
-                        </td>
-                        <td className="px-5 py-3.5 text-center">
-                          <div className="flex items-center justify-center gap-1.5">
-                            <button onClick={() => openEdit(s)} title="Edit"
-                              className="px-3 py-1.5 text-xs font-bold text-violet-700 bg-violet-100 hover:bg-violet-600 hover:text-white rounded-lg transition-all active:scale-90 no-min">
-                              Edit
-                            </button>
-                            <button onClick={() => handleDelete(s)} title="Delete"
-                              className="px-3 py-1.5 text-xs font-bold text-red-600 bg-red-50 hover:bg-red-500 hover:text-white rounded-lg transition-all active:scale-90 no-min">
-                              Delete
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {!loading && filtered.length > 0 && (
-        <p className="text-[9px] md:text-sm text-slate-400 mt-4 font-black uppercase tracking-widest text-center md:text-left">
-          {filtered.length} entries · {Object.keys(grouped).length} grade levels
-        </p>
-      )}
-
-      {/* Modal */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-[100] p-4 animate-fade-in">
-          <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden animate-scale-in">
-            <div className="flex items-center justify-between p-5 md:p-6 border-b border-slate-100 bg-slate-50/50">
-              <div>
-                <h2 className="text-sm md:text-xl font-black text-slate-800 uppercase tracking-widest">
-                  {editing ? 'Update Subject' : 'New Subject'}
-                </h2>
-                <p className="text-[8px] md:text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em] mt-0.5">Subject Curriculum Details</p>
-              </div>
-              <button onClick={() => setShowModal(false)} className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-all">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-            <form onSubmit={handleSubmit} className="p-5 md:p-6 space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="col-span-2 md:col-span-1">
-                  <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Subject Code <span className="text-rose-500">*</span></label>
+                <div>
+                  <label className="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-2">
+                    Subject Name <span className="text-red-600">*</span>
+                  </label>
                   <input
                     type="text"
-                    value={form.code}
-                    onChange={e => setForm({ ...form, code: e.target.value.toUpperCase() })}
-                    placeholder="E.G. MATH7"
-                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-[11px] md:text-sm font-black uppercase tracking-widest transition-all"
+                    value={form.name}
+                    onChange={e => setForm({ ...form, name: e.target.value })}
+                    placeholder="e.g. Mathematics"
+                    className="w-full px-4 py-2.5 border border-slate-300 rounded-md bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all"
                     required
                   />
                 </div>
-                <div className="col-span-2 md:col-span-1">
-                  <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Grade Level <span className="text-rose-500">*</span></label>
-                  <select
-                    value={form.grade_level}
-                    onChange={e => setForm({ ...form, grade_level: e.target.value })}
-                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-[11px] md:text-sm font-black uppercase tracking-widest transition-all cursor-pointer"
-                    required
-                  >
-                    <option value="">SELECT LEVEL</option>
-                    {GRADE_LEVELS.map(l => <option key={l} value={l}>{l.toUpperCase()}</option>)}
-                  </select>
+                <div>
+                  <label className="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-2">
+                    Description <span className="text-slate-400 text-xs normal-case">(optional)</span>
+                  </label>
+                  <textarea
+                    rows={3}
+                    value={form.description}
+                    onChange={e => setForm({ ...form, description: e.target.value })}
+                    placeholder="Brief subject overview..."
+                    className="w-full px-4 py-2.5 border border-slate-300 rounded-md bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all resize-none"
+                  />
                 </div>
               </div>
-              <div>
-                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Subject Name <span className="text-rose-500">*</span></label>
-                <input
-                  type="text"
-                  value={form.name}
-                  onChange={e => setForm({ ...form, name: e.target.value })}
-                  placeholder="E.G. MATHEMATICS"
-                  className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-[11px] md:text-sm font-black uppercase tracking-widest transition-all"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Description <span className="text-slate-300 font-normal tracking-normal">(OPTIONAL)</span></label>
-                <textarea
-                  rows={2}
-                  value={form.description}
-                  onChange={e => setForm({ ...form, description: e.target.value })}
-                  placeholder="BRIEF SUBJECT OVERVIEW..."
-                  className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-[11px] md:text-sm font-bold transition-all resize-none"
-                />
-              </div>
-              <div className="flex gap-3 pt-2">
-                <Button
-                  type="submit"
-                  variant="primary"
-                  loading={saving}
-                  className="flex-1"
-                >
-                  {editing ? 'SAVE CHANGES' : 'CREATE SUBJECT'}
-                </Button>
-                <Button
-                  type="button"
-                  onClick={() => setShowModal(false)}
-                  variant="secondary"
-                  className="flex-1"
-                >
-                  CANCEL
-                </Button>
-              </div>
-            </form>
-          </div>
-        </div>
+            </ModalBody>
+            <ModalFooter>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => setShowModal(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                variant="primary"
+                loading={saving}
+              >
+                {editing ? 'Save Changes' : 'Create Subject'}
+              </Button>
+            </ModalFooter>
+          </form>
+        </Modal>
       )}
-    </div>
+    </motion.div>
   );
 };
 
