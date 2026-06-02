@@ -3,7 +3,6 @@ import api from '../utils/api';
 import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
 import { LoadingSpinner } from '../components/ui';
-import { Modal } from '../components/ui/Modal';
 
 const DAYS = ['monday','tuesday','wednesday','thursday','friday','saturday'];
 const WEEKDAYS = ['monday','tuesday','wednesday','thursday','friday'];
