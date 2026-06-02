@@ -110,17 +110,16 @@ const Backups = () => {
           <h1 className="text-2xl font-black text-slate-900 tracking-tight">Database Backups</h1>
           <p className="text-sm text-slate-500 mt-0.5">Manage and restore database snapshots.</p>
         </div>
-        <button
-          <Button
-            onClick={handleCreateBackup}
-            loading={creating}
-            variant="primary"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
-            </svg>
-            Create Backup
-          </Button>
+        <Button
+          onClick={handleCreateBackup}
+          loading={creating}
+          variant="primary"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
+          </svg>
+          Create Backup
+        </Button>
       </div>
 
       {/* Info banner */}
