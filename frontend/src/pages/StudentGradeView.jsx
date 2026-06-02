@@ -1,37 +1,51 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import api from '../utils/api';
 import { useAuth } from '../context/AuthContext';
 import { jsPDF } from 'jspdf';
 import toast from 'react-hot-toast';
-import { LoadingSpinner, Button, EmptyState } from '../components/ui';
+import {
+  Card, CardHeader, CardBody, CardTitle, Button, Badge,
+  LoadingSpinner, EmptyState
+} from '../components/ui';
 
-const REMARKS_STYLE = {
-  'Outstanding':               'bg-green-100 text-green-700 border-green-200',
-  'Very Satisfactory':         'bg-blue-100 text-blue-700 border-blue-200',
-  'Satisfactory':              'bg-yellow-100 text-yellow-700 border-yellow-200',
-  'Fairly Satisfactory':       'bg-orange-100 text-orange-700 border-orange-200',
-  'Did Not Meet Expectations': 'bg-red-100 text-red-700 border-red-200',
+/**
+ * Student Grade View - DepEd Official Report Card Style
+ * Professional grade report for students and parents
+ */
+
+// Performance level configuration
+const PERFORMANCE_LEVELS = {
+  outstanding: { min: 90, label: 'Outstanding', shortLabel: 'O', color: 'emerald' },
+  verySatisfactory: { min: 85, label: 'Very Satisfactory', shortLabel: 'VS', color: 'blue' },
+  satisfactory: { min: 80, label: 'Satisfactory', shortLabel: 'S', color: 'amber' },
+  fairlySatisfactory: { min: 75, label: 'Fairly Satisfactory', shortLabel: 'FS', color: 'orange' },
+  didNotMeet: { min: 0, label: 'Did Not Meet Expectations', shortLabel: 'DNM', color: 'red' },
 };
 
-const scoreColor = (score) => {
-  if (score == null) return 'bg-slate-100 text-slate-600 border-slate-200';
+const getPerformanceLevel = (score) => {
+  if (score == null || isNaN(score)) return null;
   const n = parseFloat(score);
-  if (n >= 90) return 'bg-green-100 text-green-700 border-green-200';
-  if (n >= 85) return 'bg-blue-100 text-blue-700 border-blue-200';
-  if (n >= 80) return 'bg-yellow-100 text-yellow-700 border-yellow-200';
-  if (n >= 75) return 'bg-orange-100 text-orange-700 border-orange-200';
-  return 'bg-red-100 text-red-700 border-red-200';
+  if (n >= 90) return PERFORMANCE_LEVELS.outstanding;
+  if (n >= 85) return PERFORMANCE_LEVELS.verySatisfactory;
+  if (n >= 80) return PERFORMANCE_LEVELS.satisfactory;
+  if (n >= 75) return PERFORMANCE_LEVELS.fairlySatisfactory;
+  return PERFORMANCE_LEVELS.didNotMeet;
 };
 
-const remarksFor = (score) => {
-  if (score == null) return null;
-  const n = parseFloat(score);
-  if (n >= 90) return 'Outstanding';
-  if (n >= 85) return 'Very Satisfactory';
-  if (n >= 80) return 'Satisfactory';
-  if (n >= 75) return 'Fairly Satisfactory';
-  return 'Did Not Meet Expectations';
+const ScoreBadge = ({ score, size = 'md' }) => {
+  if (score == null || isNaN(score)) {
+    return <span className="text-slate-300 text-sm font-bold">—</span>;
+  }
+  const level = getPerformanceLevel(parseFloat(score));
+  const sizeClass = size === 'sm' ? 'text-xs px-2 py-0.5' : 'text-sm px-2.5 py-1';
+  
+  return (
+    <Badge variant={level?.color || 'slate'} className={sizeClass}>
+      {parseFloat(score).toFixed(0)}
+    </Badge>
+  );
 };
 
 const StudentGradeView = () => {
@@ -41,13 +55,15 @@ const StudentGradeView = () => {
   const studentIdParam = searchParams.get('student_id');
   const isViewingOther = !!studentIdParam;
 
-  const [grades, setGrades]         = useState([]);
+  // State
+  const [grades, setGrades] = useState([]);
   const [viewingUser, setViewingUser] = useState(null);
-  const [loading, setLoading]       = useState(true);
+  const [loading, setLoading] = useState(true);
   const [filterQuarter, setFilterQuarter] = useState('');
   const [filterYear, setFilterYear] = useState(localStorage.getItem('knhs_academic_year') || '2025-2026');
   const [filterSubject, setFilterSubject] = useState('');
 
+  // Academic year navigation
   const handleYearChange = (dir) => {
     const [start, end] = filterYear.split('-').map(Number);
     const newYear = dir === 'next' ? `${start + 1}-${end + 1}` : `${start - 1}-${end - 1}`;
@@ -55,16 +71,18 @@ const StudentGradeView = () => {
     localStorage.setItem('knhs_academic_year', newYear);
   };
 
+  // Load grades
   useEffect(() => {
     if (studentIdParam) {
       Promise.all([
         api.get(`/grades/?student=${studentIdParam}&academic_year=${filterYear}`),
         api.get(`/users/${studentIdParam}/`),
-      ]).then(([gRes, uRes]) => {
-        // Only final grades
-        setGrades(gRes.data.filter(g => g.grade_type === 'final_grade'));
-        setViewingUser(uRes.data);
-      }).catch(() => toast.error('Failed to load student grades'))
+      ])
+        .then(([gRes, uRes]) => {
+          setGrades(gRes.data.filter(g => g.grade_type === 'final_grade'));
+          setViewingUser(uRes.data);
+        })
+        .catch(() => toast.error('Failed to load student grades'))
         .finally(() => setLoading(false));
     } else {
       api.get(`/grades/my_grades/?academic_year=${filterYear}`)
@@ -74,390 +92,552 @@ const StudentGradeView = () => {
     }
   }, [studentIdParam, filterYear]);
 
+  // Filter grades
   const filtered = grades.filter(g => {
     const matchQ = !filterQuarter || String(g.quarter) === filterQuarter;
     const matchS = !filterSubject || String(g.subject) === filterSubject;
-    const matchYear = !filterYear || g.academic_year === filterYear;
-    return matchQ && matchS && matchYear;
+    return matchQ && matchS;
   });
 
   // Group by subject
   const bySubject = filtered.reduce((acc, g) => {
-    if (!acc[g.subject]) acc[g.subject] = { subject_name: g.subject_name, subject_code: g.subject_code, quarters: {} };
+    if (!acc[g.subject]) {
+      acc[g.subject] = {
+        subject_name: g.subject_name,
+        subject_code: g.subject_code,
+        quarters: {},
+      };
+    }
     acc[g.subject].quarters[g.quarter] = g;
     return acc;
   }, {});
 
-  const uniqueSubjects = [...new Map(grades.map(g => [g.subject, { id: g.subject, name: g.subject_name }])).values()];
+  const uniqueSubjects = [
+    ...new Map(
+      grades.map(g => [g.subject, { id: g.subject, name: g.subject_name }])
+    ).values(),
+  ];
 
-  // Overall average across all final grades
-  const allScores = filtered.map(g => parseFloat(g.raw_score)).filter(v => !isNaN(v));
-  const overallAvg = allScores.length ? (allScores.reduce((a, b) => a + b, 0) / allScores.length).toFixed(2) : null;
+  // Calculate overall average
+  const allScores = filtered
+    .map(g => parseFloat(g.raw_score))
+    .filter(v => !isNaN(v));
+  const overallAvg = allScores.length
+    ? (allScores.reduce((a, b) => a + b, 0) / allScores.length).toFixed(2)
+    : null;
   const overallRounded = overallAvg ? Math.round(parseFloat(overallAvg)) : null;
-  const overallRemarks = overallRounded != null ? remarksFor(overallRounded) : null;
+  const overallPerformance = getPerformanceLevel(overallRounded);
+
   const subjectEntries = Object.values(bySubject);
 
   const displayName = viewingUser
-    ? (viewingUser.first_name && viewingUser.last_name ? `${viewingUser.first_name} ${viewingUser.last_name}` : viewingUser.username)
-    : (user?.first_name && user?.last_name ? `${user.first_name} ${user.last_name}` : user?.username);
+    ? viewingUser.first_name && viewingUser.last_name
+      ? `${viewingUser.first_name} ${viewingUser.last_name}`
+      : viewingUser.username
+    : user?.first_name && user?.last_name
+    ? `${user.first_name} ${user.last_name}`
+    : user?.username;
 
-  const downloadPDF = () => {
-    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-    const W = 210; const H = 297; const ML = 20; const MR = 20; const CW = W - ML - MR;
-    const PRIMARY_RGB = [45, 27, 77];
+  // PDF Export Handler
+  const handlePDFDownload = () => {
+    if (!displayName) return toast.error('Student information not available');
 
-    const sf = (size, weight = 'normal', r = 0, g = 0, b = 0) => {
-      doc.setFontSize(size); doc.setFont('helvetica', weight); doc.setTextColor(r, g, b);
-    };
-    const hl = (y, lw = 0.2, r = 200, g = 200, b = 200) => {
-      doc.setDrawColor(r, g, b); doc.setLineWidth(lw); doc.line(ML, y, W - MR, y);
-    };
-
-    let y = 15;
-
-    // --- DepEd Official Header ---
-    sf(8, 'normal', 100, 100, 100);
-    doc.text('Republic of the Philippines', W/2, y, {align:'center'}); y+=4;
-    sf(9, 'bold', 0, 0, 0);
-    doc.text('Department of Education', W/2, y, {align:'center'}); y+=4;
-    sf(8, 'normal', 100, 100, 100);
-    doc.text('Region X — Northern Mindanao', W/2, y, {align:'center'}); y+=4;
-    doc.text('Division of Iligan City', W/2, y, {align:'center'}); y+=6;
-
-    sf(12, 'bold', ...PRIMARY_RGB);
-    doc.text('KIWALAN NATIONAL HIGH SCHOOL', W/2, y, {align:'center'}); y+=4;
-    sf(7, 'italic', 120, 120, 120);
-    doc.text('Kiwalan, Iligan City, Lanao del Norte | School ID: 304050', W/2, y, {align:'center'}); y+=6;
-
-    doc.setDrawColor(...PRIMARY_RGB); doc.setLineWidth(0.5); doc.line(ML, y, W-MR, y); y+=1;
-    doc.setLineWidth(0.1); doc.line(ML, y, W-MR, y); y+=8;
-
-    // --- Title & Metadata ---
-    sf(11, 'bold', 0, 0, 0);
-    doc.text('OFFICIAL LEARNER PROGRESS REPORT', W/2, y, {align:'center'}); y+=7;
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
     
-    // Metadata grid
-    const metaY = y;
-    sf(7, 'bold', 120, 120, 120); doc.text('LEARNER INFORMATION', ML, y);
-    doc.text('ACADEMIC CONTEXT', W/2 + 5, y); y+=5;
+    // Header
+    doc.setFontSize(16);
+    doc.setFont('helvetica', 'bold');
+    doc.text('KIWALAN NATIONAL HIGH SCHOOL', pageWidth / 2, 20, { align: 'center' });
     
-    const drawMeta = (label, value, x, currY) => {
-      sf(7, 'normal', 100, 100, 100); doc.text(`${label}:`, x, currY);
-      sf(7, 'bold', 0, 0, 0); doc.text(String(value || '—'), x + 25, currY);
-    };
-
-    drawMeta('Full Name', displayName.toUpperCase(), ML, y);
-    drawMeta('Academic Year', filterYear, W/2 + 5, y); y+=5;
-    drawMeta('LRN', viewingUser?.username || user?.username, ML, y);
-    drawMeta('Reporting Period', filterQuarter ? `Quarter ${filterQuarter}` : 'Annual Report', W/2 + 5, y); y+=5;
-    drawMeta('Grade Level', viewingUser?.profile?.grade_level || user?.profile?.grade_level, ML, y);
-    drawMeta('Date Issued', new Date().toLocaleDateString('en-US', { month:'long', day:'numeric', year:'numeric' }), W/2 + 5, y); y+=8;
-
-    hl(y); y+=8;
-
-    // --- Scholastic Achievement Table ---
-    sf(9, 'bold', ...PRIMARY_RGB);
-    doc.text('I. SCHOLASTIC ACHIEVEMENT', ML, y); y+=5;
-
-    const COL = { sub:ML, q1:105, q2:118, q3:131, q4:144, rnd:162, rem:175 };
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.text('Official Student Report Card', pageWidth / 2, 28, { align: 'center' });
     
-    // Table Header
-    doc.setFillColor(...PRIMARY_RGB);
-    doc.rect(ML, y, CW, 7, 'F');
-    sf(7, 'bold', 255, 255, 255);
-    doc.text('LEARNING AREAS', COL.sub+2, y+4.5);
-    ['Q1','Q2','Q3','Q4','FINAL'].forEach((h,i) => {
-      const xs = [COL.q1, COL.q2, COL.q3, COL.q4, COL.rnd];
-      doc.text(h, xs[i], y+4.5, {align:'center'});
-    });
-    doc.text('REMARKS', COL.rem, y+4.5);
-    y+=7;
-
-    // Table Body
-    subjectEntries.forEach((s, idx) => {
-      if (y > H - 100) { // Leave room for interpretation and signatures
-        doc.addPage(); y = 20;
-        sf(8, 'bold', ...PRIMARY_RGB); doc.text('SCHOLASTIC ACHIEVEMENT (Continued)', ML, y); y+=6;
+    // Student Info
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`Student: ${displayName}`, 20, 45);
+    doc.text(`Academic Year: ${filterYear}`, 20, 52);
+    
+    if (filterQuarter) {
+      doc.text(`Quarter: ${filterQuarter}`, 20, 59);
+    }
+    
+    // Table headers
+    let yPos = 70;
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Subject', 20, yPos);
+    doc.text('Q1', 120, yPos, { align: 'center' });
+    doc.text('Q2', 140, yPos, { align: 'center' });
+    doc.text('Q3', 160, yPos, { align: 'center' });
+    doc.text('Q4', 180, yPos, { align: 'center' });
+    doc.text('Final', 200, yPos, { align: 'right' });
+    
+    doc.line(20, yPos + 2, 200, yPos + 2);
+    yPos += 8;
+    
+    // Table rows
+    doc.setFont('helvetica', 'normal');
+    subjectEntries.forEach((entry) => {
+      if (yPos > pageHeight - 30) {
+        doc.addPage();
+        yPos = 20;
       }
       
-      const scores = [1,2,3,4].map(q => s.quarters[q] ? parseFloat(s.quarters[q].raw_score) : null).filter(v => v !== null);
-      const avg = scores.length ? scores.reduce((a,b)=>a+b,0)/scores.length : null;
-      const rounded = avg !== null ? Math.round(avg) : null;
-      const remark = rounded !== null ? remarksFor(rounded) : null;
-
-      if (idx % 2 !== 0) { doc.setFillColor(250, 250, 252); doc.rect(ML, y, CW, 8, 'F'); }
-      doc.setDrawColor(240, 240, 245); doc.setLineWidth(0.1); doc.line(ML, y+8, W-MR, y+8);
-
-      sf(7.5, 'bold', 30, 30, 30);
-      doc.text(s.subject_name, COL.sub+2, y+5);
+      const q1 = entry.quarters[1]?.raw_score || '—';
+      const q2 = entry.quarters[2]?.raw_score || '—';
+      const q3 = entry.quarters[3]?.raw_score || '—';
+      const q4 = entry.quarters[4]?.raw_score || '—';
       
-      sf(8, 'normal', 0, 0, 0);
-      [1,2,3,4].forEach(q => {
-        const g = s.quarters[q];
-        const val = g ? String(g.raw_score) : '—';
-        if (val === '—') doc.setTextColor(200, 200, 200);
-        doc.text(val, COL[`q${q}`], y+5, {align:'center'});
-        doc.setTextColor(0, 0, 0);
-      });
-
-      if (rounded !== null) {
-        sf(8, 'bold', ...PRIMARY_RGB);
-        doc.text(String(rounded), COL.rnd, y+5, {align:'center'});
-        sf(6.5, 'normal', 80, 80, 80);
-        doc.text(remark === 'Did Not Meet Expectations' ? 'Failed' : 'Passed', COL.rem, y+5);
-      }
-      y+=8;
+      const scores = [q1, q2, q3, q4]
+        .map(s => parseFloat(s))
+        .filter(s => !isNaN(s));
+      const avg = scores.length ? (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(0) : '—';
+      
+      doc.text(entry.subject_name, 20, yPos);
+      doc.text(String(q1), 120, yPos, { align: 'center' });
+      doc.text(String(q2), 140, yPos, { align: 'center' });
+      doc.text(String(q3), 160, yPos, { align: 'center' });
+      doc.text(String(q4), 180, yPos, { align: 'center' });
+      doc.text(String(avg), 200, yPos, { align: 'right' });
+      
+      yPos += 7;
     });
-
-    // General Average Row
-    if (overallRounded) {
-      doc.setFillColor(245, 245, 250);
-      doc.rect(ML, y, CW, 9, 'F');
-      doc.setDrawColor(...PRIMARY_RGB); doc.setLineWidth(0.3); doc.line(ML, y, W-MR, y);
-      doc.line(ML, y+9, W-MR, y+9);
+    
+    // General Average
+    if (overallAvg) {
+      yPos += 5;
+      doc.line(20, yPos, 200, yPos);
+      yPos += 8;
+      doc.setFont('helvetica', 'bold');
+      doc.text('General Average:', 20, yPos);
+      doc.text(String(overallRounded), 200, yPos, { align: 'right' });
       
-      sf(8, 'bold', 0, 0, 0);
-      doc.text('GENERAL AVERAGE', COL.sub+2, y+6);
-      sf(10, 'bold', ...PRIMARY_RGB);
-      doc.text(String(overallRounded), COL.rnd, y+6, {align:'center'});
-      sf(8, 'bold', ...PRIMARY_RGB);
-      doc.text(overallRemarks || '', COL.rem, y+6);
-      y+=15;
-    }
-
-    // --- II. DATA INTERPRETATION & SUMMARY ---
-    if (y > H - 80) { doc.addPage(); y = 20; }
-    sf(9, 'bold', ...PRIMARY_RGB);
-    doc.text('II. QUALITATIVE INTERPRETATION & SUMMARY', ML, y); y+=6;
-
-    // Interpretation Logic
-    let interpretation = "";
-    if (overallRounded >= 90) {
-      interpretation = "The learner has demonstrated an outstanding mastery of the core competencies and consistently produces work of exceptional quality. Their academic performance reflects a deep understanding of the learning areas.";
-    } else if (overallRounded >= 85) {
-      interpretation = "The learner has shown a very satisfactory level of performance, meeting most competencies with high proficiency and showing strong analytical skills across major subjects.";
-    } else if (overallRounded >= 80) {
-      interpretation = "The learner has achieved a satisfactory level of proficiency. They have met the basic requirements of the curriculum and show steady progress in their academic journey.";
-    } else if (overallRounded >= 75) {
-      interpretation = "The learner has met the minimum passing requirements. Consistent effort and focused intervention are recommended to further improve proficiency in key learning areas.";
-    } else {
-      interpretation = "The learner is currently working towards meeting the minimum standards. Intensive academic support and regular parent-teacher consultation are highly recommended for the next reporting period.";
-    }
-
-    sf(8, 'normal', 50, 50, 50);
-    const splitInterpretation = doc.splitTextToSize(interpretation, CW - 10);
-    doc.text(splitInterpretation, ML + 5, y);
-    y += (splitInterpretation.length * 4.5) + 8;
-
-    // Strengths and Improvements
-    const validEntries = subjectEntries.filter(s => {
-      const scores = [1,2,3,4].map(q => s.quarters[q] ? parseFloat(s.quarters[q].raw_score) : null).filter(v => v !== null);
-      return scores.length > 0;
-    }).map(s => {
-      const scores = [1,2,3,4].map(q => s.quarters[q] ? parseFloat(s.quarters[q].raw_score) : null).filter(v => v !== null);
-      return { name: s.subject_name, avg: scores.reduce((a,b)=>a+b,0)/scores.length };
-    }).sort((a,b) => b.avg - a.avg);
-
-    if (validEntries.length > 0) {
-      sf(7.5, 'bold', 80, 80, 80);
-      doc.text('ACADEMIC HIGHLIGHTS', ML + 5, y);
-      y += 5;
-      sf(7, 'normal', 100, 100, 100);
-      doc.text(`• Academic Strength: ${validEntries[0].name}`, ML + 8, y); y+=4;
-      if (validEntries.length > 1) {
-        const lowest = validEntries[validEntries.length - 1];
-        if (lowest.avg < 80) {
-          doc.text(`• Area for Development: ${lowest.name} (Requires focused attention)`, ML + 8, y); y+=4;
-        }
+      if (overallPerformance) {
+        yPos += 7;
+        doc.text('Performance Level:', 20, yPos);
+        doc.text(overallPerformance.label, 200, yPos, { align: 'right' });
       }
     }
-    y+=10;
-
-    // --- Grading Scale ---
-    if (y > H - 40) { doc.addPage(); y = 20; }
-    sf(7, 'bold', 120, 120, 120);
-    doc.text('GRADING SCALE (DepEd Order No. 8, s. 2015)', ML, y); y+=4;
-    const scale = [['90–100','Outstanding'],['85–89','Very Satisfactory'],['80–84','Satisfactory'],['75–79','Fairly Satisfactory'],['Below 75','Did Not Meet Exp.']];
-    scale.forEach(([range, label], i) => {
-      const sx = ML + (i * (CW/5));
-      sf(6.5, 'bold', 80, 80, 80); doc.text(range, sx, y);
-      sf(6, 'normal', 120, 120, 120); doc.text(label, sx, y+3.5);
-    });
-    y+=15;
-
-    // --- Signatures ---
-    if (y > H - 50) { doc.addPage(); y = 20; }
-    const sigW = CW / 3;
-    const drawSig = (label, x) => {
-      doc.setDrawColor(0,0,0); doc.setLineWidth(0.2);
-      doc.line(x + 5, y + 10, x + sigW - 5, y + 10);
-      sf(7, 'bold', 0, 0, 0);
-      doc.text(label, x + sigW/2, y + 14, {align:'center'});
-      sf(6, 'normal', 120, 120, 120);
-      doc.text('Signature over Printed Name', x + sigW/2, y + 17.5, {align:'center'});
-    };
-
-    drawSig('Class Adviser', ML);
-    drawSig('School Registrar', ML + sigW);
-    drawSig('School Principal', ML + 2*sigW);
-
-    // --- Footer ---
-    sf(6, 'italic', 150, 150, 150);
-    doc.text('This is a formal academic record generated by the Kiwalan National High School Portal.', W/2, H-15, {align:'center'});
-    doc.text(`Document Reference: ${viewingUser?.username || user?.username}-${Date.now()}`, W/2, H-12, {align:'center'});
-
-    const fname = (viewingUser?.last_name || user?.last_name || 'Student').toUpperCase();
-    doc.save(`KNHS_Grade_Report_${fname}_${filterYear}.pdf`);
+    
+    // Footer
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'italic');
+    doc.text(`Generated on ${new Date().toLocaleDateString()}`, pageWidth / 2, pageHeight - 15, { align: 'center' });
+    doc.text('Kiwalan National High School - Official Digital Campus', pageWidth / 2, pageHeight - 10, { align: 'center' });
+    
+    doc.save(`${displayName.replace(/\s+/g, '_')}_Grades_${filterYear}.pdf`);
+    toast.success('Report card downloaded');
   };
 
-  if (loading) return (
-    <div className="flex items-center justify-center h-64">
-      <LoadingSpinner />
-    </div>
-  );
-
   return (
-    <div className="animate-in fade-in duration-700 p-2.5 sm:p-4 md:p-6 page-bottom-safe">
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: 'easeOut' }}
+      className="page-bottom-safe max-w-[1400px] mx-auto bg-slate-50 px-4 py-4 md:px-6 md:py-6 space-y-5 md:space-y-6"
+    >
+      {/* ══════════════════════════════════════════════════════════════ */}
+      {/* PAGE HEADER WITH SCHOOL IDENTITY */}
+      {/* ══════════════════════════════════════════════════════════════ */}
+      
+      <Card className="border-b-4 border-b-blue-600">
+        <CardBody className="p-4 md:p-6">
+          <div className="text-center">
+            {/* School Seal */}
+            <div className="flex justify-center mb-3">
+              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center text-white font-extrabold text-2xl shadow-lg border-4 border-white ring-2 ring-blue-200">
+                K
+              </div>
+            </div>
 
-      {/* Header */}
-      <div className="mb-4 flex flex-row items-start justify-between gap-3 sm:mb-6 sm:items-center md:gap-6">
-        <div className="flex items-start gap-2.5 sm:items-center sm:gap-3">
-          {isViewingOther && (
-            <button onClick={() => navigate(-1)}
-              className="mt-0.5 shrink-0 rounded-lg border border-slate-200 bg-white p-2 text-slate-500 shadow-sm transition-all hover:text-violet-600 active:scale-95 sm:mt-0 sm:rounded-xl sm:p-2.5">
-              <svg className="h-4.5 w-4.5 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-              </svg>
-            </button>
-          )}
-          <div className="min-w-0 text-left">
-            <h1 className="truncate text-lg font-black tracking-tight text-slate-800 sm:text-2xl md:text-3xl">
-              {isViewingOther ? `${displayName}'s Grades` : 'My Grades'}
+            {/* School Name */}
+            <h1 className="text-xl md:text-2xl font-extrabold text-slate-900 uppercase tracking-tight">
+              Kiwalan National High School
             </h1>
-            <p className="mt-0.5 line-clamp-1 text-[11px] font-medium leading-snug text-slate-500 sm:mt-1 sm:text-sm md:text-base">
-              {isViewingOther
-                ? `Final grades for ${displayName}`
-                : 'Your final grades by subject and quarter'}
+            <p className="text-xs md:text-sm font-bold text-blue-700 uppercase tracking-wider mt-1">
+              Official Student Report Card
+            </p>
+            <p className="text-xs font-semibold text-slate-600 mt-1">
+              Excellence in Education, Service to Community
             </p>
           </div>
-        </div>
-        {grades.length > 0 && (
-          <Button onClick={downloadPDF} variant="primary" size="md" title="Download PDF">
-            <svg className="h-5 w-5 sm:h-5 sm:w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
-            <span className="hidden sm:inline">Download PDF</span>
-          </Button>
-        )}
-      </div>
+        </CardBody>
+      </Card>
 
-      {/* Filters */}
-      {grades.length > 0 && (
-        <div className="mb-5 grid grid-cols-1 gap-2.5 rounded-xl border border-slate-100 bg-white p-2.5 shadow-sm sm:mb-6 sm:grid-cols-2 sm:gap-3 sm:rounded-2xl sm:p-4 lg:grid-cols-3">
-          <select value={filterQuarter} onChange={e => setFilterQuarter(e.target.value)}
-            className="w-full rounded-lg border border-slate-200 px-3 py-2 text-[13px] font-medium shadow-sm transition-all cursor-pointer hover:border-violet-300 focus:outline-none focus:ring-2 focus:ring-violet-500 sm:rounded-xl sm:px-4 sm:py-2.5 sm:text-sm">
-            <option value="">All Quarters</option>
-            <option value="1">Q1 — First Quarter</option>
-            <option value="2">Q2 — Second Quarter</option>
-            <option value="3">Q3 — Third Quarter</option>
-            <option value="4">Q4 — Fourth Quarter</option>
-          </select>
-          <select value={filterSubject} onChange={e => setFilterSubject(e.target.value)}
-            className="w-full rounded-lg border border-slate-200 px-3 py-2 text-[13px] font-medium shadow-sm transition-all cursor-pointer hover:border-violet-300 focus:outline-none focus:ring-2 focus:ring-violet-500 sm:rounded-xl sm:px-4 sm:py-2.5 sm:text-sm">
-            <option value="">All Subjects</option>
-            {uniqueSubjects.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-          </select>
-          <div className="flex items-center overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm transition-all focus-within:ring-2 focus-within:ring-violet-500 sm:col-span-2 sm:rounded-xl lg:col-span-1">
-            <button onClick={() => handleYearChange('prev')} className="border-r border-slate-100 px-2.5 py-2 text-slate-500 transition-colors hover:bg-slate-50 active:bg-slate-100 sm:px-4 sm:py-2.5">
-              <svg className="h-3.5 w-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
-              </svg>
-            </button>
-            <div className="min-w-0 flex-1 px-2 text-center text-[13px] font-bold text-slate-700 select-none sm:text-sm">{filterYear}</div>
-            <button onClick={() => handleYearChange('next')} className="border-l border-slate-100 px-2.5 py-2 text-slate-500 transition-colors hover:bg-slate-50 active:bg-slate-100 sm:px-4 sm:py-2.5">
-              <svg className="h-3.5 w-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
+      {/* ══════════════════════════════════════════════════════════════ */}
+      {/* STUDENT INFORMATION */}
+      {/* ══════════════════════════════════════════════════════════════ */}
+
+      <Card>
+        <CardHeader divider>
+          <div className="flex items-center gap-2 text-xs font-bold text-blue-700 uppercase tracking-wide">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+            <span>Student Information</span>
           </div>
+        </CardHeader>
+        <CardBody>
+          {loading ? (
+            <div className="flex items-center justify-center py-8">
+              <LoadingSpinner />
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-1">
+                  Student Name
+                </label>
+                <p className="text-sm font-bold text-slate-900">
+                  {displayName || 'N/A'}
+                </p>
+              </div>
+              <div>
+                <label className="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-1">
+                  LRN / Student ID
+                </label>
+                <p className="text-sm font-bold text-slate-900">
+                  {(viewingUser?.username || user?.username) || 'N/A'}
+                </p>
+              </div>
+              <div>
+                <label className="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-1">
+                  Grade Level
+                </label>
+                <Badge variant="blue" size="md">
+                  {(viewingUser?.profile?.grade_level || user?.profile?.grade_level) || 'N/A'}
+                </Badge>
+              </div>
+            </div>
+          )}
+        </CardBody>
+      </Card>
+
+      {/* ══════════════════════════════════════════════════════════════ */}
+      {/* FILTERS AND CONTROLS */}
+      {/* ══════════════════════════════════════════════════════════════ */}
+
+      <Card>
+        <CardBody className="p-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+            {/* Quarter Filter */}
+            <div>
+              <label className="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-2">
+                Quarter
+              </label>
+              <select
+                value={filterQuarter}
+                onChange={e => setFilterQuarter(e.target.value)}
+                className="w-full px-3 py-2.5 border border-slate-300 rounded-md bg-white text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all"
+              >
+                <option value="">All Quarters</option>
+                <option value="1">Quarter 1</option>
+                <option value="2">Quarter 2</option>
+                <option value="3">Quarter 3</option>
+                <option value="4">Quarter 4</option>
+              </select>
+            </div>
+
+            {/* Subject Filter */}
+            <div className="md:col-span-2">
+              <label className="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-2">
+                Subject
+              </label>
+              <select
+                value={filterSubject}
+                onChange={e => setFilterSubject(e.target.value)}
+                className="w-full px-3 py-2.5 border border-slate-300 rounded-md bg-white text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all"
+              >
+                <option value="">All Subjects</option>
+                {uniqueSubjects.map(s => (
+                  <option key={s.id} value={s.id}>{s.name}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Academic Year */}
+            <div>
+              <label className="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-2">
+                Academic Year
+              </label>
+              <div className="flex items-center border border-slate-300 rounded-md overflow-hidden bg-white shadow-sm">
+                <button
+                  onClick={() => handleYearChange('prev')}
+                  className="px-3 py-2.5 hover:bg-slate-50 text-slate-600 border-r border-slate-300 transition-colors"
+                >
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+                <div className="flex-1 text-center text-xs font-bold text-slate-700 select-none">
+                  {filterYear}
+                </div>
+                <button
+                  onClick={() => handleYearChange('next')}
+                  className="px-3 py-2.5 hover:bg-slate-50 text-slate-600 border-l border-slate-300 transition-colors"
+                >
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex items-center justify-end gap-2 mt-4 pt-4 border-t border-slate-200">
+            {isViewingOther && (
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => navigate('/grade-management')}
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                Back to Overview
+              </Button>
+            )}
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={handlePDFDownload}
+              disabled={!subjectEntries.length}
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              Download PDF
+            </Button>
+          </div>
+        </CardBody>
+      </Card>
+
+      {/* ══════════════════════════════════════════════════════════════ */}
+      {/* GENERAL AVERAGE CARD */}
+      {/* ══════════════════════════════════════════════════════════════ */}
+
+      {overallAvg && !loading && (
+        <Card className="border-l-4 border-l-blue-600 bg-gradient-to-r from-blue-50 to-white">
+          <CardBody className="p-6">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+              <div>
+                <p className="text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-1">
+                  General Average
+                </p>
+                <div className="flex items-center gap-3">
+                  <div className="text-4xl md:text-5xl font-extrabold text-blue-600">
+                    {overallRounded}
+                  </div>
+                  {overallPerformance && (
+                    <Badge variant={overallPerformance.color} className="text-sm px-3 py-1.5">
+                      {overallPerformance.label}
+                    </Badge>
+                  )}
+                </div>
+                <p className="text-xs text-slate-600 mt-2 font-semibold">
+                  Based on {allScores.length} grade{allScores.length === 1 ? '' : 's'} 
+                  {filterQuarter && ` (Quarter ${filterQuarter})`}
+                </p>
+              </div>
+
+              {/* Grade Scale Reference */}
+              <div className="bg-white rounded-lg border border-slate-200 p-4 shadow-sm">
+                <p className="text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-2">
+                  Performance Scale
+                </p>
+                <div className="space-y-1.5">
+                  <div className="flex items-center gap-2 text-xs">
+                    <Badge variant="emerald" size="sm">90-100</Badge>
+                    <span className="text-slate-600 font-semibold">Outstanding</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs">
+                    <Badge variant="blue" size="sm">85-89</Badge>
+                    <span className="text-slate-600 font-semibold">Very Satisfactory</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs">
+                    <Badge variant="amber" size="sm">80-84</Badge>
+                    <span className="text-slate-600 font-semibold">Satisfactory</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs">
+                    <Badge variant="orange" size="sm">75-79</Badge>
+                    <span className="text-slate-600 font-semibold">Fairly Satisfactory</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs">
+                    <Badge variant="red" size="sm">Below 75</Badge>
+                    <span className="text-slate-600 font-semibold">Did Not Meet</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </CardBody>
+        </Card>
+      )}
+
+      {/* ══════════════════════════════════════════════════════════════ */}
+      {/* STATISTICS CARDS */}
+      {/* ══════════════════════════════════════════════════════════════ */}
+
+      {!loading && subjectEntries.length > 0 && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+          <Card className="border-l-4 border-l-blue-500">
+            <CardBody className="p-4 text-center">
+              <div className="text-2xl md:text-3xl font-extrabold text-blue-600">
+                {subjectEntries.length}
+              </div>
+              <div className="text-xs font-bold text-slate-600 uppercase tracking-wide mt-1">
+                Total Subjects
+              </div>
+            </CardBody>
+          </Card>
+
+          <Card className="border-l-4 border-l-emerald-500">
+            <CardBody className="p-4 text-center">
+              <div className="text-2xl md:text-3xl font-extrabold text-emerald-600">
+                {allScores.filter(s => s >= 90).length}
+              </div>
+              <div className="text-xs font-bold text-slate-600 uppercase tracking-wide mt-1">
+                Outstanding
+              </div>
+            </CardBody>
+          </Card>
+
+          <Card className="border-l-4 border-l-amber-500">
+            <CardBody className="p-4 text-center">
+              <div className="text-2xl md:text-3xl font-extrabold text-amber-600">
+                {allScores.filter(s => s >= 75).length}
+              </div>
+              <div className="text-xs font-bold text-slate-600 uppercase tracking-wide mt-1">
+                Passing
+              </div>
+            </CardBody>
+          </Card>
+
+          <Card className="border-l-4 border-l-red-500">
+            <CardBody className="p-4 text-center">
+              <div className="text-2xl md:text-3xl font-extrabold text-red-600">
+                {allScores.filter(s => s < 75).length}
+              </div>
+              <div className="text-xs font-bold text-slate-600 uppercase tracking-wide mt-1">
+                Needs Improvement
+              </div>
+            </CardBody>
+          </Card>
         </div>
       )}
 
-      {/* Grade table */}
-      {subjectEntries.length === 0 ? (
-        <EmptyState
-          icon={
-            <svg className="h-8 w-8 text-purple-300 sm:h-10 sm:w-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-            </svg>
-          }
-          title="No Final Grades Yet"
-          message="Final grades will appear here once encoded by your subject teachers."
-        />
-      ) : (
-        <>
-          <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-md sm:rounded-2xl">
-            <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-slate-300">
-              <table className="w-full min-w-[480px] sm:min-w-[820px]">
-                <thead>
-                  <tr className="bg-slate-50 border-b border-slate-200 text-slate-500">
-                    <th className="min-w-[120px] px-3 py-3 text-left text-[9px] font-bold uppercase tracking-[0.18em] sm:min-w-[200px] sm:px-6 sm:py-4 sm:text-[10px] sm:tracking-widest">Subject Details</th>
-                    <th className="px-1.5 py-3 text-center text-[9px] font-bold uppercase tracking-[0.18em] sm:px-4 sm:py-4 sm:text-[10px] sm:tracking-widest">Q1</th>
-                    <th className="px-1.5 py-3 text-center text-[9px] font-bold uppercase tracking-[0.18em] sm:px-4 sm:py-4 sm:text-[10px] sm:tracking-widest">Q2</th>
-                    <th className="px-1.5 py-3 text-center text-[9px] font-bold uppercase tracking-[0.18em] sm:px-4 sm:py-4 sm:text-[10px] sm:tracking-widest">Q3</th>
-                    <th className="px-1.5 py-3 text-center text-[9px] font-bold uppercase tracking-[0.18em] sm:px-4 sm:py-4 sm:text-[10px] sm:tracking-widest">Q4</th>
-                    <th className="hidden px-4 py-4 text-center text-[10px] font-bold uppercase tracking-widest sm:table-cell">Average</th>
-                    <th className="px-1.5 py-3 text-center text-[9px] font-bold uppercase tracking-[0.18em] sm:px-4 sm:py-4 sm:text-[10px] sm:tracking-widest">Rounded</th>
-                    <th className="hidden min-w-[140px] px-4 py-4 text-center text-[10px] font-bold uppercase tracking-widest sm:table-cell">Remarks</th>
+      {/* ══════════════════════════════════════════════════════════════ */}
+      {/* GRADE REPORT TABLE */}
+      {/* ══════════════════════════════════════════════════════════════ */}
+
+      <Card>
+        <CardHeader divider>
+          <CardTitle subtitle={`Detailed grade breakdown for ${subjectEntries.length} subject${subjectEntries.length === 1 ? '' : 's'}`}>
+            Grade Report
+          </CardTitle>
+        </CardHeader>
+        <CardBody className="p-0">
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <LoadingSpinner />
+            </div>
+          ) : subjectEntries.length === 0 ? (
+            <div className="p-8">
+              <EmptyState
+                title="No Grades Available"
+                description={filterQuarter || filterSubject ? "Try adjusting your filters" : "Grades will appear here once they are entered by your teachers"}
+                icon={
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                }
+              />
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-slate-50 border-b-2 border-slate-200 sticky top-0">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-xs font-extrabold text-slate-700 uppercase tracking-wider min-w-[200px]">
+                      Subject
+                    </th>
+                    <th className="px-4 py-3 text-center text-xs font-extrabold text-slate-700 uppercase tracking-wider w-24">
+                      Q1
+                    </th>
+                    <th className="px-4 py-3 text-center text-xs font-extrabold text-slate-700 uppercase tracking-wider w-24">
+                      Q2
+                    </th>
+                    <th className="px-4 py-3 text-center text-xs font-extrabold text-slate-700 uppercase tracking-wider w-24">
+                      Q3
+                    </th>
+                    <th className="px-4 py-3 text-center text-xs font-extrabold text-slate-700 uppercase tracking-wider w-24">
+                      Q4
+                    </th>
+                    <th className="px-4 py-3 text-center text-xs font-extrabold text-slate-700 uppercase tracking-wider w-24 bg-blue-50">
+                      Final
+                    </th>
+                    <th className="px-4 py-3 text-center text-xs font-extrabold text-slate-700 uppercase tracking-wider w-40">
+                      Performance
+                    </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {subjectEntries.map((s, idx) => {
-                    const scores = [1,2,3,4].map(q => s.quarters[q] ? parseFloat(s.quarters[q].raw_score) : null).filter(v => v !== null);
-                    const avg = scores.length ? (scores.reduce((a,b) => a+b,0)/scores.length).toFixed(2) : null;
-                    const rounded = avg ? Math.round(parseFloat(avg)) : null;
-                    const remarks = rounded != null ? remarksFor(rounded) : null;
+                <tbody className="bg-white divide-y divide-slate-100">
+                  {subjectEntries.map((entry, idx) => {
+                    const q1Score = entry.quarters[1]?.raw_score;
+                    const q2Score = entry.quarters[2]?.raw_score;
+                    const q3Score = entry.quarters[3]?.raw_score;
+                    const q4Score = entry.quarters[4]?.raw_score;
+
+                    // Calculate final grade (average of all quarters)
+                    const scores = [q1Score, q2Score, q3Score, q4Score]
+                      .map(s => parseFloat(s))
+                      .filter(s => !isNaN(s));
+                    const finalAvg = scores.length 
+                      ? (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(0)
+                      : null;
+                    const performance = getPerformanceLevel(finalAvg);
+
                     return (
-                      <tr key={s.subject_code} className={`hover:bg-violet-50/50 transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'}`}>
-                        <td className="px-3 py-3 sm:px-6 sm:py-4">
-                          <div className="text-[12px] font-bold leading-tight text-slate-800 sm:text-sm">{s.subject_name}</div>
-                          <div className="mt-0.5 text-[8px] font-bold uppercase tracking-[0.18em] text-slate-400 sm:mt-1 sm:text-[10px] sm:tracking-widest">{s.subject_code}</div>
+                      <tr key={entry.subject_name} className="hover:bg-slate-50 transition-colors">
+                        <td className="px-4 py-3">
+                          <div>
+                            <p className="text-sm font-bold text-slate-900">
+                              {entry.subject_name}
+                            </p>
+                            {entry.subject_code && (
+                              <Badge variant="slate" size="sm" className="mt-1">
+                                {entry.subject_code}
+                              </Badge>
+                            )}
+                          </div>
                         </td>
-                        {[1,2,3,4].map(q => {
-                          const g = s.quarters[q];
-                          const score = g ? parseFloat(g.raw_score) : null;
-                          return (
-                            <td key={q} className="px-1.5 py-3 text-center sm:px-4 sm:py-4">
-                              {score != null ? (
-                                <span className={`inline-flex h-6.5 w-8.5 items-center justify-center rounded-md border-2 text-[10px] font-black shadow-sm sm:h-8 sm:w-11 sm:rounded-lg sm:text-[13px] ${scoreColor(score)}`}>
-                                  {score}
-                                </span>
-                              ) : (
-                                <span className="text-[10px] font-bold text-slate-300 sm:text-xs">—</span>
-                              )}
-                            </td>
-                          );
-                        })}
-                        <td className="hidden px-4 py-4 text-center sm:table-cell">
-                          {avg ? (
-                            <span className={`inline-flex items-center justify-center px-3 py-1 rounded-lg border-2 text-[13px] font-black shadow-sm ${scoreColor(parseFloat(avg))}`}>
-                              {avg}
-                            </span>
-                          ) : <span className="text-slate-300 text-xs font-bold">—</span>}
+                        <td className="px-4 py-3 text-center">
+                          <ScoreBadge score={q1Score} size="sm" />
                         </td>
-                        <td className="px-1.5 py-3 text-center sm:px-4 sm:py-4">
-                          {rounded ? (
-                            <span className={`inline-flex min-w-[2rem] items-center justify-center rounded-md border-2 px-1.5 py-0.5 text-[10px] font-black shadow-sm sm:rounded-lg sm:px-3 sm:py-1 sm:text-[13px] ${scoreColor(rounded)}`}>
-                              {rounded}
-                            </span>
-                          ) : <span className="text-[10px] font-bold text-slate-300 sm:text-xs">—</span>}
+                        <td className="px-4 py-3 text-center">
+                          <ScoreBadge score={q2Score} size="sm" />
                         </td>
-                        <td className="hidden px-4 py-4 text-center sm:table-cell">
-                          {remarks ? (
-                            <span className={`text-[10px] font-black px-3 py-1 rounded-full border shadow-sm uppercase tracking-wider ${REMARKS_STYLE[remarks] || 'bg-slate-100 text-slate-600 border-slate-200'}`}>
-                              {remarks}
-                            </span>
-                          ) : <span className="text-slate-300 text-xs font-bold">—</span>}
+                        <td className="px-4 py-3 text-center">
+                          <ScoreBadge score={q3Score} size="sm" />
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          <ScoreBadge score={q4Score} size="sm" />
+                        </td>
+                        <td className="px-4 py-3 text-center bg-blue-50">
+                          <ScoreBadge score={finalAvg} size="md" />
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          {performance ? (
+                            <Badge variant={performance.color} size="sm">
+                              {performance.shortLabel}
+                            </Badge>
+                          ) : (
+                            <span className="text-xs text-slate-400 font-semibold">—</span>
+                          )}
                         </td>
                       </tr>
                     );
@@ -465,48 +645,27 @@ const StudentGradeView = () => {
                 </tbody>
               </table>
             </div>
+          )}
+        </CardBody>
+      </Card>
 
-            {/* Overall average footer */}
-            {overallAvg && (
-              <div className="flex flex-col justify-between gap-3 bg-gradient-to-r from-[#2D1B4D] to-[#4B2D7F] px-3 py-3.5 sm:flex-row sm:items-center sm:gap-4 sm:px-6 sm:py-5">
-                <span className="text-[10px] font-black uppercase tracking-[0.18em] text-white sm:text-sm sm:tracking-widest">General Average</span>
-                <div className="flex flex-wrap items-center gap-2.5 sm:gap-6">
-                  <div className="hidden flex-col sm:flex sm:items-end">
-                    <div className="text-2xl md:text-3xl font-black text-white leading-none">{overallAvg}</div>
-                    <div className="text-[10px] text-purple-300 font-bold uppercase tracking-tighter mt-1">Exact Average</div>
-                  </div>
-                  <div className="hidden sm:block w-px h-10 bg-white/20" />
-                  <div className="flex flex-col sm:items-end">
-                    <div className="text-lg font-black leading-none text-white sm:text-2xl md:text-3xl">{overallRounded}</div>
-                    <div className="mt-1 text-[8px] font-bold uppercase tracking-[0.16em] text-purple-300 sm:text-[10px] sm:tracking-tighter">Rounded Score</div>
-                  </div>
-                  {overallRemarks && (
-                    <span className="hidden rounded-xl border border-white/10 bg-white/10 px-4 py-1.5 text-[11px] font-black uppercase tracking-widest text-white shadow-lg backdrop-blur-md sm:inline-flex">
-                      {overallRemarks}
-                    </span>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
+      {/* ══════════════════════════════════════════════════════════════ */}
+      {/* FOOTER NOTE */}
+      {/* ══════════════════════════════════════════════════════════════ */}
 
-          {/* Stats */}
-          <div className="mt-3 grid grid-cols-2 gap-2.5 sm:mt-4 sm:grid-cols-2 sm:gap-3 lg:grid-cols-4">
-            {[
-              { label: 'Total Subjects', value: subjectEntries.length, color: 'text-slate-800' },
-              { label: 'Outstanding (90+)', value: allScores.filter(s => s >= 90).length, color: 'text-green-600' },
-              { label: 'Passing (75–89)', value: allScores.filter(s => s >= 75 && s < 90).length, color: 'text-blue-600' },
-              { label: 'Below 75', value: allScores.filter(s => s < 75).length, color: 'text-red-600' },
-            ].map(stat => (
-              <div key={stat.label} className="rounded-lg border border-slate-200 bg-white p-3 text-center shadow-sm sm:rounded-xl sm:p-4">
-                <div className={`text-xl font-bold ${stat.color} sm:text-2xl`}>{stat.value}</div>
-                <div className="mt-1 text-[10px] leading-snug text-slate-500 sm:text-xs">{stat.label}</div>
-              </div>
-            ))}
-          </div>
-        </>
+      {!loading && subjectEntries.length > 0 && (
+        <Card className="bg-slate-50 border-slate-300">
+          <CardBody className="p-4 text-center">
+            <p className="text-xs font-semibold text-slate-600">
+              This is an official digital report card from Kiwalan National High School.
+            </p>
+            <p className="text-xs text-slate-500 mt-1">
+              Generated on {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+            </p>
+          </CardBody>
+        </Card>
       )}
-    </div>
+    </motion.div>
   );
 };
 
