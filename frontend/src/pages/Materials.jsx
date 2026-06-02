@@ -522,8 +522,6 @@ const Materials = () => {
                   <span>Publish Material</span>
                 </Button>
               </div>
-                </button>
-              </div>
             </form>
           </div>
         </div>
