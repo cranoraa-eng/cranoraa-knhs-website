@@ -1087,15 +1087,22 @@ const TeacherView = () => {
             </CardHeader>
             <CardBody className="p-4 space-y-3">
               {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'].map((day, idx) => {
-                const isToday = new Date().getDay() === idx + 1;
-                const classesCount = Math.floor(Math.random() * 3) + 2; // Mock data
+                const dayNum = idx + 1; // 1 = Monday
+                const isToday = new Date().getDay() === dayNum;
+                const dayClasses = classrooms.filter(c => 
+                  c.schedule?.some(s => s.day === dayNum)
+                );
+                const classesCount = dayClasses.length;
+                
                 return (
                   <div key={day} className={`flex items-center justify-between p-2 rounded-lg ${isToday ? 'bg-indigo-100 border-2 border-indigo-300' : 'bg-slate-50'}`}>
                     <div className="flex items-center gap-2">
                       {isToday && <div className="w-2 h-2 rounded-full bg-indigo-600 animate-pulse" />}
                       <span className={`text-xs font-semibold ${isToday ? 'text-indigo-900' : 'text-slate-600'}`}>{day}</span>
                     </div>
-                    <span className={`text-xs font-bold ${isToday ? 'text-indigo-700' : 'text-slate-500'}`}>{classesCount} classes</span>
+                    <span className={`text-xs font-bold ${isToday ? 'text-indigo-700' : 'text-slate-500'}`}>
+                      {classesCount} {classesCount === 1 ? 'class' : 'classes'}
+                    </span>
                   </div>
                 );
               })}
@@ -1108,9 +1115,9 @@ const TeacherView = () => {
               <CardTitle>Recent Activity</CardTitle>
             </CardHeader>
             <CardBody className="p-4">
-              <div className="space-y-3 max-h-[300px] overflow-y-auto">
-                {data?.recent_activities?.length > 0 ? (
-                  data.recent_activities.slice(0, 8).map((activity, idx) => (
+              {data?.recent_activities && data.recent_activities.length > 0 ? (
+                <div className="space-y-3 max-h-[300px] overflow-y-auto">
+                  {data.recent_activities.slice(0, 8).map((activity, idx) => (
                     <div key={idx} className="flex items-start gap-3 p-3 rounded-xl bg-slate-50 hover:bg-white border border-slate-100 hover:border-slate-200 transition-all">
                       <div className="w-8 h-8 rounded-lg bg-violet-100 flex items-center justify-center flex-shrink-0">
                         <TeacherActivityIcon type={activity.type} className="w-4 h-4 text-violet-600" />
@@ -1120,19 +1127,20 @@ const TeacherView = () => {
                         <p className="text-[10px] text-slate-500 mt-0.5">{activity.timestamp}</p>
                       </div>
                     </div>
-                  ))
-                ) : (
-                  <EmptyState
-                    title="No recent activity"
-                    description="Your actions will appear here"
-                    icon={
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                      </svg>
-                    }
-                  />
-                )}
-              </div>
+                  ))}
+                </div>
+              ) : (
+                <EmptyState
+                  className="py-8"
+                  title="No recent activity"
+                  description="Your actions will appear here"
+                  icon={
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                  }
+                />
+              )}
             </CardBody>
           </Card>
 
@@ -1142,27 +1150,48 @@ const TeacherView = () => {
               <CardTitle className="text-rose-900">Upcoming Deadlines</CardTitle>
             </CardHeader>
             <CardBody className="p-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {[
-                  { title: 'Quarter Grades Due', date: 'March 15, 2026', type: 'grades', urgent: true },
-                  { title: 'Attendance Report', date: 'March 10, 2026', type: 'attendance', urgent: false },
-                  { title: 'Parent-Teacher Conference', date: 'March 20, 2026', type: 'event', urgent: false },
-                  { title: 'Lesson Plans Submission', date: 'March 8, 2026', type: 'materials', urgent: true },
-                ].map((deadline, idx) => (
-                  <div key={idx} className={`p-4 rounded-2xl border-2 ${deadline.urgent ? 'bg-rose-50 border-rose-200' : 'bg-slate-50 border-slate-200'} hover:shadow-md transition-all`}>
-                    <div className="flex items-start justify-between mb-2">
-                      <h3 className={`font-bold text-sm ${deadline.urgent ? 'text-rose-900' : 'text-slate-900'}`}>{deadline.title}</h3>
-                      {deadline.urgent && <Badge variant="red" size="sm">Urgent</Badge>}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <svg className={`w-4 h-4 ${deadline.urgent ? 'text-rose-600' : 'text-slate-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
-                      <span className={`text-xs font-semibold ${deadline.urgent ? 'text-rose-700' : 'text-slate-600'}`}>{deadline.date}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              {data?.upcoming_events && data.upcoming_events.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {data.upcoming_events.slice(0, 4).map((event, idx) => {
+                    const eventDate = new Date(event.date || event.timestamp);
+                    const daysUntil = Math.ceil((eventDate - new Date()) / (1000 * 60 * 60 * 24));
+                    const isUrgent = daysUntil <= 3 && daysUntil >= 0;
+                    
+                    return (
+                      <div key={idx} className={`p-4 rounded-2xl border-2 ${isUrgent ? 'bg-rose-50 border-rose-200' : 'bg-slate-50 border-slate-200'} hover:shadow-md transition-all`}>
+                        <div className="flex items-start justify-between mb-2">
+                          <h3 className={`font-bold text-sm ${isUrgent ? 'text-rose-900' : 'text-slate-900'}`}>{event.title || event.name}</h3>
+                          {isUrgent && <Badge variant="red" size="sm">Urgent</Badge>}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <svg className={`w-4 h-4 ${isUrgent ? 'text-rose-600' : 'text-slate-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          </svg>
+                          <span className={`text-xs font-semibold ${isUrgent ? 'text-rose-700' : 'text-slate-600'}`}>
+                            {eventDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                          </span>
+                          {daysUntil >= 0 && daysUntil <= 7 && (
+                            <span className={`text-[10px] font-bold ${isUrgent ? 'text-rose-600' : 'text-slate-500'}`}>
+                              ({daysUntil} {daysUntil === 1 ? 'day' : 'days'})
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <EmptyState
+                  className="py-8"
+                  title="No upcoming deadlines"
+                  description="You're all caught up!"
+                  icon={
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  }
+                />
+              )}
             </CardBody>
           </Card>
 
@@ -1173,16 +1202,25 @@ const TeacherView = () => {
             </CardHeader>
             <CardBody className="p-4">
               <div className="space-y-4">
-                <div className="text-center py-6">
-                  <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-amber-500 to-orange-500 mb-3">
-                    <span className="text-3xl font-bold text-white">B+</span>
+                {data?.average_grade ? (
+                  <div className="text-center py-6">
+                    <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-amber-500 to-orange-500 mb-3">
+                      <span className="text-3xl font-bold text-white">{data.average_grade}</span>
+                    </div>
+                    <p className="text-xs font-semibold text-slate-600">Average Class Grade</p>
                   </div>
-                  <p className="text-xs font-semibold text-slate-600">Average Class Grade</p>
-                </div>
+                ) : (
+                  <div className="text-center py-6">
+                    <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-slate-200 mb-3">
+                      <span className="text-2xl font-bold text-slate-500">--</span>
+                    </div>
+                    <p className="text-xs font-semibold text-slate-500">No grade data yet</p>
+                  </div>
+                )}
 
                 <div className="grid grid-cols-2 gap-3">
                   <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-200 text-center">
-                    <p className="text-2xl font-bold text-emerald-700">{Math.round(attendanceRate)}%</p>
+                    <p className="text-2xl font-bold text-emerald-700">{attendanceRate}%</p>
                     <p className="text-[10px] font-semibold text-emerald-600 uppercase">Present</p>
                   </div>
                   <div className="p-3 bg-blue-50 rounded-xl border border-blue-200 text-center">
