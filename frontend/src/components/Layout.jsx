@@ -23,14 +23,14 @@ const NavItem = ({ to, label, isActive, icon, onClick, tourId }) => (
     onClick={onClick}
     data-tour={tourId}
     aria-current={isActive(to) ? 'page' : undefined}
-    className={`flex items-center px-2.5 py-2 rounded-lg transition-all duration-150 mb-0.5 text-xs group ${
+    className={`flex items-center px-3 py-2.5 rounded-md transition-all duration-150 mb-0.5 text-xs group ${
       isActive(to)
-        ? 'bg-violet-600 text-white font-semibold shadow-md shadow-violet-200'
-        : 'text-slate-300 hover:bg-white/10 hover:text-white'
+        ? 'bg-blue-600 text-white font-bold shadow-sm'
+        : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 font-semibold'
     }`}
   >
     <svg
-      className={`w-3.5 h-3.5 mr-2.5 flex-shrink-0 transition-transform duration-150 group-hover:scale-110 ${isActive(to) ? 'text-white' : 'text-violet-300/70'}`}
+      className={`w-4 h-4 mr-2.5 flex-shrink-0 transition-transform duration-150 ${isActive(to) ? 'text-white' : 'text-slate-500'}`}
       fill="none"
       stroke="currentColor"
       viewBox="0 0 24 24"
@@ -42,8 +42,8 @@ const NavItem = ({ to, label, isActive, icon, onClick, tourId }) => (
 );
 
 const SectionLabel = ({ label }) => (
-  <div className="mt-4 mb-1 px-2">
-    <p className="text-[9px] font-black text-violet-400/60 uppercase tracking-[0.2em]">{label}</p>
+  <div className="mt-5 mb-2 px-3 first:mt-0">
+    <p className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider">{label}</p>
   </div>
 );
 
@@ -215,64 +215,39 @@ const Layout = () => {
   })();
 
   const NAV_STRUCTURE = {
-    student: [
-      {
-        header: 'General',
-        items: [
-          { to: '/dashboard', label: 'Dashboard', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' },
-          { to: '/notifications', label: 'Notifications', icon: 'M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9' },
-          { to: '/announcements', label: 'Announcements', icon: 'M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z' },
-          { to: '/messages', label: 'Messages', icon: 'M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z' },
-          { to: '/portal-calendar', label: 'Calendar', icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z' },
-        ]
-      },
-      {
-        header: 'Academics',
-        items: [
-          { to: '/materials', label: 'Learning Materials', icon: 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332-.477-4.5-1.253' },
-          { to: '/student-grades', label: 'My Grades', icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z' },
-          { to: '/attendance', label: 'My Attendance', icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 8l2 2 4-4' },
-          { to: '/schedule', label: 'My Schedule', icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z' },
-        ]
-      },
-      {
-        header: 'Profile',
-        items: [
-          { to: '/profile', label: 'My Profile', icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' },
-          { to: '/class-members', label: 'My Classroom', icon: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4' },
-          { to: '/password-reset', label: 'Change Password', icon: 'M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z' },
-        ]
-      }
-    ],
     teacher: [
       {
-        header: 'General',
+        header: 'ACADEMICS',
         items: [
           { to: '/dashboard', label: 'Dashboard', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' },
-          { to: '/notifications', label: 'Notifications', icon: 'M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9' },
-          { to: '/announcements', label: 'Announcements', icon: 'M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z' },
-          { to: '/messages', label: 'Messages', icon: 'M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z' },
-          { to: '/portal-calendar', label: 'Calendar', icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z' },
-        ]
-      },
-      {
-        header: 'Classroom',
-        items: [
           { to: '/my-classes', label: 'My Classes', icon: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4' },
           { to: '/attendance', label: 'Attendance', icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 8l2 2 4-4' },
-          { to: '/grade-input', label: 'Grade Input', icon: 'M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z' },
-          { to: '/grade-management', label: 'Grade Management', icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z' },
-          { to: '/materials', label: 'Learning Materials', icon: 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332-.477-4.5-1.253' },
-          { to: '/schedule', label: 'My Schedule', icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z' },
+          { to: '/grade-input', label: 'Grades', icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z' },
+          { to: '/materials', label: 'Materials', icon: 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332-.477-4.5-1.253' },
         ]
       },
       {
-        header: 'Account',
+        header: 'COMMUNICATION',
         items: [
+          { to: '/announcements', label: 'Announcements', icon: 'M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z' },
+          { to: '/messages', label: 'Messages', icon: 'M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z' },
+        ]
+      },
+      {
+        header: 'SCHOOL LIFE',
+        items: [
+          { to: '/portal-calendar', label: 'Calendar', icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z' },
+          { to: '/schedule', label: 'Schedule', icon: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z' },
+          { to: '/notifications', label: 'Notifications', icon: 'M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9' },
+        ]
+      },
+      {
+        header: 'ACCOUNT',
+        items: [
+          { to: '/profile', label: 'Profile', icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' },
           ...(user?.is_adviser ? [{ to: '/student-management', label: 'Advisory Class', icon: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z' }] : []),
-          { to: '/analytics', label: 'Portal Analytics', icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z' },
-          { to: '/profile', label: 'My Profile', icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' },
-          { to: '/password-reset', label: 'Change Password', icon: 'M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z' },
+          { to: '/analytics', label: 'Analytics', icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z' },
+          { to: '/settings', label: 'Settings', icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z' },
         ]
       }
     ],
@@ -363,24 +338,32 @@ const Layout = () => {
         )}
 
         {/* ── Sidebar ── */}
-        <aside data-tour="portal-sidebar" className={`fixed inset-y-0 left-0 z-50 flex h-screen w-56 transform flex-col overflow-hidden border-r border-white/10 bg-[#1A0B2E] text-white shadow-2xl transition-all duration-300 ease-in-out lg:static lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        <aside data-tour="portal-sidebar" className={`fixed inset-y-0 left-0 z-50 flex h-screen w-64 transform flex-col overflow-hidden border-r border-slate-200 bg-white shadow-xl transition-all duration-300 ease-in-out lg:static lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
 
-          {/* Logo Section */}
-          <div className="flex items-center gap-2.5 px-4 py-4">
-            <div className="h-9 w-9 rounded-full bg-white backdrop-blur-md p-1 flex items-center justify-center border border-white/10 shadow-xl shadow-black/20 group hover:bg-white/90 transition-all cursor-pointer shrink-0">
-              <img src="/icons/school-logo-source.png" alt="KNHS Logo" className="h-full w-full object-contain group-hover:scale-110 transition-transform" />
+          {/* School Header */}
+          <div className="flex items-center gap-3 px-4 py-4 border-b-4 border-blue-600 bg-white">
+            <div className="h-12 w-12 rounded-md bg-white p-1.5 flex items-center justify-center border-2 border-slate-200 shadow-sm shrink-0">
+              <img src="/icons/school-logo-source.png" alt="KNHS Logo" className="h-full w-full object-contain" />
             </div>
             <div className="flex flex-col min-w-0">
-              <span className="text-base font-black tracking-tighter leading-none text-white uppercase">Kiwalan</span>
-              <span className="text-[9px] font-bold text-violet-400 uppercase tracking-[0.25em] mt-0.5">High School</span>
+              <span className="text-sm font-extrabold tracking-tight leading-none text-slate-900 uppercase">Kiwalan NHS</span>
+              <span className="text-[10px] font-bold text-blue-700 uppercase tracking-wide mt-0.5">Digital Campus</span>
+            </div>
+          </div>
+
+          {/* Academic Year Info */}
+          <div className="flex-shrink-0 px-4 py-3 bg-blue-50 border-b border-blue-100">
+            <div className="flex items-center justify-between text-[10px] font-bold text-slate-700 uppercase tracking-wide">
+              <span>SY 2025-2026</span>
+              <span className="text-blue-700">2nd Semester</span>
             </div>
           </div>
 
           {/* Profile Summary */}
-          <div className="flex-shrink-0 px-3 mb-3">
+          <div className="flex-shrink-0 px-4 py-3 border-b border-slate-100">
             <div data-tour="sidebar-profile" onClick={() => navigate('/profile')}
-              className="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors cursor-pointer group">
-              <div className="h-9 w-9 rounded-lg bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-white font-black shadow-lg group-hover:scale-105 transition-transform uppercase overflow-hidden border border-white/10 shrink-0">
+              className="flex items-center gap-3 p-3 rounded-md bg-slate-50 border border-slate-200 hover:bg-slate-100 hover:border-slate-300 transition-colors cursor-pointer group">
+              <div className="h-10 w-10 rounded-md bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold shadow-sm group-hover:scale-105 transition-transform uppercase overflow-hidden border border-blue-700 shrink-0">
                 {user?.profile_picture ? (
                   <img src={user.profile_picture} alt="Avatar" className="w-full h-full object-cover" />
                 ) : (
@@ -388,18 +371,18 @@ const Layout = () => {
                 )}
               </div>
               <div className="flex flex-col min-w-0">
-                <span className="text-xs font-bold truncate">{user?.first_name} {user?.last_name}</span>
-                <span className="text-[9px] font-bold text-violet-400 uppercase tracking-widest">{user?.role}</span>
+                <span className="text-xs font-bold truncate text-slate-900">{user?.first_name} {user?.last_name}</span>
+                <span className="text-[10px] font-bold text-blue-700 uppercase tracking-wide">{user?.role}</span>
               </div>
             </div>
           </div>
 
           {/* Nav Container */}
-          <nav className="flex-1 overflow-y-auto px-3 pb-4 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
+          <nav className="flex-1 overflow-y-auto px-4 py-4 scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
             {currentNav.map((section, idx) => (
               <div key={idx} className="mb-4 last:mb-0">
                 <SectionLabel label={section.header} />
-                <div className="space-y-1">
+                <div className="space-y-0.5">
                   {section.items.map((item, i) => (
                     <NavItem 
                       key={i} 
@@ -417,21 +400,21 @@ const Layout = () => {
           </nav>
 
           {/* Bottom actions */}
-          <div className="flex-shrink-0 border-t border-white/5 p-3 space-y-1.5 bg-[#140824]/50">
+          <div className="flex-shrink-0 border-t border-slate-200 p-4 space-y-2 bg-slate-50">
             <button
               onClick={() => { window.location.href = '/'; }}
-              className="flex w-full items-center justify-center rounded-xl bg-white/5 border border-white/10 px-3 py-2 text-xs font-bold uppercase tracking-widest text-white hover:bg-white/10 transition-all active:scale-95"
+              className="flex w-full items-center justify-center rounded-md bg-white border border-slate-300 px-3 py-2.5 text-xs font-bold uppercase tracking-wide text-slate-700 hover:bg-slate-50 hover:border-slate-400 transition-all active:scale-95 shadow-sm"
             >
-              <svg className="w-3.5 h-3.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
               </svg>
               Visit Website
             </button>
             <button
               onClick={handleLogout}
-              className="flex w-full items-center justify-center rounded-xl bg-rose-500/10 border border-rose-500/20 px-3 py-2 text-xs font-bold uppercase tracking-widest text-rose-400 hover:bg-rose-500 hover:text-white transition-all active:scale-95"
+              className="flex w-full items-center justify-center rounded-md bg-white border border-red-300 px-3 py-2.5 text-xs font-bold uppercase tracking-wide text-red-700 hover:bg-red-50 hover:border-red-400 transition-all active:scale-95 shadow-sm"
             >
-              <svg className="w-3.5 h-3.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
               </svg>
               Logout
@@ -442,11 +425,11 @@ const Layout = () => {
         {/* ── Main Content ── */}
         <main data-tour="portal-main" className="flex-1 flex flex-col min-h-0 bg-[#F8FAFC]">
           {/* Top bar */}
-          <header data-tour="portal-header" className="sticky top-0 z-30 flex items-center justify-between border-b border-slate-200/60 bg-white/80 px-3 py-1.5 backdrop-blur-xl lg:px-5 shadow-sm">
-            <div className="flex items-center gap-4 lg:gap-8">
+          <header data-tour="portal-header" className="sticky top-0 z-30 flex items-center justify-between border-b-2 border-slate-200 bg-white px-4 py-3 shadow-sm lg:px-6">
+            <div className="flex items-center gap-4 lg:gap-6">
               <button 
                 onClick={() => { playSound('click'); setSidebarOpen(!sidebarOpen); }} 
-                className="rounded-xl p-2 text-slate-500 hover:bg-violet-50 hover:text-violet-600 lg:hidden transition-all active:scale-90"
+                className="rounded-md p-2 text-slate-600 hover:bg-slate-100 lg:hidden transition-all active:scale-90"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   {sidebarOpen
@@ -457,16 +440,16 @@ const Layout = () => {
 
               {/* Title & Breadcrumbs */}
               <div className="hidden sm:block">
-                <nav className="flex items-center text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-0.5">
-                  <Link to="/dashboard" className="hover:text-violet-600 transition-colors">Portal</Link>
-                  <svg className="w-2.5 h-2.5 mx-1.5 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" /></svg>
-                  <span className="text-violet-600/70">{pageTitle}</span>
+                <nav className="flex items-center text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                  <Link to="/dashboard" className="hover:text-blue-700 transition-colors">KNHS Portal</Link>
+                  <svg className="w-3 h-3 mx-1.5 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" /></svg>
+                  <span className="text-blue-700">{pageTitle}</span>
                 </nav>
-                <h1 className="text-base font-black text-slate-900 tracking-tight leading-none">{pageTitle}</h1>
+                <h1 className="text-lg font-extrabold text-slate-900 tracking-tight leading-none">{pageTitle}</h1>
               </div>
 
               {/* Mobile Title */}
-              <h1 className="text-sm font-black text-slate-900 sm:hidden tracking-tight">{pageTitle}</h1>
+              <h1 className="text-base font-extrabold text-slate-900 sm:hidden tracking-tight">{pageTitle}</h1>
             </div>
 
             <div className="flex items-center space-x-2 lg:space-x-3">

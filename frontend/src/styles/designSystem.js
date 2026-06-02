@@ -1,84 +1,128 @@
 /**
  * KNHS School Portal Design System
- * Professional, Academic, Minimalist, Purple-themed
+ * Official Digital Campus - DepEd Government Education Style
  * 
- * This file contains all standardized design tokens, components,
- * and utilities used across the entire portal.
+ * This design system reflects the professional academic identity of
+ * Kiwalan National High School, inspired by DepEd and Philippine
+ * public school systems.
  */
 
 // ═══════════════════════════════════════════════════════════════════════════
-// COLOR SYSTEM — Professional Academic Purple
+// COLOR SYSTEM — Government Education Palette
 // ═══════════════════════════════════════════════════════════════════════════
 
 export const COLORS = {
-  // Primary — Academic Purple
-  primary: {
+  // School Purple (accent only, not large surfaces)
+  purple: {
     50:  '#f5f3ff',
     100: '#ede9fe',
     200: '#ddd6fe',
     300: '#c4b5fd',
     400: '#a78bfa',
-    500: '#8b5cf6',   // Main purple
-    600: '#7c3aed',   // Active purple
+    500: '#8b5cf6',
+    600: '#7c3aed',   // School color - use sparingly
     700: '#6d28d9',
     800: '#5b21b6',
     900: '#4c1d95',
   },
+
+  // Academic Blue (primary for education/trust)
+  blue: {
+    50:  '#eff6ff',
+    100: '#dbeafe',
+    200: '#bfdbfe',
+    300: '#93c5fd',
+    400: '#60a5fa',
+    500: '#3b82f6',
+    600: '#2563eb',   // Academic primary
+    700: '#1d4ed8',
+    800: '#1e40af',   // Deep academic
+    900: '#1e3a8a',
+  },
+
+  // DepEd Blue (government education)
+  deped: {
+    50:  '#f0f9ff',
+    100: '#e0f2fe',
+    200: '#bae6fd',
+    300: '#7dd3fc',
+    400: '#38bdf8',
+    500: '#0ea5e9',
+    600: '#0284c7',
+    700: '#0369a1',   // DepEd official
+    800: '#075985',
+    900: '#0c4a6e',
+  },
+
+  // School Gold (achievements, highlights)
+  gold: {
+    50:  '#fffbeb',
+    100: '#fef3c7',
+    200: '#fde68a',
+    300: '#fcd34d',
+    400: '#fbbf24',
+    500: '#f59e0b',
+    600: '#d97706',   // School gold
+    700: '#b45309',
+    800: '#92400e',
+    900: '#78350f',
+  },
   
-  // Neutral — Clean slate tones
+  // Neutral — Clean white-focused surfaces
   neutral: {
-    50:  '#f8fafc',
+    0:   '#ffffff',   // Pure white (primary surface)
+    50:  '#f8fafc',   // Light gray (subtle backgrounds)
     100: '#f1f5f9',
-    200: '#e2e8f0',
+    200: '#e2e8f0',   // Borders, dividers
     300: '#cbd5e1',
     400: '#94a3b8',
     500: '#64748b',
     600: '#475569',
-    700: '#334155',
+    700: '#334155',   // Dark text
     800: '#1e293b',
     900: '#0f172a',
   },
 
-  // Semantic colors
-  success: '#10b981',
-  warning: '#f59e0b',
-  error:   '#ef4444',
-  info:    '#3b82f6',
+  // Semantic colors (academic context)
+  success:  '#059669',  // Attendance, completion
+  warning:  '#d97706',  // Alerts, pending
+  error:    '#dc2626',  // Urgent, required
+  info:     '#0369a1',  // DepEd blue for info
 };
 
 // ═══════════════════════════════════════════════════════════════════════════
-// TYPOGRAPHY — Professional academic hierarchy
+// TYPOGRAPHY — Official Academic Hierarchy
 // ═══════════════════════════════════════════════════════════════════════════
 
 export const TYPOGRAPHY = {
-  // Headings
-  h1: 'text-2xl md:text-3xl font-bold text-slate-900 tracking-tight',
+  // Headings (formal, official documentation style)
+  h1: 'text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight',
   h2: 'text-xl md:text-2xl font-bold text-slate-900 tracking-tight',
-  h3: 'text-lg md:text-xl font-semibold text-slate-900',
-  h4: 'text-base md:text-lg font-semibold text-slate-900',
-  h5: 'text-sm md:text-base font-semibold text-slate-900',
-  h6: 'text-xs md:text-sm font-semibold text-slate-900',
+  h3: 'text-lg md:text-xl font-bold text-slate-900',
+  h4: 'text-base md:text-lg font-bold text-slate-900',
+  h5: 'text-sm md:text-base font-bold text-slate-900',
+  h6: 'text-xs md:text-sm font-bold text-slate-900',
 
-  // Body text
+  // Body text (clear, accessible)
   body: {
-    lg: 'text-base font-normal text-slate-700',
-    md: 'text-sm font-normal text-slate-700',
-    sm: 'text-xs font-normal text-slate-600',
+    lg: 'text-base font-normal text-slate-700 leading-relaxed',
+    md: 'text-sm font-normal text-slate-700 leading-relaxed',
+    sm: 'text-xs font-normal text-slate-600 leading-relaxed',
     xs: 'text-[11px] font-normal text-slate-600',
   },
 
-  // Labels
+  // Labels (official form style)
   label: {
-    lg: 'text-sm font-medium text-slate-700',
-    md: 'text-xs font-medium text-slate-700',
-    sm: 'text-[11px] font-medium text-slate-600',
+    lg: 'text-sm font-semibold text-slate-700 uppercase tracking-wide',
+    md: 'text-xs font-semibold text-slate-700 uppercase tracking-wide',
+    sm: 'text-[11px] font-semibold text-slate-600 uppercase tracking-wide',
   },
 
-  // Section headers
-  section: 'text-[10px] font-bold text-slate-500 uppercase tracking-widest',
+  // Section headers (government document style)
+  section: 'text-xs font-extrabold text-slate-700 uppercase tracking-wider',
 
-  // Badges & Pills
-  badge: 'text-[10px] font-semibold uppercase tracking-wide',
+  // Official badges
+  badge: 'text-[10px] font-bold uppercase tracking-wider',
 };
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -131,32 +175,32 @@ export const BORDERS = {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════
-// BUTTONS — All button variants
+// BUTTONS — Official Form Button Style
 // ═══════════════════════════════════════════════════════════════════════════
 
 export const BUTTONS = {
-  // Primary — Main CTA
+  // Primary — School color accent (used sparingly)
   primary: `
     inline-flex items-center justify-center gap-2
     px-4 py-2.5 md:px-5 md:py-3
-    rounded-lg
-    bg-purple-600 text-white
-    text-sm font-semibold
-    border border-purple-700
-    hover:bg-purple-700
+    rounded-md
+    bg-blue-600 text-white
+    text-sm font-bold
+    border border-blue-700
+    hover:bg-blue-700
     active:scale-[0.98]
     disabled:opacity-50 disabled:cursor-not-allowed
     transition-all duration-150
     shadow-sm
   `,
 
-  // Secondary — Less emphasis
+  // Secondary — White professional
   secondary: `
     inline-flex items-center justify-center gap-2
     px-4 py-2.5 md:px-5 md:py-3
-    rounded-lg
+    rounded-md
     bg-white text-slate-700
-    text-sm font-semibold
+    text-sm font-bold
     border border-slate-300
     hover:bg-slate-50 hover:border-slate-400
     active:scale-[0.98]
@@ -165,13 +209,13 @@ export const BUTTONS = {
     shadow-sm
   `,
 
-  // Ghost — Minimal
+  // Ghost — Subtle interaction
   ghost: `
     inline-flex items-center justify-center gap-2
     px-4 py-2.5
-    rounded-lg
+    rounded-md
     text-slate-700
-    text-sm font-medium
+    text-sm font-semibold
     hover:bg-slate-100
     active:scale-[0.98]
     disabled:opacity-50 disabled:cursor-not-allowed
@@ -182,9 +226,9 @@ export const BUTTONS = {
   danger: `
     inline-flex items-center justify-center gap-2
     px-4 py-2.5 md:px-5 md:py-3
-    rounded-lg
+    rounded-md
     bg-red-600 text-white
-    text-sm font-semibold
+    text-sm font-bold
     border border-red-700
     hover:bg-red-700
     active:scale-[0.98]
@@ -197,7 +241,7 @@ export const BUTTONS = {
   icon: `
     inline-flex items-center justify-center
     w-9 h-9
-    rounded-lg
+    rounded-md
     text-slate-600
     hover:bg-slate-100
     active:scale-95
@@ -210,9 +254,9 @@ export const BUTTONS = {
       inline-flex items-center justify-center gap-1.5
       px-3 py-1.5
       rounded-md
-      bg-purple-600 text-white
-      text-xs font-semibold
-      hover:bg-purple-700
+      bg-blue-600 text-white
+      text-xs font-bold
+      hover:bg-blue-700
       active:scale-[0.98]
       transition-all duration-150
     `,
@@ -221,7 +265,7 @@ export const BUTTONS = {
       px-3 py-1.5
       rounded-md
       bg-white text-slate-700
-      text-xs font-semibold
+      text-xs font-bold
       border border-slate-300
       hover:bg-slate-50
       active:scale-[0.98]
@@ -231,44 +275,44 @@ export const BUTTONS = {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════
-// CARDS — Container components
+// CARDS — Academic Information Panels
 // ═══════════════════════════════════════════════════════════════════════════
 
 export const CARDS = {
-  // Standard card
+  // Standard academic panel (white, subtle border)
   default: `
     bg-white
-    rounded-lg
+    rounded-md
     border border-slate-200
     shadow-sm
     overflow-hidden
   `,
 
-  // Interactive card
+  // Interactive panel
   interactive: `
     bg-white
-    rounded-lg
+    rounded-md
     border border-slate-200
     shadow-sm
-    hover:shadow-md hover:border-slate-300
+    hover:shadow-md hover:border-blue-300
     transition-all duration-200
     cursor-pointer
     overflow-hidden
   `,
 
-  // Highlighted card
+  // Highlighted (for official notices, announcements)
   highlighted: `
-    bg-purple-50
-    rounded-lg
-    border border-purple-200
+    bg-blue-50
+    rounded-md
+    border border-blue-200
     shadow-sm
     overflow-hidden
   `,
 
-  // Stat card
+  // Stat panel (academic metrics)
   stat: `
     bg-white
-    rounded-lg
+    rounded-md
     border border-slate-200
     shadow-sm
     p-4 md:p-5
@@ -358,25 +402,57 @@ export const INPUTS = {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════
-// BADGES & PILLS
+// BADGES & PILLS — Academic Indicators
 // ═══════════════════════════════════════════════════════════════════════════
 
 export const BADGES = {
-  default: 'inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium',
+  default: 'inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-bold border',
   
   variants: {
-    purple:  'bg-purple-100 text-purple-700 border border-purple-200',
-    blue:    'bg-blue-100 text-blue-700 border border-blue-200',
-    green:   'bg-emerald-100 text-emerald-700 border border-emerald-200',
-    yellow:  'bg-amber-100 text-amber-700 border border-amber-200',
-    red:     'bg-red-100 text-red-700 border border-red-200',
-    slate:   'bg-slate-100 text-slate-700 border border-slate-200',
+    purple:  'bg-purple-50 text-purple-700 border-purple-200',      // School color
+    blue:    'bg-blue-50 text-blue-700 border-blue-200',            // Academic
+    deped:   'bg-sky-50 text-sky-700 border-sky-200',               // DepEd
+    green:   'bg-emerald-50 text-emerald-700 border-emerald-200',  // Success
+    gold:    'bg-amber-50 text-amber-700 border-amber-200',         // Achievement
+    red:     'bg-red-50 text-red-700 border-red-200',               // Urgent
+    slate:   'bg-slate-50 text-slate-700 border-slate-200',         // Neutral
   },
 
   sizes: {
     sm: 'px-2 py-0.5 text-[10px]',
     md: 'px-2.5 py-1 text-xs',
     lg: 'px-3 py-1.5 text-sm',
+  },
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SCHOOL IDENTITY — KNHS Branding Elements
+// ═══════════════════════════════════════════════════════════════════════════
+
+export const SCHOOL = {
+  name: 'Kiwalan National High School',
+  nameShort: 'KNHS',
+  motto: 'Excellence in Education, Service to Community',
+  
+  // Current academic period
+  academicYear: '2025-2026',
+  semester: 'Second Semester',
+  quarter: 'Fourth Quarter',
+  
+  // School colors
+  colors: {
+    primary: '#7c3aed',    // Purple
+    secondary: '#1e40af',  // Academic Blue
+    accent: '#d97706',     // Gold
+  },
+  
+  // Official header component classes
+  header: {
+    container: 'bg-white border-b-4 border-blue-600 shadow-sm',
+    seal: 'w-12 h-12 md:w-14 md:h-14',
+    title: 'text-base md:text-lg font-extrabold text-slate-900 uppercase tracking-tight',
+    subtitle: 'text-xs md:text-sm font-bold text-blue-700 uppercase tracking-wide',
+    period: 'text-[10px] md:text-xs font-semibold text-slate-600 uppercase tracking-wide',
   },
 };
 
@@ -569,6 +645,7 @@ export default {
   CARDS,
   INPUTS,
   BADGES,
+  SCHOOL,
   TABLES,
   MODALS,
   EMPTY_STATE,
