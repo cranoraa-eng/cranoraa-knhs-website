@@ -935,7 +935,7 @@ const TeacherView = () => {
                 </div>
               )}
               
-              <Button variant="primary" onClick={() => navigate('/my-schedule')} className="w-full">
+              <Button variant="primary" onClick={() => navigate('/schedule')} className="w-full">
                 View Schedule
               </Button>
             </CardBody>
