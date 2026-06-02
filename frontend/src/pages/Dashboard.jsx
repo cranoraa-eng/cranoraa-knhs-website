@@ -856,194 +856,218 @@ const TeacherView = () => {
   const todayStr = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
   const unmarkedCount = classrooms.filter(c => !todayAttendance[c.id]).length;
 
-  const statusChips = [
-    { label: 'Sections', value: data?.total_classes || 0, color: 'violet' },
-    { label: 'Students', value: data?.total_students || 0, color: 'blue' },
-    { label: 'Pending', value: data?.pending_grades || 0, color: 'amber' },
-    { label: 'Attendance', value: `${data?.attendance_rate || 0}%`, color: 'emerald' },
-  ];
-
   return (
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.8, ease: "easeOut" }}
+      transition={{ duration: 0.6, ease: "easeOut" }}
       className={DASH_PAGE}
     >
-      <WelcomeBanner
-        user={user}
-        today={todayStr}
-        statusChips={statusChips}
-        actions={
-          <>
-            <Button 
-              variant="secondary" 
-              onClick={() => navigate('/announcements')}
-            >
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
-              </svg>
-              Announce
-            </Button>
-            <Button 
-              variant="primary" 
-              onClick={() => navigate('/grade-input')}
-            >
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-              </svg>
-              Grades
-            </Button>
-          </>
-        }
-      />
-      {classrooms.length > 0 && (
+      {/* ═══ COMPACT WELCOME HEADER ═══ */}
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <Card className="relative overflow-hidden border-none shadow-md bg-gradient-to-br from-violet-600 via-violet-700 to-indigo-700">
+          {/* Subtle decorative elements */}
+          <div className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full bg-white/5" aria-hidden="true" />
+          <div className="pointer-events-none absolute -bottom-8 -left-6 h-32 w-32 rounded-full bg-white/5" aria-hidden="true" />
+          
+          <CardBody className="relative z-10 p-4 md:p-5">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              {/* Left: Greeting & Info */}
+              <div className="flex items-center gap-3 md:gap-4 min-w-0 flex-1">
+                {/* Avatar */}
+                <div className="relative shrink-0">
+                  <div className="w-12 h-12 md:w-14 md:h-14 rounded-xl border-2 border-white/40 bg-white/15 overflow-hidden shadow-lg flex items-center justify-center backdrop-blur-sm">
+                    {user?.profile_picture ? (
+                      <img src={user.profile_picture} alt="Profile" className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-lg md:text-xl font-bold text-white">
+                        {[user?.first_name, user?.last_name].filter(Boolean).map(n => n[0].toUpperCase()).join('') || '?'}
+                      </span>
+                    )}
+                  </div>
+                  <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-400 rounded-full border-2 border-violet-700 shadow-sm" />
+                </div>
+
+                {/* Text */}
+                <div className="min-w-0">
+                  <h1 className="text-base md:text-lg font-bold text-white leading-tight">
+                    Welcome back, <span className="font-black">{user?.first_name || 'Teacher'}</span>
+                  </h1>
+                  <p className="text-xs text-white/80 font-medium mt-0.5 truncate">{todayStr}</p>
+                </div>
+              </div>
+
+              {/* Right: Quick Stats & Actions */}
+              <div className="flex items-center gap-2 md:gap-3 shrink-0">
+                {/* Quick Stats */}
+                <div className="hidden sm:flex items-center gap-2">
+                  <div className="px-3 py-1.5 rounded-lg bg-white/10 border border-white/20 backdrop-blur-sm">
+                    <p className="text-xs font-bold text-white leading-none">{data?.total_classes || 0}</p>
+                    <p className="text-[10px] font-semibold text-white/70 uppercase tracking-wider mt-0.5">Sections</p>
+                  </div>
+                  <div className="px-3 py-1.5 rounded-lg bg-white/10 border border-white/20 backdrop-blur-sm">
+                    <p className="text-xs font-bold text-white leading-none">{data?.total_students || 0}</p>
+                    <p className="text-[10px] font-semibold text-white/70 uppercase tracking-wider mt-0.5">Students</p>
+                  </div>
+                  {(data?.pending_grades || 0) > 0 && (
+                    <div className="px-3 py-1.5 rounded-lg bg-amber-500/20 border border-amber-400/30 backdrop-blur-sm">
+                      <p className="text-xs font-bold text-amber-100 leading-none">{data.pending_grades}</p>
+                      <p className="text-[10px] font-semibold text-amber-200/80 uppercase tracking-wider mt-0.5">Pending</p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Actions */}
+                <Button 
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => navigate('/grade-input')}
+                  className="bg-white/15 hover:bg-white/25 text-white border-white/30"
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                  <span className="hidden sm:inline">Grades</span>
+                </Button>
+              </div>
+            </div>
+          </CardBody>
+        </Card>
+      </motion.div>
+
+      {/* ═══ ATTENDANCE ALERT (High Priority) ═══ */}
+      {classrooms.length > 0 && unmarkedCount > 0 && (
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.15, duration: 0.5 }}
+          transition={{ delay: 0.1, duration: 0.5 }}
         >
-          <Card className={cn(
-            "px-3 py-3 md:px-4 md:py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3",
-            unmarkedCount === 0 ? 'border-emerald-300 bg-emerald-50/90' : 'border-amber-300 bg-amber-50/90'
-          )}>
-            <div className="flex items-center gap-2.5 min-w-0">
-              <div className={cn(
-                "w-2 h-2 rounded-full shrink-0",
-                unmarkedCount === 0 ? 'bg-emerald-500' : 'bg-amber-500 animate-pulse'
-              )} />
-              <div className="min-w-0">
-                <p className={cn(
-                  "text-xs font-bold uppercase tracking-wide",
-                  unmarkedCount === 0 ? 'text-emerald-800' : 'text-amber-800'
-                )}>
-                  {unmarkedCount === 0
-                    ? 'All attendance marked for today'
-                    : `${unmarkedCount} class${unmarkedCount > 1 ? 'es' : ''} without attendance today`}
-                </p>
-                {unmarkedCount > 0 && (
-                  <p className="text-[10px] font-semibold text-amber-700 mt-0.5 truncate">
+          <Card className="border-l-4 border-l-amber-500 bg-amber-50/80 border-amber-200">
+            <CardBody className="px-4 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center shrink-0">
+                  <svg className="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                </div>
+                <div className="min-w-0">
+                  <p className="text-sm font-bold text-amber-900 leading-tight">
+                    {unmarkedCount} Class{unmarkedCount > 1 ? 'es' : ''} Without Attendance
+                  </p>
+                  <p className="text-xs font-semibold text-amber-700 mt-0.5 truncate">
                     {classrooms.filter(c => !todayAttendance[c.id]).map(c => c.name).join(', ')}
                   </p>
-                )}
+                </div>
               </div>
-            </div>
-            {unmarkedCount > 0 && (
               <Button
                 variant="primary"
                 size="sm"
                 onClick={() => navigate('/attendance')}
+                className="bg-amber-600 hover:bg-amber-700 border-0 shadow-sm shrink-0"
               >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
                 Mark Now
               </Button>
-            )}
+            </CardBody>
           </Card>
         </motion.div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 md:gap-5">
-        {/* ── MAIN CONTENT (Left - 8 Cols) ── */}
-        <div className="lg:col-span-8 space-y-3 md:space-y-5">
+      {/* ═══ MAIN GRID LAYOUT ═══ */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-5">
+        
+        {/* ── LEFT COLUMN (2/3 width) ── */}
+        <div className="lg:col-span-2 space-y-4 md:space-y-5">
           
-          {/* Today's Classes & Sections Combined */}
+          {/* ═══ TEACHING SECTIONS (Card-based) ═══ */}
           <motion.div 
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.2, duration: 0.6 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2, duration: 0.5 }}
           >
-            <Card className="overflow-hidden flex flex-col lg:h-[420px] min-h-[300px]">
-              <CardHeader divider className="bg-violet-700 text-white border-violet-800">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-lg border border-violet-600 bg-violet-600 text-white flex items-center justify-center">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                      </svg>
-                    </div>
-                    <div>
-                      <CardTitle className="text-white">Academic Overview</CardTitle>
-                      <p className="text-xs font-semibold text-violet-200 uppercase tracking-wide mt-0.5">Active teaching sections</p>
-                    </div>
-                  </div>
-                  <Link to="/my-classes">
-                    <Button variant="secondary" size="sm">Manage Classes</Button>
-                  </Link>
+            <Card>
+              <CardHeader divider>
+                <div className="flex items-center justify-between">
+                  <CardTitle subtitle={`${classrooms.length} active section${classrooms.length !== 1 ? 's' : ''}`}>
+                    My Teaching Load
+                  </CardTitle>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => navigate('/my-classes')}
+                    className="text-violet-600 hover:text-violet-700 hover:bg-violet-50"
+                  >
+                    View All
+                  </Button>
                 </div>
               </CardHeader>
             
-            <CardBody className="flex-1 overflow-x-auto overflow-y-auto scrollbar-none">
-              <table className="w-full text-left border-separate border-spacing-0 min-w-[480px]">
-                <thead className="bg-violet-50/80 border-b border-violet-100 sticky top-0 z-10">
-                  <tr>
-                    <th className={`${DASH_TABLE_TH} text-left`}>Section</th>
-                    <th className={`${DASH_TABLE_TH} text-left`}>Subject</th>
-                    <th className={`${DASH_TABLE_TH} text-left`}>Today's Attendance</th>
-                    <th className={`${DASH_TABLE_TH} text-right`}>Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-violet-100">
-                  {classrooms.length === 0 ? (
-                    <tr>
-                      <td colSpan="4" className="px-4 md:px-6 py-8">
-                        <EmptyState
-                          title="No classes assigned yet"
-                          description="Classes appear here once you are assigned as instructor."
-                          icon={
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                            </svg>
-                          }
-                        />
-                      </td>
-                    </tr>
-                  ) : (
-                    classrooms.map(c => {
+              <CardBody className="p-3 md:p-4">
+                {classrooms.length === 0 ? (
+                  <EmptyState
+                    className="py-8"
+                    title="No classes assigned"
+                    description="Your teaching sections will appear here once assigned."
+                    icon={
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                      </svg>
+                    }
+                  />
+                ) : (
+                  <div className="grid grid-cols-1 gap-3">
+                    {classrooms.map((c, idx) => {
                       const marked = todayAttendance[c.id];
                       return (
-                        <tr key={c.id} className="hover:bg-violet-50/60 transition-colors group cursor-pointer border-b border-violet-100 last:border-0">
-                          <td className="px-3 md:px-5 py-2.5 md:py-3">
-                            <div className="flex items-center gap-2 md:gap-4">
-                              <div className="w-8 h-8 md:w-10 md:h-10 rounded-sm bg-violet-50 text-violet-800 border border-violet-200 flex items-center justify-center font-bold text-xs md:text-sm shrink-0">
+                        <motion.div
+                          key={c.id}
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: idx * 0.05 }}
+                          className="group p-3 md:p-4 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white hover:border-violet-200 hover:shadow-md transition-all"
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            {/* Left: Section Info */}
+                            <div className="flex items-start gap-3 min-w-0 flex-1">
+                              <div className="w-11 h-11 md:w-12 md:h-12 rounded-lg bg-violet-100 text-violet-700 border border-violet-200 flex items-center justify-center font-bold text-sm md:text-base shrink-0 group-hover:bg-violet-600 group-hover:text-white transition-colors">
                                 {c.name?.match(/\d+/)?.[0] || 'C'}
                               </div>
-                              <div>
-                                <span className="text-xs md:text-sm font-bold text-slate-800 tracking-tight block">{c.name}</span>
-                                <span className="text-xs font-semibold text-slate-400 uppercase tracking-widest mt-0.5">Section</span>
+                              <div className="min-w-0 flex-1">
+                                <h3 className="text-sm md:text-base font-bold text-slate-900 leading-tight truncate">{c.name}</h3>
+                                <p className="text-xs font-semibold text-slate-600 mt-0.5 truncate">{c.subject_name || 'General Subject'}</p>
+                                <div className="flex items-center gap-2 mt-2">
+                                  <div className="flex items-center gap-1">
+                                    <svg className="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                                    </svg>
+                                    <span className="text-xs font-semibold text-slate-500">{c.student_count || 0} students</span>
+                                  </div>
+                                  {marked !== undefined && (
+                                    <Badge variant={marked ? "green" : "amber"} size="sm">
+                                      <span className={`w-1.5 h-1.5 rounded-full ${marked ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+                                      {marked ? 'Marked' : 'Pending'}
+                                    </Badge>
+                                  )}
+                                </div>
                               </div>
                             </div>
-                          </td>
-                          <td className="px-3 md:px-5 py-2.5 md:py-3">
-                            <p className="text-xs md:text-sm font-semibold text-slate-700">{c.subject_name || 'General'}</p>
-                              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mt-0.5">{c.subject_code || 'GEN-101'}</p>
-                          </td>
-                          <td className="px-3 md:px-5 py-2.5 md:py-3">
-                            {marked === undefined ? (
-                              <Badge variant="slate" size="sm">
-                                <div className="w-1.5 h-1.5 rounded-full bg-slate-400 animate-pulse" />
-                                Checking
-                              </Badge>
-                            ) : marked ? (
-                              <Badge variant="green" size="sm">
-                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                                Marked
-                              </Badge>
-                            ) : (
-                              <Badge variant="amber" size="sm">
-                                <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
-                                Pending
-                              </Badge>
-                            )}
-                          </td>
-                          <td className="px-3 md:px-5 py-2.5 md:py-3 text-right">
-                            <div className="flex items-center justify-end gap-1.5 md:gap-2">
+
+                            {/* Right: Actions */}
+                            <div className="flex items-center gap-1.5 shrink-0">
                               <Button
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => navigate('/attendance', { state: { classroomId: c.id } })}
                                 title="Mark Attendance"
-                                className="text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
+                                className="text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 p-2"
                               >
-                                <svg className="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 8l2 2 4-4" />
                                 </svg>
                               </Button>
@@ -1052,64 +1076,58 @@ const TeacherView = () => {
                                 size="sm"
                                 onClick={() => navigate('/grade-input', { state: { classroomId: c.id } })}
                                 title="Input Grades"
-                                className="text-violet-700 hover:text-violet-800 hover:bg-violet-50"
+                                className="text-violet-600 hover:text-violet-700 hover:bg-violet-50 p-2"
                               >
-                                <svg className="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                 </svg>
                               </Button>
                             </div>
-                          </td>
-                        </tr>
+                          </div>
+                        </motion.div>
                       );
-                    })
-                  )}
-                </tbody>
-              </table>
-            </CardBody>
-          </Card>
+                    })}
+                  </div>
+                )}
+              </CardBody>
+            </Card>
           </motion.div>
 
-          {/* Recent Activity Section */}
+          {/* ═══ RECENT ACTIVITY ═══ */}
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5, duration: 0.6 }}
+            transition={{ delay: 0.4, duration: 0.5 }}
           >
-            <Card className="flex flex-col lg:h-[520px]">
+            <Card>
               <CardHeader divider>
-                <div className="flex items-center justify-between pb-3">
-                  <CardTitle subtitle="Your latest school interactions">Recent Activity</CardTitle>
-                  <Badge variant="purple" size="sm">Activity</Badge>
-                </div>
+                <CardTitle subtitle="Your latest interactions">Recent Activity</CardTitle>
               </CardHeader>
             
-            <CardBody className="relative space-y-3 md:space-y-6 flex-1 overflow-y-auto pr-2 scrollbar-none">
-              <div className="absolute left-[15px] md:left-[19px] top-2 bottom-2 w-0.5 bg-violet-100" />
-              <AnimatePresence>
-                {data?.recent_activities?.length ? data.recent_activities.map((act, i) => (
-                  <motion.div 
-                    key={i}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: i * 0.1 }}
-                    className="relative flex items-center gap-3 md:gap-6 group"
-                  >
-                    <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg bg-white border border-violet-200 shadow-sm flex items-center justify-center shrink-0 z-10 group-hover:border-violet-400 transition-colors">
-                      <TeacherActivityIcon type={act.type} />
-                    </div>
-                    <div className="flex-1 bg-violet-50/50 border border-violet-100 p-2.5 md:p-4 rounded-lg group-hover:bg-white group-hover:border-violet-200 group-hover:shadow-sm transition-all">
-                      <div className="flex justify-between items-start mb-0.5">
-                        <p className="text-xs md:text-sm font-semibold text-slate-800 leading-snug">{act.message}</p>
-                        <span className="text-xs font-black text-slate-400 uppercase tracking-widest ml-2 shrink-0">{act.time}</span>
+              <CardBody className="p-3 md:p-4 space-y-3 max-h-96 overflow-y-auto">
+                {data?.recent_activities?.length ? (
+                  data.recent_activities.map((act, i) => (
+                    <motion.div 
+                      key={i}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: i * 0.05 }}
+                      className="flex items-start gap-3 p-3 rounded-lg border border-slate-100 bg-slate-50/50 hover:bg-white hover:border-violet-200 hover:shadow-sm transition-all group"
+                    >
+                      <div className="w-9 h-9 rounded-lg bg-violet-100 border border-violet-200 flex items-center justify-center shrink-0 group-hover:bg-violet-600 transition-colors">
+                        <TeacherActivityIcon type={act.type} className="group-hover:text-white" />
                       </div>
-                    </div>
-                  </motion.div>
-                )) : (
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs md:text-sm font-semibold text-slate-800 leading-snug">{act.message}</p>
+                        <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mt-1">{act.time}</p>
+                      </div>
+                    </motion.div>
+                  ))
+                ) : (
                   <EmptyState
-                    className="py-12"
+                    className="py-8"
                     title="No recent activities"
-                    description="Actions like attendance and grading will show up here."
+                    description="Your actions will appear here."
                     icon={
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -1117,57 +1135,70 @@ const TeacherView = () => {
                     }
                   />
                 )}
-              </AnimatePresence>
-            </CardBody>
-          </Card>
+              </CardBody>
+            </Card>
           </motion.div>
         </div>
 
-        {/* ── SIDEBAR CONTENT (Right - 4 Cols) ── */}
-        <div className="lg:col-span-4 space-y-3 md:space-y-4">
+
+        {/* ── RIGHT COLUMN (1/3 width) ── */}
+        <div className="lg:col-span-1 space-y-4 md:space-y-5">
+          
+          {/* ═══ TODAY'S SCHEDULE ═══ */}
           <motion.div 
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.3, duration: 0.6 }}
-            className="lg:h-[420px]"
+            transition={{ delay: 0.3, duration: 0.5 }}
           >
-            <TodayScheduleWidget />
+            <TodayScheduleWidget compact />
           </motion.div>
 
-          <DashboardQuickActions
-            title="Quick actions"
-            navigate={navigate}
-            items={[
-              { label: 'Attendance', path: '/attendance', icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4' },
-              { label: 'Grades', path: '/grade-input', icon: 'M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z' },
-              { label: 'Analytics', path: '/analytics', icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z' },
-              { label: 'Materials', path: '/materials', icon: 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253' },
-            ]}
-          />
-
-          {/* Messages & Status Sidebar */}
+          {/* ═══ QUICK ACTIONS ═══ */}
           <motion.div 
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.5, duration: 0.6 }}
-            className="space-y-3 md:space-y-5"
+            transition={{ delay: 0.4, duration: 0.5 }}
           >
-            <div className="lg:h-[260px]">
-              <LatestMessagesWidget messages={data?.latest_messages} onOpenChat={() => navigate('/messages')} />
-            </div>
-            
-            {/* System Status */}
-            <Card className="flex items-center justify-between shrink-0">
-              <CardBody className="flex items-center justify-between p-3 md:p-4">
-                <div className="flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 bg-violet-600 rounded-full" />
-                  <span className="text-[10px] font-bold text-violet-800 uppercase tracking-wide">System online</span>
+            <Card>
+              <CardHeader divider>
+                <CardTitle subtitle="Common tasks">Quick Actions</CardTitle>
+              </CardHeader>
+              <CardBody className="p-3">
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    { label: 'Attendance', path: '/attendance', icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4', color: 'emerald' },
+                    { label: 'Grades', path: '/grade-input', icon: 'M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z', color: 'violet' },
+                    { label: 'Materials', path: '/materials', icon: 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253', color: 'blue' },
+                    { label: 'Schedule', path: '/my-schedule', icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z', color: 'indigo' },
+                    { label: 'Announce', path: '/announcements', icon: 'M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z', color: 'amber' },
+                    { label: 'Messages', path: '/messages', icon: 'M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z', color: 'rose' },
+                  ].map((action, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => navigate(action.path)}
+                      className="group p-3 rounded-lg border border-slate-200 bg-white hover:border-violet-300 hover:shadow-md transition-all text-center"
+                    >
+                      <div className={`w-10 h-10 mx-auto rounded-lg bg-${action.color}-100 text-${action.color}-600 flex items-center justify-center mb-2 group-hover:bg-${action.color}-600 group-hover:text-white transition-colors`}>
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={action.icon} />
+                        </svg>
+                      </div>
+                      <p className="text-xs font-bold text-slate-700 group-hover:text-violet-700 transition-colors">{action.label}</p>
+                    </button>
+                  ))}
                 </div>
-                <span className="text-[10px] font-semibold text-violet-400 uppercase tracking-wide">v2.4.0</span>
               </CardBody>
             </Card>
           </motion.div>
 
+          {/* ═══ LATEST MESSAGES ═══ */}
+          <motion.div 
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.5, duration: 0.5 }}
+          >
+            <LatestMessagesWidget messages={data?.latest_messages} onOpenChat={() => navigate('/messages')} compact />
+          </motion.div>
         </div>
       </div>
     </motion.div>
