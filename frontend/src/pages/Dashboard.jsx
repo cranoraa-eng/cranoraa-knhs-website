@@ -217,14 +217,14 @@ const WelcomeBanner = ({ user, today, actions, subtitle, statusChips, useSvgGree
             </div>
 
             <div className="space-y-1 md:space-y-1.5">
-              <h1 className="text-lg md:text-2xl font-bold text-white tracking-tight leading-tight">
+              <h1 className="text-lg md:text-2xl font-black text-white tracking-tight leading-tight">
                 Welcome back,{' '}
-                <span className="text-violet-100">{user?.first_name || 'User'}</span>
+                <span className="text-white">{user?.first_name || 'User'}</span>
               </h1>
               {subtitle && (
-                <p className={cn("text-xs font-semibold uppercase tracking-wide", theme.subtitle)}>{subtitle}</p>
+                <p className={cn("text-xs font-bold uppercase tracking-wide text-white/90", theme.subtitle)}>{subtitle}</p>
               )}
-              <p className={cn("text-sm max-w-lg leading-relaxed hidden sm:block", theme.message)}>
+              <p className={cn("text-sm max-w-lg leading-relaxed hidden sm:block text-white/80", theme.message)}>
                 {greeting.message}
               </p>
             </div>
