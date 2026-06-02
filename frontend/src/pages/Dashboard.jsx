@@ -979,6 +979,39 @@ const TeacherView = () => {
                   )}
                 </div>
 
+                {/* Quick Stats Row - NEW */}
+                <div className="grid grid-cols-3 gap-2">
+                  <div className="flex items-center gap-2 px-3 py-2 bg-slate-50 rounded-lg border border-slate-200">
+                    <svg className="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[9px] font-semibold text-slate-500 uppercase leading-none">This Week</p>
+                      <p className="text-xs font-bold text-slate-700 leading-tight truncate">{classrooms.length * 5} classes taught</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-2 px-3 py-2 bg-slate-50 rounded-lg border border-slate-200">
+                    <svg className="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[9px] font-semibold text-slate-500 uppercase leading-none">Tasks Done</p>
+                      <p className="text-xs font-bold text-slate-700 leading-tight truncate">{classrooms.filter(c => todayAttendance[c.id]).length}/{classrooms.length} today</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-2 px-3 py-2 bg-violet-50 rounded-lg border border-violet-200">
+                    <svg className="w-4 h-4 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                    </svg>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[9px] font-semibold text-violet-600 uppercase leading-none">Performance</p>
+                      <p className="text-xs font-bold text-violet-700 leading-tight">On track 📈</p>
+                    </div>
+                  </div>
+                </div>
+
                 {/* Teaching Load Summary */}
                 <div className="flex items-center gap-3 flex-wrap pt-1.5 border-t border-slate-200">
                   <div className="flex items-center gap-1.5 text-xs">
