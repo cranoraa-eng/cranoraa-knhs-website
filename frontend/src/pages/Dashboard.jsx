@@ -608,7 +608,7 @@ const AdminView = () => {
 
       <div className="space-y-2">
         <p className={DASH_SECTION_LABEL}>Analytics</p>
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 md:gap-4 overflow-hidden">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 md:gap-4 overflow-hidden">
         {/* Attendance Trends */}
         <Card className="lg:col-span-8 overflow-hidden flex flex-col min-h-[220px] md:min-h-0">
           <CardHeader divider>
@@ -706,10 +706,11 @@ const AdminView = () => {
           </CardBody>
         </Card>
       </div>
+      </div>
 
       <div className="space-y-2">
         <p className={DASH_SECTION_LABEL}>Updates & activity</p>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
         {/* Recent Announcements */}
         <Card className="flex flex-col min-h-[200px]">
           <CardHeader divider>
@@ -812,8 +813,8 @@ const AdminView = () => {
         </Card>
       </div>
     </div>
-    </motion.div>
-  );
+  </motion.div>
+);
 };
 
 // ─── TEACHER DASHBOARD ───────────────────────────────────────────────────────
