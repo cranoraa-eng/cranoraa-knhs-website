@@ -1352,7 +1352,7 @@ const TeacherView = () => {
                       new Date(activity.timestamp).toDateString() !== new Date(data.recent_activities[idx - 1].timestamp).toDateString()
                     );
                     
-                    const timeAgo = activity.timestamp;
+                    const timeAgo = activity.timestamp || '';
                     const isToday = timeAgo.includes('ago') || timeAgo.includes('minute') || timeAgo.includes('hour');
                     const isYesterday = timeAgo.includes('Yesterday');
                     
