@@ -1213,7 +1213,7 @@ const TeacherView = () => {
       </div>
     </div>
   );
-;
+};
 
 const StudentView = () => <StudentDashboardView />;
 
