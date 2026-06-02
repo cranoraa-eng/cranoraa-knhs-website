@@ -1260,9 +1260,18 @@ const Messages = () => {
           {/* SEARCH */}
           {activeTab === 'search' && (
             isSearching
-              ? <div className="flex items-center justify-center p-12"><div className="w-6 h-6 border-2 border-violet-500 border-t-transparent rounded-full animate-spin" /></div>
+              ? <div className="flex items-center justify-center p-12"><LoadingSpinner size="sm" /></div>
               : searchResults.length === 0
-                ? <div className="p-8 text-center"><p className="text-sm text-slate-400 font-medium">{userSearchQuery ? 'No users found' : 'Search for teachers or classmates'}</p></div>
+                ? <EmptyState
+                    className="py-12"
+                    title={userSearchQuery ? 'No users found' : 'Start searching'}
+                    description={userSearchQuery ? 'Try different keywords' : 'Search for teachers or classmates'}
+                    icon={
+                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                      </svg>
+                    }
+                  />
                 : (
                   <div className="divide-y divide-slate-50">
                     {organizedSearchResults.admins.length > 0 && (
@@ -1491,7 +1500,7 @@ const Messages = () => {
             <div className="flex-1 overflow-y-auto px-4 py-4 md:px-6 md:py-3 space-y-1 scrollbar-thin scrollbar-thumb-slate-200 bg-slate-50/20">
               {loadingMessages ? (
                 <div className="flex items-center justify-center h-full">
-                  <div className="w-8 h-8 border-2 border-violet-500 border-t-transparent rounded-full animate-spin" />
+                  <LoadingSpinner />
                 </div>
               ) : (
                 messages.map((msg, i) => {
@@ -1802,10 +1811,7 @@ const Messages = () => {
                   disabled={uploadingAttachment || (!newMessage.trim() && !pendingFile)}
                   className="w-10 h-10 flex items-center justify-center bg-violet-600 text-white rounded-xl hover:bg-violet-700 transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0 no-min shadow-sm shadow-violet-200">
                   {uploadingAttachment ? (
-                    <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                    </svg>
+                    <LoadingSpinner size="xs" className="text-white" />
                   ) : (
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
@@ -2214,7 +2220,7 @@ const Messages = () => {
                   </div>
                   {isSearchingMembers ? (
                     <div className="flex justify-center py-8">
-                      <div className="w-6 h-6 border-2 border-violet-500 border-t-transparent rounded-full animate-spin" />
+                      <LoadingSpinner size="sm" />
                     </div>
                   ) : addMemberResults.length === 0 ? (
                     <p className="text-center text-sm text-slate-400 py-8">
