@@ -7,12 +7,12 @@ import { Button, LoadingSpinner } from '../components/ui';
 
 // ── Shared UI ─────────────────────────────────────────────────────────────────
 
-const Toggle = ({ checked, onChange, disabled, color = 'violet' }) => {
+const Toggle = ({ checked, onChange, disabled, color = 'blue' }) => {
   const colors = {
-    violet: 'peer-checked:bg-violet-600',
-    rose:   'peer-checked:bg-rose-600',
-    emerald:'peer-checked:bg-emerald-600',
-    amber:  'peer-checked:bg-amber-500',
+    blue:    'peer-checked:bg-blue-600',
+    emerald: 'peer-checked:bg-emerald-600',
+    amber:   'peer-checked:bg-amber-500',
+    rose:    'peer-checked:bg-rose-600',
   };
   return (
     <label className="relative inline-flex items-center cursor-pointer">
@@ -38,23 +38,23 @@ const Field = ({ label, hint, children }) => (
 
 const Input = ({ className = '', ...props }) => (
   <input
-    className={`w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-800
-      focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-400 focus:bg-white
+    className={`w-full px-4 py-2.5 bg-white border border-slate-300 rounded-md text-sm font-medium text-slate-900
+      focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500
       disabled:opacity-50 disabled:cursor-not-allowed transition-all ${className}`}
     {...props}
   />
 );
 
 const SectionCard = ({ title, subtitle, icon, children, danger }) => (
-  <div className={`bg-white border rounded-2xl shadow-sm overflow-hidden ${danger ? 'border-rose-200' : 'border-slate-200'}`}>
-    <div className={`px-6 py-4 border-b flex items-center gap-3 ${danger ? 'bg-rose-50 border-rose-100' : 'bg-slate-50 border-slate-100'}`}>
-      <span className="text-xl">{icon}</span>
+  <div className={`bg-white border rounded-md shadow-sm overflow-hidden ${danger ? 'border-rose-200' : 'border-slate-200'}`}>
+    <div className={`px-5 py-4 border-b flex items-center gap-3 ${danger ? 'bg-rose-50 border-rose-100' : 'bg-slate-50 border-slate-100'}`}>
+      <span className="text-lg">{icon}</span>
       <div>
-        <h3 className={`text-sm font-black tracking-tight ${danger ? 'text-rose-900' : 'text-slate-900'}`}>{title}</h3>
-        {subtitle && <p className={`text-[10px] font-bold uppercase tracking-widest mt-0.5 ${danger ? 'text-rose-500' : 'text-slate-400'}`}>{subtitle}</p>}
+        <h3 className={`text-sm font-extrabold tracking-tight ${danger ? 'text-rose-900' : 'text-slate-900'}`}>{title}</h3>
+        {subtitle && <p className={`text-[10px] font-bold uppercase tracking-wider mt-0.5 ${danger ? 'text-rose-600' : 'text-slate-600'}`}>{subtitle}</p>}
       </div>
     </div>
-    <div className="p-6">{children}</div>
+    <div className="p-5">{children}</div>
   </div>
 );
 
@@ -64,18 +64,26 @@ const EmailServiceNotice = ({ health }) => {
   const healthy = health.status === 'ok';
 
   return (
-    <div className={`rounded-2xl border px-5 py-4 shadow-sm ${
+    <div className={`rounded-md border px-5 py-4 shadow-sm ${
       healthy ? 'bg-emerald-50 border-emerald-200' : 'bg-amber-50 border-amber-200'
     }`}>
       <div className="flex items-start gap-3">
-        <div className={`mt-0.5 flex h-8 w-8 items-center justify-center rounded-full ${
+        <div className={`mt-0.5 flex h-8 w-8 items-center justify-center rounded-md ${
           healthy ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
         }`}>
-          {healthy ? 'OK' : '!'}
+          {healthy ? (
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+          ) : (
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          )}
         </div>
         <div className="min-w-0 flex-1 space-y-2">
           <div>
-            <p className={`text-xs font-black uppercase tracking-[0.2em] ${
+            <p className={`text-xs font-extrabold uppercase tracking-wider ${
               healthy ? 'text-emerald-700' : 'text-amber-700'
             }`}>
               Email Service Health
@@ -88,14 +96,14 @@ const EmailServiceNotice = ({ health }) => {
           </div>
 
           <div className="flex flex-wrap gap-2 text-[11px] font-bold">
-            <span className={`rounded-full px-2.5 py-1 ${
+            <span className={`rounded-md px-2.5 py-1 ${
               health.checks?.api_credentials
                 ? 'bg-emerald-100 text-emerald-700'
                 : 'bg-rose-100 text-rose-700'
             }`}>
               {health.checks?.api_credentials ? 'API keys present' : 'API keys missing'}
             </span>
-            <span className={`rounded-full px-2.5 py-1 ${
+            <span className={`rounded-md px-2.5 py-1 ${
               health.checks?.sender_email
                 ? 'bg-emerald-100 text-emerald-700'
                 : 'bg-rose-100 text-rose-700'
@@ -107,7 +115,7 @@ const EmailServiceNotice = ({ health }) => {
           <p className={`text-xs font-medium ${
             healthy ? 'text-emerald-800' : 'text-amber-800'
           }`}>
-            Sender: <span className="font-black">{health.sender_email || 'Not configured'}</span>
+            Sender: <span className="font-bold">{health.sender_email || 'Not configured'}</span>
           </p>
 
           {health.issues?.length > 0 && (
