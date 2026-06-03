@@ -10,7 +10,7 @@ import {
 import { Spinner } from '../components/Spinner';
 import { LoadingSpinner, Button } from '../components/ui';
 
-const COLORS = ['#8b5cf6', '#10b981', '#3b82f6', '#f59e0b', '#ef4444'];
+const COLORS = ['#2563eb', '#10b981', '#3b82f6', '#f59e0b', '#ef4444'];
 
 // ── PDF Export ────────────────────────────────────────────────────────────────
 
@@ -449,10 +449,10 @@ const ExportButton = ({ onClick, loading }) => (
   <button
     onClick={onClick}
     disabled={loading}
-    className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-xl text-[10px] font-black text-slate-600 uppercase tracking-widest hover:bg-slate-50 hover:border-violet-300 hover:text-violet-700 active:scale-95 transition-all shadow-sm disabled:opacity-50"
+    className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-xl text-[10px] font-black text-slate-600 uppercase tracking-widest hover:bg-slate-50 hover:border-blue-300 hover:text-blue-700 active:scale-95 transition-all shadow-sm disabled:opacity-50"
   >
     {loading ? (
-      <div className="w-3.5 h-3.5 border-2 border-slate-300 border-t-violet-600 rounded-full animate-spin" />
+      <div className="w-3.5 h-3.5 border-2 border-slate-300 border-t-blue-600 rounded-full animate-spin" />
     ) : (
       <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -487,7 +487,6 @@ const EmptyState = ({ message, submessage }) => (
 const StatChip = ({ label, value, color }) => {
   const colors = {
     emerald: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
-    purple: 'bg-violet-500/10 text-violet-500 border-violet-500/20',
     blue: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
     indigo: 'bg-indigo-500/10 text-indigo-500 border-indigo-500/20',
   };
@@ -565,7 +564,7 @@ const AttendanceTrendsSection = ({ data }) => (
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-emerald-500" /><span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Present</span></div>
           <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-amber-500" /><span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Late</span></div>
-          <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-purple-500" /><span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Excused</span></div>
+          <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-indigo-500" /><span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Excused</span></div>
         </div>
         <div className="px-2 py-0.5 bg-emerald-50 border border-emerald-100 rounded text-[7px] font-black text-emerald-600 uppercase tracking-widest">Live</div>
       </div>
@@ -579,7 +578,7 @@ const AttendanceTrendsSection = ({ data }) => (
             <defs>
               <linearGradient id="colorPresent" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#10b981" stopOpacity={0.1}/><stop offset="95%" stopColor="#10b981" stopOpacity={0}/></linearGradient>
               <linearGradient id="colorLate" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#f59e0b" stopOpacity={0.1}/><stop offset="95%" stopColor="#f59e0b" stopOpacity={0}/></linearGradient>
-              <linearGradient id="colorExcused" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.1}/><stop offset="95%" stopColor="#8b5cf6" stopOpacity={0}/></linearGradient>
+              <linearGradient id="colorExcused" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#6366f1" stopOpacity={0.1}/><stop offset="95%" stopColor="#6366f1" stopOpacity={0}/></linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="2 2" vertical={false} stroke="#f1f5f9" />
             <XAxis dataKey="date" tick={{fontSize: 8, fontWeight: 900, fill: '#64748b'}} axisLine={false} tickLine={false} tickFormatter={(str) => {
@@ -591,7 +590,7 @@ const AttendanceTrendsSection = ({ data }) => (
             <Tooltip content={<AttendanceTooltip />} cursor={{stroke: '#cbd5e1', strokeWidth: 1}} />
             <Area type="monotone" dataKey="present" stroke="#10b981" strokeWidth={2} fillOpacity={1} fill="url(#colorPresent)" name="Present" />
             <Area type="monotone" dataKey="late" stroke="#f59e0b" strokeWidth={2} fillOpacity={1} fill="url(#colorLate)" name="Late" />
-            <Area type="monotone" dataKey="excused" stroke="#8b5cf6" strokeWidth={2} fillOpacity={1} fill="url(#colorExcused)" name="Excused" />
+            <Area type="monotone" dataKey="excused" stroke="#6366f1" strokeWidth={2} fillOpacity={1} fill="url(#colorExcused)" name="Excused" />
           </AreaChart>
         </ResponsiveContainer>
       )}
@@ -601,7 +600,7 @@ const AttendanceTrendsSection = ({ data }) => (
 
 const AttendanceStatusPieSection = ({ data }) => {
   const total = data?.reduce((sum, d) => sum + d.value, 0) || 0;
-  const pieColors = ['#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
+  const pieColors = ['#10b981', '#f59e0b', '#ef4444', '#6366f1'];
   const hasData = data && data.some(d => d.value > 0);
   
   return (
@@ -1156,7 +1155,7 @@ const Analytics = () => {
                 </div>
                 <div className="flex flex-wrap gap-2 items-end">
                   <StatChip label="Users" value={data?.dashboard?.active_users || 0} color="emerald" />
-                  <StatChip label="Avg Grade" value={`${data?.dashboard?.average_grade?.toFixed(1) || 0}%`} color="purple" />
+                  <StatChip label="Avg Grade" value={`${data?.dashboard?.average_grade?.toFixed(1) || 0}%`} color="blue" />
                   <StatChip label="Attendance" value={`${data?.dashboard?.today_rate || 0}%`} color="blue" />
                   <div className="ml-2">
                     <YearSelector academicYear={academicYear} onYearChange={handleYearChange} />
