@@ -37,7 +37,7 @@ const isFirstLaunch = () => {
 const redirectToLogin = isFirstLaunch();
 
 // ── Public website pages ──────────────────────────────────────────────────────
-const Home = lazy(() => import('./pages/Home'));
+const Home = lazy(() => import('./pages/HomeDepEd'));
 const About = lazy(() => import('./pages/About'));
 const Programs = lazy(() => import('./pages/Programs'));
 const Contact = lazy(() => import('./pages/Contact'));
