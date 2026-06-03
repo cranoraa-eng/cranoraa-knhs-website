@@ -335,30 +335,31 @@ Redesigning communication pages, public website pages, and remaining portal page
 **Status**: ✅ COMPLETE
 **Commit**: (pending)
 
-**Improvements Made - AUTHENTIC DEPED GOVERNMENT STYLING:**
+**Improvements Made - AUTHENTIC DEPED GOVERNMENT STYLING WITH KNHS BRAND:**
 - ✅ **OFFICIAL GOVERNMENT BANNER**: Top banner with DepEd seal, government blue gradient, and yellow border
-- ✅ **DEPARTMENT OF EDUCATION BRANDING**: Official "Department of Education • Republic of the Philippines" header
+- ✅ **KNHS SCHOOL BRANDING**: "Kiwalan National High School" as primary title in banner
+- ✅ **DEPARTMENT OF EDUCATION SUBTITLE**: "Department of Education • Republic of the Philippines" as credential
 - ✅ **OFFICIAL WEBSITE BADGE**: Yellow "Official Website" badge in banner
 - ✅ **GOVERNMENT SEAL**: White circular seal with education icon and yellow border
-- ✅ Replaced ALL violet/purple with blue (#2563eb) using PowerShell
-- ✅ Hero section "Apply for Enrollment" button uses blue
-- ✅ Calendar widget uses blue for selected dates and events
-- ✅ Portal mockup dashboard uses blue accent colors
-- ✅ Statistics badges use blue theming
-- ✅ "Why Choose Kiwalan NHS" section uses blue links
-- ✅ All hover states converted to blue
-- ✅ Professional public-facing government school website
+- ✅ **KNHS BRAND COLOR**: Kept violet/purple as school brand color throughout page (vs blue in portal)
+- ✅ Hero section "Apply for Enrollment" button uses violet
+- ✅ Calendar widget uses violet for selected dates and events
+- ✅ Portal mockup dashboard uses violet accent colors
+- ✅ Statistics badges use violet theming
+- ✅ "Why Choose Kiwalan NHS" section uses violet links
+- ✅ All hover states use violet
+- ✅ Professional public-facing government school website with KNHS identity
 - ✅ Build tested successfully
 
-**Design System Applied - AUTHENTIC DEPED:**
-- **Government Blue Gradient Banner**: from-blue-900 via-blue-800 to-blue-900
+**Design System Applied - AUTHENTIC DEPED + KNHS BRANDING:**
+- **Government Blue Gradient Banner**: from-blue-900 via-blue-800 to-blue-900 (official DepEd)
 - **Official Yellow Border**: border-yellow-400 for government authenticity
 - **DepEd Seal**: Official education seal in banner
-- **Government Typography**: "Department of Education" branding
+- **KNHS School Name**: Primary branding as Kiwalan National High School
+- **DepEd Credential**: "Department of Education • Republic of the Philippines" as subtitle
 - **Official Badge**: Yellow "Official Website" designation
-- **Republic Branding**: "Republic of the Philippines" sub-text
-- Blue (#2563eb) for all interactive elements throughout page
-- Professional public government school website styling
+- **KNHS Brand Color**: Violet/purple (#8B5CF6, #9F7AEA) for all interactive elements
+- **Distinction**: Portal uses blue (government), Public website uses violet (KNHS brand)
 
 ---
 
