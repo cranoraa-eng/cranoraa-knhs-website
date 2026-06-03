@@ -1043,7 +1043,7 @@ const Messages = () => {
 
   // ── JSX ───────────────────────────────────────────────────────────────────
   return (
-    <div className="flex flex-col h-screen overflow-hidden">
+    <div className="flex flex-col h-[calc(100vh-8rem)] max-h-[800px] overflow-hidden">
       {/* DepEd Official Header */}
       <div className="bg-white border-b-4 border-blue-600 px-4 md:px-6 py-3 md:py-4 shrink-0">
         <div className="flex items-center gap-3">
