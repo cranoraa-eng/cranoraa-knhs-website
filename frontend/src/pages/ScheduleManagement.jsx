@@ -28,7 +28,7 @@ const periodKey = (s, e) => `${normalizeTime(s)}-${normalizeTime(e)}`;
 const slotExists = (slots, day, s, e) => slots.some(t => t.day === day && periodKey(t.start_time, t.end_time) === periodKey(s, e));
 
 const COLORS = [
-  'bg-violet-50 border-violet-200 text-violet-800',
+  'bg-blue-50 border-blue-200 text-blue-800',
   'bg-blue-50 border-blue-200 text-blue-800',
   'bg-emerald-50 border-emerald-200 text-emerald-800',
   'bg-amber-50 border-amber-200 text-amber-800',
@@ -51,7 +51,7 @@ const Field = ({ label, required, children }) => (
 
 const Select = ({ value, onChange, children, required }) => (
   <select required={required} value={value} onChange={onChange}
-    className="w-full px-3 py-2.5 rounded-lg border border-slate-200 text-sm font-medium text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-violet-400/30 focus:border-violet-400 transition-all">
+    className="w-full px-3 py-2.5 rounded-lg border border-slate-200 text-sm font-medium text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition-all">
     {children}
   </select>
 );
@@ -419,47 +419,83 @@ export default function ScheduleManagement() {
   );
 
   return (
-    <div className="space-y-4 md:space-y-5 page-bottom-safe max-w-[1600px] mx-auto">
+    <div className="page-bottom-safe bg-slate-50/50">
+      {/* DepEd Official Header with Government Seal */}
+      <div className="bg-gradient-to-r from-blue-900 via-blue-800 to-blue-900 border-b-4 border-yellow-400 px-4 md:px-6 py-4 md:py-6 mb-4 md:mb-6 shadow-lg">
+        <div className="max-w-[1600px] mx-auto">
+          <div className="flex items-center gap-4">
+            {/* Official DepEd Seal */}
+            <div className="h-14 w-14 md:h-20 md:w-20 rounded-full bg-white flex items-center justify-center shrink-0 shadow-xl border-4 border-yellow-400">
+              <div className="relative">
+                <svg className="w-8 h-8 md:w-12 md:h-12 text-blue-900" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                </svg>
+                <div className="absolute -top-1 -right-1 w-4 h-4 md:w-6 md:h-6 bg-yellow-400 rounded-full flex items-center justify-center">
+                  <svg className="w-2 h-2 md:w-3 md:h-3 text-blue-900" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+            <div className="flex-1">
+              <div className="flex items-baseline gap-2 flex-wrap">
+                <h1 className="text-xl md:text-3xl font-black text-white uppercase tracking-tight">
+                  Academic Scheduling
+                </h1>
+                <span className="px-2 py-0.5 md:px-3 md:py-1 bg-yellow-400 text-blue-900 text-[10px] md:text-xs font-black uppercase tracking-widest rounded-md">
+                  Official
+                </span>
+              </div>
+              <p className="text-xs md:text-sm font-bold text-blue-100 uppercase tracking-wide mt-1">
+                Department of Education • Class Timetable Management System
+              </p>
+              <p className="text-[10px] md:text-xs text-blue-200 mt-1 font-medium">
+                Bell Schedules & Room Assignments • KNHS Registrar Office
+              </p>
+            </div>
+            {/* Action Buttons */}
+            <div className="hidden lg:flex items-center gap-2">
+              <button type="button" onClick={() => setShowSlotPanel(true)}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/10 backdrop-blur-sm border border-white/20 text-white text-xs font-bold hover:bg-white/20 transition-all">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                Time Slots
+              </button>
+              <button type="button" onClick={() => setShowRoomPanel(true)}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-yellow-400 text-blue-900 text-xs font-black hover:bg-yellow-300 transition-all shadow-lg">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+                Manage Rooms
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
 
-      {/* ── Header ── */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
-        <div>
-          <h1 className="text-xl md:text-2xl font-bold text-slate-900 tracking-tight">Schedule Management</h1>
-          <p className="text-slate-500 text-xs md:text-sm mt-0.5">Create class timetables by assigning subjects to time slots</p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <select value={activeAY} onChange={e => setActiveAY(e.target.value)}
-            className="px-3 py-2 rounded-lg border border-slate-200 text-sm font-medium bg-white focus:outline-none focus:ring-2 focus:ring-violet-300/40 min-w-[140px]">
-            <option value="">All Years</option>
-            {academicYears.map(a => <option key={a.id} value={String(a.id)}>{a.name}{a.is_active ? ' (Active)' : ''}</option>)}
-          </select>
-          <button type="button" onClick={() => setShowSlotPanel(true)}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-slate-200 bg-white text-slate-700 text-xs font-semibold hover:bg-slate-50 transition-colors">
-            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-            Time Slots
-          </button>
-          <button type="button" onClick={() => { setShowSlotPanel(true); setShowTutorial(true); setTutorialStep(0); }}
-            className="flex items-center gap-1.5 px-2.5 py-2 rounded-lg border border-slate-200 bg-white text-slate-400 text-xs font-semibold hover:text-violet-600 hover:border-violet-200 transition-colors" title="Tutorial">
-            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-          </button>
-          <button type="button" onClick={() => setShowRoomPanel(true)}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-slate-200 bg-white text-slate-700 text-xs font-semibold hover:bg-slate-50 transition-colors">
-            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
-            Rooms
-          </button>
-          <button type="button" onClick={checkConflicts}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-amber-200 bg-amber-50 text-amber-800 text-xs font-semibold hover:bg-amber-100 transition-colors">
-            Check Conflicts
-          </button>
-        </div>
+      <div className="max-w-[1600px] mx-auto px-2 md:px-6 space-y-4 md:space-y-5 pb-6">
+      {/* Mobile Action Buttons */}
+      <div className="lg:hidden flex gap-2">
+        <select value={activeAY} onChange={e => setActiveAY(e.target.value)}
+          className="flex-1 px-3 py-2 rounded-lg border border-slate-200 text-sm font-medium bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/40">
+          <option value="">All Years</option>
+          {academicYears.map(a => <option key={a.id} value={String(a.id)}>{a.name}{a.is_active ? ' (Active)' : ''}</option>)}
+        </select>
+        <button type="button" onClick={() => setShowSlotPanel(true)}
+          className="flex items-center gap-2 px-3 py-2 rounded-lg border border-slate-200 bg-white text-slate-700 text-xs font-semibold hover:bg-slate-50 transition-colors">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+          Slots
+        </button>
+        <button type="button" onClick={() => setShowRoomPanel(true)}
+          className="flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 transition-all">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+          Rooms
+        </button>
       </div>
 
       {/* ── Setup Wizard (only when incomplete) ── */}
       {!isSetupComplete && (
-        <div className="bg-gradient-to-r from-violet-50 to-blue-50 border border-violet-200 rounded-2xl p-5 md:p-6">
+        <div className="bg-gradient-to-r from-violet-50 to-blue-50 border border-blue-200 rounded-2xl p-5 md:p-6">
           <div className="flex items-start gap-3 mb-4">
-            <div className="w-10 h-10 rounded-xl bg-violet-100 flex items-center justify-center flex-shrink-0">
-              <svg className="w-5 h-5 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+            <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center flex-shrink-0">
+              <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
             </div>
             <div>
               <h2 className="text-sm font-bold text-slate-900">Quick Setup Required</h2>
@@ -468,17 +504,17 @@ export default function ScheduleManagement() {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {/* Step 1: Bell Schedule */}
-            <div className={`relative p-4 rounded-xl border-2 transition-all ${needsTimeSlots ? 'border-violet-400 bg-white shadow-md' : 'border-emerald-200 bg-emerald-50'}`}>
+            <div className={`relative p-4 rounded-xl border-2 transition-all ${needsTimeSlots ? 'border-blue-400 bg-white shadow-md' : 'border-emerald-200 bg-emerald-50'}`}>
               <div className="flex items-center gap-2 mb-2">
-                <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black ${needsTimeSlots ? 'bg-violet-600 text-white' : 'bg-emerald-500 text-white'}`}>
+                <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black ${needsTimeSlots ? 'bg-blue-600 text-white' : 'bg-emerald-500 text-white'}`}>
                   {needsTimeSlots ? '1' : '\u2713'}
                 </div>
-                <span className={`text-xs font-bold ${needsTimeSlots ? 'text-violet-800' : 'text-emerald-700'}`}>Bell Schedule</span>
+                <span className={`text-xs font-bold ${needsTimeSlots ? 'text-blue-800' : 'text-emerald-700'}`}>Bell Schedule</span>
               </div>
               <p className="text-[11px] text-slate-500 mb-3">Define the daily class periods (e.g. 7:30-8:30 AM)</p>
               {needsTimeSlots ? (
                 <button type="button" onClick={() => applyStandardBell(false)} disabled={savingSlot}
-                  className="w-full py-2.5 rounded-lg bg-violet-600 text-white text-xs font-bold hover:bg-violet-700 disabled:opacity-50 transition-all">
+                  className="w-full py-2.5 rounded-lg bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 disabled:opacity-50 transition-all">
                   {savingSlot ? 'Setting up...' : 'Apply Standard 7-Period Day'}
                 </button>
               ) : (
@@ -489,7 +525,7 @@ export default function ScheduleManagement() {
             {/* Step 2: Classrooms */}
             <div className={`relative p-4 rounded-xl border-2 transition-all ${needsClassrooms ? 'border-slate-300 bg-white' : 'border-emerald-200 bg-emerald-50'}`}>
               <div className="flex items-center gap-2 mb-2">
-                <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black ${needsClassrooms && !needsTimeSlots ? 'bg-violet-600 text-white' : needsClassrooms ? 'bg-slate-300 text-white' : 'bg-emerald-500 text-white'}`}>
+                <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black ${needsClassrooms && !needsTimeSlots ? 'bg-blue-600 text-white' : needsClassrooms ? 'bg-slate-300 text-white' : 'bg-emerald-500 text-white'}`}>
                   {needsClassrooms ? (needsTimeSlots ? '2' : '\u2713') : '\u2713'}
                 </div>
                 <span className={`text-xs font-bold ${needsClassrooms ? 'text-slate-600' : 'text-emerald-700'}`}>Sections</span>
@@ -576,11 +612,11 @@ export default function ScheduleManagement() {
                   const count = classroomScheduleCounts[c.id] || 0;
                   return (
                     <button key={c.id} type="button" onClick={() => setFilterClassroom(String(c.id))}
-                      className="text-left p-4 rounded-xl border-2 border-slate-200 hover:border-violet-400 hover:bg-violet-50/50 hover:shadow-md transition-all group">
+                      className="text-left p-4 rounded-xl border-2 border-slate-200 hover:border-blue-400 hover:bg-blue-50/50 hover:shadow-md transition-all group">
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-bold text-slate-900 group-hover:text-violet-800">{c.name}</span>
+                        <span className="text-sm font-bold text-slate-900 group-hover:text-blue-800">{c.name}</span>
                         {count > 0 && (
-                          <span className="px-2 py-0.5 rounded-full bg-violet-100 text-violet-700 text-[10px] font-bold">{count}</span>
+                          <span className="px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 text-[10px] font-bold">{count}</span>
                         )}
                       </div>
                       <p className="text-[11px] text-slate-500">
@@ -595,14 +631,14 @@ export default function ScheduleManagement() {
         </div>
       ) : uniquePeriods.length === 0 ? (
         <div className="bg-white border border-slate-200 rounded-2xl shadow-sm py-16 text-center px-4">
-          <div className="w-14 h-14 rounded-2xl bg-violet-100 flex items-center justify-center mx-auto mb-3">
+          <div className="w-14 h-14 rounded-2xl bg-blue-100 flex items-center justify-center mx-auto mb-3">
             <svg className="w-7 h-7 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
           </div>
           <p className="text-sm font-bold text-slate-800">No bell periods configured</p>
           <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">Set up your school&apos;s daily schedule first. Click the &quot;Time Slots&quot; button above or use the quick setup.</p>
           <div className="flex justify-center gap-2 mt-4">
             <button type="button" onClick={() => applyStandardBell(false)} disabled={savingSlot}
-              className="px-4 py-2 rounded-lg bg-violet-600 text-white text-xs font-bold hover:bg-violet-700 disabled:opacity-50">
+              className="px-4 py-2 rounded-lg bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 disabled:opacity-50">
               Apply Standard Schedule
             </button>
             <button type="button" onClick={() => setShowSlotPanel(true)}
@@ -621,18 +657,18 @@ export default function ScheduleManagement() {
                 <p className="text-[10px] text-slate-500 uppercase tracking-wide font-semibold">Weekly Timetable</p>
               </div>
               <button type="button" onClick={() => setFilterClassroom('')}
-                className="text-[10px] font-bold text-violet-600 hover:text-violet-800 px-2 py-1 rounded-lg hover:bg-violet-50 transition-colors">
+                className="text-[10px] font-bold text-blue-600 hover:text-blue-800 px-2 py-1 rounded-lg hover:bg-blue-50 transition-colors">
                 Change
               </button>
             </div>
             <div className="flex items-center gap-2">
               <select value={filterDay} onChange={e => setFilterDay(e.target.value)}
-                className="px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-medium bg-white focus:outline-none focus:ring-2 focus:ring-violet-300/40">
+                className="px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-medium bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/40">
                 <option value="">All Days</option>
                 {DAYS.map(d => <option key={d} value={d}>{DAY_FULL[d]}</option>)}
               </select>
               <button type="button" onClick={() => openCreate()}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-violet-600 text-white text-xs font-bold hover:bg-violet-700 transition-colors">
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 transition-colors">
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" /></svg>
                 Add Class
               </button>
@@ -643,7 +679,7 @@ export default function ScheduleManagement() {
           <div className="md:hidden p-3 space-y-4">
             {(filterDay ? [filterDay] : DAYS).map(d => (
               <div key={d}>
-                <p className="text-[10px] font-bold text-violet-700 uppercase tracking-wide mb-2">{DAY_FULL[d]}</p>
+                <p className="text-[10px] font-bold text-blue-700 uppercase tracking-wide mb-2">{DAY_FULL[d]}</p>
                 <div className="space-y-2">
                   {uniquePeriods.map(period => {
                     const entries = getCellSchedules(d, period);
@@ -653,9 +689,9 @@ export default function ScheduleManagement() {
                     if (entries.length === 0) {
                       return (
                         <button key={cellKey} type="button" onClick={() => openCreateAtCell(d, period)} disabled={isAdding}
-                          className={`w-full py-3 px-3 rounded-lg border text-left transition-all ${ready ? 'border-dashed border-slate-200 hover:border-violet-300 hover:bg-violet-50/50' : 'border-dashed border-amber-200 bg-amber-50/30 hover:border-amber-400'}`}>
+                          className={`w-full py-3 px-3 rounded-lg border text-left transition-all ${ready ? 'border-dashed border-slate-200 hover:border-violet-300 hover:bg-blue-50/50' : 'border-dashed border-amber-200 bg-amber-50/30 hover:border-amber-400'}`}>
                           <p className="text-xs font-bold text-slate-700">{period.start_display} – {period.end_display}</p>
-                          <p className="text-[10px] mt-0.5 font-semibold text-violet-600">{isAdding ? 'Adding...' : ready ? 'Tap to assign' : 'Tap to enable & assign'}</p>
+                          <p className="text-[10px] mt-0.5 font-semibold text-blue-600">{isAdding ? 'Adding...' : ready ? 'Tap to assign' : 'Tap to enable & assign'}</p>
                         </button>
                       );
                     }
@@ -706,7 +742,7 @@ export default function ScheduleManagement() {
                     <td className="px-3 py-2 border-r border-slate-100 align-top">
                       <p className="text-xs font-bold text-slate-800">{period.start_display}</p>
                       <p className="text-[10px] text-slate-400">{period.end_display}</p>
-                      {period.label && <span className="mt-1 inline-block text-[9px] font-bold text-violet-600 uppercase">{period.label}</span>}
+                      {period.label && <span className="mt-1 inline-block text-[9px] font-bold text-blue-600 uppercase">{period.label}</span>}
                     </td>
                     {(filterDay ? [filterDay] : DAYS).map(d => {
                       const entries = getCellSchedules(d, period);
@@ -732,8 +768,8 @@ export default function ScheduleManagement() {
                             <button type="button" onClick={() => openCreateAtCell(d, period)} disabled={isAdding}
                               title={ready ? 'Assign class' : 'Enable period & assign'}
                               className={`w-full py-1.5 border border-dashed rounded-lg flex flex-col items-center justify-center gap-0.5 transition-all text-[9px] font-bold uppercase tracking-wide ${
-                                isAdding ? 'opacity-50 cursor-wait border-violet-200 text-violet-400' :
-                                ready ? `text-slate-300 hover:border-violet-300 hover:text-violet-500 hover:bg-violet-50/40 ${entries.length ? 'opacity-0 group-hover/cell:opacity-100' : 'opacity-60 hover:opacity-100'}` :
+                                isAdding ? 'opacity-50 cursor-wait border-blue-200 text-violet-400' :
+                                ready ? `text-slate-300 hover:border-violet-300 hover:text-violet-500 hover:bg-blue-50/40 ${entries.length ? 'opacity-0 group-hover/cell:opacity-100' : 'opacity-60 hover:opacity-100'}` :
                                 'border-amber-200 text-amber-600 bg-amber-50/50 hover:border-amber-400 opacity-80 hover:opacity-100'
                               }`}>
                               {isAdding ? '...' : ready ? <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" /></svg> : <span>Enable + Add</span>}
@@ -763,7 +799,7 @@ export default function ScheduleManagement() {
               Cancel
             </button>
             <button type="submit" form="schedule-form" disabled={saving}
-              className="flex-[2] sm:flex-none px-8 py-2.5 rounded-lg bg-violet-600 text-white font-bold text-xs hover:bg-violet-700 disabled:opacity-50 flex items-center justify-center gap-2 transition-all">
+              className="flex-[2] sm:flex-none px-8 py-2.5 rounded-lg bg-blue-600 text-white font-bold text-xs hover:bg-blue-700 disabled:opacity-50 flex items-center justify-center gap-2 transition-all">
               {saving && <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>}
               {saving ? 'Saving...' : editItem ? 'Save Changes' : 'Assign Class'}
             </button>
@@ -854,7 +890,7 @@ export default function ScheduleManagement() {
           <Field label="Notes (optional)">
             <textarea value={form.notes} onChange={e => setForm(f => ({...f, notes: e.target.value}))}
               rows={2} placeholder="Optional notes..."
-              className="w-full px-3 py-2.5 rounded-lg border border-slate-200 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-400/30 focus:border-violet-400 resize-none" />
+              className="w-full px-3 py-2.5 rounded-lg border border-slate-200 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 resize-none" />
           </Field>
         </form>
       </Modal>
@@ -870,7 +906,7 @@ export default function ScheduleManagement() {
             <div className="space-y-2">
               <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Quick Setup</p>
               <button type="button" onClick={() => applyStandardBell(false)} disabled={savingSlot}
-                className="w-full py-2.5 rounded-lg bg-violet-600 text-white text-xs font-bold hover:bg-violet-700 disabled:opacity-50 transition-all shadow-sm">
+                className="w-full py-2.5 rounded-lg bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 disabled:opacity-50 transition-all shadow-sm">
                 Apply Standard Day (Mon-Fri)
               </button>
               <button type="button" onClick={() => applyStandardBell(true)} disabled={savingSlot}
@@ -888,17 +924,17 @@ export default function ScheduleManagement() {
               <form onSubmit={saveSlotBulk} className="space-y-3">
                 <input value={slotForm.label} onChange={e => setSlotForm(f => ({...f, label: e.target.value}))}
                   placeholder="Label (e.g. Period 1)"
-                  className="w-full px-3 py-2 rounded-lg border border-slate-200 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-violet-400/30" />
+                  className="w-full px-3 py-2 rounded-lg border border-slate-200 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/30" />
                 <div className="grid grid-cols-2 gap-2">
                   <div>
                     <label className="block text-[9px] font-bold text-slate-400 uppercase mb-1">Start</label>
                     <input required type="time" value={slotForm.start_time} onChange={e => setSlotForm(f => ({...f, start_time: e.target.value}))}
-                      className="w-full px-2 py-1.5 rounded-lg border border-slate-200 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-violet-400/30" />
+                      className="w-full px-2 py-1.5 rounded-lg border border-slate-200 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/30" />
                   </div>
                   <div>
                     <label className="block text-[9px] font-bold text-slate-400 uppercase mb-1">End</label>
                     <input required type="time" value={slotForm.end_time} onChange={e => setSlotForm(f => ({...f, end_time: e.target.value}))}
-                      className="w-full px-2 py-1.5 rounded-lg border border-slate-200 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-violet-400/30" />
+                      className="w-full px-2 py-1.5 rounded-lg border border-slate-200 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/30" />
                   </div>
                 </div>
                 <div>
@@ -909,19 +945,19 @@ export default function ScheduleManagement() {
                       return (
                         <button key={d} type="button"
                           onClick={() => setSlotForm(f => ({...f, days: sel ? f.days.filter(x => x !== d) : [...f.days, d]}))}
-                          className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase border transition-colors ${sel ? 'bg-violet-600 text-white border-violet-700' : 'bg-white text-slate-500 border-slate-200 hover:border-violet-300'}`}>
+                          className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase border transition-colors ${sel ? 'bg-blue-600 text-white border-violet-700' : 'bg-white text-slate-500 border-slate-200 hover:border-violet-300'}`}>
                           {DAY_SHORT[d]}
                         </button>
                       );
                     })}
                   </div>
                   <div className="flex gap-2 mt-1.5">
-                    <button type="button" onClick={() => setSlotForm(f => ({...f, days: [...WEEKDAYS]}))} className="text-[9px] font-bold text-violet-600 hover:underline">Mon-Fri</button>
-                    <button type="button" onClick={() => setSlotForm(f => ({...f, days: [...DAYS]}))} className="text-[9px] font-bold text-violet-600 hover:underline">All</button>
+                    <button type="button" onClick={() => setSlotForm(f => ({...f, days: [...WEEKDAYS]}))} className="text-[9px] font-bold text-blue-600 hover:underline">Mon-Fri</button>
+                    <button type="button" onClick={() => setSlotForm(f => ({...f, days: [...DAYS]}))} className="text-[9px] font-bold text-blue-600 hover:underline">All</button>
                   </div>
                 </div>
                 <button type="submit" disabled={savingSlot}
-                  className="w-full py-2 rounded-lg bg-violet-600 text-white text-[10px] font-bold hover:bg-violet-700 disabled:opacity-50 transition-all">
+                  className="w-full py-2 rounded-lg bg-blue-600 text-white text-[10px] font-bold hover:bg-blue-700 disabled:opacity-50 transition-all">
                   {savingSlot ? 'Adding...' : `Add to ${slotForm.days.length} day(s)`}
                 </button>
               </form>
@@ -933,7 +969,7 @@ export default function ScheduleManagement() {
             <div className="flex items-center justify-between gap-3 mb-4">
               <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Period Overview</p>
               <button type="button" onClick={() => { setShowTutorial(true); setTutorialStep(0); }}
-                className="text-[9px] font-bold text-violet-600 hover:text-violet-800 flex items-center gap-1">
+                className="text-[9px] font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1">
                 <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 Tutorial
               </button>
@@ -941,7 +977,7 @@ export default function ScheduleManagement() {
 
             {uniquePeriods.length === 0 ? (
               <div className="text-center py-16">
-                <div className="w-12 h-12 rounded-xl bg-violet-100 flex items-center justify-center mx-auto mb-3">
+                <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center mx-auto mb-3">
                   <svg className="w-6 h-6 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 </div>
                 <p className="text-sm font-bold text-slate-600">No periods yet</p>
@@ -955,14 +991,14 @@ export default function ScheduleManagement() {
                   const dayCount = DAYS.filter(d => hasSlotForCell(d, period)).length;
                   const isFull = dayCount === DAYS.length;
                   return (
-                    <div key={pk} className={`rounded-xl border transition-all ${isEditing ? 'border-violet-300 bg-violet-50/30 ring-2 ring-violet-200/50' : 'border-slate-200 bg-white hover:border-slate-300'}`}>
+                    <div key={pk} className={`rounded-xl border transition-all ${isEditing ? 'border-violet-300 bg-blue-50/30 ring-2 ring-violet-200/50' : 'border-slate-200 bg-white hover:border-slate-300'}`}>
                       {/* Period header */}
                       <div className="flex items-center justify-between gap-2 px-4 py-3">
                         <div className="flex items-center gap-3 flex-1 min-w-0">
                           <div className="w-1.5 h-8 rounded-full bg-violet-400 flex-shrink-0" />
                           <div className="min-w-0">
                             <p className="text-sm font-bold text-slate-900">{period.start_display} – {period.end_display}</p>
-                            {period.label && <p className="text-[9px] font-bold text-violet-600 uppercase tracking-wide">{period.label}</p>}
+                            {period.label && <p className="text-[9px] font-bold text-blue-600 uppercase tracking-wide">{period.label}</p>}
                           </div>
                         </div>
                         <div className="flex items-center gap-2 shrink-0">
@@ -978,7 +1014,7 @@ export default function ScheduleManagement() {
                           <button type="button" onClick={() => {
                             if (isEditing) cancelEditSlot();
                             else { const s = sortedSlots.find(ts => periodKey(ts.start_time, ts.end_time) === pk && hasSlotForCell(ts.day, period)); if (s) startEditSlot(s); }
-                          }} className="p-1.5 rounded-lg text-slate-400 hover:text-violet-600 hover:bg-violet-50 transition-all" title={isEditing ? 'Cancel edit' : 'Edit periods'}>
+                          }} className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-all" title={isEditing ? 'Cancel edit' : 'Edit periods'}>
                             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                           </button>
                         </div>
@@ -993,16 +1029,16 @@ export default function ScheduleManagement() {
                             const slot = slots[0];
                             const isBeingEdited = isEditing && editingSlot?.day === d;
                             return (
-                              <div key={d} className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] font-bold border transition-all ${isBeingEdited ? 'bg-violet-100 border-violet-400 text-violet-900 ring-1 ring-violet-400' : has ? 'bg-violet-50 border-violet-200 text-violet-800' : 'bg-slate-50 border-dashed border-slate-200 text-slate-400'}`}>
+                              <div key={d} className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] font-bold border transition-all ${isBeingEdited ? 'bg-blue-100 border-blue-400 text-violet-900 ring-1 ring-violet-400' : has ? 'bg-blue-50 border-blue-200 text-blue-800' : 'bg-slate-50 border-dashed border-slate-200 text-slate-400'}`}>
                                 <span>{DAY_SHORT[d]}</span>
                                 {has && slot ? (
                                   <div className="flex items-center gap-0.5 ml-0.5">
                                     {isBeingEdited ? (
-                                      <span className="w-1.5 h-1.5 rounded-full bg-violet-500 animate-pulse" />
+                                      <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
                                     ) : (
                                       <>
                                         <button type="button" onClick={() => startEditSlot(slot)}
-                                          className="text-violet-400 hover:text-violet-600 transition-colors" title="Edit this slot">
+                                          className="text-violet-400 hover:text-blue-600 transition-colors" title="Edit this slot">
                                           <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                                         </button>
                                         <button type="button" onClick={() => deleteSlot(slot.id, `${DAY_SHORT[d]} ${normalizeTime(slot.start_time)}`)}
@@ -1021,34 +1057,34 @@ export default function ScheduleManagement() {
 
                       {/* Inline edit form for this period */}
                       {isEditing && (
-                        <div className="px-4 pb-4 pt-0 border-t border-violet-200 mt-1">
+                        <div className="px-4 pb-4 pt-0 border-t border-blue-200 mt-1">
                           <div className="pt-3 flex flex-wrap items-end gap-3">
                             <div>
                               <label className="block text-[9px] font-bold text-slate-400 uppercase mb-1">Day</label>
                               <select value={editSlotForm.day} onChange={e => setEditSlotForm(f => ({...f, day: e.target.value}))}
-                                className="px-2 py-1.5 rounded-lg border border-slate-200 text-xs font-medium bg-white focus:outline-none focus:ring-2 focus:ring-violet-400/30">
+                                className="px-2 py-1.5 rounded-lg border border-slate-200 text-xs font-medium bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/30">
                                 {DAYS.map(d => <option key={d} value={d}>{DAY_FULL[d]}</option>)}
                               </select>
                             </div>
                             <div>
                               <label className="block text-[9px] font-bold text-slate-400 uppercase mb-1">Start</label>
                               <input type="time" value={editSlotForm.start_time} onChange={e => setEditSlotForm(f => ({...f, start_time: e.target.value}))}
-                                className="px-2 py-1.5 rounded-lg border border-slate-200 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-violet-400/30" />
+                                className="px-2 py-1.5 rounded-lg border border-slate-200 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/30" />
                             </div>
                             <div>
                               <label className="block text-[9px] font-bold text-slate-400 uppercase mb-1">End</label>
                               <input type="time" value={editSlotForm.end_time} onChange={e => setEditSlotForm(f => ({...f, end_time: e.target.value}))}
-                                className="px-2 py-1.5 rounded-lg border border-slate-200 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-violet-400/30" />
+                                className="px-2 py-1.5 rounded-lg border border-slate-200 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/30" />
                             </div>
                             <div>
                               <label className="block text-[9px] font-bold text-slate-400 uppercase mb-1">Label</label>
                               <input value={editSlotForm.label} onChange={e => setEditSlotForm(f => ({...f, label: e.target.value}))}
                                 placeholder="Period label"
-                                className="px-2 py-1.5 rounded-lg border border-slate-200 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-violet-400/30 w-28" />
+                                className="px-2 py-1.5 rounded-lg border border-slate-200 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/30 w-28" />
                             </div>
                             <div className="flex gap-1.5">
                               <button type="button" onClick={saveEditSlot} disabled={savingSlot}
-                                className="px-3 py-1.5 rounded-lg bg-violet-600 text-white text-[10px] font-bold hover:bg-violet-700 disabled:opacity-50 transition-all">
+                                className="px-3 py-1.5 rounded-lg bg-blue-600 text-white text-[10px] font-bold hover:bg-blue-700 disabled:opacity-50 transition-all">
                                 {savingSlot ? '...' : 'Save'}
                               </button>
                               <button type="button" onClick={cancelEditSlot}
@@ -1072,8 +1108,8 @@ export default function ScheduleManagement() {
           <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
             <div className="w-full max-w-sm mx-4 bg-white rounded-2xl shadow-2xl border border-slate-200 p-6">
               <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 rounded-lg bg-violet-100 flex items-center justify-center">
-                  <svg className="w-4 h-4 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center">
+                  <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 </div>
                 <div>
                   <p className="text-xs font-bold text-slate-900">{tutorialSteps[tutorialStep].title}</p>
@@ -1091,7 +1127,7 @@ export default function ScheduleManagement() {
                     <button type="button" onClick={prevTutorial} className="px-4 py-2 rounded-lg border border-slate-200 text-slate-600 text-[10px] font-bold hover:bg-slate-50 transition-all">Back</button>
                   )}
                   <button type="button" onClick={nextTutorial}
-                    className="px-5 py-2 rounded-lg bg-violet-600 text-white text-[10px] font-bold hover:bg-violet-700 transition-all">
+                    className="px-5 py-2 rounded-lg bg-blue-600 text-white text-[10px] font-bold hover:bg-blue-700 transition-all">
                     {tutorialStep < tutorialSteps.length - 1 ? 'Next' : 'Got it!'}
                   </button>
                 </div>
@@ -1113,12 +1149,12 @@ export default function ScheduleManagement() {
               <Field label="Room Name" required>
                 <input required value={roomForm.name} onChange={e => setRoomForm(f => ({...f, name: e.target.value}))}
                   placeholder="e.g. Room 204"
-                  className="w-full px-3 py-2.5 rounded-lg border border-slate-200 text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-400/30 focus:border-violet-400" />
+                  className="w-full px-3 py-2.5 rounded-lg border border-slate-200 text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400" />
               </Field>
               <Field label="Building">
                 <input value={roomForm.building} onChange={e => setRoomForm(f => ({...f, building: e.target.value}))}
                   placeholder="e.g. Main Bldg"
-                  className="w-full px-3 py-2.5 rounded-lg border border-slate-200 text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-400/30 focus:border-violet-400" />
+                  className="w-full px-3 py-2.5 rounded-lg border border-slate-200 text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400" />
               </Field>
               <Field label="Type">
                 <Select value={roomForm.room_type} onChange={e => setRoomForm(f => ({...f, room_type: e.target.value}))}>
@@ -1131,10 +1167,10 @@ export default function ScheduleManagement() {
               </Field>
               <Field label="Capacity">
                 <input type="number" min={1} value={roomForm.capacity} onChange={e => setRoomForm(f => ({...f, capacity: e.target.value}))}
-                  className="w-full px-3 py-2.5 rounded-lg border border-slate-200 text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-400/30 focus:border-violet-400" />
+                  className="w-full px-3 py-2.5 rounded-lg border border-slate-200 text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400" />
               </Field>
               <button type="submit" disabled={savingRoom}
-                className="w-full py-2.5 rounded-lg bg-violet-600 text-white text-xs font-bold hover:bg-violet-700 disabled:opacity-50 transition-all">
+                className="w-full py-2.5 rounded-lg bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 disabled:opacity-50 transition-all">
                 {savingRoom ? 'Adding...' : '+ Add Room'}
               </button>
             </form>
@@ -1149,11 +1185,11 @@ export default function ScheduleManagement() {
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {rooms.map(r => (
-                  <div key={r.id} className="flex items-center justify-between py-3 px-4 rounded-xl bg-slate-50 hover:bg-violet-50 transition-all group border border-transparent hover:border-violet-100">
+                  <div key={r.id} className="flex items-center justify-between py-3 px-4 rounded-xl bg-slate-50 hover:bg-blue-50 transition-all group border border-transparent hover:border-violet-100">
                     <div className="min-w-0">
                       <p className="text-sm font-bold text-slate-900 truncate">{r.name}</p>
                       <div className="flex items-center gap-2 mt-1">
-                        <span className="text-[9px] font-bold uppercase text-violet-600 bg-violet-100 px-1.5 py-0.5 rounded-md">{r.room_type}</span>
+                        <span className="text-[9px] font-bold uppercase text-blue-600 bg-blue-100 px-1.5 py-0.5 rounded-md">{r.room_type}</span>
                         {r.building && <span className="text-[10px] text-slate-400 font-medium">{r.building}</span>}
                       </div>
                       <p className="text-[10px] text-slate-400 mt-1">Capacity: {r.capacity}</p>
@@ -1170,6 +1206,8 @@ export default function ScheduleManagement() {
         </div>
       </Modal>
 
+      </div>
     </div>
   );
 }
+
