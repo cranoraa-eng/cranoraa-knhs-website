@@ -70,7 +70,7 @@ export default function ParentManagement() {
               Share these credentials with the parent. They must change their password on first login.
             </p>
           </div>`,
-        confirmButtonColor: '#9333ea',
+        confirmButtonColor: '#2563eb',
       });
     } catch (err) {
       toast.error(err.response?.data?.error || 'Failed to create parent account');
@@ -169,16 +169,33 @@ export default function ParentManagement() {
   );
 
   return (
-    <div className="space-y-6 page-bottom-safe">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-black text-slate-800 tracking-tight uppercase">Parent Management</h1>
-          <p className="text-slate-500 text-sm mt-0.5">Create parent accounts and link them to their children</p>
+    <div className="page-bottom-safe bg-slate-50/50">
+      {/* DepEd Official Header */}
+      <div className="bg-white border-b-4 border-blue-600 px-4 md:px-6 py-3 md:py-4 mb-3 md:mb-6">
+        <div className="flex items-center gap-3">
+          <div className="h-10 w-10 md:h-12 md:w-12 rounded-md bg-blue-600 flex items-center justify-center shrink-0">
+            <svg className="w-6 h-6 md:w-7 md:h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+          </div>
+          <div>
+            <h1 className="text-lg md:text-2xl font-extrabold text-slate-900 uppercase tracking-tight">
+              Parent Accounts
+            </h1>
+            <p className="text-xs md:text-sm font-bold text-blue-700 uppercase tracking-wide mt-0.5">
+              Guardian Management & Student Linking
+            </p>
+          </div>
         </div>
+      </div>
+
+      <div className="p-1.5 md:p-6 space-y-2 md:space-y-6">
+      {/* Header Actions */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div></div>
         <button
           onClick={() => { setForm(emptyForm); setShowAddModal(true); }}
-          className="flex items-center gap-2 bg-violet-600 hover:bg-violet-700 text-white font-bold py-2.5 px-5 rounded-xl transition-all shadow-md text-sm uppercase tracking-widest"
+          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-5 rounded-xl transition-all shadow-md text-sm uppercase tracking-widest"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
@@ -210,7 +227,7 @@ export default function ParentManagement() {
         <input
           type="text" value={search} onChange={e => setSearch(e.target.value)}
           placeholder="Search by name or email..."
-          className="w-full pl-9 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-300"
+          className="w-full pl-9 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
       </div>
 
@@ -218,7 +235,7 @@ export default function ParentManagement() {
       <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
         {filtered.length === 0 ? (
           <div className="py-16 text-center">
-            <div className="w-16 h-16 bg-violet-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
               <svg className="w-8 h-8 text-violet-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
@@ -246,12 +263,12 @@ export default function ParentManagement() {
                     <tr key={p.id} className="hover:bg-slate-50 transition-colors">
                       <td className="px-5 py-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-white font-black text-sm flex-shrink-0">
+                          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-black text-sm flex-shrink-0">
                             {p.first_name?.[0]}{p.last_name?.[0]}
                           </div>
                           <div>
                             <p className="text-sm font-bold text-slate-800">{p.first_name} {p.last_name}</p>
-                            <p className="text-[10px] text-violet-500 font-black uppercase tracking-widest">Parent</p>
+                            <p className="text-[10px] text-blue-500 font-black uppercase tracking-widest">Parent</p>
                             {/* Show email inline on mobile */}
                             <p className="text-[10px] text-slate-400 md:hidden">{p.email || '—'}</p>
                           </div>
@@ -264,7 +281,7 @@ export default function ParentManagement() {
                         ) : (
                           <div className="flex flex-wrap gap-1">
                             {linked.slice(0, 3).map((s, i) => (
-                              <span key={i} className="px-2 py-0.5 rounded-full bg-violet-100 text-violet-700 text-[10px] font-bold">
+                              <span key={i} className="px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 text-[10px] font-bold">
                                 {typeof s === 'object' ? `${s.first_name} ${s.last_name}` : `Student #${s}`}
                               </span>
                             ))}
@@ -295,7 +312,7 @@ export default function ParentManagement() {
                           <button
                             onClick={() => openLinkModal(p)}
                             title="Link Children"
-                            className="p-2 rounded-lg text-violet-600 hover:bg-violet-50 transition-all"
+                            className="p-2 rounded-lg text-blue-600 hover:bg-blue-50 transition-all"
                           >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
@@ -343,26 +360,26 @@ export default function ParentManagement() {
                 <div>
                   <label className="block text-xs font-black text-slate-500 uppercase tracking-widest mb-1">First Name *</label>
                   <input required value={form.first_name} onChange={e => setForm(f => ({ ...f, first_name: e.target.value }))}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-violet-300" />
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
                 </div>
                 <div>
                   <label className="block text-xs font-black text-slate-500 uppercase tracking-widest mb-1">Last Name *</label>
                   <input required value={form.last_name} onChange={e => setForm(f => ({ ...f, last_name: e.target.value }))}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-violet-300" />
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
                 </div>
               </div>
               <div>
                 <label className="block text-xs font-black text-slate-500 uppercase tracking-widest mb-1">Email Address *</label>
                 <input required type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
                   placeholder="parent@email.com"
-                  className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-violet-300" />
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
                 <p className="text-[10px] text-slate-400 mt-1">This will also be their username for login.</p>
               </div>
               <div>
                 <label className="block text-xs font-black text-slate-500 uppercase tracking-widest mb-1">Password (optional)</label>
                 <input type="text" value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
                   placeholder="Leave blank to auto-generate"
-                  className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-violet-300" />
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
               </div>
               <div className="flex justify-end gap-3 pt-2">
                 <Button
@@ -404,10 +421,10 @@ export default function ParentManagement() {
                 </svg>
                 <input type="text" value={linkSearch} onChange={e => setLinkSearch(e.target.value)}
                   placeholder="Search students by name or ID..."
-                  className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-300" />
+                  className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
               </div>
               {linkedIds.length > 0 && (
-                <p className="text-[10px] text-violet-600 font-black uppercase tracking-widest mt-2">
+                <p className="text-[10px] text-blue-600 font-black uppercase tracking-widest mt-2">
                   {linkedIds.length} student{linkedIds.length !== 1 ? 's' : ''} selected
                 </p>
               )}
@@ -421,11 +438,11 @@ export default function ParentManagement() {
                   <button key={s.id} onClick={() => toggleLink(s.id)}
                     className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-all text-left ${
                       isLinked
-                        ? 'bg-violet-50 border-violet-300 shadow-sm'
-                        : 'bg-white border-slate-200 hover:border-violet-200 hover:bg-violet-50/30'
+                        ? 'bg-blue-50 border-blue-300 shadow-sm'
+                        : 'bg-white border-slate-200 hover:border-blue-200 hover:bg-blue-50/30'
                     }`}>
                     <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center flex-shrink-0 transition-all ${
-                      isLinked ? 'bg-violet-600 border-violet-600' : 'border-slate-300'
+                      isLinked ? 'bg-blue-600 border-violet-600' : 'border-slate-300'
                     }`}>
                       {isLinked && (
                         <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -433,7 +450,7 @@ export default function ParentManagement() {
                         </svg>
                       )}
                     </div>
-                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-black text-xs flex-shrink-0">
+                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center text-white font-black text-xs flex-shrink-0">
                       {s.first_name?.[0]}{s.last_name?.[0]}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -464,6 +481,8 @@ export default function ParentManagement() {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 }
+
