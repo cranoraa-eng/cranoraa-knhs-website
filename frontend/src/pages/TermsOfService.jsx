@@ -19,9 +19,16 @@ const TermsOfService = () => {
           <div className="absolute inset-0" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '60px 60px' }} />
         </div>
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <p className="text-xs font-bold text-purple-200 uppercase tracking-widest mb-3">Legal</p>
-          <h1 className="text-3xl md:text-4xl font-black text-white mb-3 uppercase">Terms of Service</h1>
-          <p className="text-purple-100 text-sm">Last updated: {lastUpdated}</p>
+          <div className="flex items-start justify-between gap-6">
+            <div>
+              <p className="text-xs font-bold text-purple-200 uppercase tracking-widest mb-3">Legal</p>
+              <h1 className="text-3xl md:text-4xl font-black text-white mb-3 uppercase">Terms of Service</h1>
+              <p className="text-purple-100 text-sm">Last updated: {lastUpdated}</p>
+            </div>
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Seal_of_the_Department_of_Education_of_the_Philippines.png/960px-Seal_of_the_Department_of_Education_of_the_Philippines.png"
+              alt="DepEd Seal" className="w-20 h-20 object-contain opacity-70 flex-shrink-0 hidden md:block"
+              onError={e => { e.target.onerror = null; e.target.style.display='none'; }} />
+          </div>
         </div>
       </section>
 

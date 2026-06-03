@@ -37,7 +37,7 @@ const PublicLayout = () => {
             {/* Left: DepEd Logo */}
             <div className="flex justify-start">
               <img
-                src="/icons/deped-logo.svg"
+                src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Seal_of_the_Department_of_Education_of_the_Philippines.png/960px-Seal_of_the_Department_of_Education_of_the_Philippines.png"
                 alt="DepEd Logo"
                 className="w-20 h-20 object-contain"
                 onError={e => { e.target.onerror = null; e.target.src = '/icons/school-logo-source.png'; }}

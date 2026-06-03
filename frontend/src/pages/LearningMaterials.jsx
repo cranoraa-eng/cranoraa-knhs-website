@@ -9,14 +9,19 @@ const LearningMaterials = () => {
           <div className="absolute inset-0" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '60px 60px' }} />
         </div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-2xl">
-            <p className="text-xs font-bold text-purple-200 uppercase tracking-widest mb-4">Resources</p>
-            <h1 className="text-4xl md:text-5xl font-black text-white leading-tight mb-5 uppercase">
-              Learning Materials
-            </h1>
-            <p className="text-purple-100 leading-relaxed text-lg">
-              Access educational resources, modules, and study materials
-            </p>
+          <div className="flex items-start justify-between gap-6">
+            <div className="max-w-2xl">
+              <p className="text-xs font-bold text-purple-200 uppercase tracking-widest mb-4">Resources</p>
+              <h1 className="text-4xl md:text-5xl font-black text-white leading-tight mb-5 uppercase">
+                Learning Materials
+              </h1>
+              <p className="text-purple-100 leading-relaxed text-lg">
+                Access educational resources, modules, and study materials
+              </p>
+            </div>
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Seal_of_the_Department_of_Education_of_the_Philippines.png/960px-Seal_of_the_Department_of_Education_of_the_Philippines.png"
+              alt="DepEd Seal" className="w-24 h-24 object-contain opacity-80 flex-shrink-0 hidden md:block"
+              onError={e => { e.target.onerror = null; e.target.style.display='none'; }} />
           </div>
         </div>
       </section>
