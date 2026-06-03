@@ -8,9 +8,6 @@ const HomeDepEd = () => {
   const [announcements, setAnnouncements] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [showAboutDropdown, setShowAboutDropdown] = useState(false);
-  const [showAcademicsDropdown, setShowAcademicsDropdown] = useState(false);
-  const [showResourcesDropdown, setShowResourcesDropdown] = useState(false);
 
   useEffect(() => {
     Promise.all([
@@ -47,109 +44,7 @@ const HomeDepEd = () => {
   }
 
   return (
-    <div className="min-h-screen bg-white font-sans">
-      {/* ═══════════════════════════════════════════════════════════ */}
-      {/* OFFICIAL DEPED HEADER */}
-      {/* ═══════════════════════════════════════════════════════════ */}
-      <header className="bg-white border-b-4 border-purple-600">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="grid grid-cols-3 items-center">
-            {/* Left: DepEd Logo */}
-            <div className="flex justify-start">
-              <div className="w-20 h-20 bg-purple-100 rounded-full flex items-center justify-center border-2 border-purple-600">
-                <svg className="w-12 h-12 text-purple-700" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-                </svg>
-              </div>
-            </div>
-
-            {/* Center: Official Text */}
-            <div className="text-center">
-              <p className="text-[10px] font-bold text-gray-700 uppercase tracking-wider">REPUBLIKA NG PILIPINAS</p>
-              <p className="text-xs font-bold text-gray-800 uppercase tracking-wide mt-0.5">KAGAWARAN NG EDUKASYON</p>
-              <h1 className="text-lg font-black text-purple-800 uppercase tracking-tight mt-1">KIWALAN NATIONAL HIGH SCHOOL</h1>
-              <p className="text-[10px] font-semibold text-gray-600 uppercase tracking-wider mt-0.5">ILIGAN CITY</p>
-            </div>
-
-            {/* Right: School Logo */}
-            <div className="flex justify-end">
-              <div className="w-20 h-20 bg-purple-100 rounded-full flex items-center justify-center border-2 border-purple-600">
-                <span className="text-2xl font-black text-purple-700">KNHS</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* ═══════════════════════════════════════════════════════════ */}
-      {/* NAVIGATION BAR */}
-      {/* ═══════════════════════════════════════════════════════════ */}
-      <nav className="bg-[#5e2a84] text-white sticky top-0 z-50 shadow-lg">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex items-center justify-between h-12">
-            <div className="flex items-center space-x-1">
-              {/* HOME */}
-              <Link to="/" className="px-4 py-3 text-sm font-bold hover:bg-purple-700 transition-colors">HOME</Link>
-
-              {/* ABOUT US with Dropdown */}
-              <div className="relative" onMouseEnter={() => setShowAboutDropdown(true)} onMouseLeave={() => setShowAboutDropdown(false)}>
-                <button className="px-4 py-3 text-sm font-bold hover:bg-purple-700 transition-colors flex items-center gap-1">
-                  ABOUT US
-                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
-                </button>
-                {showAboutDropdown && (
-                  <div className="absolute top-full left-0 bg-white text-gray-800 shadow-xl rounded-b-lg overflow-hidden w-48">
-                    <Link to="/about" className="block px-4 py-2 text-sm hover:bg-purple-100 font-semibold">Mission</Link>
-                    <Link to="/about" className="block px-4 py-2 text-sm hover:bg-purple-100 font-semibold">Vision</Link>
-                    <Link to="/about" className="block px-4 py-2 text-sm hover:bg-purple-100 font-semibold">Faculty</Link>
-                  </div>
-                )}
-              </div>
-
-              {/* ACADEMICS with Dropdown */}
-              <div className="relative" onMouseEnter={() => setShowAcademicsDropdown(true)} onMouseLeave={() => setShowAcademicsDropdown(false)}>
-                <button className="px-4 py-3 text-sm font-bold hover:bg-purple-700 transition-colors flex items-center gap-1">
-                  ACADEMICS
-                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
-                </button>
-                {showAcademicsDropdown && (
-                  <div className="absolute top-full left-0 bg-white text-gray-800 shadow-xl rounded-b-lg overflow-hidden w-48">
-                    <Link to="/programs" className="block px-4 py-2 text-sm hover:bg-purple-100 font-semibold">K to 12 Programs</Link>
-                    <Link to="/programs" className="block px-4 py-2 text-sm hover:bg-purple-100 font-semibold">Senior High</Link>
-                  </div>
-                )}
-              </div>
-
-              {/* RESOURCES with Dropdown */}
-              <div className="relative" onMouseEnter={() => setShowResourcesDropdown(true)} onMouseLeave={() => setShowResourcesDropdown(false)}>
-                <button className="px-4 py-3 text-sm font-bold hover:bg-purple-700 transition-colors flex items-center gap-1">
-                  RESOURCES
-                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
-                </button>
-                {showResourcesDropdown && (
-                  <div className="absolute top-full left-0 bg-white text-gray-800 shadow-xl rounded-b-lg overflow-hidden w-48">
-                    <Link to="/login" className="block px-4 py-2 text-sm hover:bg-purple-100 font-semibold">Learning Materials</Link>
-                    <Link to="/login" className="block px-4 py-2 text-sm hover:bg-purple-100 font-semibold">Portals</Link>
-                  </div>
-                )}
-              </div>
-
-              <Link to="/calendar" className="px-4 py-3 text-sm font-bold hover:bg-purple-700 transition-colors">NEWS & EVENTS</Link>
-              <Link to="/enroll" className="px-4 py-3 text-sm font-bold hover:bg-purple-700 transition-colors">ADMISSIONS</Link>
-              <Link to="/contact" className="px-4 py-3 text-sm font-bold hover:bg-purple-700 transition-colors">CONTACT</Link>
-            </div>
-
-            {/* Search Bar */}
-            <div className="flex items-center bg-white rounded-full overflow-hidden">
-              <input type="text" placeholder="Search..." className="px-3 py-1 text-sm text-gray-800 outline-none w-32" />
-              <button className="bg-purple-600 px-3 py-1.5 hover:bg-purple-700 transition-colors">
-                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-              </button>
-            </div>
-          </div>
-        </div>
-      </nav>
-
+    <div className="bg-white">
       {/* ═══════════════════════════════════════════════════════════ */}
       {/* HERO SLIDER */}
       {/* ═══════════════════════════════════════════════════════════ */}
@@ -291,43 +186,6 @@ const HomeDepEd = () => {
           </div>
         </div>
       </section>
-
-      {/* ═══════════════════════════════════════════════════════════ */}
-      {/* FOOTER */}
-      {/* ═══════════════════════════════════════════════════════════ */}
-      <footer className="bg-[#5e2a84] text-white py-8">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-6">
-            <div>
-              <h3 className="font-bold mb-3 uppercase text-sm">Contact Us</h3>
-              <p className="text-xs">Kiwalan, Iligan City</p>
-              <p className="text-xs">info@kiwalan-nhs.edu.ph</p>
-            </div>
-            <div>
-              <h3 className="font-bold mb-3 uppercase text-sm">Quick Links</h3>
-              <ul className="text-xs space-y-1">
-                <li><Link to="/about" className="hover:underline">About Us</Link></li>
-                <li><Link to="/programs" className="hover:underline">Programs</Link></li>
-                <li><Link to="/enroll" className="hover:underline">Admissions</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="font-bold mb-3 uppercase text-sm">Follow Us</h3>
-              <div className="flex gap-3">
-                <a href="#" className="w-8 h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors">
-                  <span className="text-xs font-bold">f</span>
-                </a>
-                <a href="#" className="w-8 h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors">
-                  <span className="text-xs font-bold">t</span>
-                </a>
-              </div>
-            </div>
-          </div>
-          <div className="border-t border-white/20 pt-4 text-center text-xs">
-            © 2026 Kiwalan National High School. All Rights Reserved.
-          </div>
-        </div>
-      </footer>
     </div>
   );
 };
