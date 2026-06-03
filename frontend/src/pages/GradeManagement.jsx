@@ -531,7 +531,7 @@ const ClassroomDetailModal = ({ classroom, onClose, user, formatName, calculateF
   };
 
   return (
-    <Modal onClose={onClose} size="xl">
+    <Modal isOpen={true} onClose={onClose} size="xl">
       <ModalHeader onClose={onClose}>
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-md bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-extrabold text-lg shadow-sm border border-blue-700">

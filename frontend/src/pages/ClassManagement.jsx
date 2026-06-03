@@ -64,7 +64,8 @@ const ClassManagement = () => {
   const fetchClasses = async () => {
     setLoading(true);
     try {
-      const res = await api.get(`/classrooms/?academic_year=${getSelectedYearName()}`);
+      const yearName = getSelectedYearName();
+      const res = await api.get(`/classrooms/${yearName ? `?academic_year=${encodeURIComponent(yearName)}` : ''}`);
       setClasses(res.data);
     } catch {
       toast.error('Failed to load classrooms');
@@ -374,8 +375,7 @@ const ClassManagement = () => {
       {/* MODAL */}
       {/* ══════════════════════════════════════════════════════════════ */}
 
-      {showModal && (
-        <Modal onClose={() => setShowModal(false)}>
+      <Modal isOpen={showModal} onClose={() => setShowModal(false)}>
           <ModalHeader onClose={() => setShowModal(false)}>
             <div>
               <h2 className="text-lg font-extrabold text-slate-900">
@@ -459,7 +459,6 @@ const ClassManagement = () => {
             </ModalFooter>
           </form>
         </Modal>
-      )}
     </motion.div>
   );
 };

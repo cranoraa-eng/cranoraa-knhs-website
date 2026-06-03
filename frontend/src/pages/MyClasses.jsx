@@ -286,8 +286,7 @@ const MyClasses = () => {
       )}
 
       {/* Full Classroom Modal */}
-      {selectedClassroom && (
-        <Modal onClose={() => setSelectedClassroom(null)}>
+      <Modal isOpen={!!selectedClassroom} onClose={() => setSelectedClassroom(null)}>
           <ModalHeader onClose={() => setSelectedClassroom(null)}>
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-md bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-extrabold shadow-sm border border-blue-700">
@@ -378,11 +377,9 @@ const MyClasses = () => {
             </Button>
           </ModalFooter>
         </Modal>
-      )}
 
       {/* Student Profile Modal */}
-      {showProfileModal && selectedStudent && (
-        <Modal onClose={() => setShowProfileModal(false)}>
+      <Modal isOpen={showProfileModal && !!selectedStudent} onClose={() => setShowProfileModal(false)}>
           <ModalHeader onClose={() => setShowProfileModal(false)}>
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-md bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-extrabold text-lg shadow-sm border border-blue-700">
@@ -478,7 +475,6 @@ const MyClasses = () => {
             </div>
           </ModalFooter>
         </Modal>
-      )}
     </motion.div>
   );
 };

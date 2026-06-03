@@ -296,8 +296,7 @@ const Subjects = () => {
       {/* MODAL */}
       {/* ══════════════════════════════════════════════════════════════ */}
 
-      {showModal && (
-        <Modal onClose={() => setShowModal(false)}>
+      <Modal isOpen={showModal} onClose={() => setShowModal(false)}>
           <ModalHeader onClose={() => setShowModal(false)}>
             <div>
               <h2 className="text-lg font-extrabold text-slate-900">

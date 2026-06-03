@@ -33,8 +33,7 @@ const About = () => {
         </div>
         <div className="absolute inset-0 bg-gradient-to-r from-purple-800 via-purple-700 to-purple-600" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-start justify-between gap-6">
-            <div className="max-w-2xl">
+          <div className="max-w-2xl">
               <p className="text-xs font-bold text-purple-200 uppercase tracking-widest mb-4">About Kiwalan NHS</p>
               <h1 className="text-4xl md:text-5xl font-black text-white leading-tight mb-5">
                 {content.about_title?.content || 'About Our School'}
@@ -43,10 +42,6 @@ const About = () => {
                 {content.about_subtitle?.content || 'Learn about our history, mission, and the values that drive our commitment to excellence in education.'}
               </p>
             </div>
-            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Seal_of_the_Department_of_Education_of_the_Philippines.png/960px-Seal_of_the_Department_of_Education_of_the_Philippines.png"
-              alt="DepEd Seal" className="w-24 h-24 object-contain opacity-80 flex-shrink-0 hidden md:block"
-              onError={e => { e.target.onerror = null; e.target.style.display='none'; }} />
-          </div>
         </div>
       </section>
 
