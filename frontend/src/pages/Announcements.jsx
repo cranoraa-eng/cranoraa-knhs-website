@@ -351,11 +351,6 @@ const Announcements = () => {
       </div>
 
       <div className="max-w-[680px] mx-auto space-y-3 md:space-y-4 px-3 md:px-6 py-3 md:py-4">
-        {/* Feed header - now just action buttons */}
-        <div className="flex items-center justify-between gap-3 px-1">
-          <div className="min-w-0">
-        </div>
-
         {/* Search & filters — compact feed toolbar */}
         <div className="bg-white rounded-lg shadow-sm border border-slate-200/80 p-3 space-y-3">
           <div className="flex flex-col sm:flex-row gap-2">
@@ -860,7 +855,6 @@ const Announcements = () => {
           />
         </div>
       )}
-      </div>
     </div>
   );
 };

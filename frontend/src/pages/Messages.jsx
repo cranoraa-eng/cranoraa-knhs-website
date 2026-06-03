@@ -1043,7 +1043,7 @@ const Messages = () => {
 
   // ── JSX ───────────────────────────────────────────────────────────────────
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-screen overflow-hidden">
       {/* DepEd Official Header */}
       <div className="bg-white border-b-4 border-blue-600 px-4 md:px-6 py-3 md:py-4 shrink-0">
         <div className="flex items-center gap-3">
@@ -1064,7 +1064,7 @@ const Messages = () => {
       </div>
 
       {/* Main Messaging Interface */}
-      <div className="flex flex-1 bg-white rounded-3xl md:rounded-3xl shadow-xl overflow-hidden border border-slate-200 relative m-2 md:m-4" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
+      <div className="flex flex-1 min-h-0 bg-white shadow-xl overflow-hidden border-t border-slate-200 relative">
 
       {/* ── Sidebar (Room List) ── */}
       <div className={`${selectedRoom ? 'hidden md:flex' : 'flex'} w-full md:w-80 border-r border-slate-100 flex-col bg-slate-50/30 min-w-0 overflow-hidden`}>
