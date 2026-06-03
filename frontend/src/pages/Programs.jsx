@@ -83,33 +83,6 @@ const Programs = () => {
   return (
     <div className="bg-white">
 
-      {/* ── OFFICIAL GOVERNMENT BANNER with KNHS Branding ── */}
-      <div className="bg-gradient-to-r from-blue-900 via-blue-800 to-blue-900 border-b-2 border-yellow-400">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
-          <div className="flex items-center justify-center md:justify-between gap-3 flex-wrap">
-            <div className="flex items-center gap-3">
-              {/* Official DepEd Seal */}
-              <div className="h-10 w-10 rounded-full bg-white flex items-center justify-center shrink-0 border-2 border-yellow-400 shadow-lg">
-                <svg className="w-6 h-6 text-blue-900" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-                </svg>
-              </div>
-              <div className="text-left">
-                <p className="text-xs md:text-sm font-black text-white uppercase tracking-wide leading-tight">
-                  Kiwalan National High School
-                </p>
-                <p className="text-[9px] md:text-[10px] text-blue-200 font-medium uppercase tracking-wider">
-                  Department of Education • Republic of the Philippines
-                </p>
-              </div>
-            </div>
-            <div className="hidden md:flex items-center gap-2 px-3 py-1 rounded-md bg-yellow-400/20 border border-yellow-400/30">
-              <span className="text-[10px] font-black text-yellow-400 uppercase tracking-widest">Official Website</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* ── Hero ── */}
       <section className="bg-[#0f0720] py-20 md:py-28 relative overflow-hidden">
         <div className="absolute inset-0 pointer-events-none">
