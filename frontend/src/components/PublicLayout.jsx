@@ -36,11 +36,7 @@ const PublicLayout = () => {
           <div className="grid grid-cols-3 items-center">
             {/* Left: DepEd Logo */}
             <div className="flex justify-start">
-              <div className="w-20 h-20 bg-purple-100 rounded-full flex items-center justify-center border-2 border-purple-600">
-                <svg className="w-12 h-12 text-purple-700" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-                </svg>
-              </div>
+              <img src="/icons/school-logo-source.png" alt="DepEd Logo" className="w-20 h-20 object-contain" />
             </div>
 
             {/* Center: Official Text */}
@@ -53,9 +49,7 @@ const PublicLayout = () => {
 
             {/* Right: School Logo */}
             <div className="flex justify-end">
-              <div className="w-20 h-20 bg-purple-100 rounded-full flex items-center justify-center border-2 border-purple-600">
-                <span className="text-2xl font-black text-purple-700">KNHS</span>
-              </div>
+              <img src="/icons/school-logo-source.png" alt="KNHS Logo" className="w-20 h-20 object-contain" />
             </div>
           </div>
         </div>

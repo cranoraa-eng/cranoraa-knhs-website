@@ -100,29 +100,29 @@ const FileUpload = ({ label, required, file, onFile, onRemove, note }) => {
 
 const Field = ({ label, required, children, hint }) => (
   <div>
-    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+    <label className="block text-[10px] font-bold text-purple-600 uppercase tracking-wider mb-1.5">
       {label} {required && <span className="text-red-500 normal-case">*</span>}
     </label>
     {children}
-    {hint && <p className="text-[10px] text-slate-400 mt-1">{hint}</p>}
+    {hint && <p className="text-[10px] text-gray-400 mt-1">{hint}</p>}
   </div>
 );
 
 const Input = (props) => (
   <input {...props}
-    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-colors" />
+    className="w-full px-3.5 py-2.5 rounded-xl border-2 border-purple-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-colors" />
 );
 
 const Select = ({ children, ...props }) => (
   <select {...props}
-    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-colors">
+    className="w-full px-3.5 py-2.5 rounded-xl border-2 border-purple-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-colors">
     {children}
   </select>
 );
 
 const Textarea = (props) => (
   <textarea {...props}
-    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-colors resize-none" />
+    className="w-full px-3.5 py-2.5 rounded-xl border-2 border-purple-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-colors resize-none" />
 );
 
 const Enrollment = () => {
@@ -396,12 +396,12 @@ const Enrollment = () => {
   }
 
   return (
-    <div className="bg-gradient-to-br from-violet-50 via-white to-slate-50 min-h-screen py-8 md:py-12">
+    <div className="bg-gradient-to-br from-purple-50 via-white to-purple-100 min-h-screen py-8 md:py-12">
       <div className="max-w-2xl mx-auto px-4 sm:px-6">
         <div className="text-center mb-8">
-          <p className="text-xs font-bold text-violet-600 uppercase tracking-widest mb-2">Online Application</p>
-          <h1 className="text-3xl font-black text-slate-900 mb-1">Enrollment Application</h1>
-          <p className="text-sm text-slate-500">Kiwalan National High School</p>
+          <p className="text-xs font-bold text-purple-600 uppercase tracking-widest mb-2">Online Application</p>
+          <h1 className="text-3xl font-black text-purple-800 mb-1 uppercase">Enrollment Application</h1>
+          <p className="text-sm text-gray-600">Kiwalan National High School</p>
         </div>
 
         {/* Progress Stepper */}
@@ -413,25 +413,25 @@ const Enrollment = () => {
               <div key={s.key} className="flex items-center flex-1 last:flex-none">
                 <div className="flex flex-col items-center gap-1.5">
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
-                    done ? 'bg-violet-600 text-white shadow-md shadow-violet-200' :
-                    active ? 'bg-violet-600 text-white ring-4 ring-violet-100 shadow-lg shadow-violet-200' :
-                    'bg-white border-2 border-slate-200 text-slate-400'
+                    done ? 'bg-purple-600 text-white shadow-md shadow-purple-200' :
+                    active ? 'bg-purple-600 text-white ring-4 ring-purple-100 shadow-lg shadow-purple-200' :
+                    'bg-white border-2 border-purple-200 text-purple-400'
                   }`}>
                     {done ? <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg> : s.icon}
                   </div>
-                  <span className={`text-[8px] font-bold uppercase tracking-wider hidden sm:block ${active ? 'text-violet-600' : done ? 'text-violet-400' : 'text-slate-400'}`}>{s.label}</span>
+                  <span className={`text-[8px] font-bold uppercase tracking-wider hidden sm:block ${active ? 'text-purple-600' : done ? 'text-purple-400' : 'text-purple-300'}`}>{s.label}</span>
                 </div>
-                {i < STEPS.length - 1 && <div className={`flex-1 h-0.5 mx-2 mb-4 transition-colors ${i < step ? 'bg-violet-500' : 'bg-slate-200'}`} />}
+                {i < STEPS.length - 1 && <div className={`flex-1 h-0.5 mx-2 mb-4 transition-colors ${i < step ? 'bg-purple-500' : 'bg-purple-200'}`} />}
               </div>
             );
           })}
         </div>
 
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-lg p-6 md:p-8">
+        <div className="bg-white rounded-2xl border-2 border-purple-200 shadow-lg p-6 md:p-8">
           {enrollmentType && step > 0 && (
-            <div className="mb-6 inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-violet-50 border border-violet-100">
-              <span className="text-[10px] font-bold text-violet-600 uppercase tracking-wide">{TYPE_LABELS[enrollmentType]}</span>
-              <button type="button" onClick={() => { setStep(0); setEnrollmentType(''); }} className="text-violet-400 hover:text-violet-600">
+            <div className="mb-6 inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-purple-50 border-2 border-purple-200">
+              <span className="text-[10px] font-bold text-purple-600 uppercase tracking-wide">{TYPE_LABELS[enrollmentType]}</span>
+              <button type="button" onClick={() => { setStep(0); setEnrollmentType(''); }} className="text-purple-400 hover:text-purple-600">
                 <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
             </div>
@@ -440,19 +440,19 @@ const Enrollment = () => {
           {/* Step 0: Type Selection */}
           {step === 0 && (
             <div className="space-y-5">
-              <h2 className="text-xl font-black text-slate-900 mb-1">Enrollment Type</h2>
-              <p className="text-sm text-slate-500 mb-4">Select the type that applies to you.</p>
+              <h2 className="text-xl font-black text-purple-800 mb-1 uppercase">Enrollment Type</h2>
+              <p className="text-sm text-gray-600 mb-4">Select the type that applies to you.</p>
               <div className="grid gap-3">
                 {ENROLLMENT_TYPES.map(t => (
                   <button key={t.value} type="button" onClick={() => { setEnrollmentType(t.value); if (t.value !== 'sh_applicant') setStrand(''); }}
                     className={`text-left p-4 rounded-2xl border-2 transition-all ${
-                      enrollmentType === t.value ? 'border-violet-500 bg-violet-50 shadow-md shadow-violet-100' : 'border-slate-200 hover:border-slate-300 bg-white hover:shadow-sm'
+                      enrollmentType === t.value ? 'border-purple-500 bg-purple-50 shadow-md shadow-purple-100' : 'border-purple-200 hover:border-purple-300 bg-white hover:shadow-sm'
                     }`}>
                     <div className="flex items-center gap-3">
                       <span className="text-2xl">{t.icon}</span>
                       <div>
-                        <p className="text-sm font-bold text-slate-900">{t.label}</p>
-                        <p className="text-xs text-slate-500">{t.desc}</p>
+                        <p className="text-sm font-bold text-purple-800">{t.label}</p>
+                        <p className="text-xs text-gray-600">{t.desc}</p>
                       </div>
                     </div>
                   </button>
@@ -464,7 +464,7 @@ const Enrollment = () => {
           {/* Step 1: Personal Information */}
           {step === 1 && (
             <div className="space-y-5">
-              <h2 className="text-xl font-black text-slate-900 mb-4">Personal Information</h2>
+              <h2 className="text-xl font-black text-purple-800 mb-4 uppercase">Personal Information</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Field label="First Name" required><Input value={firstName} onChange={e => setFirstName(e.target.value)} placeholder="Juan" /></Field>
                 <Field label="Last Name" required><Input value={lastName} onChange={e => setLastName(e.target.value)} placeholder="Dela Cruz" /></Field>
@@ -488,7 +488,7 @@ const Enrollment = () => {
           {/* Step 2: Address */}
           {step === 2 && (
             <div className="space-y-5">
-              <h2 className="text-xl font-black text-slate-900 mb-4">Address Information</h2>
+              <h2 className="text-xl font-black text-purple-800 mb-4 uppercase">Address Information</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="sm:col-span-2"><Field label="Street Address" required><Input value={streetAddress} onChange={e => setStreetAddress(e.target.value)} /></Field></div>
                 <Field label="Barangay" required><Input value={barangay} onChange={e => setBarangay(e.target.value)} /></Field>
@@ -502,7 +502,7 @@ const Enrollment = () => {
           {/* Step 3: Parents */}
           {step === 3 && (
             <div className="space-y-5">
-              <h2 className="text-xl font-black text-slate-900 mb-4">Parent / Guardian Information</h2>
+              <h2 className="text-xl font-black text-purple-800 mb-4 uppercase">Parent / Guardian Information</h2>
               {isParentAssisted ? (
                 <div className="bg-slate-50 rounded-2xl border border-slate-100 p-5 space-y-4">
                   <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Guardian Information</p>

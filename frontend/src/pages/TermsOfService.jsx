@@ -2,8 +2,8 @@ import { Link } from 'react-router-dom';
 
 const Section = ({ title, children }) => (
   <div className="mb-10">
-    <h2 className="text-lg font-black text-slate-900 mb-3">{title}</h2>
-    <div className="text-slate-600 leading-relaxed space-y-3 text-sm">{children}</div>
+    <h2 className="text-lg font-black text-purple-800 mb-3 uppercase">{title}</h2>
+    <div className="text-gray-700 leading-relaxed space-y-3 text-sm">{children}</div>
   </div>
 );
 
@@ -14,32 +14,32 @@ const TermsOfService = () => {
     <div className="bg-white">
 
       {/* Hero */}
-      <section className="bg-[#0f0720] py-16 md:py-20 relative overflow-hidden">
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-0 left-0 w-[400px] h-[400px] bg-violet-600/10 rounded-full blur-3xl -translate-x-1/3 -translate-y-1/3" />
+      <section className="bg-purple-700 py-16 md:py-20 relative overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none opacity-5">
+          <div className="absolute inset-0" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '60px 60px' }} />
         </div>
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <p className="text-xs font-bold text-violet-400 uppercase tracking-widest mb-3">Legal</p>
-          <h1 className="text-3xl md:text-4xl font-black text-white mb-3">Terms of Service</h1>
-          <p className="text-slate-400 text-sm">Last updated: {lastUpdated}</p>
+          <p className="text-xs font-bold text-purple-200 uppercase tracking-widest mb-3">Legal</p>
+          <h1 className="text-3xl md:text-4xl font-black text-white mb-3 uppercase">Terms of Service</h1>
+          <p className="text-purple-100 text-sm">Last updated: {lastUpdated}</p>
         </div>
       </section>
 
       {/* Content */}
-      <section className="py-16 md:py-20 bg-slate-50">
+      <section className="py-16 md:py-20 bg-purple-50">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-white rounded-2xl border border-slate-100 p-8 md:p-12 shadow-sm">
+          <div className="bg-white rounded-2xl border-2 border-purple-200 p-8 md:p-12 shadow-sm">
 
-            <p className="text-slate-600 leading-relaxed text-sm mb-10">
+            <p className="text-gray-700 leading-relaxed text-sm mb-10">
               These Terms of Service govern your use of the Kiwalan National High School (KNHS) Student Portal and public website. By accessing or using the portal, you agree to be bound by these terms. If you do not agree, please do not use the portal.
             </p>
 
             <Section title="1. Eligibility and Accounts">
               <p>The KNHS Portal is intended for:</p>
               <ul className="list-disc list-inside space-y-1.5 ml-2">
-                <li><strong className="text-slate-800">Students</strong> currently enrolled at Kiwalan National High School</li>
-                <li><strong className="text-slate-800">Teachers and staff</strong> employed by KNHS</li>
-                <li><strong className="text-slate-800">Administrators</strong> authorized by the school</li>
+                <li><strong className="text-gray-900">Students</strong> currently enrolled at Kiwalan National High School</li>
+                <li><strong className="text-gray-900">Teachers and staff</strong> employed by KNHS</li>
+                <li><strong className="text-gray-900">Administrators</strong> authorized by the school</li>
               </ul>
               <p>Accounts are created by school administrators. You are responsible for maintaining the confidentiality of your login credentials and for all activities that occur under your account.</p>
             </Section>
@@ -109,19 +109,19 @@ const TermsOfService = () => {
 
             <Section title="12. Contact">
               <p>For questions about these Terms of Service, contact:</p>
-              <div className="mt-3 p-4 rounded-xl bg-slate-50 border border-slate-100">
-                <p className="font-bold text-slate-800">Kiwalan National High School</p>
+              <div className="mt-3 p-4 rounded-xl bg-purple-50 border-2 border-purple-200">
+                <p className="font-bold text-purple-800">Kiwalan National High School</p>
                 <p>Kiwalan, Philippines</p>
                 <p>Email: info@kiwalan-nhs.edu.ph</p>
               </div>
             </Section>
 
-            <div className="pt-6 border-t border-slate-100 flex flex-wrap gap-4">
-              <Link to="/" className="inline-flex items-center gap-2 text-sm font-semibold text-violet-600 hover:text-violet-700 transition-colors">
+            <div className="pt-6 border-t-2 border-purple-100 flex flex-wrap gap-4">
+              <Link to="/" className="inline-flex items-center gap-2 text-sm font-bold text-purple-600 hover:text-purple-700 transition-colors">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
                 Back to Home
               </Link>
-              <Link to="/privacy" className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500 hover:text-slate-700 transition-colors">
+              <Link to="/privacy" className="inline-flex items-center gap-2 text-sm font-bold text-purple-600 hover:text-purple-700 transition-colors">
                 View Privacy Policy
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4 4H3" /></svg>
               </Link>
