@@ -138,10 +138,10 @@ const EnrollmentTracking = () => {
                       <p className="text-base font-black text-gray-900 font-mono">{data.enrolled_student_email}</p>
                     </div>
                   )}
-                  {data.temp_password && (
+                  {data.temp_password_display && (
                     <div className="bg-white border border-purple-200 p-3">
                       <p className="text-[9px] font-black text-gray-500 uppercase mb-0.5">Temporary Password</p>
-                      <p className="text-base font-black text-purple-800 font-mono tracking-wider">{data.temp_password}</p>
+                      <p className="text-base font-black text-purple-800 font-mono tracking-wider">{data.temp_password_display}</p>
                       <p className="text-[10px] text-amber-700 font-bold mt-1.5">⚠ Save this password. You will be required to change it upon first login.</p>
                     </div>
                   )}

@@ -506,6 +506,7 @@ class EnrollmentApplicationSerializer(serializers.ModelSerializer):
             'enrolled_student', 'assigned_classroom', 'assigned_classroom_name',
             'linked_parent', 'linked_parent_email',
             'status', 'remarks', 'reviewed_by', 'reviewed_by_name', 'reviewed_at',
+            'temp_password_display',
             'submitted_at', 'updated_at', 'documents', 'status_history',
         ]
         read_only_fields = [
