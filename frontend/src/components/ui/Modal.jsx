@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { cn } from '../../styles/designSystem';
 
@@ -6,9 +6,16 @@ import { cn } from '../../styles/designSystem';
  * KNHS Traditional School Modal
  * Formal, government-office style dialog system
  * Consistent purple header bar with white content area
+ *
+ * Z-INDEX STACKING: Each modal that becomes visible gets an incrementing
+ * z-index (starting at 9999, +10 per layer) so nested modals always sit
+ * on top of the modal that opened them.
  */
 
-const DEPED_LOGO = '/icons/school-logo-source.png';
+let _zCounter = 9999;
+const getNextZ = () => { _zCounter += 10; return _zCounter; };
+/** Call this in inline modals to get an always-incrementing z-index */
+export const getModalZ = getNextZ;
 
 const Modal = ({
   isOpen,
@@ -23,6 +30,15 @@ const Modal = ({
   subtitle,
 }) => {
   const visible = isOpen ?? open ?? false;
+  // Each modal instance gets its own z-index when it first becomes visible.
+  const zRef = useRef(null);
+  if (visible && zRef.current === null) {
+    zRef.current = getNextZ();
+  }
+  // Reset when closed so the next open gets a fresh value.
+  useEffect(() => {
+    if (!visible) { zRef.current = null; }
+  }, [visible]);
 
   useEffect(() => {
     if (!closeOnEscape) return;
@@ -39,6 +55,8 @@ const Modal = ({
 
   if (!visible) return null;
 
+  const z = zRef.current ?? 9999;
+
   const sizes = {
     sm:   'max-w-sm',
     md:   'max-w-lg',
@@ -49,7 +67,8 @@ const Modal = ({
 
   const modal = (
     <div
-      className="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center p-4"
+      style={{ zIndex: z }}
+      className="fixed inset-0 bg-black/50 flex items-center justify-center p-4"
       onClick={closeOnOverlayClick ? onClose : undefined}
     >
       <div

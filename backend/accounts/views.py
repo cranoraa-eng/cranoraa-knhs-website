@@ -3675,7 +3675,7 @@ def public_announcements_view(request):
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAdminUser])
 def system_metrics_view(request):
     """Returns system metrics for the System Command Center"""
     from django.db import connection
@@ -3772,7 +3772,7 @@ def system_metrics_view(request):
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAdminUser])
 def maintenance_feed_view(request):
     """Returns system maintenance feed for the System Command Center"""
     from portal.models import AuditLog
@@ -3846,7 +3846,7 @@ def _get_time_ago(timestamp):
 
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAdminUser])
 def force_sync_view(request):
     """Force sync between portal and website"""
     try:
@@ -3867,7 +3867,7 @@ def force_sync_view(request):
 
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAdminUser])
 def run_backup_view(request):
     """Run system backup"""
     try:
@@ -3885,7 +3885,7 @@ def run_backup_view(request):
 
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAdminUser])
 def clear_cache_view(request):
     """Clear system cache"""
     try:

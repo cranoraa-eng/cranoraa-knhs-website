@@ -1,6 +1,21 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+const RAW_API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+
+function normalizeApiBaseUrl(apiUrl) {
+  const value = apiUrl.replace(/\/+$/, '');
+
+  try {
+    const url = new URL(value);
+    const pathname = url.pathname.replace(/\/+$/, '');
+    url.pathname = pathname.endsWith('/api') ? pathname : `${pathname}/api`;
+    return url.toString().replace(/\/+$/, '');
+  } catch {
+    return value.endsWith('/api') ? value : `${value}/api`;
+  }
+}
+
+export const API_BASE_URL = normalizeApiBaseUrl(RAW_API_BASE_URL);
 
 // Derive the WebSocket root URL from the API_BASE_URL using URL parsing
 // so we don't accidentally corrupt URLs that contain 'http' or '/api' elsewhere.

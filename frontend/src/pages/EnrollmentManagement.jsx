@@ -710,7 +710,7 @@ const EnrollmentManagement = () => {
       )}
 
       {showEnrollModal && enrollApp && (
-        <div className="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[10010] bg-black/50 flex items-center justify-center p-4">
           <div className="bg-white w-full max-w-md border border-gray-300 shadow-2xl rounded-sm flex flex-col max-h-[92vh]" onClick={e => e.stopPropagation()}>
             <div className="bg-[#5e2a84] flex items-center justify-between px-5 py-3 flex-shrink-0 border-b-2 border-purple-900">
               <div className="flex items-center gap-3 min-w-0">

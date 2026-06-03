@@ -1,8 +1,58 @@
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+
+const ROLE_HOME = {
+  admin: '/dashboard',
+  teacher: '/dashboard',
+  student: '/dashboard',
+  parent: '/parent-dashboard',
+};
+
+const ALL_ROLES = ['admin', 'teacher', 'student', 'parent'];
+
+const ROUTE_ACCESS = {
+  dashboard: ['admin', 'teacher', 'student'],
+  announcements: ALL_ROLES,
+  attendance: ['admin', 'teacher'],
+  materials: ['admin', 'teacher', 'student'],
+  messages: ALL_ROLES,
+  subjects: ['admin'],
+  teachers: ['admin'],
+  profile: ALL_ROLES,
+  'class-members': ['admin', 'teacher'],
+  'portal-calendar': ALL_ROLES,
+  'password-reset': ['parent'],
+  'class-management': ['admin'],
+  'my-classes': ['teacher'],
+  'subject-assignment': ['admin'],
+  'student-enrollment': ['admin'],
+  'student-management': ['admin', 'teacher'],
+  'audit-logs': ['admin'],
+  backups: ['admin'],
+  'website-content': ['admin'],
+  'enrollment-management': ['admin'],
+  settings: ['admin', 'teacher', 'student'],
+  'grade-input': ['admin', 'teacher'],
+  grades: ['admin'],
+  'grade-management': ['admin'],
+  'student-grades': ['student'],
+  moderation: ['admin'],
+  analytics: ['admin', 'teacher'],
+  'system-health': ['admin'],
+  notifications: ALL_ROLES,
+  'schedule-management': ['admin'],
+  schedule: ['teacher', 'student'],
+  'parent-dashboard': ['parent'],
+  'parent-management': ['admin'],
+};
+
+function getRouteKey(pathname) {
+  return pathname.replace(/^\/+/, '').replace(/\/+$/, '').split('/')[0];
+}
 
 const ProtectedRoute = ({ children }) => {
   const { user, ready } = useAuth();
+  const location = useLocation();
 
   if (!ready) {
     return (
@@ -31,16 +81,27 @@ const ProtectedRoute = ({ children }) => {
     return <Navigate to="/login" replace />;
   }
 
-  if (user.must_change_password && window.location.pathname !== '/force-password-change') {
+  if (user.must_change_password && location.pathname !== '/force-password-change') {
     return <Navigate to="/force-password-change" replace />;
   }
 
   // Parents have their own dedicated dashboard
   if (
     user.role === 'parent' &&
-    window.location.pathname === '/dashboard'
+    location.pathname === '/dashboard'
   ) {
     return <Navigate to="/parent-dashboard" replace />;
+  }
+
+  const routeKey = getRouteKey(location.pathname);
+  const allowedRoles = ROUTE_ACCESS[routeKey];
+  const isTeacherAdvisoryRoute = routeKey === 'student-management' && user.role === 'teacher';
+
+  if (
+    allowedRoles &&
+    (!allowedRoles.includes(user.role) || (isTeacherAdvisoryRoute && !user.is_adviser))
+  ) {
+    return <Navigate to={ROLE_HOME[user.role] || '/dashboard'} replace />;
   }
 
   return children;

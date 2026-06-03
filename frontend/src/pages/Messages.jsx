@@ -234,7 +234,7 @@ const Messages = () => {
       clearInterval(interval);
       socketRef.current?.close();
     };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
   // When a room is selected: fetch its messages and join its WS group.
   // OPTIMIZATION: instead of closing/reopening the WS (which causes Redis
@@ -253,7 +253,7 @@ const Messages = () => {
     // (typing indicators, delivery receipts). Reuses existing connection
     // if already on this room — no extra Redis cmds.
     connectWebSocket(selectedRoom.id);
-  }, [selectedRoom?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [selectedRoom?.id]);
 
   useEffect(() => {
     if (activeTab !== 'search') return;
@@ -1029,7 +1029,7 @@ const Messages = () => {
       console.error('Chat WS error', err);
       ws.close();
     };
-  }, [user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [user?.id]);
   // NOTE: selectedRoom is intentionally NOT in deps — connectWebSocket takes roomId as a
   // parameter and must NOT be recreated on every room change, as that would break the
   // exponential-backoff reconnect closure which captures roomId from the call site.

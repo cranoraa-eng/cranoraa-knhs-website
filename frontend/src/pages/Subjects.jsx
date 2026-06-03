@@ -360,7 +360,6 @@ const Subjects = () => {
           </ModalFooter>
         </form>
       </Modal>
-      )}
     </motion.div>
   );
 };

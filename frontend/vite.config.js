@@ -196,16 +196,25 @@ export default defineConfig(({ mode }) => {
             options: { cacheName: 'never-cache' },
           },
 
-          // ── All other API calls: NetworkFirst ─────────────────────────────
+          // ── Public website API only: NetworkFirst ─────────────────────────
           {
-            urlPattern: ({ url }) => url.pathname.startsWith('/api/'),
+            urlPattern: ({ url }) =>
+              url.pathname === '/api/announcements/public/' ||
+              url.pathname === '/api/website-content/public/',
             handler: 'NetworkFirst',
             options: {
-              cacheName: 'api-cache',
+              cacheName: 'public-api-cache',
               networkTimeoutSeconds: 10,
               expiration: { maxEntries: 50, maxAgeSeconds: 60 * 5 },
               cacheableResponse: { statuses: [200] },
             },
+          },
+
+          // ── Authenticated API default: never cache user-specific data ─────
+          {
+            urlPattern: ({ url }) => url.pathname.startsWith('/api/'),
+            handler: 'NetworkOnly',
+            options: { cacheName: 'authenticated-api' },
           },
         ],
 

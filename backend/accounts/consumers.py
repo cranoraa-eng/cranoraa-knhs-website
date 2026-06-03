@@ -36,6 +36,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
             await self.update_last_activity()
 
             if self.room_id != '0':
+                if not await self.is_room_participant(self.room_id, self.user.id):
+                    await self.close(code=4403)
+                    return
+
                 await self.channel_layer.group_add(self.room_group_name, self.channel_name)
                 # Mark all unread messages as delivered when user connects
                 await self.mark_messages_delivered(self.room_id, self.user.id)
@@ -130,6 +134,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
             ids.append(to_id if from_id == self.user.id else from_id)
         return ids
 
+    @database_sync_to_async
+    def is_room_participant(self, room_id, user_id):
+        return ChatRoom.objects.filter(id=room_id, participants__id=user_id).exists()
+
     async def peer_presence(self, event):
         """Receive presence update from a friend."""
         await self.send(text_data=json.dumps({
@@ -141,6 +149,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def receive(self, text_data):
         data = json.loads(text_data)
         msg_type = data.get('type', 'message')
+
+        if self.room_id == '0' and msg_type in {'typing', 'read', 'reaction', 'message'}:
+            await self.send(text_data=json.dumps({
+                'type': 'error',
+                'message': 'Select a chat room before sending room actions.'
+            }))
+            return
 
         # ── Typing indicator ──────────────────────────────────────────────
         if msg_type == 'typing':
@@ -195,6 +210,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         parent_id = data.get('parent_id')
         saved_msg = await self.save_message(self.room_id, self.user.id, message, parent_id)
+        if not saved_msg:
+            await self.send(text_data=json.dumps({
+                'type': 'error',
+                'message': 'You do not have access to this chat room.'
+            }))
+            return
 
         # Serialize once, reuse for all sends
         serialized_msg = await self.serialize_message(saved_msg)
@@ -238,6 +259,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
             return
 
         reaction_data = await self.toggle_reaction(message_id, self.user.id, emoji)
+        if reaction_data is None:
+            await self.send(text_data=json.dumps({
+                'type': 'error',
+                'message': 'You do not have access to this message.'
+            }))
+            return
 
         broadcast_data = {
             'type': 'message_reaction',
@@ -266,7 +293,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         msg_data = event['message_data']
         # Mark as delivered for recipients (not sender)
         if msg_data['sender'] != self.user.id:
-            await self.set_delivered(msg_data['id'])
+            await self.set_delivered(msg_data['id'], self.user.id)
             # OPTIMIZATION: removed the delivery_receipt group_send here.
             # The sender gets delivery confirmation via the next message they send
             # or when they reconnect. This saves 1 Redis cmd per message per recipient.
@@ -397,12 +424,14 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     @database_sync_to_async
     def save_message(self, room_id, sender_id, message, parent_id=None):
-        room = ChatRoom.objects.get(id=room_id)
+        room = ChatRoom.objects.filter(id=room_id, participants__id=sender_id).first()
+        if not room:
+            return None
         sender = User.objects.get(id=sender_id)
         parent = None
         if parent_id:
             try:
-                parent = ChatMessage.objects.get(id=parent_id)
+                parent = ChatMessage.objects.get(id=parent_id, room=room)
             except ChatMessage.DoesNotExist:
                 pass
 
@@ -448,20 +477,30 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     @database_sync_to_async
     def get_room_participant_ids(self, room_id):
-        return list(ChatRoom.objects.get(id=room_id).participants.values_list('id', flat=True))
+        room = ChatRoom.objects.filter(id=room_id, participants=self.user).first()
+        if not room:
+            return []
+        return list(room.participants.values_list('id', flat=True))
 
     @database_sync_to_async
-    def set_delivered(self, msg_id):
-        ChatMessage.objects.filter(id=msg_id).update(is_delivered=True)
+    def set_delivered(self, msg_id, user_id):
+        ChatMessage.objects.filter(
+            id=msg_id,
+            room__participants__id=user_id
+        ).update(is_delivered=True)
 
     @database_sync_to_async
     def mark_messages_delivered(self, room_id, user_id):
+        if not ChatRoom.objects.filter(id=room_id, participants__id=user_id).exists():
+            return
         ChatMessage.objects.filter(room_id=room_id).exclude(sender_id=user_id).update(is_delivered=True)
 
     @database_sync_to_async
     def mark_messages_read(self, room_id, user_id, last_msg_id):
         try:
-            last_msg = ChatMessage.objects.get(id=last_msg_id)
+            if not ChatRoom.objects.filter(id=room_id, participants__id=user_id).exists():
+                return
+            last_msg = ChatMessage.objects.get(id=last_msg_id, room_id=room_id)
             ChatMessage.objects.filter(
                 room_id=room_id,
                 timestamp__lte=last_msg.timestamp
@@ -471,7 +510,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     @database_sync_to_async
     def toggle_reaction(self, message_id, user_id, emoji):
-        msg = ChatMessage.objects.get(id=message_id)
+        msg = ChatMessage.objects.filter(
+            id=message_id,
+            room__participants__id=user_id
+        ).first()
+        if not msg:
+            return None
         user = User.objects.get(id=user_id)
 
         existing_this_emoji = MessageReaction.objects.filter(message=msg, user=user, emoji=emoji)
