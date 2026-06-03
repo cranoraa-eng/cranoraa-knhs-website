@@ -9,16 +9,13 @@ const PublicLayout = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
+  const [showAboutDropdown, setShowAboutDropdown] = useState(false);
+  const [showAcademicsDropdown, setShowAcademicsDropdown] = useState(false);
+  const [showResourcesDropdown, setShowResourcesDropdown] = useState(false);
 
   useEffect(() => {
     setShowProfileMenu(false);
-    setMobileMenuOpen(false);
     window.scrollTo(0, 0);
-    const handleScroll = () => setScrolled(window.scrollY > 10);
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
   }, [location.pathname]);
 
   const handleLogout = async () => {
@@ -28,298 +25,197 @@ const PublicLayout = () => {
 
   const isActive = (path) => location.pathname === path;
 
-  const navLinks = [
-    { name: 'Home', path: '/' },
-    { name: 'About', path: '/about' },
-    { name: 'Programs', path: '/programs' },
-    { name: 'Contact', path: '/contact' },
-    { name: 'Calendar', path: '/calendar' },
-    { name: 'Track Application', path: '/track-enrollment' },
-  ];
-
   return (
-    <div className="min-h-screen flex flex-col bg-white selection:bg-violet-100 selection:text-violet-800">
+    <div className="min-h-screen flex flex-col bg-white font-sans">
 
-      {/* ── Two-Tier Header: DepEd Banner + Navbar ── */}
-      <header className="sticky top-0 z-50">
-        {/* Top Tier: Official DepEd Government Banner */}
-        <div className="bg-gradient-to-r from-blue-900 via-blue-800 to-blue-900 border-b-2 border-yellow-400">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
-            <div className="flex items-center justify-center md:justify-between gap-3 flex-wrap">
-              <div className="flex items-center gap-3">
-                {/* Official DepEd Seal */}
-                <div className="h-10 w-10 rounded-full bg-white flex items-center justify-center shrink-0 border-2 border-yellow-400 shadow-lg">
-                  <svg className="w-6 h-6 text-blue-900" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-                  </svg>
-                </div>
-                <div className="text-left">
-                  <p className="text-xs md:text-sm font-black text-white uppercase tracking-wide leading-tight">
-                    Kiwalan National High School
-                  </p>
-                  <p className="text-[9px] md:text-[10px] text-blue-200 font-medium uppercase tracking-wider">
-                    Department of Education • Republic of the Philippines
-                  </p>
-                </div>
+      {/* ═══════════════════════════════════════════════════════════ */}
+      {/* OFFICIAL DEPED HEADER */}
+      {/* ═══════════════════════════════════════════════════════════ */}
+      <header className="bg-white border-b-4 border-purple-600 sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 py-4">
+          <div className="grid grid-cols-3 items-center">
+            {/* Left: DepEd Logo */}
+            <div className="flex justify-start">
+              <div className="w-20 h-20 bg-purple-100 rounded-full flex items-center justify-center border-2 border-purple-600">
+                <svg className="w-12 h-12 text-purple-700" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                </svg>
               </div>
-              <div className="hidden md:flex items-center gap-2 px-3 py-1 rounded-md bg-yellow-400/20 border border-yellow-400/30">
-                <span className="text-[10px] font-black text-yellow-400 uppercase tracking-widest">Official Website</span>
+            </div>
+
+            {/* Center: Official Text */}
+            <div className="text-center">
+              <p className="text-[10px] font-bold text-gray-700 uppercase tracking-wider">REPUBLIKA NG PILIPINAS</p>
+              <p className="text-xs font-bold text-gray-800 uppercase tracking-wide mt-0.5">KAGAWARAN NG EDUKASYON</p>
+              <h1 className="text-lg font-black text-purple-800 uppercase tracking-tight mt-1">KIWALAN NATIONAL HIGH SCHOOL</h1>
+              <p className="text-[10px] font-semibold text-gray-600 uppercase tracking-wider mt-0.5">ILIGAN CITY</p>
+            </div>
+
+            {/* Right: School Logo */}
+            <div className="flex justify-end">
+              <div className="w-20 h-20 bg-purple-100 rounded-full flex items-center justify-center border-2 border-purple-600">
+                <span className="text-2xl font-black text-purple-700">KNHS</span>
               </div>
             </div>
           </div>
         </div>
+      </header>
 
-        {/* Bottom Tier: Navigation Navbar */}
-        <nav className={`transition-all duration-300 ${
-          scrolled
-            ? 'bg-[#0f0720]/98 backdrop-blur-xl border-b border-white/8 shadow-lg shadow-black/20'
-            : 'bg-[#0f0720]/85 backdrop-blur-xl border-b border-white/5'
-        }`}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-[68px]">
+      {/* ═══════════════════════════════════════════════════════════ */}
+      {/* NAVIGATION BAR */}
+      {/* ═══════════════════════════════════════════════════════════ */}
+      <nav className="bg-[#5e2a84] text-white sticky top-[136px] z-40 shadow-lg">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex items-center justify-between h-12">
+            <div className="flex items-center space-x-1">
+              {/* HOME */}
+              <Link to="/" className={`px-4 py-3 text-sm font-bold transition-colors ${isActive('/') ? 'bg-purple-700' : 'hover:bg-purple-700'}`}>HOME</Link>
 
-            {/* ── Logo ── */}
-            <Link to="/" className="flex items-center gap-3 flex-shrink-0 group">
-              {/* Logo circle — matches the circular PWA icon style */}
-              <div className="h-10 w-10 rounded-full overflow-hidden flex items-center justify-center flex-shrink-0 transition-all duration-300 ring-2 ring-white/10 bg-white/10">
-                <img
-                  src="/icons/school-logo-source.png"
-                  alt="KNHS"
-                  className="h-8 w-8 object-contain group-hover:scale-110 transition-transform duration-200"
-                />
-              </div>
-              <div className="hidden sm:flex flex-col">
-                <span className="text-[13px] font-black leading-none tracking-tight text-white">
-                  KIWALAN NHS
-                </span>
-                <span className="text-[9px] font-bold uppercase tracking-[0.2em] leading-none mt-1 text-violet-400">
-                  Excellence in Education
-                </span>
-              </div>
-            </Link>
-
-            {/* ── Desktop Nav ── */}
-            <div className="hidden md:flex items-center">
-              {/* Divider left */}
-              <div className="w-px h-5 mr-6 bg-white/10" />
-
-              <div className="flex items-center gap-0.5">
-                {navLinks.map((link) => {
-                  const active = isActive(link.path);
-                  return (
-                    <Link
-                      key={link.path}
-                      to={link.path}
-                      className={`relative px-4 py-2 text-sm font-semibold rounded-lg transition-all duration-200 ${
-                        active
-                          ? 'text-white'
-                          : 'text-white/60 hover:text-white hover:bg-white/8'
-                      }`}
-                    >
-                      {link.name}
-                      {active && (
-                        <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-4 h-0.5 rounded-full bg-white" />
-                      )}
-                    </Link>
-                  );
-                })}
+              {/* ABOUT US with Dropdown */}
+              <div className="relative" onMouseEnter={() => setShowAboutDropdown(true)} onMouseLeave={() => setShowAboutDropdown(false)}>
+                <button className={`px-4 py-3 text-sm font-bold transition-colors flex items-center gap-1 ${isActive('/about') ? 'bg-purple-700' : 'hover:bg-purple-700'}`}>
+                  ABOUT US
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                </button>
+                {showAboutDropdown && (
+                  <div className="absolute top-full left-0 bg-white text-gray-800 shadow-xl rounded-b-lg overflow-hidden w-48">
+                    <Link to="/about" className="block px-4 py-2 text-sm hover:bg-purple-100 font-semibold">Mission</Link>
+                    <Link to="/about" className="block px-4 py-2 text-sm hover:bg-purple-100 font-semibold">Vision</Link>
+                    <Link to="/about" className="block px-4 py-2 text-sm hover:bg-purple-100 font-semibold">Faculty</Link>
+                  </div>
+                )}
               </div>
 
-              {/* Divider right */}
-              <div className="w-px h-5 ml-6 bg-white/10" />
+              {/* ACADEMICS with Dropdown */}
+              <div className="relative" onMouseEnter={() => setShowAcademicsDropdown(true)} onMouseLeave={() => setShowAcademicsDropdown(false)}>
+                <button className={`px-4 py-3 text-sm font-bold transition-colors flex items-center gap-1 ${isActive('/programs') ? 'bg-purple-700' : 'hover:bg-purple-700'}`}>
+                  ACADEMICS
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                </button>
+                {showAcademicsDropdown && (
+                  <div className="absolute top-full left-0 bg-white text-gray-800 shadow-xl rounded-b-lg overflow-hidden w-48">
+                    <Link to="/programs" className="block px-4 py-2 text-sm hover:bg-purple-100 font-semibold">K to 12 Programs</Link>
+                    <Link to="/programs" className="block px-4 py-2 text-sm hover:bg-purple-100 font-semibold">Senior High</Link>
+                  </div>
+                )}
+              </div>
+
+              {/* RESOURCES with Dropdown */}
+              <div className="relative" onMouseEnter={() => setShowResourcesDropdown(true)} onMouseLeave={() => setShowResourcesDropdown(false)}>
+                <button className="px-4 py-3 text-sm font-bold hover:bg-purple-700 transition-colors flex items-center gap-1">
+                  RESOURCES
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                </button>
+                {showResourcesDropdown && (
+                  <div className="absolute top-full left-0 bg-white text-gray-800 shadow-xl rounded-b-lg overflow-hidden w-48">
+                    <Link to="/login" className="block px-4 py-2 text-sm hover:bg-purple-100 font-semibold">Learning Materials</Link>
+                    <Link to="/login" className="block px-4 py-2 text-sm hover:bg-purple-100 font-semibold">Portals</Link>
+                  </div>
+                )}
+              </div>
+
+              <Link to="/calendar" className={`px-4 py-3 text-sm font-bold transition-colors ${isActive('/calendar') ? 'bg-purple-700' : 'hover:bg-purple-700'}`}>NEWS & EVENTS</Link>
+              <Link to="/enroll" className={`px-4 py-3 text-sm font-bold transition-colors ${isActive('/enroll') ? 'bg-purple-700' : 'hover:bg-purple-700'}`}>ADMISSIONS</Link>
+              <Link to="/contact" className={`px-4 py-3 text-sm font-bold transition-colors ${isActive('/contact') ? 'bg-purple-700' : 'hover:bg-purple-700'}`}>CONTACT</Link>
             </div>
 
-            {/* ── Right actions ── */}
-            <div className="flex items-center gap-2.5">
-              {/* Enroll button */}
-              <Link
-                to="/enroll"
-                className="hidden sm:inline-flex items-center gap-1.5 px-4 py-2 rounded-lg border border-white/15 text-white/80 text-sm font-semibold hover:border-white/30 hover:text-white hover:bg-white/8 transition-all duration-200"
-              >
-                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                </svg>
-                Enroll
-              </Link>
+            {/* Right Side: Search + Login/Profile */}
+            <div className="flex items-center gap-3">
+              {/* Search Bar */}
+              <div className="flex items-center bg-white rounded-full overflow-hidden">
+                <input type="text" placeholder="Search..." className="px-3 py-1 text-sm text-gray-800 outline-none w-32" />
+                <button className="bg-purple-600 px-3 py-1.5 hover:bg-purple-700 transition-colors">
+                  <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                </button>
+              </div>
 
-              {/* Portal Login / User menu */}
+              {/* User Menu or Login */}
               {user ? (
                 <div className="relative">
                   <button
                     onClick={() => setShowProfileMenu(!showProfileMenu)}
-                    className="flex items-center gap-2 px-3.5 py-2 rounded-lg bg-violet-600 text-white text-sm font-semibold hover:bg-violet-500 transition-colors shadow-sm shadow-violet-900/20"
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-purple-700 text-white text-sm font-semibold hover:bg-purple-600 transition-colors"
                   >
                     <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center text-[10px] font-black">
                       {(user.first_name || user.username || '?').charAt(0).toUpperCase()}
                     </div>
-                    <span className="hidden sm:inline">{user.first_name || user.username}</span>
-                    <svg className={`w-3.5 h-3.5 transition-transform duration-200 ${showProfileMenu ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
+                    <span>{user.first_name || user.username}</span>
+                    <svg className={`w-3 h-3 transition-transform ${showProfileMenu ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
                   </button>
                   {showProfileMenu && (
-                    <div className="absolute right-0 mt-2 w-56 rounded-2xl border border-slate-100 bg-white shadow-2xl shadow-slate-900/10 overflow-hidden z-50">
-                      <div className="px-4 py-3.5 bg-slate-50 border-b border-slate-100">
-                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Signed in as</p>
-                        <p className="text-sm font-bold text-slate-800 truncate mt-0.5">{user.email}</p>
+                    <div className="absolute right-0 mt-2 w-48 rounded-xl border border-purple-200 bg-white shadow-2xl overflow-hidden z-50">
+                      <div className="px-4 py-3 bg-purple-50 border-b border-purple-100">
+                        <p className="text-[10px] text-purple-600 font-bold uppercase">Signed in as</p>
+                        <p className="text-sm font-bold text-gray-800 truncate">{user.email}</p>
                       </div>
-                      <div className="p-1.5">
-                        <Link to="/dashboard" onClick={() => setShowProfileMenu(false)} className="flex items-center gap-3 px-3 py-2.5 text-sm text-slate-700 hover:bg-violet-50 hover:text-violet-700 rounded-xl transition-colors">
-                          <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
-                          <span className="font-semibold">Portal Dashboard</span>
-                        </Link>
-                        <button onClick={handleLogout} className="flex items-center gap-3 w-full px-3 py-2.5 text-sm text-red-600 hover:bg-red-50 rounded-xl transition-colors">
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1m0-11V7" /></svg>
-                          <span className="font-semibold">Sign Out</span>
-                        </button>
-                      </div>
+                      <Link to="/dashboard" onClick={() => setShowProfileMenu(false)} className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-purple-50 font-semibold">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
+                        Portal Dashboard
+                      </Link>
+                      <button onClick={handleLogout} className="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 font-semibold">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1m0-11V7" /></svg>
+                        Sign Out
+                      </button>
                     </div>
                   )}
                 </div>
               ) : (
-                <Link
-                  to="/login"
-                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-violet-600 text-white text-sm font-semibold hover:bg-violet-500 transition-colors shadow-sm shadow-violet-900/20"
-                >
-                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
-                  </svg>
+                <Link to="/login" className="px-4 py-2 rounded-lg bg-purple-700 text-white text-sm font-bold hover:bg-purple-600 transition-colors">
                   Portal Login
                 </Link>
               )}
-
-              {/* Mobile hamburger */}
-              <button
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="md:hidden p-2 rounded-lg text-white/70 hover:bg-white/10 transition-colors"
-                aria-label="Toggle menu"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  {mobileMenuOpen
-                    ? <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    : <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />}
-                </svg>
-              </button>
             </div>
           </div>
         </div>
-
-        {/* ── Mobile drawer ── */}
-        <div
-          className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out ${
-            mobileMenuOpen ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'
-          }`}
-        >
-          <div className="bg-[#0f0720] border-t border-white/8">
-            {/* Nav links */}
-            <div className="px-4 pt-3 pb-2 space-y-0.5">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.path}
-                  to={link.path}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className={`flex items-center justify-between px-4 py-3 rounded-xl text-sm font-semibold transition-colors ${
-                    isActive(link.path)
-                      ? 'bg-white/10 text-white'
-                      : 'text-white/60 hover:bg-white/8 hover:text-white'
-                  }`}
-                >
-                  {link.name}
-                  {isActive(link.path) && (
-                    <span className="w-1.5 h-1.5 rounded-full bg-violet-400" />
-                  )}
-                </Link>
-              ))}
-            </div>
-            {/* CTA row */}
-            <div className="px-4 pb-5 pt-2 border-t border-white/8 flex gap-2">
-              <Link
-                to="/enroll"
-                onClick={() => setMobileMenuOpen(false)}
-                className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white/80 border border-white/15 text-center hover:bg-white/8 hover:text-white transition-colors"
-              >
-                Enroll Now
-              </Link>
-              <Link
-                to="/login"
-                onClick={() => setMobileMenuOpen(false)}
-                className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white bg-violet-600 text-center hover:bg-violet-500 transition-colors"
-              >
-                Portal Login
-              </Link>
-            </div>
-          </div>
-        </div>
-        </nav>
-      </header>
+      </nav>
 
       {/* ── Page content ── */}
       <main className="flex-grow overflow-hidden">
         <Outlet />
       </main>
 
-      {/* ── Footer ── */}
-      <footer className="bg-slate-900 text-white">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-14">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
-
-            {/* Brand */}
-            <div className="lg:col-span-2 space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-full overflow-hidden border border-white/10 bg-white p-1 flex items-center justify-center">
-                  <img src="/icons/school-logo-source.png" alt="KNHS" className="h-full w-full object-contain" />
-                </div>
-                <div>
-                  <p className="text-sm font-black text-white leading-none">KIWALAN NATIONAL HIGH SCHOOL</p>
-                  <p className="text-[10px] text-slate-400 font-medium mt-0.5">Kiwalan, Philippines</p>
-                </div>
+      {/* ═══════════════════════════════════════════════════════════ */}
+      {/* FOOTER */}
+      {/* ═══════════════════════════════════════════════════════════ */}
+      <footer className="bg-[#5e2a84] text-white py-8 mt-auto">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-6">
+            <div>
+              <h3 className="font-bold mb-3 uppercase text-sm">Contact Us</h3>
+              <p className="text-xs">Kiwalan, Iligan City</p>
+              <p className="text-xs">Lanao del Norte, Philippines</p>
+              <p className="text-xs mt-2">info@kiwalan-nhs.edu.ph</p>
+              <p className="text-xs">(123) 456-7890</p>
+            </div>
+            <div>
+              <h3 className="font-bold mb-3 uppercase text-sm">Quick Links</h3>
+              <ul className="text-xs space-y-1">
+                <li><Link to="/" className="hover:underline">Home</Link></li>
+                <li><Link to="/about" className="hover:underline">About Us</Link></li>
+                <li><Link to="/programs" className="hover:underline">Programs</Link></li>
+                <li><Link to="/enroll" className="hover:underline">Admissions</Link></li>
+                <li><Link to="/contact" className="hover:underline">Contact</Link></li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="font-bold mb-3 uppercase text-sm">Follow Us</h3>
+              <div className="flex gap-3 mb-4">
+                <a href="#" className="w-8 h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors">
+                  <span className="text-xs font-bold">f</span>
+                </a>
+                <a href="#" className="w-8 h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors">
+                  <span className="text-xs font-bold">t</span>
+                </a>
+                <a href="#" className="w-8 h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors">
+                  <span className="text-xs font-bold">in</span>
+                </a>
               </div>
-              <p className="text-sm text-slate-400 leading-relaxed max-w-sm">
-                Dedicated to providing quality education and shaping the future leaders of our community through excellence, integrity, and innovation.
-              </p>
-            </div>
-
-            {/* Quick Links */}
-            <div>
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Quick Links</p>
-              <ul className="space-y-2.5">
-                {navLinks.map(link => (
-                  <li key={link.path}>
-                    <Link to={link.path} className="text-sm text-slate-400 hover:text-white transition-colors">{link.name}</Link>
-                  </li>
-                ))}
-                <li><Link to="/enroll" className="text-sm text-slate-400 hover:text-white transition-colors">Online Enrollment</Link></li>
-              </ul>
-            </div>
-
-            {/* Contact */}
-            <div>
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Contact</p>
-              <ul className="space-y-2.5 text-sm text-slate-400">
-                <li className="flex items-start gap-2">
-                  <svg className="w-4 h-4 text-violet-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                  Kiwalan, Philippines
-                </li>
-                <li className="flex items-center gap-2">
-                  <svg className="w-4 h-4 text-violet-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
-                  info@kiwalan-nhs.edu.ph
-                </li>
-                <li className="pt-2">
-                  <Link to="/login" className="inline-flex items-center gap-1.5 text-violet-400 hover:text-violet-300 font-semibold transition-colors text-xs">
-                    Student Portal Login
-                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4 4H3" /></svg>
-                  </Link>
-                </li>
-              </ul>
+              <Link to="/privacy" className="text-xs hover:underline block">Privacy Policy</Link>
+              <Link to="/terms" className="text-xs hover:underline block mt-1">Terms of Service</Link>
             </div>
           </div>
-
-          <div className="mt-10 pt-8 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <p className="text-xs text-slate-500">© {new Date().getFullYear()} Kiwalan National High School. All rights reserved.</p>
-            <div className="flex gap-5 text-xs text-slate-500">
-              <Link to="/privacy" className="hover:text-slate-300 transition-colors">Privacy Policy</Link>
-              <Link to="/terms" className="hover:text-slate-300 transition-colors">Terms of Service</Link>
-            </div>
+          <div className="border-t border-white/20 pt-4 text-center text-xs">
+            © {new Date().getFullYear()} Kiwalan National High School. All Rights Reserved.
           </div>
         </div>
       </footer>
