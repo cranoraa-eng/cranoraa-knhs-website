@@ -371,50 +371,69 @@ const AdminDashboard = () => {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="p-5 rounded-md bg-blue-50 border border-blue-200">
                   <p className="text-xs font-bold text-slate-600 uppercase tracking-wide mb-2">Average Grade</p>
-                  <p className="text-4xl font-extrabold text-blue-700">85.4</p>
+                  <p className="text-4xl font-extrabold text-blue-700">
+                    {data?.average_grade != null ? data.average_grade.toFixed(1) : '—'}
+                  </p>
                   <p className="text-xs text-slate-600 mt-1">Across all subjects</p>
                 </div>
 
                 <div className="p-5 rounded-md bg-emerald-50 border border-emerald-200">
                   <p className="text-xs font-bold text-slate-600 uppercase tracking-wide mb-2">Attendance Rate</p>
-                  <p className="text-4xl font-extrabold text-emerald-700">92%</p>
-                  <p className="text-xs text-slate-600 mt-1">School-wide average</p>
+                  <p className="text-4xl font-extrabold text-emerald-700">
+                    {data?.today_rate != null ? `${data.today_rate}%` : '—'}
+                  </p>
+                  <p className="text-xs text-slate-600 mt-1">Today's school-wide rate</p>
                 </div>
 
                 <div className="p-5 rounded-md bg-sky-50 border border-sky-200">
                   <p className="text-xs font-bold text-slate-600 uppercase tracking-wide mb-2">Passing Rate</p>
-                  <p className="text-4xl font-extrabold text-sky-700">96%</p>
-                  <p className="text-xs text-slate-600 mt-1">Students above 75</p>
+                  <p className="text-4xl font-extrabold text-sky-700">
+                    {data?.all_subjects?.total_count > 0
+                      ? `${100 - (data?.all_subjects?.below_75_pct ?? 0)}%`
+                      : '—'}
+                  </p>
+                  <p className="text-xs text-slate-600 mt-1">Students at or above 75</p>
                 </div>
               </div>
 
               <div className="mt-5 pt-5 border-t border-slate-200">
                 <div className="flex items-center justify-between text-xs mb-4">
                   <span className="font-bold text-slate-600">Grade Distribution</span>
-                  <span className="text-slate-500">Current quarter</span>
+                  <span className="text-slate-500">
+                    {data?.all_subjects?.total_count
+                      ? `${data.all_subjects.total_count.toLocaleString()} grade records`
+                      : 'No grade data yet'}
+                  </span>
                 </div>
-                <div className="space-y-3">
-                  {[
-                    { label: 'Outstanding (90-100)', value: 35, color: 'bg-emerald-500' },
-                    { label: 'Very Satisfactory (85-89)', value: 28, color: 'bg-blue-500' },
-                    { label: 'Satisfactory (80-84)', value: 22, color: 'bg-sky-500' },
-                    { label: 'Fairly Satisfactory (75-79)', value: 11, color: 'bg-amber-500' },
-                    { label: 'Did Not Meet (Below 75)', value: 4, color: 'bg-rose-500' },
-                  ].map((item, idx) => (
-                    <div key={idx}>
-                      <div className="flex items-center justify-between text-xs mb-1.5">
-                        <span className="text-slate-700 font-semibold">{item.label}</span>
-                        <span className="font-bold text-slate-900">{item.value}%</span>
+                {data?.all_subjects?.total_count > 0 ? (
+                  <div className="space-y-3">
+                    {[
+                      { label: 'Outstanding (90-100)',        pct: data?.all_subjects?.outstanding_pct ?? 0,         color: 'bg-emerald-500' },
+                      { label: 'Very Satisfactory (85-89)',   pct: data?.all_subjects?.very_satisfactory_pct ?? 0,    color: 'bg-blue-500'    },
+                      { label: 'Satisfactory (80-84)',        pct: data?.all_subjects?.satisfactory_pct ?? 0,         color: 'bg-sky-500'     },
+                      { label: 'Fairly Satisfactory (75-79)', pct: data?.all_subjects?.fairly_satisfactory_pct ?? 0,  color: 'bg-amber-500'   },
+                      { label: 'Did Not Meet (Below 75)',     pct: data?.all_subjects?.below_75_pct ?? 0,             color: 'bg-rose-500'    },
+                    ].map((item, idx) => (
+                      <div key={idx}>
+                        <div className="flex items-center justify-between text-xs mb-1.5">
+                          <span className="text-slate-700 font-semibold">{item.label}</span>
+                          <span className="font-bold text-slate-900">{item.pct}%</span>
+                        </div>
+                        <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                          <div className={`h-full ${item.color} transition-all`} style={{ width: `${item.pct}%` }} />
+                        </div>
                       </div>
-                      <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
-                        <div 
-                          className={`h-full ${item.color} transition-all`} 
-                          style={{ width: `${item.value}%` }}
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-6 text-slate-400">
+                    <svg className="w-8 h-8 mx-auto mb-2 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                    <p className="text-xs font-bold uppercase tracking-widest">No grade data available</p>
+                    <p className="text-[10px] mt-1">Grades will appear here once teachers submit records.</p>
+                  </div>
+                )}
               </div>
             </CardBody>
           </Card>
@@ -467,11 +486,11 @@ const AdminDashboard = () => {
                       </svg>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs font-bold text-slate-900">Storage</p>
-                      <p className="text-[10px] text-slate-600">68% capacity</p>
+                      <p className="text-xs font-bold text-slate-900">Supabase DB</p>
+                      <p className="text-[10px] text-slate-600">PostgreSQL · Connected</p>
                     </div>
                   </div>
-                  <Badge variant="blue" size="sm" className="flex-shrink-0">Good</Badge>
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0 animate-pulse" />
                 </div>
 
                 <Button 
