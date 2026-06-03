@@ -13,11 +13,19 @@ class SchoolAuthBackend(ModelBackend):
     def authenticate(self, request, username=None, password=None, **kwargs):
         if username is None:
             username = kwargs.get(User.USERNAME_FIELD)
+        if username is None:
+            return None
+        username = str(username).strip()
+        if not username:
+            return None
 
         try:
             # Use filter().first() to avoid MultipleObjectsReturned on case-insensitive collision
             user = User.objects.filter(
-                Q(username__iexact=username) | Q(email__iexact=username)
+                Q(username__iexact=username)
+                | Q(email__iexact=username)
+                | Q(profile__lrn=username)
+                | Q(profile__registration_number=username)
             ).first()
 
             if user is None:

@@ -87,7 +87,12 @@ def login_view(request):
         if user is None:
             # Check if user exists but is suspended/inactive
             try:
-                potential_user = User.objects.filter(Q(username=login_id) | Q(email=login_id)).first()
+                potential_user = User.objects.filter(
+                    Q(username=login_id)
+                    | Q(email=login_id)
+                    | Q(profile__lrn=login_id)
+                    | Q(profile__registration_number=login_id)
+                ).first()
                 if potential_user:
                     if potential_user.account_status == 'suspended' or not potential_user.is_active:
                         if potential_user.check_password(password):
@@ -1018,8 +1023,18 @@ class UserViewSet(viewsets.ModelViewSet):
             new_password = ''.join(secrets.choice(string.ascii_letters + string.digits) for i in range(10))
             
         user.set_password(new_password)
-        user.must_change_password = True # Force them to change it again
+        user.must_change_password = True  # Force them to change it on next login
         user.save()
+
+        # Update temp_password_display on any linked EnrollmentApplication
+        # so the tracking page shows the new temp password correctly.
+        try:
+            EnrollmentApplication.objects.filter(
+                enrolled_student=user,
+                status='enrolled'
+            ).update(temp_password_display=new_password)
+        except Exception as e:
+            logger.error(f"Failed to update temp_password_display on enrollment app: {e}")
         
         return Response({
             'message': 'Password reset successfully',
