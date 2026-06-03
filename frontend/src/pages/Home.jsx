@@ -1,12 +1,95 @@
 import { Link } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import api from '../utils/api';
 import { LoadingSpinner } from '../components/ui';
+
+// ── Mini Calendar Component ──────────────────────────────────────────
+const MiniCalendar = ({ events, onSelectDay }) => {
+  const [currentDate] = useState(new Date());
+  const [selectedDay, setSelectedDay] = useState(null);
+  const daysInMonth = useMemo(() => {
+    const year = currentDate.getFullYear(), month = currentDate.getMonth();
+    const firstDay = new Date(year, month, 1).getDay();
+    const lastDate = new Date(year, month + 1, 0).getDate();
+    const days = [];
+    for (let i = 0; i < firstDay; i++) days.push(null);
+    for (let i = 1; i <= lastDate; i++) days.push(i);
+    return days;
+  }, [currentDate]);
+  const eventDays = useMemo(() => {
+    const map = {};
+    events.forEach(e => {
+      const start = new Date(e.event_date || e.created_at);
+      const end = e.end_date ? new Date(e.end_date) : start;
+      let curr = new Date(start); curr.setHours(0,0,0,0);
+      const last = new Date(end); last.setHours(0,0,0,0);
+      while (curr <= last) {
+        if (curr.getMonth() === currentDate.getMonth() && curr.getFullYear() === currentDate.getFullYear())
+          map[curr.getDate()] = (map[curr.getDate()] || 0) + 1;
+        curr.setDate(curr.getDate() + 1);
+      }
+    });
+    return map;
+  }, [events, currentDate]);
+  const monthName = currentDate.toLocaleString('en-US', { month: 'long' });
+  const handleDayClick = (day) => { if (!day) return; setSelectedDay(day); if (onSelectDay) onSelectDay(day); };
+  return (
+    <div className="bg-white rounded-2xl border border-slate-100 p-5 shadow-sm">
+      <div className="flex items-center justify-between mb-4">
+        <p className="text-sm font-bold text-slate-900">{monthName} {currentDate.getFullYear()}</p>
+        <Link to="/calendar" className="text-xs font-semibold text-violet-600 hover:text-violet-700 transition-colors">View full →</Link>
+      </div>
+      <div className="grid grid-cols-7 gap-1 mb-1">
+        {['S','M','T','W','T','F','S'].map((d,i) => <div key={i} className="text-[10px] font-bold text-slate-400 text-center py-1">{d}</div>)}
+      </div>
+      <div className="grid grid-cols-7 gap-1 text-center">
+        {daysInMonth.map((day, i) => {
+          const hasEvent = day && eventDays[day];
+          const isToday = day === currentDate.getDate();
+          const isSelected = day === selectedDay;
+          return (
+            <div key={i} onClick={() => handleDayClick(day)}
+              className={`aspect-square flex flex-col items-center justify-center text-[11px] font-semibold rounded-lg cursor-pointer transition-all relative
+                ${!day ? 'invisible' : ''}
+                ${isSelected ? 'bg-violet-600 text-white' : hasEvent ? 'bg-violet-50 text-violet-700 hover:bg-violet-100' : 'text-slate-600 hover:bg-slate-50'}
+                ${isToday && !isSelected ? 'ring-1 ring-violet-400' : ''}`}>
+              {day}
+              {hasEvent && !isSelected && <span className="absolute bottom-0.5 w-1 h-1 bg-violet-500 rounded-full" />}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+// ── Helper Functions ───────────────────────────────────────────────────────
+const attachUrl = (url) => {
+  if (!url) return null;
+  if (url.startsWith('http')) return url;
+  const base = (() => {
+    try {
+      const u = new URL(api.defaults.baseURL);
+      u.pathname = u.pathname.replace(/\/api\/?$/, '') || '/';
+      return u.toString().replace(/\/$/, '');
+    } catch {
+      return api.defaults.baseURL.replace(/\/api\/?$/, '');
+    }
+  })();
+  return `${base}${url}`;
+};
+const getFirstImage = (a) => { if (a.attachment_url && /\.(jpg|jpeg|png|gif|webp)$/i.test(a.attachment_url)) return attachUrl(a.attachment_url); const img = a.attachments?.find(att => att.is_image); return attachUrl(img?.url); };
+const getPDFs = (a) => { const pdfs = []; if (a.attachment_url?.toLowerCase().endsWith('.pdf')) pdfs.push({ name: 'Attachment.pdf', url: attachUrl(a.attachment_url) }); a.attachments?.forEach(att => { if (att.url?.toLowerCase().endsWith('.pdf')) pdfs.push({ name: att.filename || 'Document.pdf', url: attachUrl(att.url) }); }); return pdfs; };
+const formatDate = (d) => new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+const CATEGORY_STYLES = { academic: 'bg-violet-50 text-violet-700 border-violet-100', events: 'bg-emerald-50 text-emerald-700 border-emerald-100', emergency: 'bg-red-50 text-red-700 border-red-100', holiday: 'bg-violet-50 text-violet-700 border-violet-100' };
 
 const Home = () => {
   const [content, setContent] = useState({});
   const [announcements, setAnnouncements] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [zoomedImage, setZoomedImage] = useState(null);
+  const [selectedDateEvents, setSelectedDateEvents] = useState([]);
+  const [selectedDayLabel, setSelectedDayLabel] = useState(null);
 
   useEffect(() => {
     Promise.all([
@@ -16,9 +99,29 @@ const Home = () => {
         data.forEach(item => { map[item.section] = item; });
         setContent(map);
       }).catch(() => {}),
-      api.get('/announcements/public/').then(r => setAnnouncements(r.data.slice(0, 3))).catch(() => {}),
+      api.get('/announcements/public/').then(r => setAnnouncements(r.data)).catch(() => {}),
     ]).finally(() => setLoading(false));
   }, []);
+
+  const handleSelectDay = (day) => {
+    const today = new Date();
+    const target = new Date(today.getFullYear(), today.getMonth(), day);
+    target.setHours(0,0,0,0);
+    const dayEvents = announcements.filter(a => {
+      const start = new Date(a.event_date || a.created_at); start.setHours(0,0,0,0);
+      const end = a.end_date ? new Date(a.end_date) : start; end.setHours(0,0,0,0);
+      return target >= start && target <= end;
+    });
+    setSelectedDateEvents(dayEvents);
+    setSelectedDayLabel(day);
+  };
+
+  const generalAnnouncements = announcements.filter(a => a.category !== 'events').slice(0, 3);
+  const upcomingEvents = announcements
+    .filter(a => a.category === 'events' && (a.event_date || a.created_at))
+    .sort((a, b) => new Date(a.event_date || a.created_at) - new Date(b.event_date || b.created_at))
+    .filter(a => { const end = a.end_date ? new Date(a.end_date) : new Date(a.event_date || a.created_at); const today = new Date(); today.setHours(0,0,0,0); return end >= today; })
+    .slice(0, 4);
 
   if (loading) {
     return (
@@ -187,41 +290,210 @@ const Home = () => {
         </div>
       </section>
 
-      {/* ── ANNOUNCEMENTS ── */}
+      {/* ── ANNOUNCEMENTS & EVENTS ── */}
       <section className="py-20 md:py-24 bg-slate-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-end justify-between mb-10">
             <div>
-              <p className="text-xs font-bold text-violet-600 uppercase tracking-widest mb-2">Latest Updates</p>
-              <h2 className="text-3xl md:text-4xl font-black text-slate-900">Announcements</h2>
+              <p className="text-xs font-bold text-violet-600 uppercase tracking-widest mb-2">Stay Updated</p>
+              <h2 className="text-3xl md:text-4xl font-black text-slate-900">Announcements & Events</h2>
             </div>
-            <Link to="/login" className="text-sm font-bold text-violet-600 hover:text-violet-700 transition-colors">
-              View all →
+            <Link to="/calendar" className="text-sm font-bold text-violet-600 hover:text-violet-700 transition-colors">
+              Full Calendar →
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {announcements.length > 0 ? announcements.map(a => (
-              <div key={a.id} className="bg-white rounded-2xl border-2 border-slate-100 hover:border-violet-200 hover:shadow-lg transition-all p-6 group">
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="px-2 py-1 rounded-lg bg-violet-50 text-violet-700 text-[10px] font-bold uppercase tracking-wider">
-                    {a.category}
-                  </span>
-                  <span className="text-xs text-slate-400">
-                    {new Date(a.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                  </span>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Announcements */}
+            <div className="lg:col-span-2 space-y-4">
+              {generalAnnouncements.length > 0 ? generalAnnouncements.map(a => {
+                const imageUrl = getFirstImage(a);
+                const pdfs = getPDFs(a);
+                const catStyle = CATEGORY_STYLES[a.category] || 'bg-slate-50 text-slate-600 border-slate-100';
+                return (
+                  <div key={a.id} className="group bg-white rounded-2xl border border-slate-100 hover:border-violet-200 hover:shadow-md transition-all p-5 flex gap-4">
+                    {imageUrl && (
+                      <button onClick={() => setZoomedImage(imageUrl)} className="flex-shrink-0 w-20 h-20 rounded-xl overflow-hidden border border-slate-100">
+                        <img src={imageUrl} alt={a.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                      </button>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-2 flex-wrap">
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${catStyle}`}>{a.category}</span>
+                        <span className="text-[11px] text-slate-400">{a.event_date ? new Date(a.event_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : formatDate(a.created_at)}</span>
+                      </div>
+                      <h3 className="text-sm font-bold text-slate-900 mb-1 line-clamp-1 group-hover:text-violet-700 transition-colors">{a.title}</h3>
+                      <p className="text-xs text-slate-500 leading-relaxed line-clamp-2">{a.content}</p>
+                      {pdfs.length > 0 && (
+                        <div className="flex gap-2 mt-2">
+                          {pdfs.map((pdf, i) => (
+                            <a key={i} href={pdf.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-red-50 text-red-600 text-[10px] font-bold hover:bg-red-100 transition-colors">
+                              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                              PDF
+                            </a>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              }) : (
+                <div className="col-span-3 text-center py-12 bg-white rounded-2xl border-2 border-slate-100">
+                  <svg className="w-12 h-12 text-slate-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" /></svg>
+                  <p className="text-slate-400 font-semibold">No announcements at this time</p>
                 </div>
-                <h3 className="text-lg font-bold text-slate-900 mb-2 line-clamp-2 group-hover:text-violet-600 transition-colors">
-                  {a.title}
-                </h3>
-                <p className="text-sm text-slate-600 line-clamp-3">{a.content}</p>
+              )}
+              <div className="pt-1">
+                <Link to="/login" className="text-sm font-semibold text-violet-600 hover:text-violet-700 transition-colors">View all announcements in the portal →</Link>
               </div>
-            )) : (
-              <div className="col-span-3 text-center py-12 bg-white rounded-2xl border-2 border-slate-100">
-                <svg className="w-12 h-12 text-slate-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" /></svg>
-                <p className="text-slate-400 font-semibold">No announcements at this time</p>
+            </div>
+
+            {/* Events sidebar */}
+            <div className="space-y-5">
+              <MiniCalendar events={announcements.filter(a => a.category === 'events')} onSelectDay={handleSelectDay} />
+              <div>
+                <p className="text-sm font-bold text-slate-900 mb-3">
+                  {selectedDayLabel ? `Events — ${new Date().toLocaleString('en-US', { month: 'short' })} ${selectedDayLabel}` : 'Upcoming Events'}
+                </p>
+                <div className="space-y-2">
+                  {(selectedDayLabel ? selectedDateEvents : upcomingEvents).length > 0
+                    ? (selectedDayLabel ? selectedDateEvents : upcomingEvents).map(ev => {
+                        const d = new Date(ev.event_date || ev.created_at);
+                        return (
+                          <Link key={ev.id} to={`/calendar?year=${d.getFullYear()}&month=${d.getMonth() + 1}`}
+                            className="flex items-start gap-3 p-3 rounded-xl border border-slate-100 bg-white hover:border-violet-200 hover:shadow-sm transition-all group">
+                            <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-violet-50 border border-violet-100 flex flex-col items-center justify-center">
+                              <span className="text-[9px] font-bold text-violet-500 uppercase leading-none">{d.toLocaleString('en-US', { month: 'short' })}</span>
+                              <span className="text-sm font-black text-violet-700 leading-tight">{d.getDate()}</span>
+                            </div>
+                            <div className="min-w-0">
+                              <p className="text-xs font-bold text-slate-900 group-hover:text-violet-700 transition-colors line-clamp-1">{ev.title}</p>
+                              <p className="text-[10px] text-slate-400 line-clamp-1 mt-0.5">{ev.content}</p>
+                            </div>
+                          </Link>
+                        );
+                      })
+                    : <div className="p-5 rounded-xl border border-slate-100 bg-white text-center"><p className="text-xs text-slate-400 font-medium">No upcoming events</p></div>
+                  }
+                </div>
               </div>
-            )}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── PORTAL FEATURES SHOWCASE ── */}
+      <section className="py-20 md:py-24 bg-[#0f0720] relative overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-violet-600/10 rounded-full blur-3xl translate-x-1/3 -translate-y-1/3" />
+        </div>
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <p className="text-xs font-bold text-violet-400 uppercase tracking-widest mb-3">Digital Platform</p>
+            <h2 className="text-3xl md:text-4xl font-black text-white mb-4">Everything in one portal</h2>
+            <p className="text-slate-400 max-w-xl mx-auto">Students, teachers, and administrators all have dedicated dashboards with the tools they need.</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            {[
+              { role: 'Students', color: 'border-violet-500/30 bg-violet-500/5', badge: 'bg-violet-500/20 text-violet-300', features: ['View grades & report cards', 'Track attendance records', 'Access learning materials', 'Receive announcements', 'Message teachers & peers'] },
+              { role: 'Teachers', color: 'border-violet-500/30 bg-violet-500/5', badge: 'bg-violet-500/20 text-violet-300', features: ['Input & manage grades', 'Record attendance', 'Upload learning materials', 'Post announcements', 'Communicate with students'] },
+              { role: 'Administrators', color: 'border-emerald-500/30 bg-emerald-500/5', badge: 'bg-emerald-500/20 text-emerald-300', features: ['Manage all users & classes', 'View analytics & reports', 'Control enrollment', 'System settings & audit logs', 'Backup & maintenance tools'] },
+            ].map((r, i) => (
+              <div key={i} className={`rounded-2xl border ${r.color} p-6`}>
+                <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest mb-4 ${r.badge}`}>{r.role}</span>
+                <ul className="space-y-2.5">
+                  {r.features.map((f, j) => (
+                    <li key={j} className="flex items-center gap-2.5 text-sm text-slate-400">
+                      <svg className="w-3.5 h-3.5 text-violet-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
+                      {f}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+          <div className="text-center mt-10">
+            <Link to="/login" className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl bg-violet-600 text-white text-sm font-bold hover:bg-violet-500 transition-colors shadow-lg shadow-violet-900/40">
+              Access the Portal
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4 4H3" /></svg>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* ── LOCATION ── */}
+      <section className="py-20 md:py-24 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
+
+            {/* Info side */}
+            <div>
+              <p className="text-xs font-bold text-violet-600 uppercase tracking-widest mb-3">Find Us</p>
+              <h2 className="text-3xl md:text-4xl font-black text-slate-900 mb-5 leading-tight">
+                Visit Kiwalan<br />National High School
+              </h2>
+              <p className="text-slate-500 leading-relaxed mb-8">
+                We welcome prospective students and parents to visit our campus. Our registrar's office is open on school days for enrollment inquiries.
+              </p>
+
+              <div className="space-y-4">
+                {[
+                  {
+                    icon: 'M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z M15 11a3 3 0 11-6 0 3 3 0 016 0z',
+                    label: 'Address',
+                    value: 'Kiwalan, Iligan City, Lanao del Norte, Philippines',
+                  },
+                  {
+                    icon: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z',
+                    label: 'Office Hours',
+                    value: 'Monday – Friday, 7:00 AM – 5:00 PM',
+                  },
+                  {
+                    icon: 'M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z',
+                    label: 'Email',
+                    value: 'info@kiwalan-nhs.edu.ph',
+                  },
+                ].map((item, i) => (
+                  <div key={i} className="flex items-start gap-4">
+                    <div className="w-10 h-10 rounded-xl bg-violet-50 border border-violet-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <svg className="w-4 h-4 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={item.icon} />
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">{item.label}</p>
+                      <p className="text-sm font-semibold text-slate-800">{item.value}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <a
+                href="https://maps.google.com/?q=Kiwalan+National+High+School+Iligan+City"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 mt-8 px-5 py-2.5 rounded-xl bg-violet-600 text-white text-sm font-bold hover:bg-violet-500 transition-colors shadow-sm"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                Open in Google Maps
+              </a>
+            </div>
+
+            {/* Map side */}
+            <div className="rounded-2xl overflow-hidden border border-slate-100 shadow-sm h-[380px] bg-slate-50">
+              <iframe
+                title="Kiwalan National High School Location"
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3948.2297046439908!2d124.27159847501021!3d8.27992249175451!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x325576cc580e692d%3A0x1ee65da2c86ad0a6!2sKiwalan%20National%20High%20School!5e0!3m2!1sen!2sph!4v1779569511724!5m2!1sen!2sph"
+                width="100%"
+                height="100%"
+                style={{ border: 0 }}
+                allowFullScreen=""
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+              />
+            </div>
           </div>
         </div>
       </section>
@@ -252,6 +524,15 @@ const Home = () => {
         </div>
       </section>
 
+      {/* Image zoom modal */}
+      {zoomedImage && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-sm" onClick={() => setZoomedImage(null)}>
+          <button className="absolute top-4 right-4 p-2 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors" onClick={() => setZoomedImage(null)}>
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+          </button>
+          <img src={zoomedImage} alt="Zoomed" className="max-w-full max-h-[90vh] object-contain rounded-2xl shadow-2xl" onClick={e => e.stopPropagation()} />
+        </div>
+      )}
     </div>
   );
 };
