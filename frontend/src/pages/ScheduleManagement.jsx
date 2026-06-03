@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import api from '../utils/api';
 import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
-import { LoadingSpinner } from '../components/ui';
+import { LoadingSpinner, Modal } from '../components/ui';
 
 const DAYS = ['monday','tuesday','wednesday','thursday','friday','saturday'];
 const WEEKDAYS = ['monday','tuesday','wednesday','thursday','friday'];
