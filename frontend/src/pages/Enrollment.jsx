@@ -51,16 +51,16 @@ const FileUpload = ({ label, required, file, onFile, onRemove, note }) => {
   }, [onFile]);
 
   return (
-    <div className={`rounded-xl border-2 border-dashed transition-all p-4 ${
-      dragOver ? 'border-violet-400 bg-violet-50' :
-      file ? 'border-emerald-300 bg-emerald-50' : 'border-slate-200 bg-white hover:border-slate-300'
+    <div className={`border-2 transition-all p-4 rounded-sm ${
+      dragOver ? 'border-purple-400 bg-purple-50' :
+      file ? 'border-green-400 bg-green-50' : 'border-gray-300 bg-white hover:border-gray-400'
     }`}>
       <div className="flex items-center justify-between">
         <div className="flex-1">
-          <p className="text-sm font-bold text-slate-800">{label} {required && <span className="text-red-500">*</span>}</p>
-          {note && <p className="text-[10px] text-slate-400 mt-0.5 italic">{note}</p>}
+          <p className="text-sm font-bold text-gray-800">{label} {required && <span className="text-red-600">*</span>}</p>
+          {note && <p className="text-[10px] text-gray-500 mt-0.5 italic">{note}</p>}
           {file && (
-            <p className="text-xs text-emerald-600 font-semibold mt-1 flex items-center gap-1">
+            <p className="text-xs text-green-700 font-semibold mt-1 flex items-center gap-1">
               <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
               {file.name}
             </p>
@@ -69,11 +69,11 @@ const FileUpload = ({ label, required, file, onFile, onRemove, note }) => {
         <div className="flex items-center gap-2">
           {file && (
             <button type="button" onClick={() => { onRemove(); if (inputRef.current) inputRef.current.value = ''; }}
-              className="text-rose-400 hover:text-rose-600 p-1">
+              className="text-red-500 hover:text-red-700 p-1">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
             </button>
           )}
-          <label className="cursor-pointer px-3 py-1.5 rounded-lg bg-violet-100 text-violet-700 text-xs font-bold hover:bg-violet-200 transition-colors">
+          <label className="cursor-pointer px-3 py-1.5 bg-gray-100 border border-gray-300 text-gray-700 text-xs font-bold hover:bg-gray-200 transition-colors rounded-sm">
             {file ? 'Change' : 'Browse'}
             <input ref={inputRef} type="file" accept=".pdf,.jpg,.jpeg,.png" className="hidden"
               onChange={e => { if (e.target.files[0]) onFile(e.target.files[0]); }} />
@@ -82,16 +82,16 @@ const FileUpload = ({ label, required, file, onFile, onRemove, note }) => {
       </div>
       {!file && (
         <div
-          className="mt-3 text-center py-4"
+          className="mt-3 text-center py-3 border border-dashed border-gray-300 rounded-sm"
           onDragOver={e => { e.preventDefault(); setDragOver(true); }}
           onDragLeave={() => setDragOver(false)}
           onDrop={handleDrop}
         >
-          <svg className="w-8 h-8 mx-auto text-slate-300 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-7 h-7 mx-auto text-gray-400 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
           </svg>
-          <p className="text-[10px] text-slate-400 font-medium">Drag & drop or click Browse</p>
-          <p className="text-[9px] text-slate-300">PDF, JPG, PNG (max 10MB)</p>
+          <p className="text-[10px] text-gray-500 font-medium">Drag & drop or click Browse</p>
+          <p className="text-[9px] text-gray-400">PDF, JPG, PNG (max 10MB)</p>
         </div>
       )}
     </div>
@@ -100,8 +100,8 @@ const FileUpload = ({ label, required, file, onFile, onRemove, note }) => {
 
 const Field = ({ label, required, children, hint }) => (
   <div>
-    <label className="block text-[10px] font-bold text-purple-600 uppercase tracking-wider mb-1.5">
-      {label} {required && <span className="text-red-500 normal-case">*</span>}
+    <label className="block text-[10px] font-black text-gray-600 uppercase tracking-wider mb-1.5">
+      {label}{required && <span className="text-red-600 ml-0.5">*</span>}
     </label>
     {children}
     {hint && <p className="text-[10px] text-gray-400 mt-1">{hint}</p>}
@@ -110,19 +110,19 @@ const Field = ({ label, required, children, hint }) => (
 
 const Input = (props) => (
   <input {...props}
-    className="w-full px-3.5 py-2.5 rounded-xl border-2 border-purple-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-colors" />
+    className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500 transition-colors placeholder:text-gray-400" />
 );
 
 const Select = ({ children, ...props }) => (
   <select {...props}
-    className="w-full px-3.5 py-2.5 rounded-xl border-2 border-purple-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-colors">
+    className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500 transition-colors">
     {children}
   </select>
 );
 
 const Textarea = (props) => (
   <textarea {...props}
-    className="w-full px-3.5 py-2.5 rounded-xl border-2 border-purple-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-colors resize-none" />
+    className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500 transition-colors resize-none" />
 );
 
 const Enrollment = () => {
@@ -364,29 +364,35 @@ const Enrollment = () => {
 
   if (submitted) {
     return (
-      <div className="bg-gradient-to-br from-violet-50 via-white to-emerald-50 min-h-screen py-12 flex items-center">
+      <div className="bg-gray-50 min-h-screen py-12 flex items-center">
         <div className="max-w-lg mx-auto px-4 w-full">
-          <div className="bg-white rounded-3xl border border-slate-100 shadow-xl p-8 text-center">
-            <div className="w-20 h-20 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-5">
-              <svg className="w-10 h-10 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          {/* Official header */}
+          <div className="bg-[#5e2a84] text-white text-center py-4 px-6 rounded-t-sm border-b-4 border-yellow-400">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-purple-200">REPUBLIKA NG PILIPINAS</p>
+            <p className="text-xs font-bold uppercase tracking-wide mt-0.5">KAGAWARAN NG EDUKASYON</p>
+            <h2 className="text-base font-black uppercase mt-1">KIWALAN NATIONAL HIGH SCHOOL</h2>
+          </div>
+          <div className="bg-white border border-gray-300 shadow-xl p-8 text-center rounded-b-sm">
+            <div className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-5 border-2 border-green-300">
+              <svg className="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <h2 className="text-2xl font-black text-slate-900 mb-2">Application Submitted!</h2>
-            <p className="text-sm text-slate-500 mb-6">Your enrollment application has been received successfully.</p>
-            <div className="bg-gradient-to-r from-violet-50 to-purple-50 rounded-2xl p-6 mb-6 border border-violet-100">
-              <p className="text-[10px] font-bold text-violet-400 uppercase tracking-widest mb-1">Enrollment Number</p>
-              <p className="text-3xl font-black text-violet-700 tracking-wider">{submitted.enrollment_number}</p>
-              <p className="text-xs text-violet-500 mt-2 font-medium">Save this number to track your application</p>
+            <h2 className="text-2xl font-black text-gray-900 mb-2 uppercase">Application Submitted</h2>
+            <p className="text-sm text-gray-600 mb-6">Your enrollment application has been received. Please keep your enrollment number for tracking.</p>
+            <div className="bg-purple-50 border-2 border-purple-200 p-6 mb-6 rounded-sm">
+              <p className="text-[10px] font-black text-purple-600 uppercase tracking-widest mb-1">Enrollment Reference Number</p>
+              <p className="text-3xl font-black text-purple-800 tracking-wider font-mono">{submitted.enrollment_number}</p>
+              <p className="text-xs text-purple-600 mt-2 font-medium">Present this number when inquiring about your application status.</p>
             </div>
             <div className="flex flex-col gap-3">
               <Link to={`/track-enrollment?number=${submitted.enrollment_number}`}
-                className="w-full py-3.5 rounded-xl bg-violet-600 text-white text-sm font-bold hover:bg-violet-700 transition-all shadow-lg shadow-violet-200">
+                className="w-full py-3.5 bg-[#5e2a84] text-white text-sm font-black hover:bg-purple-700 transition-all uppercase tracking-widest rounded-sm">
                 Track Application Status
               </Link>
               <button onClick={() => navigate('/')}
-                className="w-full py-3.5 rounded-xl border border-slate-200 text-slate-600 text-sm font-bold hover:bg-slate-50 transition-colors">
-                Back to Home
+                className="w-full py-3.5 border border-gray-300 text-gray-600 text-sm font-bold hover:bg-gray-50 transition-colors rounded-sm">
+                Return to Homepage
               </button>
             </div>
           </div>
@@ -396,41 +402,55 @@ const Enrollment = () => {
   }
 
   return (
-    <div className="bg-gradient-to-br from-purple-50 via-white to-purple-100 min-h-screen py-8 md:py-12">
+    <div className="bg-gray-100 min-h-screen py-8 md:py-12">
       <div className="max-w-2xl mx-auto px-4 sm:px-6">
-        <div className="text-center mb-8">
-          <p className="text-xs font-bold text-purple-600 uppercase tracking-widest mb-2">Online Application</p>
-          <h1 className="text-3xl font-black text-purple-800 mb-1 uppercase">Enrollment Application</h1>
-          <p className="text-sm text-gray-600">Kiwalan National High School</p>
+
+        {/* Official School Header */}
+        <div className="bg-[#5e2a84] text-white text-center py-4 px-6 rounded-t-sm border-b-4 border-yellow-400 shadow-lg">
+          <div className="flex items-center justify-center gap-3 mb-1">
+            <img src="/icons/school-logo-source.png" alt="KNHS" className="w-10 h-10 object-contain" />
+            <div>
+              <p className="text-[9px] font-bold uppercase tracking-widest text-purple-200">Republic of the Philippines • Department of Education</p>
+              <h1 className="text-base font-black uppercase tracking-tight">Kiwalan National High School</h1>
+              <p className="text-[9px] text-purple-200 uppercase tracking-wide">Iligan City</p>
+            </div>
+          </div>
+          <div className="mt-2 pt-2 border-t border-white/20">
+            <p className="text-xs font-black uppercase tracking-widest">Enrollment Application Form</p>
+            <p className="text-[10px] text-purple-200 mt-0.5">School Year {schoolYear}</p>
+          </div>
         </div>
 
         {/* Progress Stepper */}
-        <div className="flex items-center justify-between mb-8 px-1">
-          {STEPS.map((s, i) => {
-            const done = i < step;
-            const active = i === step;
-            return (
-              <div key={s.key} className="flex items-center flex-1 last:flex-none">
-                <div className="flex flex-col items-center gap-1.5">
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
-                    done ? 'bg-purple-600 text-white shadow-md shadow-purple-200' :
-                    active ? 'bg-purple-600 text-white ring-4 ring-purple-100 shadow-lg shadow-purple-200' :
-                    'bg-white border-2 border-purple-200 text-purple-400'
-                  }`}>
-                    {done ? <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg> : s.icon}
+        <div className="bg-white border-x border-gray-300 px-6 pt-5 pb-3">
+          <div className="flex items-center justify-between">
+            {STEPS.map((s, i) => {
+              const done = i < step;
+              const active = i === step;
+              return (
+                <div key={s.key} className="flex items-center flex-1 last:flex-none">
+                  <div className="flex flex-col items-center gap-1">
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-black border-2 transition-all ${
+                      done ? 'bg-[#5e2a84] border-[#5e2a84] text-white' :
+                      active ? 'bg-white border-[#5e2a84] text-[#5e2a84] ring-2 ring-purple-200' :
+                      'bg-white border-gray-300 text-gray-400'
+                    }`}>
+                      {done ? <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg> : s.icon}
+                    </div>
+                    <span className={`text-[8px] font-bold uppercase tracking-wide hidden sm:block ${active ? 'text-purple-700' : done ? 'text-purple-500' : 'text-gray-400'}`}>{s.label}</span>
                   </div>
-                  <span className={`text-[8px] font-bold uppercase tracking-wider hidden sm:block ${active ? 'text-purple-600' : done ? 'text-purple-400' : 'text-purple-300'}`}>{s.label}</span>
+                  {i < STEPS.length - 1 && <div className={`flex-1 h-0.5 mx-2 mb-4 ${i < step ? 'bg-[#5e2a84]' : 'bg-gray-200'}`} />}
                 </div>
-                {i < STEPS.length - 1 && <div className={`flex-1 h-0.5 mx-2 mb-4 transition-colors ${i < step ? 'bg-purple-500' : 'bg-purple-200'}`} />}
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
 
-        <div className="bg-white rounded-2xl border-2 border-purple-200 shadow-lg p-6 md:p-8">
+        {/* Form Card */}
+        <div className="bg-white border border-gray-300 shadow-lg p-6 md:p-8">
           {enrollmentType && step > 0 && (
-            <div className="mb-6 inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-purple-50 border-2 border-purple-200">
-              <span className="text-[10px] font-bold text-purple-600 uppercase tracking-wide">{TYPE_LABELS[enrollmentType]}</span>
+            <div className="mb-5 inline-flex items-center gap-2 px-3 py-1.5 bg-purple-50 border border-purple-200 rounded-sm">
+              <span className="text-[10px] font-black text-purple-700 uppercase tracking-wide">{TYPE_LABELS[enrollmentType]}</span>
               <button type="button" onClick={() => { setStep(0); setEnrollmentType(''); }} className="text-purple-400 hover:text-purple-600">
                 <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
@@ -439,19 +459,21 @@ const Enrollment = () => {
 
           {/* Step 0: Type Selection */}
           {step === 0 && (
-            <div className="space-y-5">
-              <h2 className="text-xl font-black text-purple-800 mb-1 uppercase">Enrollment Type</h2>
-              <p className="text-sm text-gray-600 mb-4">Select the type that applies to you.</p>
+            <div className="space-y-4">
+              <div className="border-b-2 border-purple-600 pb-2 mb-4">
+                <h2 className="text-base font-black text-purple-800 uppercase tracking-wide">Step 1 of 7 — Enrollment Type</h2>
+                <p className="text-xs text-gray-600 mt-0.5">Select the category that best describes your application.</p>
+              </div>
               <div className="grid gap-3">
                 {ENROLLMENT_TYPES.map(t => (
                   <button key={t.value} type="button" onClick={() => { setEnrollmentType(t.value); if (t.value !== 'sh_applicant') setStrand(''); }}
-                    className={`text-left p-4 rounded-2xl border-2 transition-all ${
-                      enrollmentType === t.value ? 'border-purple-500 bg-purple-50 shadow-md shadow-purple-100' : 'border-purple-200 hover:border-purple-300 bg-white hover:shadow-sm'
+                    className={`text-left p-4 border-2 transition-all rounded-sm ${
+                      enrollmentType === t.value ? 'border-purple-600 bg-purple-50' : 'border-gray-300 hover:border-purple-400 bg-white'
                     }`}>
                     <div className="flex items-center gap-3">
-                      <span className="text-2xl">{t.icon}</span>
+                      <span className="text-xl">{t.icon}</span>
                       <div>
-                        <p className="text-sm font-bold text-purple-800">{t.label}</p>
+                        <p className="text-sm font-black text-gray-800 uppercase">{t.label}</p>
                         <p className="text-xs text-gray-600">{t.desc}</p>
                       </div>
                     </div>
@@ -463,8 +485,10 @@ const Enrollment = () => {
 
           {/* Step 1: Personal Information */}
           {step === 1 && (
-            <div className="space-y-5">
-              <h2 className="text-xl font-black text-purple-800 mb-4 uppercase">Personal Information</h2>
+            <div className="space-y-4">
+              <div className="border-b-2 border-purple-600 pb-2 mb-4">
+                <h2 className="text-base font-black text-purple-800 uppercase tracking-wide">Step 2 of 7 — Personal Information</h2>
+              </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Field label="First Name" required><Input value={firstName} onChange={e => setFirstName(e.target.value)} placeholder="Juan" /></Field>
                 <Field label="Last Name" required><Input value={lastName} onChange={e => setLastName(e.target.value)} placeholder="Dela Cruz" /></Field>
@@ -487,8 +511,10 @@ const Enrollment = () => {
 
           {/* Step 2: Address */}
           {step === 2 && (
-            <div className="space-y-5">
-              <h2 className="text-xl font-black text-purple-800 mb-4 uppercase">Address Information</h2>
+            <div className="space-y-4">
+              <div className="border-b-2 border-purple-600 pb-2 mb-4">
+                <h2 className="text-base font-black text-purple-800 uppercase tracking-wide">Step 3 of 7 — Address Information</h2>
+              </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="sm:col-span-2"><Field label="Street Address" required><Input value={streetAddress} onChange={e => setStreetAddress(e.target.value)} /></Field></div>
                 <Field label="Barangay" required><Input value={barangay} onChange={e => setBarangay(e.target.value)} /></Field>
@@ -501,11 +527,13 @@ const Enrollment = () => {
 
           {/* Step 3: Parents */}
           {step === 3 && (
-            <div className="space-y-5">
-              <h2 className="text-xl font-black text-purple-800 mb-4 uppercase">Parent / Guardian Information</h2>
+            <div className="space-y-4">
+              <div className="border-b-2 border-purple-600 pb-2 mb-4">
+                <h2 className="text-base font-black text-purple-800 uppercase tracking-wide">Step 4 of 7 — Parent / Guardian Information</h2>
+              </div>
               {isParentAssisted ? (
-                <div className="bg-slate-50 rounded-2xl border border-slate-100 p-5 space-y-4">
-                  <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Guardian Information</p>
+                <div className="bg-gray-50 border border-gray-200 p-5 space-y-4">
+                  <p className="text-xs font-black text-gray-600 uppercase tracking-widest border-b border-gray-300 pb-2">Guardian Information</p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <Field label="Guardian's Full Name" required><Input value={guardianName} onChange={e => setGuardianName(e.target.value)} /></Field>
                     <Field label="Relationship" required><Input value={guardianRelationship} onChange={e => setGuardianRelationship(e.target.value)} placeholder="e.g. Parent, Aunt" /></Field>
@@ -515,8 +543,8 @@ const Enrollment = () => {
                 </div>
               ) : (
                 <>
-                  <div className="bg-slate-50 rounded-2xl border border-slate-100 p-5 space-y-4">
-                    <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Father's Information</p>
+                  <div className="bg-gray-50 border border-gray-200 p-5 space-y-4">
+                    <p className="text-xs font-black text-gray-600 uppercase tracking-widest border-b border-gray-300 pb-2">Father's Information</p>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <Field label="Father's Name" required><Input value={fatherName} onChange={e => setFatherName(e.target.value)} /></Field>
                       <Field label="Occupation"><Input value={fatherOccupation} onChange={e => setFatherOccupation(e.target.value)} placeholder="Optional" /></Field>
@@ -524,8 +552,8 @@ const Enrollment = () => {
                       <Field label="Email"><Input type="email" value={fatherEmail} onChange={e => setFatherEmail(e.target.value)} placeholder="Optional" /></Field>
                     </div>
                   </div>
-                  <div className="bg-slate-50 rounded-2xl border border-slate-100 p-5 space-y-4">
-                    <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Mother's Information</p>
+                  <div className="bg-gray-50 border border-gray-200 p-5 space-y-4">
+                    <p className="text-xs font-black text-gray-600 uppercase tracking-widest border-b border-gray-300 pb-2">Mother's Information</p>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <Field label="Mother's Name" required><Input value={motherName} onChange={e => setMotherName(e.target.value)} /></Field>
                       <Field label="Occupation"><Input value={motherOccupation} onChange={e => setMotherOccupation(e.target.value)} placeholder="Optional" /></Field>
@@ -533,8 +561,8 @@ const Enrollment = () => {
                       <Field label="Email"><Input type="email" value={motherEmail} onChange={e => setMotherEmail(e.target.value)} placeholder="Optional" /></Field>
                     </div>
                   </div>
-                  <div className="bg-slate-50 rounded-2xl border border-slate-100 p-5 space-y-4">
-                    <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Guardian (if applicable)</p>
+                  <div className="bg-gray-50 border border-gray-200 p-5 space-y-4">
+                    <p className="text-xs font-black text-gray-600 uppercase tracking-widest border-b border-gray-300 pb-2">Guardian (if applicable)</p>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <Field label="Guardian's Name"><Input value={guardianName} onChange={e => setGuardianName(e.target.value)} /></Field>
                       <Field label="Relationship"><Input value={guardianRelationship} onChange={e => setGuardianRelationship(e.target.value)} /></Field>
@@ -549,10 +577,12 @@ const Enrollment = () => {
 
           {/* Step 4: Academic */}
           {step === 4 && (
-            <div className="space-y-5">
-              <h2 className="text-xl font-black text-slate-900 mb-4">Academic & Contact Information</h2>
-              <div className="bg-slate-50 rounded-2xl border border-slate-100 p-5 space-y-4">
-                <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Academic Information</p>
+            <div className="space-y-4">
+              <div className="border-b-2 border-purple-600 pb-2 mb-4">
+                <h2 className="text-base font-black text-purple-800 uppercase tracking-wide">Step 5 of 7 — Academic & Contact Information</h2>
+              </div>
+              <div className="bg-gray-50 border border-gray-200 p-5 space-y-4">
+                <p className="text-xs font-black text-gray-600 uppercase tracking-widest border-b border-gray-300 pb-2">Academic Information</p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <Field label="Grade Level" required>
                     <Select value={gradeLevel} onChange={e => { setGradeLevel(e.target.value); if (!['11','12'].includes(e.target.value)) setStrand(''); }}>
@@ -627,15 +657,15 @@ const Enrollment = () => {
                   </div>
                 </div>
               </div>
-              <div className="bg-slate-50 rounded-2xl border border-slate-100 p-5 space-y-4">
-                <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Contact Information</p>
+              <div className="bg-gray-50 border border-gray-200 p-5 space-y-4">
+                <p className="text-xs font-black text-gray-600 uppercase tracking-widest border-b border-gray-300 pb-2">Contact Information</p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <Field label="Email" required><Input type="email" value={email} onChange={e => setEmail(e.target.value)} /></Field>
                   <Field label="Phone Number" required><Input value={phoneNumber} onChange={e => setPhoneNumber(e.target.value)} /></Field>
                 </div>
               </div>
-              <div className="bg-slate-50 rounded-2xl border border-slate-100 p-5 space-y-4">
-                <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Emergency Contact</p>
+              <div className="bg-gray-50 border border-gray-200 p-5 space-y-4">
+                <p className="text-xs font-black text-gray-600 uppercase tracking-widest border-b border-gray-300 pb-2">Emergency Contact</p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <Field label="Name" required><Input value={emergencyContactName} onChange={e => setEmergencyContactName(e.target.value)} /></Field>
                   <Field label="Relationship" required><Input value={emergencyContactRelationship} onChange={e => setEmergencyContactRelationship(e.target.value)} /></Field>
@@ -647,14 +677,16 @@ const Enrollment = () => {
 
           {/* Step 5: Documents */}
           {step === 5 && (
-            <div className="space-y-5">
-              <h2 className="text-xl font-black text-slate-900 mb-2">Document Requirements</h2>
-              <div className="flex items-start gap-3 p-4 rounded-xl bg-amber-50 border border-amber-100">
+            <div className="space-y-4">
+              <div className="border-b-2 border-purple-600 pb-2 mb-4">
+                <h2 className="text-base font-black text-purple-800 uppercase tracking-wide">Step 6 of 7 — Document Requirements</h2>
+              </div>
+              <div className="flex items-start gap-3 p-4 bg-amber-50 border border-amber-300">
                 <svg className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                <p className="text-xs text-amber-700 font-medium">
+                <p className="text-xs text-amber-800 font-medium">
                   Requirements for <strong>{TYPE_LABELS[enrollmentType]}</strong>
-                  {!isSHS && gradeLevel && !isAls ? ` \u2014 Grade ${gradeLevel}` : ''}
-                  {isAls ? ' \u2014 ALS' : ''}
+                  {!isSHS && gradeLevel && !isAls ? ` — Grade ${gradeLevel}` : ''}
+                  {isAls ? ' — ALS' : ''}. Upload clear, legible copies (PDF, JPG, or PNG, max 10MB each).
                 </p>
               </div>
               <div className="space-y-3">
@@ -668,9 +700,11 @@ const Enrollment = () => {
 
           {/* Step 6: Review */}
           {step === 6 && (
-            <div className="space-y-5">
-              <h2 className="text-xl font-black text-slate-900 mb-2">Review & Submit</h2>
-              <p className="text-sm text-slate-500 mb-4">Please review your information before submitting.</p>
+            <div className="space-y-4">
+              <div className="border-b-2 border-purple-600 pb-2 mb-4">
+                <h2 className="text-base font-black text-purple-800 uppercase tracking-wide">Step 7 of 7 — Review & Submit</h2>
+                <p className="text-xs text-gray-600 mt-0.5">Please verify all information before submitting. You cannot edit after submission.</p>
+              </div>
 
               <ReviewSection title="Enrollment Type">
                 <ReviewRow label="Type" value={TYPE_LABELS[enrollmentType]} />
@@ -696,51 +730,57 @@ const Enrollment = () => {
               </ReviewSection>
 
               <ReviewSection title="Parents / Guardian">
-                {fatherName && <ReviewRow label="Father" value={`${fatherName} ${fatherContact ? `\u2014 ${fatherContact}` : ''}`} />}
-                {motherName && <ReviewRow label="Mother" value={`${motherName} ${motherContact ? `\u2014 ${motherContact}` : ''}`} />}
-                {guardianName && <ReviewRow label="Guardian" value={`${guardianName} (${guardianRelationship}) ${guardianContact ? `\u2014 ${guardianContact}` : ''}`} />}
+                {fatherName && <ReviewRow label="Father" value={`${fatherName} ${fatherContact ? `— ${fatherContact}` : ''}`} />}
+                {motherName && <ReviewRow label="Mother" value={`${motherName} ${motherContact ? `— ${motherContact}` : ''}`} />}
+                {guardianName && <ReviewRow label="Guardian" value={`${guardianName} (${guardianRelationship}) ${guardianContact ? `— ${guardianContact}` : ''}`} />}
               </ReviewSection>
 
               <ReviewSection title="Academic">
-                <ReviewRow label="Grade Level" value={`Grade ${gradeLevel}${strand ? ` \u2014 ${strand}` : ''}`} />
+                <ReviewRow label="Grade Level" value={`Grade ${gradeLevel}${strand ? ` — ${strand}` : ''}`} />
                 <ReviewRow label="LRN" value={noLrn ? `Not available (${lrnRequestReason.replace(/_/g, ' ')})` : (lrn || 'N/A')} />
                 <ReviewRow label="Previous School" value={previousSchool || 'N/A'} />
-                <ReviewRow label="ALS" value={isAls ? 'Yes' : 'No'} />
+                <ReviewRow label="ALS Applicant" value={isAls ? 'Yes' : 'No'} />
               </ReviewSection>
 
               <ReviewSection title="Contact">
                 <ReviewRow label="Email" value={email} />
                 <ReviewRow label="Phone" value={phoneNumber} />
-                <ReviewRow label="Emergency" value={`${emergencyContactName} (${emergencyContactRelationship}) ${emergencyContactPhone}`} />
+                <ReviewRow label="Emergency Contact" value={`${emergencyContactName} (${emergencyContactRelationship}) ${emergencyContactPhone}`} />
               </ReviewSection>
 
               <ReviewSection title="Documents">
                 {getRequirementsForGrade().map(req => {
                   const f = fileMap[req.key];
-                  return <ReviewRow key={req.key} label={req.label} value={f ? '\u2713 Uploaded' : (req.required ? '\u2717 Missing' : 'Not provided')} />;
+                  return <ReviewRow key={req.key} label={req.label} value={f ? '✓ Uploaded' : (req.required ? '✗ Missing' : 'Not provided')} />;
                 })}
               </ReviewSection>
+
+              <div className="p-4 bg-blue-50 border border-blue-200">
+                <p className="text-xs text-blue-800 font-medium">
+                  <strong>Declaration:</strong> I hereby certify that all information provided in this application form is true and correct to the best of my knowledge. I understand that providing false information may result in the cancellation of my enrollment.
+                </p>
+              </div>
             </div>
           )}
 
           {/* Navigation */}
-          <div className="flex items-center justify-between mt-8 pt-6 border-t border-slate-100">
+          <div className="flex items-center justify-between mt-6 pt-5 border-t-2 border-gray-200">
             {step > 0 ? (
               <button type="button" onClick={() => setStep(s => s - 1)}
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-colors">
+                className="inline-flex items-center gap-2 px-5 py-2.5 border border-gray-300 bg-white text-sm font-black text-gray-700 hover:bg-gray-50 transition-colors rounded-sm uppercase tracking-wide">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
                 Back
               </button>
             ) : <div />}
             {step < 6 ? (
               <button type="button" onClick={handleNext}
-                className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-violet-600 text-white text-sm font-bold hover:bg-violet-700 transition-all shadow-md shadow-violet-200">
-                Next
+                className="inline-flex items-center gap-2 px-6 py-2.5 bg-[#5e2a84] text-white text-sm font-black hover:bg-purple-700 transition-all uppercase tracking-wide rounded-sm">
+                Next Step
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
               </button>
             ) : (
               <button type="button" onClick={handleSubmit} disabled={loading}
-                className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-emerald-600 text-white text-sm font-bold hover:bg-emerald-700 disabled:opacity-50 transition-all shadow-md shadow-emerald-200">
+                className="inline-flex items-center gap-2 px-6 py-2.5 bg-green-700 text-white text-sm font-black hover:bg-green-800 disabled:opacity-50 transition-all uppercase tracking-wide rounded-sm">
                 {loading ? (
                   <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
                 ) : (
@@ -751,22 +791,31 @@ const Enrollment = () => {
             )}
           </div>
         </div>
+
+        {/* Footer */}
+        <div className="bg-[#5e2a84] text-center py-3 rounded-b-sm">
+          <p className="text-[10px] text-purple-200 uppercase tracking-widest">
+            © {new Date().getFullYear()} Kiwalan National High School — Department of Education — Republic of the Philippines
+          </p>
+        </div>
       </div>
     </div>
   );
 };
 
 const ReviewSection = ({ title, children }) => (
-  <div className="bg-slate-50 rounded-2xl border border-slate-100 p-5">
-    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3">{title}</p>
-    <div className="space-y-2">{children}</div>
+  <div className="border border-gray-300 bg-white">
+    <div className="bg-gray-100 border-b border-gray-300 px-4 py-2">
+      <p className="text-[10px] font-black text-gray-700 uppercase tracking-widest">{title}</p>
+    </div>
+    <div className="px-4 py-3 space-y-2">{children}</div>
   </div>
 );
 
 const ReviewRow = ({ label, value }) => (
-  <div className="flex items-start justify-between gap-4 text-sm">
-    <span className="text-slate-500 font-medium">{label}</span>
-    <span className="text-slate-900 font-bold text-right">{value}</span>
+  <div className="flex items-start justify-between gap-4 text-sm border-b border-gray-100 pb-1.5 last:border-0 last:pb-0">
+    <span className="text-gray-500 font-medium text-xs uppercase tracking-wide">{label}</span>
+    <span className="text-gray-900 font-bold text-right text-xs">{value}</span>
   </div>
 );
 

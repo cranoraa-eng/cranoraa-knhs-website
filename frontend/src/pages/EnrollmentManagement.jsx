@@ -53,10 +53,11 @@ const EnrollmentManagement = () => {
 
   const handleAction = async (id, action, opts = {}) => {
     try {
-      const res = await api[action === 'delete_application' ? 'delete' : 'post'](
-        `/enrollment-applications/${id}/${action}/`, action === 'delete_application' ? {} : opts
-      );
-      Swal.fire({ icon: 'success', title: 'Done', text: res.data.status || res.data.message || 'Action completed.' });
+      // delete_application uses DELETE method; all others use POST
+      const res = action === 'delete_application'
+        ? await api.delete(`/enrollment-applications/${id}/delete_application/`)
+        : await api.post(`/enrollment-applications/${id}/${action}/`, opts);
+      Swal.fire({ icon: 'success', title: 'Done', text: res.data?.status || res.data?.message || 'Action completed.' });
       fetchAll();
       if (selected?.id === id && action !== 'enroll_student') setSelected(null);
       return res.data;
@@ -247,6 +248,31 @@ const EnrollmentManagement = () => {
     }
   };
 
+  // Authenticated file download helper
+  const downloadFile = async (endpoint, filename) => {
+    try {
+      const res = await api.get(endpoint, { responseType: 'blob' });
+      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.click();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      Swal.fire({ icon: 'error', title: 'Export Failed', text: err.response?.data?.error || 'Failed to download file.' });
+    }
+  };
+
+  const handleExportCSV = () => downloadFile(
+    '/enrollment-applications/export_csv/',
+    `enrollment_applications_${new Date().toISOString().slice(0,10)}.csv`
+  );
+
+  const handleExportPDF = () => downloadFile(
+    '/enrollment-applications/export-summary-pdf/',
+    `enrollment_summary_${new Date().toISOString().slice(0,10)}.pdf`
+  );
+
   const filtered = applications.filter(app => {
     if (filter !== 'all' && app.status !== filter) return false;
     if (gradeFilter && app.grade_level !== gradeFilter) return false;
@@ -269,7 +295,7 @@ const EnrollmentManagement = () => {
     if (!confirmed.isConfirmed) return;
     for (const id of selectedIds) {
       if (action === 'approve') {
-        await handleAction(id, 'start_review', { remarks: '' });
+        await handleAction(id, 'approve_application', { remarks: 'Bulk approved by admin' });
       } else if (action === 'reject') {
         await handleAction(id, 'reject', { remarks: 'Bulk rejected by admin' });
       }
@@ -320,12 +346,12 @@ const EnrollmentManagement = () => {
             </div>
             {/* Export Actions */}
             <div className="hidden lg:flex items-center gap-2">
-              <button onClick={() => { const a = document.createElement('a'); a.href = '/api/enrollment-applications/export_csv/'; a.click(); }}
+              <button onClick={handleExportCSV}
                 className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/10 backdrop-blur-sm border border-white/20 text-white text-xs font-bold hover:bg-white/20 transition-all">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                 CSV
               </button>
-              <button onClick={() => { const a = document.createElement('a'); a.href = '/api/enrollment-applications/export-summary-pdf/'; a.click(); }}
+              <button onClick={handleExportPDF}
                 className="flex items-center gap-2 px-4 py-2 rounded-lg bg-yellow-400 text-blue-900 text-xs font-black hover:bg-yellow-300 transition-all shadow-lg">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
                 PDF Report
@@ -338,12 +364,12 @@ const EnrollmentManagement = () => {
       <div className="max-w-[1600px] mx-auto px-2 md:px-6 space-y-4 md:space-y-6 pb-6">
       {/* Mobile Export Buttons */}
       <div className="lg:hidden flex gap-2">
-        <button onClick={() => { const a = document.createElement('a'); a.href = '/api/enrollment-applications/export_csv/'; a.click(); }}
+        <button onClick={handleExportCSV}
           className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg border border-slate-200 bg-white text-slate-700 text-xs font-semibold hover:bg-slate-50">
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
           CSV
         </button>
-        <button onClick={() => { const a = document.createElement('a'); a.href = '/api/enrollment-applications/export-summary-pdf/'; a.click(); }}
+        <button onClick={handleExportPDF}
           className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-blue-600 text-white text-xs font-bold hover:bg-blue-700">
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
           PDF

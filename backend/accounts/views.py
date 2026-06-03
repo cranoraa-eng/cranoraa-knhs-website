@@ -3293,22 +3293,27 @@ class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post'], url_path='start-review')
     def start_review(self, request, pk=None):
+        """Move application to under_review status (triggered when admin opens a pending application)."""
         application = self.get_object()
         user = request.user
         remarks = request.data.get('remarks', '')
-        if application.status not in ('under_review', 'pending_requirements', 'pending'):
-            return Response({'error': f'Cannot approve application with status: {application.status}'}, status=400)
-        from_status = application.status
-        application.status = 'approved'
-        application.remarks = remarks or application.remarks
-        application.reviewed_by = user
-        application.reviewed_at = timezone.now()
-        application.save()
-        EnrollmentStatusHistory.objects.create(application=application, from_status=from_status,
-            to_status='approved', changed_by=user, notes=remarks or 'Application approved')
-        self._safe_notify_user(application, 'Application Approved',
-            'Your enrollment application has been approved.', '/track-enrollment')
-        return Response({'status': 'Application approved'})
+        # Only move to under_review if currently pending
+        if application.status == 'pending':
+            from_status = application.status
+            application.status = 'under_review'
+            application.reviewed_by = user
+            application.reviewed_at = timezone.now()
+            if remarks:
+                application.remarks = remarks
+            application.save()
+            EnrollmentStatusHistory.objects.create(
+                application=application, from_status=from_status,
+                to_status='under_review', changed_by=user,
+                notes=remarks or 'Application opened for review'
+            )
+            return Response({'status': 'Application is now under review'})
+        # Already past pending — just return current status, no change
+        return Response({'status': application.status})
 
     @action(detail=True, methods=['post'])
     def reject(self, request, pk=None):

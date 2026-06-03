@@ -272,7 +272,7 @@ const SystemHealth = () => {
               <p className="text-xs text-slate-500">System audit log is clear</p>
             </div>
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
               {feed.map((item, i) => (
                 <div key={item.id ?? i} className="flex items-start gap-3 p-3 rounded-md bg-slate-50 border border-slate-200">
                   <div className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${item.status === 'success' ? 'bg-emerald-500' : item.status === 'warning' ? 'bg-amber-500' : 'bg-rose-500'}`} />
