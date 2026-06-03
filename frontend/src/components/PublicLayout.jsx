@@ -67,48 +67,48 @@ const PublicLayout = () => {
 
               {/* ABOUT US with Dropdown */}
               <div className="relative" onMouseEnter={() => setShowAboutDropdown(true)} onMouseLeave={() => setShowAboutDropdown(false)}>
-                <button className={`px-4 py-3 text-sm font-bold transition-colors flex items-center gap-1 ${isActive('/about') ? 'bg-purple-700' : 'hover:bg-purple-700'}`}>
+                <button className={`px-4 py-3 text-sm font-bold transition-colors flex items-center gap-1 ${isActive('/about') || isActive('/mission') || isActive('/vision') || isActive('/faculty') ? 'bg-purple-700' : 'hover:bg-purple-700'}`}>
                   ABOUT US
                   <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
                 </button>
                 {showAboutDropdown && (
                   <div className="absolute top-full left-0 bg-white text-gray-800 shadow-xl rounded-b-lg overflow-hidden w-48">
-                    <Link to="/about" className="block px-4 py-2 text-sm hover:bg-purple-100 font-semibold">Mission</Link>
-                    <Link to="/about" className="block px-4 py-2 text-sm hover:bg-purple-100 font-semibold">Vision</Link>
-                    <Link to="/about" className="block px-4 py-2 text-sm hover:bg-purple-100 font-semibold">Faculty</Link>
+                    <Link to="/mission" className="block px-4 py-2 text-sm hover:bg-purple-100 font-semibold">Mission</Link>
+                    <Link to="/vision" className="block px-4 py-2 text-sm hover:bg-purple-100 font-semibold">Vision</Link>
+                    <Link to="/faculty" className="block px-4 py-2 text-sm hover:bg-purple-100 font-semibold">Faculty</Link>
                   </div>
                 )}
               </div>
 
               {/* ACADEMICS with Dropdown */}
               <div className="relative" onMouseEnter={() => setShowAcademicsDropdown(true)} onMouseLeave={() => setShowAcademicsDropdown(false)}>
-                <button className={`px-4 py-3 text-sm font-bold transition-colors flex items-center gap-1 ${isActive('/programs') ? 'bg-purple-700' : 'hover:bg-purple-700'}`}>
+                <button className={`px-4 py-3 text-sm font-bold transition-colors flex items-center gap-1 ${isActive('/programs') || isActive('/k12-programs') || isActive('/senior-high') ? 'bg-purple-700' : 'hover:bg-purple-700'}`}>
                   ACADEMICS
                   <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
                 </button>
                 {showAcademicsDropdown && (
                   <div className="absolute top-full left-0 bg-white text-gray-800 shadow-xl rounded-b-lg overflow-hidden w-48">
-                    <Link to="/programs" className="block px-4 py-2 text-sm hover:bg-purple-100 font-semibold">K to 12 Programs</Link>
-                    <Link to="/programs" className="block px-4 py-2 text-sm hover:bg-purple-100 font-semibold">Senior High</Link>
+                    <Link to="/k12-programs" className="block px-4 py-2 text-sm hover:bg-purple-100 font-semibold">K to 12 Programs</Link>
+                    <Link to="/senior-high" className="block px-4 py-2 text-sm hover:bg-purple-100 font-semibold">Senior High</Link>
                   </div>
                 )}
               </div>
 
               {/* RESOURCES with Dropdown */}
               <div className="relative" onMouseEnter={() => setShowResourcesDropdown(true)} onMouseLeave={() => setShowResourcesDropdown(false)}>
-                <button className="px-4 py-3 text-sm font-bold hover:bg-purple-700 transition-colors flex items-center gap-1">
+                <button className={`px-4 py-3 text-sm font-bold transition-colors flex items-center gap-1 ${isActive('/learning-materials') || isActive('/portals') ? 'bg-purple-700' : 'hover:bg-purple-700'}`}>
                   RESOURCES
                   <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
                 </button>
                 {showResourcesDropdown && (
                   <div className="absolute top-full left-0 bg-white text-gray-800 shadow-xl rounded-b-lg overflow-hidden w-48">
-                    <Link to="/login" className="block px-4 py-2 text-sm hover:bg-purple-100 font-semibold">Learning Materials</Link>
-                    <Link to="/login" className="block px-4 py-2 text-sm hover:bg-purple-100 font-semibold">Portals</Link>
+                    <Link to="/learning-materials" className="block px-4 py-2 text-sm hover:bg-purple-100 font-semibold">Learning Materials</Link>
+                    <Link to="/portals" className="block px-4 py-2 text-sm hover:bg-purple-100 font-semibold">Portals</Link>
                   </div>
                 )}
               </div>
 
-              <Link to="/calendar" className={`px-4 py-3 text-sm font-bold transition-colors ${isActive('/calendar') ? 'bg-purple-700' : 'hover:bg-purple-700'}`}>NEWS & EVENTS</Link>
+              <Link to="/news-events" className={`px-4 py-3 text-sm font-bold transition-colors ${isActive('/news-events') ? 'bg-purple-700' : 'hover:bg-purple-700'}`}>NEWS & EVENTS</Link>
               <Link to="/enroll" className={`px-4 py-3 text-sm font-bold transition-colors ${isActive('/enroll') ? 'bg-purple-700' : 'hover:bg-purple-700'}`}>ADMISSIONS</Link>
               <Link to="/contact" className={`px-4 py-3 text-sm font-bold transition-colors ${isActive('/contact') ? 'bg-purple-700' : 'hover:bg-purple-700'}`}>CONTACT</Link>
             </div>
@@ -185,8 +185,11 @@ const PublicLayout = () => {
               <h3 className="font-bold mb-3 uppercase text-sm">Quick Links</h3>
               <ul className="text-xs space-y-1">
                 <li><Link to="/" className="hover:underline">Home</Link></li>
-                <li><Link to="/about" className="hover:underline">About Us</Link></li>
-                <li><Link to="/programs" className="hover:underline">Programs</Link></li>
+                <li><Link to="/mission" className="hover:underline">Mission & Vision</Link></li>
+                <li><Link to="/faculty" className="hover:underline">Faculty</Link></li>
+                <li><Link to="/k12-programs" className="hover:underline">K-12 Programs</Link></li>
+                <li><Link to="/senior-high" className="hover:underline">Senior High</Link></li>
+                <li><Link to="/news-events" className="hover:underline">News & Events</Link></li>
                 <li><Link to="/enroll" className="hover:underline">Admissions</Link></li>
                 <li><Link to="/contact" className="hover:underline">Contact</Link></li>
               </ul>

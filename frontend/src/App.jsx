@@ -39,11 +39,19 @@ const redirectToLogin = isFirstLaunch();
 // ── Public website pages ──────────────────────────────────────────────────────
 const Home = lazy(() => import('./pages/HomeDepEd'));
 const About = lazy(() => import('./pages/About'));
+const Mission = lazy(() => import('./pages/Mission'));
+const Vision = lazy(() => import('./pages/Vision'));
+const Faculty = lazy(() => import('./pages/Faculty'));
 const Programs = lazy(() => import('./pages/Programs'));
+const K12Programs = lazy(() => import('./pages/K12Programs'));
+const SeniorHigh = lazy(() => import('./pages/SeniorHigh'));
 const Contact = lazy(() => import('./pages/Contact'));
 const Enrollment = lazy(() => import('./pages/Enrollment'));
 const AnnouncementDetails = lazy(() => import('./pages/AnnouncementDetails'));
+const NewsEvents = lazy(() => import('./pages/NewsEvents'));
 const Calendar = lazy(() => import('./pages/Calendar'));
+const LearningMaterials = lazy(() => import('./pages/LearningMaterials'));
+const Portals = lazy(() => import('./pages/Portals'));
 const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
 const TermsOfService = lazy(() => import('./pages/TermsOfService'));
 const EnrollmentTracking = lazy(() => import('./pages/EnrollmentTracking'));
@@ -143,7 +151,15 @@ function App() {
                 <>
                   <Route path="/" element={<Navigate to="/login" replace />} />
                   <Route path="/about" element={<Navigate to="/login" replace />} />
+                  <Route path="/mission" element={<Navigate to="/login" replace />} />
+                  <Route path="/vision" element={<Navigate to="/login" replace />} />
+                  <Route path="/faculty" element={<Navigate to="/login" replace />} />
                   <Route path="/programs" element={<Navigate to="/login" replace />} />
+                  <Route path="/k12-programs" element={<Navigate to="/login" replace />} />
+                  <Route path="/senior-high" element={<Navigate to="/login" replace />} />
+                  <Route path="/news-events" element={<Navigate to="/login" replace />} />
+                  <Route path="/learning-materials" element={<Navigate to="/login" replace />} />
+                  <Route path="/portals" element={<Navigate to="/login" replace />} />
                   <Route path="/contact" element={<Navigate to="/login" replace />} />
                   <Route path="/enroll" element={<Navigate to="/login" replace />} />
                   <Route path="/announcement" element={<Navigate to="/login" replace />} />
@@ -156,7 +172,15 @@ function App() {
                 <Route path="/" element={<PublicLayout />}>
                   <Route index element={<Home />} />
                   <Route path="about" element={<About />} />
+                  <Route path="mission" element={<Mission />} />
+                  <Route path="vision" element={<Vision />} />
+                  <Route path="faculty" element={<Faculty />} />
                   <Route path="programs" element={<Programs />} />
+                  <Route path="k12-programs" element={<K12Programs />} />
+                  <Route path="senior-high" element={<SeniorHigh />} />
+                  <Route path="news-events" element={<NewsEvents />} />
+                  <Route path="learning-materials" element={<LearningMaterials />} />
+                  <Route path="portals" element={<Portals />} />
                   <Route path="contact" element={<Contact />} />
                   <Route path="enroll" element={<Enrollment />} />
                   <Route path="announcement" element={<AnnouncementDetails />} />
