@@ -104,76 +104,99 @@ const PublicLayout = () => {
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex items-center justify-between h-12">
 
-            {/* ── Desktop nav links (hidden on mobile) ── */}
-            <div className="hidden lg:flex items-center space-x-1">
-              <Link to="/" className={`px-3 xl:px-4 py-3 text-xs xl:text-sm font-bold transition-colors ${isActive('/') ? 'bg-purple-700' : 'hover:bg-purple-700'}`}>HOME</Link>
+            {/* ── Left side (Home icon for mobile, nav links for desktop) ── */}
+            <div className="flex items-center">
+              <Link to="/" className="lg:hidden p-2 -ml-1 text-white hover:bg-purple-700 rounded-lg transition-colors">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                </svg>
+              </Link>
 
-              {/* About */}
-              <div className="relative" onMouseEnter={() => setShowAboutDropdown(true)} onMouseLeave={() => setShowAboutDropdown(false)}>
-                <button className={`px-3 xl:px-4 py-3 text-xs xl:text-sm font-bold transition-colors flex items-center gap-1 ${isActive('/mission') || isActive('/vision') || isActive('/faculty') ? 'bg-purple-700' : 'hover:bg-purple-700'}`}>
-                  ABOUT US <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
-                </button>
-                {showAboutDropdown && (
-                  <div className="absolute top-full left-0 bg-white text-gray-800 shadow-xl rounded-b-lg overflow-hidden w-48 z-50">
-                    <Link to="/mission" className="block px-4 py-2.5 text-sm hover:bg-purple-100 font-semibold">Mission</Link>
-                    <Link to="/vision" className="block px-4 py-2.5 text-sm hover:bg-purple-100 font-semibold">Vision</Link>
-                    <Link to="/faculty" className="block px-4 py-2.5 text-sm hover:bg-purple-100 font-semibold">Faculty</Link>
-                  </div>
-                )}
+              {/* Desktop nav links (hidden on mobile) */}
+              <div className="hidden lg:flex items-center space-x-1">
+                <Link to="/" className={`px-3 xl:px-4 py-3 text-xs xl:text-sm font-bold transition-colors ${isActive('/') ? 'bg-purple-700' : 'hover:bg-purple-700'}`}>HOME</Link>
+
+                {/* About */}
+                <div className="relative" onMouseEnter={() => setShowAboutDropdown(true)} onMouseLeave={() => setShowAboutDropdown(false)}>
+                  <button className={`px-3 xl:px-4 py-3 text-xs xl:text-sm font-bold transition-colors flex items-center gap-1 ${isActive('/mission') || isActive('/vision') || isActive('/faculty') ? 'bg-purple-700' : 'hover:bg-purple-700'}`}>
+                    ABOUT US <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                  </button>
+                  {showAboutDropdown && (
+                    <div className="absolute top-full left-0 bg-white text-gray-800 shadow-xl rounded-b-lg overflow-hidden w-48 z-50">
+                      <Link to="/mission" className="block px-4 py-2.5 text-sm hover:bg-purple-100 font-semibold">Mission</Link>
+                      <Link to="/vision" className="block px-4 py-2.5 text-sm hover:bg-purple-100 font-semibold">Vision</Link>
+                      <Link to="/faculty" className="block px-4 py-2.5 text-sm hover:bg-purple-100 font-semibold">Faculty</Link>
+                    </div>
+                  )}
+                </div>
+
+                {/* Academics */}
+                <div className="relative" onMouseEnter={() => setShowAcademicsDropdown(true)} onMouseLeave={() => setShowAcademicsDropdown(false)}>
+                  <button className={`px-3 xl:px-4 py-3 text-xs xl:text-sm font-bold transition-colors flex items-center gap-1 ${isActive('/k12-programs') || isActive('/senior-high') ? 'bg-purple-700' : 'hover:bg-purple-700'}`}>
+                    ACADEMICS <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                  </button>
+                  {showAcademicsDropdown && (
+                    <div className="absolute top-full left-0 bg-white text-gray-800 shadow-xl rounded-b-lg overflow-hidden w-48 z-50">
+                      <Link to="/k12-programs" className="block px-4 py-2.5 text-sm hover:bg-purple-100 font-semibold">K to 12 Programs</Link>
+                      <Link to="/senior-high" className="block px-4 py-2.5 text-sm hover:bg-purple-100 font-semibold">Senior High</Link>
+                    </div>
+                  )}
+                </div>
+
+                {/* Resources */}
+                <div className="relative" onMouseEnter={() => setShowResourcesDropdown(true)} onMouseLeave={() => setShowResourcesDropdown(false)}>
+                  <button className={`px-3 xl:px-4 py-3 text-xs xl:text-sm font-bold transition-colors flex items-center gap-1 ${isActive('/learning-materials') || isActive('/portals') ? 'bg-purple-700' : 'hover:bg-purple-700'}`}>
+                    RESOURCES <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                  </button>
+                  {showResourcesDropdown && (
+                    <div className="absolute top-full left-0 bg-white text-gray-800 shadow-xl rounded-b-lg overflow-hidden w-48 z-50">
+                      <Link to="/learning-materials" className="block px-4 py-2.5 text-sm hover:bg-purple-100 font-semibold">Learning Materials</Link>
+                      <Link to="/portals" className="block px-4 py-2.5 text-sm hover:bg-purple-100 font-semibold">Portals</Link>
+                    </div>
+                  )}
+                </div>
+
+                <Link to="/news-events" className={`px-3 xl:px-4 py-3 text-xs xl:text-sm font-bold transition-colors whitespace-nowrap ${isActive('/news-events') ? 'bg-purple-700' : 'hover:bg-purple-700'}`}>NEWS & EVENTS</Link>
+
+                {/* Admissions */}
+                <div className="relative" onMouseEnter={() => setShowAdmissionsDropdown(true)} onMouseLeave={() => setShowAdmissionsDropdown(false)}>
+                  <button className={`px-3 xl:px-4 py-3 text-xs xl:text-sm font-bold transition-colors flex items-center gap-1 ${isActive('/enroll') || isActive('/track-enrollment') ? 'bg-purple-700' : 'hover:bg-purple-700'}`}>
+                    ADMISSIONS <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                  </button>
+                  {showAdmissionsDropdown && (
+                    <div className="absolute top-full left-0 bg-white text-gray-800 shadow-xl rounded-b-lg overflow-hidden w-52 z-50">
+                      <Link to="/enroll" className="flex items-center gap-2 px-4 py-2.5 text-sm hover:bg-purple-100 font-semibold">
+                        <svg className="w-4 h-4 text-purple-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                        Apply for Enrollment
+                      </Link>
+                      <Link to="/track-enrollment" className="flex items-center gap-2 px-4 py-2.5 text-sm hover:bg-purple-100 font-semibold">
+                        <svg className="w-4 h-4 text-purple-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                        Track Application
+                      </Link>
+                    </div>
+                  )}
+                </div>
+
+                <Link to="/contact" className={`px-3 xl:px-4 py-3 text-xs xl:text-sm font-bold transition-colors ${isActive('/contact') ? 'bg-purple-700' : 'hover:bg-purple-700'}`}>CONTACT</Link>
               </div>
-
-              {/* Academics */}
-              <div className="relative" onMouseEnter={() => setShowAcademicsDropdown(true)} onMouseLeave={() => setShowAcademicsDropdown(false)}>
-                <button className={`px-3 xl:px-4 py-3 text-xs xl:text-sm font-bold transition-colors flex items-center gap-1 ${isActive('/k12-programs') || isActive('/senior-high') ? 'bg-purple-700' : 'hover:bg-purple-700'}`}>
-                  ACADEMICS <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
-                </button>
-                {showAcademicsDropdown && (
-                  <div className="absolute top-full left-0 bg-white text-gray-800 shadow-xl rounded-b-lg overflow-hidden w-48 z-50">
-                    <Link to="/k12-programs" className="block px-4 py-2.5 text-sm hover:bg-purple-100 font-semibold">K to 12 Programs</Link>
-                    <Link to="/senior-high" className="block px-4 py-2.5 text-sm hover:bg-purple-100 font-semibold">Senior High</Link>
-                  </div>
-                )}
-              </div>
-
-              {/* Resources */}
-              <div className="relative" onMouseEnter={() => setShowResourcesDropdown(true)} onMouseLeave={() => setShowResourcesDropdown(false)}>
-                <button className={`px-3 xl:px-4 py-3 text-xs xl:text-sm font-bold transition-colors flex items-center gap-1 ${isActive('/learning-materials') || isActive('/portals') ? 'bg-purple-700' : 'hover:bg-purple-700'}`}>
-                  RESOURCES <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
-                </button>
-                {showResourcesDropdown && (
-                  <div className="absolute top-full left-0 bg-white text-gray-800 shadow-xl rounded-b-lg overflow-hidden w-48 z-50">
-                    <Link to="/learning-materials" className="block px-4 py-2.5 text-sm hover:bg-purple-100 font-semibold">Learning Materials</Link>
-                    <Link to="/portals" className="block px-4 py-2.5 text-sm hover:bg-purple-100 font-semibold">Portals</Link>
-                  </div>
-                )}
-              </div>
-
-              <Link to="/news-events" className={`px-3 xl:px-4 py-3 text-xs xl:text-sm font-bold transition-colors whitespace-nowrap ${isActive('/news-events') ? 'bg-purple-700' : 'hover:bg-purple-700'}`}>NEWS & EVENTS</Link>
-
-              {/* Admissions */}
-              <div className="relative" onMouseEnter={() => setShowAdmissionsDropdown(true)} onMouseLeave={() => setShowAdmissionsDropdown(false)}>
-                <button className={`px-3 xl:px-4 py-3 text-xs xl:text-sm font-bold transition-colors flex items-center gap-1 ${isActive('/enroll') || isActive('/track-enrollment') ? 'bg-purple-700' : 'hover:bg-purple-700'}`}>
-                  ADMISSIONS <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
-                </button>
-                {showAdmissionsDropdown && (
-                  <div className="absolute top-full left-0 bg-white text-gray-800 shadow-xl rounded-b-lg overflow-hidden w-52 z-50">
-                    <Link to="/enroll" className="flex items-center gap-2 px-4 py-2.5 text-sm hover:bg-purple-100 font-semibold">
-                      <svg className="w-4 h-4 text-purple-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                      Apply for Enrollment
-                    </Link>
-                    <Link to="/track-enrollment" className="flex items-center gap-2 px-4 py-2.5 text-sm hover:bg-purple-100 font-semibold">
-                      <svg className="w-4 h-4 text-purple-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-                      Track Application
-                    </Link>
-                  </div>
-                )}
-              </div>
-
-              <Link to="/contact" className={`px-3 xl:px-4 py-3 text-xs xl:text-sm font-bold transition-colors ${isActive('/contact') ? 'bg-purple-700' : 'hover:bg-purple-700'}`}>CONTACT</Link>
             </div>
 
-            {/* ── Right: Search + Login + Hamburger ── */}
-            <div className="flex items-center gap-2">
+            {/* ── Middle: Search (Mobile only, centered) ── */}
+            <div className="lg:hidden flex-1 flex justify-center px-4">
+              <div className="relative w-full max-w-[160px] xs:max-w-[200px]">
+                <input 
+                  type="text" 
+                  placeholder="Search..." 
+                  className="w-full bg-white/10 text-white text-[11px] py-1.5 pl-8 pr-2 rounded-full border border-white/20 focus:bg-white focus:text-gray-900 focus:outline-none transition-all placeholder:text-purple-200"
+                />
+                <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-purple-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
+            </div>
+
+            {/* ── Right: Search(desktop) + Login + Hamburger ── */}
+            <div className="flex items-center gap-1.5 sm:gap-2">
               {/* Search (desktop only) */}
               <div className="hidden lg:flex items-center bg-white rounded-full overflow-hidden">
                 <input type="text" placeholder="Search..." className="px-3 py-1 text-sm text-gray-800 outline-none w-28 xl:w-32" />
@@ -186,8 +209,8 @@ const PublicLayout = () => {
               {user ? (
                 <div className="relative">
                   <button onClick={() => setShowProfileMenu(!showProfileMenu)}
-                    className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-purple-700 text-white text-xs font-semibold hover:bg-purple-600 transition-colors">
-                    <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center text-[10px] font-black flex-shrink-0">
+                    className="flex items-center gap-1.5 px-2 py-1.5 sm:px-2.5 sm:py-1.5 rounded-lg bg-purple-700 text-white text-[10px] sm:text-xs font-semibold hover:bg-purple-600 transition-colors">
+                    <div className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-white/20 flex items-center justify-center text-[8px] sm:text-[10px] font-black flex-shrink-0">
                       {(user.first_name || user.username || '?').charAt(0).toUpperCase()}
                     </div>
                     <span className="hidden sm:block max-w-[80px] truncate">{user.first_name || user.username}</span>
@@ -211,7 +234,7 @@ const PublicLayout = () => {
                   )}
                 </div>
               ) : (
-                <Link to="/login" className="px-3 py-1.5 rounded-lg bg-purple-700 text-white text-xs font-bold hover:bg-purple-600 transition-colors whitespace-nowrap">
+                <Link to="/login" className="px-2.5 py-1.5 sm:px-3 sm:py-1.5 rounded-lg bg-purple-700 text-white text-[10px] sm:text-xs font-bold hover:bg-purple-600 transition-colors whitespace-nowrap">
                   Portal Login
                 </Link>
               )}
@@ -219,7 +242,7 @@ const PublicLayout = () => {
               {/* Hamburger (mobile only) */}
               <button
                 onClick={() => setMobileOpen(v => !v)}
-                className="lg:hidden p-2 rounded-lg hover:bg-purple-700 transition-colors"
+                className="lg:hidden p-1.5 sm:p-2 rounded-lg hover:bg-purple-700 transition-colors"
                 aria-label="Toggle menu"
               >
                 {mobileOpen ? (
@@ -266,15 +289,6 @@ const PublicLayout = () => {
                 )}
               </div>
             ))}
-            {/* Mobile search */}
-            <div className="px-4 py-3 border-b border-purple-700/50">
-              <div className="flex items-center bg-white/10 rounded-lg overflow-hidden border border-white/20">
-                <input type="text" placeholder="Search..." className="flex-1 px-3 py-2 text-sm text-white bg-transparent outline-none placeholder:text-purple-300" />
-                <button className="px-3 py-2 hover:bg-white/10 transition-colors">
-                  <svg className="w-4 h-4 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-                </button>
-              </div>
-            </div>
           </div>
         )}
       </nav>
