@@ -37,7 +37,7 @@ const MiniCalendar = ({ events, onSelectDay }) => {
     <div className="bg-white rounded-2xl border border-slate-100 p-5 shadow-sm">
       <div className="flex items-center justify-between mb-4">
         <p className="text-sm font-bold text-slate-900">{monthName} {currentDate.getFullYear()}</p>
-        <Link to="/calendar" className="text-xs font-semibold text-violet-600 hover:text-violet-700 transition-colors">View full →</Link>
+        <Link to="/calendar" className="text-xs font-semibold text-blue-600 hover:text-blue-700 transition-colors">View full →</Link>
       </div>
       <div className="grid grid-cols-7 gap-1 mb-1">
         {['S','M','T','W','T','F','S'].map((d,i) => <div key={i} className="text-[10px] font-bold text-slate-400 text-center py-1">{d}</div>)}
@@ -51,10 +51,10 @@ const MiniCalendar = ({ events, onSelectDay }) => {
             <div key={i} onClick={() => handleDayClick(day)}
               className={`aspect-square flex flex-col items-center justify-center text-[11px] font-semibold rounded-lg cursor-pointer transition-all relative
                 ${!day ? 'invisible' : ''}
-                ${isSelected ? 'bg-violet-600 text-white' : hasEvent ? 'bg-violet-50 text-violet-700 hover:bg-violet-100' : 'text-slate-600 hover:bg-slate-50'}
-                ${isToday && !isSelected ? 'ring-1 ring-violet-400' : ''}`}>
+                ${isSelected ? 'bg-blue-600 text-white' : hasEvent ? 'bg-blue-50 text-blue-700 hover:bg-blue-100' : 'text-slate-600 hover:bg-slate-50'}
+                ${isToday && !isSelected ? 'ring-1 ring-blue-400' : ''}`}>
               {day}
-              {hasEvent && !isSelected && <span className="absolute bottom-0.5 w-1 h-1 bg-violet-500 rounded-full" />}
+              {hasEvent && !isSelected && <span className="absolute bottom-0.5 w-1 h-1 bg-blue-500 rounded-full" />}
             </div>
           );
         })}
@@ -82,15 +82,15 @@ const attachUrl = (url) => {
 const getFirstImage = (a) => { if (a.attachment_url && /\.(jpg|jpeg|png|gif|webp)$/i.test(a.attachment_url)) return attachUrl(a.attachment_url); const img = a.attachments?.find(att => att.is_image); return attachUrl(img?.url); };
 const getPDFs = (a) => { const pdfs = []; if (a.attachment_url?.toLowerCase().endsWith('.pdf')) pdfs.push({ name: 'Attachment.pdf', url: attachUrl(a.attachment_url) }); a.attachments?.forEach(att => { if (att.url?.toLowerCase().endsWith('.pdf')) pdfs.push({ name: att.filename || 'Document.pdf', url: attachUrl(att.url) }); }); return pdfs; };
 const formatDate = (d) => new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-const CATEGORY_STYLES = { academic: 'bg-violet-50 text-violet-700 border-violet-100', events: 'bg-emerald-50 text-emerald-700 border-emerald-100', emergency: 'bg-red-50 text-red-700 border-red-100', holiday: 'bg-blue-50 text-blue-700 border-blue-100' };
+const CATEGORY_STYLES = { academic: 'bg-blue-50 text-blue-700 border-blue-100', events: 'bg-emerald-50 text-emerald-700 border-emerald-100', emergency: 'bg-red-50 text-red-700 border-red-100', holiday: 'bg-blue-50 text-blue-700 border-blue-100' };
 
 // ── Portal Mockup (hero visual) ───────────────────────────────────────────────
 const PortalMockup = () => (
   <div className="relative w-full max-w-lg mx-auto lg:mx-0">
     {/* Glow behind */}
-    <div className="absolute inset-0 bg-violet-400/20 rounded-3xl blur-3xl scale-110 pointer-events-none" />
+    <div className="absolute inset-0 bg-blue-400/20 rounded-3xl blur-3xl scale-110 pointer-events-none" />
     {/* Browser chrome */}
-    <div className="relative rounded-2xl overflow-hidden border border-white/20 shadow-2xl shadow-violet-900/30 bg-[#1A0B2E]">
+    <div className="relative rounded-2xl overflow-hidden border border-white/20 shadow-2xl shadow-blue-900/30 bg-[#1A0B2E]">
       {/* Title bar */}
       <div className="flex items-center gap-1.5 px-4 py-3 bg-[#140824] border-b border-white/5">
         <span className="w-2.5 h-2.5 rounded-full bg-red-400/70" />
@@ -104,7 +104,7 @@ const PortalMockup = () => (
       <div className="flex h-56">
         {/* Sidebar */}
         <div className="w-14 bg-[#140824] border-r border-white/5 flex flex-col items-center py-3 gap-3">
-          <div className="w-7 h-7 rounded-lg bg-violet-600/80 flex items-center justify-center">
+          <div className="w-7 h-7 rounded-lg bg-blue-600/80 flex items-center justify-center">
             <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
           </div>
           {[
@@ -124,7 +124,7 @@ const PortalMockup = () => (
           <div className="grid grid-cols-3 gap-1.5">
             {[
               { label: 'Attendance', val: '96%', color: 'bg-emerald-500/20 text-emerald-400' },
-              { label: 'Avg Grade', val: '88.4', color: 'bg-violet-500/20 text-violet-400' },
+              { label: 'Avg Grade', val: '88.4', color: 'bg-blue-500/20 text-blue-400' },
               { label: 'Subjects', val: '8', color: 'bg-blue-500/20 text-blue-400' },
             ].map((s, i) => (
               <div key={i} className="rounded-lg bg-white/5 border border-white/5 p-2">
@@ -137,7 +137,7 @@ const PortalMockup = () => (
           <div className="rounded-lg bg-white/5 border border-white/5 p-2">
             <p className="text-[8px] font-bold text-white/40 uppercase tracking-widest mb-1.5">Latest Announcement</p>
             <div className="flex items-start gap-2">
-              <div className="w-1.5 h-1.5 rounded-full bg-violet-400 mt-1 flex-shrink-0" />
+              <div className="w-1.5 h-1.5 rounded-full bg-blue-400 mt-1 flex-shrink-0" />
               <div>
                 <p className="text-[9px] font-semibold text-white/70 leading-tight">Enrollment for SY 2026–2027 is now open</p>
                 <p className="text-[8px] text-white/30 mt-0.5">2 hours ago</p>
@@ -148,7 +148,7 @@ const PortalMockup = () => (
           <div className="rounded-lg bg-white/5 border border-white/5 p-2">
             <p className="text-[8px] font-bold text-white/40 uppercase tracking-widest mb-1.5">Grade Summary</p>
             <div className="space-y-1">
-              {[['Math', 92, 'bg-violet-500'], ['Science', 87, 'bg-blue-500'], ['English', 90, 'bg-emerald-500']].map(([sub, pct, color]) => (
+              {[['Math', 92, 'bg-blue-500'], ['Science', 87, 'bg-blue-500'], ['English', 90, 'bg-emerald-500']].map(([sub, pct, color]) => (
                 <div key={sub} className="flex items-center gap-2">
                   <p className="text-[8px] text-white/40 w-10 flex-shrink-0">{sub}</p>
                   <div className="flex-1 h-1 bg-white/10 rounded-full overflow-hidden">
@@ -174,8 +174,8 @@ const PortalMockup = () => (
     </div>
     {/* Floating badge 2 */}
     <div className="absolute -top-4 -right-4 bg-white rounded-2xl shadow-xl border border-slate-100 px-4 py-3 flex items-center gap-3">
-      <div className="w-8 h-8 rounded-xl bg-violet-100 flex items-center justify-center flex-shrink-0">
-        <svg className="w-4 h-4 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+      <div className="w-8 h-8 rounded-xl bg-blue-100 flex items-center justify-center flex-shrink-0">
+        <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
       </div>
       <div>
         <p className="text-xs font-black text-slate-900 leading-none">1,200+ Students</p>
@@ -237,11 +237,38 @@ const Home = () => {
   return (
     <div className="bg-white">
 
+      {/* ── OFFICIAL GOVERNMENT BANNER ── */}
+      <div className="bg-gradient-to-r from-blue-900 via-blue-800 to-blue-900 border-b-2 border-yellow-400">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
+          <div className="flex items-center justify-center md:justify-between gap-3 flex-wrap">
+            <div className="flex items-center gap-3">
+              {/* Official DepEd Seal */}
+              <div className="h-10 w-10 rounded-full bg-white flex items-center justify-center shrink-0 border-2 border-yellow-400 shadow-lg">
+                <svg className="w-6 h-6 text-blue-900" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                </svg>
+              </div>
+              <div className="text-left">
+                <p className="text-xs md:text-sm font-black text-white uppercase tracking-wide leading-tight">
+                  Department of Education
+                </p>
+                <p className="text-[9px] md:text-[10px] text-blue-200 font-medium uppercase tracking-wider">
+                  Republic of the Philippines
+                </p>
+              </div>
+            </div>
+            <div className="hidden md:flex items-center gap-2 px-3 py-1 rounded-md bg-yellow-400/20 border border-yellow-400/30">
+              <span className="text-[10px] font-black text-yellow-400 uppercase tracking-widest">Official Website</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* ── HERO ── */}
       <section className="relative overflow-hidden bg-[#0f0720] min-h-[92vh] flex items-center">
         {/* Background texture */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[900px] bg-violet-600/10 rounded-full blur-3xl" />
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[900px] bg-blue-600/10 rounded-full blur-3xl" />
           <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-indigo-600/10 rounded-full blur-3xl translate-x-1/3 translate-y-1/3" />
           {/* Grid lines */}
           <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '60px 60px' }} />
@@ -252,9 +279,9 @@ const Home = () => {
 
             {/* Left — text */}
             <div className="space-y-7">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-violet-500/10 border border-violet-500/20">
-                <span className="w-1.5 h-1.5 rounded-full bg-violet-400 animate-pulse" />
-                <span className="text-xs font-bold text-violet-300 uppercase tracking-widest">Enrollment Open — SY 2026–2027</span>
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20">
+                <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
+                <span className="text-xs font-bold text-blue-300 uppercase tracking-widest">Enrollment Open — SY 2026–2027</span>
               </div>
 
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-white leading-[1.08] tracking-tight">
@@ -266,7 +293,7 @@ const Home = () => {
               </p>
 
               <div className="flex flex-wrap gap-3 pt-1">
-                <Link to="/enroll" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-violet-600 text-white text-sm font-bold hover:bg-violet-500 transition-colors shadow-lg shadow-violet-900/40">
+                <Link to="/enroll" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-blue-600 text-white text-sm font-bold hover:bg-blue-500 transition-colors shadow-lg shadow-blue-900/40">
                   Apply for Enrollment
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4 4H3" /></svg>
                 </Link>
@@ -304,22 +331,22 @@ const Home = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
-              <p className="text-xs font-bold text-violet-600 uppercase tracking-widest mb-3">Core Strengths</p>
+              <p className="text-xs font-bold text-blue-600 uppercase tracking-widest mb-3">Core Strengths</p>
               <h2 className="text-3xl md:text-4xl font-black text-slate-900 mb-5 leading-tight">Why Choose<br />Kiwalan NHS?</h2>
               <p className="text-slate-500 leading-relaxed mb-8">A holistic learning environment that combines academic rigor with character building and practical skills for every student.</p>
-              <Link to="/about" className="inline-flex items-center gap-2 text-sm font-bold text-violet-600 hover:text-violet-700 transition-colors">
+              <Link to="/about" className="inline-flex items-center gap-2 text-sm font-bold text-blue-600 hover:text-blue-700 transition-colors">
                 Learn more about us
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4 4H3" /></svg>
               </Link>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {[
-                { title: content.home_feature_1_title?.content || 'Quality Education', desc: content.home_feature_1_content?.content || 'Comprehensive curriculum designed to prepare students for success in higher education and beyond.', icon: 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253', accent: 'bg-violet-50 text-violet-600' },
+                { title: content.home_feature_1_title?.content || 'Quality Education', desc: content.home_feature_1_content?.content || 'Comprehensive curriculum designed to prepare students for success in higher education and beyond.', icon: 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253', accent: 'bg-blue-50 text-blue-600' },
                 { title: content.home_feature_2_title?.content || 'Dedicated Faculty', desc: content.home_feature_2_content?.content || 'Experienced and passionate teachers committed to student development and academic excellence.', icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z', accent: 'bg-blue-50 text-blue-600' },
                 { title: content.home_feature_3_title?.content || 'Modern Facilities', desc: content.home_feature_3_content?.content || 'State-of-the-art classrooms, laboratories, and facilities to support holistic learning.', icon: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4', accent: 'bg-emerald-50 text-emerald-600' },
                 { title: 'Digital Portal', desc: 'Full-featured student portal with grades, attendance, messaging, and real-time notifications.', icon: 'M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z', accent: 'bg-amber-50 text-amber-600' },
               ].map((f, i) => (
-                <div key={i} className="bg-slate-50 rounded-2xl border border-slate-100 p-6 hover:shadow-md hover:border-violet-100 transition-all group">
+                <div key={i} className="bg-slate-50 rounded-2xl border border-slate-100 p-6 hover:shadow-md hover:border-blue-100 transition-all group">
                   <div className={`w-9 h-9 rounded-xl ${f.accent} flex items-center justify-center mb-4`}>
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={f.icon} /></svg>
                   </div>
@@ -333,7 +360,7 @@ const Home = () => {
       </section>
 
       {/* ── STATS BAND ── */}
-      <section className="bg-violet-600 py-14">
+      <section className="bg-blue-600 py-14">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             {[
@@ -344,7 +371,7 @@ const Home = () => {
             ].map((s, i) => (
               <div key={i}>
                 <p className="text-3xl md:text-4xl font-black text-white">{s.val}</p>
-                <p className="text-xs font-bold text-violet-200 uppercase tracking-widest mt-1">{s.label}</p>
+                <p className="text-xs font-bold text-blue-200 uppercase tracking-widest mt-1">{s.label}</p>
               </div>
             ))}
           </div>
@@ -356,10 +383,10 @@ const Home = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
             <div>
-              <p className="text-xs font-bold text-violet-600 uppercase tracking-widest mb-2">Stay Updated</p>
+              <p className="text-xs font-bold text-blue-600 uppercase tracking-widest mb-2">Stay Updated</p>
               <h2 className="text-3xl md:text-4xl font-black text-slate-900">Announcements & Events</h2>
             </div>
-            <Link to="/calendar" className="inline-flex items-center gap-1.5 text-sm font-semibold text-violet-600 hover:text-violet-700 transition-colors flex-shrink-0">
+            <Link to="/calendar" className="inline-flex items-center gap-1.5 text-sm font-semibold text-blue-600 hover:text-blue-700 transition-colors flex-shrink-0">
               Full Calendar <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4 4H3" /></svg>
             </Link>
           </div>
@@ -372,7 +399,7 @@ const Home = () => {
                 const pdfs = getPDFs(a);
                 const catStyle = CATEGORY_STYLES[a.category] || 'bg-slate-50 text-slate-600 border-slate-100';
                 return (
-                  <div key={a.id} className="group bg-white rounded-2xl border border-slate-100 hover:border-violet-200 hover:shadow-md transition-all p-5 flex gap-4">
+                  <div key={a.id} className="group bg-white rounded-2xl border border-slate-100 hover:border-blue-200 hover:shadow-md transition-all p-5 flex gap-4">
                     {imageUrl && (
                       <button onClick={() => setZoomedImage(imageUrl)} className="flex-shrink-0 w-20 h-20 rounded-xl overflow-hidden border border-slate-100">
                         <img src={imageUrl} alt={a.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
@@ -383,7 +410,7 @@ const Home = () => {
                         <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${catStyle}`}>{a.category}</span>
                         <span className="text-[11px] text-slate-400">{a.event_date ? new Date(a.event_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : formatDate(a.created_at)}</span>
                       </div>
-                      <h3 className="text-sm font-bold text-slate-900 mb-1 line-clamp-1 group-hover:text-violet-700 transition-colors">{a.title}</h3>
+                      <h3 className="text-sm font-bold text-slate-900 mb-1 line-clamp-1 group-hover:text-blue-700 transition-colors">{a.title}</h3>
                       <p className="text-xs text-slate-500 leading-relaxed line-clamp-2">{a.content}</p>
                       {pdfs.length > 0 && (
                         <div className="flex gap-2 mt-2">
@@ -407,7 +434,7 @@ const Home = () => {
                 </div>
               )}
               <div className="pt-1">
-                <Link to="/login" className="text-sm font-semibold text-violet-600 hover:text-violet-700 transition-colors">View all announcements in the portal →</Link>
+                <Link to="/login" className="text-sm font-semibold text-blue-600 hover:text-blue-700 transition-colors">View all announcements in the portal →</Link>
               </div>
             </div>
 
@@ -424,13 +451,13 @@ const Home = () => {
                         const d = new Date(ev.event_date || ev.created_at);
                         return (
                           <Link key={ev.id} to={`/calendar?year=${d.getFullYear()}&month=${d.getMonth() + 1}`}
-                            className="flex items-start gap-3 p-3 rounded-xl border border-slate-100 bg-white hover:border-violet-200 hover:shadow-sm transition-all group">
-                            <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-violet-50 border border-violet-100 flex flex-col items-center justify-center">
-                              <span className="text-[9px] font-bold text-violet-500 uppercase leading-none">{d.toLocaleString('en-US', { month: 'short' })}</span>
-                              <span className="text-sm font-black text-violet-700 leading-tight">{d.getDate()}</span>
+                            className="flex items-start gap-3 p-3 rounded-xl border border-slate-100 bg-white hover:border-blue-200 hover:shadow-sm transition-all group">
+                            <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-blue-50 border border-blue-100 flex flex-col items-center justify-center">
+                              <span className="text-[9px] font-bold text-blue-500 uppercase leading-none">{d.toLocaleString('en-US', { month: 'short' })}</span>
+                              <span className="text-sm font-black text-blue-700 leading-tight">{d.getDate()}</span>
                             </div>
                             <div className="min-w-0">
-                              <p className="text-xs font-bold text-slate-900 group-hover:text-violet-700 transition-colors line-clamp-1">{ev.title}</p>
+                              <p className="text-xs font-bold text-slate-900 group-hover:text-blue-700 transition-colors line-clamp-1">{ev.title}</p>
                               <p className="text-[10px] text-slate-400 line-clamp-1 mt-0.5">{ev.content}</p>
                             </div>
                           </Link>
@@ -448,17 +475,17 @@ const Home = () => {
       {/* ── PORTAL FEATURES SHOWCASE ── */}
       <section className="py-20 md:py-28 bg-[#0f0720] relative overflow-hidden">
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-violet-600/10 rounded-full blur-3xl translate-x-1/3 -translate-y-1/3" />
+          <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-blue-600/10 rounded-full blur-3xl translate-x-1/3 -translate-y-1/3" />
         </div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <p className="text-xs font-bold text-violet-400 uppercase tracking-widest mb-3">Digital Platform</p>
+            <p className="text-xs font-bold text-blue-400 uppercase tracking-widest mb-3">Digital Platform</p>
             <h2 className="text-3xl md:text-4xl font-black text-white mb-4">Everything in one portal</h2>
             <p className="text-slate-400 max-w-xl mx-auto">Students, teachers, and administrators all have dedicated dashboards with the tools they need.</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             {[
-              { role: 'Students', color: 'border-violet-500/30 bg-violet-500/5', badge: 'bg-violet-500/20 text-violet-300', features: ['View grades & report cards', 'Track attendance records', 'Access learning materials', 'Receive announcements', 'Message teachers & peers'] },
+              { role: 'Students', color: 'border-blue-500/30 bg-blue-500/5', badge: 'bg-blue-500/20 text-blue-300', features: ['View grades & report cards', 'Track attendance records', 'Access learning materials', 'Receive announcements', 'Message teachers & peers'] },
               { role: 'Teachers', color: 'border-blue-500/30 bg-blue-500/5', badge: 'bg-blue-500/20 text-blue-300', features: ['Input & manage grades', 'Record attendance', 'Upload learning materials', 'Post announcements', 'Communicate with students'] },
               { role: 'Administrators', color: 'border-emerald-500/30 bg-emerald-500/5', badge: 'bg-emerald-500/20 text-emerald-300', features: ['Manage all users & classes', 'View analytics & reports', 'Control enrollment', 'System settings & audit logs', 'Backup & maintenance tools'] },
             ].map((r, i) => (
@@ -467,7 +494,7 @@ const Home = () => {
                 <ul className="space-y-2.5">
                   {r.features.map((f, j) => (
                     <li key={j} className="flex items-center gap-2.5 text-sm text-slate-400">
-                      <svg className="w-3.5 h-3.5 text-violet-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
+                      <svg className="w-3.5 h-3.5 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
                       {f}
                     </li>
                   ))}
@@ -476,7 +503,7 @@ const Home = () => {
             ))}
           </div>
           <div className="text-center mt-10">
-            <Link to="/login" className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl bg-violet-600 text-white text-sm font-bold hover:bg-violet-500 transition-colors shadow-lg shadow-violet-900/40">
+            <Link to="/login" className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl bg-blue-600 text-white text-sm font-bold hover:bg-blue-500 transition-colors shadow-lg shadow-blue-900/40">
               Access the Portal
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4 4H3" /></svg>
             </Link>
@@ -491,7 +518,7 @@ const Home = () => {
 
             {/* Info side */}
             <div>
-              <p className="text-xs font-bold text-violet-600 uppercase tracking-widest mb-3">Find Us</p>
+              <p className="text-xs font-bold text-blue-600 uppercase tracking-widest mb-3">Find Us</p>
               <h2 className="text-3xl md:text-4xl font-black text-slate-900 mb-5 leading-tight">
                 Visit Kiwalan<br />National High School
               </h2>
@@ -518,8 +545,8 @@ const Home = () => {
                   },
                 ].map((item, i) => (
                   <div key={i} className="flex items-start gap-4">
-                    <div className="w-10 h-10 rounded-xl bg-violet-50 border border-violet-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <svg className="w-4 h-4 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={item.icon} />
                       </svg>
                     </div>
@@ -535,7 +562,7 @@ const Home = () => {
                 href="https://maps.google.com/?q=Kiwalan+National+High+School+Iligan+City"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 mt-8 px-5 py-2.5 rounded-xl bg-violet-600 text-white text-sm font-bold hover:bg-violet-500 transition-colors shadow-sm"
+                className="inline-flex items-center gap-2 mt-8 px-5 py-2.5 rounded-xl bg-blue-600 text-white text-sm font-bold hover:bg-blue-500 transition-colors shadow-sm"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -566,7 +593,7 @@ const Home = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="rounded-3xl bg-slate-900 px-8 py-14 md:px-16 md:py-20 relative overflow-hidden">
             <div className="absolute inset-0 pointer-events-none">
-              <div className="absolute top-0 right-0 w-64 h-64 bg-violet-600/20 rounded-full translate-x-1/3 -translate-y-1/3 blur-3xl" />
+              <div className="absolute top-0 right-0 w-64 h-64 bg-blue-600/20 rounded-full translate-x-1/3 -translate-y-1/3 blur-3xl" />
               <div className="absolute bottom-0 left-0 w-64 h-64 bg-indigo-600/10 rounded-full -translate-x-1/3 translate-y-1/3 blur-3xl" />
             </div>
             <div className="relative grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
@@ -575,7 +602,7 @@ const Home = () => {
                 <p className="text-slate-400 leading-relaxed">Join a community dedicated to academic excellence and personal growth. Your journey starts here at Kiwalan NHS.</p>
               </div>
               <div className="flex flex-wrap gap-3 lg:justify-end">
-                <Link to="/enroll" className="px-8 py-3.5 rounded-xl bg-violet-600 text-white text-sm font-bold hover:bg-violet-500 transition-colors shadow-lg shadow-violet-900/40">
+                <Link to="/enroll" className="px-8 py-3.5 rounded-xl bg-blue-600 text-white text-sm font-bold hover:bg-blue-500 transition-colors shadow-lg shadow-blue-900/40">
                   Enroll Now
                 </Link>
                 <Link to="/contact" className="px-8 py-3.5 rounded-xl border border-white/10 text-white text-sm font-bold hover:bg-white/5 transition-colors">
@@ -601,3 +628,4 @@ const Home = () => {
 };
 
 export default Home;
+
