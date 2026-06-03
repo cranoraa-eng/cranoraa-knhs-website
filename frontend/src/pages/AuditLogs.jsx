@@ -179,17 +179,28 @@ const AuditLogs = () => {
   }
 
   return (
-    <div className="space-y-5 animate-fade-in page-bottom-safe">
-      {/* ── Page Header ── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="page-bottom-safe max-w-[1800px] mx-auto min-h-0 bg-slate-50 px-4 py-4 md:px-6 md:py-6 space-y-5 md:space-y-6 animate-fade-in">
+      {/* ══════════════════════════════════════════════════════════════ */}
+      {/* OFFICIAL HEADER */}
+      {/* ══════════════════════════════════════════════════════════════ */}
+      
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-black text-slate-900 tracking-tight">Audit Logs</h1>
+          <div className="flex items-center gap-2 text-xs font-bold text-blue-700 uppercase tracking-wide mb-2">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            <span>System Monitoring & Security</span>
+          </div>
+          <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight">
+            Audit Logs
+          </h1>
           <div className="flex items-center gap-3 mt-1 flex-wrap">
-            <p className="text-sm text-slate-500">{totalCount} total entries</p>
-            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-              (stats.size_mb / stats.max_mb) > 0.8 ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600'
+            <p className="text-xs text-slate-600 font-semibold">{totalCount} total entries</p>
+            <span className={`text-[10px] font-bold px-2.5 py-1 rounded-md ${
+              (stats.size_mb / stats.max_mb) > 0.8 ? 'bg-red-100 text-red-600 border border-red-200' : 'bg-blue-100 text-blue-600 border border-blue-200'
             }`}>{stats.size_mb}MB / {stats.max_mb}MB</span>
-            <div className="w-24 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+            <div className="w-24 h-2 bg-slate-100 rounded-full overflow-hidden border border-slate-200">
               <div className={`h-full rounded-full transition-all duration-500 ${
                 (stats.size_mb / stats.max_mb) > 0.8 ? 'bg-red-500' : 'bg-blue-500'
               }`} style={{ width: `${Math.min((stats.size_mb / stats.max_mb) * 100, 100)}%` }} />
@@ -199,7 +210,7 @@ const AuditLogs = () => {
         <div className="flex items-center gap-2 flex-wrap">
           {selectedIds.length > 0 && (
             <button onClick={handleBulkDelete} disabled={deleting}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-md bg-red-50 text-red-600 border border-red-200 text-sm font-bold hover:bg-red-100 transition-all disabled:opacity-50">
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-md bg-red-50 text-red-600 border border-red-200 text-sm font-bold hover:bg-red-100 transition-all disabled:opacity-50 shadow-sm">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
               </svg>
