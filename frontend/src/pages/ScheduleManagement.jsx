@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import api from '../utils/api';
 import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
-import { LoadingSpinner, Modal } from '../components/ui';
+import { LoadingSpinner, Modal, getModalZ } from '../components/ui';
 
 const DAYS = ['monday','tuesday','wednesday','thursday','friday'];
 const WEEKDAYS = ['monday','tuesday','wednesday','thursday','friday'];
@@ -92,6 +92,18 @@ export default function ScheduleManagement() {
   const [editSlotForm, setEditSlotForm] = useState({ start_time:'', end_time:'', label:'', day:'' });
   const [showTutorial, setShowTutorial] = useState(() => !localStorage.getItem('schedTutorialDone'));
   const [tutorialStep, setTutorialStep] = useState(0);
+
+  const fireStackedAlert = useCallback((options) => Swal.fire({
+    heightAuto: false,
+    ...options,
+    didOpen: (popup) => {
+      const container = Swal.getContainer();
+      if (container) {
+        container.style.zIndex = String(getModalZ());
+      }
+      options.didOpen?.(popup);
+    },
+  }), []);
 
   const fetchAll = useCallback(async () => {
     setLoading(true);
@@ -263,7 +275,7 @@ export default function ScheduleManagement() {
   };
 
   const handleDelete = async (id, name) => {
-    const r = await Swal.fire({ title:'Delete schedule?', text:name||'This cannot be undone.', icon:'warning', showCancelButton:true, confirmButtonColor:'#ef4444', confirmButtonText:'Delete', customClass:{popup:'rounded-2xl'} });
+    const r = await fireStackedAlert({ title:'Delete schedule?', text:name||'This cannot be undone.', icon:'warning', showCancelButton:true, confirmButtonColor:'#ef4444', confirmButtonText:'Delete', customClass:{popup:'rounded-2xl'} });
     if (!r.isConfirmed) return;
     try { await api.delete(`/schedules/${id}/`); toast.success('Deleted'); fetchAll(); }
     catch { toast.error('Failed to delete'); }
@@ -323,9 +335,14 @@ export default function ScheduleManagement() {
   };
 
   const deleteSlot = async (id, label) => {
-    const r = await Swal.fire({ title:`Delete "${label}"?`, text:'Schedules using this slot will be affected.', icon:'warning', showCancelButton:true, confirmButtonColor:'#ef4444', confirmButtonText:'Delete', customClass:{popup:'rounded-2xl'} });
+    const r = await fireStackedAlert({ title:`Delete "${label}"?`, text:'Schedules using this slot will be affected.', icon:'warning', showCancelButton:true, confirmButtonColor:'#ef4444', confirmButtonText:'Delete', customClass:{popup:'rounded-2xl'} });
     if (!r.isConfirmed) return;
-    try { await api.delete(`/time-slots/${id}/`); toast.success('Deleted'); setTimeSlots(prev => prev.filter(t => t.id !== id)); }
+    try {
+      await api.delete(`/time-slots/${id}/`);
+      toast.success('Deleted');
+      setTimeSlots(prev => prev.filter(t => t.id !== id));
+      if (editingSlot && String(editingSlot.id) === String(id)) cancelEditSlot();
+    }
     catch { toast.error('Failed to delete'); }
   };
 
@@ -337,7 +354,7 @@ export default function ScheduleManagement() {
   };
 
   const deleteRoom = async (id, name) => {
-    const r = await Swal.fire({ title:`Delete "${name}"?`, text:'Schedules using this room will lose their assignment.', icon:'warning', showCancelButton:true, confirmButtonColor:'#ef4444', confirmButtonText:'Delete', customClass:{popup:'rounded-2xl'} });
+    const r = await fireStackedAlert({ title:`Delete "${name}"?`, text:'Schedules using this room will lose their assignment.', icon:'warning', showCancelButton:true, confirmButtonColor:'#ef4444', confirmButtonText:'Delete', customClass:{popup:'rounded-2xl'} });
     if (!r.isConfirmed) return;
     try { await api.delete(`/rooms/${id}/`); toast.success('Deleted'); fetchAll(); }
     catch { toast.error('Failed to delete'); }
@@ -1138,6 +1155,12 @@ export default function ScheduleManagement() {
                                 className="px-3 py-1.5 rounded-lg bg-blue-600 text-white text-[10px] font-bold hover:bg-blue-700 disabled:opacity-50 transition-all">
                                 {savingSlot ? '...' : 'Save'}
                               </button>
+                              <button type="button"
+                                onClick={() => deleteSlot(editingSlot.id, `${DAY_SHORT[editingSlot.day]} ${normalizeTime(editingSlot.start_time)}`)}
+                                disabled={savingSlot}
+                                className="px-3 py-1.5 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-[10px] font-bold hover:bg-rose-100 disabled:opacity-50 transition-all">
+                                Delete Slot
+                              </button>
                               <button type="button" onClick={cancelEditSlot}
                                 className="px-3 py-1.5 rounded-lg border border-slate-200 text-slate-500 text-[10px] font-bold hover:bg-slate-50 transition-all">
                                 Cancel
@@ -1261,4 +1284,3 @@ export default function ScheduleManagement() {
     </div>
   );
 }
-
