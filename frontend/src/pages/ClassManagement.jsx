@@ -5,7 +5,8 @@ import Swal from 'sweetalert2';
 import toast from 'react-hot-toast';
 import {
   Card, CardHeader, CardBody, CardTitle, Button, Badge,
-  LoadingSpinner, EmptyState, Modal, ModalHeader, ModalBody, ModalFooter
+  LoadingSpinner, EmptyState, Modal, ModalHeader, ModalBody, ModalFooter,
+  ModalTitle, ModalField, ModalBtnPrimary, ModalBtnSecondary, modalInputCls, modalSelectCls
 } from '../components/ui';
 
 /**
@@ -375,90 +376,79 @@ const ClassManagement = () => {
       {/* MODAL */}
       {/* ══════════════════════════════════════════════════════════════ */}
 
-      <Modal isOpen={showModal} onClose={() => setShowModal(false)}>
-          <ModalHeader onClose={() => setShowModal(false)}>
-            <div>
-              <h2 className="text-lg font-extrabold text-slate-900">
-                {editingClass ? 'Edit Class' : 'Add New Class'}
-              </h2>
-              <p className="text-xs text-blue-700 font-bold uppercase tracking-wide mt-0.5">
-                {selectedYearName}
-              </p>
-            </div>
-          </ModalHeader>
-          <form onSubmit={handleSubmit}>
-            <ModalBody>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-2">
-                    Grade Level <span className="text-red-600">*</span>
-                  </label>
-                  <select
-                    value={formData.grade_level}
-                    onChange={e => {
-                      const level = e.target.value;
-                      setFormData(prev => ({
-                        ...prev,
-                        grade_level: level,
-                        name: prev.name || level + ' - ',
-                      }));
-                    }}
-                    className="w-full px-4 py-2.5 border border-slate-300 rounded-md bg-white text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all"
-                    required
-                  >
-                    <option value="">Select grade level</option>
-                    {GRADE_LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-2">
-                    Class Name <span className="text-red-600">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.name}
-                    onChange={e => setFormData({ ...formData, name: e.target.value })}
-                    placeholder="e.g. Grade 7 - Rizal"
-                    className="w-full px-4 py-2.5 border border-slate-300 rounded-md bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all"
-                    required
-                  />
-                  <p className="text-xs text-slate-500 mt-1">Include the grade level, e.g. "Grade 7 - Rizal"</p>
-                </div>
-                <div>
-                  <label className="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-2">
-                    Adviser / Teacher <span className="text-slate-400 text-xs normal-case">(optional)</span>
-                  </label>
-                  <select
-                    value={formData.teacher || ''}
-                    onChange={e => setFormData({ ...formData, teacher: e.target.value })}
-                    className="w-full px-4 py-2.5 border border-slate-300 rounded-md bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all"
-                  >
-                    <option value="">— No Adviser —</option>
-                    {teachers.map(t => {
-                      const otherClass = classes.find(c => c.teacher === t.id && c.id !== editingClass?.id);
-                      const isAssigned = !!otherClass;
-                      return (
-                        <option key={t.id} value={t.id} disabled={isAssigned}>
-                          {t.first_name && t.last_name ? `${t.first_name} ${t.last_name}` : t.username}
-                          {isAssigned ? ` (Adviser of ${otherClass.name})` : ` (${t.email})`}
-                        </option>
-                      );
-                    })}
-                  </select>
-                  <p className="text-xs text-slate-500 mt-1">Leave empty to assign an adviser later.</p>
-                </div>
+      <Modal isOpen={showModal} onClose={() => setShowModal(false)} size="md">
+        <ModalHeader onClose={() => setShowModal(false)}>
+          <ModalTitle
+            title={editingClass ? 'Edit Classroom' : 'Add New Classroom'}
+            subtitle={`Academic Year ${selectedYearName}`}
+          />
+        </ModalHeader>
+        <form onSubmit={handleSubmit}>
+          <ModalBody>
+            <div className="space-y-4">
+              {/* Info banner */}
+              <div className="flex items-start gap-3 p-3 bg-purple-50 border border-purple-200 rounded-sm">
+                <svg className="w-4 h-4 text-purple-700 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <p className="text-xs text-purple-800">Fill in all required fields. Class name should follow the format: Grade Level - Section Name.</p>
               </div>
-            </ModalBody>
-            <ModalFooter>
-              <Button type="button" variant="secondary" onClick={() => setShowModal(false)}>
-                Cancel
-              </Button>
-              <Button type="submit" variant="primary" loading={saving}>
-                {editingClass ? 'Update Class' : 'Create Class'}
-              </Button>
-            </ModalFooter>
-          </form>
-        </Modal>
+
+              <ModalField label="Grade Level" required>
+                <select
+                  value={formData.grade_level}
+                  onChange={e => {
+                    const level = e.target.value;
+                    setFormData(prev => ({ ...prev, grade_level: level, name: prev.name || level + ' - ' }));
+                  }}
+                  className={modalSelectCls}
+                  required
+                >
+                  <option value="">— Select Grade Level —</option>
+                  {GRADE_LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
+                </select>
+              </ModalField>
+
+              <ModalField label="Class / Section Name" required hint='Example: "Grade 7 - Rizal" or "Grade 11 - STEM A"'>
+                <input
+                  type="text"
+                  value={formData.name}
+                  onChange={e => setFormData({ ...formData, name: e.target.value })}
+                  placeholder="e.g. Grade 7 - Rizal"
+                  className={modalInputCls}
+                  required
+                />
+              </ModalField>
+
+              <ModalField label="Adviser / Class Teacher" hint="Optional — can be assigned later.">
+                <select
+                  value={formData.teacher || ''}
+                  onChange={e => setFormData({ ...formData, teacher: e.target.value })}
+                  className={modalSelectCls}
+                >
+                  <option value="">— No Adviser Assigned —</option>
+                  {teachers.map(t => {
+                    const otherClass = classes.find(c => c.teacher === t.id && c.id !== editingClass?.id);
+                    const isAssigned = !!otherClass;
+                    return (
+                      <option key={t.id} value={t.id} disabled={isAssigned}>
+                        {t.first_name && t.last_name ? `${t.first_name} ${t.last_name}` : t.username}
+                        {isAssigned ? ` (Assigned: ${otherClass.name})` : ` — ${t.email}`}
+                      </option>
+                    );
+                  })}
+                </select>
+              </ModalField>
+            </div>
+          </ModalBody>
+          <ModalFooter>
+            <ModalBtnSecondary onClick={() => setShowModal(false)}>Cancel</ModalBtnSecondary>
+            <ModalBtnPrimary loading={saving}>
+              {editingClass ? 'Update Classroom' : 'Create Classroom'}
+            </ModalBtnPrimary>
+          </ModalFooter>
+        </form>
+      </Modal>
     </motion.div>
   );
 };

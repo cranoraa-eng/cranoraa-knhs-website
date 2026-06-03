@@ -5,7 +5,9 @@ import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
 import {
   Card, CardHeader, CardBody, CardTitle, Button, Badge,
-  LoadingSpinner, EmptyState, Modal, ModalHeader, ModalBody, ModalFooter
+  LoadingSpinner, EmptyState, Modal, ModalHeader, ModalBody, ModalFooter,
+  ModalTitle, ModalField, ModalBtnPrimary, ModalBtnSecondary,
+  modalInputCls, modalSelectCls, modalTextareaCls
 } from '../components/ui';
 
 /**
@@ -296,94 +298,68 @@ const Subjects = () => {
       {/* MODAL */}
       {/* ══════════════════════════════════════════════════════════════ */}
 
-      <Modal isOpen={showModal} onClose={() => setShowModal(false)}>
-          <ModalHeader onClose={() => setShowModal(false)}>
-            <div>
-              <h2 className="text-lg font-extrabold text-slate-900">
-                {editing ? 'Update Subject' : 'New Subject'}
-              </h2>
-              <p className="text-xs text-blue-700 font-bold uppercase tracking-wide mt-0.5">
-                Subject Curriculum Details
-              </p>
-            </div>
-          </ModalHeader>
-          <form onSubmit={handleSubmit}>
-            <ModalBody>
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-2">
-                      Subject Code <span className="text-red-600">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      value={form.code}
-                      onChange={e => setForm({ ...form, code: e.target.value.toUpperCase() })}
-                      placeholder="e.g. MATH7"
-                      className="w-full px-4 py-2.5 border border-slate-300 rounded-md bg-white text-sm font-semibold uppercase focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-2">
-                      Grade Level <span className="text-red-600">*</span>
-                    </label>
-                    <select
-                      value={form.grade_level}
-                      onChange={e => setForm({ ...form, grade_level: e.target.value })}
-                      className="w-full px-4 py-2.5 border border-slate-300 rounded-md bg-white text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all"
-                      required
-                    >
-                      <option value="">Select Level</option>
-                      {GRADE_LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
-                    </select>
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-2">
-                    Subject Name <span className="text-red-600">*</span>
-                  </label>
+      <Modal isOpen={showModal} onClose={() => setShowModal(false)} size="md">
+        <ModalHeader onClose={() => setShowModal(false)}>
+          <ModalTitle
+            title={editing ? 'Edit Subject' : 'New Subject'}
+            subtitle="Subject Curriculum Details"
+          />
+        </ModalHeader>
+        <form onSubmit={handleSubmit}>
+          <ModalBody>
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <ModalField label="Subject Code" required>
                   <input
                     type="text"
-                    value={form.name}
-                    onChange={e => setForm({ ...form, name: e.target.value })}
-                    placeholder="e.g. Mathematics"
-                    className="w-full px-4 py-2.5 border border-slate-300 rounded-md bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all"
+                    value={form.code}
+                    onChange={e => setForm({ ...form, code: e.target.value.toUpperCase() })}
+                    placeholder="e.g. MATH7"
+                    className={modalInputCls + ' uppercase font-mono'}
                     required
                   />
-                </div>
-                <div>
-                  <label className="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-2">
-                    Description <span className="text-slate-400 text-xs normal-case">(optional)</span>
-                  </label>
-                  <textarea
-                    rows={3}
-                    value={form.description}
-                    onChange={e => setForm({ ...form, description: e.target.value })}
-                    placeholder="Brief subject overview..."
-                    className="w-full px-4 py-2.5 border border-slate-300 rounded-md bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all resize-none"
-                  />
-                </div>
+                </ModalField>
+                <ModalField label="Grade Level" required>
+                  <select
+                    value={form.grade_level}
+                    onChange={e => setForm({ ...form, grade_level: e.target.value })}
+                    className={modalSelectCls}
+                    required
+                  >
+                    <option value="">— Select Level —</option>
+                    {GRADE_LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
+                  </select>
+                </ModalField>
               </div>
-            </ModalBody>
-            <ModalFooter>
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={() => setShowModal(false)}
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                variant="primary"
-                loading={saving}
-              >
-                {editing ? 'Save Changes' : 'Create Subject'}
-              </Button>
-            </ModalFooter>
-          </form>
-        </Modal>
+              <ModalField label="Subject Name" required>
+                <input
+                  type="text"
+                  value={form.name}
+                  onChange={e => setForm({ ...form, name: e.target.value })}
+                  placeholder="e.g. Mathematics"
+                  className={modalInputCls}
+                  required
+                />
+              </ModalField>
+              <ModalField label="Description">
+                <textarea
+                  rows={3}
+                  value={form.description}
+                  onChange={e => setForm({ ...form, description: e.target.value })}
+                  placeholder="Brief subject overview (optional)"
+                  className={modalTextareaCls}
+                />
+              </ModalField>
+            </div>
+          </ModalBody>
+          <ModalFooter>
+            <ModalBtnSecondary onClick={() => setShowModal(false)}>Cancel</ModalBtnSecondary>
+            <ModalBtnPrimary loading={saving}>
+              {editing ? 'Save Changes' : 'Create Subject'}
+            </ModalBtnPrimary>
+          </ModalFooter>
+        </form>
+      </Modal>
       )}
     </motion.div>
   );

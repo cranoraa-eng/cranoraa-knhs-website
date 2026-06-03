@@ -262,143 +262,122 @@ const StudentEnrollment = () => {
 
       {/* Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[100] p-2 md:p-4 animate-in fade-in duration-300">
-          <div className="bg-white rounded-xl md:rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-300">
-            <div className="flex items-center justify-between p-4 md:p-6 border-b border-slate-100 bg-slate-50/50">
-              <h2 className="text-base md:text-xl font-black text-slate-800 uppercase tracking-tight">Enroll Student</h2>
-              <button onClick={() => setShowModal(false)} className="p-1.5 hover:bg-white rounded-full transition-all text-slate-400 hover:text-slate-600 shadow-sm">
-                <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+        <div className="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center p-2 md:p-4 animate-in fade-in duration-300">
+          <div className="bg-white w-full max-w-md border border-gray-300 shadow-2xl rounded-sm flex flex-col max-h-[92vh]" onClick={e => e.stopPropagation()}>
+            <div className="bg-[#5e2a84] flex items-center justify-between px-5 py-3 flex-shrink-0 border-b-2 border-purple-900">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-7 h-7 rounded-full bg-white/20 border border-white/30 flex items-center justify-center flex-shrink-0">
+                  <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
+                  </svg>
+                </div>
+                <div>
+                  <h2 className="text-sm font-black text-white uppercase tracking-widest leading-none">Enroll Student</h2>
+                  <p className="text-purple-200 text-[10px] mt-0.5 font-medium uppercase tracking-wide">
+                    Classroom: {classrooms.find(c => String(c.id) === String(selectedClassroom))?.name || ''}
+                  </p>
+                </div>
+              </div>
+              <button type="button" onClick={() => setShowModal(false)}
+                className="ml-4 w-7 h-7 flex items-center justify-center rounded text-white/60 hover:bg-white/20 hover:text-white transition-all">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12"/>
                 </svg>
               </button>
             </div>
-            <form onSubmit={handleSubmit} className="p-4 md:p-6 space-y-3 md:space-y-4">
-              <div>
-                <label className="block text-[10px] md:text-sm font-black text-slate-700 mb-1.5 uppercase tracking-widest">
-                  Select Student
-                  <span className="ml-2 text-[8px] md:text-xs font-bold text-slate-400 lowercase tracking-normal">
-                    ({filteredStudents.length} available)
-                  </span>
-                </label>
+            <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
+              <div className="px-4 md:px-6 py-4 md:py-5 overflow-y-auto flex-1 space-y-3 md:space-y-4">
+                <div>
+                  <label className="block text-xs font-black text-gray-700 uppercase tracking-wider mb-1.5">
+                    Select Student
+                    <span className="ml-2 text-[10px] font-bold text-gray-400 normal-case tracking-normal">
+                      ({filteredStudents.length} available)
+                    </span>
+                  </label>
 
-                {/* Search */}
-                <div className="relative mb-2">
-                  <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-3 h-3 md:w-4 md:h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                  </svg>
-                  <input
-                    type="text"
-                    placeholder="Search name, email, or LRN..."
-                    value={studentSearch}
-                    onChange={e => setStudentSearch(e.target.value)}
-                    className="w-full pl-9 pr-9 py-1.5 md:py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-1 focus:ring-violet-500 text-[10px] md:text-sm font-bold shadow-inner uppercase tracking-wider"
-                  />
-                  {studentSearch && (
-                    <button type="button" onClick={() => setStudentSearch('')}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1">
-                      <svg className="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
-                  )}
-                </div>
-
-                {/* Student card list */}
-                <div className="border border-slate-200 rounded-lg md:rounded-xl overflow-hidden shadow-sm">
-                  {filteredStudents.length === 0 ? (
-                    <div className="py-6 md:py-8 text-center text-slate-400 text-[10px] md:text-sm font-bold uppercase tracking-widest">
-                      <svg className="w-6 h-6 md:w-8 md:h-8 mx-auto mb-2 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-                      </svg>
-                      {studentSearch ? 'No matches' : 'All enrolled'}
-                    </div>
-                  ) : (
-                    <div className="max-h-40 md:max-h-56 overflow-y-auto divide-y divide-slate-100 scrollbar-thin scrollbar-thumb-slate-200">
-                      {filteredStudents.map(s => {
-                        const fullName = s.first_name && s.last_name
-                          ? `${s.first_name} ${s.last_name}`
-                          : s.username;
-                        const initials = fullName.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
-                        const isSelected = selectedStudents.includes(s.id);
-                        return (
-                          <button
-                            key={s.id}
-                            type="button"
-                            onClick={() => toggleStudentSelection(s.id)}
-                            className={`w-full flex items-center gap-2 md:gap-3 px-3 py-2 md:px-4 md:py-3 text-left transition-colors border-l-2 md:border-l-4 ${
-                              isSelected
-                                ? 'bg-violet-50 border-violet-500'
-                                : 'hover:bg-slate-50 border-transparent'
-                            }`}
-                          >
-                            {/* Checkbox-like Indicator */}
-                            <div className={`w-3.5 h-3.5 md:w-5 md:h-5 rounded border flex items-center justify-center transition-colors ${
-                              isSelected ? 'bg-violet-600 border-violet-600' : 'bg-white border-slate-300'
-                            }`}>
-                              {isSelected && (
-                                <svg className="w-2.5 h-2.5 md:w-3.5 md:h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                                </svg>
-                              )}
-                            </div>
-
-                            {/* Avatar */}
-                            <div className={`w-7 h-7 md:w-9 md:h-9 rounded md:rounded-lg flex items-center justify-center text-[8px] md:text-sm font-black flex-shrink-0 shadow-sm ${
-                              isSelected
-                                ? 'bg-violet-600 text-white'
-                                : 'bg-gradient-to-br from-purple-400 to-indigo-500 text-white'
-                            }`}>
-                              {initials}
-                            </div>
-
-                            {/* Info */}
-                            <div className="flex-1 min-w-0 leading-tight">
-                              <div className={`text-[9px] md:text-sm font-black truncate uppercase tracking-tighter ${isSelected ? 'text-purple-800' : 'text-slate-800'}`}>
-                                {fullName}
-                              </div>
-                              <div className="text-[7px] md:text-xs text-slate-400 truncate font-bold">{s.email}</div>
-                              {s.profile?.lrn && <div className="text-[6px] md:text-[10px] text-slate-300 font-bold">LRN: {s.profile.lrn}</div>}
-                            </div>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-
-                {/* Selected confirmation */}
-                {selectedStudents.length > 0 && (
-                  <div className="mt-1.5 flex items-center justify-between text-[8px] md:text-xs text-violet-700 bg-violet-50 border border-violet-200 rounded-md md:rounded-lg px-2 py-1 md:px-3 md:py-2 font-bold uppercase tracking-widest">
-                    <div className="flex items-center gap-1.5">
-                      <svg className="w-2.5 h-2.5 md:w-3.5 md:h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-                      </svg>
-                      Selected: {selectedStudents.length} Student(s)
-                    </div>
-                    <button 
-                      type="button"
-                      onClick={() => setSelectedStudents([])}
-                      className="text-violet-400 hover:text-violet-600 transition-colors px-1"
-                    >
-                      Clear
-                    </button>
+                  {/* Search */}
+                  <div className="relative mb-2">
+                    <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-3 h-3 md:w-4 md:h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                    <input type="text" placeholder="Search name, email, or LRN..." value={studentSearch}
+                      onChange={e => setStudentSearch(e.target.value)}
+                      className="w-full pl-9 pr-9 py-1.5 md:py-2.5 border border-gray-300 rounded-sm bg-white text-[10px] md:text-sm focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500 placeholder:text-gray-400" />
+                    {studentSearch && (
+                      <button type="button" onClick={() => setStudentSearch('')}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1">
+                        <svg className="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    )}
                   </div>
-                )}
+
+                  {/* Student card list */}
+                  <div className="border border-gray-200 rounded-sm overflow-hidden shadow-sm">
+                    {filteredStudents.length === 0 ? (
+                      <div className="py-6 md:py-8 text-center text-gray-400 text-[10px] md:text-sm font-bold uppercase tracking-widest">
+                        <svg className="w-6 h-6 md:w-8 md:h-8 mx-auto mb-2 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        {studentSearch ? 'No matches' : 'All enrolled'}
+                      </div>
+                    ) : (
+                      <div className="max-h-40 md:max-h-56 overflow-y-auto divide-y divide-gray-100 scrollbar-thin scrollbar-thumb-gray-200">
+                        {filteredStudents.map(s => {
+                          const fullName = s.first_name && s.last_name ? `${s.first_name} ${s.last_name}` : s.username;
+                          const initials = fullName.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+                          const isSelected = selectedStudents.includes(s.id);
+                          return (
+                            <button key={s.id} type="button" onClick={() => toggleStudentSelection(s.id)}
+                              className={`w-full flex items-center gap-2 md:gap-3 px-3 py-2 md:px-4 md:py-3 text-left transition-colors border-l-2 md:border-l-4 ${
+                                isSelected ? 'bg-violet-50 border-violet-500' : 'hover:bg-gray-50 border-transparent'
+                              }`}>
+                              <div className={`w-3.5 h-3.5 md:w-5 md:h-5 rounded border flex items-center justify-center transition-colors ${
+                                isSelected ? 'bg-violet-600 border-violet-600' : 'bg-white border-gray-300'
+                              }`}>
+                                {isSelected && (
+                                  <svg className="w-2.5 h-2.5 md:w-3.5 md:h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                                  </svg>
+                                )}
+                              </div>
+                              <div className={`w-7 h-7 md:w-9 md:h-9 rounded flex items-center justify-center text-[8px] md:text-sm font-black flex-shrink-0 shadow-sm ${
+                                isSelected ? 'bg-violet-600 text-white' : 'bg-gradient-to-br from-purple-400 to-indigo-500 text-white'
+                              }`}>{initials}</div>
+                              <div className="flex-1 min-w-0 leading-tight">
+                                <div className={`text-[9px] md:text-sm font-black truncate uppercase tracking-tighter ${isSelected ? 'text-purple-800' : 'text-gray-800'}`}>{fullName}</div>
+                                <div className="text-[7px] md:text-xs text-gray-400 truncate font-bold">{s.email}</div>
+                                {s.profile?.lrn && <div className="text-[6px] md:text-[10px] text-gray-300 font-bold">LRN: {s.profile.lrn}</div>}
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+
+                  {selectedStudents.length > 0 && (
+                    <div className="mt-1.5 flex items-center justify-between text-[8px] md:text-xs text-violet-700 bg-violet-50 border border-violet-200 rounded px-2 py-1 md:px-3 md:py-2 font-bold uppercase tracking-widest">
+                      <div className="flex items-center gap-1.5">
+                        <svg className="w-2.5 h-2.5 md:w-3.5 md:h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                        </svg>
+                        Selected: {selectedStudents.length} Student(s)
+                      </div>
+                      <button type="button" onClick={() => setSelectedStudents([])} className="text-violet-400 hover:text-violet-600 transition-colors px-1">Clear</button>
+                    </div>
+                  )}
+                </div>
               </div>
-              <div className="flex gap-2 md:gap-3 pt-1 md:pt-2">
-                <button
-                  type="submit"
-                  disabled={saving || selectedStudents.length === 0}
-                  className="flex-1 bg-violet-600 hover:bg-violet-700 disabled:opacity-60 text-white font-black py-2 md:py-2.5 rounded md:rounded-lg transition-all active:scale-95 text-[9px] md:text-sm uppercase tracking-widest"
-                >
-                  {saving ? 'Enrolling...' : `Enroll ${selectedStudents.length || ''}`}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowModal(false)}
-                  className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-black py-2 md:py-2.5 rounded md:rounded-lg transition-all active:scale-95 text-[9px] md:text-sm uppercase tracking-widest"
-                >
+              <div className="px-4 md:px-6 py-4 border-t border-gray-200 bg-gray-50 flex items-center justify-end gap-3 flex-shrink-0">
+                <button type="button" onClick={() => setShowModal(false)}
+                  className="px-6 py-2.5 bg-white text-gray-700 text-xs font-black uppercase tracking-widest border border-gray-300 hover:bg-gray-100 rounded-sm">
                   Cancel
+                </button>
+                <button type="submit" disabled={saving || selectedStudents.length === 0}
+                  className="px-6 py-2.5 bg-[#5e2a84] text-white text-xs font-black uppercase tracking-widest hover:bg-purple-700 rounded-sm disabled:opacity-60">
+                  {saving ? 'Enrolling...' : `Enroll ${selectedStudents.length || ''}`}
                 </button>
               </div>
             </form>

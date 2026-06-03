@@ -7,7 +7,8 @@ import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
 import {
   Card, CardHeader, CardBody, CardTitle, Button, Badge,
-  LoadingSpinner, EmptyState, Modal, ModalHeader, ModalBody, ModalFooter
+  LoadingSpinner, EmptyState, Modal, ModalHeader, ModalBody, ModalFooter,
+  ModalTitle, ModalBtnSecondary
 } from '../components/ui';
 
 /**
@@ -533,17 +534,10 @@ const ClassroomDetailModal = ({ classroom, onClose, user, formatName, calculateF
   return (
     <Modal isOpen={true} onClose={onClose} size="xl">
       <ModalHeader onClose={onClose}>
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-md bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-extrabold text-lg shadow-sm border border-blue-700">
-            {classroom.name?.match(/\d+/)?.[0] || classroom.name?.charAt(0)}
-          </div>
-          <div>
-            <h2 className="text-lg font-extrabold text-slate-900">{classroom.name}</h2>
-            <p className="text-xs text-blue-700 font-bold uppercase tracking-wide">
-              Grade Records • {classroom.studentCount} Students
-            </p>
-          </div>
-        </div>
+        <ModalTitle
+          title={classroom.name}
+          subtitle={`Grade Records — ${classroom.studentCount} Students`}
+        />
       </ModalHeader>
 
       <ModalBody>
@@ -587,9 +581,7 @@ const ClassroomDetailModal = ({ classroom, onClose, user, formatName, calculateF
       </ModalBody>
 
       <ModalFooter>
-        <Button variant="secondary" onClick={onClose}>
-          Close
-        </Button>
+        <ModalBtnSecondary onClick={onClose}>Close</ModalBtnSecondary>
       </ModalFooter>
     </Modal>
   );

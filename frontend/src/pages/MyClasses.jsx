@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import api from '../utils/api';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
-import { Card, CardHeader, CardBody, CardTitle, Button, Badge, LoadingSpinner, EmptyState, Modal, ModalHeader, ModalBody, ModalFooter } from '../components/ui';
+import { Card, CardHeader, CardBody, CardTitle, Button, Badge, LoadingSpinner, EmptyState, Modal, ModalHeader, ModalBody, ModalFooter, ModalTitle, ModalBtnSecondary } from '../components/ui';
 
 const MyClasses = () => {
   const { user } = useAuth();
@@ -286,18 +286,13 @@ const MyClasses = () => {
       )}
 
       {/* Full Classroom Modal */}
-      <Modal isOpen={!!selectedClassroom} onClose={() => setSelectedClassroom(null)}>
-          <ModalHeader onClose={() => setSelectedClassroom(null)}>
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-md bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-extrabold shadow-sm border border-blue-700">
-                {selectedClassroom.name?.match(/\d+/)?.[0] || 'C'}
-              </div>
-              <div>
-                <h2 className="text-lg font-extrabold text-slate-900">{selectedClassroom.name}</h2>
-                <p className="text-xs text-slate-600 font-semibold">Complete Student Roster</p>
-              </div>
-            </div>
-          </ModalHeader>
+      <Modal isOpen={!!selectedClassroom} onClose={() => setSelectedClassroom(null)} size="lg">
+        <ModalHeader onClose={() => setSelectedClassroom(null)}>
+          <ModalTitle
+            title={selectedClassroom?.name || 'Classroom'}
+            subtitle="Complete Student Roster"
+          />
+        </ModalHeader>
           <ModalBody>
             <div className="max-h-[500px] overflow-y-auto rounded-md border border-slate-200">
               <table className="w-full">
@@ -372,27 +367,20 @@ const MyClasses = () => {
             </div>
           </ModalBody>
           <ModalFooter>
-            <Button variant="secondary" onClick={() => setSelectedClassroom(null)}>
+            <ModalBtnSecondary onClick={() => setSelectedClassroom(null)}>
               Close
-            </Button>
+            </ModalBtnSecondary>
           </ModalFooter>
         </Modal>
 
       {/* Student Profile Modal */}
-      <Modal isOpen={showProfileModal && !!selectedStudent} onClose={() => setShowProfileModal(false)}>
-          <ModalHeader onClose={() => setShowProfileModal(false)}>
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-md bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-extrabold text-lg shadow-sm border border-blue-700">
-                {selectedStudent.first_name?.charAt(0)}{selectedStudent.last_name?.charAt(0)}
-              </div>
-              <div>
-                <h2 className="text-lg font-extrabold text-slate-900 uppercase">
-                  {selectedStudent.last_name}, {selectedStudent.first_name}
-                </h2>
-                <p className="text-xs text-blue-700 font-bold uppercase tracking-wide">Student Profile</p>
-              </div>
-            </div>
-          </ModalHeader>
+      <Modal isOpen={showProfileModal && !!selectedStudent} onClose={() => setShowProfileModal(false)} size="md">
+        <ModalHeader onClose={() => setShowProfileModal(false)}>
+          <ModalTitle
+            title={selectedStudent ? `${selectedStudent.last_name}, ${selectedStudent.first_name}` : ''}
+            subtitle="Student Profile"
+          />
+        </ModalHeader>
           <ModalBody>
             <div className="grid grid-cols-2 gap-6">
               {/* Account Info */}
@@ -456,22 +444,16 @@ const MyClasses = () => {
           </ModalBody>
           <ModalFooter>
             <div className="flex gap-3 w-full">
-              <Button 
-                variant="primary"
+              <button
                 onClick={() => {
                   setShowProfileModal(false);
                   navigate(`/student-grades?student_id=${selectedStudent.id}`);
                 }}
-                className="flex-1"
+                className="px-6 py-2.5 bg-[#5e2a84] text-white text-xs font-black uppercase tracking-widest hover:bg-purple-700 rounded-sm flex items-center gap-2"
               >
-                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-                </svg>
                 View Full Grades
-              </Button>
-              <Button variant="secondary" onClick={() => setShowProfileModal(false)}>
-                Close
-              </Button>
+              </button>
+              <ModalBtnSecondary onClick={() => setShowProfileModal(false)}>Close</ModalBtnSecondary>
             </div>
           </ModalFooter>
         </Modal>

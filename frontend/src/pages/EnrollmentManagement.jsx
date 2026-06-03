@@ -514,15 +514,29 @@ const EnrollmentManagement = () => {
       </div>
 
       {selected && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] flex flex-col">
-            <div className="p-5 border-b border-slate-100 flex justify-between items-center">
-              <div>
-                <h2 className="text-lg font-bold text-slate-900">{selected.full_name || `${selected.first_name} ${selected.last_name}`}</h2>
-                <p className="text-xs text-slate-400">{selected.enrollment_number} &middot; {selected.email}</p>
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999] p-4">
+          <div className="bg-white w-full max-w-3xl border border-gray-300 shadow-2xl rounded-sm flex flex-col max-h-[92vh]" onClick={e => e.stopPropagation()}>
+            <div className="bg-[#5e2a84] flex items-center justify-between px-5 py-3 flex-shrink-0 border-b-2 border-purple-900">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-7 h-7 rounded-full bg-white/20 border border-white/30 flex items-center justify-center flex-shrink-0">
+                  <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                  </svg>
+                </div>
+                <div>
+                  <h2 className="text-sm font-black text-white uppercase tracking-widest leading-none">
+                    {selected.full_name || `${selected.first_name} ${selected.last_name}`}
+                  </h2>
+                  <p className="text-purple-200 text-[10px] mt-0.5 font-medium uppercase tracking-wide">
+                    {selected.enrollment_number} — Enrollment Application
+                  </p>
+                </div>
               </div>
-              <button onClick={() => setSelected(null)} className="p-2 hover:bg-slate-100 rounded-xl text-slate-400 hover:text-slate-600 transition-all">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" /></svg>
+              <button type="button" onClick={() => setSelected(null)}
+                className="ml-4 w-7 h-7 flex items-center justify-center rounded text-white/60 hover:bg-white/20 hover:text-white transition-all">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12"/>
+                </svg>
               </button>
             </div>
             <div className="flex-1 overflow-y-auto p-5 space-y-6">
@@ -625,17 +639,17 @@ const EnrollmentManagement = () => {
                 </div>
               )}
             </div>
-            <div className="p-4 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between gap-2">
+            <div className="px-5 py-4 border-t border-gray-200 bg-gray-50 flex items-center justify-between gap-2 flex-shrink-0">
               <div className="flex gap-2">
-                <button onClick={() => promptRequestDocs(selected.id)} className="px-4 py-2 rounded-lg border border-amber-200 bg-amber-50 text-amber-700 text-xs font-bold hover:bg-amber-100">Request Docs</button>
-                <button onClick={() => assignSection(selected.id, selected.grade_level)} className="px-4 py-2 rounded-lg border border-blue-200 bg-blue-50 text-blue-700 text-xs font-bold hover:bg-blue-100">Set Section</button>
+                <button onClick={() => promptRequestDocs(selected.id)} className="px-4 py-2 border border-amber-300 bg-amber-50 text-amber-700 text-xs font-black uppercase tracking-widest hover:bg-amber-100 rounded-sm">Request Docs</button>
+                <button onClick={() => assignSection(selected.id, selected.grade_level)} className="px-4 py-2 border border-blue-300 bg-blue-50 text-blue-700 text-xs font-black uppercase tracking-widest hover:bg-blue-100 rounded-sm">Set Section</button>
                 <a href={`/api/enrollment-applications/export-form-pdf/?id=${selected.id}`} target="_blank" rel="noreferrer"
-                  className="px-4 py-2 rounded-lg border border-slate-200 bg-white text-slate-700 text-xs font-bold hover:bg-slate-50">Print Form</a>
+                  className="px-4 py-2 border border-gray-300 bg-white text-gray-700 text-xs font-black uppercase tracking-widest hover:bg-gray-100 rounded-sm">Print Form</a>
               </div>
               <div className="flex gap-2">
                 {(selected.status === 'pending' || selected.status === 'under_review') && (
                   <>
-                    <button onClick={() => { promptReject(selected.id); }} className="px-4 py-2 rounded-lg border border-rose-200 bg-white text-rose-600 text-xs font-bold hover:bg-rose-50">Reject</button>
+                    <button onClick={() => { promptReject(selected.id); }} className="px-4 py-2 border border-red-300 bg-white text-red-600 text-xs font-black uppercase tracking-widest hover:bg-red-50 rounded-sm">Reject</button>
                     {selected.status === 'under_review' && (() => {
                       const allDocsVerified = !selected.documents || selected.documents.length === 0 ||
                         selected.documents.every(d => d.verification_status === 'verified');
@@ -643,10 +657,10 @@ const EnrollmentManagement = () => {
                         <button
                           onClick={() => { if (allDocsVerified) promptApproveApplication(selected.id); }}
                           disabled={!allDocsVerified}
-                          className={`px-4 py-2 rounded-lg text-xs font-bold ${
+                          className={`px-4 py-2 text-xs font-black uppercase tracking-widest rounded-sm ${
                             allDocsVerified
                               ? 'bg-emerald-600 text-white hover:bg-emerald-700'
-                              : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                              : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                           }`}
                           title={allDocsVerified ? 'Approve' : 'Verify all documents first'}
                         >
@@ -657,12 +671,12 @@ const EnrollmentManagement = () => {
                   </>
                 )}
                 {selected.status === 'approved' && (
-                  <button onClick={() => { setEnrollApp(selected); setShowEnrollModal(true); }} className="px-4 py-2 rounded-lg bg-violet-600 text-white text-xs font-bold hover:bg-violet-700">Enroll Student</button>
+                  <button onClick={() => { setEnrollApp(selected); setShowEnrollModal(true); }} className="px-4 py-2 bg-[#5e2a84] text-white text-xs font-black uppercase tracking-widest hover:bg-purple-700 rounded-sm">Enroll Student</button>
                 )}
                 {selected.status !== 'enrolled' && (
-                  <button onClick={() => promptDelete(selected.id, selected.full_name || `${selected.first_name} ${selected.last_name}`)} className="px-4 py-2 rounded-lg border border-rose-200 bg-white text-rose-600 text-xs font-bold hover:bg-rose-50">Delete</button>
+                  <button onClick={() => promptDelete(selected.id, selected.full_name || `${selected.first_name} ${selected.last_name}`)} className="px-4 py-2 border border-red-300 bg-white text-red-600 text-xs font-black uppercase tracking-widest hover:bg-red-50 rounded-sm">Delete</button>
                 )}
-                <button onClick={() => setSelected(null)} className="px-4 py-2 rounded-lg border border-slate-200 text-slate-500 text-xs font-bold hover:bg-slate-50">Close</button>
+                <button onClick={() => setSelected(null)} className="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-xs font-black uppercase tracking-widest hover:bg-gray-100 rounded-sm">Close</button>
               </div>
             </div>
           </div>
@@ -670,15 +684,32 @@ const EnrollmentManagement = () => {
       )}
 
       {showEnrollModal && enrollApp && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
-            <h3 className="text-lg font-bold text-slate-900 mb-1">Enroll Student</h3>
-            <p className="text-sm text-slate-500 mb-4">Create account for {enrollApp.first_name} {enrollApp.last_name}</p>
-            <div className="space-y-4">
+        <div className="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center p-4">
+          <div className="bg-white w-full max-w-md border border-gray-300 shadow-2xl rounded-sm flex flex-col max-h-[92vh]" onClick={e => e.stopPropagation()}>
+            <div className="bg-[#5e2a84] flex items-center justify-between px-5 py-3 flex-shrink-0 border-b-2 border-purple-900">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-7 h-7 rounded-full bg-white/20 border border-white/30 flex items-center justify-center flex-shrink-0">
+                  <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
+                  </svg>
+                </div>
+                <div>
+                  <h2 className="text-sm font-black text-white uppercase tracking-widest leading-none">Enroll Student</h2>
+                  <p className="text-purple-200 text-[10px] mt-0.5 font-medium uppercase tracking-wide">{enrollApp?.first_name} {enrollApp?.last_name}</p>
+                </div>
+              </div>
+              <button type="button" onClick={() => { setShowEnrollModal(false); setEnrollApp(null); setEnrollClassroom(''); setEnrollParentEmail(''); }}
+                className="ml-4 w-7 h-7 flex items-center justify-center rounded text-white/60 hover:bg-white/20 hover:text-white transition-all">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+              </button>
+            </div>
+            <div className="px-6 py-5 overflow-y-auto flex-1 space-y-4">
               <div>
-                <label className="block text-xs font-bold text-slate-600 mb-1">Assign Section</label>
+                <label className="block text-xs font-black text-gray-700 uppercase tracking-wider mb-1.5">Assign Section</label>
                 <select value={enrollClassroom} onChange={e => setEnrollClassroom(e.target.value)}
-                  className="w-full px-3 py-2.5 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400/30">
+                  className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500">
                   <option value="">Auto-assign</option>
                   {classrooms.filter(c => String(c.grade_level) === String(enrollApp.grade_level)).map(c => {
                     const count = c.student_count || 0;
@@ -688,31 +719,26 @@ const EnrollmentManagement = () => {
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-600 mb-1">Parent Email (optional)</label>
+                <label className="block text-xs font-black text-gray-700 uppercase tracking-wider mb-1.5">Parent Email (optional)</label>
                 <input type="email" value={enrollParentEmail} onChange={e => setEnrollParentEmail(e.target.value)}
-                  placeholder="parent@email.com" className="w-full px-3 py-2.5 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400/30" />
-                <p className="text-[10px] text-slate-400 mt-1">If a parent account exists with this email, it will be linked.</p>
+                  placeholder="parent@email.com"
+                  className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500 placeholder:text-gray-400" />
+                <p className="text-[10px] text-gray-400 mt-1">If a parent account exists with this email, it will be linked.</p>
               </div>
-              <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-700">
+              <div className="bg-amber-50 border border-amber-200 rounded p-3 text-xs text-amber-700">
                 <strong>Note:</strong> A student account will be created automatically. Save the credentials shown after enrollment.
               </div>
-              <div className="flex gap-3">
-                <Button
-                  onClick={() => { setShowEnrollModal(false); setEnrollApp(null); setEnrollClassroom(''); setEnrollParentEmail(''); }}
-                  variant="secondary"
-                  className="flex-1"
-                >
-                  Cancel
-                </Button>
-                <Button
-                  onClick={enrollStudent}
-                  variant="primary"
-                  loading={enrolling}
-                  className="flex-1"
-                >
-                  Enroll Now
-                </Button>
-              </div>
+            </div>
+            <div className="px-6 py-4 border-t border-gray-200 bg-gray-50 flex items-center justify-end gap-3 flex-shrink-0">
+              <button type="button"
+                onClick={() => { setShowEnrollModal(false); setEnrollApp(null); setEnrollClassroom(''); setEnrollParentEmail(''); }}
+                className="px-6 py-2.5 bg-white text-gray-700 text-xs font-black uppercase tracking-widest border border-gray-300 hover:bg-gray-100 rounded-sm">
+                Cancel
+              </button>
+              <button type="button" onClick={enrollStudent} disabled={enrolling}
+                className="px-6 py-2.5 bg-[#5e2a84] text-white text-xs font-black uppercase tracking-widest hover:bg-purple-700 rounded-sm">
+                {enrolling ? 'Enrolling...' : 'Enroll Now'}
+              </button>
             </div>
           </div>
         </div>

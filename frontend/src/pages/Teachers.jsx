@@ -751,67 +751,85 @@ const Teachers = () => {
 
       {/* Add Teacher Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-[100] p-4 animate-in fade-in duration-300">
-          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-300">
-            <div className="p-8 bg-gradient-to-br from-blue-600 to-indigo-700 text-white relative">
-              <h2 className="text-2xl font-black tracking-tight">Add New Teacher</h2>
-              <p className="text-blue-100 text-sm mt-1 font-medium opacity-90">Create a new teacher account and profile.</p>
-              <button onClick={() => setShowAddModal(false)} className="absolute top-6 right-6 text-white/50 hover:text-white transition-colors">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" /></svg>
+        <div className="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center p-4 animate-in fade-in duration-300">
+          <div className="bg-white w-full max-w-lg border border-gray-300 shadow-2xl rounded-sm flex flex-col max-h-[92vh]" onClick={e => e.stopPropagation()}>
+            <div className="bg-[#5e2a84] flex items-center justify-between px-5 py-3 flex-shrink-0 border-b-2 border-purple-900">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-7 h-7 rounded-full bg-white/20 border border-white/30 flex items-center justify-center flex-shrink-0">
+                  <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
+                  </svg>
+                </div>
+                <div>
+                  <h2 className="text-sm font-black text-white uppercase tracking-widest leading-none">Add New Teacher</h2>
+                  <p className="text-purple-200 text-[10px] mt-0.5 font-medium uppercase tracking-wide">Create Faculty Account</p>
+                </div>
+              </div>
+              <button type="button" onClick={() => setShowAddModal(false)}
+                className="ml-4 w-7 h-7 flex items-center justify-center rounded text-white/60 hover:bg-white/20 hover:text-white transition-all">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12"/>
+                </svg>
               </button>
             </div>
-            <form onSubmit={handleAddTeacher} className="p-8 space-y-5 max-h-[70vh] overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200">
-              <div className="grid grid-cols-3 gap-4">
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Title</label>
-                  <select required value={newTeacher.title} onChange={(e) => setNewTeacher({ ...newTeacher, title: e.target.value })}
-                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white text-sm font-bold transition-all">
-                    <option value="">Title</option>
-                    {TITLES.map(t => <option key={t} value={t}>{t}</option>)}
-                  </select>
+            <form onSubmit={handleAddTeacher} className="flex flex-col flex-1 overflow-hidden">
+              <div className="px-6 py-5 overflow-y-auto flex-1 space-y-4">
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-xs font-black text-gray-700 uppercase tracking-wider mb-1.5">
+                      Title <span className="text-red-600">*</span>
+                    </label>
+                    <select required value={newTeacher.title} onChange={(e) => setNewTeacher({ ...newTeacher, title: e.target.value })}
+                      className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500">
+                      <option value="">Title</option>
+                      {TITLES.map(t => <option key={t} value={t}>{t}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-black text-gray-700 uppercase tracking-wider mb-1.5">
+                      First Name <span className="text-red-600">*</span>
+                    </label>
+                    <input type="text" required value={newTeacher.first_name} onChange={(e) => setNewTeacher({ ...newTeacher, first_name: e.target.value })}
+                      className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500 placeholder:text-gray-400" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-black text-gray-700 uppercase tracking-wider mb-1.5">
+                      Last Name <span className="text-red-600">*</span>
+                    </label>
+                    <input type="text" required value={newTeacher.last_name} onChange={(e) => setNewTeacher({ ...newTeacher, last_name: e.target.value })}
+                      className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500 placeholder:text-gray-400" />
+                  </div>
                 </div>
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">First Name</label>
-                  <input type="text" required value={newTeacher.first_name} onChange={(e) => setNewTeacher({ ...newTeacher, first_name: e.target.value })}
-                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white text-sm font-bold transition-all" />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Last Name</label>
-                  <input type="text" required value={newTeacher.last_name} onChange={(e) => setNewTeacher({ ...newTeacher, last_name: e.target.value })}
-                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white text-sm font-bold transition-all" />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-black text-gray-700 uppercase tracking-wider mb-1.5">
+                      Email Address <span className="text-red-600">*</span>
+                    </label>
+                    <input type="email" required value={newTeacher.email} onChange={(e) => setNewTeacher({ ...newTeacher, email: e.target.value })}
+                      className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500 placeholder:text-gray-400" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-black text-gray-700 uppercase tracking-wider mb-1.5">
+                      Sex <span className="text-red-600">*</span>
+                    </label>
+                    <select required value={newTeacher.sex} onChange={(e) => setNewTeacher({ ...newTeacher, sex: e.target.value })}
+                      className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500">
+                      <option value="">Select Sex</option>
+                      <option value="male">Male</option>
+                      <option value="female">Female</option>
+                    </select>
+                  </div>
                 </div>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Email Address</label>
-                  <input type="email" required value={newTeacher.email} onChange={(e) => setNewTeacher({ ...newTeacher, email: e.target.value })}
-                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white text-sm font-bold transition-all" />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Sex</label>
-                  <select required value={newTeacher.sex} onChange={(e) => setNewTeacher({ ...newTeacher, sex: e.target.value })}
-                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white text-sm font-bold transition-all">
-                    <option value="">Select Sex</option>
-                    <option value="male">Male</option>
-                    <option value="female">Female</option>
-                  </select>
-                </div>
-              </div>
-              <div className="flex justify-end gap-3 pt-6 border-t border-slate-100">
-                <Button
-                  type="button"
-                  onClick={() => setShowAddModal(false)}
-                  variant="secondary"
-                >
+              <div className="px-6 py-4 border-t border-gray-200 bg-gray-50 flex items-center justify-end gap-3 flex-shrink-0">
+                <button type="button" onClick={() => setShowAddModal(false)}
+                  className="px-6 py-2.5 bg-white text-gray-700 text-xs font-black uppercase tracking-widest border border-gray-300 hover:bg-gray-100 rounded-sm">
                   Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  variant="primary"
-                  loading={isSubmitting}
-                >
-                  Create Teacher Account
-                </Button>
+                </button>
+                <button type="submit" disabled={isSubmitting}
+                  className="px-6 py-2.5 bg-[#5e2a84] text-white text-xs font-black uppercase tracking-widest hover:bg-purple-700 rounded-sm">
+                  {isSubmitting ? 'Creating...' : 'Create Account'}
+                </button>
               </div>
             </form>
           </div>
@@ -820,66 +838,85 @@ const Teachers = () => {
 
       {/* Edit Teacher Modal */}
       {showEditModal && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-[100] p-4 animate-in fade-in duration-300">
-          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-300">
-            <div className="p-8 bg-gradient-to-br from-blue-600 to-indigo-700 text-white relative">
-              <h2 className="text-2xl font-black tracking-tight">Edit Teacher Details</h2>
-              <p className="text-blue-100 text-sm mt-1 font-medium opacity-90">Update profile information for {editingTeacher.first_name}.</p>
-              <button onClick={() => setShowEditModal(false)} className="absolute top-6 right-6 text-white/50 hover:text-white transition-colors">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" /></svg>
+        <div className="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center p-4 animate-in fade-in duration-300">
+          <div className="bg-white w-full max-w-lg border border-gray-300 shadow-2xl rounded-sm flex flex-col max-h-[92vh]" onClick={e => e.stopPropagation()}>
+            <div className="bg-[#5e2a84] flex items-center justify-between px-5 py-3 flex-shrink-0 border-b-2 border-purple-900">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-7 h-7 rounded-full bg-white/20 border border-white/30 flex items-center justify-center flex-shrink-0">
+                  <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                  </svg>
+                </div>
+                <div>
+                  <h2 className="text-sm font-black text-white uppercase tracking-widest leading-none">Edit Teacher Record</h2>
+                  <p className="text-purple-200 text-[10px] mt-0.5 font-medium uppercase tracking-wide">{editingTeacher.profile?.title} {editingTeacher.first_name} {editingTeacher.last_name}</p>
+                </div>
+              </div>
+              <button type="button" onClick={() => setShowEditModal(false)}
+                className="ml-4 w-7 h-7 flex items-center justify-center rounded text-white/60 hover:bg-white/20 hover:text-white transition-all">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12"/>
+                </svg>
               </button>
             </div>
-            <form onSubmit={handleEditTeacher} className="p-8 space-y-5 max-h-[70vh] overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200">
-              <div className="grid grid-cols-3 gap-4">
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Title</label>
-                  <select required value={editingTeacher.profile?.title || ''} onChange={(e) => setEditingTeacher({ ...editingTeacher, profile: { ...editingTeacher.profile, title: e.target.value } })}
-                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white text-sm font-bold transition-all">
-                    <option value="">Title</option>
-                    {TITLES.map(t => <option key={t} value={t}>{t}</option>)}
-                  </select>
+            <form onSubmit={handleEditTeacher} className="flex flex-col flex-1 overflow-hidden">
+              <div className="px-6 py-5 overflow-y-auto flex-1 space-y-4">
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-xs font-black text-gray-700 uppercase tracking-wider mb-1.5">
+                      Title <span className="text-red-600">*</span>
+                    </label>
+                    <select required value={editingTeacher.profile?.title || ''} onChange={(e) => setEditingTeacher({ ...editingTeacher, profile: { ...editingTeacher.profile, title: e.target.value } })}
+                      className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500">
+                      <option value="">Title</option>
+                      {TITLES.map(t => <option key={t} value={t}>{t}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-black text-gray-700 uppercase tracking-wider mb-1.5">
+                      First Name <span className="text-red-600">*</span>
+                    </label>
+                    <input type="text" required value={editingTeacher.first_name} onChange={(e) => setEditingTeacher({ ...editingTeacher, first_name: e.target.value })}
+                      className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500 placeholder:text-gray-400" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-black text-gray-700 uppercase tracking-wider mb-1.5">
+                      Last Name <span className="text-red-600">*</span>
+                    </label>
+                    <input type="text" required value={editingTeacher.last_name} onChange={(e) => setEditingTeacher({ ...editingTeacher, last_name: e.target.value })}
+                      className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500 placeholder:text-gray-400" />
+                  </div>
                 </div>
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">First Name</label>
-                  <input type="text" required value={editingTeacher.first_name} onChange={(e) => setEditingTeacher({ ...editingTeacher, first_name: e.target.value })}
-                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white text-sm font-bold transition-all" />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Last Name</label>
-                  <input type="text" required value={editingTeacher.last_name} onChange={(e) => setEditingTeacher({ ...editingTeacher, last_name: e.target.value })}
-                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white text-sm font-bold transition-all" />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-black text-gray-700 uppercase tracking-wider mb-1.5">
+                      Email Address <span className="text-red-600">*</span>
+                    </label>
+                    <input type="email" required value={editingTeacher.email} onChange={(e) => setEditingTeacher({ ...editingTeacher, email: e.target.value })}
+                      className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500 placeholder:text-gray-400" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-black text-gray-700 uppercase tracking-wider mb-1.5">
+                      Sex <span className="text-red-600">*</span>
+                    </label>
+                    <select required value={editingTeacher.profile?.sex || ''} onChange={(e) => setEditingTeacher({ ...editingTeacher, profile: { ...editingTeacher.profile, sex: e.target.value } })}
+                      className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500">
+                      <option value="">Select Sex</option>
+                      <option value="male">Male</option>
+                      <option value="female">Female</option>
+                    </select>
+                  </div>
                 </div>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Email Address</label>
-                  <input type="email" required value={editingTeacher.email} onChange={(e) => setEditingTeacher({ ...editingTeacher, email: e.target.value })}
-                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white text-sm font-bold transition-all" />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Sex</label>
-                  <select required value={editingTeacher.profile?.sex || ''} onChange={(e) => setEditingTeacher({ ...editingTeacher, profile: { ...editingTeacher.profile, sex: e.target.value } })}
-                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white text-sm font-bold transition-all">
-                    <option value="">Select Sex</option>
-                    <option value="male">Male</option>
-                    <option value="female">Female</option>
-                  </select>
-                </div>
-              </div>
-              <div className="flex justify-end gap-3 pt-6 border-t border-slate-100">
-                <Button
-                  type="button"
-                  onClick={() => setShowEditModal(false)}
-                  variant="secondary"
-                >
+              <div className="px-6 py-4 border-t border-gray-200 bg-gray-50 flex items-center justify-end gap-3 flex-shrink-0">
+                <button type="button" onClick={() => setShowEditModal(false)}
+                  className="px-6 py-2.5 bg-white text-gray-700 text-xs font-black uppercase tracking-widest border border-gray-300 hover:bg-gray-100 rounded-sm">
                   Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  variant="primary"
-                >
+                </button>
+                <button type="submit"
+                  className="px-6 py-2.5 bg-[#5e2a84] text-white text-xs font-black uppercase tracking-widest hover:bg-purple-700 rounded-sm">
                   Save Changes
-                </Button>
+                </button>
               </div>
             </form>
           </div>
@@ -888,34 +925,48 @@ const Teachers = () => {
 
       {/* Import Modal */}
       {showImportModal && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-[100] p-4 animate-in fade-in duration-300">
-          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden p-8 text-center animate-in zoom-in-95 duration-300">
-            <div className="p-6 bg-slate-50 border-b border-slate-200 text-slate-500">
-              <h2 className="text-xl font-black uppercase tracking-tight">Bulk Import Teachers</h2>
-              <p className="text-purple-200 text-[10px] font-bold uppercase tracking-widest mt-1">Upload CSV or Excel file</p>
+        <div className="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center p-4 animate-in fade-in duration-300">
+          <div className="bg-white w-full max-w-lg border border-gray-300 shadow-2xl rounded-sm flex flex-col max-h-[92vh]" onClick={e => e.stopPropagation()}>
+            <div className="bg-[#5e2a84] flex items-center justify-between px-5 py-3 flex-shrink-0 border-b-2 border-purple-900">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-7 h-7 rounded-full bg-white/20 border border-white/30 flex items-center justify-center flex-shrink-0">
+                  <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                  </svg>
+                </div>
+                <div>
+                  <h2 className="text-sm font-black text-white uppercase tracking-widest leading-none">Bulk Import Teachers</h2>
+                  <p className="text-purple-200 text-[10px] mt-0.5 font-medium uppercase tracking-wide">Upload Excel or CSV</p>
+                </div>
+              </div>
+              <button type="button" onClick={() => setShowImportModal(false)}
+                className="ml-4 w-7 h-7 flex items-center justify-center rounded text-white/60 hover:bg-white/20 hover:text-white transition-all">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+              </button>
             </div>
-            <div className="p-8 space-y-6">
-              <div className="border-2 border-dashed border-slate-200 rounded-3xl p-10 text-center hover:border-violet-400 transition-all group relative">
-                <input 
-                  type="file" 
+            <div className="px-6 py-5 overflow-y-auto flex-1 space-y-5">
+              <div className="border-2 border-dashed border-gray-300 rounded p-10 text-center hover:border-purple-400 transition-all group relative">
+                <input
+                  type="file"
                   accept=".csv, .xlsx, .xls"
                   onChange={handleImportExcel}
                   className="absolute inset-0 opacity-0 cursor-pointer z-10"
                 />
                 <div className="space-y-4">
-                  <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto group-hover:scale-110 transition-transform">
+                  <div className="w-16 h-16 bg-blue-50 rounded flex items-center justify-center mx-auto group-hover:scale-110 transition-transform">
                     <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                     </svg>
                   </div>
                   <div>
-                    <p className="text-sm font-black text-slate-700 uppercase tracking-tight">Click or drag file here</p>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Supports CSV, XLSX</p>
+                    <p className="text-sm font-black text-gray-700 uppercase tracking-tight">Click or drag file here</p>
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">Supports CSV, XLSX</p>
                   </div>
                 </div>
               </div>
-
-              <div className="bg-amber-50 border border-amber-100 rounded-2xl p-4">
+              <div className="bg-amber-50 border border-amber-100 rounded p-4">
                 <div className="flex gap-3">
                   <svg className="w-5 h-5 text-amber-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -928,11 +979,10 @@ const Teachers = () => {
                   </div>
                 </div>
               </div>
-
-              <button 
-                onClick={() => setShowImportModal(false)}
-                className="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] transition-all active:scale-95"
-              >
+            </div>
+            <div className="px-6 py-4 border-t border-gray-200 bg-gray-50 flex items-center justify-end gap-3 flex-shrink-0">
+              <button type="button" onClick={() => setShowImportModal(false)}
+                className="px-6 py-2.5 bg-white text-gray-700 text-xs font-black uppercase tracking-widest border border-gray-300 hover:bg-gray-100 rounded-sm">
                 Cancel
               </button>
             </div>

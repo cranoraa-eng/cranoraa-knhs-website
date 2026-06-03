@@ -299,143 +299,130 @@ const SubjectAssignment = () => {
 
       {/* Assign Subject Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[9999] p-4 animate-in fade-in duration-300">
-          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-4 duration-300">
-            <div className="p-8 bg-gradient-to-br from-purple-600 to-indigo-700 text-white relative">
-              <h2 className="text-2xl font-black tracking-tight">{selectedAssignment ? 'Edit Assignment' : 'Assign Subject'}</h2>
-              <p className="text-purple-100 text-sm mt-1 font-medium opacity-90">Link a subject and teacher to this classroom.</p>
-              <button onClick={() => setShowModal(false)} className="absolute top-6 right-6 text-white/50 hover:text-white transition-colors">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" /></svg>
+        <div className="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center p-4 animate-in fade-in duration-300">
+          <div className="bg-white w-full max-w-lg border border-gray-300 shadow-2xl rounded-sm flex flex-col max-h-[92vh]" onClick={e => e.stopPropagation()}>
+            <div className="bg-[#5e2a84] flex items-center justify-between px-5 py-3 flex-shrink-0 border-b-2 border-purple-900">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-7 h-7 rounded-full bg-white/20 border border-white/30 flex items-center justify-center flex-shrink-0">
+                  <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                  </svg>
+                </div>
+                <div>
+                  <h2 className="text-sm font-black text-white uppercase tracking-widest leading-none">{selectedAssignment ? 'Edit Assignment' : 'Assign Subject'}</h2>
+                  <p className="text-purple-200 text-[10px] mt-0.5 font-medium uppercase tracking-wide">Link subject and teacher to classroom</p>
+                </div>
+              </div>
+              <button type="button" onClick={() => setShowModal(false)}
+                className="ml-4 w-7 h-7 flex items-center justify-center rounded text-white/60 hover:bg-white/20 hover:text-white transition-all">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12"/>
+                </svg>
               </button>
             </div>
-            <form onSubmit={handleSubmit} className="p-8 space-y-6 max-h-[70vh] overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200">
-              <div className="space-y-2">
-                <div className="flex items-center justify-between ml-1">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Select Subject</label>
-                  {(() => {
-                    const cls = classrooms.find(c => String(c.id) === String(selectedClassroom));
-                    const level = cls?.name
-                      ? (['Grade 7','Grade 8','Grade 9','Grade 10','Grade 11','Grade 12']
-                          .find(l => cls.name.toLowerCase().includes(l.toLowerCase())))
-                      : null;
-                    return level ? (
-                      <span className="text-[9px] font-black text-violet-600 bg-violet-50 px-2 py-0.5 rounded-full uppercase tracking-wider">
-                        {level} Only
-                      </span>
-                    ) : null;
-                  })()}
-                </div>
-
-                {/* Search box */}
-                {!selectedAssignment ? (
-                  <div className="relative group">
-                    <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-violet-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
-                    <input
-                      type="text"
-                      placeholder="Quick search by name or code..."
-                      value={subjectSearch}
-                      onChange={e => setSubjectSearch(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 focus:bg-white text-sm font-bold transition-all shadow-inner"
-                    />
-                    {subjectSearch && (
-                      <button
-                        type="button"
-                        onClick={() => setSubjectSearch('')}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-                      >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" /></svg>
-                      </button>
-                    )}
+            <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
+              <div className="px-6 py-5 overflow-y-auto flex-1 space-y-6">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="block text-xs font-black text-gray-700 uppercase tracking-wider">Select Subject</label>
+                    {(() => {
+                      const cls = classrooms.find(c => String(c.id) === String(selectedClassroom));
+                      const level = cls?.name
+                        ? (['Grade 7','Grade 8','Grade 9','Grade 10','Grade 11','Grade 12']
+                            .find(l => cls.name.toLowerCase().includes(l.toLowerCase())))
+                        : null;
+                      return level ? (
+                        <span className="text-[9px] font-black text-violet-600 bg-violet-50 px-2 py-0.5 rounded-full uppercase tracking-wider">
+                          {level} Only
+                        </span>
+                      ) : null;
+                    })()}
                   </div>
-                ) : (
-                  <div className="px-4 py-3 bg-violet-50 border border-violet-100 rounded-xl text-sm font-black text-violet-700 uppercase tracking-widest flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-violet-600 text-white flex items-center justify-center">
-                      {selectedAssignment.subject_code?.charAt(0)}
-                    </div>
-                    {selectedAssignment.subject_name}
-                  </div>
-                )}
 
-                {/* Subject card list */}
-                {!selectedAssignment && (
-                <div className="border border-slate-100 rounded-2xl overflow-hidden shadow-sm bg-slate-50/50">
-                  {filteredSubjects.length === 0 ? (
-                    <div className="py-12 text-center text-slate-400">
-                      <svg className="w-10 h-10 mx-auto mb-3 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                  {/* Search box */}
+                  {!selectedAssignment ? (
+                    <div className="relative group">
+                      <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-purple-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                       </svg>
-                      <p className="text-xs font-bold uppercase tracking-widest opacity-60">No subjects match filters</p>
+                      <input
+                        type="text"
+                        placeholder="Quick search by name or code..."
+                        value={subjectSearch}
+                        onChange={e => setSubjectSearch(e.target.value)}
+                        className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500 placeholder:text-gray-400"
+                      />
+                      {subjectSearch && (
+                        <button type="button" onClick={() => setSubjectSearch('')}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" /></svg>
+                        </button>
+                      )}
                     </div>
                   ) : (
-                    <div className="max-h-60 overflow-y-auto divide-y divide-slate-100 scrollbar-thin scrollbar-thumb-slate-200">
-                      {filteredSubjects.map(s => {
-                        const isAssigned = assignedSubjectIds.has(s.id);
-                        const isSelected = String(formData.subject) === String(s.id);
-                        return (
-                          <button
-                            key={s.id}
-                            type="button"
-                            disabled={isAssigned}
-                            onClick={() => !isAssigned && setFormData({ ...formData, subject: String(s.id) })}
-                            className={`w-full flex items-center gap-4 px-5 py-4 text-left transition-all ${
-                              isAssigned
-                                ? 'opacity-40 cursor-not-allowed grayscale bg-slate-100/50'
-                                : isSelected
-                                  ? 'bg-violet-600 text-white shadow-lg shadow-violet-200 z-10'
-                                  : 'hover:bg-white bg-transparent'
-                            }`}
-                          >
-                            {/* Code badge */}
-                            <span className={`flex-shrink-0 font-mono text-[10px] font-black px-2 py-1 rounded-lg uppercase tracking-tight shadow-sm ${
-                              isSelected ? 'bg-white text-violet-600' : 'bg-slate-200 text-slate-600'
-                            }`}>
-                              {s.code}
-                            </span>
-
-                            {/* Name */}
-                            <div className="flex-1 min-w-0">
-                              <div className={`text-sm font-black tracking-tight truncate ${isSelected ? 'text-white' : 'text-slate-800'}`}>
-                                {s.name}
-                              </div>
-                              {s.grade_level && (
-                                <div className={`text-[9px] font-bold uppercase tracking-widest mt-0.5 ${isSelected ? 'text-purple-200' : 'text-slate-400'}`}>
-                                  {s.grade_level}
-                                </div>
-                              )}
-                            </div>
-
-                            {/* Status */}
-                            {isAssigned ? (
-                              <span className="flex-shrink-0 text-[8px] font-black uppercase tracking-widest bg-slate-200 text-slate-500 px-2 py-1 rounded-full border border-slate-300">
-                                Assigned
-                              </span>
-                            ) : isSelected ? (
-                              <div className="w-6 h-6 rounded-full bg-white flex items-center justify-center shadow-sm">
-                                <svg className="w-4 h-4 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                                </svg>
-                              </div>
-                            ) : null}
-                          </button>
-                        );
-                      })}
+                    <div className="px-4 py-3 bg-violet-50 border border-violet-100 rounded-sm text-sm font-black text-violet-700 uppercase tracking-widest flex items-center gap-3">
+                      <div className="w-8 h-8 rounded bg-violet-600 text-white flex items-center justify-center">
+                        {selectedAssignment.subject_code?.charAt(0)}
+                      </div>
+                      {selectedAssignment.subject_name}
                     </div>
                   )}
-                </div>
-                )}
-              </div>
 
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Assigned Teacher</label>
-                <div className="relative group">
-                  <select
-                    value={formData.teacher}
-                    onChange={e => setFormData({ ...formData, teacher: e.target.value })}
-                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 focus:bg-white text-sm font-bold transition-all shadow-inner appearance-none cursor-pointer pr-10"
-                    required
-                  >
+                  {/* Subject card list */}
+                  {!selectedAssignment && (
+                  <div className="border border-gray-200 rounded-sm overflow-hidden shadow-sm bg-gray-50">
+                    {filteredSubjects.length === 0 ? (
+                      <div className="py-12 text-center text-gray-400">
+                        <svg className="w-10 h-10 mx-auto mb-3 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                        </svg>
+                        <p className="text-xs font-bold uppercase tracking-widest opacity-60">No subjects match filters</p>
+                      </div>
+                    ) : (
+                      <div className="max-h-60 overflow-y-auto divide-y divide-gray-100 scrollbar-thin scrollbar-thumb-gray-200">
+                        {filteredSubjects.map(s => {
+                          const isAssigned = assignedSubjectIds.has(s.id);
+                          const isSelected = String(formData.subject) === String(s.id);
+                          return (
+                            <button key={s.id} type="button" disabled={isAssigned}
+                              onClick={() => !isAssigned && setFormData({ ...formData, subject: String(s.id) })}
+                              className={`w-full flex items-center gap-4 px-5 py-4 text-left transition-all ${
+                                isAssigned ? 'opacity-40 cursor-not-allowed grayscale bg-gray-100'
+                                  : isSelected ? 'bg-violet-600 text-white shadow-lg shadow-violet-200 z-10'
+                                  : 'hover:bg-white bg-transparent'
+                              }`}>
+                              <span className={`flex-shrink-0 font-mono text-[10px] font-black px-2 py-1 rounded uppercase tracking-tight shadow-sm ${
+                                isSelected ? 'bg-white text-violet-600' : 'bg-gray-200 text-gray-600'
+                              }`}>{s.code}</span>
+                              <div className="flex-1 min-w-0">
+                                <div className={`text-sm font-black tracking-tight truncate ${isSelected ? 'text-white' : 'text-gray-800'}`}>{s.name}</div>
+                                {s.grade_level && (
+                                  <div className={`text-[9px] font-bold uppercase tracking-widest mt-0.5 ${isSelected ? 'text-purple-200' : 'text-gray-400'}`}>{s.grade_level}</div>
+                                )}
+                              </div>
+                              {isAssigned ? (
+                                <span className="flex-shrink-0 text-[8px] font-black uppercase tracking-widest bg-gray-200 text-gray-500 px-2 py-1 rounded-full border border-gray-300">Assigned</span>
+                              ) : isSelected ? (
+                                <div className="w-6 h-6 rounded-full bg-white flex items-center justify-center shadow-sm">
+                                  <svg className="w-4 h-4 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                                  </svg>
+                                </div>
+                              ) : null}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-xs font-black text-gray-700 uppercase tracking-wider mb-1.5">Assigned Teacher <span className="text-red-600">*</span></label>
+                  <select value={formData.teacher} onChange={e => setFormData({ ...formData, teacher: e.target.value })}
+                    className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500"
+                    required>
                     <option value="">Select a teacher for this subject</option>
                     {teachers.map(t => (
                       <option key={t.id} value={t.id}>
@@ -443,30 +430,17 @@ const SubjectAssignment = () => {
                       </option>
                     ))}
                   </select>
-                  <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 group-hover:text-violet-500 transition-colors">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" /></svg>
-                  </div>
                 </div>
               </div>
-
-              <div className="flex gap-4 pt-4 border-t border-slate-100">
-                <Button
-                  type="button"
-                  onClick={() => setShowModal(false)}
-                  variant="secondary"
-                  className="flex-1"
-                >
+              <div className="px-6 py-4 border-t border-gray-200 bg-gray-50 flex items-center justify-end gap-3 flex-shrink-0">
+                <button type="button" onClick={() => setShowModal(false)}
+                  className="px-6 py-2.5 bg-white text-gray-700 text-xs font-black uppercase tracking-widest border border-gray-300 hover:bg-gray-100 rounded-sm">
                   Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  variant="primary"
-                  disabled={!formData.subject || !formData.teacher}
-                  loading={saving}
-                  className="flex-[2]"
-                >
-                  {selectedAssignment ? 'Update Assignment' : 'Confirm Assignment'}
-                </Button>
+                </button>
+                <button type="submit" disabled={!formData.subject || !formData.teacher || saving}
+                  className="px-6 py-2.5 bg-[#5e2a84] text-white text-xs font-black uppercase tracking-widest hover:bg-purple-700 rounded-sm">
+                  {saving ? 'Saving...' : selectedAssignment ? 'Update Assignment' : 'Confirm Assignment'}
+                </button>
               </div>
             </form>
           </div>
