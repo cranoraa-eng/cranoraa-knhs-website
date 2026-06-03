@@ -1,9 +1,17 @@
 import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import api from '../utils/api';
 import Swal from 'sweetalert2';
 import toast from 'react-hot-toast';
-import { useScrollLock } from '../hooks/useScrollLock';
-import { LoadingSpinner, Button } from '../components/ui';
+import {
+  Card, CardHeader, CardBody, CardTitle, Button, Badge,
+  LoadingSpinner, EmptyState, Modal, ModalHeader, ModalBody, ModalFooter
+} from '../components/ui';
+
+/**
+ * Class Management Page - DepEd Academic Style
+ * Professional classroom/section management interface for administrators
+ */
 
 const GRADE_LEVELS = ['Grade 7', 'Grade 8', 'Grade 9', 'Grade 10', 'Grade 11', 'Grade 12'];
 
@@ -25,8 +33,6 @@ const ClassManagement = () => {
   const [search, setSearch] = useState('');
   const [filterLevel, setFilterLevel] = useState('');
   const [formData, setFormData] = useState({ name: '', teacher: '', grade_level: '' });
-
-  useScrollLock(showModal);
 
   // Load years + teachers once, then load classes whenever year changes
   useEffect(() => {
@@ -156,24 +162,36 @@ const ClassManagement = () => {
   const selectedYearName = getSelectedYearName();
 
   return (
-    <div className="space-y-5 animate-fade-in page-bottom-safe">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: 'easeOut' }}
+      className="page-bottom-safe max-w-[1800px] mx-auto bg-slate-50 px-4 py-4 md:px-6 md:py-6 space-y-5 md:space-y-6"
+    >
+      {/* ══════════════════════════════════════════════════════════════ */}
+      {/* PAGE HEADER */}
+      {/* ══════════════════════════════════════════════════════════════ */}
+
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-black text-slate-900 tracking-tight">Class Management</h1>
-          <p className="text-sm text-slate-500 mt-0.5">
+          <div className="flex items-center gap-2 text-xs font-bold text-blue-700 uppercase tracking-wide mb-2">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+            </svg>
+            <span>Academic Management</span>
+          </div>
+          <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight">
+            Class Management
+          </h1>
+          <p className="text-xs text-slate-600 mt-1 font-semibold">
             {classes.length} classroom{classes.length !== 1 ? 's' : ''} in{' '}
-            <span className="font-bold text-violet-600">{selectedYearName || '…'}</span>
+            <span className="font-bold text-blue-700">{selectedYearName || '…'}</span>
           </p>
         </div>
 
-        {/* Year selector + Add button — side by side */}
         <div className="flex items-center gap-3 flex-wrap">
           {/* Academic Year Selector */}
           <div className="relative">
-            <label className="absolute -top-2 left-2.5 px-1 bg-white text-[9px] font-black text-slate-400 uppercase tracking-widest z-10">
-              School Year
-            </label>
             <select
               value={selectedYearId}
               onChange={e => {
@@ -181,260 +199,268 @@ const ClassManagement = () => {
                 setSearch('');
                 setFilterLevel('');
               }}
-              className="pl-3 pr-8 py-2.5 border-2 border-violet-200 bg-violet-50 rounded-xl text-sm font-black text-violet-800 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all appearance-none cursor-pointer min-w-[140px]"
+              className="pl-4 pr-10 py-2.5 border border-slate-300 bg-white rounded-md text-sm font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all appearance-none cursor-pointer min-w-[160px]"
             >
               {academicYears.length === 0 && (
                 <option value="">No years set up</option>
               )}
               {academicYears.map(y => (
                 <option key={y.id} value={y.id}>
-                  {y.name}{y.is_active ? ' ★' : ''}
+                  SY {y.name}{y.is_active ? ' ★' : ''}
                 </option>
               ))}
             </select>
-            <svg className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-violet-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
             </svg>
           </div>
 
-          <button
+          <Button
+            variant="primary"
             onClick={openCreate}
             disabled={!selectedYearId}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-violet-600 text-white text-sm font-bold hover:bg-violet-700 active:scale-95 transition-all shadow-sm disabled:opacity-40 disabled:cursor-not-allowed"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
             </svg>
             Add Class
-          </button>
+          </Button>
         </div>
       </div>
 
-      {/* Filters */}
-      <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-4">
-        <div className="flex flex-col sm:flex-row gap-3">
-          <div className="relative flex-1">
-            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-            <input
-              type="text"
-              placeholder="Search by name or teacher…"
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              className="w-full pl-9 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-400 focus:bg-white transition-all"
-            />
+      {/* ══════════════════════════════════════════════════════════════ */}
+      {/* FILTERS */}
+      {/* ══════════════════════════════════════════════════════════════ */}
+
+      <Card>
+        <CardBody className="p-4">
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="relative flex-1">
+              <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              <input
+                type="text"
+                placeholder="Search by name or teacher..."
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                className="w-full pl-10 pr-4 py-2.5 border border-slate-300 rounded-md bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all"
+              />
+            </div>
+            <select
+              value={filterLevel}
+              onChange={e => setFilterLevel(e.target.value)}
+              className="px-4 py-2.5 border border-slate-300 rounded-md bg-white text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all"
+            >
+              <option value="">All Levels</option>
+              {GRADE_LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
+            </select>
           </div>
-          <select
-            value={filterLevel}
-            onChange={e => setFilterLevel(e.target.value)}
-            className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-400 transition-all"
-          >
-            <option value="">All Levels</option>
-            {GRADE_LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
-          </select>
-        </div>
-      </div>
+        </CardBody>
+      </Card>
 
       {/* No year set up warning */}
       {!loading && academicYears.length === 0 && (
-        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5 flex items-start gap-3">
-          <svg className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-          </svg>
-          <div>
-            <p className="text-sm font-bold text-amber-800">No academic years configured</p>
-            <p className="text-xs text-amber-600 mt-0.5">Go to <strong>Settings → Academic Years</strong> to create one before adding classrooms.</p>
-          </div>
-        </div>
+        <Card className="border-l-4 border-l-amber-500 bg-amber-50">
+          <CardBody className="p-5">
+            <div className="flex items-start gap-3">
+              <svg className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              <div>
+                <p className="text-sm font-bold text-amber-900">No Academic Years Configured</p>
+                <p className="text-xs text-amber-700 mt-1">Go to <strong>Settings → Academic Years</strong> to create one before adding classrooms.</p>
+              </div>
+            </div>
+          </CardBody>
+        </Card>
       )}
 
-      {/* Content */}
+      {/* ══════════════════════════════════════════════════════════════ */}
+      {/* CONTENT */}
+      {/* ══════════════════════════════════════════════════════════════ */}
+
       {loading ? (
-        <div className="flex flex-col items-center justify-center h-48 gap-4">
+        <div className="flex items-center justify-center h-64">
           <LoadingSpinner />
         </div>
       ) : filtered.length === 0 ? (
-        <div className="bg-white border border-slate-200 rounded-2xl shadow-sm">
-          <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
-            <div className="w-14 h-14 rounded-2xl bg-violet-50 flex items-center justify-center mb-4">
-              <svg className="w-7 h-7 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-              </svg>
-            </div>
-            <h3 className="text-base font-bold text-slate-700 mb-1">
-              {search || filterLevel ? 'No results found' : `No classes in ${selectedYearName}`}
-            </h3>
-            <p className="text-sm text-slate-400">
-              {search || filterLevel
-                ? 'Try adjusting your filters.'
-                : `Click "Add Class" to create the first classroom for ${selectedYearName}.`}
-            </p>
-          </div>
-        </div>
+        <Card>
+          <CardBody className="p-12">
+            <EmptyState
+              icon={
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                </svg>
+              }
+              title={search || filterLevel ? 'No Results Found' : `No Classes in ${selectedYearName}`}
+              message={search || filterLevel ? 'Try adjusting your filters' : `Click "Add Class" to create the first classroom for ${selectedYearName}`}
+            />
+          </CardBody>
+        </Card>
       ) : (
-        <div className="space-y-4">
-          {sortedGroups.map(([level, items]) => (
-            <div key={level} className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
-              <div className="flex items-center justify-between px-5 py-3 bg-slate-50 border-b border-slate-200">
-                <div className="flex items-center gap-2.5">
-                  <span className="text-sm font-black text-slate-800 uppercase tracking-tight">{level}</span>
-                  <span className="text-[10px] font-black text-slate-500 bg-slate-200 px-2 py-0.5 rounded-full uppercase tracking-widest">
-                    {items.length}
-                  </span>
+        <>
+          <div className="space-y-4">
+            {sortedGroups.map(([level, items]) => (
+              <Card key={level} className="border-l-4 border-l-blue-500">
+                <CardHeader divider className="bg-slate-50">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-md bg-blue-100 flex items-center justify-center font-extrabold text-sm text-blue-700 border border-blue-200">
+                      {gradeNum(level) !== 999 ? gradeNum(level) : level.charAt(0).toUpperCase()}
+                    </div>
+                    <div>
+                      <CardTitle className="text-base uppercase">{level}</CardTitle>
+                      <p className="text-xs font-bold text-slate-500 uppercase tracking-wide">{items.length} Classes</p>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardBody className="p-0">
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead className="bg-slate-50 border-b border-slate-200">
+                        <tr>
+                          <th className="text-left px-4 py-3 text-xs font-extrabold text-slate-700 uppercase tracking-wider">Class</th>
+                          <th className="hidden md:table-cell text-left px-4 py-3 text-xs font-extrabold text-slate-700 uppercase tracking-wider">Adviser</th>
+                          <th className="text-center px-4 py-3 text-xs font-extrabold text-slate-700 uppercase tracking-wider">Students</th>
+                          <th className="text-center px-4 py-3 text-xs font-extrabold text-slate-700 uppercase tracking-wider">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100">
+                        {items.map(cls => (
+                          <tr key={cls.id} className="hover:bg-slate-50 transition-colors">
+                            <td className="px-4 py-3">
+                              <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-md bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-extrabold text-sm shadow-sm border border-blue-700">
+                                  {gradeNum(cls.name) !== 999 ? gradeNum(cls.name) : cls.name.charAt(0).toUpperCase()}
+                                </div>
+                                <span className="font-bold text-slate-900 text-sm">{cls.name}</span>
+                              </div>
+                            </td>
+                            <td className="hidden md:table-cell px-4 py-3 text-sm text-slate-600">
+                              {cls.teacher_name || <span className="text-slate-400 italic">Not assigned</span>}
+                            </td>
+                            <td className="px-4 py-3 text-center">
+                              <Badge variant="blue" size="md" className="font-extrabold">
+                                {cls.student_count ?? 0}
+                              </Badge>
+                            </td>
+                            <td className="px-4 py-3 text-center">
+                              <div className="flex items-center justify-center gap-2">
+                                <Button variant="secondary" size="sm" onClick={() => openEdit(cls)}>
+                                  Edit
+                                </Button>
+                                <Button variant="danger" size="sm" onClick={() => handleDelete(cls)}>
+                                  Delete
+                                </Button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </CardBody>
+              </Card>
+            ))}
+          </div>
+
+          <p className="text-xs text-slate-500 font-semibold text-center">
+            Showing {filtered.length} of {classes.length} classes in {selectedYearName}
+          </p>
+        </>
+      )}
+
+      {/* ══════════════════════════════════════════════════════════════ */}
+      {/* MODAL */}
+      {/* ══════════════════════════════════════════════════════════════ */}
+
+      {showModal && (
+        <Modal onClose={() => setShowModal(false)}>
+          <ModalHeader onClose={() => setShowModal(false)}>
+            <div>
+              <h2 className="text-lg font-extrabold text-slate-900">
+                {editingClass ? 'Edit Class' : 'Add New Class'}
+              </h2>
+              <p className="text-xs text-blue-700 font-bold uppercase tracking-wide mt-0.5">
+                {selectedYearName}
+              </p>
+            </div>
+          </ModalHeader>
+          <form onSubmit={handleSubmit}>
+            <ModalBody>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-2">
+                    Grade Level <span className="text-red-600">*</span>
+                  </label>
+                  <select
+                    value={formData.grade_level}
+                    onChange={e => {
+                      const level = e.target.value;
+                      setFormData(prev => ({
+                        ...prev,
+                        grade_level: level,
+                        name: prev.name || level + ' - ',
+                      }));
+                    }}
+                    className="w-full px-4 py-2.5 border border-slate-300 rounded-md bg-white text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all"
+                    required
+                  >
+                    <option value="">Select grade level</option>
+                    {GRADE_LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-2">
+                    Class Name <span className="text-red-600">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.name}
+                    onChange={e => setFormData({ ...formData, name: e.target.value })}
+                    placeholder="e.g. Grade 7 - Rizal"
+                    className="w-full px-4 py-2.5 border border-slate-300 rounded-md bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all"
+                    required
+                  />
+                  <p className="text-xs text-slate-500 mt-1">Include the grade level, e.g. "Grade 7 - Rizal"</p>
+                </div>
+                <div>
+                  <label className="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-2">
+                    Adviser / Teacher <span className="text-slate-400 text-xs normal-case">(optional)</span>
+                  </label>
+                  <select
+                    value={formData.teacher || ''}
+                    onChange={e => setFormData({ ...formData, teacher: e.target.value })}
+                    className="w-full px-4 py-2.5 border border-slate-300 rounded-md bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all"
+                  >
+                    <option value="">— No Adviser —</option>
+                    {teachers.map(t => {
+                      const otherClass = classes.find(c => c.teacher === t.id && c.id !== editingClass?.id);
+                      const isAssigned = !!otherClass;
+                      return (
+                        <option key={t.id} value={t.id} disabled={isAssigned}>
+                          {t.first_name && t.last_name ? `${t.first_name} ${t.last_name}` : t.username}
+                          {isAssigned ? ` (Adviser of ${otherClass.name})` : ` (${t.email})`}
+                        </option>
+                      );
+                    })}
+                  </select>
+                  <p className="text-xs text-slate-500 mt-1">Leave empty to assign an adviser later.</p>
                 </div>
               </div>
-
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-slate-50 border-b border-slate-200">
-                    <tr>
-                      <th className="text-left px-5 py-3 text-[10px] font-black text-slate-500 uppercase tracking-[0.15em]">Class</th>
-                      <th className="hidden md:table-cell text-left px-5 py-3 text-[10px] font-black text-slate-500 uppercase tracking-[0.15em]">Adviser</th>
-                      <th className="text-center px-5 py-3 text-[10px] font-black text-slate-500 uppercase tracking-[0.15em]">Students</th>
-                      <th className="text-center px-5 py-3 text-[10px] font-black text-slate-500 uppercase tracking-[0.15em]">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {items.map(cls => (
-                      <tr key={cls.id} className="hover:bg-violet-50/40 transition-colors group">
-                        <td className="px-5 py-3.5">
-                          <div className="flex items-center gap-3">
-                            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-white font-black text-sm flex-shrink-0 shadow-sm">
-                              {gradeNum(cls.name) !== 999 ? gradeNum(cls.name) : cls.name.charAt(0).toUpperCase()}
-                            </div>
-                            <span className="font-bold text-slate-800 text-sm">{cls.name}</span>
-                          </div>
-                        </td>
-                        <td className="hidden md:table-cell px-5 py-3.5 text-sm font-medium text-slate-600">
-                          {cls.teacher_name || <span className="text-slate-400 italic text-xs">Not assigned</span>}
-                        </td>
-                        <td className="px-5 py-3.5 text-center">
-                          <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-violet-100 text-violet-700 font-black text-sm">
-                            {cls.student_count ?? 0}
-                          </span>
-                        </td>
-                        <td className="px-5 py-3.5 text-center">
-                          <div className="flex items-center justify-center gap-1.5">
-                            <button onClick={() => openEdit(cls)}
-                              className="px-3 py-1.5 text-xs font-bold text-violet-700 bg-violet-100 hover:bg-violet-200 rounded-lg transition-all active:scale-90 no-min">
-                              Edit
-                            </button>
-                            <button onClick={() => handleDelete(cls)}
-                              className="px-3 py-1.5 text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-all active:scale-90 no-min">
-                              Delete
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          ))}
-        </div>
+            </ModalBody>
+            <ModalFooter>
+              <Button type="button" variant="secondary" onClick={() => setShowModal(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" variant="primary" loading={saving}>
+                {editingClass ? 'Update Class' : 'Create Class'}
+              </Button>
+            </ModalFooter>
+          </form>
+        </Modal>
       )}
-
-      {!loading && classes.length > 0 && (
-        <p className="text-sm text-slate-400 mt-4">
-          Showing {filtered.length} of {classes.length} classes in {selectedYearName}
-        </p>
-      )}
-
-      {/* Create / Edit Modal */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-[100] p-4 animate-fade-in">
-          <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden animate-scale-in">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
-              <div>
-                <h2 className="text-base font-black text-slate-900 tracking-tight">
-                  {editingClass ? 'Edit Class' : 'Add New Class'}
-                </h2>
-                {/* Show which year this class will be assigned to */}
-                <p className="text-[10px] font-bold text-violet-600 uppercase tracking-widest mt-0.5">
-                  {selectedYearName}
-                </p>
-              </div>
-              <button onClick={() => setShowModal(false)}
-                className="p-2 rounded-xl text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-all no-min">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-            <form onSubmit={handleSubmit} className="p-6 space-y-4">
-              <div className="space-y-1.5">
-                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider">
-                  Grade Level <span className="text-red-500">*</span>
-                </label>
-                <select
-                  value={formData.grade_level}
-                  onChange={e => {
-                    const level = e.target.value;
-                    setFormData(prev => ({
-                      ...prev,
-                      grade_level: level,
-                      name: prev.name || level + ' - ',
-                    }));
-                  }}
-                  className="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-white text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-400 transition-all"
-                  required
-                >
-                  <option value="">Select grade level</option>
-                  {GRADE_LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
-                </select>
-              </div>
-              <div className="space-y-1.5">
-                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider">
-                  Class Name <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={formData.name}
-                  onChange={e => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="e.g. Grade 7 - Rizal"
-                  className="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-white text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-400 transition-all"
-                  required
-                />
-                <p className="text-xs text-slate-400">Include the grade level, e.g. "Grade 7 - Rizal"</p>
-              </div>
-              <div className="space-y-1.5">
-                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider">
-                  Adviser / Teacher <span className="text-slate-400 font-medium normal-case tracking-normal">(optional)</span>
-                </label>
-                <select
-                  value={formData.teacher || ''}
-                  onChange={e => setFormData({ ...formData, teacher: e.target.value })}
-                  className="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-white text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-400 transition-all"
-                >
-                  <option value="">— No Adviser —</option>
-                  {teachers.map(t => {
-                    const otherClass = classes.find(c => c.teacher === t.id && c.id !== editingClass?.id);
-                    const isAssigned = !!otherClass;
-                    return (
-                      <option key={t.id} value={t.id} disabled={isAssigned}>
-                        {t.first_name && t.last_name ? `${t.first_name} ${t.last_name}` : t.username}
-                        {isAssigned ? ` (Adviser of ${otherClass.name})` : ` (${t.email})`}
-                      </option>
-                    );
-                  })}
-                </select>
-                <p className="text-xs text-slate-400">Leave empty to assign an adviser later.</p>
-              </div>
-              <div className="flex gap-3 pt-2">
-                <Button type="submit" disabled={saving} loading={saving} variant="primary" className="flex-1">
-                  {editingClass ? 'Update Class' : 'Create Class'}
-                </Button>
-                <Button type="button" onClick={() => setShowModal(false)} variant="secondary" className="flex-1">
-                  Cancel
-                </Button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-    </div>
+    </motion.div>
   );
 };
 
