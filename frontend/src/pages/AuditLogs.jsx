@@ -162,8 +162,8 @@ const AuditLogs = () => {
     if (type.includes('create') || type.includes('mark')) return 'bg-emerald-100 text-emerald-700 border-emerald-200';
     if (type.includes('update') || type.includes('edit')) return 'bg-blue-100 text-blue-700 border-blue-200';
     if (type.includes('delete') || type.includes('clear')) return 'bg-red-100 text-red-700 border-red-200';
-    if (type.includes('login') || type.includes('auth')) return 'bg-violet-100 text-violet-700 border-violet-200';
-    if (type.includes('approve')) return 'bg-indigo-100 text-indigo-700 border-indigo-200';
+    if (type.includes('login') || type.includes('auth')) return 'bg-indigo-100 text-indigo-700 border-indigo-200';
+    if (type.includes('approve')) return 'bg-sky-100 text-sky-700 border-sky-200';
     if (type.includes('reject') || type.includes('suspend') || type.includes('mute')) return 'bg-orange-100 text-orange-700 border-orange-200';
     if (type.includes('export') || type.includes('import')) return 'bg-amber-100 text-amber-700 border-amber-200';
     return 'bg-slate-100 text-slate-700 border-slate-200';
@@ -199,7 +199,7 @@ const AuditLogs = () => {
         <div className="flex items-center gap-2 flex-wrap">
           {selectedIds.length > 0 && (
             <button onClick={handleBulkDelete} disabled={deleting}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-red-50 text-red-600 border border-red-200 text-sm font-bold hover:bg-red-100 transition-all disabled:opacity-50">
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-md bg-red-50 text-red-600 border border-red-200 text-sm font-bold hover:bg-red-100 transition-all disabled:opacity-50">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
               </svg>
@@ -207,14 +207,14 @@ const AuditLogs = () => {
             </button>
           )}
           <button onClick={handleClearAll} disabled={deleting || !logs || logs.length === 0}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-slate-200 text-sm font-bold text-slate-600 hover:bg-slate-50 transition-all disabled:opacity-40 shadow-sm">
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-md bg-white border border-slate-200 text-sm font-bold text-slate-600 hover:bg-slate-50 transition-all disabled:opacity-40 shadow-sm">
             Clear all
           </button>
         </div>
       </div>
 
       {/* ── Filters ── */}
-      <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-4">
+      <div className="bg-white border border-slate-200 rounded-md shadow-sm p-4">
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
             <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -222,10 +222,10 @@ const AuditLogs = () => {
             </svg>
             <input type="text" placeholder="Search by user, model, or description…" value={search}
               onChange={e => setSearch(e.target.value)}
-              className="w-full pl-9 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-400 focus:bg-white transition-all" />
+              className="w-full pl-9 pr-4 py-2.5 bg-white border border-slate-300 rounded-md text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all" />
           </div>
           <select value={actionFilter} onChange={e => setActionFilter(e.target.value)}
-            className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-400 transition-all">
+            className="px-4 py-2.5 bg-white border border-slate-300 rounded-md text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all">
             <option value="">All Actions</option>
             <option value="create">Create</option>
             <option value="update">Update</option>
@@ -238,10 +238,10 @@ const AuditLogs = () => {
       </div>
         
       {/* ── Table / Card List ── */}
-      <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+      <div className="bg-white border border-slate-200 rounded-md shadow-sm overflow-hidden">
         {logs.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
-            <div className="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center mb-4">
+            <div className="w-14 h-14 rounded-md bg-slate-100 flex items-center justify-center mb-4">
               <svg className="w-7 h-7 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
@@ -259,7 +259,7 @@ const AuditLogs = () => {
                   <input type="checkbox"
                     checked={logs.length > 0 && selectedIds.length === logs.length}
                     onChange={handleSelectAll}
-                    className="w-4 h-4 rounded border-slate-300 text-violet-600 focus:ring-violet-500 cursor-pointer" />
+                    className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer" />
                   <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
                     {selectedIds.length > 0 ? `${selectedIds.length} selected` : 'Select all'}
                   </span>
@@ -268,18 +268,18 @@ const AuditLogs = () => {
 
               {logs.map((log) => (
                 <div key={log.id}
-                  className={`px-4 py-3.5 transition-colors ${selectedIds.includes(log.id) ? 'bg-violet-50/40' : ''}`}>
+                  className={`px-4 py-3.5 transition-colors ${selectedIds.includes(log.id) ? 'bg-blue-50/40' : ''}`}>
                   <div className="flex items-start gap-3">
                     {/* Checkbox */}
                     <label className="flex-shrink-0 mt-0.5 cursor-pointer no-min">
                       <input type="checkbox"
                         checked={selectedIds.includes(log.id)}
                         onChange={() => handleSelectLog(log.id)}
-                        className="w-4 h-4 rounded border-slate-300 text-violet-600 focus:ring-violet-500 cursor-pointer" />
+                        className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer" />
                     </label>
 
                     {/* Avatar */}
-                    <div className="w-8 h-8 rounded-lg bg-violet-100 flex items-center justify-center text-violet-700 font-black text-xs flex-shrink-0">
+                    <div className="w-8 h-8 rounded-md bg-blue-100 flex items-center justify-center text-blue-700 font-black text-xs flex-shrink-0">
                       {log.user_name?.charAt(0).toUpperCase() || 'S'}
                     </div>
 
@@ -331,7 +331,7 @@ const AuditLogs = () => {
                     <th className="px-5 py-3.5 w-10">
                       <input type="checkbox" checked={logs?.length > 0 && selectedIds.length === logs.length}
                         onChange={handleSelectAll}
-                        className="w-4 h-4 rounded border-slate-300 text-violet-600 focus:ring-violet-500 cursor-pointer" />
+                        className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer" />
                     </th>
                     <th className="px-5 py-3.5 text-[10px] font-black text-slate-500 uppercase tracking-[0.15em] whitespace-nowrap">Time</th>
                     <th className="px-5 py-3.5 text-[10px] font-black text-slate-500 uppercase tracking-[0.15em] whitespace-nowrap">User</th>
@@ -343,11 +343,11 @@ const AuditLogs = () => {
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {logs.map((log) => (
-                    <tr key={log.id} className={`group hover:bg-violet-50/40 transition-colors ${selectedIds.includes(log.id) ? 'bg-violet-50/30' : ''}`}>
+                    <tr key={log.id} className={`group hover:bg-blue-50/40 transition-colors ${selectedIds.includes(log.id) ? 'bg-blue-50/30' : ''}`}>
                       <td className="px-5 py-3.5">
                         <input type="checkbox" checked={selectedIds.includes(log.id)}
                           onChange={() => handleSelectLog(log.id)}
-                          className="w-4 h-4 rounded border-slate-300 text-violet-600 focus:ring-violet-500 cursor-pointer" />
+                          className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer" />
                       </td>
                       <td className="px-5 py-3.5 whitespace-nowrap">
                         <p className="text-xs font-bold text-slate-700">{new Date(log.timestamp).toLocaleDateString()}</p>
@@ -355,7 +355,7 @@ const AuditLogs = () => {
                       </td>
                       <td className="px-5 py-3.5">
                         <div className="flex items-center gap-2.5">
-                          <div className="w-7 h-7 rounded-lg bg-violet-100 flex items-center justify-center text-violet-700 font-black text-[10px] flex-shrink-0">
+                          <div className="w-7 h-7 rounded-md bg-blue-100 flex items-center justify-center text-blue-700 font-black text-[10px] flex-shrink-0">
                             {log.user_name?.charAt(0).toUpperCase() || 'S'}
                           </div>
                           <div className="min-w-0">
@@ -399,17 +399,17 @@ const AuditLogs = () => {
             <span className="text-xs font-bold text-slate-500">
               Page {page} of {totalPages}
               <span className="hidden sm:inline"> · {totalCount} entries</span>
-              {selectedIds.length > 0 && <span className="ml-2 text-violet-600">{selectedIds.length} selected</span>}
+              {selectedIds.length > 0 && <span className="ml-2 text-blue-600">{selectedIds.length} selected</span>}
             </span>
             <div className="flex items-center gap-2">
               <button disabled={page === 1} onClick={() => setPage(p => Math.max(1, p - 1))}
-                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-600 hover:bg-slate-50 transition-all disabled:opacity-40 disabled:cursor-not-allowed">
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-md border border-slate-200 bg-white text-xs font-bold text-slate-600 hover:bg-slate-50 transition-all disabled:opacity-40 disabled:cursor-not-allowed">
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" /></svg>
                 <span className="hidden sm:inline">Previous</span>
               </button>
               <span className="text-xs font-bold text-slate-500 px-1">{page} / {totalPages}</span>
               <button disabled={page === totalPages} onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-600 hover:bg-slate-50 transition-all disabled:opacity-40 disabled:cursor-not-allowed">
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-md border border-slate-200 bg-white text-xs font-bold text-slate-600 hover:bg-slate-50 transition-all disabled:opacity-40 disabled:cursor-not-allowed">
                 <span className="hidden sm:inline">Next</span>
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" /></svg>
               </button>
