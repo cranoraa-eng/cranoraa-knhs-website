@@ -4,10 +4,10 @@ import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
 import { LoadingSpinner, Modal } from '../components/ui';
 
-const DAYS = ['monday','tuesday','wednesday','thursday','friday','saturday'];
+const DAYS = ['monday','tuesday','wednesday','thursday','friday'];
 const WEEKDAYS = ['monday','tuesday','wednesday','thursday','friday'];
-const DAY_FULL = { monday:'Monday', tuesday:'Tuesday', wednesday:'Wednesday', thursday:'Thursday', friday:'Friday', saturday:'Saturday' };
-const DAY_SHORT = { monday:'Mon', tuesday:'Tue', wednesday:'Wed', thursday:'Thu', friday:'Fri', saturday:'Sat' };
+const DAY_FULL = { monday:'Monday', tuesday:'Tuesday', wednesday:'Wednesday', thursday:'Thursday', friday:'Friday' };
+const DAY_SHORT = { monday:'Mon', tuesday:'Tue', wednesday:'Wed', thursday:'Thu', friday:'Fri' };
 
 const DEFAULT_PERIODS = [
   { start_time: '07:30', end_time: '08:30', label: 'Period 1' },
@@ -83,6 +83,7 @@ export default function ScheduleManagement() {
   const [savingRoom, setSavingRoom] = useState(false);
   const [classroomAssignments, setClassroomAssignments] = useState([]);
   const [loadingAssignments, setLoadingAssignments] = useState(false);
+  const [teacherLocked, setTeacherLocked] = useState(false);
   const [addingCell, setAddingCell] = useState('');
   const [conflicts, setConflicts] = useState([]);
   const [showConflicts, setShowConflicts] = useState(false);
@@ -134,7 +135,9 @@ export default function ScheduleManagement() {
           const ids = data.map(a => String(a.subject));
           const sub = ids.includes(String(f.subject)) ? f.subject : '';
           const match = data.find(a => String(a.subject) === String(sub));
-          return { ...f, subject: sub, teacher: match ? String(match.teacher) : '' };
+          const autoTeacher = match ? String(match.teacher) : '';
+          if (autoTeacher) setTeacherLocked(true);
+          return { ...f, subject: sub, teacher: autoTeacher };
         });
       })
       .catch(() => setClassroomAssignments([]))
@@ -209,6 +212,7 @@ export default function ScheduleManagement() {
   const openCreate = useCallback((slotId = '', prefill = {}) => {
     const ay = academicYears.find(a => String(a.id) === activeAY) || academicYears.find(a => a.is_active);
     setEditItem(null);
+    setTeacherLocked(false);
     setForm({ ...emptyForm, time_slot: slotId, academic_year: ay ? String(ay.id) : '', classroom: prefill.classroom || filterClassroom || '', ...prefill });
     setShowForm(true);
   }, [academicYears, activeAY, filterClassroom]);
@@ -227,6 +231,7 @@ export default function ScheduleManagement() {
 
   const openEdit = useCallback((s) => {
     setEditItem(s);
+    setTeacherLocked(false);
     setForm({
       classroom: String(s.classroom), subject: String(s.subject), teacher: String(s.teacher),
       room: s.room ? String(s.room) : '', time_slot: String(s.time_slot),
@@ -368,6 +373,7 @@ export default function ScheduleManagement() {
         start_time: editSlotForm.start_time,
         end_time: editSlotForm.end_time,
         label: editSlotForm.label,
+        day: editSlotForm.day,
       });
       setTimeSlots(prev => prev.map(t => t.id === editingSlot.id ? { ...t, ...res.data } : t));
       toast.success('Time slot updated');
@@ -790,108 +796,156 @@ export default function ScheduleManagement() {
           SCHEDULE FORM MODAL
       ══════════════════════════════════════════════════════════════════════ */}
       <Modal open={showForm} onClose={() => setShowForm(false)} size="md"
-        title={editItem ? 'Edit Class' : 'Assign Class'}
-        subtitle={editItem ? 'Update this schedule entry' : 'Assign a subject to a time slot'}
-        footer={
-          <div className="flex items-center justify-end gap-3">
+        title={editItem ? 'Edit Class Schedule' : 'Assign Class to Schedule'}
+        subtitle={editItem ? 'Update this schedule entry' : 'Assign a subject to a time slot'}>
+        <form id="schedule-form" onSubmit={handleSave} className="flex flex-col">
+          <div className="px-4 md:px-6 py-4 md:py-5 space-y-4 overflow-y-auto max-h-[65vh]">
+            {/* Section + Time Slot */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block text-[10px] font-black text-gray-600 uppercase tracking-wider mb-1.5">
+                  Section / Class <span className="text-red-600">*</span>
+                </label>
+                <select required value={form.classroom} onChange={e => setForm(f => ({...f, classroom: e.target.value, subject:'', teacher:''}))}
+                  className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500">
+                  <option value="">— Select Section —</option>
+                  {classrooms.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-[10px] font-black text-gray-600 uppercase tracking-wider mb-1.5">
+                  Day & Time Slot <span className="text-red-600">*</span>
+                </label>
+                <select required value={form.time_slot} onChange={e => setForm(f => ({...f, time_slot: e.target.value}))}
+                  className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500">
+                  <option value="">— Select Time Slot —</option>
+                  {DAYS.map(d => {
+                    const daySlots = sortedSlots.filter(ts => ts.day === d);
+                    if (!daySlots.length) return null;
+                    return (
+                      <optgroup key={d} label={`── ${DAY_FULL[d]} ──`}>
+                        {daySlots.map(ts => (
+                          <option key={ts.id} value={ts.id}>
+                            {ts.start_time_display || normalizeTime(ts.start_time)} – {ts.end_time_display || normalizeTime(ts.end_time)}{ts.label ? ` · ${ts.label}` : ''}
+                          </option>
+                        ))}
+                      </optgroup>
+                    );
+                  })}
+                </select>
+              </div>
+            </div>
+
+            {/* Subject */}
+            <div>
+              <label className="block text-[10px] font-black text-gray-600 uppercase tracking-wider mb-1.5">
+                Subject <span className="text-red-600">*</span>
+              </label>
+              {loadingAssignments ? (
+                <div className="w-full px-3 py-2.5 border border-gray-200 rounded-sm text-xs text-gray-400 bg-gray-50 flex items-center gap-2">
+                  <svg className="w-4 h-4 animate-spin text-purple-400" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                  Loading subjects...
+                </div>
+              ) : (
+                <>
+                  <select required value={form.subject} onChange={e => {
+                    const sid = e.target.value;
+                    const match = classroomAssignments.find(a => String(a.subject) === sid);
+                    if (match) { setTeacherLocked(true); setForm(f => ({...f, subject: sid, teacher: String(match.teacher)})); }
+                    else { setTeacherLocked(false); setForm(f => ({...f, subject: sid})); }
+                  }}
+                    className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500">
+                    <option value="">{!form.classroom ? '— Select a section first —' : classroomAssignments.length === 0 ? '— No subjects assigned to this section —' : '— Select Subject —'}</option>
+                    {(form.classroom && classroomAssignments.length > 0 ? classroomAssignments : []).map(a => (
+                      <option key={a.subject} value={a.subject}>{a.subject_code} — {a.subject_name}</option>
+                    ))}
+                  </select>
+                  {form.classroom && classroomAssignments.length === 0 && !loadingAssignments && (
+                    <p className="text-[10px] text-amber-600 mt-1 font-medium">⚠ No subjects assigned to this section. Go to Subject Assignment first.</p>
+                  )}
+                </>
+              )}
+            </div>
+
+            {/* Teacher */}
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="block text-[10px] font-black text-gray-600 uppercase tracking-wider">
+                  Teacher <span className="text-red-600">*</span>
+                </label>
+                {teacherLocked && (
+                  <button type="button" onClick={() => setTeacherLocked(false)}
+                    className="text-[10px] text-purple-600 font-bold hover:text-purple-800 underline">
+                    Override
+                  </button>
+                )}
+              </div>
+              <select required value={form.teacher} onChange={e => setForm(f => ({...f, teacher: e.target.value}))}
+                disabled={teacherLocked}
+                className={`w-full px-3 py-2.5 border rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500 ${teacherLocked ? 'border-gray-200 bg-gray-50 text-gray-600' : 'border-gray-300'}`}>
+                <option value="">— Select Teacher —</option>
+                {teachers.map(t => (
+                  <option key={t.id} value={t.id}>{t.first_name && t.last_name ? `${t.first_name} ${t.last_name}` : t.username} ({t.email})</option>
+                ))}
+              </select>
+              {teacherLocked && (
+                <p className="text-[10px] text-gray-500 mt-1">Auto-filled from subject assignment. Click Override to change.</p>
+              )}
+            </div>
+
+            {/* Room */}
+            <div>
+              <label className="block text-[10px] font-black text-gray-600 uppercase tracking-wider mb-1.5">Room (optional)</label>
+              <select value={form.room} onChange={e => setForm(f => ({...f, room: e.target.value}))}
+                className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500">
+                <option value="">— No Room Assigned —</option>
+                {rooms.map(r => <option key={r.id} value={r.id}>{r.name}{r.building ? ` — ${r.building}` : ''} (Cap: {r.capacity})</option>)}
+              </select>
+            </div>
+
+            {/* Academic Year + Semester */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3 border-t border-gray-100">
+              <div>
+                <label className="block text-[10px] font-black text-gray-600 uppercase tracking-wider mb-1.5">
+                  Academic Year <span className="text-red-600">*</span>
+                </label>
+                <select required value={form.academic_year} onChange={e => setForm(f => ({...f, academic_year: e.target.value, semester:''}))}
+                  className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500">
+                  <option value="">— Select Year —</option>
+                  {academicYears.map(a => <option key={a.id} value={a.id}>{a.name}{a.is_active ? ' (Active)' : ''}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-[10px] font-black text-gray-600 uppercase tracking-wider mb-1.5">Semester (optional)</label>
+                <select value={form.semester} onChange={e => setForm(f => ({...f, semester: e.target.value}))}
+                  className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500">
+                  <option value="">None</option>
+                  {semesters.map(s => <option key={s.id} value={s.id}>{s.semester_type}</option>)}
+                </select>
+              </div>
+            </div>
+
+            {/* Notes */}
+            <div>
+              <label className="block text-[10px] font-black text-gray-600 uppercase tracking-wider mb-1.5">Notes (optional)</label>
+              <textarea value={form.notes} onChange={e => setForm(f => ({...f, notes: e.target.value}))}
+                rows={2} placeholder="Additional notes..."
+                className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500 resize-none placeholder:text-gray-400" />
+            </div>
+          </div>
+
+          {/* Footer */}
+          <div className="px-4 md:px-6 py-4 border-t border-gray-200 bg-gray-50 flex items-center justify-end gap-3 flex-shrink-0">
             <button type="button" onClick={() => setShowForm(false)}
-              className="flex-1 sm:flex-none px-6 py-2.5 rounded-lg border border-slate-200 text-slate-600 font-bold text-xs hover:bg-slate-50 transition-all">
+              className="px-6 py-2.5 bg-white text-gray-700 text-xs font-black uppercase tracking-widest border border-gray-300 hover:bg-gray-100 rounded-sm">
               Cancel
             </button>
-            <button type="submit" form="schedule-form" disabled={saving}
-              className="flex-[2] sm:flex-none px-8 py-2.5 rounded-lg bg-blue-600 text-white font-bold text-xs hover:bg-blue-700 disabled:opacity-50 flex items-center justify-center gap-2 transition-all">
-              {saving && <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>}
+            <button type="submit" disabled={saving}
+              className="px-8 py-2.5 bg-[#5e2a84] text-white text-xs font-black uppercase tracking-widest hover:bg-purple-700 disabled:opacity-50 flex items-center gap-2 rounded-sm">
+              {saving && <svg className="w-3.5 h-3.5 animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>}
               {saving ? 'Saving...' : editItem ? 'Save Changes' : 'Assign Class'}
             </button>
           </div>
-        }>
-        <form id="schedule-form" onSubmit={handleSave} className="px-6 py-6 space-y-5">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Field label="Section" required>
-              <Select required value={form.classroom} onChange={e => setForm(f => ({...f, classroom: e.target.value, subject:'', teacher:''}))}>
-                <option value="">Select section...</option>
-                {classrooms.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-              </Select>
-            </Field>
-            <Field label="Time Slot" required>
-              <Select required value={form.time_slot} onChange={e => setForm(f => ({...f, time_slot: e.target.value}))}>
-                <option value="">Select time...</option>
-                {DAYS.map(d => {
-                  const daySlots = sortedSlots.filter(ts => ts.day === d);
-                  if (!daySlots.length) return null;
-                  return (
-                    <optgroup key={d} label={DAY_FULL[d]}>
-                      {daySlots.map(ts => (
-                        <option key={ts.id} value={ts.id}>
-                          {ts.start_time_display} – {ts.end_time_display}{ts.label ? ` (${ts.label})` : ''}
-                        </option>
-                      ))}
-                    </optgroup>
-                  );
-                })}
-              </Select>
-            </Field>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Field label="Subject" required>
-              {loadingAssignments ? (
-                <div className="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-xs font-bold text-slate-400 bg-slate-50 flex items-center gap-2">
-                  <svg className="w-4 h-4 animate-spin text-violet-400" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
-                  Loading...
-                </div>
-              ) : (
-                <Select required value={form.subject} onChange={e => {
-                  const sid = e.target.value;
-                  const match = classroomAssignments.find(a => String(a.subject) === sid);
-                  setForm(f => ({...f, subject: sid, teacher: match ? String(match.teacher) : f.teacher}));
-                }}>
-                  <option value="">{!form.classroom ? 'Select a section first' : classroomAssignments.length === 0 ? 'No subjects assigned' : 'Select subject...'}</option>
-                  {(form.classroom && classroomAssignments.length > 0 ? classroomAssignments : []).map(a => (
-                    <option key={a.subject} value={a.subject}>{a.subject_code} — {a.subject_name}</option>
-                  ))}
-                </Select>
-              )}
-            </Field>
-            <Field label="Teacher" required>
-              <Select required value={form.teacher} onChange={e => setForm(f => ({...f, teacher: e.target.value}))}>
-                <option value="">Select teacher...</option>
-                {(form.classroom && form.subject
-                  ? classroomAssignments.filter(a => String(a.subject) === String(form.subject))
-                  : teachers
-                ).map(a => (
-                  <option key={a.teacher || a.id} value={a.teacher || a.id}>{a.teacher_name || a.full_name}</option>
-                ))}
-              </Select>
-            </Field>
-            <Field label="Room (optional)">
-              <Select value={form.room} onChange={e => setForm(f => ({...f, room: e.target.value}))}>
-                <option value="">No room</option>
-                {rooms.map(r => <option key={r.id} value={r.id}>{r.name}{r.building ? ` - ${r.building}` : ''}</option>)}
-              </Select>
-            </Field>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3 border-t border-slate-100">
-            <Field label="Academic Year" required>
-              <Select required value={form.academic_year} onChange={e => setForm(f => ({...f, academic_year: e.target.value, semester:''}))}>
-                <option value="">Select year...</option>
-                {academicYears.map(a => <option key={a.id} value={a.id}>{a.name}{a.is_active ? ' (Active)' : ''}</option>)}
-              </Select>
-            </Field>
-            <Field label="Semester (optional)">
-              <Select value={form.semester} onChange={e => setForm(f => ({...f, semester: e.target.value}))}>
-                <option value="">None</option>
-                {semesters.map(s => <option key={s.id} value={s.id}>{s.semester_type}</option>)}
-              </Select>
-            </Field>
-          </div>
-
-          <Field label="Notes (optional)">
-            <textarea value={form.notes} onChange={e => setForm(f => ({...f, notes: e.target.value}))}
-              rows={2} placeholder="Optional notes..."
-              className="w-full px-3 py-2.5 rounded-lg border border-slate-200 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 resize-none" />
-          </Field>
         </form>
       </Modal>
 
@@ -899,23 +953,19 @@ export default function ScheduleManagement() {
           TIME SLOTS MODAL
       ══════════════════════════════════════════════════════════════════════ */}
       <Modal open={showSlotPanel} onClose={() => { setShowSlotPanel(false); cancelEditSlot(); }} size="lg"
-        title="Bell Periods" subtitle={`${timeSlots.length} slots configured`}>
-        <div className="flex flex-1 min-h-0 max-h-[70vh] overflow-hidden">
+        title="Bell Periods" subtitle={`${timeSlots.length} slots configured · Mon–Fri`}>
+        <div className="flex flex-col md:flex-row flex-1 min-h-0 max-h-[75vh] overflow-hidden">
           {/* Left: Setup panel */}
-          <div className="w-[280px] shrink-0 p-4 border-r border-slate-100 bg-slate-50/50 overflow-y-auto space-y-4">
+          <div className="w-full md:w-[280px] shrink-0 p-4 border-b md:border-b-0 md:border-r border-slate-100 bg-slate-50/50 overflow-y-auto space-y-4 max-h-64 md:max-h-none">
             <div className="space-y-2">
               <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Quick Setup</p>
               <button type="button" onClick={() => applyStandardBell(false)} disabled={savingSlot}
                 className="w-full py-2.5 rounded-lg bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 disabled:opacity-50 transition-all shadow-sm">
                 Apply Standard Day (Mon-Fri)
               </button>
-              <button type="button" onClick={() => applyStandardBell(true)} disabled={savingSlot}
-                className="w-full py-2.5 rounded-lg border border-slate-200 bg-white text-slate-700 text-xs font-bold hover:bg-slate-50 disabled:opacity-50 transition-all">
-                Include Saturday
-              </button>
               <button type="button" onClick={fillMissingSlots} disabled={savingSlot || !uniquePeriods.length}
                 className="w-full py-2.5 rounded-lg border border-amber-200 bg-amber-50 text-amber-800 text-xs font-bold hover:bg-amber-100 disabled:opacity-50 transition-all">
-                Fill Weekday Gaps
+                Fill Missing Day Gaps
               </button>
             </div>
 
@@ -953,7 +1003,8 @@ export default function ScheduleManagement() {
                   </div>
                   <div className="flex gap-2 mt-1.5">
                     <button type="button" onClick={() => setSlotForm(f => ({...f, days: [...WEEKDAYS]}))} className="text-[9px] font-bold text-blue-600 hover:underline">Mon-Fri</button>
-                    <button type="button" onClick={() => setSlotForm(f => ({...f, days: [...DAYS]}))} className="text-[9px] font-bold text-blue-600 hover:underline">All</button>
+                    <button type="button" onClick={() => setSlotForm(f => ({...f, days: [...DAYS]}))} className="text-[9px] font-bold text-blue-600 hover:underline">Select All</button>
+                    <button type="button" onClick={() => setSlotForm(f => ({...f, days: []}))} className="text-[9px] font-bold text-slate-500 hover:underline">Clear</button>
                   </div>
                 </div>
                 <button type="submit" disabled={savingSlot}
@@ -965,7 +1016,7 @@ export default function ScheduleManagement() {
           </div>
 
           {/* Right: Visual weekly grid with edit capability */}
-          <div className="flex-1 overflow-y-auto p-4 bg-white">
+          <div className="flex-1 overflow-y-auto p-4 bg-white min-h-0">
             <div className="flex items-center justify-between gap-3 mb-4">
               <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Period Overview</p>
               <button type="button" onClick={() => { setShowTutorial(true); setTutorialStep(0); }}
@@ -1142,7 +1193,7 @@ export default function ScheduleManagement() {
       ══════════════════════════════════════════════════════════════════════ */}
       <Modal open={showRoomPanel} onClose={() => setShowRoomPanel(false)} size="lg"
         title="Rooms" subtitle={`${rooms.length} registered`}>
-        <div className="flex-1 overflow-hidden flex flex-col md:flex-row min-h-0">
+        <div className="flex-1 overflow-hidden flex flex-col md:flex-row min-h-0 max-h-[75vh]">
           <div className="w-full md:w-[320px] p-6 border-b md:border-b-0 md:border-r border-slate-100 bg-slate-50/50 overflow-y-auto shrink-0">
             <form onSubmit={saveRoom} className="space-y-4">
               <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Add Room</p>

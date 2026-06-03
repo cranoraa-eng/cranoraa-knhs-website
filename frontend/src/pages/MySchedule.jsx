@@ -3,9 +3,9 @@ import { useAuth } from '../context/AuthContext';
 import api from '../utils/api';
 import { LoadingSpinner } from '../components/ui';
 
-const DAYS = ['monday','tuesday','wednesday','thursday','friday','saturday'];
-const DAY_FULL = { monday:'Monday', tuesday:'Tuesday', wednesday:'Wednesday', thursday:'Thursday', friday:'Friday', saturday:'Saturday' };
-const DAY_SHORT = { monday:'Mon', tuesday:'Tue', wednesday:'Wed', thursday:'Thu', friday:'Fri', saturday:'Sat' };
+const DAYS = ['monday','tuesday','wednesday','thursday','friday'];
+const DAY_FULL = { monday:'Monday', tuesday:'Tuesday', wednesday:'Wednesday', thursday:'Thursday', friday:'Friday' };
+const DAY_SHORT = { monday:'Mon', tuesday:'Tue', wednesday:'Wed', thursday:'Thu', friday:'Fri' };
 
 const COLOR_MAP = [
   'bg-blue-50 border-blue-200 text-blue-700',
