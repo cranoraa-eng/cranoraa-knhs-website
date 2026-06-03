@@ -215,7 +215,7 @@ const HomeDepEd = () => {
               { title: "LEARNER INFORMATION SYSTEM", icon: "M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z", link: "/login" },
               { title: "TEACHER'S PORTAL", icon: "M12 14l9-5-9-5-9 5 9 5zm0 7l-9-5 9-5 9 5-9 5z", link: "/login" },
               { title: "SCHOOL CALENDAR", icon: "M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z", link: "/calendar" },
-              { title: "DEPED COMMONS", icon: "M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z", link: "https://commons.deped.gov.ph" },
+              { title: "TRACK ENROLLMENT", icon: "M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01", link: "/track-enrollment" },
             ].map((item, i) => (
               <Link key={i} to={item.link} className="flex flex-col items-center gap-2 py-5 px-4 text-white border-r border-white/20 last:border-r-0 hover:bg-purple-600 transition-colors group">
                 <svg className="w-8 h-8 text-purple-200 group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -534,7 +534,10 @@ const HomeDepEd = () => {
                 <Link to="/enroll" className="px-8 py-4 rounded-xl bg-white text-purple-700 text-sm font-black hover:bg-purple-50 transition-colors shadow-lg uppercase">
                   Enroll Now
                 </Link>
-                <Link to="/contact" className="px-8 py-4 rounded-xl border-2 border-white/30 text-white text-sm font-black hover:bg-white/10 transition-colors uppercase">
+                <Link to="/track-enrollment" className="px-8 py-4 rounded-xl border-2 border-white/40 text-white text-sm font-black hover:bg-white/10 transition-colors uppercase">
+                  Track Application
+                </Link>
+                <Link to="/contact" className="px-8 py-4 rounded-xl border-2 border-white/20 text-white/80 text-sm font-bold hover:bg-white/5 transition-colors uppercase">
                   Contact Us
                 </Link>
               </div>
