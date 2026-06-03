@@ -73,6 +73,7 @@ const GradeManagement = lazy(() => import('./pages/GradeManagement'));
 const StudentGradeView = lazy(() => import('./pages/StudentGradeView'));
 const Moderation = lazy(() => import('./pages/Moderation'));
 const Analytics = lazy(() => import('./pages/Analytics'));
+const SystemHealth = lazy(() => import('./pages/SystemHealth'));
 const Notifications = lazy(() => import('./pages/Notifications'));
 const Messages = lazy(() => import('./pages/Messages'));
 const ScheduleManagement = lazy(() => import('./pages/ScheduleManagement'));
@@ -203,6 +204,7 @@ function App() {
                 <Route path="student-grades" element={<StudentGradeView />} />
                 <Route path="moderation" element={<Moderation />} />
                 <Route path="analytics" element={<Analytics />} />
+                <Route path="system-health" element={<SystemHealth />} />
                 <Route path="notifications" element={<Notifications />} />
                 <Route path="schedule-management" element={<ScheduleManagement />} />
                 <Route path="schedule" element={<MySchedule />} />
