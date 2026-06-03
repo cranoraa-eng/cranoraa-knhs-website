@@ -3362,15 +3362,16 @@ class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
                 return Response({'error': 'Student account already exists'}, status=400)
 
             import re, secrets
-            clean_first = re.sub(r'[^a-z]', '', (application.first_name or 'student').lower().split()[0])
-            clean_last = re.sub(r'[^a-z]', '', (application.last_name or 'user').lower().split()[0])
-            if not clean_first: clean_first = 'student'
-            if not clean_last: clean_last = 'user'
-            username_base = f"{clean_first}.{clean_last}"
-            username = username_base
-            counter = 1
-            while User.objects.filter(username=username).exists():
-                username = f"{username_base}{counter}"; counter += 1
+            lrn = (application.lrn or '').strip()
+            if lrn and len(lrn) == 12 and lrn.isdigit():
+                username = lrn
+                if User.objects.filter(username=username).exists():
+                    return Response({'error': 'A student account with this LRN already exists'}, status=400)
+            else:
+                # Keep a non-name fallback only for applications without a usable LRN.
+                username = f"student.{secrets.token_hex(4)}"
+                while User.objects.filter(username=username).exists():
+                    username = f"student.{secrets.token_hex(4)}"
 
             temp_password = secrets.token_urlsafe(12)
             student_user = User(username=username, email=application.email or None,
@@ -3379,7 +3380,6 @@ class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
             student_user.set_password(temp_password)
             student_user.save()
 
-            lrn = application.lrn or ''
             profile, _ = Profile.objects.get_or_create(user=student_user)
             profile.lrn = lrn; profile.grade_level = application.grade_level
             profile.phone_number = application.phone_number or ''
