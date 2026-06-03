@@ -365,6 +365,20 @@ def admin_create_user_view(request):
         
         profile.save()
 
+        # Link to EnrollmentApplication if it exists (for students)
+        if role == 'student':
+            try:
+                EnrollmentApplication.objects.filter(
+                    lrn=username,
+                    status__in=['pending', 'under_review', 'approved']
+                ).update(
+                    enrolled_student=user,
+                    status='enrolled',
+                    temp_password_display=password
+                )
+            except Exception as e:
+                logger.error(f"Failed to link manual user creation to enrollment app: {e}")
+
         # Auto-enroll student if created by teacher
         if advisory_classroom:
             StudentClassEnrollment.objects.get_or_create(
@@ -1148,6 +1162,19 @@ class UserViewSet(viewsets.ModelViewSet):
                         'sex': sex
                     }
                 )
+
+                # Link to EnrollmentApplication if it exists
+                try:
+                    EnrollmentApplication.objects.filter(
+                        lrn=student_id,
+                        status__in=['pending', 'under_review', 'approved']
+                    ).update(
+                        enrolled_student=user,
+                        status='enrolled',
+                        temp_password_display=temp_password
+                    )
+                except Exception as e:
+                    logger.error(f"Failed to link imported user to enrollment app: {e}")
 
                 # Auto-enroll student if imported by teacher
                 if advisory_classroom:
@@ -3297,7 +3324,7 @@ class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
             'remarks': app.remarks,
             'lrn': app.lrn or '',
             'enrolled_student_email': app.enrolled_student.email if app.enrolled_student else None,
-            'temp_password': app.temp_password_display if app.status == 'enrolled' and app.enrolled_student and app.enrolled_student.must_change_password else None,
+            'temp_password_display': app.temp_password_display if app.status == 'enrolled' and app.enrolled_student and app.enrolled_student.must_change_password else None,
             'documents': [{'id': d.id, 'document_type_display': d.get_document_type_display(),
                            'verification_status': d.verification_status,
                            'verification_status_display': d.get_verification_status_display()} for d in app.documents.all()],
