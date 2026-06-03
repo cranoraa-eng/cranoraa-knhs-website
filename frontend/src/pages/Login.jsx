@@ -132,7 +132,7 @@ const Login = () => {
             {/* Left: DepEd Seal */}
             <div className="flex justify-start">
               <img
-                src="https://upload.wikimedia.org/wikipedia/commons/f/f6/DepEd_Philippines_Logo.svg"
+                src="/icons/deped-logo.svg"
                 alt="DepEd Seal"
                 className="w-16 h-16 object-contain"
                 onError={e => { e.target.onerror = null; e.target.src = '/icons/school-logo-source.png'; }}
@@ -229,7 +229,7 @@ const Login = () => {
             {/* Bottom logos */}
             <div className="relative flex items-center gap-4 mt-10 pt-6 border-t border-white/20">
               <img
-                src="https://upload.wikimedia.org/wikipedia/commons/f/f6/DepEd_Philippines_Logo.svg"
+                src="/icons/deped-logo.svg"
                 alt="DepEd"
                 className="w-10 h-10 object-contain opacity-80"
                 onError={e => { e.target.onerror = null; e.target.src = '/icons/school-logo-source.png'; }}
