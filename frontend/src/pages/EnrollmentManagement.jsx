@@ -9,7 +9,7 @@ const STATUS_CONFIG = {
   pending_requirements: { color: 'bg-orange-100 text-orange-800 border-orange-200', label: 'Pending Req' },
   approved: { color: 'bg-emerald-100 text-emerald-800 border-emerald-200', label: 'Approved' },
   rejected: { color: 'bg-rose-100 text-rose-800 border-rose-200', label: 'Rejected' },
-  enrolled: { color: 'bg-violet-100 text-violet-800 border-violet-200', label: 'Enrolled' },
+  enrolled: { color: 'bg-blue-100 text-blue-800 border-blue-200', label: 'Enrolled' },
 };
 
 const GRADE_LEVELS = ['','7','8','9','10','11','12'];
@@ -284,24 +284,70 @@ const EnrollmentManagement = () => {
   );
 
   return (
-    <div className="space-y-4 md:space-y-6 page-bottom-safe max-w-[1600px] mx-auto">
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
-        <div>
-          <h1 className="text-xl md:text-2xl font-bold text-slate-900 tracking-tight">Enrollment Management</h1>
-          <p className="text-slate-500 text-xs md:text-sm mt-0.5">Review, approve, and manage student applications</p>
+    <div className="page-bottom-safe bg-slate-50/50">
+      {/* DepEd Official Header with Government Seal */}
+      <div className="bg-gradient-to-r from-blue-900 via-blue-800 to-blue-900 border-b-4 border-yellow-400 px-4 md:px-6 py-4 md:py-6 mb-4 md:mb-6 shadow-lg">
+        <div className="max-w-[1600px] mx-auto">
+          <div className="flex items-center gap-4">
+            {/* Official DepEd Seal */}
+            <div className="h-14 w-14 md:h-20 md:w-20 rounded-full bg-white flex items-center justify-center shrink-0 shadow-xl border-4 border-yellow-400">
+              <div className="relative">
+                <svg className="w-8 h-8 md:w-12 md:h-12 text-blue-900" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 3L1 9l11 6 9-4.91V17h2V9M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z"/>
+                </svg>
+                <div className="absolute -top-1 -right-1 w-4 h-4 md:w-6 md:h-6 bg-yellow-400 rounded-full flex items-center justify-center">
+                  <svg className="w-2 h-2 md:w-3 md:h-3 text-blue-900" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+            <div className="flex-1">
+              <div className="flex items-baseline gap-2 flex-wrap">
+                <h1 className="text-xl md:text-3xl font-black text-white uppercase tracking-tight">
+                  Admissions Management
+                </h1>
+                <span className="px-2 py-0.5 md:px-3 md:py-1 bg-yellow-400 text-blue-900 text-[10px] md:text-xs font-black uppercase tracking-widest rounded-md">
+                  Official
+                </span>
+              </div>
+              <p className="text-xs md:text-sm font-bold text-blue-100 uppercase tracking-wide mt-1">
+                Department of Education • Enrollment Applications System
+              </p>
+              <p className="text-[10px] md:text-xs text-blue-200 mt-1 font-medium">
+                SY {new Date().getFullYear()}-{new Date().getFullYear() + 1} • KNHS Admissions Office
+              </p>
+            </div>
+            {/* Export Actions */}
+            <div className="hidden lg:flex items-center gap-2">
+              <button onClick={() => { const a = document.createElement('a'); a.href = '/api/enrollment-applications/export_csv/'; a.click(); }}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/10 backdrop-blur-sm border border-white/20 text-white text-xs font-bold hover:bg-white/20 transition-all">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                CSV
+              </button>
+              <button onClick={() => { const a = document.createElement('a'); a.href = '/api/enrollment-applications/export-summary-pdf/'; a.click(); }}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-yellow-400 text-blue-900 text-xs font-black hover:bg-yellow-300 transition-all shadow-lg">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+                PDF Report
+              </button>
+            </div>
+          </div>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <button onClick={() => { const a = document.createElement('a'); a.href = '/api/enrollment-applications/export_csv/'; a.click(); }}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-slate-200 bg-white text-slate-700 text-xs font-semibold hover:bg-slate-50">
-            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-            CSV
-          </button>
-          <button onClick={() => { const a = document.createElement('a'); a.href = '/api/enrollment-applications/export-summary-pdf/'; a.click(); }}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-slate-200 bg-white text-slate-700 text-xs font-semibold hover:bg-slate-50">
-            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
-            PDF Report
-          </button>
-        </div>
+      </div>
+
+      <div className="max-w-[1600px] mx-auto px-2 md:px-6 space-y-4 md:space-y-6 pb-6">
+      {/* Mobile Export Buttons */}
+      <div className="lg:hidden flex gap-2">
+        <button onClick={() => { const a = document.createElement('a'); a.href = '/api/enrollment-applications/export_csv/'; a.click(); }}
+          className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg border border-slate-200 bg-white text-slate-700 text-xs font-semibold hover:bg-slate-50">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          CSV
+        </button>
+        <button onClick={() => { const a = document.createElement('a'); a.href = '/api/enrollment-applications/export-summary-pdf/'; a.click(); }}
+          className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-blue-600 text-white text-xs font-bold hover:bg-blue-700">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+          PDF
+        </button>
       </div>
 
       {analytics && (
@@ -311,7 +357,7 @@ const EnrollmentManagement = () => {
             { label: 'Pending', value: analytics.pending, color: 'text-amber-700', bg: 'bg-amber-50 border-amber-200' },
             { label: 'Under Review', value: (analytics.status_breakdown?.under_review || 0), color: 'text-blue-700', bg: 'bg-blue-50 border-blue-200' },
             { label: 'Approved', value: analytics.approved, color: 'text-emerald-700', bg: 'bg-emerald-50 border-emerald-200' },
-            { label: 'Enrolled', value: analytics.enrolled, color: 'text-violet-700', bg: 'bg-violet-50 border-violet-200' },
+            { label: 'Enrolled', value: analytics.enrolled, color: 'text-blue-700', bg: 'bg-blue-50 border-blue-200' },
             { label: 'Rejected', value: analytics.rejected, color: 'text-rose-700', bg: 'bg-rose-50 border-rose-200' },
           ].map(s => (
             <div key={s.label} className={`${s.bg} border rounded-xl p-4`}>
@@ -327,27 +373,27 @@ const EnrollmentManagement = () => {
           <div className="relative flex-1">
             <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
             <input value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Search name, email, or enrollment #..."
-              className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-violet-300/40" />
+              className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40" />
           </div>
           <select value={filter} onChange={e => setFilter(e.target.value)}
-            className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 focus:outline-none focus:ring-2 focus:ring-violet-300/40">
+            className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500/40">
             <option value="all">All Status</option>
             {Object.entries(STATUS_CONFIG).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
           </select>
           <select value={gradeFilter} onChange={e => setGradeFilter(e.target.value)}
-            className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 focus:outline-none focus:ring-2 focus:ring-violet-300/40">
+            className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500/40">
             <option value="">All Grades</option>
             {GRADE_LEVELS.filter(Boolean).map(g => <option key={g} value={g}>Grade {g}</option>)}
           </select>
           <select value={typeFilter} onChange={e => setTypeFilter(e.target.value)}
-            className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 focus:outline-none focus:ring-2 focus:ring-violet-300/40">
+            className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500/40">
             <option value="">All Types</option>
             {[{ v: 'new', l: 'New' }, { v: 'returning', l: 'Returning' }, { v: 'transferee', l: 'Transferee' }, { v: 'sh_applicant', l: 'SHS' }, { v: 'parent_assisted', l: 'Parent-Assisted' }].map(t =>
               <option key={t.v} value={t.v}>{t.l}</option>
             )}
           </select>
           <select value={schoolYearFilter} onChange={e => setSchoolYearFilter(e.target.value)}
-            className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 focus:outline-none focus:ring-2 focus:ring-violet-300/40">
+            className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500/40">
             <option value="">All Years</option>
             <option value="2025-2026">2025-2026</option>
             <option value="2026-2027">2026-2027</option>
@@ -355,8 +401,8 @@ const EnrollmentManagement = () => {
         </div>
 
         {selectedIds.length > 0 && (
-          <div className="px-4 py-2 bg-violet-50 border-b border-violet-100 flex items-center gap-3">
-            <span className="text-xs font-bold text-violet-800">{selectedIds.length} selected</span>
+          <div className="px-4 py-2 bg-blue-50 border-b border-blue-100 flex items-center gap-3">
+            <span className="text-xs font-bold text-blue-800">{selectedIds.length} selected</span>
             <button onClick={() => bulkAction('approve')} className="px-3 py-1 rounded-lg bg-emerald-600 text-white text-[10px] font-bold hover:bg-emerald-700">Approve All</button>
             <button onClick={() => bulkAction('reject')} className="px-3 py-1 rounded-lg bg-rose-600 text-white text-[10px] font-bold hover:bg-rose-700">Reject All</button>
             <button onClick={() => setSelectedIds([])} className="text-[10px] font-bold text-slate-500 hover:text-slate-700">Clear</button>
@@ -367,7 +413,7 @@ const EnrollmentManagement = () => {
           <table className="w-full text-left">
             <thead className="bg-slate-50/50 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100">
               <tr>
-                <th className="px-3 py-3 w-8"><input type="checkbox" onChange={e => setSelectedIds(e.target.checked ? filtered.map(a => a.id) : [])} checked={selectedIds.length === filtered.length && filtered.length > 0} className="w-4 h-4 text-violet-600 rounded" /></th>
+                <th className="px-3 py-3 w-8"><input type="checkbox" onChange={e => setSelectedIds(e.target.checked ? filtered.map(a => a.id) : [])} checked={selectedIds.length === filtered.length && filtered.length > 0} className="w-4 h-4 text-blue-600 rounded" /></th>
                 <th className="px-3 py-3">Applicant</th>
                 <th className="px-3 py-3">Enrollment #</th>
                 <th className="px-3 py-3">Grade</th>
@@ -382,14 +428,14 @@ const EnrollmentManagement = () => {
                 <tr><td colSpan={8} className="px-6 py-12 text-center text-sm text-slate-400 font-bold">No applications found</td></tr>
               ) : filtered.map(app => (
                 <tr key={app.id} className="hover:bg-slate-50/50 transition-colors">
-                  <td className="px-3 py-3"><input type="checkbox" checked={selectedIds.includes(app.id)} onChange={() => toggleSelect(app.id)} className="w-4 h-4 text-violet-600 rounded" /></td>
+                  <td className="px-3 py-3"><input type="checkbox" checked={selectedIds.includes(app.id)} onChange={() => toggleSelect(app.id)} className="w-4 h-4 text-blue-600 rounded" /></td>
                   <td className="px-3 py-3">
                     <button onClick={() => setSelected(app)} className="text-left">
                       <p className="text-sm font-bold text-slate-900">{app.last_name}, {app.first_name}</p>
                       <p className="text-[10px] text-slate-400">{app.email}</p>
                     </button>
                   </td>
-                  <td className="px-3 py-3 text-xs font-bold text-violet-700">{app.enrollment_number || '—'}</td>
+                  <td className="px-3 py-3 text-xs font-bold text-blue-700">{app.enrollment_number || '—'}</td>
                   <td className="px-3 py-3">
                     <span className="text-sm font-bold text-slate-700">G{app.grade_level}</span>
                     {app.strand && <span className="text-[9px] text-slate-400 ml-1">{app.strand}</span>}
@@ -403,7 +449,7 @@ const EnrollmentManagement = () => {
                   <td className="px-3 py-3 text-xs text-slate-400 hidden md:table-cell">{new Date(app.submitted_at).toLocaleDateString()}</td>
                   <td className="px-3 py-3 text-center relative">
                     <div className="hidden md:flex items-center justify-center gap-1">
-                      <button onClick={() => handleView(app)} className="p-1.5 text-slate-400 hover:text-violet-600 hover:bg-violet-50 rounded-lg transition-all" title="View">
+                      <button onClick={() => handleView(app)} className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all" title="View">
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
                       </button>
                       {(app.status === 'pending' || app.status === 'under_review') && (
@@ -424,12 +470,12 @@ const EnrollmentManagement = () => {
                         </button>
                       )}
                       {app.status === 'approved' && (
-                        <button onClick={() => { setEnrollApp(app); setShowEnrollModal(true); }} className="p-1.5 text-slate-400 hover:text-violet-600 hover:bg-violet-50 rounded-lg" title="Enroll">
+                        <button onClick={() => { setEnrollApp(app); setShowEnrollModal(true); }} className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg" title="Enroll">
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" /></svg>
                         </button>
                       )}
                       {app.enrolled_student && (
-                        <span className="text-[9px] font-bold text-violet-600 bg-violet-50 px-2 py-1 rounded-lg">Enrolled</span>
+                        <span className="text-[9px] font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded-lg">Enrolled</span>
                       )}
                       {app.status !== 'enrolled' && (
                         <button onClick={() => promptDelete(app.id, `${app.first_name} ${app.last_name}`)} className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg" title="Delete">
@@ -438,12 +484,12 @@ const EnrollmentManagement = () => {
                       )}
                     </div>
                     <div className="md:hidden">
-                      <button onClick={() => setActiveMenu(activeMenu === app.id ? null : app.id)} className={`p-1 rounded-md ${activeMenu === app.id ? 'bg-violet-100 text-violet-600' : 'text-slate-400'}`}>
+                      <button onClick={() => setActiveMenu(activeMenu === app.id ? null : app.id)} className={`p-1 rounded-md ${activeMenu === app.id ? 'bg-blue-100 text-blue-600' : 'text-slate-400'}`}>
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 6h16M4 12h16m-7 6h7" /></svg>
                       </button>
                       {activeMenu === app.id && (
                         <div className="absolute right-0 top-full mt-1 bg-white border border-slate-100 rounded-xl shadow-xl z-50 py-1 min-w-[130px]">
-                          <button onClick={() => { handleView(app); setActiveMenu(null); }} className="w-full text-left px-3 py-2 text-[10px] font-bold text-slate-600 hover:bg-violet-50 flex items-center gap-2">View</button>
+                          <button onClick={() => { handleView(app); setActiveMenu(null); }} className="w-full text-left px-3 py-2 text-[10px] font-bold text-slate-600 hover:bg-blue-50 flex items-center gap-2">View</button>
                           {(app.status === 'pending' || app.status === 'under_review') && (
                             <>
                               <button onClick={() => { promptReject(app.id); setActiveMenu(null); }} className="w-full text-left px-3 py-2 text-[10px] font-bold text-rose-600 hover:bg-rose-50 flex items-center gap-2">Reject</button>
@@ -484,7 +530,7 @@ const EnrollmentManagement = () => {
                 <span className={`px-3 py-1 text-xs font-bold uppercase rounded-lg border ${(STATUS_CONFIG[selected.status] || STATUS_CONFIG.pending).color}`}>
                   {(STATUS_CONFIG[selected.status] || STATUS_CONFIG.pending).label}
                 </span>
-                {selected.assigned_classroom_name && <span className="text-xs font-bold text-violet-600">Section: {selected.assigned_classroom_name}</span>}
+                {selected.assigned_classroom_name && <span className="text-xs font-bold text-blue-600">Section: {selected.assigned_classroom_name}</span>}
               </div>
 
               <div className="grid grid-cols-2 gap-4 text-sm">
@@ -503,7 +549,7 @@ const EnrollmentManagement = () => {
                   <div className="bg-emerald-50 p-3 rounded-xl"><p className="text-[9px] font-bold text-emerald-600 uppercase">Father</p><p className="font-bold text-slate-800">{selected.father_name || 'N/A'}</p><p className="text-xs text-slate-500">{selected.father_contact || ''}</p>{selected.father_email && <p className="text-[10px] text-slate-400">{selected.father_email}</p>}</div>
                   <div className="bg-rose-50 p-3 rounded-xl"><p className="text-[9px] font-bold text-rose-600 uppercase">Mother</p><p className="font-bold text-slate-800">{selected.mother_name || 'N/A'}</p><p className="text-xs text-slate-500">{selected.mother_contact || ''}</p>{selected.mother_email && <p className="text-[10px] text-slate-400">{selected.mother_email}</p>}</div>
                   {selected.guardian_name && <div className="bg-amber-50 p-3 rounded-xl col-span-2"><p className="text-[9px] font-bold text-amber-600 uppercase">Guardian</p><p className="font-bold text-slate-800">{selected.guardian_name} ({selected.guardian_relationship})</p><p className="text-xs text-slate-500">{selected.guardian_contact || ''}</p></div>}
-                  {selected.linked_parent_email && <div className="bg-violet-50 p-3 rounded-xl col-span-2 border border-violet-200"><p className="text-[9px] font-bold text-violet-600 uppercase">Linked Parent Account</p><p className="text-xs text-violet-700 font-semibold">{selected.linked_parent_email}</p></div>}
+                  {selected.linked_parent_email && <div className="bg-blue-50 p-3 rounded-xl col-span-2 border border-blue-200"><p className="text-[9px] font-bold text-blue-600 uppercase">Linked Parent Account</p><p className="text-xs text-blue-700 font-semibold">{selected.linked_parent_email}</p></div>}
                 </div>
               </div>
 
@@ -529,7 +575,7 @@ const EnrollmentManagement = () => {
                           }`}>{doc.verification_status_display}</span>
                         </div>
                         <div className="flex items-center gap-1">
-                          <a href={doc.file_url} target="_blank" rel="noreferrer" className="p-1.5 text-slate-400 hover:text-violet-600 rounded-lg" title="View">
+                          <a href={doc.file_url} target="_blank" rel="noreferrer" className="p-1.5 text-slate-400 hover:text-blue-600 rounded-lg" title="View">
                             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
                           </a>
                           {doc.verification_status !== 'verified' && (
@@ -558,7 +604,7 @@ const EnrollmentManagement = () => {
                     {selected.status_history.map((h, i) => (
                       <div key={h.id} className="flex gap-3">
                         <div className="flex flex-col items-center">
-                          <div className={`w-4 h-4 rounded-full border-2 ${i === 0 ? 'bg-violet-500 border-violet-500' : 'bg-white border-slate-300'}`} />
+                          <div className={`w-4 h-4 rounded-full border-2 ${i === 0 ? 'bg-blue-500 border-violet-500' : 'bg-white border-slate-300'}`} />
                           {i < selected.status_history.length - 1 && <div className="w-0.5 h-6 bg-slate-200" />}
                         </div>
                         <div className="pb-3">
@@ -671,8 +717,10 @@ const EnrollmentManagement = () => {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 };
 
 export default EnrollmentManagement;
+
