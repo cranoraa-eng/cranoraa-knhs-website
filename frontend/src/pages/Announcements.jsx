@@ -330,14 +330,30 @@ const Announcements = () => {
   const authorInitial = (name) => (name || 'S').charAt(0).toUpperCase();
 
   return (
-    <div className="animate-fade-in page-bottom-safe min-h-0 -mx-3 md:-mx-6 px-3 md:px-6 py-3 md:py-4 bg-[#f0f2f5]">
-      <div className="max-w-[680px] mx-auto space-y-3 md:space-y-4">
-        {/* Feed header */}
+    <div className="animate-fade-in page-bottom-safe min-h-0 -mx-3 md:-mx-6 bg-[#f0f2f5]">
+      {/* DepEd Official Header */}
+      <div className="bg-white border-b-4 border-blue-600 px-4 md:px-6 py-3 md:py-4 mb-3 md:mb-4">
+        <div className="max-w-[680px] mx-auto flex items-center gap-3">
+          <div className="h-10 w-10 md:h-12 md:w-12 rounded-md bg-blue-600 flex items-center justify-center shrink-0">
+            <svg className="w-6 h-6 md:w-7 md:h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
+            </svg>
+          </div>
+          <div>
+            <h1 className="text-lg md:text-2xl font-extrabold text-slate-900 uppercase tracking-tight">
+              School Announcements
+            </h1>
+            <p className="text-xs md:text-sm font-bold text-blue-700 uppercase tracking-wide mt-0.5">
+              Official News & Updates
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-[680px] mx-auto space-y-3 md:space-y-4 px-3 md:px-6 py-3 md:py-4">
+        {/* Feed header - now just action buttons */}
         <div className="flex items-center justify-between gap-3 px-1">
           <div className="min-w-0">
-            <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">Announcements</h1>
-            <p className="text-xs sm:text-sm text-slate-500 mt-0.5">School feed — news and updates</p>
-          </div>
         </div>
 
         {/* Search & filters — compact feed toolbar */}
@@ -353,13 +369,13 @@ const Announcements = () => {
                 placeholder="Search posts…"
                 value={search}
                 onChange={e => setSearch(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 bg-slate-100 border-0 rounded-full text-sm text-slate-800 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-violet-500/30 focus:bg-white transition-all"
+                className="w-full pl-9 pr-4 py-2 bg-slate-100 border-0 rounded-full text-sm text-slate-800 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:bg-white transition-all"
               />
             </div>
             <select
               value={categoryFilter}
               onChange={e => setCategoryFilter(e.target.value)}
-              className="px-4 py-2 bg-slate-100 border-0 rounded-full text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-500/30 cursor-pointer"
+              className="px-4 py-2 bg-slate-100 border-0 rounded-full text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/30 cursor-pointer"
             >
               <option value="all">All posts</option>
               {Object.entries(CATEGORY_CONFIG).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
@@ -373,7 +389,7 @@ const Announcements = () => {
                   type="checkbox"
                   checked={selectedIds.length === sorted.length && sorted.length > 0}
                   onChange={toggleSelectAll}
-                  className="w-4 h-4 rounded border-slate-300 text-violet-600 focus:ring-violet-500 cursor-pointer"
+                  className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
                 />
                 {selectedIds.length === sorted.length ? 'Deselect all' : 'Select all'}
               </label>
@@ -401,7 +417,7 @@ const Announcements = () => {
         {canManage && (
           <div className="bg-white rounded-lg shadow-sm border border-slate-200/80 p-3 md:p-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center text-white text-sm font-bold shrink-0">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white text-sm font-bold shrink-0">
                 {authorInitial(user?.full_name || user?.username)}
               </div>
               <button
@@ -462,8 +478,8 @@ const Announcements = () => {
         ) : sorted.length === 0 ? (
           <div className="bg-white rounded-lg shadow-sm border border-slate-200/80">
             <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
-              <div className="w-14 h-14 rounded-full bg-violet-100 flex items-center justify-center mb-4">
-                <svg className="w-7 h-7 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-14 h-14 rounded-full bg-blue-100 flex items-center justify-center mb-4">
+                <svg className="w-7 h-7 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
                     d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
                 </svg>
@@ -474,7 +490,7 @@ const Announcements = () => {
                 <button
                   type="button"
                   onClick={openCreate}
-                  className="mt-4 px-5 py-2 rounded-lg bg-violet-600 text-white text-sm font-semibold hover:bg-violet-700 transition-colors"
+                  className="mt-4 px-5 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 transition-colors"
                 >
                   Create first post
                 </button>
@@ -495,7 +511,7 @@ const Announcements = () => {
                   key={a.id}
                   className={`bg-white rounded-lg shadow-sm border border-slate-200/80 overflow-hidden transition-shadow hover:shadow-md
                     ${a.priority === 'critical' ? 'ring-2 ring-red-200 ring-offset-0' : ''}
-                    ${isSelected ? 'ring-2 ring-violet-400' : ''}`}
+                    ${isSelected ? 'ring-2 ring-blue-400' : ''}`}
                 >
                   {/* Post header — avatar, name, time */}
                   <div className="px-3 md:px-4 pt-3 md:pt-4 pb-2 flex items-start gap-2">
@@ -504,10 +520,10 @@ const Announcements = () => {
                         type="checkbox"
                         checked={isSelected}
                         onChange={() => toggleSelect(a.id)}
-                        className="mt-2.5 w-4 h-4 rounded border-slate-300 text-violet-600 focus:ring-violet-500 cursor-pointer shrink-0"
+                        className="mt-2.5 w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer shrink-0"
                       />
                     )}
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center text-white text-sm font-bold shrink-0">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white text-sm font-bold shrink-0">
                       {authorInitial(a.author_name)}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -595,7 +611,7 @@ const Announcements = () => {
                       <button
                         type="button"
                         onClick={() => openPost(a)}
-                        className="text-sm font-semibold text-slate-500 hover:text-violet-700 mt-1 no-min"
+                        className="text-sm font-semibold text-slate-500 hover:text-blue-700 mt-1 no-min"
                       >
                         See more
                       </button>
@@ -615,7 +631,7 @@ const Announcements = () => {
                   <div className="px-3 md:px-4 py-2 flex items-center justify-between text-xs text-slate-500 border-b border-slate-100">
                     <span className="flex items-center gap-3">
                       <span className="flex items-center gap-1">
-                        <span className="w-4 h-4 rounded-full bg-violet-600 flex items-center justify-center">
+                        <span className="w-4 h-4 rounded-full bg-blue-600 flex items-center justify-center">
                           <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
                             <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
                             <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
@@ -844,8 +860,10 @@ const Announcements = () => {
           />
         </div>
       )}
+      </div>
     </div>
   );
 };
 
 export default Announcements;
+
