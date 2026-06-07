@@ -1,4 +1,4 @@
-
+a
           {/* ROW 2: Attendance Alert (4) | Quick Actions (4) | Messages (4) */}
           {unmarkedCount > 0 && (
             <Card className="sm:col-span-3 lg:col-span-4 border-l-4 border-l-amber-500 bg-amber-50/50 border-amber-200 shadow-sm hover:shadow-md transition-shadow rounded-2xl">
