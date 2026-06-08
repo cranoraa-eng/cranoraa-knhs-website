@@ -15,6 +15,17 @@ const ROLES = {
     identifierPlaceholder: 'Enter your Student ID or email',
     icon: 'M12 14l9-5-9-5-9 5 9 5zm0 7l-9-5 9-5 9 5-9 5z',
     features: ['Real-time grade tracking', 'Attendance monitoring', 'Learning materials', 'Announcements', 'Direct messaging'],
+    theme: {
+      primary: 'violet-600',
+      primaryBg: 'bg-violet-600/20',
+      text: 'text-violet-600',
+      bg: 'bg-violet-600',
+      ring: 'focus:ring-violet-600/5',
+      border: 'group-focus-within:border-violet-600/20',
+      accent: 'bg-violet-400',
+      hover: 'hover:bg-violet-700',
+      gradient: 'from-violet-400 to-blue-400'
+    }
   },
   teacher: {
     label: 'Teacher',
@@ -23,6 +34,17 @@ const ROLES = {
     identifierPlaceholder: 'teacher@knhs.edu.ph',
     icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01',
     features: ['Grade input & management', 'Class attendance', 'Upload materials', 'Post announcements', 'Student communication'],
+    theme: {
+      primary: 'blue-600',
+      primaryBg: 'bg-blue-600/20',
+      text: 'text-blue-600',
+      bg: 'bg-blue-600',
+      ring: 'focus:ring-blue-600/5',
+      border: 'group-focus-within:border-blue-600/20',
+      accent: 'bg-blue-400',
+      hover: 'hover:bg-blue-700',
+      gradient: 'from-blue-400 to-cyan-400'
+    }
   },
   admin: {
     label: 'Administrator',
@@ -31,6 +53,17 @@ const ROLES = {
     identifierPlaceholder: 'admin@knhs.edu.ph',
     icon: 'M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z',
     features: ['Full system oversight', 'User management', 'Enrollment control', 'Analytics & reports', 'Security & audit logs'],
+    theme: {
+      primary: 'indigo-600',
+      primaryBg: 'bg-indigo-600/20',
+      text: 'text-indigo-600',
+      bg: 'bg-indigo-600',
+      ring: 'focus:ring-indigo-600/5',
+      border: 'group-focus-within:border-indigo-600/20',
+      accent: 'bg-indigo-400',
+      hover: 'hover:bg-indigo-700',
+      gradient: 'from-indigo-400 to-slate-400'
+    }
   },
 };
 
@@ -131,7 +164,7 @@ const Login = () => {
           {/* Background Elements */}
           <div className="absolute inset-0 z-0">
             <div className="absolute top-0 left-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10" />
-            <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-violet-600/20 rounded-full blur-[120px]" />
+            <div className={`absolute top-[-10%] right-[-10%] w-[500px] h-[500px] ${role.theme.primaryBg} rounded-full blur-[120px] transition-colors duration-500`} />
             <div className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[120px]" />
           </div>
 
@@ -140,25 +173,25 @@ const Login = () => {
               <img src="/icons/school-logo-source.png" alt="KNHS Logo" className="w-16 h-16 object-contain drop-shadow-2xl" />
               <div>
                 <h1 className="text-xl font-black text-white uppercase tracking-tight leading-none">Kiwalan</h1>
-                <p className="text-xs font-bold text-violet-400 uppercase tracking-widest mt-1">National High School</p>
+                <p className={`text-xs font-bold ${role.theme.text} uppercase tracking-widest mt-1 transition-colors duration-500`}>National High School</p>
               </div>
             </div>
 
             <div className="max-w-md">
               <h2 className="text-5xl font-black text-white mb-6 leading-[1.1]">
-                Digital Campus <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-blue-400">Portal</span>
+                Digital Campus <span className={`text-transparent bg-clip-text bg-gradient-to-r ${role.theme.gradient} transition-all duration-500`}>Portal</span>
               </h2>
               <p className="text-slate-400 text-lg leading-relaxed mb-10">
                 Official management system for students, faculty, and administration of Kiwalan National High School.
               </p>
 
               <div className="grid grid-cols-2 gap-6">
-                <div className="bg-white/5 backdrop-blur-md border border-white/10 p-4 rounded-2xl">
+                <div className="bg-white/5 backdrop-blur-md border border-white/10 p-4 rounded-lg">
                   <p className="text-2xl font-black text-white">100%</p>
                   <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Digital Access</p>
                 </div>
-                <div className="bg-white/5 backdrop-blur-md border border-white/10 p-4 rounded-2xl">
-                  <p className="text-2xl font-black text-violet-400">Secure</p>
+                <div className="bg-white/5 backdrop-blur-md border border-white/10 p-4 rounded-lg">
+                  <p className={`text-2xl font-black ${role.theme.text} transition-colors duration-500`}>Secure</p>
                   <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Authentication</p>
                 </div>
               </div>
@@ -193,7 +226,7 @@ const Login = () => {
             <div className="mb-10 text-center lg:text-left">
               <button 
                 onClick={() => navigate('/')} 
-                className="hidden lg:inline-flex items-center gap-2 text-slate-400 hover:text-violet-600 text-xs font-bold uppercase tracking-widest mb-8 transition-colors group"
+                className={`hidden lg:inline-flex items-center gap-2 text-slate-400 hover:${role.theme.text} text-xs font-bold uppercase tracking-widest mb-8 transition-colors group`}
               >
                 <svg className="w-4 h-4 transition-transform group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" /></svg>
                 Return to Home
@@ -204,14 +237,14 @@ const Login = () => {
             </div>
 
             {/* Role Selector */}
-            <div className="flex p-1 bg-slate-100 rounded-2xl mb-8">
+            <div className="flex p-1 bg-slate-100 rounded-lg mb-8">
               {Object.entries(ROLES).map(([key, r]) => (
                 <button
                   key={key}
                   onClick={() => setLoginType(key)}
-                  className={`flex-1 flex items-center justify-center gap-2 py-3 px-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all ${
+                  className={`flex-1 flex items-center justify-center gap-2 py-3 px-2 rounded-md text-[10px] font-black uppercase tracking-wider transition-all ${
                     loginType === key
-                      ? 'bg-white text-violet-700 shadow-sm ring-1 ring-slate-200'
+                      ? `bg-white ${r.theme.text} shadow-sm ring-1 ring-slate-200`
                       : 'text-slate-500 hover:text-slate-700'
                   }`}
                 >
@@ -227,7 +260,7 @@ const Login = () => {
               <div className="space-y-1.5">
                 <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">{role.identifierLabel}</label>
                 <div className="relative group">
-                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-violet-600 transition-colors">
+                  <div className={`absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:${role.theme.text} transition-colors`}>
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                     </svg>
@@ -237,7 +270,7 @@ const Login = () => {
                     value={identifier}
                     onChange={e => setIdentifier(e.target.value)}
                     placeholder={role.identifierPlaceholder}
-                    className={`w-full bg-slate-50 border-2 ${fieldErrors.identifier ? 'border-red-200' : 'border-slate-100'} group-focus-within:border-violet-600/20 group-focus-within:bg-white rounded-2xl py-4 pl-12 pr-4 text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-4 focus:ring-violet-600/5 transition-all`}
+                    className={`w-full bg-slate-50 border-2 ${fieldErrors.identifier ? 'border-red-200' : 'border-slate-100'} ${role.theme.border} group-focus-within:bg-white rounded-lg py-4 pl-12 pr-4 text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-4 ${role.theme.ring} transition-all`}
                   />
                 </div>
                 {fieldErrors.identifier && <p className="text-[10px] font-bold text-red-500 ml-1">{fieldErrors.identifier}</p>}
@@ -246,10 +279,10 @@ const Login = () => {
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between px-1">
                   <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Password</label>
-                  <button type="button" className="text-[10px] font-black text-violet-600 uppercase tracking-widest hover:underline">Forgot?</button>
+                  <button type="button" className={`text-[10px] font-black ${role.theme.text} uppercase tracking-widest hover:underline`}>Forgot?</button>
                 </div>
                 <div className="relative group">
-                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-violet-600 transition-colors">
+                  <div className={`absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:${role.theme.text} transition-colors`}>
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                     </svg>
@@ -259,7 +292,7 @@ const Login = () => {
                     value={password}
                     onChange={e => setPassword(e.target.value)}
                     placeholder="••••••••"
-                    className={`w-full bg-slate-50 border-2 ${fieldErrors.password ? 'border-red-200' : 'border-slate-100'} group-focus-within:border-violet-600/20 group-focus-within:bg-white rounded-2xl py-4 pl-12 pr-12 text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-4 focus:ring-violet-600/5 transition-all`}
+                    className={`w-full bg-slate-50 border-2 ${fieldErrors.password ? 'border-red-200' : 'border-slate-100'} ${role.theme.border} group-focus-within:bg-white rounded-lg py-4 pl-12 pr-12 text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-4 ${role.theme.ring} transition-all`}
                   />
                   <button
                     type="button"
@@ -279,7 +312,7 @@ const Login = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-[#0f172a] hover:bg-slate-800 text-white font-black uppercase tracking-[0.2em] py-5 rounded-2xl text-xs shadow-xl shadow-slate-900/10 hover:shadow-slate-900/20 active:scale-[0.98] transition-all flex items-center justify-center gap-3 disabled:opacity-70 disabled:cursor-not-allowed"
+                className={`w-full ${role.theme.bg} ${role.theme.hover} text-white font-black uppercase tracking-[0.2em] py-5 rounded-lg text-xs shadow-xl shadow-slate-900/10 hover:shadow-slate-900/20 active:scale-[0.98] transition-all flex items-center justify-center gap-3 disabled:opacity-70 disabled:cursor-not-allowed`}
               >
                 {loading ? (
                   <svg className="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
@@ -300,7 +333,7 @@ const Login = () => {
               <div className="flex flex-wrap justify-center gap-x-6 gap-y-3">
                 {role.features.slice(0, 3).map((f, i) => (
                   <div key={i} className="flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 rounded-full bg-violet-400" />
+                    <div className={`w-1.5 h-1.5 rounded-full ${role.theme.accent}`} />
                     <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{f}</span>
                   </div>
                 ))}
