@@ -176,15 +176,15 @@ const HomeDepEd = () => {
         </div>
         {/* Slider Content */}
         <div className="relative h-full max-w-7xl mx-auto px-4 flex items-center">
-          <div className="max-w-xl bg-violet-950/80 backdrop-blur-sm p-8 rounded-xl border border-white/10">
-            <h2 className="text-5xl font-black text-white mb-2">{slides[currentSlide].title}</h2>
-            <p className="text-3xl font-light text-violet-100 italic mb-2">{slides[currentSlide].subtitle}</p>
-            <p className="text-sm font-bold text-violet-200 uppercase tracking-widest mb-6">{slides[currentSlide].tagline}</p>
-            <div className="flex flex-wrap gap-3">
-              <Link to="/enroll" className="px-6 py-3 bg-white text-violet-900 font-black rounded-lg shadow-lg transition-colors hover:bg-violet-50 uppercase text-sm">
+          <div className="max-w-xl bg-violet-950/80 backdrop-blur-sm p-8 rounded-xl border border-white/10 public-animate-rise public-animate-delay-1">
+            <h2 className="text-4xl md:text-5xl font-black text-white mb-2 text-center md:text-left">{slides[currentSlide].title}</h2>
+            <p className="text-2xl md:text-3xl font-light text-violet-100 italic mb-2 text-center md:text-left">{slides[currentSlide].subtitle}</p>
+            <p className="text-sm font-bold text-violet-200 uppercase tracking-widest mb-6 text-center md:text-left">{slides[currentSlide].tagline}</p>
+            <div className="flex flex-col sm:flex-row items-center justify-center md:justify-start gap-3">
+              <Link to="/enroll" className="w-full sm:w-auto px-6 py-3 bg-white text-violet-900 font-black rounded-lg shadow-lg transition-colors hover:bg-violet-50 uppercase text-sm text-center public-hover-lift">
                 Enroll Now
               </Link>
-              <Link to="/login" className="px-6 py-3 bg-violet-900 hover:bg-violet-950 text-white font-bold rounded-lg transition-colors text-sm">
+              <Link to="/login" className="w-full sm:w-auto px-6 py-3 bg-violet-900 hover:bg-violet-950 text-white font-bold rounded-lg transition-colors text-sm text-center public-hover-lift">
                 Portal Login
               </Link>
             </div>
@@ -217,7 +217,7 @@ const HomeDepEd = () => {
               { title: "SCHOOL CALENDAR", icon: "M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z", link: "/calendar" },
               { title: "TRACK ENROLLMENT", icon: "M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01", link: "/track-enrollment" },
             ].map((item, i) => (
-              <Link key={i} to={item.link} className="flex flex-col items-center gap-2 py-5 px-4 text-white border-r border-white/20 last:border-r-0 hover:bg-violet-900 transition-colors group">
+              <Link key={i} to={item.link} className="flex flex-col items-center gap-2 py-5 px-4 text-white border-r border-white/20 last:border-r-0 hover:bg-violet-900 transition-colors group public-hover-lift public-animate-rise">
                 <svg className="w-8 h-8 text-violet-200 group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={item.icon} />
                 </svg>
@@ -240,8 +240,8 @@ const HomeDepEd = () => {
               { val: '80+',    label: 'Faculty Members',   icon: 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z' },
               { val: '150+',   label: 'Awards & Honors',   icon: 'M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z' },
             ].map((s, i) => (
-              <div key={i} className="flex flex-col items-center gap-2">
-                <div className="w-12 h-12 rounded-xl bg-violet-900 flex items-center justify-center">
+              <div key={i} className="flex flex-col items-center gap-2 public-animate-rise public-hover-lift">
+                <div className="w-12 h-12 rounded-xl bg-violet-900 flex items-center justify-center public-animate-float">
                   <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={s.icon} />
                   </svg>

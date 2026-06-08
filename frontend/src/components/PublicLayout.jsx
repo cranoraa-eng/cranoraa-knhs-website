@@ -95,7 +95,7 @@ const PublicLayout = () => {
         </div>
       </div>
 
-      <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/95 backdrop-blur">
+      <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/95 backdrop-blur animate-fade-in-down">
         <div className="max-w-7xl mx-auto px-4 py-4 md:py-5">
           <div className="grid grid-cols-[auto_1fr_auto] items-center gap-3 md:gap-6">
             <div className="flex items-center justify-start">
@@ -135,10 +135,10 @@ const PublicLayout = () => {
         <nav ref={navRef} className="border-t border-slate-200 bg-violet-950 text-white">
           <div className="max-w-7xl mx-auto px-4">
             <div className="flex items-center justify-between gap-3 h-14">
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1 lg:flex-none">
                 <Link
                   to="/"
-                  className="lg:hidden flex items-center justify-center rounded-xl p-2 text-violet-100 hover:bg-violet-900"
+                  className="lg:hidden flex h-10 w-10 items-center justify-center rounded-xl p-2 text-violet-100 hover:bg-violet-900"
                   aria-label="Go to home page"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -205,6 +205,17 @@ const PublicLayout = () => {
                 </div>
               </div>
 
+              {!user && (
+                <div className="flex flex-1 justify-center lg:hidden">
+                  <Link
+                    to="/login"
+                    className="inline-flex min-w-[136px] items-center justify-center rounded-xl bg-violet-800 px-4 py-2 text-center text-[11px] font-black uppercase tracking-[0.14em] hover:bg-violet-700"
+                  >
+                    Portal Login
+                  </Link>
+                </div>
+              )}
+
               <div className="hidden lg:flex items-center gap-3">
                 <div className="relative">
                   <input
@@ -267,12 +278,7 @@ const PublicLayout = () => {
                 )}
               </div>
 
-              <div className="flex items-center gap-2 lg:hidden">
-                {!user && (
-                  <Link to="/login" className="rounded-lg bg-violet-800 px-3 py-1.5 text-[11px] font-black uppercase tracking-[0.12em] hover:bg-violet-700">
-                    Login
-                  </Link>
-                )}
+              <div className={`flex items-center justify-end gap-2 lg:hidden ${user ? 'flex-1' : ''}`}>
                 <button
                   onClick={() => setMobileOpen((prev) => !prev)}
                   className="rounded-xl p-2 hover:bg-violet-900"
@@ -293,7 +299,7 @@ const PublicLayout = () => {
           </div>
 
           {mobileOpen && (
-            <div className="border-t border-violet-900 bg-violet-950 lg:hidden">
+            <div className="border-t border-violet-900 bg-violet-950 lg:hidden animate-fade-in">
               <div className="max-h-[75vh] overflow-y-auto px-4 py-3">
                 <div className="mb-3">
                   <div className="relative">
