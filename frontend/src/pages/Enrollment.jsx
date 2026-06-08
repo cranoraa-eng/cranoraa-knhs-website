@@ -52,7 +52,7 @@ const FileUpload = ({ label, required, file, onFile, onRemove, note }) => {
 
   return (
     <div className={`border-2 transition-all p-4 rounded-sm ${
-      dragOver ? 'border-purple-400 bg-purple-50' :
+      dragOver ? 'border-violet-400 bg-slate-50' :
       file ? 'border-green-400 bg-green-50' : 'border-gray-300 bg-white hover:border-gray-400'
     }`}>
       <div className="flex items-center justify-between">
@@ -110,19 +110,19 @@ const Field = ({ label, required, children, hint }) => (
 
 const Input = (props) => (
   <input {...props}
-    className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500 transition-colors placeholder:text-gray-400" />
+    className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-violet-700 focus:border-violet-700 transition-colors placeholder:text-gray-400" />
 );
 
 const Select = ({ children, ...props }) => (
   <select {...props}
-    className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500 transition-colors">
+    className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-violet-700 focus:border-violet-700 transition-colors">
     {children}
   </select>
 );
 
 const Textarea = (props) => (
   <textarea {...props}
-    className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500 transition-colors resize-none" />
+    className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-violet-700 focus:border-violet-700 transition-colors resize-none" />
 );
 
 const Enrollment = () => {
@@ -367,8 +367,8 @@ const Enrollment = () => {
       <div className="bg-gray-50 min-h-screen py-12 flex items-center">
         <div className="max-w-lg mx-auto px-4 w-full">
           {/* Official header */}
-          <div className="bg-[#5e2a84] text-white text-center py-4 px-6 rounded-t-sm border-b-4 border-yellow-400">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-purple-200">REPUBLIKA NG PILIPINAS</p>
+          <div className="bg-violet-950 text-white text-center py-4 px-6 rounded-t-sm border-b-4 border-yellow-400">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-violet-200">REPUBLIKA NG PILIPINAS</p>
             <p className="text-xs font-bold uppercase tracking-wide mt-0.5">KAGAWARAN NG EDUKASYON</p>
             <h2 className="text-base font-black uppercase mt-1">KIWALAN NATIONAL HIGH SCHOOL</h2>
           </div>
@@ -380,14 +380,14 @@ const Enrollment = () => {
             </div>
             <h2 className="text-2xl font-black text-gray-900 mb-2 uppercase">Application Submitted</h2>
             <p className="text-sm text-gray-600 mb-6">Your enrollment application has been received. Please keep your enrollment number for tracking.</p>
-            <div className="bg-purple-50 border-2 border-purple-200 p-6 mb-6 rounded-sm">
-              <p className="text-[10px] font-black text-purple-600 uppercase tracking-widest mb-1">Enrollment Reference Number</p>
-              <p className="text-3xl font-black text-purple-800 tracking-wider font-mono">{submitted.enrollment_number}</p>
-              <p className="text-xs text-purple-600 mt-2 font-medium">Present this number when inquiring about your application status.</p>
+            <div className="bg-slate-50 border-2 border-violet-200 p-6 mb-6 rounded-sm">
+              <p className="text-[10px] font-black text-violet-800 uppercase tracking-widest mb-1">Enrollment Reference Number</p>
+              <p className="text-3xl font-black text-slate-900 tracking-wider font-mono">{submitted.enrollment_number}</p>
+              <p className="text-xs text-violet-800 mt-2 font-medium">Present this number when inquiring about your application status.</p>
             </div>
             <div className="flex flex-col gap-3">
               <Link to={`/track-enrollment?number=${submitted.enrollment_number}`}
-                className="w-full py-3.5 bg-[#5e2a84] text-white text-sm font-black hover:bg-purple-700 transition-all uppercase tracking-widest rounded-sm">
+                className="w-full py-3.5 bg-violet-950 text-white text-sm font-black hover:bg-violet-950 transition-all uppercase tracking-widest rounded-sm">
                 Track Application Status
               </Link>
               <button onClick={() => navigate('/')}
@@ -406,25 +406,25 @@ const Enrollment = () => {
       <div className="max-w-2xl mx-auto px-4 sm:px-6">
 
         {/* Official School Header */}
-        <div className="bg-[#5e2a84] text-white text-center py-4 px-6 rounded-t-sm border-b-4 border-yellow-400 shadow-lg">
+        <div className="bg-violet-950 text-white text-center py-4 px-6 rounded-t-sm border-b-4 border-yellow-400 shadow-lg">
           <div className="flex items-center justify-center gap-3 mb-1">
             <img src="/icons/school-logo-source.png" alt="KNHS" className="w-10 h-10 object-contain" />
             <div>
-              <p className="text-[9px] font-bold uppercase tracking-widest text-purple-200">Republic of the Philippines • Department of Education</p>
+              <p className="text-[9px] font-bold uppercase tracking-widest text-violet-200">Republic of the Philippines • Department of Education</p>
               <h1 className="text-base font-black uppercase tracking-tight">Kiwalan National High School</h1>
-              <p className="text-[9px] text-purple-200 uppercase tracking-wide">Iligan City</p>
+              <p className="text-[9px] text-violet-200 uppercase tracking-wide">Iligan City</p>
             </div>
           </div>
           <div className="mt-2 pt-2 border-t border-white/20">
             <p className="text-xs font-black uppercase tracking-widest">Enrollment Application Form</p>
-            <p className="text-[10px] text-purple-200 mt-0.5">School Year {schoolYear}</p>
+            <p className="text-[10px] text-violet-200 mt-0.5">School Year {schoolYear}</p>
           </div>
         </div>
 
         {/* Track existing application */}
-        <div className="bg-purple-50 border-x border-b border-purple-200 px-5 py-3 flex items-center justify-between gap-3">
-          <p className="text-xs text-purple-700 font-medium">Already applied? Check your application status.</p>
-          <Link to="/track-enrollment" className="flex items-center gap-1.5 px-4 py-1.5 bg-purple-600 text-white text-xs font-black uppercase tracking-wide hover:bg-purple-700 transition-colors rounded-sm flex-shrink-0">
+        <div className="bg-slate-50 border-x border-b border-violet-200 px-5 py-3 flex items-center justify-between gap-3">
+          <p className="text-xs text-violet-900 font-medium">Already applied? Check your application status.</p>
+          <Link to="/track-enrollment" className="flex items-center gap-1.5 px-4 py-1.5 bg-violet-900 text-white text-xs font-black uppercase tracking-wide hover:bg-violet-950 transition-colors rounded-sm flex-shrink-0">
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
             Track Application
           </Link>
@@ -440,15 +440,15 @@ const Enrollment = () => {
                 <div key={s.key} className="flex items-center flex-1 last:flex-none">
                   <div className="flex flex-col items-center gap-1">
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-black border-2 transition-all ${
-                      done ? 'bg-[#5e2a84] border-[#5e2a84] text-white' :
-                      active ? 'bg-white border-[#5e2a84] text-[#5e2a84] ring-2 ring-purple-200' :
+                      done ? 'bg-violet-950 border-[#5e2a84] text-white' :
+                      active ? 'bg-white border-violet-950 text-violet-950 ring-2 ring-violet-200' :
                       'bg-white border-gray-300 text-gray-400'
                     }`}>
                       {done ? <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg> : s.icon}
                     </div>
-                    <span className={`text-[8px] font-bold uppercase tracking-wide hidden sm:block ${active ? 'text-purple-700' : done ? 'text-purple-500' : 'text-gray-400'}`}>{s.label}</span>
+                    <span className={`text-[8px] font-bold uppercase tracking-wide hidden sm:block ${active ? 'text-violet-900' : done ? 'text-violet-600' : 'text-gray-400'}`}>{s.label}</span>
                   </div>
-                  {i < STEPS.length - 1 && <div className={`flex-1 h-0.5 mx-2 mb-4 ${i < step ? 'bg-[#5e2a84]' : 'bg-gray-200'}`} />}
+                  {i < STEPS.length - 1 && <div className={`flex-1 h-0.5 mx-2 mb-4 ${i < step ? 'bg-violet-950' : 'bg-gray-200'}`} />}
                 </div>
               );
             })}
@@ -458,9 +458,9 @@ const Enrollment = () => {
         {/* Form Card */}
         <div className="bg-white border border-gray-300 shadow-lg p-6 md:p-8">
           {enrollmentType && step > 0 && (
-            <div className="mb-5 inline-flex items-center gap-2 px-3 py-1.5 bg-purple-50 border border-purple-200 rounded-sm">
-              <span className="text-[10px] font-black text-purple-700 uppercase tracking-wide">{TYPE_LABELS[enrollmentType]}</span>
-              <button type="button" onClick={() => { setStep(0); setEnrollmentType(''); }} className="text-purple-400 hover:text-purple-600">
+            <div className="mb-5 inline-flex items-center gap-2 px-3 py-1.5 bg-slate-50 border border-violet-200 rounded-sm">
+              <span className="text-[10px] font-black text-violet-900 uppercase tracking-wide">{TYPE_LABELS[enrollmentType]}</span>
+              <button type="button" onClick={() => { setStep(0); setEnrollmentType(''); }} className="text-violet-400 hover:text-violet-900">
                 <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
             </div>
@@ -469,15 +469,15 @@ const Enrollment = () => {
           {/* Step 0: Type Selection */}
           {step === 0 && (
             <div className="space-y-4">
-              <div className="border-b-2 border-purple-600 pb-2 mb-4">
-                <h2 className="text-base font-black text-purple-800 uppercase tracking-wide">Step 1 of 7 — Enrollment Type</h2>
+              <div className="border-b-2 border-violet-800 pb-2 mb-4">
+                <h2 className="text-base font-black text-slate-900 uppercase tracking-wide">Step 1 of 7 — Enrollment Type</h2>
                 <p className="text-xs text-gray-600 mt-0.5">Select the category that best describes your application.</p>
               </div>
               <div className="grid gap-3">
                 {ENROLLMENT_TYPES.map(t => (
                   <button key={t.value} type="button" onClick={() => { setEnrollmentType(t.value); if (t.value !== 'sh_applicant') setStrand(''); }}
                     className={`text-left p-4 border-2 transition-all rounded-sm ${
-                      enrollmentType === t.value ? 'border-purple-600 bg-purple-50' : 'border-gray-300 hover:border-purple-400 bg-white'
+                      enrollmentType === t.value ? 'border-violet-800 bg-slate-50' : 'border-gray-300 hover:border-violet-400 bg-white'
                     }`}>
                     <div className="flex items-center gap-3">
                       <span className="text-xl">{t.icon}</span>
@@ -495,8 +495,8 @@ const Enrollment = () => {
           {/* Step 1: Personal Information */}
           {step === 1 && (
             <div className="space-y-4">
-              <div className="border-b-2 border-purple-600 pb-2 mb-4">
-                <h2 className="text-base font-black text-purple-800 uppercase tracking-wide">Step 2 of 7 — Personal Information</h2>
+              <div className="border-b-2 border-violet-800 pb-2 mb-4">
+                <h2 className="text-base font-black text-slate-900 uppercase tracking-wide">Step 2 of 7 — Personal Information</h2>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Field label="First Name" required><Input value={firstName} onChange={e => setFirstName(e.target.value)} placeholder="Juan" /></Field>
@@ -521,8 +521,8 @@ const Enrollment = () => {
           {/* Step 2: Address */}
           {step === 2 && (
             <div className="space-y-4">
-              <div className="border-b-2 border-purple-600 pb-2 mb-4">
-                <h2 className="text-base font-black text-purple-800 uppercase tracking-wide">Step 3 of 7 — Address Information</h2>
+              <div className="border-b-2 border-violet-800 pb-2 mb-4">
+                <h2 className="text-base font-black text-slate-900 uppercase tracking-wide">Step 3 of 7 — Address Information</h2>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="sm:col-span-2"><Field label="Street Address" required><Input value={streetAddress} onChange={e => setStreetAddress(e.target.value)} /></Field></div>
@@ -537,8 +537,8 @@ const Enrollment = () => {
           {/* Step 3: Parents */}
           {step === 3 && (
             <div className="space-y-4">
-              <div className="border-b-2 border-purple-600 pb-2 mb-4">
-                <h2 className="text-base font-black text-purple-800 uppercase tracking-wide">Step 4 of 7 — Parent / Guardian Information</h2>
+              <div className="border-b-2 border-violet-800 pb-2 mb-4">
+                <h2 className="text-base font-black text-slate-900 uppercase tracking-wide">Step 4 of 7 — Parent / Guardian Information</h2>
               </div>
               {isParentAssisted ? (
                 <div className="bg-gray-50 border border-gray-200 p-5 space-y-4">
@@ -587,8 +587,8 @@ const Enrollment = () => {
           {/* Step 4: Academic */}
           {step === 4 && (
             <div className="space-y-4">
-              <div className="border-b-2 border-purple-600 pb-2 mb-4">
-                <h2 className="text-base font-black text-purple-800 uppercase tracking-wide">Step 5 of 7 — Academic & Contact Information</h2>
+              <div className="border-b-2 border-violet-800 pb-2 mb-4">
+                <h2 className="text-base font-black text-slate-900 uppercase tracking-wide">Step 5 of 7 — Academic & Contact Information</h2>
               </div>
               <div className="bg-gray-50 border border-gray-200 p-5 space-y-4">
                 <p className="text-xs font-black text-gray-600 uppercase tracking-widest border-b border-gray-300 pb-2">Academic Information</p>
@@ -687,8 +687,8 @@ const Enrollment = () => {
           {/* Step 5: Documents */}
           {step === 5 && (
             <div className="space-y-4">
-              <div className="border-b-2 border-purple-600 pb-2 mb-4">
-                <h2 className="text-base font-black text-purple-800 uppercase tracking-wide">Step 6 of 7 — Document Requirements</h2>
+              <div className="border-b-2 border-violet-800 pb-2 mb-4">
+                <h2 className="text-base font-black text-slate-900 uppercase tracking-wide">Step 6 of 7 — Document Requirements</h2>
               </div>
               <div className="flex items-start gap-3 p-4 bg-amber-50 border border-amber-300">
                 <svg className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
@@ -710,8 +710,8 @@ const Enrollment = () => {
           {/* Step 6: Review */}
           {step === 6 && (
             <div className="space-y-4">
-              <div className="border-b-2 border-purple-600 pb-2 mb-4">
-                <h2 className="text-base font-black text-purple-800 uppercase tracking-wide">Step 7 of 7 — Review & Submit</h2>
+              <div className="border-b-2 border-violet-800 pb-2 mb-4">
+                <h2 className="text-base font-black text-slate-900 uppercase tracking-wide">Step 7 of 7 — Review & Submit</h2>
                 <p className="text-xs text-gray-600 mt-0.5">Please verify all information before submitting. You cannot edit after submission.</p>
               </div>
 
@@ -783,7 +783,7 @@ const Enrollment = () => {
             ) : <div />}
             {step < 6 ? (
               <button type="button" onClick={handleNext}
-                className="inline-flex items-center gap-2 px-6 py-2.5 bg-[#5e2a84] text-white text-sm font-black hover:bg-purple-700 transition-all uppercase tracking-wide rounded-sm">
+                className="inline-flex items-center gap-2 px-6 py-2.5 bg-violet-950 text-white text-sm font-black hover:bg-violet-950 transition-all uppercase tracking-wide rounded-sm">
                 Next Step
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
               </button>
@@ -802,8 +802,8 @@ const Enrollment = () => {
         </div>
 
         {/* Footer */}
-        <div className="bg-[#5e2a84] text-center py-3 rounded-b-sm">
-          <p className="text-[10px] text-purple-200 uppercase tracking-widest">
+        <div className="bg-violet-950 text-center py-3 rounded-b-sm">
+          <p className="text-[10px] text-violet-200 uppercase tracking-widest">
             © {new Date().getFullYear()} Kiwalan National High School — Department of Education — Republic of the Philippines
           </p>
         </div>

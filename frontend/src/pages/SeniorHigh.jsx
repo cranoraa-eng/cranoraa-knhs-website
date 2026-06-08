@@ -8,7 +8,7 @@ const SeniorHigh = () => {
       desc: 'For students interested in engineering, medicine, IT, and science-related careers',
       subjects: ['Pre-Calculus', 'Basic Calculus', 'General Biology', 'General Chemistry', 'General Physics'],
       careers: ['Engineer', 'Doctor', 'Scientist', 'Architect', 'IT Professional'],
-      color: 'from-blue-600 to-purple-600'
+      color: 'from-blue-600 to-violet-800'
     },
     {
       code: 'ABM',
@@ -32,7 +32,7 @@ const SeniorHigh = () => {
       desc: 'For students who are still exploring their interests and career options',
       subjects: ['Humanities', 'Social Sciences', 'Applied Economics', 'Organization & Management'],
       careers: ['Flexible career paths', 'Multiple college majors'],
-      color: 'from-purple-600 to-pink-600'
+      color: 'from-violet-900 to-pink-600'
     },
     {
       code: 'TVL',
@@ -47,17 +47,17 @@ const SeniorHigh = () => {
   return (
     <div className="bg-white">
       {/* Hero */}
-      <section className="bg-purple-700 py-16 md:py-20 relative overflow-hidden">
+      <section className="bg-violet-950 py-16 md:py-20 relative overflow-hidden">
         <div className="absolute inset-0 pointer-events-none opacity-5">
           <div className="absolute inset-0" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '60px 60px' }} />
         </div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-2xl">
-              <p className="text-xs font-bold text-purple-200 uppercase tracking-widest mb-4">Grades 11-12</p>
+              <p className="text-xs font-bold text-violet-200 uppercase tracking-widest mb-4">Grades 11-12</p>
               <h1 className="text-4xl md:text-5xl font-black text-white leading-tight mb-5 uppercase">
                 Senior High School
               </h1>
-              <p className="text-purple-100 leading-relaxed text-lg">
+              <p className="text-violet-100 leading-relaxed text-lg">
                 Choose your track and prepare for college, employment, or entrepreneurship
               </p>
             </div>
@@ -65,10 +65,10 @@ const SeniorHigh = () => {
       </section>
 
       {/* Overview */}
-      <section className="py-16 md:py-20 bg-purple-50">
+      <section className="py-16 md:py-20 bg-slate-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-white rounded-3xl border-2 border-purple-200 p-8 md:p-12 shadow-lg mb-12">
-            <h2 className="text-2xl font-black text-purple-800 mb-4 uppercase">About Senior High School</h2>
+          <div className="bg-white rounded-3xl border-2 border-violet-200 p-8 md:p-12 shadow-lg mb-12">
+            <h2 className="text-2xl font-black text-slate-900 mb-4 uppercase">About Senior High School</h2>
             <p className="text-gray-700 leading-relaxed mb-6">
               Senior High School (SHS) is the final two years of the K-12 program. Students choose a track based on their interests, strengths, and career goals. All SHS students take core subjects plus specialized subjects in their chosen track.
             </p>
@@ -79,8 +79,8 @@ const SeniorHigh = () => {
                 { label: 'Tracks', value: '4 Academic' },
                 { label: 'Strands', value: '5 Options' }
               ].map((info, i) => (
-                <div key={i} className="text-center p-4 bg-purple-50 rounded-xl border border-purple-200">
-                  <p className="text-2xl font-black text-purple-600 mb-1">{info.value}</p>
+                <div key={i} className="text-center p-4 bg-slate-50 rounded-xl border border-violet-200">
+                  <p className="text-2xl font-black text-violet-800 mb-1">{info.value}</p>
                   <p className="text-xs text-gray-600 uppercase font-bold">{info.label}</p>
                 </div>
               ))}
@@ -89,39 +89,39 @@ const SeniorHigh = () => {
 
           {/* Strands */}
           <div className="text-center mb-10">
-            <h2 className="text-3xl font-black text-purple-800 mb-3 uppercase">Choose Your Strand</h2>
+            <h2 className="text-3xl font-black text-slate-900 mb-3 uppercase">Choose Your Strand</h2>
             <p className="text-gray-600">Select a path that aligns with your goals</p>
           </div>
 
           <div className="space-y-6">
             {strands.map((strand, i) => (
-              <div key={i} className="bg-white rounded-2xl border-2 border-purple-200 overflow-hidden hover:shadow-xl transition-all">
+              <div key={i} className="bg-white rounded-2xl border-2 border-violet-200 overflow-hidden hover:shadow-xl transition-all">
                 <div className={`h-2 bg-gradient-to-r ${strand.color}`} />
                 <div className="p-6">
                   <div className="flex flex-col md:flex-row gap-6">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-3">
-                        <span className="px-4 py-2 bg-purple-600 text-white rounded-lg font-black text-lg">{strand.code}</span>
-                        <h3 className="text-xl font-black text-purple-800 uppercase">{strand.name}</h3>
+                        <span className="px-4 py-2 bg-violet-900 text-white rounded-lg font-black text-lg">{strand.code}</span>
+                        <h3 className="text-xl font-black text-slate-900 uppercase">{strand.name}</h3>
                       </div>
                       <p className="text-gray-700 mb-4">{strand.desc}</p>
                       <div className="mb-4">
-                        <p className="text-xs font-bold text-purple-600 uppercase mb-2">Specialized Subjects:</p>
+                        <p className="text-xs font-bold text-violet-800 uppercase mb-2">Specialized Subjects:</p>
                         <div className="flex flex-wrap gap-2">
                           {strand.subjects.map((sub, j) => (
-                            <span key={j} className="px-3 py-1 bg-purple-50 text-purple-700 rounded-full text-xs font-bold border border-purple-200">
+                            <span key={j} className="px-3 py-1 bg-slate-50 text-violet-900 rounded-full text-xs font-bold border border-violet-200">
                               {sub}
                             </span>
                           ))}
                         </div>
                       </div>
                       <div>
-                        <p className="text-xs font-bold text-purple-600 uppercase mb-2">Career Paths:</p>
+                        <p className="text-xs font-bold text-violet-800 uppercase mb-2">Career Paths:</p>
                         <p className="text-sm text-gray-600">{strand.careers.join(', ')}</p>
                       </div>
                     </div>
                     <div className="flex items-center">
-                      <Link to="/enroll" className="px-6 py-3 bg-purple-600 text-white rounded-xl font-bold text-sm hover:bg-purple-700 transition-colors uppercase">
+                      <Link to="/enroll" className="px-6 py-3 bg-violet-900 text-white rounded-xl font-bold text-sm hover:bg-violet-950 transition-colors uppercase">
                         Enroll Now
                       </Link>
                     </div>
@@ -137,7 +137,7 @@ const SeniorHigh = () => {
       <section className="py-16 md:py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-black text-purple-800 mb-3 uppercase">Core Subjects</h2>
+            <h2 className="text-3xl font-black text-slate-900 mb-3 uppercase">Core Subjects</h2>
             <p className="text-gray-600">Required for all SHS students regardless of strand</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -152,9 +152,9 @@ const SeniorHigh = () => {
               { subject: 'Personal Development', area: 'Core' },
               { subject: 'Physical Education & Health', area: 'MAPEH' }
             ].map((sub, i) => (
-              <div key={i} className="bg-purple-50 rounded-xl border-2 border-purple-200 p-4 hover:bg-white transition-all">
-                <p className="text-sm font-black text-purple-800">{sub.subject}</p>
-                <p className="text-xs text-purple-600 mt-1">{sub.area}</p>
+              <div key={i} className="bg-slate-50 rounded-xl border-2 border-violet-200 p-4 hover:bg-white transition-all">
+                <p className="text-sm font-black text-slate-900">{sub.subject}</p>
+                <p className="text-xs text-violet-800 mt-1">{sub.area}</p>
               </div>
             ))}
           </div>

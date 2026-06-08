@@ -50,17 +50,17 @@ const Contact = () => {
     <div className="bg-white">
 
       {/* ── Hero Banner ── */}
-      <section className="bg-purple-700 py-16 md:py-20 relative overflow-hidden">
+      <section className="bg-violet-950 py-16 md:py-20 relative overflow-hidden">
         <div className="absolute inset-0 pointer-events-none opacity-5">
           <div className="absolute inset-0" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '60px 60px' }} />
         </div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-2xl">
-              <p className="text-xs font-bold text-purple-200 uppercase tracking-widest mb-4">Contact Information</p>
+              <p className="text-xs font-bold text-violet-200 uppercase tracking-widest mb-4">Contact Information</p>
               <h1 className="text-4xl md:text-5xl font-black text-white leading-tight mb-5">
                 {content.contact_title?.content || 'Get in Touch'}
               </h1>
-              <p className="text-purple-100 leading-relaxed text-lg">
+              <p className="text-violet-100 leading-relaxed text-lg">
                 {content.contact_subtitle?.content || 'Have questions about enrollment or our programs? We are here to help.'}
               </p>
             </div>
@@ -68,31 +68,31 @@ const Contact = () => {
       </section>
 
       {/* ── Contact Info + Map ── */}
-      <section className="py-16 md:py-20 bg-purple-50">
+      <section className="py-16 md:py-20 bg-slate-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
 
             {/* Info cards */}
             <div className="lg:col-span-2 space-y-4">
               {infoItems.map((item, i) => (
-                <div key={i} className="bg-white rounded-2xl border-2 border-purple-200 p-6 flex items-start gap-4 hover:shadow-lg hover:border-purple-400 transition-all group">
-                  <div className="w-12 h-12 rounded-xl bg-purple-100 border-2 border-purple-200 flex items-center justify-center flex-shrink-0 group-hover:bg-purple-600 transition-colors">
-                    <svg className="w-6 h-6 text-purple-600 group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div key={i} className="bg-white rounded-2xl border-2 border-violet-200 p-6 flex items-start gap-4 hover:shadow-lg hover:border-violet-400 transition-all group">
+                  <div className="w-12 h-12 rounded-xl bg-violet-100 border-2 border-violet-200 flex items-center justify-center flex-shrink-0 group-hover:bg-violet-900 transition-colors">
+                    <svg className="w-6 h-6 text-violet-800 group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={item.icon} />
                     </svg>
                   </div>
                   <div>
-                    <p className="text-xs font-bold text-purple-600 uppercase tracking-widest mb-1">{item.label}</p>
+                    <p className="text-xs font-bold text-violet-800 uppercase tracking-widest mb-1">{item.label}</p>
                     <p className="text-sm font-bold text-gray-800">{item.value}</p>
                   </div>
                 </div>
               ))}
 
               {/* Quick CTA */}
-              <div className="bg-purple-600 rounded-2xl p-6 text-white border-2 border-purple-700">
+              <div className="bg-violet-900 rounded-2xl p-6 text-white border-2 border-violet-900">
                 <p className="text-base font-black mb-1 uppercase">Ready to Enroll?</p>
-                <p className="text-sm text-purple-100 mb-4">Applications are open for SY 2026–2027.</p>
-                <a href="/enroll" className="inline-flex items-center gap-1.5 text-sm font-black bg-white text-purple-700 px-5 py-2.5 rounded-lg hover:bg-purple-50 transition-colors uppercase">
+                <p className="text-sm text-violet-100 mb-4">Applications are open for SY 2026–2027.</p>
+                <a href="/enroll" className="inline-flex items-center gap-1.5 text-sm font-black bg-white text-violet-900 px-5 py-2.5 rounded-lg hover:bg-violet-50 transition-colors uppercase">
                   Apply Now
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4 4H3" /></svg>
                 </a>
@@ -101,7 +101,7 @@ const Contact = () => {
 
             {/* Map */}
             <div className="lg:col-span-3">
-              <div className="bg-white rounded-2xl border-2 border-purple-200 overflow-hidden h-full min-h-[480px] relative shadow-sm">
+              <div className="bg-white rounded-2xl border-2 border-violet-200 overflow-hidden h-full min-h-[480px] relative shadow-sm">
                 {content.contact_map_url?.content ? (
                   <iframe
                     src={content.contact_map_url.content}
@@ -126,15 +126,15 @@ const Contact = () => {
                 )}
 
                 {/* Floating label */}
-                <div className="absolute bottom-4 left-4 right-4 bg-purple-800/95 backdrop-blur-sm rounded-xl p-4 hidden sm:flex items-center justify-between gap-4 border-2 border-purple-600">
+                <div className="absolute bottom-4 left-4 right-4 bg-violet-950/95 backdrop-blur-sm rounded-xl p-4 hidden sm:flex items-center justify-between gap-4 border-2 border-violet-800">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center text-purple-700 text-sm font-black flex-shrink-0">KN</div>
+                    <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center text-violet-900 text-sm font-black flex-shrink-0">KN</div>
                     <div>
                       <p className="text-white text-sm font-black leading-none">Kiwalan National High School</p>
-                      <p className="text-purple-200 text-xs mt-0.5">Main Campus · Kiwalan, Philippines</p>
+                      <p className="text-violet-200 text-xs mt-0.5">Main Campus · Kiwalan, Philippines</p>
                     </div>
                   </div>
-                  <button className="px-4 py-2 bg-white text-purple-700 rounded-lg text-xs font-black hover:bg-purple-50 transition-colors flex-shrink-0 uppercase">
+                  <button className="px-4 py-2 bg-white text-violet-900 rounded-lg text-xs font-black hover:bg-violet-50 transition-colors flex-shrink-0 uppercase">
                     Directions
                   </button>
                 </div>

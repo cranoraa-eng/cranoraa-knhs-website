@@ -36,7 +36,7 @@ const Programs = () => {
       padding: '2rem',
       background: '#ffffff',
       customClass: {
-        popup: 'rounded-2xl border border-purple-200 shadow-2xl',
+        popup: 'rounded-2xl border border-violet-200 shadow-2xl',
       },
     });
   };
@@ -84,17 +84,17 @@ const Programs = () => {
     <div className="bg-white">
 
       {/* ── Hero Banner ── */}
-      <section className="bg-purple-700 py-16 md:py-20 relative overflow-hidden">
+      <section className="bg-violet-950 py-16 md:py-20 relative overflow-hidden">
         <div className="absolute inset-0 pointer-events-none opacity-5">
           <div className="absolute inset-0" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '60px 60px' }} />
         </div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-2xl">
-              <p className="text-xs font-bold text-purple-200 uppercase tracking-widest mb-4">Academic Excellence</p>
+              <p className="text-xs font-bold text-violet-200 uppercase tracking-widest mb-4">Academic Excellence</p>
               <h1 className="text-4xl md:text-5xl font-black text-white leading-tight mb-5">
                 {content.programs_title?.content || 'Our Programs'}
               </h1>
-              <p className="text-purple-100 leading-relaxed text-lg">
+              <p className="text-violet-100 leading-relaxed text-lg">
                 {content.programs_subtitle?.content || 'Discover the diverse educational opportunities we offer, designed to prepare students for a bright future.'}
               </p>
             </div>
@@ -102,22 +102,22 @@ const Programs = () => {
       </section>
 
       {/* ── Programs Grid ── */}
-      <section className="py-16 md:py-20 bg-purple-50">
+      <section className="py-16 md:py-20 bg-slate-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {programList.map((program, i) => (
-              <div key={i} className="group bg-white rounded-2xl border-2 border-purple-200 overflow-hidden hover:shadow-xl hover:border-purple-400 transition-all duration-300 flex flex-col">
+              <div key={i} className="group bg-white rounded-2xl border-2 border-violet-200 overflow-hidden hover:shadow-xl hover:border-violet-400 transition-all duration-300 flex flex-col">
                 {/* Image */}
                 <div className="relative h-56 overflow-hidden">
                   <img src={program.image} alt={program.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-purple-900/70 via-purple-900/20 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-violet-950/70 via-violet-900/30 to-transparent" />
                   {/* Number badge */}
                   <div className="absolute top-4 left-4 w-10 h-10 rounded-xl bg-white/20 border border-white/40 backdrop-blur-sm flex items-center justify-center">
                     <span className="text-sm font-black text-white">0{i + 1}</span>
                   </div>
                   {/* Icon */}
                   <div className="absolute bottom-4 left-4 flex items-center gap-3">
-                    <div className="w-11 h-11 rounded-xl bg-purple-600 flex items-center justify-center shadow-lg">
+                    <div className="w-11 h-11 rounded-xl bg-violet-900 flex items-center justify-center shadow-lg">
                       <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={program.icon} />
                       </svg>
@@ -128,11 +128,11 @@ const Programs = () => {
                 {/* Content */}
                 <div className="p-6 flex-1 flex flex-col">
                   <p className="text-sm text-gray-600 leading-relaxed flex-1">{program.content}</p>
-                  <div className="mt-5 pt-4 border-t border-purple-100 flex items-center justify-between">
-                    <span className="text-xs font-bold text-purple-600 uppercase">DepEd Curriculum</span>
+                  <div className="mt-5 pt-4 border-t border-violet-100 flex items-center justify-between">
+                    <span className="text-xs font-bold text-violet-800 uppercase">DepEd Curriculum</span>
                     <button
                       onClick={() => handleViewDetails(program)}
-                      className="inline-flex items-center gap-1.5 text-sm font-bold text-purple-700 hover:text-purple-800 transition-colors"
+                      className="inline-flex items-center gap-1.5 text-sm font-bold text-violet-900 hover:text-slate-900 transition-colors"
                     >
                       View Details
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -150,15 +150,15 @@ const Programs = () => {
       {/* ── CTA Section ── */}
       <section className="py-16 md:py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-purple-700 rounded-3xl px-8 py-14 md:px-16 md:py-20 relative overflow-hidden">
+          <div className="bg-violet-950 rounded-3xl px-8 py-14 md:px-16 md:py-20 relative overflow-hidden">
             <div className="absolute inset-0 pointer-events-none opacity-5">
               <div className="absolute inset-0" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '60px 60px' }} />
             </div>
             <div className="relative grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
               <div>
-                <p className="text-xs font-bold text-purple-200 uppercase tracking-widest mb-3">Start Your Journey</p>
+                <p className="text-xs font-bold text-violet-200 uppercase tracking-widest mb-3">Start Your Journey</p>
                 <h2 className="text-3xl md:text-4xl font-black text-white mb-4 leading-tight uppercase">Ready to Enroll?</h2>
-                <p className="text-purple-100 leading-relaxed mb-6">Our comprehensive curriculum is designed to challenge and inspire students at every level.</p>
+                <p className="text-violet-100 leading-relaxed mb-6">Our comprehensive curriculum is designed to challenge and inspire students at every level.</p>
                 <div className="flex flex-wrap gap-2">
                   {['Science & Tech', 'Liberal Arts', 'Engineering', 'Vocational'].map(tag => (
                     <span key={tag} className="px-3 py-1.5 rounded-full bg-white/10 border border-white/20 text-white text-xs font-bold">{tag}</span>
@@ -166,7 +166,7 @@ const Programs = () => {
                 </div>
               </div>
               <div className="lg:text-right">
-                <Link to="/enroll" className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-white text-purple-700 font-black text-sm hover:bg-purple-50 transition-colors shadow-2xl uppercase">
+                <Link to="/enroll" className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-white text-violet-900 font-black text-sm hover:bg-violet-50 transition-colors shadow-2xl uppercase">
                   Apply for Admission
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4 4H3" /></svg>
                 </Link>

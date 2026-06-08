@@ -4,17 +4,17 @@ const Faculty = () => {
   return (
     <div className="bg-white">
       {/* Hero Banner */}
-      <section className="bg-purple-700 py-16 md:py-20 relative overflow-hidden">
+      <section className="bg-violet-950 py-16 md:py-20 relative overflow-hidden">
         <div className="absolute inset-0 pointer-events-none opacity-5">
           <div className="absolute inset-0" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '60px 60px' }} />
         </div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-2xl">
-              <p className="text-xs font-bold text-purple-200 uppercase tracking-widest mb-4">Our Team</p>
+              <p className="text-xs font-bold text-violet-200 uppercase tracking-widest mb-4">Our Team</p>
               <h1 className="text-4xl md:text-5xl font-black text-white leading-tight mb-5 uppercase">
                 Faculty & Staff
               </h1>
-              <p className="text-purple-100 leading-relaxed text-lg">
+              <p className="text-violet-100 leading-relaxed text-lg">
                 Meet the dedicated educators and professionals who make Kiwalan NHS a center of excellence
               </p>
             </div>
@@ -22,10 +22,10 @@ const Faculty = () => {
       </section>
 
       {/* Administration */}
-      <section className="py-16 md:py-20 bg-purple-50">
+      <section className="py-16 md:py-20 bg-slate-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-black text-purple-800 mb-3 uppercase">School Administration</h2>
+            <h2 className="text-3xl font-black text-slate-900 mb-3 uppercase">School Administration</h2>
             <p className="text-gray-600">Leadership team guiding our institution</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -34,12 +34,12 @@ const Faculty = () => {
               { name: 'Prof. Juan Dela Cruz', position: 'Assistant Principal', dept: 'Academic Affairs' },
               { name: 'Ms. Ana Reyes', position: 'Assistant Principal', dept: 'Student Affairs' }
             ].map((admin, i) => (
-              <div key={i} className="bg-white rounded-2xl border-2 border-purple-200 p-6 text-center hover:shadow-lg transition-all">
-                <div className="w-24 h-24 rounded-full bg-purple-100 mx-auto mb-4 flex items-center justify-center border-4 border-purple-200">
-                  <span className="text-3xl font-black text-purple-600">{admin.name.charAt(0)}</span>
+              <div key={i} className="bg-white rounded-2xl border-2 border-violet-200 p-6 text-center hover:shadow-lg transition-all">
+                <div className="w-24 h-24 rounded-full bg-violet-100 mx-auto mb-4 flex items-center justify-center border-4 border-violet-200">
+                  <span className="text-3xl font-black text-violet-800">{admin.name.charAt(0)}</span>
                 </div>
-                <h3 className="text-lg font-black text-purple-800 uppercase">{admin.name}</h3>
-                <p className="text-sm font-bold text-purple-600 mb-1">{admin.position}</p>
+                <h3 className="text-lg font-black text-slate-900 uppercase">{admin.name}</h3>
+                <p className="text-sm font-bold text-violet-800 mb-1">{admin.position}</p>
                 <p className="text-xs text-gray-600">{admin.dept}</p>
               </div>
             ))}
@@ -51,7 +51,7 @@ const Faculty = () => {
       <section className="py-16 md:py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-black text-purple-800 mb-3 uppercase">Academic Departments</h2>
+            <h2 className="text-3xl font-black text-slate-900 mb-3 uppercase">Academic Departments</h2>
             <p className="text-gray-600">Organized by subject area and expertise</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -66,16 +66,16 @@ const Faculty = () => {
               { dept: 'Values Education', count: 6, icon: 'M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z' },
               { dept: 'Araling Panlipunan', count: 7, icon: 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253' }
             ].map((dept, i) => (
-              <div key={i} className="bg-purple-50 rounded-2xl border-2 border-purple-200 p-6 hover:shadow-lg transition-all group">
+              <div key={i} className="bg-slate-50 rounded-2xl border-2 border-violet-200 p-6 hover:shadow-lg transition-all group">
                 <div className="flex items-start justify-between mb-4">
-                  <div className="w-12 h-12 rounded-xl bg-purple-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <div className="w-12 h-12 rounded-xl bg-violet-900 flex items-center justify-center group-hover:scale-110 transition-transform">
                     <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={dept.icon} />
                     </svg>
                   </div>
-                  <span className="px-3 py-1 bg-purple-200 text-purple-800 rounded-full text-xs font-black">{dept.count} Faculty</span>
+                  <span className="px-3 py-1 bg-violet-200 text-slate-900 rounded-full text-xs font-black">{dept.count} Faculty</span>
                 </div>
-                <h3 className="text-lg font-black text-purple-800 uppercase">{dept.dept}</h3>
+                <h3 className="text-lg font-black text-slate-900 uppercase">{dept.dept}</h3>
                 <p className="text-sm text-gray-600 mt-2">Department Head & Teaching Staff</p>
               </div>
             ))}
@@ -84,11 +84,11 @@ const Faculty = () => {
       </section>
 
       {/* Support Staff */}
-      <section className="py-16 md:py-20 bg-purple-700 text-white">
+      <section className="py-16 md:py-20 bg-violet-950 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-black mb-3 uppercase">Support Services</h2>
-            <p className="text-purple-100">The dedicated team behind our operations</p>
+            <p className="text-violet-100">The dedicated team behind our operations</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             {[

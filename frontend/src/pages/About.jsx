@@ -27,18 +27,18 @@ const About = () => {
     <div className="bg-white">
 
       {/* ── Hero Banner ── */}
-      <section className="bg-purple-700 py-16 md:py-20 relative overflow-hidden">
+      <section className="bg-violet-950 py-16 md:py-20 relative overflow-hidden">
         <div className="absolute inset-0 pointer-events-none opacity-10">
           <img src="https://images.unsplash.com/photo-1577896851231-70ef18881754?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80" alt="" className="w-full h-full object-cover" />
         </div>
-        <div className="absolute inset-0 bg-gradient-to-r from-purple-800 via-purple-700 to-purple-600" />
+        <div className="absolute inset-0 bg-gradient-to-r from-violet-950 via-violet-900 to-violet-800" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-2xl">
-              <p className="text-xs font-bold text-purple-200 uppercase tracking-widest mb-4">About Kiwalan NHS</p>
+              <p className="text-xs font-bold text-violet-200 uppercase tracking-widest mb-4">About Kiwalan NHS</p>
               <h1 className="text-4xl md:text-5xl font-black text-white leading-tight mb-5">
                 {content.about_title?.content || 'About Our School'}
               </h1>
-              <p className="text-purple-100 leading-relaxed text-lg">
+              <p className="text-violet-100 leading-relaxed text-lg">
                 {content.about_subtitle?.content || 'Learn about our history, mission, and the values that drive our commitment to excellence in education.'}
               </p>
             </div>
@@ -46,17 +46,17 @@ const About = () => {
       </section>
 
       {/* ── Mission & Vision ── */}
-      <section className="py-16 md:py-20 bg-purple-50">
+      <section className="py-16 md:py-20 bg-slate-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-12">
             {/* Mission */}
-            <div className="rounded-2xl border-2 border-purple-200 bg-white p-8 md:p-10 hover:shadow-lg transition-shadow">
-              <div className="w-14 h-14 rounded-xl bg-purple-600 flex items-center justify-center mb-6 shadow-lg">
+            <div className="rounded-2xl border-2 border-violet-200 bg-white p-8 md:p-10 hover:shadow-lg transition-shadow">
+              <div className="w-14 h-14 rounded-xl bg-violet-900 flex items-center justify-center mb-6 shadow-lg">
                 <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>
               </div>
-              <h2 className="text-2xl font-black text-purple-800 mb-4 uppercase">
+              <h2 className="text-2xl font-black text-slate-900 mb-4 uppercase">
                 {content.about_mission_title?.content || 'Our Mission'}
               </h2>
               <p className="text-gray-700 leading-relaxed whitespace-pre-line">
@@ -65,13 +65,13 @@ const About = () => {
             </div>
 
             {/* Vision */}
-            <div className="rounded-2xl border-2 border-purple-200 bg-white p-8 md:p-10 hover:shadow-lg transition-shadow">
-              <div className="w-14 h-14 rounded-xl bg-purple-600 flex items-center justify-center mb-6 shadow-lg">
+            <div className="rounded-2xl border-2 border-violet-200 bg-white p-8 md:p-10 hover:shadow-lg transition-shadow">
+              <div className="w-14 h-14 rounded-xl bg-violet-900 flex items-center justify-center mb-6 shadow-lg">
                 <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
               </div>
-              <h2 className="text-2xl font-black text-purple-800 mb-4 uppercase">
+              <h2 className="text-2xl font-black text-slate-900 mb-4 uppercase">
                 {content.about_vision_title?.content || 'Our Vision'}
               </h2>
               <p className="text-gray-700 leading-relaxed whitespace-pre-line">
@@ -88,13 +88,13 @@ const About = () => {
               { val: '5,000+', label: 'Alumni', icon: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4' },
               { val: '80+', label: 'Faculty Members', icon: 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z' },
             ].map((s, i) => (
-              <div key={i} className="rounded-2xl border-2 border-purple-100 bg-white p-6 text-center hover:border-purple-300 hover:bg-purple-50 transition-all">
-                <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center mx-auto mb-3">
-                  <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div key={i} className="rounded-2xl border-2 border-violet-100 bg-white p-6 text-center hover:border-violet-300 hover:bg-violet-50 transition-all">
+                <div className="w-10 h-10 rounded-lg bg-violet-100 flex items-center justify-center mx-auto mb-3">
+                  <svg className="w-5 h-5 text-violet-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={s.icon} />
                   </svg>
                 </div>
-                <p className="text-3xl font-black text-purple-600 mb-1">{s.val}</p>
+                <p className="text-3xl font-black text-violet-800 mb-1">{s.val}</p>
                 <p className="text-xs font-bold text-gray-600 uppercase">{s.label}</p>
               </div>
             ))}
@@ -103,14 +103,14 @@ const About = () => {
       </section>
 
       {/* ── History ── */}
-      <section className="py-16 md:py-20 bg-purple-700 relative overflow-hidden">
+      <section className="py-16 md:py-20 bg-violet-950 relative overflow-hidden">
         <div className="absolute inset-0 pointer-events-none opacity-5">
           <div className="absolute inset-0" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '60px 60px' }} />
         </div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-3xl mx-auto">
             <div className="text-center mb-10">
-              <p className="text-xs font-bold text-purple-200 uppercase tracking-widest mb-3">Our Legacy</p>
+              <p className="text-xs font-bold text-violet-200 uppercase tracking-widest mb-3">Our Legacy</p>
               <h2 className="text-3xl md:text-4xl font-black text-white uppercase">
                 {content.about_history_title?.content || 'Our History'}
               </h2>

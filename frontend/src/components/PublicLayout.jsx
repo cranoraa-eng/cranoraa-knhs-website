@@ -2,346 +2,421 @@ import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 
+const NAV_LINKS = [
+  { key: 'home', label: 'Home', to: '/' },
+  {
+    key: 'about',
+    label: 'About',
+    children: [
+      { label: 'Mission', to: '/mission' },
+      { label: 'Vision', to: '/vision' },
+      { label: 'Faculty & Staff', to: '/faculty' },
+    ],
+  },
+  {
+    key: 'academics',
+    label: 'Academics',
+    children: [
+      { label: 'K to 12 Programs', to: '/k12-programs' },
+      { label: 'Senior High School', to: '/senior-high' },
+      { label: 'Calendar', to: '/calendar' },
+    ],
+  },
+  {
+    key: 'resources',
+    label: 'Resources',
+    children: [
+      { label: 'Learning Materials', to: '/learning-materials' },
+      { label: 'Portals & Systems', to: '/portals' },
+      { label: 'News & Events', to: '/news-events' },
+    ],
+  },
+  {
+    key: 'admissions',
+    label: 'Admissions',
+    children: [
+      { label: 'Apply for Enrollment', to: '/enroll' },
+      { label: 'Track Application', to: '/track-enrollment' },
+    ],
+  },
+  { key: 'contact', label: 'Contact', to: '/contact' },
+];
+
 const PublicLayout = () => {
   const { user, signOut } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
+  const navRef = useRef(null);
+  const profileMenuRef = useRef(null);
+
   const [showProfileMenu, setShowProfileMenu] = useState(false);
-  const [showAboutDropdown, setShowAboutDropdown] = useState(false);
-  const [showAcademicsDropdown, setShowAcademicsDropdown] = useState(false);
-  const [showResourcesDropdown, setShowResourcesDropdown] = useState(false);
-  const [showAdmissionsDropdown, setShowAdmissionsDropdown] = useState(false);
+  const [desktopDropdown, setDesktopDropdown] = useState('');
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mobileExpanded, setMobileExpanded] = useState('');
 
   useEffect(() => {
     setShowProfileMenu(false);
+    setDesktopDropdown('');
     setMobileOpen(false);
     setMobileExpanded('');
     window.scrollTo(0, 0);
   }, [location.pathname]);
 
-  // Close mobile menu on outside click
-  const navRef = useRef(null);
   useEffect(() => {
-    const handler = (e) => { if (navRef.current && !navRef.current.contains(e.target)) setMobileOpen(false); };
+    const handler = (event) => {
+      if (navRef.current && !navRef.current.contains(event.target)) {
+        setMobileOpen(false);
+        setDesktopDropdown('');
+      }
+      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
+        setShowProfileMenu(false);
+      }
+    };
+
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  const handleLogout = async () => { await signOut(); navigate('/', { replace: true }); };
-  const isActive = (path) => location.pathname === path;
-  const toggleMobileSection = (key) => setMobileExpanded(prev => prev === key ? '' : key);
+  const handleLogout = async () => {
+    await signOut();
+    navigate('/', { replace: true });
+  };
 
-  const navLinks = [
-    { key: 'home', label: 'Home', to: '/' },
-    {
-      key: 'about', label: 'About Us',
-      children: [
-        { label: 'Mission', to: '/mission' },
-        { label: 'Vision', to: '/vision' },
-        { label: 'Faculty', to: '/faculty' },
-      ]
-    },
-    {
-      key: 'academics', label: 'Academics',
-      children: [
-        { label: 'K to 12 Programs', to: '/k12-programs' },
-        { label: 'Senior High', to: '/senior-high' },
-      ]
-    },
-    {
-      key: 'resources', label: 'Resources',
-      children: [
-        { label: 'Learning Materials', to: '/learning-materials' },
-        { label: 'Portals', to: '/portals' },
-      ]
-    },
-    { key: 'news', label: 'News & Events', to: '/news-events' },
-    {
-      key: 'admissions', label: 'Admissions',
-      children: [
-        { label: 'Apply for Enrollment', to: '/enroll' },
-        { label: 'Track Application', to: '/track-enrollment' },
-      ]
-    },
-    { key: 'contact', label: 'Contact', to: '/contact' },
-  ];
+  const isActive = (path) => location.pathname === path;
+  const isGroupActive = (children = []) => children.some((child) => isActive(child.to));
+  const toggleMobileSection = (key) => setMobileExpanded((prev) => (prev === key ? '' : key));
 
   return (
-    <div className="min-h-screen flex flex-col bg-white font-sans">
+    <div className="public-page min-h-screen flex flex-col">
+      <div className="bg-violet-950 text-violet-100">
+        <div className="max-w-7xl mx-auto px-4 py-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 text-[10px] font-bold uppercase tracking-[0.18em]">
+          <span>Republic of the Philippines</span>
+          <span className="text-violet-200">Department of Education</span>
+        </div>
+      </div>
 
-      {/* ═══════════════════ OFFICIAL DEPED HEADER ═══════════════════ */}
-      <header className="bg-white border-b-4 border-purple-600 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 py-3 md:py-4">
-          <div className="grid grid-cols-3 items-center">
-            {/* Left: DepEd Logo */}
-            <div className="flex justify-start">
+      <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/95 backdrop-blur">
+        <div className="max-w-7xl mx-auto px-4 py-4 md:py-5">
+          <div className="grid grid-cols-[auto_1fr_auto] items-center gap-3 md:gap-6">
+            <div className="flex items-center justify-start">
               <img
                 src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Seal_of_the_Department_of_Education_of_the_Philippines.png/960px-Seal_of_the_Department_of_Education_of_the_Philippines.png"
-                alt="DepEd Logo"
+                alt="Department of Education seal"
                 className="w-14 h-14 md:w-20 md:h-20 object-contain"
-                onError={e => { e.target.onerror = null; e.target.src = '/icons/school-logo-source.png'; }}
+                onError={(event) => {
+                  event.target.onerror = null;
+                  event.target.src = '/icons/school-logo-source.png';
+                }}
               />
             </div>
-            {/* Center: Official Text */}
-            <div className="text-center">
-              <p className="text-[8px] md:text-[10px] font-bold text-gray-700 uppercase tracking-wider">REPUBLIKA NG PILIPINAS</p>
-              <p className="text-[8px] md:text-xs font-bold text-gray-800 uppercase tracking-wide mt-0.5">KAGAWARAN NG EDUKASYON</p>
-              <h1 className="text-sm md:text-lg font-black text-purple-800 uppercase tracking-tight mt-0.5 md:mt-1">KIWALAN NATIONAL HIGH SCHOOL</h1>
-              <p className="text-[8px] md:text-[10px] font-semibold text-gray-600 uppercase tracking-wider mt-0.5">ILIGAN CITY</p>
+
+            <div className="text-center min-w-0">
+              <p className="text-[9px] md:text-[11px] font-black uppercase tracking-[0.24em] text-violet-800">
+                Official School Website
+              </p>
+              <h1 className="text-sm md:text-2xl font-black uppercase tracking-tight text-slate-900">
+                Kiwalan National High School
+              </h1>
+              <p className="text-[10px] md:text-xs font-bold uppercase tracking-[0.18em] text-slate-500">
+                Iligan City, Lanao del Norte
+              </p>
             </div>
-            {/* Right: School Logo */}
-            <div className="flex justify-end">
-              <img src="/icons/school-logo-source.png" alt="KNHS Logo" className="w-14 h-14 md:w-20 md:h-20 object-contain" />
+
+            <div className="flex items-center justify-end">
+              <img
+                src="/icons/school-logo-source.png"
+                alt="Kiwalan National High School seal"
+                className="w-14 h-14 md:w-20 md:h-20 object-contain"
+              />
             </div>
           </div>
         </div>
-      </header>
 
-      {/* ═══════════════════ NAVIGATION BAR ═══════════════════ */}
-      <nav ref={navRef} className="bg-[#5e2a84] text-white sticky top-[84px] md:top-[136px] z-40 shadow-lg">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex items-center justify-between h-12">
+        <nav ref={navRef} className="border-t border-slate-200 bg-violet-950 text-white">
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="flex items-center justify-between gap-3 h-14">
+              <div className="flex items-center gap-1">
+                <Link
+                  to="/"
+                  className="lg:hidden flex items-center justify-center rounded-xl p-2 text-violet-100 hover:bg-violet-900"
+                  aria-label="Go to home page"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                  </svg>
+                </Link>
 
-            {/* ── Left side (Home icon for mobile, nav links for desktop) ── */}
-            <div className="flex items-center">
-              <Link to="/" className="lg:hidden p-2 -ml-1 text-white hover:bg-purple-700 rounded-lg transition-colors">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                </svg>
-              </Link>
+                <div className="hidden lg:flex items-stretch">
+                  {NAV_LINKS.map((item) => {
+                    if (item.to) {
+                      return (
+                        <Link
+                          key={item.key}
+                          to={item.to}
+                          className={`px-4 xl:px-5 h-14 inline-flex items-center text-[13px] font-black uppercase tracking-[0.12em] transition-colors ${
+                            isActive(item.to) ? 'bg-violet-900 text-white' : 'text-violet-100 hover:bg-violet-900'
+                          }`}
+                        >
+                          {item.label}
+                        </Link>
+                      );
+                    }
 
-              {/* Desktop nav links (hidden on mobile) */}
-              <div className="hidden lg:flex items-center space-x-1">
-                <Link to="/" className={`px-3 xl:px-4 py-3 text-xs xl:text-sm font-bold transition-colors ${isActive('/') ? 'bg-purple-700' : 'hover:bg-purple-700'}`}>HOME</Link>
+                    return (
+                      <div
+                        key={item.key}
+                        className="relative"
+                        onMouseEnter={() => setDesktopDropdown(item.key)}
+                        onMouseLeave={() => setDesktopDropdown('')}
+                      >
+                        <button
+                          className={`px-4 xl:px-5 h-14 inline-flex items-center gap-2 text-[13px] font-black uppercase tracking-[0.12em] transition-colors ${
+                            isGroupActive(item.children) || desktopDropdown === item.key
+                              ? 'bg-violet-900 text-white'
+                              : 'text-violet-100 hover:bg-violet-900'
+                          }`}
+                        >
+                          {item.label}
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                          </svg>
+                        </button>
 
-                {/* About */}
-                <div className="relative" onMouseEnter={() => setShowAboutDropdown(true)} onMouseLeave={() => setShowAboutDropdown(false)}>
-                  <button className={`px-3 xl:px-4 py-3 text-xs xl:text-sm font-bold transition-colors flex items-center gap-1 ${isActive('/mission') || isActive('/vision') || isActive('/faculty') ? 'bg-purple-700' : 'hover:bg-purple-700'}`}>
-                    ABOUT US <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
-                  </button>
-                  {showAboutDropdown && (
-                    <div className="absolute top-full left-0 bg-white text-gray-800 shadow-xl rounded-b-lg overflow-hidden w-48 z-50">
-                      <Link to="/mission" className="block px-4 py-2.5 text-sm hover:bg-purple-100 font-semibold">Mission</Link>
-                      <Link to="/vision" className="block px-4 py-2.5 text-sm hover:bg-purple-100 font-semibold">Vision</Link>
-                      <Link to="/faculty" className="block px-4 py-2.5 text-sm hover:bg-purple-100 font-semibold">Faculty</Link>
-                    </div>
-                  )}
+                        {desktopDropdown === item.key && (
+                          <div className="absolute left-0 top-full w-64 overflow-hidden rounded-b-2xl border border-slate-200 bg-white shadow-xl">
+                            {item.children.map((child) => (
+                              <Link
+                                key={child.to}
+                                to={child.to}
+                                className={`block px-4 py-3 text-sm font-semibold transition-colors ${
+                                  isActive(child.to)
+                                    ? 'bg-violet-50 text-violet-900'
+                                    : 'text-slate-700 hover:bg-slate-50 hover:text-violet-900'
+                                }`}
+                              >
+                                {child.label}
+                              </Link>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
-
-                {/* Academics */}
-                <div className="relative" onMouseEnter={() => setShowAcademicsDropdown(true)} onMouseLeave={() => setShowAcademicsDropdown(false)}>
-                  <button className={`px-3 xl:px-4 py-3 text-xs xl:text-sm font-bold transition-colors flex items-center gap-1 ${isActive('/k12-programs') || isActive('/senior-high') ? 'bg-purple-700' : 'hover:bg-purple-700'}`}>
-                    ACADEMICS <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
-                  </button>
-                  {showAcademicsDropdown && (
-                    <div className="absolute top-full left-0 bg-white text-gray-800 shadow-xl rounded-b-lg overflow-hidden w-48 z-50">
-                      <Link to="/k12-programs" className="block px-4 py-2.5 text-sm hover:bg-purple-100 font-semibold">K to 12 Programs</Link>
-                      <Link to="/senior-high" className="block px-4 py-2.5 text-sm hover:bg-purple-100 font-semibold">Senior High</Link>
-                    </div>
-                  )}
-                </div>
-
-                {/* Resources */}
-                <div className="relative" onMouseEnter={() => setShowResourcesDropdown(true)} onMouseLeave={() => setShowResourcesDropdown(false)}>
-                  <button className={`px-3 xl:px-4 py-3 text-xs xl:text-sm font-bold transition-colors flex items-center gap-1 ${isActive('/learning-materials') || isActive('/portals') ? 'bg-purple-700' : 'hover:bg-purple-700'}`}>
-                    RESOURCES <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
-                  </button>
-                  {showResourcesDropdown && (
-                    <div className="absolute top-full left-0 bg-white text-gray-800 shadow-xl rounded-b-lg overflow-hidden w-48 z-50">
-                      <Link to="/learning-materials" className="block px-4 py-2.5 text-sm hover:bg-purple-100 font-semibold">Learning Materials</Link>
-                      <Link to="/portals" className="block px-4 py-2.5 text-sm hover:bg-purple-100 font-semibold">Portals</Link>
-                    </div>
-                  )}
-                </div>
-
-                <Link to="/news-events" className={`px-3 xl:px-4 py-3 text-xs xl:text-sm font-bold transition-colors whitespace-nowrap ${isActive('/news-events') ? 'bg-purple-700' : 'hover:bg-purple-700'}`}>NEWS & EVENTS</Link>
-
-                {/* Admissions */}
-                <div className="relative" onMouseEnter={() => setShowAdmissionsDropdown(true)} onMouseLeave={() => setShowAdmissionsDropdown(false)}>
-                  <button className={`px-3 xl:px-4 py-3 text-xs xl:text-sm font-bold transition-colors flex items-center gap-1 ${isActive('/enroll') || isActive('/track-enrollment') ? 'bg-purple-700' : 'hover:bg-purple-700'}`}>
-                    ADMISSIONS <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
-                  </button>
-                  {showAdmissionsDropdown && (
-                    <div className="absolute top-full left-0 bg-white text-gray-800 shadow-xl rounded-b-lg overflow-hidden w-52 z-50">
-                      <Link to="/enroll" className="flex items-center gap-2 px-4 py-2.5 text-sm hover:bg-purple-100 font-semibold">
-                        <svg className="w-4 h-4 text-purple-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                        Apply for Enrollment
-                      </Link>
-                      <Link to="/track-enrollment" className="flex items-center gap-2 px-4 py-2.5 text-sm hover:bg-purple-100 font-semibold">
-                        <svg className="w-4 h-4 text-purple-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-                        Track Application
-                      </Link>
-                    </div>
-                  )}
-                </div>
-
-                <Link to="/contact" className={`px-3 xl:px-4 py-3 text-xs xl:text-sm font-bold transition-colors ${isActive('/contact') ? 'bg-purple-700' : 'hover:bg-purple-700'}`}>CONTACT</Link>
               </div>
-            </div>
 
-            {/* ── Middle: Search (Mobile only, centered) ── */}
-            <div className="lg:hidden flex-1 flex justify-center px-4">
-              <div className="relative w-full max-w-[160px] xs:max-w-[200px]">
-                <input 
-                  type="text" 
-                  placeholder="Search..." 
-                  className="w-full bg-white/10 text-white text-[11px] py-1.5 pl-8 pr-2 rounded-full border border-white/20 focus:bg-white focus:text-gray-900 focus:outline-none transition-all placeholder:text-purple-200"
-                />
-                <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-purple-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
+              <div className="hidden lg:flex items-center gap-3">
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="Search public website"
+                    className="w-64 rounded-full border border-violet-800 bg-violet-900/80 py-2 pl-10 pr-4 text-sm text-white placeholder:text-violet-300 focus:border-violet-300 focus:bg-violet-900"
+                  />
+                  <svg className="absolute left-3 top-1/2 w-4 h-4 -translate-y-1/2 text-violet-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </div>
+
+                {user ? (
+                  <div ref={profileMenuRef} className="relative">
+                    <button
+                      onClick={() => setShowProfileMenu((prev) => !prev)}
+                      className="flex items-center gap-2 rounded-xl bg-violet-900 px-3 py-2 text-xs font-bold hover:bg-violet-800"
+                    >
+                      <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white/15 text-[11px] font-black">
+                        {(user.first_name || user.username || '?').charAt(0).toUpperCase()}
+                      </span>
+                      <span className="max-w-[120px] truncate">{user.first_name || user.username}</span>
+                      <svg className={`w-3.5 h-3.5 transition-transform ${showProfileMenu ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+
+                    {showProfileMenu && (
+                      <div className="absolute right-0 mt-2 w-60 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
+                        <div className="border-b border-slate-100 bg-slate-50 px-4 py-3">
+                          <p className="text-[10px] font-black uppercase tracking-[0.18em] text-violet-700">Signed in as</p>
+                          <p className="mt-1 truncate text-sm font-bold text-slate-900">{user.email}</p>
+                        </div>
+                        <Link
+                          to="/dashboard"
+                          onClick={() => setShowProfileMenu(false)}
+                          className="flex items-center gap-2 px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                          </svg>
+                          Portal Dashboard
+                        </Link>
+                        <button
+                          onClick={handleLogout}
+                          className="flex w-full items-center gap-2 px-4 py-3 text-sm font-semibold text-red-600 hover:bg-red-50"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1m0-11V7" />
+                          </svg>
+                          Sign Out
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <Link to="/login" className="rounded-xl bg-violet-800 px-4 py-2 text-xs font-black uppercase tracking-[0.14em] hover:bg-violet-700">
+                    Portal Login
+                  </Link>
+                )}
               </div>
-            </div>
 
-            {/* ── Right: Search(desktop) + Login + Hamburger ── */}
-            <div className="flex items-center gap-1.5 sm:gap-2">
-              {/* Search (desktop only) */}
-              <div className="hidden lg:flex items-center bg-white rounded-full overflow-hidden">
-                <input type="text" placeholder="Search..." className="px-3 py-1 text-sm text-gray-800 outline-none w-28 xl:w-32" />
-                <button className="bg-purple-600 px-2.5 py-1.5 hover:bg-purple-700 transition-colors">
-                  <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+              <div className="flex items-center gap-2 lg:hidden">
+                {!user && (
+                  <Link to="/login" className="rounded-lg bg-violet-800 px-3 py-1.5 text-[11px] font-black uppercase tracking-[0.12em] hover:bg-violet-700">
+                    Login
+                  </Link>
+                )}
+                <button
+                  onClick={() => setMobileOpen((prev) => !prev)}
+                  className="rounded-xl p-2 hover:bg-violet-900"
+                  aria-label="Toggle public navigation"
+                >
+                  {mobileOpen ? (
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  ) : (
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                  )}
                 </button>
               </div>
+            </div>
+          </div>
 
-              {/* Login/Profile (always visible) */}
-              {user ? (
-                <div className="relative">
-                  <button onClick={() => setShowProfileMenu(!showProfileMenu)}
-                    className="flex items-center gap-1.5 px-2 py-1.5 sm:px-2.5 sm:py-1.5 rounded-lg bg-purple-700 text-white text-[10px] sm:text-xs font-semibold hover:bg-purple-600 transition-colors">
-                    <div className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-white/20 flex items-center justify-center text-[8px] sm:text-[10px] font-black flex-shrink-0">
-                      {(user.first_name || user.username || '?').charAt(0).toUpperCase()}
-                    </div>
-                    <span className="hidden sm:block max-w-[80px] truncate">{user.first_name || user.username}</span>
-                    <svg className={`w-3 h-3 flex-shrink-0 transition-transform ${showProfileMenu ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
-                  </button>
-                  {showProfileMenu && (
-                    <div className="absolute right-0 mt-2 w-48 rounded-xl border border-purple-200 bg-white shadow-2xl overflow-hidden z-50">
-                      <div className="px-4 py-3 bg-purple-50 border-b border-purple-100">
-                        <p className="text-[10px] text-purple-600 font-bold uppercase">Signed in as</p>
-                        <p className="text-sm font-bold text-gray-800 truncate">{user.email}</p>
-                      </div>
-                      <Link to="/dashboard" onClick={() => setShowProfileMenu(false)} className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-purple-50 font-semibold">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
-                        Portal Dashboard
+          {mobileOpen && (
+            <div className="border-t border-violet-900 bg-violet-950 lg:hidden">
+              <div className="max-h-[75vh] overflow-y-auto px-4 py-3">
+                <div className="mb-3">
+                  <div className="relative">
+                    <input
+                      type="text"
+                      placeholder="Search public website"
+                      className="w-full rounded-2xl border border-violet-800 bg-violet-900 py-3 pl-10 pr-4 text-sm text-white placeholder:text-violet-300"
+                    />
+                    <svg className="absolute left-3 top-1/2 w-4 h-4 -translate-y-1/2 text-violet-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                  </div>
+                </div>
+
+                {NAV_LINKS.map((item) => (
+                  <div key={item.key} className="border-b border-violet-900/70 last:border-b-0">
+                    {item.to ? (
+                      <Link
+                        to={item.to}
+                        className={`flex items-center px-1 py-4 text-sm font-black uppercase tracking-[0.14em] ${
+                          isActive(item.to) ? 'text-white' : 'text-violet-100'
+                        }`}
+                      >
+                        {item.label}
                       </Link>
-                      <button onClick={handleLogout} className="flex items-center gap-2 w-full px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 font-semibold">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1m0-11V7" /></svg>
+                    ) : (
+                      <>
+                        <button
+                          onClick={() => toggleMobileSection(item.key)}
+                          className={`flex w-full items-center justify-between px-1 py-4 text-sm font-black uppercase tracking-[0.14em] ${
+                            mobileExpanded === item.key || isGroupActive(item.children) ? 'text-white' : 'text-violet-100'
+                          }`}
+                        >
+                          <span>{item.label}</span>
+                          <svg className={`w-4 h-4 transition-transform ${mobileExpanded === item.key ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                          </svg>
+                        </button>
+                        {mobileExpanded === item.key && (
+                          <div className="pb-3 pl-4">
+                            {item.children.map((child) => (
+                              <Link
+                                key={child.to}
+                                to={child.to}
+                                className={`flex items-center gap-2 py-3 text-sm font-semibold ${
+                                  isActive(child.to) ? 'text-violet-200' : 'text-violet-300'
+                                }`}
+                              >
+                                <span className="w-1.5 h-1.5 rounded-full bg-violet-300" />
+                                {child.label}
+                              </Link>
+                            ))}
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
+                ))}
+
+                {user && (
+                  <div className="mt-4 rounded-2xl border border-violet-900 bg-violet-900/70 p-4">
+                    <p className="text-[10px] font-black uppercase tracking-[0.18em] text-violet-300">Signed in as</p>
+                    <p className="mt-1 text-sm font-bold text-white">{user.email}</p>
+                    <div className="mt-4 flex gap-2">
+                      <Link to="/dashboard" className="flex-1 rounded-xl bg-white px-4 py-2 text-center text-xs font-black uppercase tracking-[0.12em] text-violet-950">
+                        Dashboard
+                      </Link>
+                      <button onClick={handleLogout} className="flex-1 rounded-xl border border-white/20 px-4 py-2 text-xs font-black uppercase tracking-[0.12em] text-white">
                         Sign Out
                       </button>
                     </div>
-                  )}
-                </div>
-              ) : (
-                <Link to="/login" className="px-2.5 py-1.5 sm:px-3 sm:py-1.5 rounded-lg bg-purple-700 text-white text-[10px] sm:text-xs font-bold hover:bg-purple-600 transition-colors whitespace-nowrap">
-                  Portal Login
-                </Link>
-              )}
-
-              {/* Hamburger (mobile only) */}
-              <button
-                onClick={() => setMobileOpen(v => !v)}
-                className="lg:hidden p-1.5 sm:p-2 rounded-lg hover:bg-purple-700 transition-colors"
-                aria-label="Toggle menu"
-              >
-                {mobileOpen ? (
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-                ) : (
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* ── Mobile Dropdown Menu ── */}
-        {mobileOpen && (
-          <div className="lg:hidden bg-[#4a1f6e] border-t border-purple-700 overflow-y-auto max-h-[70vh]">
-            {navLinks.map(item => (
-              <div key={item.key}>
-                {item.to ? (
-                  <Link to={item.to}
-                    className={`flex items-center px-5 py-3.5 text-sm font-bold uppercase tracking-wide border-b border-purple-700/50 ${isActive(item.to) ? 'bg-purple-700 text-white' : 'text-purple-100 hover:bg-purple-700/60'}`}>
-                    {item.label}
-                  </Link>
-                ) : (
-                  <>
-                    <button
-                      onClick={() => toggleMobileSection(item.key)}
-                      className={`w-full flex items-center justify-between px-5 py-3.5 text-sm font-bold uppercase tracking-wide border-b border-purple-700/50 ${mobileExpanded === item.key ? 'bg-purple-700' : 'text-purple-100 hover:bg-purple-700/60'}`}
-                    >
-                      <span>{item.label}</span>
-                      <svg className={`w-4 h-4 transition-transform ${mobileExpanded === item.key ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
-                    </button>
-                    {mobileExpanded === item.key && (
-                      <div className="bg-[#3d1a5e]">
-                        {item.children.map(child => (
-                          <Link key={child.to} to={child.to}
-                            className={`flex items-center gap-2 px-8 py-3 text-sm font-semibold border-b border-purple-800/40 ${isActive(child.to) ? 'text-yellow-300' : 'text-purple-200 hover:text-white hover:bg-purple-700/40'}`}>
-                            <span className="w-1.5 h-1.5 rounded-full bg-purple-400 flex-shrink-0" />
-                            {child.label}
-                          </Link>
-                        ))}
-                      </div>
-                    )}
-                  </>
+                  </div>
                 )}
               </div>
-            ))}
-          </div>
-        )}
-      </nav>
+            </div>
+          )}
+        </nav>
+      </header>
 
-      {/* ── Page content ── */}
       <main className="flex-grow overflow-hidden">
         <Outlet />
       </main>
 
-      {/* ═══════════════════ FOOTER ═══════════════════ */}
-      <footer className="bg-[#5e2a84] text-white py-8 mt-auto">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-6">
+      <footer className="mt-auto border-t border-violet-900/20 bg-violet-950 text-white">
+        <div className="max-w-7xl mx-auto px-4 py-12">
+          <div className="grid gap-10 md:grid-cols-3">
             <div>
-              <h3 className="font-bold mb-3 uppercase text-sm">Contact Us</h3>
-              <p className="text-xs">Kiwalan, Iligan City</p>
-              <p className="text-xs">Lanao del Norte, Philippines</p>
-              <p className="text-xs mt-2">info@kiwalan-nhs.edu.ph</p>
-              <p className="text-xs">(123) 456-7890</p>
-            </div>
-            <div>
-              <h3 className="font-bold mb-3 uppercase text-sm">Quick Links</h3>
-              <ul className="text-xs space-y-1">
-                <li><Link to="/" className="hover:underline">Home</Link></li>
-                <li><Link to="/mission" className="hover:underline">Mission & Vision</Link></li>
-                <li><Link to="/faculty" className="hover:underline">Faculty</Link></li>
-                <li><Link to="/k12-programs" className="hover:underline">K-12 Programs</Link></li>
-                <li><Link to="/senior-high" className="hover:underline">Senior High</Link></li>
-                <li><Link to="/news-events" className="hover:underline">News & Events</Link></li>
-                <li><Link to="/enroll" className="hover:underline">Apply for Enrollment</Link></li>
-                <li><Link to="/track-enrollment" className="hover:underline">Track Application</Link></li>
-                <li><Link to="/contact" className="hover:underline">Contact</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="font-bold mb-3 uppercase text-sm">Follow Us</h3>
-              <div className="flex gap-3 mb-4">
-                <a href="#" className="w-8 h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors">
-                  <span className="text-xs font-bold">f</span>
-                </a>
-                <a href="#" className="w-8 h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors">
-                  <span className="text-xs font-bold">t</span>
-                </a>
-                <a href="#" className="w-8 h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors">
-                  <span className="text-xs font-bold">in</span>
-                </a>
+              <p className="text-[10px] font-black uppercase tracking-[0.22em] text-violet-300">Official Contact</p>
+              <h3 className="mt-3 text-lg font-black">Kiwalan National High School</h3>
+              <div className="mt-4 space-y-2 text-sm text-violet-100">
+                <p>Kiwalan, Iligan City, Lanao del Norte, Philippines</p>
+                <p>info@kiwalan-nhs.edu.ph</p>
+                <p>(123) 456-7890</p>
               </div>
-              <Link to="/privacy" className="text-xs hover:underline block">Privacy Policy</Link>
-              <Link to="/terms" className="text-xs hover:underline block mt-1">Terms of Service</Link>
+            </div>
+
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-[0.22em] text-violet-300">Site Directory</p>
+              <div className="mt-4 grid gap-2 text-sm font-semibold text-violet-100">
+                <Link to="/" className="hover:text-white">Home</Link>
+                <Link to="/mission" className="hover:text-white">Mission</Link>
+                <Link to="/vision" className="hover:text-white">Vision</Link>
+                <Link to="/faculty" className="hover:text-white">Faculty & Staff</Link>
+                <Link to="/k12-programs" className="hover:text-white">K to 12 Programs</Link>
+                <Link to="/senior-high" className="hover:text-white">Senior High School</Link>
+                <Link to="/enroll" className="hover:text-white">Apply for Enrollment</Link>
+                <Link to="/track-enrollment" className="hover:text-white">Track Application</Link>
+              </div>
+            </div>
+
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-[0.22em] text-violet-300">Policies</p>
+              <div className="mt-4 space-y-2 text-sm font-semibold text-violet-100">
+                <Link to="/privacy" className="hover:text-white">Privacy Policy</Link>
+                <Link to="/terms" className="hover:text-white">Terms of Service</Link>
+                <Link to="/contact" className="hover:text-white">Contact Office</Link>
+                <Link to="/portals" className="hover:text-white">Portals & Systems</Link>
+              </div>
             </div>
           </div>
-          <div className="border-t border-white/20 pt-4 text-center text-xs">
-            © {new Date().getFullYear()} Kiwalan National High School. All Rights Reserved.
+
+          <div className="mt-10 border-t border-white/10 pt-5 text-xs uppercase tracking-[0.16em] text-violet-200">
+            © {new Date().getFullYear()} Kiwalan National High School. All rights reserved.
           </div>
         </div>
       </footer>

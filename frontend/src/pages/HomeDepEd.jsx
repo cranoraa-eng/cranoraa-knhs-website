@@ -29,7 +29,7 @@ const getPDFs = (a) => {
 };
 const formatDate = (d) => new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 const CAT_STYLES = {
-  academic: 'bg-purple-50 text-purple-700 border-purple-200',
+  academic: 'bg-slate-50 text-violet-900 border-violet-200',
   events:   'bg-emerald-50 text-emerald-700 border-emerald-200',
   emergency:'bg-red-50 text-red-700 border-red-200',
   holiday:  'bg-yellow-50 text-yellow-700 border-yellow-200',
@@ -66,13 +66,13 @@ const MiniCalendar = ({ events, onSelectDay }) => {
   const monthName = currentDate.toLocaleString('en-US', { month: 'long' });
   const handleDayClick = (day) => { if (!day) return; setSelectedDay(day); if (onSelectDay) onSelectDay(day); };
   return (
-    <div className="bg-white rounded-2xl border-2 border-purple-200 p-5 shadow-sm">
+    <div className="bg-white rounded-2xl border-2 border-violet-200 p-5 shadow-sm">
       <div className="flex items-center justify-between mb-4">
-        <p className="text-sm font-black text-purple-800 uppercase">{monthName} {currentDate.getFullYear()}</p>
-        <Link to="/calendar" className="text-xs font-bold text-purple-600 hover:text-purple-700 transition-colors">View full →</Link>
+        <p className="text-sm font-black text-slate-900 uppercase">{monthName} {currentDate.getFullYear()}</p>
+        <Link to="/calendar" className="text-xs font-bold text-violet-800 hover:text-violet-950 transition-colors">View full →</Link>
       </div>
       <div className="grid grid-cols-7 gap-1 mb-1">
-        {['S','M','T','W','T','F','S'].map((d,i) => <div key={i} className="text-[10px] font-bold text-purple-500 text-center py-1">{d}</div>)}
+        {['S','M','T','W','T','F','S'].map((d,i) => <div key={i} className="text-[10px] font-bold text-violet-600 text-center py-1">{d}</div>)}
       </div>
       <div className="grid grid-cols-7 gap-1 text-center">
         {daysInMonth.map((day, i) => {
@@ -83,10 +83,10 @@ const MiniCalendar = ({ events, onSelectDay }) => {
             <div key={i} onClick={() => handleDayClick(day)}
               className={`aspect-square flex flex-col items-center justify-center text-[11px] font-semibold rounded-lg cursor-pointer transition-all relative
                 ${!day ? 'invisible' : ''}
-                ${isSelected ? 'bg-purple-600 text-white' : hasEvent ? 'bg-purple-50 text-purple-700 hover:bg-purple-100' : 'text-gray-600 hover:bg-purple-50'}
-                ${isToday && !isSelected ? 'ring-2 ring-purple-400' : ''}`}>
+                ${isSelected ? 'bg-violet-900 text-white' : hasEvent ? 'bg-slate-50 text-violet-900 hover:bg-violet-100' : 'text-gray-600 hover:bg-violet-50'}
+                ${isToday && !isSelected ? 'ring-2 ring-violet-400' : ''}`}>
               {day}
-              {hasEvent && !isSelected && <span className="absolute bottom-0.5 w-1 h-1 bg-purple-500 rounded-full" />}
+              {hasEvent && !isSelected && <span className="absolute bottom-0.5 w-1 h-1 bg-slate-500 rounded-full" />}
             </div>
           );
         })}
@@ -166,25 +166,25 @@ const HomeDepEd = () => {
           <div key={index}
             className={`absolute inset-0 transition-opacity duration-1000 ${index === currentSlide ? 'opacity-100' : 'opacity-0'}`}
             style={{ backgroundImage: `url(${slide.image})`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
-            <div className="absolute inset-0 bg-gradient-to-r from-purple-900/90 via-purple-800/70 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-r from-violet-950/95 via-violet-900/80 to-transparent" />
           </div>
         ))}
         {/* Enrollment badge */}
-        <div className="absolute top-6 right-6 z-10 hidden md:flex items-center gap-2 px-4 py-2 rounded-full bg-purple-500/30 border border-white/30 backdrop-blur-sm">
+        <div className="absolute top-6 right-6 z-10 hidden md:flex items-center gap-2 px-4 py-2 rounded-full bg-violet-700/30 border border-white/30 backdrop-blur-sm">
           <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
           <span className="text-xs font-bold text-white uppercase tracking-widest">Enrollment Open — SY 2026–2027</span>
         </div>
         {/* Slider Content */}
         <div className="relative h-full max-w-7xl mx-auto px-4 flex items-center">
-          <div className="max-w-xl bg-purple-800/80 backdrop-blur-sm p-8 rounded-xl border border-white/10">
+          <div className="max-w-xl bg-violet-950/80 backdrop-blur-sm p-8 rounded-xl border border-white/10">
             <h2 className="text-5xl font-black text-white mb-2">{slides[currentSlide].title}</h2>
-            <p className="text-3xl font-light text-purple-100 italic mb-2">{slides[currentSlide].subtitle}</p>
-            <p className="text-sm font-bold text-purple-200 uppercase tracking-widest mb-6">{slides[currentSlide].tagline}</p>
+            <p className="text-3xl font-light text-violet-100 italic mb-2">{slides[currentSlide].subtitle}</p>
+            <p className="text-sm font-bold text-violet-200 uppercase tracking-widest mb-6">{slides[currentSlide].tagline}</p>
             <div className="flex flex-wrap gap-3">
-              <Link to="/enroll" className="px-6 py-3 bg-white text-purple-700 font-black rounded-lg shadow-lg transition-colors hover:bg-purple-50 uppercase text-sm">
+              <Link to="/enroll" className="px-6 py-3 bg-white text-violet-900 font-black rounded-lg shadow-lg transition-colors hover:bg-violet-50 uppercase text-sm">
                 Enroll Now
               </Link>
-              <Link to="/login" className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-lg transition-colors text-sm">
+              <Link to="/login" className="px-6 py-3 bg-violet-900 hover:bg-violet-950 text-white font-bold rounded-lg transition-colors text-sm">
                 Portal Login
               </Link>
             </div>
@@ -208,7 +208,7 @@ const HomeDepEd = () => {
       {/* ═══════════════════════════════════════════════════════════ */}
       {/* QUICK LINKS */}
       {/* ═══════════════════════════════════════════════════════════ */}
-      <section className="bg-purple-700 py-0">
+      <section className="bg-violet-950 py-0">
         <div className="max-w-7xl mx-auto px-4">
           <div className="grid grid-cols-2 md:grid-cols-4">
             {[
@@ -217,8 +217,8 @@ const HomeDepEd = () => {
               { title: "SCHOOL CALENDAR", icon: "M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z", link: "/calendar" },
               { title: "TRACK ENROLLMENT", icon: "M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01", link: "/track-enrollment" },
             ].map((item, i) => (
-              <Link key={i} to={item.link} className="flex flex-col items-center gap-2 py-5 px-4 text-white border-r border-white/20 last:border-r-0 hover:bg-purple-600 transition-colors group">
-                <svg className="w-8 h-8 text-purple-200 group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <Link key={i} to={item.link} className="flex flex-col items-center gap-2 py-5 px-4 text-white border-r border-white/20 last:border-r-0 hover:bg-violet-900 transition-colors group">
+                <svg className="w-8 h-8 text-violet-200 group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={item.icon} />
                 </svg>
                 <p className="text-[11px] font-bold uppercase text-center leading-tight">{item.title}</p>
@@ -231,7 +231,7 @@ const HomeDepEd = () => {
       {/* ═══════════════════════════════════════════════════════════ */}
       {/* STATS BAND */}
       {/* ═══════════════════════════════════════════════════════════ */}
-      <section className="bg-purple-50 border-b-2 border-purple-200 py-8">
+      <section className="bg-slate-50 border-b-2 border-violet-200 py-8">
         <div className="max-w-7xl mx-auto px-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
             {[
@@ -241,12 +241,12 @@ const HomeDepEd = () => {
               { val: '150+',   label: 'Awards & Honors',   icon: 'M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z' },
             ].map((s, i) => (
               <div key={i} className="flex flex-col items-center gap-2">
-                <div className="w-12 h-12 rounded-xl bg-purple-600 flex items-center justify-center">
+                <div className="w-12 h-12 rounded-xl bg-violet-900 flex items-center justify-center">
                   <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={s.icon} />
                   </svg>
                 </div>
-                <p className="text-3xl font-black text-purple-700">{s.val}</p>
+                <p className="text-3xl font-black text-violet-900">{s.val}</p>
                 <p className="text-xs font-bold text-gray-600 uppercase tracking-wide">{s.label}</p>
               </div>
             ))}
@@ -263,17 +263,17 @@ const HomeDepEd = () => {
 
             {/* LEFT: NEWS UPDATES */}
             <div>
-              <div className="bg-purple-600 text-white px-4 py-2 font-black uppercase text-sm tracking-wider">NEWS UPDATES</div>
-              <div className="bg-white border-2 border-purple-200 p-4 space-y-4">
+              <div className="bg-violet-900 text-white px-4 py-2 font-black uppercase text-sm tracking-wider">NEWS UPDATES</div>
+              <div className="bg-white border-2 border-violet-200 p-4 space-y-4">
                 {generalAnnouncements.length > 0 ? generalAnnouncements.map(a => {
                   const imageUrl = getFirstImage(a);
                   const pdfs = getPDFs(a);
-                  const catStyle = CAT_STYLES[a.category] || 'bg-purple-50 text-purple-700 border-purple-200';
+                  const catStyle = CAT_STYLES[a.category] || 'bg-slate-50 text-violet-900 border-violet-200';
                   return (
-                    <div key={a.id} className="border-b-2 border-purple-100 pb-4 last:border-0 last:pb-0">
+                    <div key={a.id} className="border-b-2 border-violet-100 pb-4 last:border-0 last:pb-0">
                       <div className="flex gap-3">
                         {imageUrl && (
-                          <button onClick={() => setZoomedImage(imageUrl)} className="flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border border-purple-200">
+                          <button onClick={() => setZoomedImage(imageUrl)} className="flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border border-violet-200">
                             <img src={imageUrl} alt={a.title} className="w-full h-full object-cover hover:scale-105 transition-transform" />
                           </button>
                         )}
@@ -282,7 +282,7 @@ const HomeDepEd = () => {
                             <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase border ${catStyle}`}>{a.category}</span>
                             <span className="text-[10px] text-gray-400">{formatDate(a.created_at)}</span>
                           </div>
-                          <h3 className="font-black text-sm text-purple-800 uppercase mb-1 line-clamp-2">{a.title}</h3>
+                          <h3 className="font-black text-sm text-slate-900 uppercase mb-1 line-clamp-2">{a.title}</h3>
                           <p className="text-xs text-gray-600 line-clamp-2">{a.content}</p>
                           {pdfs.length > 0 && (
                             <div className="flex gap-1 mt-1">
@@ -302,26 +302,26 @@ const HomeDepEd = () => {
                 }) : (
                   <p className="text-sm text-gray-500 py-6 text-center">No announcements at this time</p>
                 )}
-                <Link to="/news-events" className="block text-center text-xs font-bold text-purple-600 hover:text-purple-700 pt-1 uppercase">View All News →</Link>
+                <Link to="/news-events" className="block text-center text-xs font-bold text-violet-800 hover:text-violet-950 pt-1 uppercase">View All News →</Link>
               </div>
             </div>
 
             {/* MIDDLE: EVENTS + FEATURED PROGRAMS */}
             <div className="space-y-6">
               <div>
-                <div className="bg-purple-600 text-white px-4 py-2 font-black uppercase text-sm tracking-wider">UPCOMING EVENTS</div>
-                <div className="bg-white border-2 border-purple-200 p-4 space-y-3">
+                <div className="bg-violet-900 text-white px-4 py-2 font-black uppercase text-sm tracking-wider">UPCOMING EVENTS</div>
+                <div className="bg-white border-2 border-violet-200 p-4 space-y-3">
                   {upcomingEvents.length > 0 ? upcomingEvents.map(ev => {
                     const d = new Date(ev.event_date || ev.created_at);
                     return (
                       <Link key={ev.id} to={`/calendar?year=${d.getFullYear()}&month=${d.getMonth()+1}`}
                         className="flex items-start gap-3 group">
-                        <div className="bg-purple-600 text-white text-center p-2 rounded-lg flex-shrink-0 w-12">
+                        <div className="bg-violet-900 text-white text-center p-2 rounded-lg flex-shrink-0 w-12">
                           <p className="text-sm font-black leading-none">{d.getDate()}</p>
                           <p className="text-[9px] uppercase mt-0.5">{d.toLocaleDateString('en-US',{month:'short'})}</p>
                         </div>
                         <div className="flex-1 min-w-0">
-                          <h4 className="font-black text-sm text-purple-800 group-hover:text-purple-600 transition-colors line-clamp-1">{ev.title}</h4>
+                          <h4 className="font-black text-sm text-slate-900 group-hover:text-violet-900 transition-colors line-clamp-1">{ev.title}</h4>
                           <p className="text-xs text-gray-600 line-clamp-1">{ev.content}</p>
                         </div>
                       </Link>
@@ -329,13 +329,13 @@ const HomeDepEd = () => {
                   }) : (
                     <p className="text-sm text-gray-500 py-4 text-center">No upcoming events</p>
                   )}
-                  <Link to="/calendar" className="block text-center text-xs font-bold text-purple-600 hover:text-purple-700 pt-1 uppercase">Full Calendar →</Link>
+                  <Link to="/calendar" className="block text-center text-xs font-bold text-violet-800 hover:text-violet-950 pt-1 uppercase">Full Calendar →</Link>
                 </div>
               </div>
 
               <div>
-                <div className="bg-purple-600 text-white px-4 py-2 font-black uppercase text-sm tracking-wider">FEATURED PROGRAMS</div>
-                <div className="bg-white border-2 border-purple-200 p-4">
+                <div className="bg-violet-900 text-white px-4 py-2 font-black uppercase text-sm tracking-wider">FEATURED PROGRAMS</div>
+                <div className="bg-white border-2 border-violet-200 p-4">
                   <div className="grid grid-cols-2 gap-3">
                     {[
                       { code: 'STEM', img: 'https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=300&q=60' },
@@ -343,11 +343,11 @@ const HomeDepEd = () => {
                       { code: 'HUMSS',img: 'https://images.unsplash.com/photo-1529070538774-1843cb3265df?w=300&q=60' },
                       { code: 'TVL',  img: 'https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=300&q=60' },
                     ].map((prog, i) => (
-                      <Link key={i} to="/senior-high" className="bg-purple-50 rounded-lg overflow-hidden border-2 border-purple-200 hover:border-purple-400 transition-all group">
+                      <Link key={i} to="/senior-high" className="bg-slate-50 rounded-lg overflow-hidden border-2 border-violet-200 hover:border-violet-400 transition-all group">
                         <div className="w-full h-16 overflow-hidden">
                           <img src={prog.img} alt={prog.code} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
                         </div>
-                        <p className="text-xs font-black text-purple-800 text-center py-2 uppercase">{prog.code}</p>
+                        <p className="text-xs font-black text-slate-900 text-center py-2 uppercase">{prog.code}</p>
                       </Link>
                     ))}
                   </div>
@@ -359,17 +359,17 @@ const HomeDepEd = () => {
             <div className="space-y-4">
               <MiniCalendar events={announcements.filter(a => a.category === 'events')} onSelectDay={handleSelectDay} />
               <div>
-                <div className="bg-purple-600 text-white px-4 py-2 font-black uppercase text-sm tracking-wider">
+                <div className="bg-violet-900 text-white px-4 py-2 font-black uppercase text-sm tracking-wider">
                   {selectedDayLabel ? `Events — ${new Date().toLocaleString('en-US',{month:'short'})} ${selectedDayLabel}` : 'ANNOUNCEMENTS'}
                 </div>
-                <div className="bg-white border-2 border-purple-200 p-4 space-y-3">
+                <div className="bg-white border-2 border-violet-200 p-4 space-y-3">
                   {(selectedDayLabel ? selectedDateEvents : announcements.slice(0, 5)).map((a, i) => (
-                    <div key={i} className="flex items-start gap-2 pb-3 border-b border-purple-100 last:border-0 last:pb-0">
-                      <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
-                        <span className="text-xs font-black text-purple-700">K</span>
+                    <div key={i} className="flex items-start gap-2 pb-3 border-b border-violet-100 last:border-0 last:pb-0">
+                      <div className="w-8 h-8 rounded-full bg-violet-100 flex items-center justify-center flex-shrink-0">
+                        <span className="text-xs font-black text-violet-900">K</span>
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="font-black text-xs text-purple-800">Kiwalan NHS</p>
+                        <p className="font-black text-xs text-slate-900">Kiwalan NHS</p>
                         <p className="text-[11px] text-gray-600 leading-tight line-clamp-2">{a.title}</p>
                         <p className="text-[9px] text-gray-400 mt-0.5">{new Date(a.created_at).toLocaleDateString()}</p>
                       </div>
@@ -389,18 +389,18 @@ const HomeDepEd = () => {
       {/* ═══════════════════════════════════════════════════════════ */}
       {/* WHY CHOOSE US */}
       {/* ═══════════════════════════════════════════════════════════ */}
-      <section className="py-16 md:py-20 bg-purple-50">
+      <section className="py-16 md:py-20 bg-slate-50">
         <div className="max-w-7xl mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
-              <p className="text-xs font-bold text-purple-600 uppercase tracking-widest mb-3">Core Strengths</p>
-              <h2 className="text-3xl md:text-4xl font-black text-purple-800 mb-5 leading-tight uppercase">
+              <p className="text-xs font-bold text-violet-800 uppercase tracking-widest mb-3">Core Strengths</p>
+              <h2 className="text-3xl md:text-4xl font-black text-slate-900 mb-5 leading-tight uppercase">
                 Why Choose<br />Kiwalan NHS?
               </h2>
               <p className="text-gray-600 leading-relaxed mb-8">
                 A holistic learning environment that combines academic rigor with character building and practical skills for every student.
               </p>
-              <Link to="/about" className="inline-flex items-center gap-2 text-sm font-bold text-purple-600 hover:text-purple-700 transition-colors uppercase">
+              <Link to="/about" className="inline-flex items-center gap-2 text-sm font-bold text-violet-800 hover:text-violet-950 transition-colors uppercase">
                 Learn more about us
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4 4H3" /></svg>
               </Link>
@@ -412,11 +412,11 @@ const HomeDepEd = () => {
                 { title: content.home_feature_3_title?.content || 'Modern Facilities', desc: content.home_feature_3_content?.content || 'State-of-the-art classrooms, laboratories, and learning spaces to support holistic education.', icon: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4' },
                 { title: 'Digital Portal', desc: 'Full-featured student portal with grades, attendance, messaging, and real-time notifications.', icon: 'M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z' },
               ].map((f, i) => (
-                <div key={i} className="bg-white rounded-2xl border-2 border-purple-200 p-6 hover:shadow-lg hover:border-purple-400 transition-all">
-                  <div className="w-10 h-10 rounded-xl bg-purple-600 flex items-center justify-center mb-4">
+                <div key={i} className="bg-white rounded-2xl border-2 border-violet-200 p-6 hover:shadow-lg hover:border-violet-400 transition-all">
+                  <div className="w-10 h-10 rounded-xl bg-violet-900 flex items-center justify-center mb-4">
                     <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={f.icon} /></svg>
                   </div>
-                  <h3 className="text-sm font-black text-purple-800 mb-1.5 uppercase">{f.title}</h3>
+                  <h3 className="text-sm font-black text-slate-900 mb-1.5 uppercase">{f.title}</h3>
                   <p className="text-xs text-gray-600 leading-relaxed">{f.desc}</p>
                 </div>
               ))}
@@ -428,15 +428,15 @@ const HomeDepEd = () => {
       {/* ═══════════════════════════════════════════════════════════ */}
       {/* PORTAL FEATURES */}
       {/* ═══════════════════════════════════════════════════════════ */}
-      <section className="py-16 md:py-20 bg-purple-700 relative overflow-hidden">
+      <section className="py-16 md:py-20 bg-violet-950 relative overflow-hidden">
         <div className="absolute inset-0 pointer-events-none opacity-5">
           <div className="absolute inset-0" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '60px 60px' }} />
         </div>
         <div className="relative max-w-7xl mx-auto px-4">
           <div className="text-center mb-12">
-            <p className="text-xs font-bold text-purple-200 uppercase tracking-widest mb-3">Digital Platform</p>
+            <p className="text-xs font-bold text-violet-200 uppercase tracking-widest mb-3">Digital Platform</p>
             <h2 className="text-3xl md:text-4xl font-black text-white mb-4 uppercase">Everything in One Portal</h2>
-            <p className="text-purple-100 max-w-xl mx-auto">Students, teachers, and administrators all have dedicated dashboards with the tools they need.</p>
+            <p className="text-violet-100 max-w-xl mx-auto">Students, teachers, and administrators all have dedicated dashboards with the tools they need.</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             {[
@@ -448,7 +448,7 @@ const HomeDepEd = () => {
                 <span className={`inline-block px-3 py-1 rounded-full text-xs font-black uppercase tracking-widest mb-4 border border-white/30 ${r.badge}`}>{r.role}</span>
                 <ul className="space-y-2.5">
                   {r.features.map((f, j) => (
-                    <li key={j} className="flex items-center gap-2.5 text-sm text-purple-100">
+                    <li key={j} className="flex items-center gap-2.5 text-sm text-violet-100">
                       <svg className="w-3.5 h-3.5 text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
                       {f}
                     </li>
@@ -458,7 +458,7 @@ const HomeDepEd = () => {
             ))}
           </div>
           <div className="text-center mt-10">
-            <Link to="/login" className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-white text-purple-700 text-sm font-black hover:bg-purple-50 transition-colors shadow-lg uppercase">
+            <Link to="/login" className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-white text-violet-900 text-sm font-black hover:bg-violet-50 transition-colors shadow-lg uppercase">
               Access the Portal
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4 4H3" /></svg>
             </Link>
@@ -473,8 +473,8 @@ const HomeDepEd = () => {
         <div className="max-w-7xl mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
             <div>
-              <p className="text-xs font-bold text-purple-600 uppercase tracking-widest mb-3">Find Us</p>
-              <h2 className="text-3xl md:text-4xl font-black text-purple-800 mb-5 leading-tight uppercase">
+              <p className="text-xs font-bold text-violet-800 uppercase tracking-widest mb-3">Find Us</p>
+              <h2 className="text-3xl md:text-4xl font-black text-slate-900 mb-5 leading-tight uppercase">
                 Visit Kiwalan<br />National High School
               </h2>
               <p className="text-gray-600 leading-relaxed mb-8">
@@ -487,25 +487,25 @@ const HomeDepEd = () => {
                   { icon: 'M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z', label: 'Email', value: 'info@kiwalan-nhs.edu.ph' },
                 ].map((item, i) => (
                   <div key={i} className="flex items-start gap-4">
-                    <div className="w-11 h-11 rounded-xl bg-purple-100 border-2 border-purple-200 flex items-center justify-center flex-shrink-0">
-                      <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="w-11 h-11 rounded-xl bg-violet-100 border-2 border-violet-200 flex items-center justify-center flex-shrink-0">
+                      <svg className="w-5 h-5 text-violet-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={item.icon} />
                       </svg>
                     </div>
                     <div>
-                      <p className="text-[10px] font-bold text-purple-600 uppercase tracking-widest mb-0.5">{item.label}</p>
+                      <p className="text-[10px] font-bold text-violet-800 uppercase tracking-widest mb-0.5">{item.label}</p>
                       <p className="text-sm font-bold text-gray-800">{item.value}</p>
                     </div>
                   </div>
                 ))}
               </div>
               <a href="https://maps.google.com/?q=Kiwalan+National+High+School+Iligan+City" target="_blank" rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 mt-8 px-6 py-3 rounded-xl bg-purple-600 text-white text-sm font-black hover:bg-purple-700 transition-colors shadow-sm uppercase">
+                className="inline-flex items-center gap-2 mt-8 px-6 py-3 rounded-xl bg-violet-900 text-white text-sm font-black hover:bg-violet-950 transition-colors shadow-sm uppercase">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
                 Open in Google Maps
               </a>
             </div>
-            <div className="rounded-2xl overflow-hidden border-2 border-purple-200 shadow-sm h-[380px]">
+            <div className="rounded-2xl overflow-hidden border-2 border-violet-200 shadow-sm h-[380px]">
               <iframe
                 title="Kiwalan National High School Location"
                 src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3948.2297046439908!2d124.27159847501021!3d8.27992249175451!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x325576cc580e692d%3A0x1ee65da2c86ad0a6!2sKiwalan%20National%20High%20School!5e0!3m2!1sen!2sph!4v1779569511724!5m2!1sen!2sph"
@@ -519,19 +519,19 @@ const HomeDepEd = () => {
       {/* ═══════════════════════════════════════════════════════════ */}
       {/* CTA */}
       {/* ═══════════════════════════════════════════════════════════ */}
-      <section className="py-16 md:py-20 bg-purple-50">
+      <section className="py-16 md:py-20 bg-slate-50">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="rounded-3xl bg-purple-700 px-8 py-14 md:px-16 md:py-20 relative overflow-hidden">
+          <div className="rounded-3xl bg-violet-950 px-8 py-14 md:px-16 md:py-20 relative overflow-hidden">
             <div className="absolute inset-0 pointer-events-none opacity-5">
               <div className="absolute inset-0" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '60px 60px' }} />
             </div>
             <div className="relative grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
               <div>
                 <h2 className="text-3xl md:text-4xl font-black text-white mb-4 leading-tight uppercase">Ready to Shape Your Future?</h2>
-                <p className="text-purple-100 leading-relaxed">Join a community dedicated to academic excellence and personal growth. Your journey starts here at Kiwalan NHS.</p>
+                <p className="text-violet-100 leading-relaxed">Join a community dedicated to academic excellence and personal growth. Your journey starts here at Kiwalan NHS.</p>
               </div>
               <div className="flex flex-wrap gap-3 lg:justify-end">
-                <Link to="/enroll" className="px-8 py-4 rounded-xl bg-white text-purple-700 text-sm font-black hover:bg-purple-50 transition-colors shadow-lg uppercase">
+                <Link to="/enroll" className="px-8 py-4 rounded-xl bg-white text-violet-900 text-sm font-black hover:bg-violet-50 transition-colors shadow-lg uppercase">
                   Enroll Now
                 </Link>
                 <Link to="/track-enrollment" className="px-8 py-4 rounded-xl border-2 border-white/40 text-white text-sm font-black hover:bg-white/10 transition-colors uppercase">
@@ -548,7 +548,7 @@ const HomeDepEd = () => {
 
       {/* Image zoom modal */}
       {zoomedImage && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-purple-900/80 backdrop-blur-sm" onClick={() => setZoomedImage(null)}>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-violet-950/85 backdrop-blur-sm" onClick={() => setZoomedImage(null)}>
           <button className="absolute top-4 right-4 p-2 rounded-full bg-white/20 text-white hover:bg-white/30 transition-colors" onClick={() => setZoomedImage(null)}>
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
           </button>

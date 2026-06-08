@@ -8,7 +8,7 @@ const STATUS_CONFIG = {
   pending_requirements: { color: 'bg-orange-500',  light: 'bg-orange-50 border-orange-300', text: 'text-orange-800',  label: 'Pending Requirements',   desc: 'Additional documents are required. Please check the remarks.',    icon: '📋' },
   approved:             { color: 'bg-green-600',   light: 'bg-green-50 border-green-300',   text: 'text-green-800',   label: 'Approved',               desc: 'Your application has been approved. Enrollment will proceed shortly.', icon: '✅' },
   rejected:             { color: 'bg-red-600',     light: 'bg-red-50 border-red-300',       text: 'text-red-800',     label: 'Rejected',               desc: 'Your application was not approved. See remarks for details.',     icon: '❌' },
-  enrolled:             { color: 'bg-purple-700',  light: 'bg-purple-50 border-purple-300', text: 'text-purple-800',  label: 'Enrolled',               desc: 'You are officially enrolled at Kiwalan National High School!',    icon: '🎓' },
+  enrolled:             { color: 'bg-violet-950',  light: 'bg-slate-50 border-violet-300', text: 'text-slate-900',  label: 'Enrolled',               desc: 'You are officially enrolled at Kiwalan National High School!',    icon: '🎓' },
 };
 
 const TIMELINE_STEPS = [
@@ -57,10 +57,10 @@ const EnrollmentTracking = () => {
       <div className="max-w-lg mx-auto px-4">
 
         {/* Official Header */}
-        <div className="bg-[#5e2a84] text-white text-center py-4 px-6 border-b-4 border-yellow-400 shadow-lg">
-          <p className="text-[9px] font-bold uppercase tracking-widest text-purple-200">Republic of the Philippines • Department of Education</p>
+        <div className="bg-violet-950 text-white text-center py-4 px-6 border-b-4 border-yellow-400 shadow-lg">
+          <p className="text-[9px] font-bold uppercase tracking-widest text-violet-200">Republic of the Philippines • Department of Education</p>
           <h1 className="text-base font-black uppercase tracking-tight mt-0.5">Kiwalan National High School</h1>
-          <p className="text-[9px] text-purple-200 uppercase">Iligan City, Lanao del Norte</p>
+          <p className="text-[9px] text-violet-200 uppercase">Iligan City, Lanao del Norte</p>
           <div className="mt-2 pt-2 border-t border-white/20">
             <p className="text-xs font-black uppercase tracking-widest">Enrollment Application Status</p>
           </div>
@@ -68,13 +68,13 @@ const EnrollmentTracking = () => {
 
         {/* Search Form */}
         <div className="bg-white border border-t-0 border-gray-300 shadow-md p-6">
-          <p className="text-[10px] font-black text-gray-600 uppercase tracking-widest border-b-2 border-purple-600 pb-2 mb-4">Track Your Application</p>
+          <p className="text-[10px] font-black text-gray-600 uppercase tracking-widest border-b-2 border-violet-800 pb-2 mb-4">Track Your Application</p>
           <form onSubmit={handleTrack} className="space-y-4">
             <div>
               <label className="block text-[10px] font-black text-gray-600 uppercase tracking-wider mb-1.5">Enrollment Reference Number</label>
               <input value={number} onChange={e => setNumber(e.target.value)}
                 placeholder="e.g. ENR-2026-000001"
-                className="w-full px-3 py-2.5 border border-gray-300 rounded-sm text-sm focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500 font-mono placeholder:text-gray-400" />
+                className="w-full px-3 py-2.5 border border-gray-300 rounded-sm text-sm focus:outline-none focus:ring-1 focus:ring-violet-700 focus:border-violet-700 font-mono placeholder:text-gray-400" />
             </div>
             <div className="flex items-center gap-3">
               <div className="flex-1 border-t border-gray-300" />
@@ -85,10 +85,10 @@ const EnrollmentTracking = () => {
               <label className="block text-[10px] font-black text-gray-600 uppercase tracking-wider mb-1.5">Email Address Used in Application</label>
               <input type="email" value={email} onChange={e => setEmail(e.target.value)}
                 placeholder="your@email.com"
-                className="w-full px-3 py-2.5 border border-gray-300 rounded-sm text-sm focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500 placeholder:text-gray-400" />
+                className="w-full px-3 py-2.5 border border-gray-300 rounded-sm text-sm focus:outline-none focus:ring-1 focus:ring-violet-700 focus:border-violet-700 placeholder:text-gray-400" />
             </div>
             <button type="submit" disabled={loading}
-              className="w-full py-3 bg-[#5e2a84] text-white text-xs font-black uppercase tracking-widest hover:bg-purple-700 disabled:opacity-50 transition-all rounded-sm">
+              className="w-full py-3 bg-violet-950 text-white text-xs font-black uppercase tracking-widest hover:bg-violet-950 disabled:opacity-50 transition-all rounded-sm">
               {loading ? (
                 <span className="flex items-center justify-center gap-2">
                   <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
@@ -123,30 +123,30 @@ const EnrollmentTracking = () => {
                 <div><p className="text-[9px] font-black text-gray-500 uppercase">Applicant</p><p className="font-black text-gray-900">{data.full_name}</p></div>
                 <div><p className="text-[9px] font-black text-gray-500 uppercase">Grade / Strand</p><p className="font-black text-gray-900">Grade {data.grade_level}{data.strand ? ` — ${data.strand}` : ''}</p></div>
                 <div><p className="text-[9px] font-black text-gray-500 uppercase">Date Submitted</p><p className="font-semibold text-gray-800">{new Date(data.submitted_at).toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'})}</p></div>
-                {data.assigned_classroom_name && <div><p className="text-[9px] font-black text-gray-500 uppercase">Assigned Section</p><p className="font-black text-purple-700">{data.assigned_classroom_name}</p></div>}
+                {data.assigned_classroom_name && <div><p className="text-[9px] font-black text-gray-500 uppercase">Assigned Section</p><p className="font-black text-violet-900">{data.assigned_classroom_name}</p></div>}
               </div>
             </div>
 
             {/* Credentials (enrolled only) */}
             {data.status === 'enrolled' && (
-              <div className="bg-purple-50 border border-t-0 border-purple-300 p-5">
-                <p className="text-[10px] font-black text-purple-700 uppercase tracking-widest border-b border-purple-200 pb-2 mb-4">Student Portal Login Credentials</p>
+              <div className="bg-slate-50 border border-t-0 border-violet-300 p-5">
+                <p className="text-[10px] font-black text-violet-900 uppercase tracking-widest border-b border-violet-200 pb-2 mb-4">Student Portal Login Credentials</p>
                 <div className="space-y-3">
                   {data.enrolled_student_email && (
-                    <div className="bg-white border border-purple-200 p-3">
+                    <div className="bg-white border border-violet-200 p-3">
                       <p className="text-[9px] font-black text-gray-500 uppercase mb-0.5">Email / Username</p>
                       <p className="text-base font-black text-gray-900 font-mono">{data.enrolled_student_email}</p>
                     </div>
                   )}
                   {data.temp_password_display && (
-                    <div className="bg-white border border-purple-200 p-3">
+                    <div className="bg-white border border-violet-200 p-3">
                       <p className="text-[9px] font-black text-gray-500 uppercase mb-0.5">Temporary Password</p>
-                      <p className="text-base font-black text-purple-800 font-mono tracking-wider">{data.temp_password_display}</p>
+                      <p className="text-base font-black text-slate-900 font-mono tracking-wider">{data.temp_password_display}</p>
                       <p className="text-[10px] text-amber-700 font-bold mt-1.5">⚠ Save this password. You will be required to change it upon first login.</p>
                     </div>
                   )}
                   {data.lrn && (
-                    <div className="bg-white border border-purple-200 p-3">
+                    <div className="bg-white border border-violet-200 p-3">
                       <p className="text-[9px] font-black text-gray-500 uppercase mb-0.5">Learner Reference Number (LRN)</p>
                       <p className="text-base font-black text-gray-900 font-mono">{data.lrn}</p>
                     </div>
@@ -176,11 +176,11 @@ const EnrollmentTracking = () => {
                     return (
                       <div key={tStep.key} className="flex gap-4">
                         <div className="flex flex-col items-center">
-                          <div className={`w-7 h-7 border-2 flex items-center justify-center flex-shrink-0 ${isCurrent ? 'border-purple-600 bg-purple-50' : isDone ? 'border-purple-700 bg-[#5e2a84]' : 'border-gray-300 bg-white'}`}>
+                          <div className={`w-7 h-7 border-2 flex items-center justify-center flex-shrink-0 ${isCurrent ? 'border-violet-800 bg-slate-50' : isDone ? 'border-violet-900 bg-violet-950' : 'border-gray-300 bg-white'}`}>
                             {isDone && !isCurrent && <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7"/></svg>}
-                            {isCurrent && <div className="w-2.5 h-2.5 rounded-full bg-purple-600 animate-pulse"/>}
+                            {isCurrent && <div className="w-2.5 h-2.5 rounded-full bg-violet-900 animate-pulse"/>}
                           </div>
-                          {i < TIMELINE_STEPS.length - 1 && <div className={`w-0.5 h-10 ${isDone && i < currentIdx ? 'bg-[#5e2a84]' : 'bg-gray-200'}`}/>}
+                          {i < TIMELINE_STEPS.length - 1 && <div className={`w-0.5 h-10 ${isDone && i < currentIdx ? 'bg-violet-950' : 'bg-gray-200'}`}/>}
                         </div>
                         <div className="pb-5">
                           <p className={`text-sm font-black uppercase ${isDone ? 'text-gray-900' : 'text-gray-400'}`}>{tStep.label}</p>
@@ -229,7 +229,7 @@ const EnrollmentTracking = () => {
                 <div className="space-y-1">
                   {data.status_history.slice().reverse().map(h => (
                     <div key={h.id} className="flex items-start gap-3 py-2 border-b border-gray-100 last:border-0">
-                      <div className="w-2 h-2 rounded-full bg-purple-500 mt-1.5 shrink-0"/>
+                      <div className="w-2 h-2 rounded-full bg-slate-500 mt-1.5 shrink-0"/>
                       <div>
                         <p className="text-sm font-black text-gray-800">{h.from_status_display || 'Submitted'} → {h.to_status_display}</p>
                         {h.notes && <p className="text-xs text-gray-500 mt-0.5">{h.notes}</p>}
@@ -243,15 +243,15 @@ const EnrollmentTracking = () => {
 
             {/* Actions */}
             <div className="bg-gray-50 border border-t-0 border-gray-300 p-4 flex gap-3">
-              <Link to="/enroll" className="flex-1 py-2.5 bg-[#5e2a84] text-white text-xs font-black text-center hover:bg-purple-700 uppercase tracking-widest rounded-sm">New Application</Link>
+              <Link to="/enroll" className="flex-1 py-2.5 bg-violet-950 text-white text-xs font-black text-center hover:bg-violet-950 uppercase tracking-widest rounded-sm">New Application</Link>
               <Link to="/" className="flex-1 py-2.5 border border-gray-300 bg-white text-gray-700 text-xs font-black text-center hover:bg-gray-50 uppercase tracking-widest rounded-sm">Return to Home</Link>
             </div>
           </div>
         )}
 
         {/* Footer */}
-        <div className="bg-[#5e2a84] text-center py-3">
-          <p className="text-[10px] text-purple-200 uppercase tracking-widest">
+        <div className="bg-violet-950 text-center py-3">
+          <p className="text-[10px] text-violet-200 uppercase tracking-widest">
             © {new Date().getFullYear()} Kiwalan National High School — Department of Education
           </p>
         </div>

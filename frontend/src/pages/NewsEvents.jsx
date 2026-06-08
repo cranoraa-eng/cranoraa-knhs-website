@@ -30,17 +30,17 @@ const NewsEvents = () => {
   return (
     <div className="bg-white">
       {/* Hero */}
-      <section className="bg-purple-700 py-16 md:py-20 relative overflow-hidden">
+      <section className="bg-violet-950 py-16 md:py-20 relative overflow-hidden">
         <div className="absolute inset-0 pointer-events-none opacity-5">
           <div className="absolute inset-0" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '60px 60px' }} />
         </div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-2xl">
-              <p className="text-xs font-bold text-purple-200 uppercase tracking-widest mb-4">What's Happening</p>
+              <p className="text-xs font-bold text-violet-200 uppercase tracking-widest mb-4">What's Happening</p>
               <h1 className="text-4xl md:text-5xl font-black text-white leading-tight mb-5 uppercase">
                 News & Events
               </h1>
-              <p className="text-purple-100 leading-relaxed text-lg">
+              <p className="text-violet-100 leading-relaxed text-lg">
                 Stay updated with the latest announcements, activities, and events at Kiwalan NHS
               </p>
             </div>
@@ -48,7 +48,7 @@ const NewsEvents = () => {
       </section>
 
       {/* Filters & Content */}
-      <section className="py-16 md:py-20 bg-purple-50">
+      <section className="py-16 md:py-20 bg-slate-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Filters */}
           <div className="flex flex-wrap gap-3 mb-10 justify-center">
@@ -64,8 +64,8 @@ const NewsEvents = () => {
                 onClick={() => setFilter(f.key)}
                 className={`px-6 py-2.5 rounded-xl font-bold text-sm uppercase transition-all ${
                   filter === f.key 
-                    ? 'bg-purple-600 text-white shadow-lg' 
-                    : 'bg-white text-purple-700 border-2 border-purple-200 hover:border-purple-400'
+                    ? 'bg-violet-900 text-white shadow-lg' 
+                    : 'bg-white text-violet-900 border-2 border-violet-200 hover:border-violet-400'
                 }`}
               >
                 {f.label}
@@ -76,8 +76,8 @@ const NewsEvents = () => {
           {/* Announcements Grid */}
           {filteredAnnouncements.length === 0 ? (
             <div className="text-center py-16">
-              <div className="w-20 h-20 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-10 h-10 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-20 h-20 bg-violet-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="w-10 h-10 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
                 </svg>
               </div>
@@ -86,12 +86,12 @@ const NewsEvents = () => {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredAnnouncements.map(announcement => (
-                <div key={announcement.id} className="bg-white rounded-2xl border-2 border-purple-200 overflow-hidden hover:shadow-xl transition-all group">
+                <div key={announcement.id} className="bg-white rounded-2xl border-2 border-violet-200 overflow-hidden hover:shadow-xl transition-all group">
                   <div className={`h-2 ${
                     announcement.category === 'emergency' ? 'bg-red-500' :
                     announcement.category === 'events' ? 'bg-green-500' :
                     announcement.category === 'holiday' ? 'bg-yellow-500' :
-                    'bg-purple-500'
+                    'bg-slate-500'
                   }`} />
                   <div className="p-6">
                     <div className="flex items-start justify-between mb-3">
@@ -99,7 +99,7 @@ const NewsEvents = () => {
                         announcement.category === 'emergency' ? 'bg-red-100 text-red-700' :
                         announcement.category === 'events' ? 'bg-green-100 text-green-700' :
                         announcement.category === 'holiday' ? 'bg-yellow-100 text-yellow-700' :
-                        'bg-purple-100 text-purple-700'
+                        'bg-violet-100 text-violet-900'
                       }`}>
                         {announcement.category}
                       </span>
@@ -107,14 +107,14 @@ const NewsEvents = () => {
                         {new Date(announcement.created_at).toLocaleDateString()}
                       </span>
                     </div>
-                    <h3 className="text-lg font-black text-purple-800 mb-3 group-hover:text-purple-600 transition-colors">
+                    <h3 className="text-lg font-black text-slate-900 mb-3 group-hover:text-violet-900 transition-colors">
                       {announcement.title}
                     </h3>
                     <p className="text-sm text-gray-700 leading-relaxed line-clamp-3 mb-4">
                       {announcement.content}
                     </p>
                     {announcement.event_date && (
-                      <div className="flex items-center gap-2 text-purple-600 text-sm font-bold">
+                      <div className="flex items-center gap-2 text-violet-800 text-sm font-bold">
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
@@ -130,11 +130,11 @@ const NewsEvents = () => {
       </section>
 
       {/* Calendar CTA */}
-      <section className="py-16 bg-purple-700 text-white">
+      <section className="py-16 bg-violet-950 text-white">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <h2 className="text-3xl font-black mb-4 uppercase">View Full Calendar</h2>
-          <p className="text-purple-100 mb-6">Check all upcoming events, holidays, and important dates</p>
-          <Link to="/calendar" className="inline-flex items-center gap-2 px-8 py-4 bg-white text-purple-700 rounded-xl font-black hover:bg-purple-50 transition-colors uppercase">
+          <p className="text-violet-100 mb-6">Check all upcoming events, holidays, and important dates</p>
+          <Link to="/calendar" className="inline-flex items-center gap-2 px-8 py-4 bg-white text-violet-900 rounded-xl font-black hover:bg-violet-50 transition-colors uppercase">
             Open School Calendar
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />

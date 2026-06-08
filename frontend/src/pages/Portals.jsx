@@ -38,7 +38,7 @@ const Portals = () => {
 
   const getColorClasses = (color) => {
     const colors = {
-      purple: 'from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800',
+      purple: 'from-violet-900 to-violet-950 hover:from-violet-900 hover:to-violet-900',
       blue: 'from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800',
       green: 'from-green-600 to-green-700 hover:from-green-700 hover:to-green-800',
       red: 'from-red-600 to-red-700 hover:from-red-700 hover:to-red-800'
@@ -49,17 +49,17 @@ const Portals = () => {
   return (
     <div className="bg-white">
       {/* Hero */}
-      <section className="bg-purple-700 py-16 md:py-20 relative overflow-hidden">
+      <section className="bg-violet-950 py-16 md:py-20 relative overflow-hidden">
         <div className="absolute inset-0 pointer-events-none opacity-5">
           <div className="absolute inset-0" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '60px 60px' }} />
         </div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-2xl">
-              <p className="text-xs font-bold text-purple-200 uppercase tracking-widest mb-4">Online Access</p>
+              <p className="text-xs font-bold text-violet-200 uppercase tracking-widest mb-4">Online Access</p>
               <h1 className="text-4xl md:text-5xl font-black text-white leading-tight mb-5 uppercase">
                 Portals & Systems
               </h1>
-              <p className="text-purple-100 leading-relaxed text-lg">
+              <p className="text-violet-100 leading-relaxed text-lg">
                 Access official school and DepEd online systems
               </p>
             </div>
@@ -67,7 +67,7 @@ const Portals = () => {
       </section>
 
       {/* Portals Grid */}
-      <section className="py-16 md:py-20 bg-purple-50">
+      <section className="py-16 md:py-20 bg-slate-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {portals.map((portal, i) => (
@@ -130,11 +130,11 @@ const Portals = () => {
       {/* Support */}
       <section className="py-16 bg-white">
         <div className="max-w-4xl mx-auto px-4 text-center">
-          <h2 className="text-3xl font-black text-purple-800 mb-4 uppercase">Need Help?</h2>
+          <h2 className="text-3xl font-black text-slate-900 mb-4 uppercase">Need Help?</h2>
           <p className="text-gray-700 mb-6">
             For portal access issues or technical support, please contact the school ICT office during office hours.
           </p>
-          <Link to="/contact" className="inline-flex items-center gap-2 px-8 py-4 bg-purple-600 text-white rounded-xl font-black hover:bg-purple-700 transition-colors uppercase">
+          <Link to="/contact" className="inline-flex items-center gap-2 px-8 py-4 bg-violet-900 text-white rounded-xl font-black hover:bg-violet-950 transition-colors uppercase">
             Contact ICT Support
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
