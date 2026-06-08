@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { useState, useEffect, useMemo } from 'react';
 import api from '../utils/api';
 import { LoadingSpinner } from '../components/ui';
+import { motion } from 'framer-motion';
 
 // ── Mini Calendar Component ──────────────────────────────────────────
 const MiniCalendar = ({ events, onSelectDay }) => {
@@ -137,19 +138,41 @@ const Home = () => {
       {/* ── HERO SECTION - Clean & Professional ── */}
       <section className="relative bg-gradient-to-br from-violet-50 via-white to-violet-50/30 py-20 md:py-28 overflow-hidden">
         {/* Decorative elements */}
-        <div className="absolute top-0 right-0 w-96 h-96 bg-violet-100/40 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-        <div className="absolute bottom-0 left-0 w-64 h-64 bg-violet-100/30 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 1.5, ease: "easeOut" }}
+          className="absolute top-0 right-0 w-96 h-96 bg-violet-100/40 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" 
+        />
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 1.5, ease: "easeOut", delay: 0.2 }}
+          className="absolute bottom-0 left-0 w-64 h-64 bg-violet-100/30 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" 
+        />
         
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             
             {/* Left - Content */}
-            <div className="text-center lg:text-left">
+            <motion.div 
+              initial={{ opacity: 0, x: -30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+              className="text-center lg:text-left"
+            >
               {/* Enrollment Badge */}
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border-2 border-violet-200 shadow-sm mb-6">
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.2 }}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border-2 border-violet-200 shadow-sm mb-6"
+              >
                 <span className="w-2 h-2 rounded-full bg-violet-500 animate-pulse" />
                 <span className="text-xs font-bold text-violet-700 uppercase tracking-wider">Enrollment Open • SY 2026-2027</span>
-              </div>
+              </motion.div>
 
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-slate-900 leading-tight mb-6">
                 {content.home_hero_title?.content || 'Kiwalan National High School'}
@@ -161,11 +184,11 @@ const Home = () => {
 
               {/* CTA Buttons */}
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-10">
-                <Link to="/enroll" className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-violet-600 text-white font-bold hover:bg-violet-700 transition-all shadow-lg shadow-violet-600/30 hover:shadow-xl hover:shadow-violet-600/40">
+                <Link to="/enroll" className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-violet-600 text-white font-bold hover:bg-violet-700 transition-all shadow-lg shadow-violet-600/30 hover:shadow-xl hover:shadow-violet-600/40 hover:scale-105 active:scale-95">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
                   Apply for Enrollment
                 </Link>
-                <Link to="/login" className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl border-2 border-violet-600 text-violet-700 font-bold hover:bg-violet-50 transition-all">
+                <Link to="/login" className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl border-2 border-violet-600 text-violet-700 font-bold hover:bg-violet-50 transition-all hover:scale-105 active:scale-95">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" /></svg>
                   Student Portal
                 </Link>
@@ -179,16 +202,29 @@ const Home = () => {
                   { val: '5,000+', label: 'Graduates' },
                   { val: '20+', label: 'Years' },
                 ].map((stat, i) => (
-                  <div key={i} className="text-center">
+                  <motion.div 
+                    key={i} 
+                    initial={{ opacity: 0, y: 10 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.4 + (i * 0.1) }}
+                    className="text-center"
+                  >
                     <p className="text-2xl md:text-3xl font-black text-violet-600">{stat.val}</p>
                     <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mt-1">{stat.label}</p>
-                  </div>
+                  </motion.div>
                 ))}
               </div>
-            </div>
+            </motion.div>
 
             {/* Right - School Image/Badge */}
-            <div className="hidden lg:flex justify-center">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9, x: 30 }}
+              whileInView={{ opacity: 1, scale: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8, type: "spring" }}
+              className="hidden lg:flex justify-center"
+            >
               <div className="relative">
                 {/* Main Card */}
                 <div className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl border-4 border-violet-100 p-8 overflow-hidden">
@@ -209,27 +245,46 @@ const Home = () => {
                       { label: 'DepEd Recognized', icon: 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253', color: 'text-violet-600 bg-violet-50' },
                       { label: 'Excellence Award', icon: 'M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z', color: 'text-amber-600 bg-amber-50' },
                     ].map((badge, i) => (
-                      <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100">
+                      <motion.div 
+                        key={i} 
+                        initial={{ opacity: 0, x: 20 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: 0.6 + (i * 0.1) }}
+                        className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100"
+                      >
                         <div className={`w-10 h-10 rounded-lg ${badge.color} flex items-center justify-center flex-shrink-0`}>
                           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={badge.icon} /></svg>
                         </div>
                         <span className="text-sm font-bold text-slate-700">{badge.label}</span>
-                      </div>
+                      </motion.div>
                     ))}
                   </div>
                 </div>
 
                 {/* Floating Stats */}
-                <div className="absolute -top-6 -right-6 bg-white rounded-2xl shadow-xl border border-slate-100 px-5 py-3">
+                <motion.div 
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 1, duration: 0.5 }}
+                  className="absolute -top-6 -right-6 bg-white rounded-2xl shadow-xl border border-slate-100 px-5 py-3"
+                >
                   <p className="text-2xl font-black text-violet-600">98%</p>
                   <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Pass Rate</p>
-                </div>
-                <div className="absolute -bottom-6 -left-6 bg-white rounded-2xl shadow-xl border border-slate-100 px-5 py-3">
+                </motion.div>
+                <motion.div 
+                  initial={{ opacity: 0, y: -20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 1.2, duration: 0.5 }}
+                  className="absolute -bottom-6 -left-6 bg-white rounded-2xl shadow-xl border border-slate-100 px-5 py-3"
+                >
                   <p className="text-2xl font-black text-emerald-600">A+</p>
                   <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Rating</p>
-                </div>
+                </motion.div>
               </div>
-            </div>
+            </motion.div>
 
           </div>
         </div>
@@ -238,11 +293,16 @@ const Home = () => {
       {/* ── FEATURES ── */}
       <section className="py-20 md:py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-12"
+          >
             <p className="text-xs font-bold text-violet-600 uppercase tracking-widest mb-3">Why Choose KNHS</p>
             <h2 className="text-3xl md:text-4xl font-black text-slate-900 mb-4">Excellence in Education</h2>
             <p className="text-slate-600 max-w-2xl mx-auto">A holistic learning environment that combines academic rigor with character building</p>
-          </div>
+          </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
@@ -271,13 +331,20 @@ const Home = () => {
                 color: 'bg-blue-50 text-blue-600'
               },
             ].map((feature, i) => (
-              <div key={i} className="bg-slate-50 rounded-2xl border-2 border-slate-100 p-6 hover:border-violet-200 hover:shadow-lg transition-all group">
+              <motion.div 
+                key={i} 
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1 }}
+                className="bg-slate-50 rounded-2xl border-2 border-slate-100 p-6 hover:border-violet-200 hover:shadow-lg transition-all group"
+              >
                 <div className={`w-12 h-12 rounded-xl ${feature.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={feature.icon} /></svg>
                 </div>
                 <h3 className="text-lg font-bold text-slate-900 mb-2">{feature.title}</h3>
                 <p className="text-sm text-slate-600 leading-relaxed">{feature.desc}</p>
-              </div>
+              </motion.div>
             ))}
           </div>
 
@@ -293,7 +360,12 @@ const Home = () => {
       {/* ── ANNOUNCEMENTS & EVENTS ── */}
       <section className="py-20 md:py-24 bg-slate-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-end justify-between mb-10">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="flex items-end justify-between mb-10"
+          >
             <div>
               <p className="text-xs font-bold text-violet-600 uppercase tracking-widest mb-2">Stay Updated</p>
               <h2 className="text-3xl md:text-4xl font-black text-slate-900">Announcements & Events</h2>
@@ -301,17 +373,24 @@ const Home = () => {
             <Link to="/calendar" className="text-sm font-bold text-violet-600 hover:text-violet-700 transition-colors">
               Full Calendar →
             </Link>
-          </div>
+          </motion.div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Announcements */}
             <div className="lg:col-span-2 space-y-4">
-              {generalAnnouncements.length > 0 ? generalAnnouncements.map(a => {
+              {generalAnnouncements.length > 0 ? generalAnnouncements.map((a, i) => {
                 const imageUrl = getFirstImage(a);
                 const pdfs = getPDFs(a);
                 const catStyle = CATEGORY_STYLES[a.category] || 'bg-slate-50 text-slate-600 border-slate-100';
                 return (
-                  <div key={a.id} className="group bg-white rounded-2xl border border-slate-100 hover:border-violet-200 hover:shadow-md transition-all p-5 flex gap-4">
+                  <motion.div 
+                    key={a.id} 
+                    initial={{ opacity: 0, x: -20 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: i * 0.1 }}
+                    className="group bg-white rounded-2xl border border-slate-100 hover:border-violet-200 hover:shadow-md transition-all p-5 flex gap-4"
+                  >
                     {imageUrl && (
                       <button onClick={() => setZoomedImage(imageUrl)} className="flex-shrink-0 w-20 h-20 rounded-xl overflow-hidden border border-slate-100">
                         <img src={imageUrl} alt={a.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
@@ -335,7 +414,7 @@ const Home = () => {
                         </div>
                       )}
                     </div>
-                  </div>
+                  </motion.div>
                 );
               }) : (
                 <div className="col-span-3 text-center py-12 bg-white rounded-2xl border-2 border-slate-100">
@@ -385,21 +464,38 @@ const Home = () => {
       {/* ── PORTAL FEATURES SHOWCASE ── */}
       <section className="py-20 md:py-24 bg-[#0f0720] relative overflow-hidden">
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-violet-600/10 rounded-full blur-3xl translate-x-1/3 -translate-y-1/3" />
+          <motion.div 
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            transition={{ duration: 1.5 }}
+            className="absolute top-0 right-0 w-[600px] h-[600px] bg-violet-600/10 rounded-full blur-3xl translate-x-1/3 -translate-y-1/3" 
+          />
         </div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-12"
+          >
             <p className="text-xs font-bold text-violet-400 uppercase tracking-widest mb-3">Digital Platform</p>
             <h2 className="text-3xl md:text-4xl font-black text-white mb-4">Everything in one portal</h2>
             <p className="text-slate-400 max-w-xl mx-auto">Students, teachers, and administrators all have dedicated dashboards with the tools they need.</p>
-          </div>
+          </motion.div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             {[
               { role: 'Students', color: 'border-violet-500/30 bg-violet-500/5', badge: 'bg-violet-500/20 text-violet-300', features: ['View grades & report cards', 'Track attendance records', 'Access learning materials', 'Receive announcements', 'Message teachers & peers'] },
               { role: 'Teachers', color: 'border-violet-500/30 bg-violet-500/5', badge: 'bg-violet-500/20 text-violet-300', features: ['Input & manage grades', 'Record attendance', 'Upload learning materials', 'Post announcements', 'Communicate with students'] },
               { role: 'Administrators', color: 'border-emerald-500/30 bg-emerald-500/5', badge: 'bg-emerald-500/20 text-emerald-300', features: ['Manage all users & classes', 'View analytics & reports', 'Control enrollment', 'System settings & audit logs', 'Backup & maintenance tools'] },
             ].map((r, i) => (
-              <div key={i} className={`rounded-2xl border ${r.color} p-6`}>
+              <motion.div 
+                key={i} 
+                initial={{ opacity: 0, scale: 0.95 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1 }}
+                className={`rounded-2xl border ${r.color} p-6`}
+              >
                 <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest mb-4 ${r.badge}`}>{r.role}</span>
                 <ul className="space-y-2.5">
                   {r.features.map((f, j) => (
@@ -409,7 +505,7 @@ const Home = () => {
                     </li>
                   ))}
                 </ul>
-              </div>
+              </motion.div>
             ))}
           </div>
           <div className="text-center mt-10">
@@ -427,7 +523,11 @@ const Home = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
 
             {/* Info side */}
-            <div>
+            <motion.div
+              initial={{ opacity: 0, x: -30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+            >
               <p className="text-xs font-bold text-violet-600 uppercase tracking-widest mb-3">Find Us</p>
               <h2 className="text-3xl md:text-4xl font-black text-slate-900 mb-5 leading-tight">
                 Visit Kiwalan<br />National High School
@@ -444,45 +544,50 @@ const Home = () => {
                     value: 'Kiwalan, Iligan City, Lanao del Norte, Philippines',
                   },
                   {
+                    icon: 'M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z',
+                    label: 'Email Support',
+                    value: 'info@kiwalan-nhs.edu.ph',
+                  },
+                  {
                     icon: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z',
                     label: 'Office Hours',
                     value: 'Monday – Friday, 7:00 AM – 5:00 PM',
                   },
-                  {
-                    icon: 'M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z',
-                    label: 'Email',
-                    value: 'info@kiwalan-nhs.edu.ph',
-                  },
                 ].map((item, i) => (
-                  <div key={i} className="flex items-start gap-4">
-                    <div className="w-10 h-10 rounded-xl bg-violet-50 border border-violet-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <svg className="w-4 h-4 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={item.icon} />
-                      </svg>
+                  <div key={i} className="flex gap-4">
+                    <div className="w-10 h-10 rounded-xl bg-violet-50 flex items-center justify-center flex-shrink-0">
+                      <svg className="w-5 h-5 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={item.icon} /></svg>
                     </div>
                     <div>
-                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">{item.label}</p>
-                      <p className="text-sm font-semibold text-slate-800">{item.value}</p>
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{item.label}</p>
+                      <p className="text-sm font-bold text-slate-700 mt-0.5">{item.value}</p>
                     </div>
                   </div>
                 ))}
               </div>
 
-              <a
+              <motion.a
                 href="https://maps.google.com/?q=Kiwalan+National+High+School+Iligan+City"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 mt-8 px-5 py-2.5 rounded-xl bg-violet-600 text-white text-sm font-bold hover:bg-violet-500 transition-colors shadow-sm"
+                initial={{ opacity: 0, y: 10 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.4 }}
+                className="inline-flex items-center gap-2 mt-8 px-6 py-3 rounded-xl bg-violet-600 text-white text-sm font-bold hover:bg-violet-700 transition-all shadow-md hover:shadow-lg active:scale-95"
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
                 Open in Google Maps
-              </a>
-            </div>
+              </motion.a>
+            </motion.div>
 
             {/* Map side */}
-            <div className="rounded-2xl overflow-hidden border border-slate-100 shadow-sm h-[380px] bg-slate-50">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              className="relative aspect-video lg:aspect-square bg-slate-100 rounded-3xl overflow-hidden border-8 border-slate-50 shadow-inner group"
+            >
               <iframe
                 title="Kiwalan National High School Location"
                 src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3948.2297046439908!2d124.27159847501021!3d8.27992249175451!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x325576cc580e692d%3A0x1ee65da2c86ad0a6!2sKiwalan%20National%20High%20School!5e0!3m2!1sen!2sph!4v1779569511724!5m2!1sen!2sph"
@@ -493,7 +598,7 @@ const Home = () => {
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
               />
-            </div>
+            </motion.div>
           </div>
         </div>
       </section>
@@ -501,27 +606,40 @@ const Home = () => {
       {/* ── CTA SECTION ── */}
       <section className="py-20 md:py-24 bg-gradient-to-br from-violet-600 to-violet-700 relative overflow-hidden">
         <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-0 right-0 w-96 h-96 bg-white rounded-full blur-3xl" />
-          <div className="absolute bottom-0 left-0 w-96 h-96 bg-white rounded-full blur-3xl" />
+          <motion.div 
+            animate={{ scale: [1, 1.2, 1], opacity: [0.1, 0.2, 0.1] }}
+            transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute top-0 right-0 w-96 h-96 bg-white rounded-full blur-3xl" 
+          />
+          <motion.div 
+            animate={{ scale: [1, 1.3, 1], opacity: [0.1, 0.15, 0.1] }}
+            transition={{ duration: 12, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+            className="absolute bottom-0 left-0 w-96 h-96 bg-white rounded-full blur-3xl" 
+          />
         </div>
         
-        <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.9 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true }}
+          className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center"
+        >
           <h2 className="text-3xl md:text-5xl font-black text-white mb-6">Ready to Join KNHS?</h2>
           <p className="text-lg md:text-xl text-violet-100 mb-10 max-w-2xl mx-auto">
             Start your journey towards excellence. Enrollment for SY 2026-2027 is now open.
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/enroll" className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-white text-violet-700 font-bold hover:bg-violet-50 transition-all shadow-2xl">
+            <Link to="/enroll" className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-white text-violet-700 font-bold hover:bg-violet-50 transition-all shadow-2xl hover:scale-105 active:scale-95">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
               Apply Now
             </Link>
-            <Link to="/contact" className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl border-2 border-white text-white font-bold hover:bg-white/10 transition-all">
+            <Link to="/contact" className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl border-2 border-white text-white font-bold hover:bg-white/10 transition-all hover:scale-105 active:scale-95">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
               Contact Us
             </Link>
           </div>
-        </div>
+        </motion.div>
       </section>
 
       {/* Image zoom modal */}
