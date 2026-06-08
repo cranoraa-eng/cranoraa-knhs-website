@@ -97,6 +97,19 @@ const Login = () => {
   // Reset fields when switching role
   useEffect(() => { setIdentifier(''); setPassword(''); setFieldErrors({}); }, [loginType]);
 
+  const handleForgotClick = () => {
+    Swal.fire({
+      icon: 'info',
+      title: 'Password Reset',
+      text: 'Please contact the ICT coordinator for password reset.',
+      confirmButtonColor: '#0f172a', // Matching the dark theme of the login button
+      customClass: {
+        popup: 'rounded-lg', // Matching the new "less roundy" UI
+        confirmButton: 'rounded-md uppercase text-xs font-black tracking-widest px-6 py-3'
+      }
+    });
+  };
+
   const validate = () => {
     const errors = {};
     if (!identifier.trim()) errors.identifier = `${role.identifierLabel} is required`;
@@ -279,7 +292,13 @@ const Login = () => {
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between px-1">
                   <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Password</label>
-                  <button type="button" className={`text-[10px] font-black ${role.theme.text} uppercase tracking-widest hover:underline`}>Forgot?</button>
+                  <button 
+                    type="button" 
+                    onClick={handleForgotClick}
+                    className={`text-[10px] font-black ${role.theme.text} uppercase tracking-widest hover:underline`}
+                  >
+                    Forgot?
+                  </button>
                 </div>
                 <div className="relative group">
                   <div className={`absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:${role.theme.text} transition-colors`}>
