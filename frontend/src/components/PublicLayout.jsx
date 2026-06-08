@@ -135,7 +135,7 @@ const PublicLayout = () => {
 
         <nav ref={navRef} className="border-t border-slate-200 bg-violet-950 text-white">
           <div className="max-w-7xl mx-auto px-4">
-            <div className="flex items-center justify-between gap-3 h-14 relative">
+            <div className="flex items-center justify-between gap-3 h-14">
               <div className="flex items-center gap-1 lg:flex-none">
                 <Link
                   to="/"
@@ -154,7 +154,7 @@ const PublicLayout = () => {
                         <Link
                           key={item.key}
                           to={item.to}
-                          className={`px-4 xl:px-5 h-14 inline-flex items-center text-[13px] font-black uppercase tracking-[0.12em] transition-colors ${
+                          className={`px-3 xl:px-5 h-14 inline-flex items-center text-[13px] font-black uppercase tracking-[0.12em] transition-colors ${
                             isActive(item.to) ? 'bg-violet-900 text-white' : 'text-violet-100 hover:bg-violet-900'
                           }`}
                         >
@@ -171,7 +171,7 @@ const PublicLayout = () => {
                         onMouseLeave={() => setDesktopDropdown('')}
                       >
                         <button
-                          className={`px-4 xl:px-5 h-14 inline-flex items-center gap-2 text-[13px] font-black uppercase tracking-[0.12em] transition-colors ${
+                          className={`px-3 xl:px-5 h-14 inline-flex items-center gap-2 text-[13px] font-black uppercase tracking-[0.12em] transition-colors ${
                             isGroupActive(item.children) || desktopDropdown === item.key
                               ? 'bg-violet-900 text-white'
                               : 'text-violet-100 hover:bg-violet-900'
@@ -214,23 +214,12 @@ const PublicLayout = () => {
                 </div>
               </div>
 
-              {!user && (
-                <div className="flex flex-1 justify-center lg:absolute lg:left-1/2 lg:top-1/2 lg:-translate-x-1/2 lg:-translate-y-1/2">
-                  <Link
-                    to="/login"
-                    className="inline-flex min-w-[136px] items-center justify-center rounded-xl bg-violet-800 px-4 py-2 text-center text-[11px] font-black uppercase tracking-[0.14em] hover:bg-violet-700 transition-all hover:scale-105 active:scale-95 shadow-lg shadow-violet-900/20"
-                  >
-                    Portal Login
-                  </Link>
-                </div>
-              )}
-
               <div className="hidden lg:flex items-center gap-3">
                 <div className="relative">
                   <input
                     type="text"
                     placeholder="Search public website"
-                    className="w-64 rounded-full border border-violet-800 bg-violet-900/80 py-2 pl-10 pr-4 text-sm text-white placeholder:text-violet-300 focus:border-violet-300 focus:bg-violet-900"
+                    className="w-48 xl:w-64 rounded-full border border-violet-800 bg-violet-900/80 py-2 pl-10 pr-4 text-sm text-white placeholder:text-violet-300 focus:border-violet-300 focus:bg-violet-900 transition-all"
                   />
                   <svg className="absolute left-3 top-1/2 w-4 h-4 -translate-y-1/2 text-violet-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -288,7 +277,14 @@ const PublicLayout = () => {
                       )}
                     </AnimatePresence>
                   </div>
-                ) : null}
+                ) : (
+                  <Link
+                    to="/login"
+                    className="inline-flex items-center justify-center rounded-lg bg-violet-700 px-6 py-2 text-xs font-bold uppercase tracking-wider text-white hover:bg-violet-600 transition-all hover:scale-105 active:scale-95 shadow-md shadow-violet-950/20 border border-violet-500/30"
+                  >
+                    Portal Login
+                  </Link>
+                )}
               </div>
 
               <div className={`flex items-center justify-end gap-2 lg:hidden ${user ? 'flex-1' : ''}`}>
