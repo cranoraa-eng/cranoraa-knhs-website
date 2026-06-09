@@ -84,6 +84,12 @@ const Analytics = lazy(() => import('./pages/Analytics'));
 const SystemHealth = lazy(() => import('./pages/SystemHealth'));
 const Notifications = lazy(() => import('./pages/Notifications'));
 const Messages = lazy(() => import('./pages/Messages'));
+const AcademicsHub = lazy(() => import('./pages/AcademicsHub'));
+const EnrollmentClassesHub = lazy(() => import('./pages/EnrollmentClassesHub'));
+const GradingSuite = lazy(() => import('./pages/GradingSuite'));
+const PeopleDirectory = lazy(() => import('./pages/PeopleDirectory'));
+const SystemAdminHub = lazy(() => import('./pages/SystemAdminHub'));
+const CommunicationCenter = lazy(() => import('./pages/CommunicationCenter'));
 const ScheduleManagement = lazy(() => import('./pages/ScheduleManagement'));
 const MySchedule = lazy(() => import('./pages/MySchedule'));
 const ParentDashboard = lazy(() => import('./pages/ParentDashboard'));
@@ -200,6 +206,12 @@ function App() {
                 }
               >
                 <Route path="dashboard" element={<Dashboard />} />
+                <Route path="academics-hub" element={<AcademicsHub />} />
+                <Route path="enrollment-classes" element={<EnrollmentClassesHub />} />
+                <Route path="grading-suite" element={<GradingSuite />} />
+                <Route path="people-directory" element={<PeopleDirectory />} />
+                <Route path="system-admin" element={<SystemAdminHub />} />
+                <Route path="communication-center" element={<CommunicationCenter />} />
                 <Route path="announcements" element={<Announcements />} />
                 <Route path="grades" element={<Navigate to="/grade-management" replace />} />
                 <Route path="attendance" element={<Attendance />} />

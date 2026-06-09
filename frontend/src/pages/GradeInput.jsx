@@ -476,7 +476,7 @@ const GradeInput = () => {
       {/* ══════════════════════════════════════════════════════════════ */}
 
       {selClassroom && selSubject && students.length > 0 && scores.length > 0 && (
-        <div className="flex-shrink-0 px-4 py-3 md:px-6 bg-violet-50 border-b border-blue-100">
+        <div className="flex-shrink-0 px-4 py-3 md:px-6 bg-violet-50 border-b border-violet-100">
           <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
             <div className="text-center">
               <div className="text-xl md:text-2xl font-extrabold text-violet-600">
@@ -667,7 +667,7 @@ const GradeInput = () => {
                                     placeholder="0-100"
                                     className={`w-full px-3 py-2 text-center font-mono text-sm font-bold border-2 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 transition-all ${
                                       isOver ? 'border-red-500 bg-red-50 text-red-700' :
-                                      isActive ? 'border-blue-500 bg-white' :
+                                      isActive ? 'border-violet-500 bg-white' :
                                       'border-slate-200 bg-white'
                                     }`}
                                   />

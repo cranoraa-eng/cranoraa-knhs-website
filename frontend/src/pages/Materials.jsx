@@ -228,7 +228,7 @@ const Materials = () => {
       ) : materials.length === 0 ? (
         <EmptyState
           icon={
-            <svg className="w-10 h-10 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-10 h-10 text-violet-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
             </svg>
           }
@@ -240,7 +240,7 @@ const Materials = () => {
           {materials.map((material) => {
             const config = MATERIAL_TYPE_CONFIG[material.material_type] || MATERIAL_TYPE_CONFIG.other;
             return (
-              <div key={material.id} className="group bg-white border border-slate-100 rounded-2xl p-5 hover:shadow-xl hover:shadow-purple-500/5 transition-all duration-300 relative">
+              <div key={material.id} className="group bg-white border border-slate-100 rounded-2xl p-5 hover:shadow-xl hover:shadow-violet-500/5 transition-all duration-300 relative">
                 <div className="flex items-start justify-between mb-4">
                   <div className={`p-2.5 rounded-xl ${config.color.split(' ')[0]} ${config.color.split(' ')[1]}`}>
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -305,7 +305,7 @@ const Materials = () => {
 
                 <div className="flex items-center justify-between pt-4 border-t border-slate-50">
                   <div className="flex items-center gap-2">
-                    <div className="w-7 h-7 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white text-[10px] font-bold">
+                    <div className="w-7 h-7 rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-white text-[10px] font-bold">
                       {(material.uploaded_by_name || 'U').charAt(0).toUpperCase()}
                     </div>
                     <div className="flex flex-col">
@@ -341,7 +341,7 @@ const Materials = () => {
         <div className="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center p-4">
           <div className="bg-white w-full max-w-lg border border-gray-300 shadow-2xl rounded-sm flex flex-col max-h-[92vh]" onClick={e => e.stopPropagation()}>
             {/* Modal Header */}
-            <div className="bg-[#5e2a84] flex items-center justify-between px-5 py-3 flex-shrink-0 border-b-2 border-purple-900">
+            <div className="bg-[#5e2a84] flex items-center justify-between px-5 py-3 flex-shrink-0 border-b-2 border-violet-900">
               <div className="flex items-center gap-3 min-w-0">
                 <div className="w-7 h-7 rounded-full bg-white/20 border border-white/30 flex items-center justify-center flex-shrink-0">
                   <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -350,7 +350,7 @@ const Materials = () => {
                 </div>
                 <div>
                   <h2 className="text-sm font-black text-white uppercase tracking-widest leading-none">Upload Learning Material</h2>
-                  <p className="text-purple-200 text-[10px] mt-0.5 font-medium uppercase tracking-wide">Publish Educational Resource</p>
+                  <p className="text-violet-200 text-[10px] mt-0.5 font-medium uppercase tracking-wide">Publish Educational Resource</p>
                 </div>
               </div>
               <button type="button" onClick={() => setShowUploadModal(false)}
@@ -370,7 +370,7 @@ const Materials = () => {
                   </label>
                   <input type="text" required placeholder="e.g., Advanced Calculus - Unit 1"
                     value={newMaterial.title} onChange={(e) => setNewMaterial({ ...newMaterial, title: e.target.value })}
-                    className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500 placeholder:text-gray-400" />
+                    className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500 placeholder:text-gray-400" />
                 </div>
 
                 {/* Description Field */}
@@ -378,7 +378,7 @@ const Materials = () => {
                   <label className="block text-xs font-black text-gray-700 uppercase tracking-wider mb-1.5">Description</label>
                   <textarea rows={2} placeholder="Describe the learning objectives or content..."
                     value={newMaterial.description} onChange={(e) => setNewMaterial({ ...newMaterial, description: e.target.value })}
-                    className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500 placeholder:text-gray-400 resize-none" />
+                    className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500 placeholder:text-gray-400 resize-none" />
                 </div>
 
                 {/* Material Type & Access Level Row */}
@@ -386,7 +386,7 @@ const Materials = () => {
                   <div>
                     <label className="block text-xs font-black text-gray-700 uppercase tracking-wider mb-1.5">Material Type</label>
                     <select value={newMaterial.material_type} onChange={(e) => setNewMaterial({ ...newMaterial, material_type: e.target.value })}
-                      className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500">
+                      className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500">
                       {Object.entries(MATERIAL_TYPE_CONFIG).map(([k, v]) => (
                         <option key={k} value={k}>{v.label}</option>
                       ))}
@@ -395,7 +395,7 @@ const Materials = () => {
                   <div>
                     <label className="block text-xs font-black text-gray-700 uppercase tracking-wider mb-1.5">Access Level</label>
                     <select value={newMaterial.classroom} onChange={(e) => setNewMaterial({ ...newMaterial, classroom: e.target.value })}
-                      className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500">
+                      className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500">
                       <option value="">No specific class</option>
                       {sortedClassrooms.map((cls) => (
                         <option key={cls.id} value={cls.id}>{cls.name}</option>
@@ -408,7 +408,7 @@ const Materials = () => {
                   <div>
                     <label className="block text-xs font-black text-gray-700 uppercase tracking-wider mb-1.5">Quarter</label>
                     <select value={newMaterial.quarter} onChange={(e) => setNewMaterial({ ...newMaterial, quarter: e.target.value })}
-                      className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500">
+                      className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500">
                       <option value="">Select Quarter</option>
                       <option value="1">Quarter 1</option>
                       <option value="2">Quarter 2</option>
@@ -420,7 +420,7 @@ const Materials = () => {
                     <label className="block text-xs font-black text-gray-700 uppercase tracking-wider mb-1.5">Week Number</label>
                     <input type="number" min="1" max="10" placeholder="e.g., 1" value={newMaterial.week}
                       onChange={(e) => setNewMaterial({ ...newMaterial, week: e.target.value })}
-                      className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500 placeholder:text-gray-400" />
+                      className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500 placeholder:text-gray-400" />
                   </div>
                 </div>
 
@@ -433,9 +433,9 @@ const Materials = () => {
                     <input type="file" required onChange={(e) => setNewMaterial({ ...newMaterial, file: e.target.files[0] })}
                       className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
                     <div className={`w-full px-6 py-6 border-2 border-dashed rounded flex flex-col items-center justify-center transition-all duration-300
-                      ${newMaterial.file ? 'border-purple-500 bg-purple-50' : 'border-gray-300 bg-gray-50 group-hover:border-purple-400 group-hover:bg-purple-50/30'}`}>
+                      ${newMaterial.file ? 'border-violet-500 bg-violet-50' : 'border-gray-300 bg-gray-50 group-hover:border-violet-400 group-hover:bg-violet-50/30'}`}>
                       <div className={`p-2.5 rounded mb-2 transition-all duration-300
-                        ${newMaterial.file ? 'bg-purple-600 text-white' : 'bg-white text-purple-500 group-hover:scale-110'}`}>
+                        ${newMaterial.file ? 'bg-violet-600 text-white' : 'bg-white text-violet-500 group-hover:scale-110'}`}>
                         {newMaterial.file ? (
                           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -462,7 +462,7 @@ const Materials = () => {
                   Cancel
                 </button>
                 <button type="submit" disabled={saving}
-                  className="px-6 py-2.5 bg-[#5e2a84] text-white text-xs font-black uppercase tracking-widest hover:bg-purple-700 rounded-sm">
+                  className="px-6 py-2.5 bg-[#5e2a84] text-white text-xs font-black uppercase tracking-widest hover:bg-violet-700 rounded-sm">
                   {saving ? 'Uploading...' : 'Publish Material'}
                 </button>
               </div>

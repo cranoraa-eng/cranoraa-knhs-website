@@ -225,7 +225,7 @@ const SubjectAssignment = () => {
                   <div key={a.id} className={`p-5 hover:bg-violet-50/50 transition-all group ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/20'}`}>
                     <div className="flex items-center gap-5">
                       {/* Subject icon/card */}
-                      <div className="flex-shrink-0 w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white font-black text-lg shadow-lg transition-transform group-hover:scale-105">
+                      <div className="flex-shrink-0 w-14 h-14 rounded-2xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-white font-black text-lg shadow-lg transition-transform group-hover:scale-105">
                         {a.subject_code?.substring(0, 2).toUpperCase() || 'SB'}
                       </div>
 
@@ -301,7 +301,7 @@ const SubjectAssignment = () => {
       {showModal && (
         <div className="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center p-4 animate-in fade-in duration-300">
           <div className="bg-white w-full max-w-lg border border-gray-300 shadow-2xl rounded-sm flex flex-col max-h-[92vh]" onClick={e => e.stopPropagation()}>
-            <div className="bg-[#5e2a84] flex items-center justify-between px-5 py-3 flex-shrink-0 border-b-2 border-purple-900">
+            <div className="bg-[#5e2a84] flex items-center justify-between px-5 py-3 flex-shrink-0 border-b-2 border-violet-900">
               <div className="flex items-center gap-3 min-w-0">
                 <div className="w-7 h-7 rounded-full bg-white/20 border border-white/30 flex items-center justify-center flex-shrink-0">
                   <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -310,7 +310,7 @@ const SubjectAssignment = () => {
                 </div>
                 <div>
                   <h2 className="text-sm font-black text-white uppercase tracking-widest leading-none">{selectedAssignment ? 'Edit Assignment' : 'Assign Subject'}</h2>
-                  <p className="text-purple-200 text-[10px] mt-0.5 font-medium uppercase tracking-wide">Link subject and teacher to classroom</p>
+                  <p className="text-violet-200 text-[10px] mt-0.5 font-medium uppercase tracking-wide">Link subject and teacher to classroom</p>
                 </div>
               </div>
               <button type="button" onClick={() => setShowModal(false)}
@@ -342,7 +342,7 @@ const SubjectAssignment = () => {
                   {/* Search box */}
                   {!selectedAssignment ? (
                     <div className="relative group">
-                      <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-purple-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-violet-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                       </svg>
                       <input
@@ -350,7 +350,7 @@ const SubjectAssignment = () => {
                         placeholder="Quick search by name or code..."
                         value={subjectSearch}
                         onChange={e => setSubjectSearch(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500 placeholder:text-gray-400"
+                        className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500 placeholder:text-gray-400"
                       />
                       {subjectSearch && (
                         <button type="button" onClick={() => setSubjectSearch('')}
@@ -397,7 +397,7 @@ const SubjectAssignment = () => {
                               <div className="flex-1 min-w-0">
                                 <div className={`text-sm font-black tracking-tight truncate ${isSelected ? 'text-white' : 'text-gray-800'}`}>{s.name}</div>
                                 {s.grade_level && (
-                                  <div className={`text-[9px] font-bold uppercase tracking-widest mt-0.5 ${isSelected ? 'text-purple-200' : 'text-gray-400'}`}>{s.grade_level}</div>
+                                  <div className={`text-[9px] font-bold uppercase tracking-widest mt-0.5 ${isSelected ? 'text-violet-200' : 'text-gray-400'}`}>{s.grade_level}</div>
                                 )}
                               </div>
                               {isAssigned ? (
@@ -421,7 +421,7 @@ const SubjectAssignment = () => {
                 <div>
                   <label className="block text-xs font-black text-gray-700 uppercase tracking-wider mb-1.5">Assigned Teacher <span className="text-red-600">*</span></label>
                   <select value={formData.teacher} onChange={e => setFormData({ ...formData, teacher: e.target.value })}
-                    className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500"
+                    className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500"
                     required>
                     <option value="">Select a teacher for this subject</option>
                     {teachers.map(t => (
@@ -438,7 +438,7 @@ const SubjectAssignment = () => {
                   Cancel
                 </button>
                 <button type="submit" disabled={!formData.subject || !formData.teacher || saving}
-                  className="px-6 py-2.5 bg-[#5e2a84] text-white text-xs font-black uppercase tracking-widest hover:bg-purple-700 rounded-sm">
+                  className="px-6 py-2.5 bg-[#5e2a84] text-white text-xs font-black uppercase tracking-widest hover:bg-violet-700 rounded-sm">
                   {saving ? 'Saving...' : selectedAssignment ? 'Update Assignment' : 'Confirm Assignment'}
                 </button>
               </div>

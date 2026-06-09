@@ -35,15 +35,15 @@ const ROLES = {
     icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01',
     features: ['Grade input & management', 'Class attendance', 'Upload materials', 'Post announcements', 'Student communication'],
     theme: {
-      primary: 'blue-600',
+      primary: 'violet-600',
       primaryBg: 'bg-violet-600/20',
       text: 'text-violet-600',
       bg: 'bg-violet-600',
       ring: 'focus:ring-violet-600/5',
       border: 'group-focus-within:border-violet-600/20',
-      accent: 'bg-blue-400',
+      accent: 'bg-violet-400',
       hover: 'hover:bg-violet-700',
-      gradient: 'from-blue-400 to-cyan-400'
+      gradient: 'from-violet-400 to-indigo-400'
     }
   },
   admin: {

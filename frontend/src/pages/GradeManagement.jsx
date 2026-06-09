@@ -370,9 +370,9 @@ const GradeManagement = () => {
               </CardBody>
             </Card>
 
-            <Card className="border-l-4 border-l-purple-500">
+            <Card className="border-l-4 border-l-violet-500">
               <CardBody className="p-4 text-center">
-                <div className="text-2xl md:text-3xl font-extrabold text-purple-600">
+                <div className="text-2xl md:text-3xl font-extrabold text-violet-600">
                   {filteredGrades.length}
                 </div>
                 <div className="text-xs font-bold text-slate-600 uppercase tracking-wide mt-1">
@@ -615,7 +615,7 @@ const SubjectGradeTable = ({ subject, user, formatName, calculateFinal, handleLo
   return (
     <div>
       <div className="mb-3 p-3 bg-violet-50 border border-violet-200 rounded-md">
-        <h3 className="text-sm font-extrabold text-blue-900 uppercase tracking-wide">
+        <h3 className="text-sm font-extrabold text-violet-900 uppercase tracking-wide">
           {subject.name}
         </h3>
         <p className="text-xs font-semibold text-violet-700 mt-0.5">

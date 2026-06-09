@@ -264,7 +264,7 @@ const StudentEnrollment = () => {
       {showModal && (
         <div className="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center p-2 md:p-4 animate-in fade-in duration-300">
           <div className="bg-white w-full max-w-md border border-gray-300 shadow-2xl rounded-sm flex flex-col max-h-[92vh]" onClick={e => e.stopPropagation()}>
-            <div className="bg-[#5e2a84] flex items-center justify-between px-5 py-3 flex-shrink-0 border-b-2 border-purple-900">
+            <div className="bg-[#5e2a84] flex items-center justify-between px-5 py-3 flex-shrink-0 border-b-2 border-violet-900">
               <div className="flex items-center gap-3 min-w-0">
                 <div className="w-7 h-7 rounded-full bg-white/20 border border-white/30 flex items-center justify-center flex-shrink-0">
                   <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -273,7 +273,7 @@ const StudentEnrollment = () => {
                 </div>
                 <div>
                   <h2 className="text-sm font-black text-white uppercase tracking-widest leading-none">Enroll Student</h2>
-                  <p className="text-purple-200 text-[10px] mt-0.5 font-medium uppercase tracking-wide">
+                  <p className="text-violet-200 text-[10px] mt-0.5 font-medium uppercase tracking-wide">
                     Classroom: {classrooms.find(c => String(c.id) === String(selectedClassroom))?.name || ''}
                   </p>
                 </div>
@@ -302,7 +302,7 @@ const StudentEnrollment = () => {
                     </svg>
                     <input type="text" placeholder="Search name, email, or LRN..." value={studentSearch}
                       onChange={e => setStudentSearch(e.target.value)}
-                      className="w-full pl-9 pr-9 py-1.5 md:py-2.5 border border-gray-300 rounded-sm bg-white text-[10px] md:text-sm focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500 placeholder:text-gray-400" />
+                      className="w-full pl-9 pr-9 py-1.5 md:py-2.5 border border-gray-300 rounded-sm bg-white text-[10px] md:text-sm focus:outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500 placeholder:text-gray-400" />
                     {studentSearch && (
                       <button type="button" onClick={() => setStudentSearch('')}
                         className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1">
@@ -343,10 +343,10 @@ const StudentEnrollment = () => {
                                 )}
                               </div>
                               <div className={`w-7 h-7 md:w-9 md:h-9 rounded flex items-center justify-center text-[8px] md:text-sm font-black flex-shrink-0 shadow-sm ${
-                                isSelected ? 'bg-violet-600 text-white' : 'bg-gradient-to-br from-purple-400 to-indigo-500 text-white'
+                                isSelected ? 'bg-violet-600 text-white' : 'bg-gradient-to-br from-violet-400 to-indigo-500 text-white'
                               }`}>{initials}</div>
                               <div className="flex-1 min-w-0 leading-tight">
-                                <div className={`text-[9px] md:text-sm font-black truncate uppercase tracking-tighter ${isSelected ? 'text-purple-800' : 'text-gray-800'}`}>{fullName}</div>
+                                <div className={`text-[9px] md:text-sm font-black truncate uppercase tracking-tighter ${isSelected ? 'text-violet-800' : 'text-gray-800'}`}>{fullName}</div>
                                 <div className="text-[7px] md:text-xs text-gray-400 truncate font-bold">{s.email}</div>
                                 {s.profile?.lrn && <div className="text-[6px] md:text-[10px] text-gray-300 font-bold">LRN: {s.profile.lrn}</div>}
                               </div>
@@ -376,7 +376,7 @@ const StudentEnrollment = () => {
                   Cancel
                 </button>
                 <button type="submit" disabled={saving || selectedStudents.length === 0}
-                  className="px-6 py-2.5 bg-[#5e2a84] text-white text-xs font-black uppercase tracking-widest hover:bg-purple-700 rounded-sm disabled:opacity-60">
+                  className="px-6 py-2.5 bg-[#5e2a84] text-white text-xs font-black uppercase tracking-widest hover:bg-violet-700 rounded-sm disabled:opacity-60">
                   {saving ? 'Enrolling...' : `Enroll ${selectedStudents.length || ''}`}
                 </button>
               </div>

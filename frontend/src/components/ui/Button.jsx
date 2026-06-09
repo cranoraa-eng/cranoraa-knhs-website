@@ -23,7 +23,7 @@ const Button = React.forwardRef(({
   const baseStyles = 'inline-flex items-center justify-center gap-2 rounded-lg font-semibold transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]';
   
   const variants = {
-    primary: 'bg-purple-600 text-white border border-purple-700 hover:bg-purple-700 shadow-sm',
+    primary: 'bg-violet-600 text-white border border-violet-700 hover:bg-violet-700 shadow-sm',
     secondary: 'bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 hover:border-slate-400 shadow-sm',
     ghost: 'text-slate-700 hover:bg-slate-100',
     danger: 'bg-red-600 text-white border border-red-700 hover:bg-red-700 shadow-sm',

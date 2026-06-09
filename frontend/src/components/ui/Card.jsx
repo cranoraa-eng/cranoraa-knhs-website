@@ -12,7 +12,7 @@ export const Card = ({ children, className = '', interactive = false, highlighte
       className={cn(
         'bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden',
         interactive && 'hover:shadow-md hover:border-slate-300 transition-all duration-200 cursor-pointer',
-        highlighted && 'bg-purple-50 border-purple-200',
+        highlighted && 'bg-violet-50 border-violet-200',
         className
       )}
       {...props}

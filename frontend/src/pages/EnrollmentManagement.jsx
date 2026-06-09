@@ -5,11 +5,11 @@ import { LoadingSpinner, Button } from '../components/ui';
 
 const STATUS_CONFIG = {
   pending: { color: 'bg-amber-100 text-amber-800 border-amber-200', label: 'Pending' },
-  under_review: { color: 'bg-violet-100 text-blue-800 border-violet-200', label: 'Under Review' },
+  under_review: { color: 'bg-violet-100 text-violet-800 border-violet-200', label: 'Under Review' },
   pending_requirements: { color: 'bg-orange-100 text-orange-800 border-orange-200', label: 'Pending Req' },
   approved: { color: 'bg-emerald-100 text-emerald-800 border-emerald-200', label: 'Approved' },
   rejected: { color: 'bg-rose-100 text-rose-800 border-rose-200', label: 'Rejected' },
-  enrolled: { color: 'bg-violet-100 text-blue-800 border-violet-200', label: 'Enrolled' },
+  enrolled: { color: 'bg-violet-100 text-violet-800 border-violet-200', label: 'Enrolled' },
 };
 
 const GRADE_LEVELS = ['','7','8','9','10','11','12'];
@@ -394,8 +394,8 @@ const EnrollmentManagement = () => {
         </div>
 
         {selectedIds.length > 0 && (
-          <div className="px-4 py-2 bg-violet-50 border-b border-blue-100 flex items-center gap-3">
-            <span className="text-xs font-bold text-blue-800">{selectedIds.length} selected</span>
+          <div className="px-4 py-2 bg-violet-50 border-b border-violet-100 flex items-center gap-3">
+            <span className="text-xs font-bold text-violet-800">{selectedIds.length} selected</span>
             <button onClick={() => bulkAction('approve')} className="px-3 py-1 rounded-lg bg-emerald-600 text-white text-[10px] font-bold hover:bg-emerald-700">Approve All</button>
             <button onClick={() => bulkAction('reject')} className="px-3 py-1 rounded-lg bg-rose-600 text-white text-[10px] font-bold hover:bg-rose-700">Reject All</button>
             <button onClick={() => setSelectedIds([])} className="text-[10px] font-bold text-slate-500 hover:text-slate-700">Clear</button>
@@ -509,7 +509,7 @@ const EnrollmentManagement = () => {
       {selected && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999] p-4">
           <div className="bg-white w-full max-w-3xl border border-gray-300 shadow-2xl rounded-sm flex flex-col max-h-[92vh]" onClick={e => e.stopPropagation()}>
-            <div className="bg-[#5e2a84] flex items-center justify-between px-5 py-3 flex-shrink-0 border-b-2 border-purple-900">
+            <div className="bg-[#5e2a84] flex items-center justify-between px-5 py-3 flex-shrink-0 border-b-2 border-violet-900">
               <div className="flex items-center gap-3 min-w-0">
                 <div className="w-7 h-7 rounded-full bg-white/20 border border-white/30 flex items-center justify-center flex-shrink-0">
                   <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -520,7 +520,7 @@ const EnrollmentManagement = () => {
                   <h2 className="text-sm font-black text-white uppercase tracking-widest leading-none">
                     {selected.full_name || `${selected.first_name} ${selected.last_name}`}
                   </h2>
-                  <p className="text-purple-200 text-[10px] mt-0.5 font-medium uppercase tracking-wide">
+                  <p className="text-violet-200 text-[10px] mt-0.5 font-medium uppercase tracking-wide">
                     {selected.enrollment_number} — Enrollment Application
                   </p>
                 </div>
@@ -664,7 +664,7 @@ const EnrollmentManagement = () => {
                   </>
                 )}
                 {selected.status === 'approved' && (
-                  <button onClick={() => { setEnrollApp(selected); setShowEnrollModal(true); }} className="px-4 py-2 bg-[#5e2a84] text-white text-xs font-black uppercase tracking-widest hover:bg-purple-700 rounded-sm">Enroll Student</button>
+                  <button onClick={() => { setEnrollApp(selected); setShowEnrollModal(true); }} className="px-4 py-2 bg-[#5e2a84] text-white text-xs font-black uppercase tracking-widest hover:bg-violet-700 rounded-sm">Enroll Student</button>
                 )}
                 {selected.status !== 'enrolled' && (
                   <button onClick={() => promptDelete(selected.id, selected.full_name || `${selected.first_name} ${selected.last_name}`)} className="px-4 py-2 border border-red-300 bg-white text-red-600 text-xs font-black uppercase tracking-widest hover:bg-red-50 rounded-sm">Delete</button>
@@ -679,7 +679,7 @@ const EnrollmentManagement = () => {
       {showEnrollModal && enrollApp && (
         <div className="fixed inset-0 z-[10010] bg-black/50 flex items-center justify-center p-4">
           <div className="bg-white w-full max-w-md border border-gray-300 shadow-2xl rounded-sm flex flex-col max-h-[92vh]" onClick={e => e.stopPropagation()}>
-            <div className="bg-[#5e2a84] flex items-center justify-between px-5 py-3 flex-shrink-0 border-b-2 border-purple-900">
+            <div className="bg-[#5e2a84] flex items-center justify-between px-5 py-3 flex-shrink-0 border-b-2 border-violet-900">
               <div className="flex items-center gap-3 min-w-0">
                 <div className="w-7 h-7 rounded-full bg-white/20 border border-white/30 flex items-center justify-center flex-shrink-0">
                   <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -688,7 +688,7 @@ const EnrollmentManagement = () => {
                 </div>
                 <div>
                   <h2 className="text-sm font-black text-white uppercase tracking-widest leading-none">Enroll Student</h2>
-                  <p className="text-purple-200 text-[10px] mt-0.5 font-medium uppercase tracking-wide">{enrollApp?.first_name} {enrollApp?.last_name}</p>
+                  <p className="text-violet-200 text-[10px] mt-0.5 font-medium uppercase tracking-wide">{enrollApp?.first_name} {enrollApp?.last_name}</p>
                 </div>
               </div>
               <button type="button" onClick={() => { setShowEnrollModal(false); setEnrollApp(null); setEnrollClassroom(''); setEnrollParentEmail(''); }}
@@ -702,7 +702,7 @@ const EnrollmentManagement = () => {
               <div>
                 <label className="block text-xs font-black text-gray-700 uppercase tracking-wider mb-1.5">Assign Section</label>
                 <select value={enrollClassroom} onChange={e => setEnrollClassroom(e.target.value)}
-                  className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500">
+                  className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500">
                   <option value="">Auto-assign</option>
                   {classrooms.filter(c => String(c.grade_level) === String(enrollApp.grade_level)).map(c => {
                     const count = c.student_count || 0;
@@ -715,7 +715,7 @@ const EnrollmentManagement = () => {
                 <label className="block text-xs font-black text-gray-700 uppercase tracking-wider mb-1.5">Parent Email (optional)</label>
                 <input type="email" value={enrollParentEmail} onChange={e => setEnrollParentEmail(e.target.value)}
                   placeholder="parent@email.com"
-                  className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500 placeholder:text-gray-400" />
+                  className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500 placeholder:text-gray-400" />
                 <p className="text-[10px] text-gray-400 mt-1">If a parent account exists with this email, it will be linked.</p>
               </div>
               <div className="bg-amber-50 border border-amber-200 rounded p-3 text-xs text-amber-700">
@@ -729,7 +729,7 @@ const EnrollmentManagement = () => {
                 Cancel
               </button>
               <button type="button" onClick={enrollStudent} disabled={enrolling}
-                className="px-6 py-2.5 bg-[#5e2a84] text-white text-xs font-black uppercase tracking-widest hover:bg-purple-700 rounded-sm">
+                className="px-6 py-2.5 bg-[#5e2a84] text-white text-xs font-black uppercase tracking-widest hover:bg-violet-700 rounded-sm">
                 {enrolling ? 'Enrolling...' : 'Enroll Now'}
               </button>
             </div>

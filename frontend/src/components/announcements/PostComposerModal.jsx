@@ -62,7 +62,7 @@ const PostComposerModal = ({
   return (
     <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-[9999] p-0 sm:p-4">
       <div className="bg-white w-full sm:max-w-xl max-h-[95vh] sm:max-h-[90vh] flex flex-col rounded-t-sm sm:rounded-sm shadow-2xl border border-gray-300 overflow-hidden">
-        <div className="bg-[#5e2a84] flex items-center justify-between px-5 py-3 flex-shrink-0 border-b-2 border-purple-900">
+        <div className="bg-[#5e2a84] flex items-center justify-between px-5 py-3 flex-shrink-0 border-b-2 border-violet-900">
           <div className="flex items-center gap-3 min-w-0">
             <div className="w-7 h-7 rounded-full bg-white/20 border border-white/30 flex items-center justify-center flex-shrink-0">
               <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -71,7 +71,7 @@ const PostComposerModal = ({
             </div>
             <div>
               <h2 className="text-sm font-black text-white uppercase tracking-widest leading-none">{isEditing ? 'Edit Announcement' : 'Create Announcement'}</h2>
-              <p className="text-purple-200 text-[10px] mt-0.5 font-medium uppercase tracking-wide">Share with students and teachers</p>
+              <p className="text-violet-200 text-[10px] mt-0.5 font-medium uppercase tracking-wide">Share with students and teachers</p>
             </div>
           </div>
           <button type="button" onClick={onClose}
@@ -93,7 +93,7 @@ const PostComposerModal = ({
                 placeholder="Post title"
                 required
                 maxLength={100}
-                className="w-full text-base font-semibold text-gray-900 placeholder-gray-400 border-0 border-b-2 border-gray-200 focus:border-purple-500 focus:ring-0 px-0 py-2 bg-transparent"
+                className="w-full text-base font-semibold text-gray-900 placeholder-gray-400 border-0 border-b-2 border-gray-200 focus:border-violet-500 focus:ring-0 px-0 py-2 bg-transparent"
               />
               <p className="text-right text-[10px] text-slate-400 mt-0.5">{form.title.length}/100</p>
             </div>
@@ -105,7 +105,7 @@ const PostComposerModal = ({
                 placeholder="What do you want to share?"
                 required
                 rows={5}
-                className="w-full text-sm text-gray-800 placeholder-gray-400 border border-gray-300 rounded-sm px-3 py-3 focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500 resize-none"
+                className="w-full text-sm text-gray-800 placeholder-gray-400 border border-gray-300 rounded-sm px-3 py-3 focus:outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500 resize-none"
               />
             </div>
 
@@ -173,7 +173,7 @@ const PostComposerModal = ({
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="w-full flex items-center justify-center gap-2 py-3 border-2 border-dashed border-gray-300 text-sm font-semibold text-gray-600 hover:border-purple-400 hover:bg-purple-50/50 hover:text-purple-700 transition-colors rounded-sm"
+                className="w-full flex items-center justify-center gap-2 py-3 border-2 border-dashed border-gray-300 text-sm font-semibold text-gray-600 hover:border-violet-400 hover:bg-violet-50/50 hover:text-violet-700 transition-colors rounded-sm"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -196,8 +196,8 @@ const PostComposerModal = ({
                     onClick={() => setForm((f) => ({ ...f, target_audience: opt.value }))}
                     className={`px-3 py-1.5 text-xs font-semibold border transition-colors rounded-sm ${
                       form.target_audience === opt.value
-                        ? 'bg-[#5e2a84] text-white border-purple-700'
-                        : 'bg-white text-gray-600 border-gray-300 hover:border-purple-400'
+                        ? 'bg-[#5e2a84] text-white border-violet-700'
+                        : 'bg-white text-gray-600 border-gray-300 hover:border-violet-400'
                     }`}
                   >
                     {opt.label}
@@ -215,7 +215,7 @@ const PostComposerModal = ({
                         onClick={() => toggleClassroom(cls.id)}
                         className={`px-2 py-1 text-[10px] font-semibold border rounded-sm ${
                           (form.target_classrooms || []).includes(cls.id)
-                            ? 'bg-purple-100 text-purple-800 border-purple-300'
+                            ? 'bg-violet-100 text-violet-800 border-violet-300'
                             : 'bg-white text-gray-500 border-gray-200'
                         }`}
                       >
@@ -322,7 +322,7 @@ const PostComposerModal = ({
             <button
               type="submit"
               disabled={saving}
-              className="flex-[2] py-2.5 bg-[#5e2a84] text-white text-xs font-black uppercase tracking-widest hover:bg-purple-700 disabled:opacity-60 flex items-center justify-center gap-2 rounded-sm"
+              className="flex-[2] py-2.5 bg-[#5e2a84] text-white text-xs font-black uppercase tracking-widest hover:bg-violet-700 disabled:opacity-60 flex items-center justify-center gap-2 rounded-sm"
             >
               {saving ? (
                 <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />

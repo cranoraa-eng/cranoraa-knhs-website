@@ -82,7 +82,7 @@ const Modal = ({
       >
         {/* Auto-header when title prop is passed */}
         {title && (
-          <div className="bg-[#5e2a84] flex items-center justify-between px-5 py-3 flex-shrink-0 border-b-2 border-purple-900">
+          <div className="bg-violet-600 flex items-center justify-between px-5 py-3 flex-shrink-0 border-b-2 border-violet-700">
             <div className="flex items-center gap-3 min-w-0">
               <div className="w-7 h-7 rounded-full bg-white/20 border border-white/30 flex items-center justify-center flex-shrink-0">
                 <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -91,7 +91,7 @@ const Modal = ({
               </div>
               <div className="min-w-0">
                 <h2 className="text-sm font-black text-white uppercase tracking-widest leading-none">{title}</h2>
-                {subtitle && <p className="text-purple-200 text-[10px] mt-0.5 font-medium uppercase tracking-wide">{subtitle}</p>}
+                {subtitle && <p className="text-violet-200 text-[10px] mt-0.5 font-medium uppercase tracking-wide">{subtitle}</p>}
               </div>
             </div>
             <button type="button" onClick={onClose}
@@ -113,7 +113,7 @@ const Modal = ({
 /* ─── ModalHeader ─────────────────────────────────────────────────────────── */
 export const ModalHeader = ({ children, onClose, className = '', icon, ...props }) => (
   <div className={cn(
-    'bg-[#5e2a84] flex items-center justify-between px-5 py-3 flex-shrink-0 border-b-2 border-purple-900',
+    'bg-violet-600 flex items-center justify-between px-5 py-3 flex-shrink-0 border-b-2 border-violet-700',
     className
   )} {...props}>
     <div className="flex items-center gap-3 min-w-0">
@@ -141,7 +141,7 @@ export const ModalHeader = ({ children, onClose, className = '', icon, ...props 
 export const ModalTitle = ({ title, subtitle }) => (
   <div>
     <h2 className="text-sm font-black text-white uppercase tracking-widest leading-none">{title}</h2>
-    {subtitle && <p className="text-purple-200 text-[10px] mt-0.5 font-medium uppercase tracking-wide">{subtitle}</p>}
+    {subtitle && <p className="text-violet-200 text-[10px] mt-0.5 font-medium uppercase tracking-wide">{subtitle}</p>}
   </div>
 );
 
@@ -175,15 +175,15 @@ export const ModalField = ({ label, required, hint, children }) => (
 );
 
 /** Standard input styling for use inside ModalField */
-export const modalInputCls = 'w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm text-gray-900 focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500 transition-colors placeholder:text-gray-400';
-export const modalSelectCls = 'w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm text-gray-900 focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500 transition-colors';
-export const modalTextareaCls = 'w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm text-gray-900 focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500 transition-colors resize-none';
+export const modalInputCls = 'w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm text-gray-900 focus:outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500 transition-colors placeholder:text-gray-400';
+export const modalSelectCls = 'w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm text-gray-900 focus:outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500 transition-colors';
+export const modalTextareaCls = 'w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm text-gray-900 focus:outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500 transition-colors resize-none';
 
 /* ─── ModalBtn ────────────────────────────────────────────────────────────── */
 /** Primary action button */
 export const ModalBtnPrimary = ({ children, loading, className = '', ...props }) => (
   <button type="submit"
-    className={cn('inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-[#5e2a84] text-white text-xs font-black uppercase tracking-widest hover:bg-purple-700 active:bg-purple-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed rounded-sm', className)}
+    className={cn('inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-violet-600 text-white text-xs font-black uppercase tracking-widest hover:bg-violet-700 active:bg-violet-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed rounded-sm', className)}
     disabled={loading}
     {...props}
   >

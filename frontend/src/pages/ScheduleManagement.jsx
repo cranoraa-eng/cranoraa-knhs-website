@@ -28,8 +28,8 @@ const periodKey = (s, e) => `${normalizeTime(s)}-${normalizeTime(e)}`;
 const slotExists = (slots, day, s, e) => slots.some(t => t.day === day && periodKey(t.start_time, t.end_time) === periodKey(s, e));
 
 const COLORS = [
-  'bg-violet-50 border-violet-200 text-blue-800',
-  'bg-violet-50 border-violet-200 text-blue-800',
+  'bg-violet-50 border-violet-200 text-violet-800',
+  'bg-violet-50 border-violet-200 text-violet-800',
   'bg-emerald-50 border-emerald-200 text-emerald-800',
   'bg-amber-50 border-amber-200 text-amber-800',
   'bg-rose-50 border-rose-200 text-rose-800',
@@ -494,12 +494,12 @@ export default function ScheduleManagement() {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {/* Step 1: Bell Schedule */}
-            <div className={`relative p-4 rounded-xl border-2 transition-all ${needsTimeSlots ? 'border-blue-400 bg-white shadow-md' : 'border-emerald-200 bg-emerald-50'}`}>
+            <div className={`relative p-4 rounded-xl border-2 transition-all ${needsTimeSlots ? 'border-violet-400 bg-white shadow-md' : 'border-emerald-200 bg-emerald-50'}`}>
               <div className="flex items-center gap-2 mb-2">
                 <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black ${needsTimeSlots ? 'bg-violet-600 text-white' : 'bg-emerald-500 text-white'}`}>
                   {needsTimeSlots ? '1' : '\u2713'}
                 </div>
-                <span className={`text-xs font-bold ${needsTimeSlots ? 'text-blue-800' : 'text-emerald-700'}`}>Bell Schedule</span>
+                <span className={`text-xs font-bold ${needsTimeSlots ? 'text-violet-800' : 'text-emerald-700'}`}>Bell Schedule</span>
               </div>
               <p className="text-[11px] text-slate-500 mb-3">Define the daily class periods (e.g. 7:30-8:30 AM)</p>
               {needsTimeSlots ? (
@@ -602,9 +602,9 @@ export default function ScheduleManagement() {
                   const count = classroomScheduleCounts[c.id] || 0;
                   return (
                     <button key={c.id} type="button" onClick={() => setFilterClassroom(String(c.id))}
-                      className="text-left p-4 rounded-xl border-2 border-slate-200 hover:border-blue-400 hover:bg-violet-50/50 hover:shadow-md transition-all group">
+                      className="text-left p-4 rounded-xl border-2 border-slate-200 hover:border-violet-400 hover:bg-violet-50/50 hover:shadow-md transition-all group">
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-bold text-slate-900 group-hover:text-blue-800">{c.name}</span>
+                        <span className="text-sm font-bold text-slate-900 group-hover:text-violet-800">{c.name}</span>
                         {count > 0 && (
                           <span className="px-2 py-0.5 rounded-full bg-violet-100 text-violet-700 text-[10px] font-bold">{count}</span>
                         )}
@@ -647,7 +647,7 @@ export default function ScheduleManagement() {
                 <p className="text-[10px] text-slate-500 uppercase tracking-wide font-semibold">Weekly Timetable</p>
               </div>
               <button type="button" onClick={() => setFilterClassroom('')}
-                className="text-[10px] font-bold text-violet-600 hover:text-blue-800 px-2 py-1 rounded-lg hover:bg-violet-50 transition-colors">
+                className="text-[10px] font-bold text-violet-600 hover:text-violet-800 px-2 py-1 rounded-lg hover:bg-violet-50 transition-colors">
                 Change
               </button>
             </div>
@@ -791,7 +791,7 @@ export default function ScheduleManagement() {
                   Section / Class <span className="text-red-600">*</span>
                 </label>
                 <select required value={form.classroom} onChange={e => setForm(f => ({...f, classroom: e.target.value, subject:'', teacher:''}))}
-                  className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500">
+                  className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500">
                   <option value="">— Select Section —</option>
                   {classrooms.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>
@@ -801,7 +801,7 @@ export default function ScheduleManagement() {
                   Day & Time Slot <span className="text-red-600">*</span>
                 </label>
                 <select required value={form.time_slot} onChange={e => setForm(f => ({...f, time_slot: e.target.value}))}
-                  className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500">
+                  className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500">
                   <option value="">— Select Time Slot —</option>
                   {DAYS.map(d => {
                     const daySlots = sortedSlots.filter(ts => ts.day === d);
@@ -827,7 +827,7 @@ export default function ScheduleManagement() {
               </label>
               {loadingAssignments ? (
                 <div className="w-full px-3 py-2.5 border border-gray-200 rounded-sm text-xs text-gray-400 bg-gray-50 flex items-center gap-2">
-                  <svg className="w-4 h-4 animate-spin text-purple-400" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                  <svg className="w-4 h-4 animate-spin text-violet-400" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
                   Loading subjects...
                 </div>
               ) : (
@@ -838,7 +838,7 @@ export default function ScheduleManagement() {
                     if (match) { setTeacherLocked(true); setForm(f => ({...f, subject: sid, teacher: String(match.teacher)})); }
                     else { setTeacherLocked(false); setForm(f => ({...f, subject: sid})); }
                   }}
-                    className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500">
+                    className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500">
                     <option value="">{!form.classroom ? '— Select a section first —' : classroomAssignments.length === 0 ? '— No subjects assigned to this section —' : '— Select Subject —'}</option>
                     {(form.classroom && classroomAssignments.length > 0 ? classroomAssignments : []).map(a => (
                       <option key={a.subject} value={a.subject}>{a.subject_code} — {a.subject_name}</option>
@@ -859,14 +859,14 @@ export default function ScheduleManagement() {
                 </label>
                 {teacherLocked && (
                   <button type="button" onClick={() => setTeacherLocked(false)}
-                    className="text-[10px] text-purple-600 font-bold hover:text-purple-800 underline">
+                    className="text-[10px] text-violet-600 font-bold hover:text-violet-800 underline">
                     Override
                   </button>
                 )}
               </div>
               <select required value={form.teacher} onChange={e => setForm(f => ({...f, teacher: e.target.value}))}
                 disabled={teacherLocked}
-                className={`w-full px-3 py-2.5 border rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500 ${teacherLocked ? 'border-gray-200 bg-gray-50 text-gray-600' : 'border-gray-300'}`}>
+                className={`w-full px-3 py-2.5 border rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500 ${teacherLocked ? 'border-gray-200 bg-gray-50 text-gray-600' : 'border-gray-300'}`}>
                 <option value="">— Select Teacher —</option>
                 {teachers.map(t => (
                   <option key={t.id} value={t.id}>{t.first_name && t.last_name ? `${t.first_name} ${t.last_name}` : t.username} ({t.email})</option>
@@ -881,7 +881,7 @@ export default function ScheduleManagement() {
             <div>
               <label className="block text-[10px] font-black text-gray-600 uppercase tracking-wider mb-1.5">Room (optional)</label>
               <select value={form.room} onChange={e => setForm(f => ({...f, room: e.target.value}))}
-                className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500">
+                className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500">
                 <option value="">— No Room Assigned —</option>
                 {rooms.map(r => <option key={r.id} value={r.id}>{r.name}{r.building ? ` — ${r.building}` : ''} (Cap: {r.capacity})</option>)}
               </select>
@@ -894,7 +894,7 @@ export default function ScheduleManagement() {
                   Academic Year <span className="text-red-600">*</span>
                 </label>
                 <select required value={form.academic_year} onChange={e => setForm(f => ({...f, academic_year: e.target.value, semester:''}))}
-                  className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500">
+                  className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500">
                   <option value="">— Select Year —</option>
                   {academicYears.map(a => <option key={a.id} value={a.id}>{a.name}{a.is_active ? ' (Active)' : ''}</option>)}
                 </select>
@@ -902,7 +902,7 @@ export default function ScheduleManagement() {
               <div>
                 <label className="block text-[10px] font-black text-gray-600 uppercase tracking-wider mb-1.5">Semester (optional)</label>
                 <select value={form.semester} onChange={e => setForm(f => ({...f, semester: e.target.value}))}
-                  className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500">
+                  className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500">
                   <option value="">None</option>
                   {semesters.map(s => <option key={s.id} value={s.id}>{s.semester_type}</option>)}
                 </select>
@@ -914,7 +914,7 @@ export default function ScheduleManagement() {
               <label className="block text-[10px] font-black text-gray-600 uppercase tracking-wider mb-1.5">Notes (optional)</label>
               <textarea value={form.notes} onChange={e => setForm(f => ({...f, notes: e.target.value}))}
                 rows={2} placeholder="Additional notes..."
-                className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500 resize-none placeholder:text-gray-400" />
+                className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500 resize-none placeholder:text-gray-400" />
             </div>
           </div>
 
@@ -925,7 +925,7 @@ export default function ScheduleManagement() {
               Cancel
             </button>
             <button type="submit" disabled={saving}
-              className="px-8 py-2.5 bg-[#5e2a84] text-white text-xs font-black uppercase tracking-widest hover:bg-purple-700 disabled:opacity-50 flex items-center gap-2 rounded-sm">
+              className="px-8 py-2.5 bg-[#5e2a84] text-white text-xs font-black uppercase tracking-widest hover:bg-violet-700 disabled:opacity-50 flex items-center gap-2 rounded-sm">
               {saving && <svg className="w-3.5 h-3.5 animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>}
               {saving ? 'Saving...' : editItem ? 'Save Changes' : 'Assign Class'}
             </button>
@@ -1004,7 +1004,7 @@ export default function ScheduleManagement() {
             <div className="flex items-center justify-between gap-3 mb-4">
               <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Period Overview</p>
               <button type="button" onClick={() => { setShowTutorial(true); setTutorialStep(0); }}
-                className="text-[9px] font-bold text-violet-600 hover:text-blue-800 flex items-center gap-1">
+                className="text-[9px] font-bold text-violet-600 hover:text-violet-800 flex items-center gap-1">
                 <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 Tutorial
               </button>
@@ -1064,7 +1064,7 @@ export default function ScheduleManagement() {
                             const slot = slots[0];
                             const isBeingEdited = isEditing && editingSlot?.day === d;
                             return (
-                              <div key={d} className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] font-bold border transition-all ${isBeingEdited ? 'bg-violet-100 border-blue-400 text-violet-900 ring-1 ring-violet-400' : has ? 'bg-violet-50 border-violet-200 text-blue-800' : 'bg-slate-50 border-dashed border-slate-200 text-slate-400'}`}>
+                              <div key={d} className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] font-bold border transition-all ${isBeingEdited ? 'bg-violet-100 border-violet-400 text-violet-900 ring-1 ring-violet-400' : has ? 'bg-violet-50 border-violet-200 text-violet-800' : 'bg-slate-50 border-dashed border-slate-200 text-slate-400'}`}>
                                 <span>{DAY_SHORT[d]}</span>
                                 {has && slot ? (
                                   <div className="flex items-center gap-0.5 ml-0.5">

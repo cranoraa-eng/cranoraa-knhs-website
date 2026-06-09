@@ -117,7 +117,7 @@ const ClassMembers = () => {
           </div>
           <div>
             <h2 className="text-xl font-bold" style={{ color: '#ffffff' }}>{classroom?.classroom_name || `Classroom ${classroom?.classroom}`}</h2>
-            <div className="flex flex-wrap gap-4 mt-2 text-purple-200 text-sm">
+            <div className="flex flex-wrap gap-4 mt-2 text-violet-200 text-sm">
               <span className="flex items-center gap-1.5">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -144,7 +144,7 @@ const ClassMembers = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Subjects */}
         <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
-          <div className="px-5 py-4 border-b border-slate-100 bg-gradient-to-r from-purple-50 to-indigo-50">
+          <div className="px-5 py-4 border-b border-slate-100 bg-gradient-to-r from-violet-50 to-indigo-50">
             <h3 className="font-semibold text-slate-800">Subjects & Teachers</h3>
             <p className="text-xs text-slate-400 mt-0.5">{subjects.length} subject{subjects.length !== 1 ? 's' : ''} this year</p>
           </div>
@@ -154,7 +154,7 @@ const ClassMembers = () => {
             <div className="divide-y divide-slate-100">
               {subjects.map((s, i) => (
                 <div key={s.id} className="flex items-center gap-3 px-5 py-3.5 hover:bg-violet-50 transition-colors">
-                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-indigo-500 flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
+                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-indigo-500 flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
                     {i + 1}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -182,7 +182,7 @@ const ClassMembers = () => {
 
         {/* Classmates */}
         <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
-          <div className="px-5 py-4 border-b border-slate-100 bg-gradient-to-r from-purple-50 to-indigo-50">
+          <div className="px-5 py-4 border-b border-slate-100 bg-gradient-to-r from-violet-50 to-indigo-50">
             <h3 className="font-semibold text-slate-800">Classmates</h3>
             <p className="text-xs text-slate-400 mt-0.5">{classmates.length} student{classmates.length !== 1 ? 's' : ''} enrolled</p>
           </div>
@@ -204,7 +204,7 @@ const ClassMembers = () => {
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-xs flex-shrink-0 shadow-sm ${
                       m.student_sex?.toLowerCase() === 'female' 
                         ? 'bg-rose-400' 
-                        : 'bg-blue-400'
+                        : 'bg-violet-400'
                     }`}>
                       {initials}
                     </div>

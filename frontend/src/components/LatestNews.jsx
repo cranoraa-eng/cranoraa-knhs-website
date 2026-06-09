@@ -27,7 +27,7 @@ const LatestNews = () => {
 
   const getCategoryColor = (category) => {
     const colors = {
-      'academic': 'bg-violet-100 text-purple-800',
+      'academic': 'bg-violet-100 text-violet-800',
       'events': 'bg-green-100 text-green-800',
       'emergency': 'bg-red-100 text-red-800',
       'holiday': 'bg-blue-100 text-blue-800',
@@ -60,7 +60,7 @@ const LatestNews = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-bold text-center text-slate-800 mb-12">Latest News</h2>
           <div className="flex justify-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-violet-600"></div>
           </div>
         </div>
       </div>

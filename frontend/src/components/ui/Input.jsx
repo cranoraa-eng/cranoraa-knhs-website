@@ -28,7 +28,7 @@ export const Input = React.forwardRef(({
         className={cn(
           'w-full px-4 py-2.5 rounded-lg bg-white text-sm text-slate-900',
           'border border-slate-300 placeholder:text-slate-400',
-          'focus:outline-none focus:ring-2 focus:ring-purple-100 focus:border-purple-500',
+          'focus:outline-none focus:ring-2 focus:ring-violet-100 focus:border-violet-500',
           'disabled:bg-slate-50 disabled:text-slate-500 disabled:cursor-not-allowed',
           'transition-all duration-150',
           error && 'border-red-300 focus:border-red-500 focus:ring-red-100',
@@ -72,7 +72,7 @@ export const Textarea = React.forwardRef(({
         className={cn(
           'w-full px-4 py-2.5 rounded-lg bg-white text-sm text-slate-900',
           'border border-slate-300 placeholder:text-slate-400',
-          'focus:outline-none focus:ring-2 focus:ring-purple-100 focus:border-purple-500',
+          'focus:outline-none focus:ring-2 focus:ring-violet-100 focus:border-violet-500',
           'disabled:bg-slate-50 disabled:text-slate-500 disabled:cursor-not-allowed',
           'resize-none transition-all duration-150',
           error && 'border-red-300 focus:border-red-500 focus:ring-red-100',
@@ -115,7 +115,7 @@ export const Select = React.forwardRef(({
         className={cn(
           'w-full px-4 py-2.5 rounded-lg bg-white text-sm text-slate-900 font-medium',
           'border border-slate-300',
-          'focus:outline-none focus:ring-2 focus:ring-purple-100 focus:border-purple-500',
+          'focus:outline-none focus:ring-2 focus:ring-violet-100 focus:border-violet-500',
           'disabled:bg-slate-50 disabled:text-slate-500 disabled:cursor-not-allowed',
           'cursor-pointer transition-all duration-150',
           error && 'border-red-300 focus:border-red-500 focus:ring-red-100',
@@ -165,7 +165,7 @@ export const SearchInput = React.forwardRef(({
           'w-full pl-10 pr-4 py-2.5 rounded-lg',
           'bg-slate-50 text-sm text-slate-900',
           'border border-slate-200 placeholder:text-slate-400',
-          'focus:outline-none focus:ring-2 focus:ring-purple-100 focus:border-purple-500 focus:bg-white',
+          'focus:outline-none focus:ring-2 focus:ring-violet-100 focus:border-violet-500 focus:bg-white',
           'transition-all duration-150',
           className
         )}
@@ -189,8 +189,8 @@ export const Checkbox = React.forwardRef(({
         ref={ref}
         type="checkbox"
         className={cn(
-          'w-4 h-4 rounded border-slate-300 text-purple-600',
-          'focus:ring-2 focus:ring-purple-100 focus:ring-offset-0',
+          'w-4 h-4 rounded border-slate-300 text-violet-600',
+          'focus:ring-2 focus:ring-violet-100 focus:ring-offset-0',
           'cursor-pointer transition-all duration-150',
           className
         )}

@@ -449,7 +449,7 @@ const MyClasses = () => {
                   setShowProfileModal(false);
                   navigate(`/student-grades?student_id=${selectedStudent.id}`);
                 }}
-                className="px-6 py-2.5 bg-[#5e2a84] text-white text-xs font-black uppercase tracking-widest hover:bg-purple-700 rounded-sm flex items-center gap-2"
+                className="px-6 py-2.5 bg-[#5e2a84] text-white text-xs font-black uppercase tracking-widest hover:bg-violet-700 rounded-sm flex items-center gap-2"
               >
                 View Full Grades
               </button>

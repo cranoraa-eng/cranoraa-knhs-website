@@ -1022,7 +1022,7 @@ const StudentManagement = () => {
       {showProfileModal && selectedStudent && (
         <div className="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center p-4">
           <div className="bg-white w-full max-w-lg border border-gray-300 shadow-2xl rounded-sm flex flex-col max-h-[92vh]" onClick={e => e.stopPropagation()}>
-            <div className="bg-[#5e2a84] flex items-center justify-between px-5 py-3 flex-shrink-0 border-b-2 border-purple-900">
+            <div className="bg-[#5e2a84] flex items-center justify-between px-5 py-3 flex-shrink-0 border-b-2 border-violet-900">
               <div className="flex items-center gap-3 min-w-0">
                 <div className="w-7 h-7 rounded-full bg-white/20 border border-white/30 flex items-center justify-center flex-shrink-0">
                   <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1031,7 +1031,7 @@ const StudentManagement = () => {
                 </div>
                 <div>
                   <h2 className="text-sm font-black text-white uppercase tracking-widest leading-none">{selectedStudent.last_name}, {selectedStudent.first_name}</h2>
-                  <p className="text-purple-200 text-[10px] mt-0.5 font-medium uppercase tracking-wide">Student Academic Profile</p>
+                  <p className="text-violet-200 text-[10px] mt-0.5 font-medium uppercase tracking-wide">Student Academic Profile</p>
                 </div>
               </div>
               <button type="button" onClick={() => setShowProfileModal(false)}
@@ -1087,7 +1087,7 @@ const StudentManagement = () => {
       {showAddModal && (
         <div className="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center p-4">
           <div className="bg-white w-full max-w-lg border border-gray-300 shadow-2xl rounded-sm flex flex-col max-h-[92vh]" onClick={e => e.stopPropagation()}>
-            <div className="bg-[#5e2a84] flex items-center justify-between px-5 py-3 flex-shrink-0 border-b-2 border-purple-900">
+            <div className="bg-[#5e2a84] flex items-center justify-between px-5 py-3 flex-shrink-0 border-b-2 border-violet-900">
               <div className="flex items-center gap-3 min-w-0">
                 <div className="w-7 h-7 rounded-full bg-white/20 border border-white/30 flex items-center justify-center flex-shrink-0">
                   <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1096,7 +1096,7 @@ const StudentManagement = () => {
                 </div>
                 <div>
                   <h2 className="text-sm font-black text-white uppercase tracking-widest leading-none">Create Student Account</h2>
-                  <p className="text-purple-200 text-[10px] mt-0.5 font-medium uppercase tracking-wide">New Learner Registration</p>
+                  <p className="text-violet-200 text-[10px] mt-0.5 font-medium uppercase tracking-wide">New Learner Registration</p>
                 </div>
               </div>
               <button type="button" onClick={() => setShowAddModal(false)}
@@ -1114,7 +1114,7 @@ const StudentManagement = () => {
                   </label>
                   <input type="text" value={newStudent.username}
                     onChange={e => setNewStudent({...newStudent, username: e.target.value})}
-                    className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500 placeholder:text-gray-400"
+                    className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500 placeholder:text-gray-400"
                     required />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
@@ -1124,7 +1124,7 @@ const StudentManagement = () => {
                     </label>
                     <input type="text" value={newStudent.first_name}
                       onChange={e => setNewStudent({...newStudent, first_name: e.target.value})}
-                      className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500 placeholder:text-gray-400"
+                      className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500 placeholder:text-gray-400"
                       required />
                   </div>
                   <div>
@@ -1133,7 +1133,7 @@ const StudentManagement = () => {
                     </label>
                     <input type="text" value={newStudent.last_name}
                       onChange={e => setNewStudent({...newStudent, last_name: e.target.value})}
-                      className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500 placeholder:text-gray-400"
+                      className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500 placeholder:text-gray-400"
                       required />
                   </div>
                 </div>
@@ -1144,7 +1144,7 @@ const StudentManagement = () => {
                     </label>
                     <select value={newStudent.grade_level}
                       onChange={e => setNewStudent({...newStudent, grade_level: e.target.value})}
-                      className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500"
+                      className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500"
                       required>
                       <option value="">Select Grade</option>
                       {GRADE_ORDER.map(g => <option key={g} value={g}>{g}</option>)}
@@ -1156,7 +1156,7 @@ const StudentManagement = () => {
                     </label>
                     <select value={newStudent.sex}
                       onChange={e => setNewStudent({...newStudent, sex: e.target.value})}
-                      className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500"
+                      className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500"
                       required>
                       <option value="">Select Sex</option>
                       <option value="male">Male</option>
@@ -1168,14 +1168,14 @@ const StudentManagement = () => {
                   <label className="block text-xs font-black text-gray-700 uppercase tracking-wider mb-1.5">Email (Optional)</label>
                   <input type="email" value={newStudent.email}
                     onChange={e => setNewStudent({...newStudent, email: e.target.value})}
-                    className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500 placeholder:text-gray-400" />
+                    className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500 placeholder:text-gray-400" />
                 </div>
                 <div>
                   <label className="block text-xs font-black text-gray-700 uppercase tracking-wider mb-1.5">Temporary Password</label>
                   <input type="text" value={newStudent.password}
                     onChange={e => setNewStudent({...newStudent, password: e.target.value})}
                     placeholder="Leave blank for auto-gen"
-                    className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500 placeholder:text-gray-400" />
+                    className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500 placeholder:text-gray-400" />
                 </div>
               </div>
               <div className="px-6 py-4 border-t border-gray-200 bg-gray-50 flex items-center justify-end gap-3 flex-shrink-0">
@@ -1184,7 +1184,7 @@ const StudentManagement = () => {
                   Cancel
                 </button>
                 <button type="submit" disabled={isSubmitting}
-                  className="px-6 py-2.5 bg-[#5e2a84] text-white text-xs font-black uppercase tracking-widest hover:bg-purple-700 rounded-sm">
+                  className="px-6 py-2.5 bg-[#5e2a84] text-white text-xs font-black uppercase tracking-widest hover:bg-violet-700 rounded-sm">
                   {isSubmitting ? 'Creating...' : 'Create Account'}
                 </button>
               </div>
@@ -1197,7 +1197,7 @@ const StudentManagement = () => {
       {showImportModal && (
         <div className="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center p-4">
           <div className="bg-white w-full max-w-lg border border-gray-300 shadow-2xl rounded-sm flex flex-col max-h-[92vh]" onClick={e => e.stopPropagation()}>
-            <div className="bg-[#5e2a84] flex items-center justify-between px-5 py-3 flex-shrink-0 border-b-2 border-purple-900">
+            <div className="bg-[#5e2a84] flex items-center justify-between px-5 py-3 flex-shrink-0 border-b-2 border-violet-900">
               <div className="flex items-center gap-3 min-w-0">
                 <div className="w-7 h-7 rounded-full bg-white/20 border border-white/30 flex items-center justify-center flex-shrink-0">
                   <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1206,7 +1206,7 @@ const StudentManagement = () => {
                 </div>
                 <div>
                   <h2 className="text-sm font-black text-white uppercase tracking-widest leading-none">Bulk Import Students</h2>
-                  <p className="text-purple-200 text-[10px] mt-0.5 font-medium uppercase tracking-wide">Upload Excel or CSV File</p>
+                  <p className="text-violet-200 text-[10px] mt-0.5 font-medium uppercase tracking-wide">Upload Excel or CSV File</p>
                 </div>
               </div>
               <button type="button" onClick={() => setShowImportModal(false)}
@@ -1243,8 +1243,8 @@ const StudentManagement = () => {
                 }}
                 className={`relative border-2 border-dashed rounded p-10 text-center transition-all duration-300 ${
                   isDragging
-                    ? 'border-purple-500 bg-purple-50 scale-[1.02] shadow-xl shadow-purple-100'
-                    : 'border-gray-300 hover:border-purple-400 bg-gray-50'
+                    ? 'border-violet-500 bg-violet-50 scale-[1.02] shadow-xl shadow-violet-100'
+                    : 'border-gray-300 hover:border-violet-400 bg-gray-50'
                 }`}
               >
                 <input
@@ -1255,7 +1255,7 @@ const StudentManagement = () => {
                   id="excel-upload"
                 />
                 <div className="space-y-4">
-                  <div className={`w-16 h-16 rounded mx-auto flex items-center justify-center transition-colors ${isDragging ? 'bg-purple-600 text-white' : 'bg-white text-purple-500 shadow-sm'}`}>
+                  <div className={`w-16 h-16 rounded mx-auto flex items-center justify-center transition-colors ${isDragging ? 'bg-violet-600 text-white' : 'bg-white text-violet-500 shadow-sm'}`}>
                     <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v12m0 0l-3-3m3 3l3-3m-9 8h12" />
                     </svg>

@@ -387,11 +387,11 @@ const ClassManagement = () => {
           <ModalBody>
             <div className="space-y-4">
               {/* Info banner */}
-              <div className="flex items-start gap-3 p-3 bg-purple-50 border border-purple-200 rounded-sm">
-                <svg className="w-4 h-4 text-purple-700 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="flex items-start gap-3 p-3 bg-violet-50 border border-violet-200 rounded-sm">
+                <svg className="w-4 h-4 text-violet-700 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                 </svg>
-                <p className="text-xs text-purple-800">Fill in all required fields. Class name should follow the format: Grade Level - Section Name.</p>
+                <p className="text-xs text-violet-800">Fill in all required fields. Class name should follow the format: Grade Level - Section Name.</p>
               </div>
 
               <ModalField label="Grade Level" required>
