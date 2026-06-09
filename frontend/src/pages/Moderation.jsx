@@ -224,55 +224,22 @@ const Moderation = () => {
 
   return (
     <div className="page-bottom-safe bg-slate-50/50">
-      {/* DepEd Official Header with Government Seal */}
-      <div className="bg-gradient-to-r from-blue-900 via-blue-800 to-blue-900 border-b-4 border-yellow-400 px-4 md:px-6 py-4 md:py-6 mb-4 md:mb-6 shadow-lg">
-        <div className="max-w-[1600px] mx-auto">
-          <div className="flex items-center gap-4">
-            {/* Official DepEd Seal */}
-            <div className="h-14 w-14 md:h-20 md:w-20 rounded-full bg-white flex items-center justify-center shrink-0 shadow-xl border-4 border-yellow-400">
-              <div className="relative">
-                <svg className="w-8 h-8 md:w-12 md:h-12 text-blue-900" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/>
-                </svg>
-                <div className="absolute -top-1 -right-1 w-4 h-4 md:w-6 md:h-6 bg-yellow-400 rounded-full flex items-center justify-center">
-                  <svg className="w-2 h-2 md:w-3 md:h-3 text-blue-900" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/>
-                  </svg>
-                </div>
-              </div>
-            </div>
-            <div className="flex-1">
-              <div className="flex items-baseline gap-2 flex-wrap">
-                <h1 className="text-xl md:text-3xl font-black text-white uppercase tracking-tight">
-                  Content Moderation
-                </h1>
-                <span className="px-2 py-0.5 md:px-3 md:py-1 bg-yellow-400 text-blue-900 text-[10px] md:text-xs font-black uppercase tracking-widest rounded-md">
-                  Official
-                </span>
-              </div>
-              <p className="text-xs md:text-sm font-bold text-blue-100 uppercase tracking-wide mt-1">
-                Department of Education • Safety & Community Standards
-              </p>
-              <p className="text-[10px] md:text-xs text-blue-200 mt-1 font-medium">
-                Message Reports & Moderation System • KNHS Safety Office
-              </p>
-            </div>
-            {/* Bulk Delete Action */}
-            {selectedIds.length > 0 && (
-              <div className="hidden lg:block">
-                <button
-                  onClick={handleBulkDelete}
-                  disabled={processing}
-                  className="flex items-center gap-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg text-xs font-black uppercase tracking-widest transition-all shadow-lg"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                  Delete {selectedIds.length}
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
+      <div className="mb-4 md:mb-6">
+        <h1 className="text-xl md:text-2xl font-extrabold text-slate-900 tracking-tight">Content Moderation</h1>
+        <p className="text-xs text-slate-500 mt-1">Message Reports & Community Standards</p>
       </div>
+      {selectedIds.length > 0 && (
+        <div className="flex items-center gap-2 mb-4 md:mb-6">
+          <button
+            onClick={handleBulkDelete}
+            disabled={processing}
+            className="flex items-center gap-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg text-xs font-black uppercase tracking-widest transition-all shadow-lg"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+            Delete {selectedIds.length}
+          </button>
+        </div>
+      )}
 
       <div className="max-w-[1600px] mx-auto px-2 md:px-6 space-y-4 md:space-y-6 pb-6">
       {/* Mobile Bulk Delete */}

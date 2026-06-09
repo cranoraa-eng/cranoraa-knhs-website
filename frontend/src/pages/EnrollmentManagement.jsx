@@ -311,54 +311,21 @@ const EnrollmentManagement = () => {
 
   return (
     <div className="page-bottom-safe bg-slate-50/50">
-      {/* DepEd Official Header with Government Seal */}
-      <div className="bg-gradient-to-r from-blue-900 via-blue-800 to-blue-900 border-b-4 border-yellow-400 px-4 md:px-6 py-4 md:py-6 mb-4 md:mb-6 shadow-lg">
-        <div className="max-w-[1600px] mx-auto">
-          <div className="flex items-center gap-4">
-            {/* Official DepEd Seal */}
-            <div className="h-14 w-14 md:h-20 md:w-20 rounded-full bg-white flex items-center justify-center shrink-0 shadow-xl border-4 border-yellow-400">
-              <div className="relative">
-                <svg className="w-8 h-8 md:w-12 md:h-12 text-blue-900" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M12 3L1 9l11 6 9-4.91V17h2V9M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z"/>
-                </svg>
-                <div className="absolute -top-1 -right-1 w-4 h-4 md:w-6 md:h-6 bg-yellow-400 rounded-full flex items-center justify-center">
-                  <svg className="w-2 h-2 md:w-3 md:h-3 text-blue-900" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/>
-                  </svg>
-                </div>
-              </div>
-            </div>
-            <div className="flex-1">
-              <div className="flex items-baseline gap-2 flex-wrap">
-                <h1 className="text-xl md:text-3xl font-black text-white uppercase tracking-tight">
-                  Admissions Management
-                </h1>
-                <span className="px-2 py-0.5 md:px-3 md:py-1 bg-yellow-400 text-blue-900 text-[10px] md:text-xs font-black uppercase tracking-widest rounded-md">
-                  Official
-                </span>
-              </div>
-              <p className="text-xs md:text-sm font-bold text-blue-100 uppercase tracking-wide mt-1">
-                Department of Education • Enrollment Applications System
-              </p>
-              <p className="text-[10px] md:text-xs text-blue-200 mt-1 font-medium">
-                SY {new Date().getFullYear()}-{new Date().getFullYear() + 1} • KNHS Admissions Office
-              </p>
-            </div>
-            {/* Export Actions */}
-            <div className="hidden lg:flex items-center gap-2">
-              <button onClick={handleExportCSV}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/10 backdrop-blur-sm border border-white/20 text-white text-xs font-bold hover:bg-white/20 transition-all">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                CSV
-              </button>
-              <button onClick={handleExportPDF}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-yellow-400 text-blue-900 text-xs font-black hover:bg-yellow-300 transition-all shadow-lg">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
-                PDF Report
-              </button>
-            </div>
-          </div>
-        </div>
+      <div className="mb-4 md:mb-6">
+        <h1 className="text-xl md:text-2xl font-extrabold text-slate-900 tracking-tight">Admissions Management</h1>
+        <p className="text-xs text-slate-500 mt-1">SY {new Date().getFullYear()}-{new Date().getFullYear() + 1} Enrollment Applications</p>
+      </div>
+      <div className="flex items-center gap-2 mb-4 md:mb-6">
+        <button onClick={handleExportCSV}
+          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white border border-slate-200 text-slate-700 text-xs font-bold hover:bg-slate-50 transition-all shadow-sm">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          CSV
+        </button>
+        <button onClick={handleExportPDF}
+          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-violet-600 text-white text-xs font-bold hover:bg-violet-700 transition-all shadow-md">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+          PDF Report
+        </button>
       </div>
 
       <div className="max-w-[1600px] mx-auto px-2 md:px-6 space-y-4 md:space-y-6 pb-6">

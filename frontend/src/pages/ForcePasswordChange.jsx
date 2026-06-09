@@ -47,79 +47,28 @@ const ForcePasswordChange = () => {
   };
 
   return (
-    <div className="min-h-screen relative overflow-hidden flex items-center justify-center px-4 py-12 bg-[#0F071E]">
-      {/* SaaS-style Background Accents */}
-      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-to-br from-violet-600/20 via-fuchsia-600/10 to-transparent rounded-full blur-[120px] -mr-64 -mt-64" />
-      <div className="absolute -bottom-32 -left-32 w-96 h-96 bg-indigo-600/20 rounded-full blur-[100px]" />
-      
-      {/* Grid texture */}
-      <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
-
-      <div className="relative w-full max-w-sm">
-        <div className="bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[2.5rem] p-8 shadow-2xl shadow-black/40 ring-1 ring-white/5 relative overflow-hidden">
-           {/* Inner glow */}
-           <div className="absolute inset-0 bg-gradient-to-br from-violet-500/[0.05] to-transparent pointer-events-none" />
-
-          {/* Header */}
-          <div className="text-center mb-8 relative">
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-white rounded-full mb-6 shadow-[0_0_30px_rgba(139,92,246,0.3)] p-1.5 border-4 border-white/10">
-              <img 
-                src="/icons/school-logo-source.png" 
-                alt="KNHS Logo" 
-                className="w-full h-full object-contain"
-              />
-            </div>
-            <h1 className="text-2xl font-black text-white mb-2 tracking-tight uppercase leading-none text-center">Security Policy</h1>
-            <p className="text-[10px] text-violet-400 font-bold uppercase tracking-[0.2em] text-center">Mandatory Password Update</p>
+    <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-slate-50">
+      <div className="w-full max-w-sm bg-white rounded-xl border border-slate-200 shadow-sm p-8">
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-violet-100 rounded-full mb-4">
+            <img src="/icons/school-logo-source.png" alt="KNHS Logo" className="w-10 h-10 object-contain" />
           </div>
-
-          <form onSubmit={handleSubmit} className="space-y-5 relative">
-            <div className="p-4 bg-violet-500/10 border border-violet-500/20 rounded-2xl mb-6">
-              <p className="text-[11px] text-violet-200 leading-relaxed font-medium">
-                To keep your student portal account secure, our policy requires a unique password. Please set one now.
-              </p>
-            </div>
-
-            <Input
-              label="New Password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              required
-              className="bg-white/5 border-white/10 text-white placeholder:text-slate-600 focus:ring-violet-500/20 focus:border-violet-500"
-            />
-
-            <Input
-              label="Confirm Password"
-              type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="••••••••"
-              required
-              className="bg-white/5 border-white/10 text-white placeholder:text-slate-600 focus:ring-violet-500/20 focus:border-violet-500"
-            />
-
-            <Button
-              type="submit"
-              variant="primary"
-              disabled={loading}
-              loading={loading}
-              className="w-full shadow-xl shadow-violet-900/20"
-            >
-              Secure Account
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-              </svg>
-            </Button>
-          </form>
-
-          <div className="mt-8 text-center">
-            <p className="text-slate-600 font-bold text-[9px] uppercase tracking-[0.2em]">
-              Kiwalan National High School • Data Privacy Protected
-            </p>
-          </div>
+          <h1 className="text-xl font-extrabold text-slate-900 tracking-tight">Security Policy</h1>
+          <p className="text-xs text-slate-500 mt-1">Mandatory Password Update</p>
         </div>
+        <div className="p-3 bg-violet-50 border border-violet-200 rounded-lg mb-6">
+          <p className="text-xs text-violet-700 leading-relaxed">
+            To keep your account secure, please set a new password.
+          </p>
+        </div>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <Input label="New Password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Enter new password" required />
+          <Input label="Confirm Password" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Confirm new password" required />
+          <Button type="submit" variant="primary" disabled={loading} loading={loading} className="w-full">
+            Update Password
+          </Button>
+        </form>
+        <p className="text-center text-[11px] text-slate-400 mt-6">Kiwalan National High School</p>
       </div>
     </div>
   );

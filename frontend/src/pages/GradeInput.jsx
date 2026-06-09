@@ -635,9 +635,9 @@ const GradeInput = () => {
                                 <td className="px-4 py-3">
                                   <div className="flex items-center gap-3">
                                     <div className={`w-9 h-9 rounded-md flex items-center justify-center text-white font-extrabold text-xs shadow-sm shrink-0 ${
-                                      currentSex === 'male' ? 'bg-gradient-to-br from-violet-500 to-violet-600 border border-violet-700' :
-                                      currentSex === 'female' ? 'bg-gradient-to-br from-rose-500 to-rose-600 border border-rose-700' :
-                                      'bg-gradient-to-br from-slate-500 to-slate-600 border border-slate-700'
+                                      currentSex === 'male' ? 'bg-violet-500 border border-violet-700' :
+                                      currentSex === 'female' ? 'bg-rose-500 border border-rose-700' :
+                                      'bg-slate-500 border border-slate-700'
                                     }`}>
                                       {s.student_name?.charAt(0).toUpperCase()}
                                     </div>

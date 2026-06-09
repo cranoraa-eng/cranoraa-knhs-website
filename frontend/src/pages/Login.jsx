@@ -177,8 +177,7 @@ const Login = () => {
           {/* Background Elements */}
           <div className="absolute inset-0 z-0">
             <div className="absolute top-0 left-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10" />
-            <div className={`absolute top-[-10%] right-[-10%] w-[500px] h-[500px] ${role.theme.primaryBg} rounded-full blur-[120px] transition-colors duration-500`} />
-            <div className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] bg-violet-600/10 rounded-full blur-[120px]" />
+
           </div>
 
           <div className="relative z-10">
@@ -192,18 +191,18 @@ const Login = () => {
 
             <div className="max-w-md">
               <h2 className="text-5xl font-black text-white mb-6 leading-[1.1]">
-                Digital Campus <span className={`text-transparent bg-clip-text bg-gradient-to-r ${role.theme.gradient} transition-all duration-500`}>Portal</span>
+                Digital Campus <span className={`${role.theme.text} transition-colors duration-500`}>Portal</span>
               </h2>
               <p className="text-slate-400 text-lg leading-relaxed mb-10">
                 Official management system for students, faculty, and administration of Kiwalan National High School.
               </p>
 
               <div className="grid grid-cols-2 gap-6">
-                <div className="bg-white/5 backdrop-blur-md border border-white/10 p-4 rounded-lg">
+                <div className="bg-white/10 border border-white/10 p-4 rounded-lg">
                   <p className="text-2xl font-black text-white">100%</p>
                   <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Digital Access</p>
                 </div>
-                <div className="bg-white/5 backdrop-blur-md border border-white/10 p-4 rounded-lg">
+                <div className="bg-white/10 border border-white/10 p-4 rounded-lg">
                   <p className={`text-2xl font-black ${role.theme.text} transition-colors duration-500`}>Secure</p>
                   <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Authentication</p>
                 </div>

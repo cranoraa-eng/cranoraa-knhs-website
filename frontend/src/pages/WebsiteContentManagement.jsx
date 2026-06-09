@@ -146,36 +146,9 @@ const WebsiteContentManagement = () => {
 
   return (
     <div className="p-1.5 md:p-6 bg-slate-50 min-h-full max-w-full overflow-x-hidden page-bottom-safe">
-      {/* ── OFFICIAL GOVERNMENT HEADER ── */}
-      <div className="bg-gradient-to-r from-blue-900 via-blue-800 to-blue-900 border-b-2 border-yellow-400 -m-1.5 md:-m-6 mb-4 md:mb-6">
-        <div className="px-4 md:px-6 py-3 md:py-4">
-          <div className="flex items-center justify-between gap-3 flex-wrap">
-            <div className="flex items-center gap-3 min-w-0">
-              {/* Official DepEd Seal */}
-              <div className="h-10 w-10 md:h-12 md:w-12 rounded-full bg-white flex items-center justify-center shrink-0 border-2 border-yellow-400 shadow-lg">
-                <svg className="w-5 h-5 md:w-6 md:h-6 text-blue-900" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                </svg>
-              </div>
-              <div className="text-left min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <p className="text-sm md:text-base font-black text-white uppercase tracking-wide leading-tight">
-                    Website Content Management
-                  </p>
-                  <span className="px-2 py-0.5 rounded-md bg-yellow-400/90 text-yellow-900 text-[8px] md:text-[9px] font-black uppercase tracking-widest">
-                    Official
-                  </span>
-                </div>
-                <p className="text-[9px] md:text-[10px] text-blue-200 font-medium uppercase tracking-wider mt-0.5">
-                  Department of Education • Public Portal Editor
-                </p>
-              </div>
-            </div>
-            <div className="hidden md:flex items-center gap-2 px-3 py-1 rounded-md bg-blue-800/50">
-              <p className="text-[10px] font-black text-blue-100 uppercase tracking-widest">KNHS Content System</p>
-            </div>
-          </div>
-        </div>
+      <div className="mb-4 md:mb-6">
+        <h1 className="text-xl md:text-2xl font-extrabold text-slate-900 tracking-tight">Website Content Management</h1>
+        <p className="text-xs text-slate-500 mt-1">Public Portal Editor</p>
       </div>
 
       {/* Header */}

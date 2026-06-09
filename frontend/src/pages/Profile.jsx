@@ -161,7 +161,7 @@ const Profile = () => {
         <div className="h-32 bg-[#1A0B2E] px-6 sm:px-8 flex items-end pb-4 relative">
           <div className="absolute inset-0 overflow-hidden rounded-t-[2rem]">
             <div className="absolute inset-0 opacity-[0.06]" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
-            <div className="absolute top-0 right-0 w-64 h-64 bg-violet-600/20 rounded-full translate-x-1/3 -translate-y-1/3 blur-3xl pointer-events-none" />
+
           </div>
 
           <div className="relative flex items-end gap-5 w-full">

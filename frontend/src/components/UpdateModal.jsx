@@ -71,7 +71,7 @@ const UpdateModal = () => {
         <div className="rounded-2xl bg-white shadow-2xl shadow-slate-900/25 overflow-hidden border border-slate-200/80">
 
           {/* Header stripe */}
-          <div className="h-1 w-full bg-gradient-to-r from-violet-500 via-indigo-500 to-violet-600" />
+          <div className="h-1 w-full bg-violet-600" />
 
           <div className="p-6">
             {updating ? (
@@ -97,7 +97,7 @@ const UpdateModal = () => {
               <>
                 <div className="flex items-start gap-4">
                   {/* Icon */}
-                  <div className="flex-shrink-0 h-11 w-11 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-violet-500/30">
+                  <div className="flex-shrink-0 h-11 w-11 rounded-xl bg-violet-600 flex items-center justify-center shadow-sm">
                     <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                     </svg>
@@ -140,7 +140,7 @@ const UpdateModal = () => {
                   </button>
                   <button
                     onClick={handleRefresh}
-                    className="flex-1 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 px-4 py-2.5 text-sm font-bold text-white shadow-md shadow-violet-500/30 hover:from-violet-700 hover:to-indigo-700 active:scale-95 transition-all duration-150 flex items-center justify-center gap-2"
+                    className="flex-1 rounded-xl bg-violet-600 px-4 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-violet-700 active:scale-95 transition-all duration-150 flex items-center justify-center gap-2"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />

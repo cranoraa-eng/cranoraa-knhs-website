@@ -2037,7 +2037,7 @@ const Messages = () => {
         ) : (
           /* Empty state */
           <div className="flex-1 flex flex-col items-center justify-center text-center p-8 bg-slate-50/30">
-            <div className="w-20 h-20 md:w-24 md:h-24 bg-white rounded-3xl shadow-xl flex items-center justify-center text-blue-500 mb-5">
+            <div className="w-20 h-20 md:w-24 md:h-24 bg-white rounded-xl flex items-center justify-center text-blue-500 mb-5">
               <svg className="w-10 h-10 md:w-12 md:h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
               </svg>
@@ -2060,7 +2060,7 @@ const Messages = () => {
         <div className="fixed inset-0 z-[90] flex justify-end">
           <div className="absolute inset-0 bg-black/20" onClick={() => setShowMembersPanel(false)} />
           <div className="relative w-full md:w-80 bg-white h-full shadow-2xl flex flex-col overflow-hidden">
-            <div className="p-5 bg-gradient-to-r from-indigo-500 to-violet-600 text-white flex items-center justify-between">
+            <div className="p-5 bg-violet-600 text-white flex items-center justify-between">
               <div>
                 <h3 className="text-base font-black tracking-tight">Group Members</h3>
                 <p className="text-indigo-200 text-xs font-bold mt-0.5">{selectedRoom.participants_details?.length || 0} members</p>
@@ -2109,7 +2109,7 @@ const Messages = () => {
         <div className="fixed inset-0 z-[90] flex justify-end">
           <div className="absolute inset-0 bg-black/20" onClick={() => setShowPinnedPanel(false)} />
           <div className="relative w-full md:w-80 bg-white h-full shadow-2xl flex flex-col overflow-hidden">
-            <div className="p-5 bg-gradient-to-r from-amber-500 to-orange-500 text-white flex items-center justify-between">
+            <div className="p-5 bg-amber-500 text-white flex items-center justify-between">
               <div>
                 <h3 className="text-base font-black tracking-tight">📌 Pinned Messages</h3>
                 <p className="text-amber-100 text-xs font-bold mt-0.5">
@@ -2158,7 +2158,7 @@ const Messages = () => {
           {/* Panel */}
           <div className="relative w-full md:w-96 bg-white h-full shadow-2xl flex flex-col overflow-hidden">
             {/* Header */}
-            <div className="p-5 bg-gradient-to-r from-violet-600 to-indigo-700 text-white flex items-center justify-between">
+            <div className="p-5 bg-violet-600 text-white flex items-center justify-between">
               <div>
                 <h3 className="text-lg font-black tracking-tight">Group Settings</h3>
                 <p className="text-blue-200 text-xs font-bold uppercase tracking-widest mt-0.5">{selectedRoom.name}</p>
@@ -2313,7 +2313,7 @@ const Messages = () => {
       {showGroupModal && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-[100] p-4">
           <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden">
-            <div className="p-6 bg-gradient-to-r from-violet-600 to-indigo-700 text-white">
+            <div className="p-6 bg-violet-600 text-white">
               <h3 className="text-xl font-black tracking-tight mb-1">Create Group Chat</h3>
               <p className="text-violet-100 text-xs font-bold uppercase tracking-widest opacity-80">Add friends to your conversation</p>
             </div>

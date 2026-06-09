@@ -203,8 +203,8 @@ const ClassMembers = () => {
                   <div key={m.id} className="flex items-center gap-3 px-5 py-3 hover:bg-violet-50 transition-colors">
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-xs flex-shrink-0 shadow-sm ${
                       m.student_sex?.toLowerCase() === 'female' 
-                        ? 'bg-gradient-to-br from-rose-400 to-purple-500' 
-                        : 'bg-gradient-to-br from-blue-400 to-indigo-500'
+                        ? 'bg-rose-400' 
+                        : 'bg-blue-400'
                     }`}>
                       {initials}
                     </div>
