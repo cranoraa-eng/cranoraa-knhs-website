@@ -3,14 +3,14 @@ from rest_framework.decorators import api_view, permission_classes, action
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from rest_framework.response import Response
 from django.contrib.auth import get_user_model
-from accounts.models import User, Attendance, ChatMessage, Grade, StudentClassEnrollment, Classroom, Subject, Announcement as AccountAnnouncement
+from accounts.models import User, ClassroomSubject, StudentClassEnrollment, Grade
 from .models import Announcement, SchoolClass, Department, AcademicYear, Semester, AuditLog, DatabaseBackup
 from .serializers import (
     AnnouncementSerializer,
     SchoolClassSerializer, DepartmentSerializer, AcademicYearSerializer, SemesterSerializer,
     AuditLogSerializer, DatabaseBackupSerializer
 )
-from django.db.models import Count, Avg, Q
+from django.db.models import Count
 from django.utils import timezone
 import datetime
 import logging
@@ -59,7 +59,7 @@ def get_client_ip(request):
 
 
 class AnnouncementViewSet(viewsets.ModelViewSet):
-    queryset = Announcement.objects.filter(is_active=True)
+    queryset = Announcement.objects.filter(is_active=True).select_related('author')
     serializer_class = AnnouncementSerializer
     permission_classes = [IsAuthenticated]
 
@@ -461,22 +461,27 @@ def pending_fees(request):
             status=status.HTTP_403_FORBIDDEN
         )
     
-    # Placeholder data - replace with actual fee model
-    fees = [
-        {
-            'id': 1,
-            'student_name': 'John Doe',
-            'grade_section': 'Grade 7 - Diamond',
-            'balance': 15000,
-        },
-        {
-            'id': 2,
-            'student_name': 'Jane Smith',
-            'grade_section': 'Grade 8 - Ruby',
-            'balance': 8500,
-        },
-    ]
-    return Response(fees)
+    from accounts.models import Fee
+    fees = Fee.objects.filter(status__in=['unpaid', 'partial']).select_related(
+        'student', 'student__profile'
+    ).values(
+        'id', 'student__first_name', 'student__last_name', 'student__username',
+        'student__profile__grade_level', 'amount', 'amount_paid', 'fee_type', 'due_date'
+    )[:20]
+    
+    result = []
+    for f in fees:
+        balance = float(f['amount']) - float(f['amount_paid'])
+        name = f"{f['student__first_name']} {f['student__last_name']}".strip() or f['student__username']
+        result.append({
+            'id': f['id'],
+            'student_name': name,
+            'grade_section': f['student__profile__grade_level'] or 'N/A',
+            'balance': balance,
+            'fee_type': f['fee_type'],
+            'due_date': f['due_date'],
+        })
+    return Response(result)
 
 
 @api_view(['GET'])
@@ -488,23 +493,27 @@ def teacher_progress(request):
             status=status.HTTP_403_FORBIDDEN
         )
     
-    # Placeholder data - replace with actual progress tracking
-    progress = [
-        {
-            'id': 1,
-            'subject': 'Mathematics',
-            'progress': 75,
-            'teacher_name': 'Mr. Johnson',
-            'subjects_count': 5,
-            'submission_status': 'partial',
-        },
-        {
-            'id': 2,
-            'subject': 'Science',
-            'progress': 90,
-            'teacher_name': 'Ms. Williams',
-            'subjects_count': 4,
-            'submission_status': 'complete',
-        },
-    ]
+    teacher_subjects = ClassroomSubject.objects.select_related(
+        'teacher', 'teacher__profile', 'subject', 'classroom'
+    ).all()
+    
+    progress = []
+    for ts in teacher_subjects:
+        total_students = StudentClassEnrollment.objects.filter(classroom=ts.classroom).count()
+        graded_students = Grade.objects.filter(
+            subject=ts.subject, classroom=ts.classroom
+        ).values('student').distinct().count()
+        
+        pct = round(graded_students / total_students * 100) if total_students > 0 else 0
+        teacher_name = full_name(ts.teacher) if ts.teacher else 'Unassigned'
+        
+        progress.append({
+            'id': ts.id,
+            'subject': ts.subject.name if ts.subject else 'N/A',
+            'progress': pct,
+            'teacher_name': teacher_name,
+            'classroom_name': ts.classroom.name if ts.classroom else 'N/A',
+            'students_count': total_students,
+            'submission_status': 'complete' if pct >= 100 else 'partial',
+        })
     return Response(progress)

@@ -19,6 +19,8 @@ from .views import (
     onboarding_state_view,
 )
 
+app_name = 'accounts'
+
 router = DefaultRouter()
 router.register(r'classrooms', ClassroomViewSet, basename='classroom')
 router.register(r'enrollments', StudentClassEnrollmentViewSet, basename='enrollment')

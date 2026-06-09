@@ -8,6 +8,8 @@ from .views import (
     pending_fees, teacher_progress
 )
 
+app_name = 'portal'
+
 router = DefaultRouter()
 router.register(r'public-announcements', AnnouncementViewSet, basename='public-announcement')
 router.register(r'admin/classes', SchoolClassViewSet, basename='class')

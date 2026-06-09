@@ -752,23 +752,35 @@ class ChatRoomSerializer(serializers.ModelSerializer):
         return ''
 
     def get_last_message(self, obj):
-        msg = obj.messages.last()
+        if hasattr(obj, '_prefetched_objects_cache') and 'messages' in obj._prefetched_objects_cache:
+            msgs = sorted(obj._prefetched_objects_cache['messages'], key=lambda m: m.timestamp, reverse=True)
+            msg = msgs[0] if msgs else None
+        else:
+            msg = obj.messages.select_related('sender', 'sender__profile').last()
         if msg:
             return ChatMessageSerializer(msg).data
         return None
 
     def get_participants_details(self, obj):
-        return UserSerializer(obj.participants.all(), many=True).data
+        if hasattr(obj, '_prefetched_objects_cache') and 'participants' in obj._prefetched_objects_cache:
+            participants = obj._prefetched_objects_cache['participants']
+        else:
+            participants = obj.participants.select_related('profile').all()
+        return UserSerializer(participants, many=True).data
 
     def get_is_pinned(self, obj):
         request = self.context.get('request')
         if request and request.user.is_authenticated:
+            if hasattr(obj, '_prefetched_objects_cache') and 'pinned_by' in obj._prefetched_objects_cache:
+                return any(u.id == request.user.id for u in obj._prefetched_objects_cache['pinned_by'])
             return obj.pinned_by.filter(id=request.user.id).exists()
         return False
 
     def get_unread_count(self, obj):
         request = self.context.get('request')
         if request and request.user.is_authenticated:
+            if hasattr(obj, '_prefetched_objects_cache') and 'messages' in obj._prefetched_objects_cache:
+                return sum(1 for m in obj._prefetched_objects_cache['messages'] if not m.is_read and m.sender_id != request.user.id)
             return obj.messages.filter(
                 is_read=False
             ).exclude(sender=request.user).count()
@@ -912,11 +924,15 @@ class ParentChildSummarySerializer(serializers.ModelSerializer):
         return full_name(obj)
 
     def get_classroom_name(self, obj):
-        enrollment = StudentClassEnrollment.objects.filter(student=obj).select_related('classroom').first()
+        enrollment = getattr(obj, '_enrollment_cache', None)
+        if enrollment is None:
+            enrollment = StudentClassEnrollment.objects.filter(student=obj).select_related('classroom').first()
         return enrollment.classroom.name if enrollment else None
 
     def get_adviser_name(self, obj):
-        enrollment = StudentClassEnrollment.objects.filter(student=obj).select_related('classroom__teacher').first()
+        enrollment = getattr(obj, '_enrollment_cache', None)
+        if enrollment is None:
+            enrollment = StudentClassEnrollment.objects.filter(student=obj).select_related('classroom__teacher').first()
         if enrollment and enrollment.classroom.teacher:
             return full_name(enrollment.classroom.teacher)
         return None

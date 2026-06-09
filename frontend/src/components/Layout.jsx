@@ -86,11 +86,17 @@ const Layout = () => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showPushPrompt, setShowPushPrompt] = useState(false);
+  const [sysSettings, setSysSettings] = useState(null);
   const { isOnline } = useNetworkStatus();
   const notifDropdownRef = useRef(null);
 
   // FCM Web Push
   usePushNotifications(user);
+
+  // Fetch system settings for academic year
+  useEffect(() => {
+    api.get('/system/settings/').then(r => setSysSettings(r.data)).catch(() => {});
+  }, []);
 
   // Scroll to top on route change
   useEffect(() => {
@@ -367,8 +373,8 @@ const Layout = () => {
           {/* Academic Year Info */}
           <div className="flex-shrink-0 px-4 py-3 bg-violet-50 border-b border-violet-100">
             <div className="flex items-center justify-between text-[10px] font-bold text-slate-700 uppercase tracking-wide">
-              <span>SY 2025-2026</span>
-              <span className="text-violet-700">2nd Semester</span>
+              <span>{sysSettings?.academic_year || 'SY 2025-2026'}</span>
+              <span className="text-violet-700">{sysSettings?.current_quarter || 'Current Semester'}</span>
             </div>
           </div>
 

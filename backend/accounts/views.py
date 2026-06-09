@@ -1,4 +1,4 @@
-from rest_framework import viewsets, status, filters, parsers, serializers
+from rest_framework import viewsets, status, filters, parsers
 from rest_framework.decorators import action, permission_classes, api_view, parser_classes, throttle_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
@@ -7,7 +7,7 @@ from django.contrib.auth import authenticate
 from django.utils import timezone
 from datetime import timedelta
 import datetime
-from django.db.models import Q, Avg, Count, Max, Min, Sum
+from django.db.models import Q, Avg, Count
 from .serializers import (UserSerializer, ClassroomSerializer, StudentClassEnrollmentSerializer,
     AnnouncementSerializer, AnnouncementCommentSerializer, AttendanceSerializer, LearningMaterialSerializer,
     SubjectSerializer, ClassroomSubjectSerializer, ScratchCardSerializer, FeeSerializer,
@@ -18,7 +18,7 @@ from .serializers import (UserSerializer, ClassroomSerializer, StudentClassEnrol
     OnboardingStateSerializer,
     full_name)
 from .models import User, Profile, Classroom, StudentClassEnrollment, Announcement, AnnouncementAttachment, AnnouncementComment, Attendance, LearningMaterial, Subject, ClassroomSubject, ScratchCard, Fee, Notification, EnrollmentApplication, EnrollmentDocument, EnrollmentStatusHistory, WebsiteContent, Grade, GradeReport, ChatRoom, ChatMessage, MessageReaction, Friendship, SystemSetting, Assignment, Submission, ReportedMessage, Room, TimeSlot, Schedule, FCMToken, OnboardingState
-from .permissions import IsAdmin, IsTeacher, IsStudent, IsParent, IsAdminOrTeacher, IsAdminOrReadOnly
+from .permissions import IsAdmin, IsAdminOrTeacher, IsAdminOrReadOnly
 from .throttles import AuthRateThrottle, CheckResultRateThrottle, EnrollmentRateThrottle
 # Moved portal imports inside functions to avoid circular dependencies
 import logging
@@ -28,7 +28,6 @@ logger = logging.getLogger(__name__)
 
 
 from django.conf import settings
-import random
 import string
 
 from .utils import (
@@ -542,7 +541,7 @@ def teacher_dashboard_stats(request):
         latest_messages = []
         msg_objs = ChatMessage.objects.filter(
             room__participants=user
-        ).exclude(sender=user).order_by('-timestamp')
+        ).exclude(sender=user).select_related('sender', 'sender__profile').order_by('-timestamp')
         
         seen_senders = set()
         for m in msg_objs:
@@ -609,7 +608,7 @@ def student_dashboard_stats(request):
         latest_messages = []
         msg_objs = ChatMessage.objects.filter(
             room__participants=user
-        ).exclude(sender=user).order_by('-timestamp')
+        ).exclude(sender=user).select_related('sender', 'sender__profile').order_by('-timestamp')
         
         seen_senders = set()
         for m in msg_objs:
@@ -654,7 +653,7 @@ class ClassroomViewSet(viewsets.ModelViewSet):
             academic_year = self.request.query_params.get('academic_year')
             
             # Base queryset
-            qs = Classroom.objects.all()
+            qs = Classroom.objects.select_related('teacher', 'academic_year').prefetch_related('enrollments', 'classroom_subjects__subject')
             
             # Filter by academic year if provided
             if academic_year:
@@ -744,7 +743,9 @@ class StudentClassEnrollmentViewSet(viewsets.ModelViewSet):
     
     def get_queryset(self):
         user = self.request.user
-        queryset = StudentClassEnrollment.objects.all()
+        queryset = StudentClassEnrollment.objects.select_related(
+            'student', 'student__profile', 'classroom', 'classroom__teacher'
+        )
         classroom_id = self.request.query_params.get('classroom')
 
         if user.role == 'student':
@@ -2056,7 +2057,7 @@ class LearningMaterialViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         user = self.request.user
         from django.db.models import Q
-        queryset = LearningMaterial.objects.all()
+        queryset = LearningMaterial.objects.select_related('uploaded_by', 'classroom')
         classroom_id = self.request.query_params.get('classroom')
         material_type = self.request.query_params.get('material_type')
         quarter = self.request.query_params.get('quarter')
@@ -2282,7 +2283,7 @@ class FeeViewSet(viewsets.ModelViewSet):
     
     def get_queryset(self):
         user = self.request.user
-        queryset = Fee.objects.all()
+        queryset = Fee.objects.select_related('student')
         student_id = self.request.query_params.get('student')
         status = self.request.query_params.get('status')
         fee_type = self.request.query_params.get('fee_type')
@@ -2561,7 +2562,7 @@ def admin_dashboard_stats(request):
         try:
             msg_objs = ChatMessage.objects.filter(
                 room__participants=request.user
-            ).exclude(sender=request.user).select_related('sender').order_by('-timestamp')
+            ).exclude(sender=request.user).select_related('sender', 'sender__profile').order_by('-timestamp')
             
             seen_senders = set()
             for m in msg_objs:
@@ -4614,7 +4615,12 @@ class ChatRoomViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         try:
-            return self.request.user.chat_rooms.all().order_by('-updated_at')
+            return self.request.user.chat_rooms.select_related(
+                'last_action_sender', 'last_action_sender__profile'
+            ).prefetch_related(
+                'participants', 'participants__profile',
+                'pinned_by', 'messages'
+            ).order_by('-updated_at')
         except Exception as e:
             logger.error(f"ChatRoom queryset error: {str(e)}")
             return ChatRoom.objects.none()
