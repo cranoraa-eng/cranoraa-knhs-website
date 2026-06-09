@@ -13,6 +13,14 @@ const ROLES = {
     identifierPlaceholder: 'Enter your Student ID or email',
     icon: 'M12 14l9-5-9-5-9 5 9 5zm0 7l-9-5 9-5 9 5-9 5z',
     features: ['Real-time grade tracking', 'Attendance monitoring', 'Learning materials', 'Announcements'],
+    panelTitle: 'Student Portal',
+    panelDesc: 'Access your academic records, track your attendance, download learning materials, and stay updated with school announcements.',
+    panelFeatures: [
+      { icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z', label: 'Grade Tracking' },
+      { icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2', label: 'Attendance' },
+      { icon: 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253', label: 'Learning Materials' },
+      { icon: 'M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z', label: 'Messaging' },
+    ],
     theme: {
       text: 'text-purple-800',
       bg: 'bg-purple-900',
@@ -29,6 +37,14 @@ const ROLES = {
     identifierPlaceholder: 'teacher@knhs.edu.ph',
     icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01',
     features: ['Grade input & management', 'Class attendance', 'Upload materials', 'Student communication'],
+    panelTitle: 'Faculty Portal',
+    panelDesc: 'Manage your classes, input grades, take attendance, upload learning materials, and communicate with students and parents.',
+    panelFeatures: [
+      { icon: 'M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z', label: 'Grade Management' },
+      { icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4', label: 'Attendance' },
+      { icon: 'M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12', label: 'Upload Materials' },
+      { icon: 'M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z', label: 'Communication' },
+    ],
     theme: {
       text: 'text-purple-800',
       bg: 'bg-purple-900',
@@ -45,6 +61,14 @@ const ROLES = {
     identifierPlaceholder: 'Enter your email or ID',
     icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z',
     features: ['Monitor child progress', 'View grades & attendance', 'School announcements', 'Direct messaging'],
+    panelTitle: 'Parent Portal',
+    panelDesc: "Stay connected with your child's academic journey. Monitor grades, track attendance, and communicate with teachers.",
+    panelFeatures: [
+      { icon: 'M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z', label: 'Monitor Progress' },
+      { icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z', label: 'View Grades' },
+      { icon: 'M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9', label: 'Announcements' },
+      { icon: 'M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z', label: 'Message Teachers' },
+    ],
     theme: {
       text: 'text-purple-800',
       bg: 'bg-purple-900',
@@ -61,6 +85,14 @@ const ROLES = {
     identifierPlaceholder: 'admin@knhs.edu.ph',
     icon: 'M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z',
     features: ['Full system oversight', 'User management', 'Enrollment control', 'Analytics & reports'],
+    panelTitle: 'Administration',
+    panelDesc: 'Full system oversight. Manage users, control enrollment, view analytics, and maintain system security.',
+    panelFeatures: [
+      { icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z', label: 'System Settings' },
+      { icon: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z', label: 'User Management' },
+      { icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', label: 'Enrollment Control' },
+      { icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z', label: 'Analytics & Reports' },
+    ],
     theme: {
       text: 'text-purple-800',
       bg: 'bg-purple-900',
@@ -161,58 +193,51 @@ const Login = () => {
   return (
     <div className="min-h-screen flex font-sans bg-gray-50">
       {/* Left Side: School Branding */}
-      <div className="hidden lg:flex lg:w-[48%] bg-gradient-to-br from-purple-900 via-purple-800 to-slate-900 relative overflow-hidden">
-        {/* Subtle pattern overlay */}
-        <div className="absolute inset-0 opacity-5">
-          <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '32px 32px' }} />
+      <div className="hidden lg:flex lg:w-[48%] bg-slate-900 relative overflow-hidden">
+        {/* Subtle grid pattern */}
+        <div className="absolute inset-0 opacity-[0.03]">
+          <div className="absolute inset-0" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
         </div>
-        
-        {/* Decorative elements */}
-        <div className="absolute top-0 right-0 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-        <div className="absolute bottom-0 left-0 w-80 h-80 bg-indigo-500/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
 
         <div className="relative z-10 flex flex-col justify-between w-full p-12">
           {/* Header with logo */}
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 bg-white rounded-xl flex items-center justify-center shadow-lg">
-              <img src="/icons/school-logo-source.png" alt="KNHS" className="w-12 h-12 object-contain" />
+            <div className="w-14 h-14 bg-white flex items-center justify-center">
+              <img src="/icons/school-logo-source.png" alt="KNHS" className="w-10 h-10 object-contain" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-white tracking-tight">Kiwalan National</h1>
-              <p className="text-purple-200 text-sm font-medium">High School</p>
+              <h1 className="text-lg font-bold text-white tracking-tight">Kiwalan National</h1>
+              <p className="text-slate-400 text-xs font-medium uppercase tracking-wider">High School</p>
             </div>
           </div>
 
-          {/* Main content */}
+          {/* Main content - Role specific */}
           <div className="flex-1 flex flex-col justify-center max-w-lg">
-            <h2 className="text-5xl font-bold text-white mb-6 leading-tight">
-              Welcome to your
-              <span className="block text-purple-200">Digital Campus</span>
+            <div className="mb-4">
+              <span className="text-purple-400 text-xs font-semibold uppercase tracking-widest">{role.panelTitle}</span>
+            </div>
+            <h2 className="text-4xl font-bold text-white mb-4 leading-tight">
+              {role.label === 'Student' && 'Your Academic\nJourney Starts Here'}
+              {role.label === 'Teacher' && 'Empowering\nEducators'}
+              {role.label === 'Parent' && 'Stay Connected\nWith Your Child'}
+              {role.label === 'Admin' && 'Complete System\nControl'}
             </h2>
-            <p className="text-purple-200/80 text-lg leading-relaxed mb-12">
-              Access your grades, attendance, materials, and communicate with your school community — all in one secure portal.
+            <p className="text-slate-400 text-sm leading-relaxed mb-10">
+              {role.panelDesc}
             </p>
 
-            {/* Feature cards */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-white/10 backdrop-blur-sm border border-white/10 p-5 rounded-xl">
-                <div className="w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center mb-3">
-                  <svg className="w-5 h-5 text-purple-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                  </svg>
+            {/* Role specific features */}
+            <div className="space-y-3">
+              {role.panelFeatures.map((f, i) => (
+                <div key={i} className="flex items-center gap-4 p-3 bg-white/5 border border-white/5">
+                  <div className="w-10 h-10 bg-purple-500/10 flex items-center justify-center flex-shrink-0">
+                    <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={f.icon} />
+                    </svg>
+                  </div>
+                  <span className="text-white text-sm font-medium">{f.label}</span>
                 </div>
-                <h3 className="text-white font-semibold text-sm mb-1">Secure Access</h3>
-                <p className="text-purple-200/60 text-xs">Protected authentication system</p>
-              </div>
-              <div className="bg-white/10 backdrop-blur-sm border border-white/10 p-5 rounded-xl">
-                <div className="w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center mb-3">
-                  <svg className="w-5 h-5 text-purple-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                  </svg>
-                </div>
-                <h3 className="text-white font-semibold text-sm mb-1">Real-time Updates</h3>
-                <p className="text-purple-200/60 text-xs">Instant notifications & grades</p>
-              </div>
+              ))}
             </div>
           </div>
 
@@ -222,14 +247,14 @@ const Login = () => {
               <img
                 src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Seal_of_the_Department_of_Education_of_the_Philippines.png/960px-Seal_of_the_Department_of_Education_of_the_Philippines.png"
                 alt="DepEd"
-                className="w-8 h-8 object-contain opacity-70"
+                className="w-7 h-7 object-contain opacity-50"
               />
               <div>
-                <p className="text-white/80 text-xs font-medium">Department of Education</p>
-                <p className="text-purple-200/50 text-[10px]">Republic of the Philippines</p>
+                <p className="text-slate-400 text-xs font-medium">Department of Education</p>
+                <p className="text-slate-500 text-[10px]">Republic of the Philippines</p>
               </div>
             </div>
-            <p className="text-purple-200/40 text-xs">&copy; 2026 KNHS Portal</p>
+            <p className="text-slate-500 text-xs">&copy; 2026 KNHS Portal</p>
           </div>
         </div>
       </div>
