@@ -108,14 +108,13 @@ export default function ScheduleManagement() {
   const fetchAll = useCallback(async () => {
     setLoading(true);
     try {
-      const [schR, roomR, slotR, clsR, subR, tchR, ayR] = await Promise.all([
-        api.get('/schedules/'), api.get('/rooms/'), api.get('/time-slots/'),
+      const [schR, roomR, clsR, subR, tchR, ayR] = await Promise.all([
+        api.get('/schedules/'), api.get('/rooms/'),
         api.get('/classrooms/'), api.get('/subjects/'), api.get('/users/?role=teacher'),
         api.get('/admin/academic-years/'),
       ]);
       setSchedules(schR.data.results || schR.data);
       setRooms(roomR.data.results || roomR.data);
-      setTimeSlots(slotR.data.results || slotR.data);
       setClassrooms(clsR.data.results || clsR.data);
       setSubjects(subR.data.results || subR.data);
       setTeachers(tchR.data.results || tchR.data);
@@ -128,6 +127,18 @@ export default function ScheduleManagement() {
   }, []);
 
   useEffect(() => { fetchAll(); }, [fetchAll]);
+
+  const fetchTimeSlots = useCallback(async (classroomId) => {
+    try {
+      const url = classroomId ? `/time-slots/?classroom=${classroomId}` : '/time-slots/';
+      const res = await api.get(url);
+      setTimeSlots(res.data.results || res.data);
+    } catch { toast.error('Failed to load time slots'); }
+  }, []);
+
+  useEffect(() => {
+    fetchTimeSlots(filterClassroom || null);
+  }, [filterClassroom, fetchTimeSlots]);
 
   useEffect(() => {
     if (form.academic_year) {
@@ -210,16 +221,18 @@ export default function ScheduleManagement() {
     const existing = getSlotForCell(day, period);
     if (existing) return existing;
     try {
-      const res = await api.post('/time-slots/', {
+      const payload = {
         day, start_time: normalizeTime(period.start_time), end_time: normalizeTime(period.end_time), label: period.label || '',
-      });
+      };
+      if (filterClassroom) payload.classroom = filterClassroom;
+      const res = await api.post('/time-slots/', payload);
       setTimeSlots(prev => [...prev, res.data]);
       return res.data;
     } catch (err) {
       toast.error(err.response?.data?.non_field_errors?.[0] || 'Could not create time slot');
       return null;
     }
-  }, [getSlotForCell]);
+  }, [getSlotForCell, filterClassroom]);
 
   const openCreate = useCallback((slotId = '', prefill = {}) => {
     const ay = academicYears.find(a => String(a.id) === activeAY) || academicYears.find(a => a.is_active);
@@ -289,7 +302,9 @@ export default function ScheduleManagement() {
       for (const p of DEFAULT_PERIODS) {
         for (const d of days) {
           if (slotExists(timeSlots, d, p.start_time, p.end_time)) continue;
-          const r = await api.post('/time-slots/', { day: d, ...p });
+          const payload = { day: d, ...p };
+          if (filterClassroom) payload.classroom = filterClassroom;
+          const r = await api.post('/time-slots/', payload);
           n.push(r.data); c++;
         }
       }
@@ -307,7 +322,9 @@ export default function ScheduleManagement() {
       for (const p of uniquePeriods) {
         for (const d of WEEKDAYS) {
           if (hasSlotForCell(d, p)) continue;
-          const r = await api.post('/time-slots/', { day: d, start_time: normalizeTime(p.start_time), end_time: normalizeTime(p.end_time), label: p.label||'' });
+          const payload = { day: d, start_time: normalizeTime(p.start_time), end_time: normalizeTime(p.end_time), label: p.label||'' };
+          if (filterClassroom) payload.classroom = filterClassroom;
+          const r = await api.post('/time-slots/', payload);
           n.push(r.data); c++;
         }
       }
@@ -325,7 +342,9 @@ export default function ScheduleManagement() {
     try {
       for (const d of slotForm.days) {
         if (slotExists(timeSlots, d, slotForm.start_time, slotForm.end_time)) { sk++; continue; }
-        const r = await api.post('/time-slots/', { day: d, start_time: slotForm.start_time, end_time: slotForm.end_time, label: slotForm.label });
+        const payload = { day: d, start_time: slotForm.start_time, end_time: slotForm.end_time, label: slotForm.label };
+        if (filterClassroom) payload.classroom = filterClassroom;
+        const r = await api.post('/time-slots/', payload);
         n.push(r.data); c++;
       }
       if (c) { setTimeSlots(prev => [...prev, ...n]); toast.success(`Added ${c} period(s)${sk ? ` · ${sk} skipped` : ''}`); setSlotForm(f => ({...f, label:''})); }
@@ -406,14 +425,16 @@ export default function ScheduleManagement() {
     try {
       for (const d of WEEKDAYS) {
         if (hasSlotForCell(d, period)) continue;
-        const r = await api.post('/time-slots/', { day: d, start_time: normalizeTime(period.start_time), end_time: normalizeTime(period.end_time), label: period.label||'' });
+        const payload = { day: d, start_time: normalizeTime(period.start_time), end_time: normalizeTime(period.end_time), label: period.label||'' };
+        if (filterClassroom) payload.classroom = filterClassroom;
+        const r = await api.post('/time-slots/', payload);
         n.push(r.data); c++;
       }
       if (c) { setTimeSlots(prev => [...prev, ...n]); toast.success(`Added ${c} missing day(s)`); }
       else toast.success('All days already present');
     } catch { toast.error('Failed to add'); }
     finally { setSavingSlot(false); }
-  }, [hasSlotForCell]);
+  }, [hasSlotForCell, filterClassroom]);
 
   const tutorialSteps = [
     { title:'Welcome to Bell Periods', desc:'This is where you define your school\'s daily class periods. Start with the quick setup or add periods manually.' },
@@ -937,12 +958,17 @@ export default function ScheduleManagement() {
           TIME SLOTS MODAL
       ══════════════════════════════════════════════════════════════════════ */}
       <Modal open={showSlotPanel} onClose={() => { setShowSlotPanel(false); cancelEditSlot(); }} size="lg"
-        title="Bell Periods" subtitle={`${timeSlots.length} slots configured · Mon–Fri`}>
+        title="Bell Periods" subtitle={filterClassroom ? `${classrooms.find(c => String(c.id) === filterClassroom)?.name || 'Section'} — ${timeSlots.length} slots` : `${timeSlots.length} slots configured · Mon–Fri`}>
         <div className="flex flex-col md:flex-row flex-1 min-h-0 max-h-[75vh] overflow-hidden">
           {/* Left: Setup panel */}
           <div className="w-full md:w-[280px] shrink-0 p-4 border-b md:border-b-0 md:border-r border-slate-100 bg-slate-50/50 overflow-y-auto space-y-4 max-h-64 md:max-h-none">
             <div className="space-y-2">
               <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Quick Setup</p>
+              {filterClassroom && (
+                <p className="text-[10px] text-violet-600 font-semibold bg-violet-50 px-2 py-1 rounded-lg">
+                  Scoping to: {classrooms.find(c => String(c.id) === filterClassroom)?.name}
+                </p>
+              )}
               <button type="button" onClick={() => applyStandardBell(false)} disabled={savingSlot}
                 className="w-full py-2.5 rounded-lg bg-violet-600 text-white text-xs font-bold hover:bg-violet-700 disabled:opacity-50 transition-all shadow-sm">
                 Apply Standard Day (Mon-Fri)

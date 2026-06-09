@@ -1336,7 +1336,11 @@ class Room(models.Model):
 
 
 class TimeSlot(models.Model):
-    """Reusable time slot definition (e.g. 7:00 AM – 8:00 AM)."""
+    """Time slot definition scoped to a classroom section (e.g. 7:00 AM – 8:00 AM).
+    
+    Each section can have its own bell schedule. The classroom field is nullable
+    for backward compatibility with universally-created slots.
+    """
     DAY_CHOICES = [
         ('monday', 'Monday'),
         ('tuesday', 'Tuesday'),
@@ -1346,6 +1350,11 @@ class TimeSlot(models.Model):
         ('saturday', 'Saturday'),
     ]
 
+    classroom = models.ForeignKey(
+        Classroom, on_delete=models.CASCADE, related_name='time_slots',
+        null=True, blank=True,
+        help_text="Scope this time slot to a specific section. Null = universal."
+    )
     day = models.CharField(max_length=10, choices=DAY_CHOICES)
     start_time = models.TimeField()
     end_time = models.TimeField()
@@ -1353,10 +1362,11 @@ class TimeSlot(models.Model):
 
     class Meta:
         ordering = ['day', 'start_time']
-        unique_together = ['day', 'start_time', 'end_time']
+        unique_together = ['classroom', 'day', 'start_time', 'end_time']
 
     def __str__(self):
-        return f"{self.get_day_display()} {self.start_time.strftime('%I:%M %p')} – {self.end_time.strftime('%I:%M %p')}"
+        scope = f" [{self.classroom.name}]" if self.classroom else ""
+        return f"{self.get_day_display()} {self.start_time.strftime('%I:%M %p')} – {self.end_time.strftime('%I:%M %p')}{scope}"
 
 
 class Schedule(models.Model):

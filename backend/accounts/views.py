@@ -5560,15 +5560,18 @@ class RoomViewSet(viewsets.ModelViewSet):
 
 
 class TimeSlotViewSet(viewsets.ModelViewSet):
-    """Manage reusable time slots. Admin-only writes."""
+    """Manage time slots scoped to classroom sections. Admin-only writes."""
     serializer_class = TimeSlotSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        qs = TimeSlot.objects.all()
+        qs = TimeSlot.objects.select_related('classroom').all()
         day = self.request.query_params.get('day')
+        classroom = self.request.query_params.get('classroom')
         if day:
             qs = qs.filter(day=day)
+        if classroom:
+            qs = qs.filter(classroom_id=classroom)
         return qs
 
     def perform_create(self, serializer):

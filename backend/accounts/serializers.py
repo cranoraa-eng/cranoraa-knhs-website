@@ -815,10 +815,11 @@ class TimeSlotSerializer(serializers.ModelSerializer):
     day_display = serializers.CharField(source='get_day_display', read_only=True)
     start_time_display = serializers.SerializerMethodField()
     end_time_display = serializers.SerializerMethodField()
+    classroom_name = serializers.CharField(source='classroom.name', read_only=True)
 
     class Meta:
         model = TimeSlot
-        fields = ['id', 'day', 'day_display', 'start_time', 'end_time',
+        fields = ['id', 'classroom', 'classroom_name', 'day', 'day_display', 'start_time', 'end_time',
                   'start_time_display', 'end_time_display', 'label']
 
     def get_start_time_display(self, obj):
