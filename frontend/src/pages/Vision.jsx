@@ -100,7 +100,7 @@ const Vision = () => {
               <div className="space-y-4">
                 {[
                   'Graduates equipped with 21st-century skills',
-                  'Strong foundation in STEM and humanities',
+                  'Strong foundation in academics and technical skills',
                   'Values-driven, socially responsible citizens',
                   'Active contributors to national development'
                 ].map((item, i) => (

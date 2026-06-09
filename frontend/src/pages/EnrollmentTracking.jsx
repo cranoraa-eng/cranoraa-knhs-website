@@ -121,7 +121,7 @@ const EnrollmentTracking = () => {
               <p className={`text-sm font-semibold ${cfg.text}`}>{cfg.desc}</p>
               <div className="grid grid-cols-2 gap-3 mt-4 pt-3 border-t border-gray-200 text-sm">
                 <div><p className="text-[9px] font-black text-gray-500 uppercase">Applicant</p><p className="font-black text-gray-900">{data.full_name}</p></div>
-                <div><p className="text-[9px] font-black text-gray-500 uppercase">Grade / Strand</p><p className="font-black text-gray-900">Grade {data.grade_level}{data.strand ? ` — ${data.strand}` : ''}</p></div>
+                <div><p className="text-[9px] font-black text-gray-500 uppercase">Grade / Track</p><p className="font-black text-gray-900">Grade {data.grade_level}{data.strand ? ` — ${data.strand}` : ''}</p></div>
                 <div><p className="text-[9px] font-black text-gray-500 uppercase">Date Submitted</p><p className="font-semibold text-gray-800">{new Date(data.submitted_at).toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'})}</p></div>
                 {data.assigned_classroom_name && <div><p className="text-[9px] font-black text-gray-500 uppercase">Assigned Section</p><p className="font-black text-violet-900">{data.assigned_classroom_name}</p></div>}
               </div>

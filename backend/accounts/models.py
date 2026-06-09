@@ -848,17 +848,9 @@ class EnrollmentApplication(models.Model):
         ('other', 'Other'),
     ]
     
-    SHS_STRAND_CHOICES = [
-        ('STEM', 'STEM'),
-        ('ABM', 'ABM'),
-        ('HUMSS', 'HUMSS'),
-        ('GAS', 'GAS'),
-        ('TVL-ICT', 'TVL-ICT'),
-        ('TVL-HE', 'TVL-HE'),
-        ('TVL-IA', 'TVL-IA'),
-        ('TVL-AFA', 'TVL-AFA'),
-        ('Sports', 'Sports'),
-        ('Arts & Design', 'Arts & Design'),
+    SHS_TRACK_CHOICES = [
+        ('Academic', 'Academic Track'),
+        ('TechPro', 'Technical-Professional Track'),
     ]
     
     enrollment_number = models.CharField(max_length=20, unique=True, blank=True, null=True, help_text="Auto-generated ENR-YYYY-XXXXXX")
@@ -897,7 +889,7 @@ class EnrollmentApplication(models.Model):
     
     # Academic Information
     grade_level = models.CharField(max_length=2, choices=GRADE_LEVEL_CHOICES)
-    strand = models.CharField(max_length=20, choices=SHS_STRAND_CHOICES, blank=True, null=True, help_text="Required for Grades 11-12")
+    strand = models.CharField(max_length=20, choices=SHS_TRACK_CHOICES, blank=True, null=True, help_text="Required for Grades 11-12")
     previous_school = models.CharField(max_length=200, blank=True, null=True)
     previous_school_address = models.TextField(blank=True, null=True)
     lrn = models.CharField(max_length=12, blank=True, null=True, help_text="Learner Reference Number")

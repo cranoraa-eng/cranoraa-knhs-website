@@ -338,14 +338,12 @@ const HomeDepEd = () => {
                 <div className="bg-white border-2 border-violet-200 p-4">
                   <div className="grid grid-cols-2 gap-3">
                     {[
-                      { code: 'STEM', img: 'https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=300&q=60' },
-                      { code: 'ABM',  img: 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=300&q=60' },
-                      { code: 'HUMSS',img: 'https://images.unsplash.com/photo-1529070538774-1843cb3265df?w=300&q=60' },
-                      { code: 'TVL',  img: 'https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=300&q=60' },
+                      { code: 'Academic', img: 'https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=300&q=60' },
+                      { code: 'TechPro',  img: 'https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=300&q=60' },
                     ].map((prog, i) => (
                       <Link key={i} to="/senior-high" className="bg-slate-50 rounded-lg overflow-hidden border-2 border-violet-200 hover:border-violet-400 transition-all group">
                         <div className="w-full h-16 overflow-hidden">
-                           <img src={prog.img} alt={prog.code} className="w-full h-full object-cover" />
+                          <img src={prog.img} alt={prog.code} className="w-full h-full object-cover" />
                         </div>
                         <p className="text-xs font-black text-slate-900 text-center py-2 uppercase">{prog.code}</p>
                       </Link>

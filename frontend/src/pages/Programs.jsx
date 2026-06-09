@@ -60,7 +60,7 @@ const Programs = () => {
     {
       key: 'tech',
       title: content.programs_tech_title?.content || 'Technical-Vocational Programs',
-      content: content.programs_tech_content?.content || 'We offer technical-vocational education and training (TVET) programs that equip students with practical skills in various fields.',
+      content: content.programs_tech_content?.content || 'We offer technical-vocational education and training programs under the Technical-Professional (TechPro) track that equip students with practical skills in various fields.',
       icon: 'M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z',
       image: 'https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
     },

@@ -3,17 +3,9 @@ import { useNavigate, Link } from 'react-router-dom';
 import api from '../utils/api';
 import Swal from 'sweetalert2';
 
-const SHS_STRANDS = [
-  { value: 'STEM', label: 'STEM' },
-  { value: 'ABM', label: 'ABM' },
-  { value: 'HUMSS', label: 'HUMSS' },
-  { value: 'GAS', label: 'GAS' },
-  { value: 'TVL-ICT', label: 'TVL-ICT' },
-  { value: 'TVL-HE', label: 'TVL-HE' },
-  { value: 'TVL-IA', label: 'TVL-IA' },
-  { value: 'TVL-AFA', label: 'TVL-AFA' },
-  { value: 'Sports', label: 'Sports' },
-  { value: 'Arts & Design', label: 'Arts & Design' },
+const SHS_TRACKS = [
+  { value: 'Academic', label: 'Academic Track' },
+  { value: 'TechPro', label: 'Technical-Professional Track' },
 ];
 
 const ENROLLMENT_TYPES = [
@@ -279,7 +271,7 @@ const Enrollment = () => {
         return false;
       }
       if (['11','12'].includes(gradeLevel) && !strand) {
-        Swal.fire({ icon: 'error', title: 'Strand Required', text: 'Select a strand for SHS.' });
+        Swal.fire({ icon: 'error', title: 'Track Required', text: 'Select a track for SHS.' });
         return false;
       }
       if (isTransferee && !previousSchool) {
@@ -601,10 +593,10 @@ const Enrollment = () => {
                     </Select>
                   </Field>
                   {['11','12'].includes(gradeLevel) && (
-                    <Field label="Strand" required>
+                    <Field label="Track" required>
                       <Select value={strand} onChange={e => setStrand(e.target.value)}>
-                        <option value="">Select Strand</option>
-                        {SHS_STRANDS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+                        <option value="">Select Track</option>
+                        {SHS_TRACKS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
                       </Select>
                     </Field>
                   )}

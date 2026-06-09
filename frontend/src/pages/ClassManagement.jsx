@@ -456,7 +456,7 @@ const ClassManagement = () => {
                   {GRADE_LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
                 </select>
               </ModalField>
-              <ModalField label="Class / Section Name" required hint='Example: "Grade 7 - Rizal" or "Grade 11 - STEM A"'>
+              <ModalField label="Class / Section Name" required hint='Example: "Grade 7 - Rizal" or "Grade 11 - Academic A"'>
                 <input type="text" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} placeholder="e.g. Grade 7 - Rizal" className={modalInputCls} required />
               </ModalField>
               <ModalField label="Adviser / Class Teacher" hint="Optional — can be assigned later.">
