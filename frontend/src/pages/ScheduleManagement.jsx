@@ -473,11 +473,11 @@ export default function ScheduleManagement() {
   }, [hasSlotForCell, filterClassroom]);
 
   const tutorialSteps = [
-    { title:'Welcome to Bell Periods', desc:'This is where you define your school\'s daily class periods. Start with the quick setup or add periods manually.' },
-    { title:'Quick Setup', desc:'Click "Apply Standard Day" to instantly create 7 periods (Mon-Fri) or include Saturday. Use "Fill Gaps" to add missing days for existing periods.' },
-    { title:'Add Custom Period', desc:'Fill in the label, start/end time, and select which days this period applies to. Use the shortcuts to select Mon-Fri or all days.' },
-    { title:'Period Overview', desc:'The grid shows all periods across the week. Each cell shows the day coverage. Click the edit icon to change a slot\'s time or label, or delete it.' },
-    { title:'You\'re all set!', desc:'Close this panel and start assigning classes to time slots. You can always come back here to add or edit periods.' },
+    { icon: 'M12 6v6m0 0v6m0-6h6m-6 0H6', title:'Bell Periods', desc:'Define your school\'s daily class periods here.' },
+    { icon: 'M13 10V3L4 14h7v7l9-11h-7z', title:'Quick Setup', desc:'Click "Apply Standard Day" to create 7 periods (Mon-Fri) instantly.' },
+    { icon: 'M12 4v16m8-8H4', title:'Custom Period', desc:'Add periods manually with label, time, and day selection.' },
+    { icon: 'M4 6h16M4 10h16M4 14h16M4 18h16', title:'Overview Grid', desc:'Review all periods across the week. Edit or delete as needed.' },
+    { icon: 'M5 13l4 4L19 7', title:'All Set!', desc:'Close this and start assigning classes to time slots.' },
   ];
 
   const nextTutorial = () => {
@@ -1218,30 +1218,36 @@ export default function ScheduleManagement() {
         {/* Tutorial overlay */}
         {showTutorial && (
           <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
-            <div className="w-full max-w-sm mx-4 bg-white rounded-2xl shadow-2xl border border-slate-200 p-6">
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 rounded-lg bg-violet-100 flex items-center justify-center">
-                  <svg className="w-4 h-4 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                </div>
-                <div>
-                  <p className="text-xs font-bold text-slate-900">{tutorialSteps[tutorialStep].title}</p>
-                  <p className="text-[9px] text-slate-400">Step {tutorialStep + 1} of {tutorialSteps.length}</p>
-                </div>
-                <button type="button" onClick={dismissTutorial} className="ml-auto p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/></svg>
-                </button>
+            <div className="w-full max-w-sm mx-4 bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden">
+              {/* Progress bar */}
+              <div className="h-1 w-full bg-slate-100">
+                <div className="h-full bg-gradient-to-r from-violet-600 to-violet-400 transition-all duration-300" style={{ width: `${((tutorialStep + 1) / tutorialSteps.length) * 100}%` }} />
               </div>
-              <p className="text-sm text-slate-600 leading-relaxed">{tutorialSteps[tutorialStep].desc}</p>
-              <div className="flex items-center justify-between mt-6 pt-4 border-t border-slate-100">
-                <button type="button" onClick={dismissTutorial} className="text-[10px] font-bold text-slate-400 hover:text-slate-600">Skip</button>
-                <div className="flex items-center gap-2">
-                  {tutorialStep > 0 && (
-                    <button type="button" onClick={prevTutorial} className="px-4 py-2 rounded-lg border border-slate-200 text-slate-600 text-[10px] font-bold hover:bg-slate-50 transition-all">Back</button>
-                  )}
-                  <button type="button" onClick={nextTutorial}
-                    className="px-5 py-2 rounded-lg bg-violet-600 text-white text-[10px] font-bold hover:bg-violet-700 transition-all">
-                    {tutorialStep < tutorialSteps.length - 1 ? 'Next' : 'Got it!'}
+              <div className="p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 rounded-xl bg-violet-100 flex items-center justify-center flex-shrink-0">
+                    <svg className="w-5 h-5 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={tutorialSteps[tutorialStep].icon}/></svg>
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-bold text-slate-900">{tutorialSteps[tutorialStep].title}</p>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Step {tutorialStep + 1} of {tutorialSteps.length}</p>
+                  </div>
+                  <button type="button" onClick={dismissTutorial} className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/></svg>
                   </button>
+                </div>
+                <p className="text-sm text-slate-600 leading-relaxed">{tutorialSteps[tutorialStep].desc}</p>
+                <div className="flex items-center justify-between mt-6 pt-4 border-t border-slate-100">
+                  <button type="button" onClick={dismissTutorial} className="text-[10px] font-bold text-slate-400 hover:text-slate-600 uppercase tracking-wider">Skip</button>
+                  <div className="flex items-center gap-2">
+                    {tutorialStep > 0 && (
+                      <button type="button" onClick={prevTutorial} className="px-4 py-2 rounded-lg border border-slate-200 text-slate-600 text-[10px] font-bold hover:bg-slate-50 transition-all uppercase tracking-wider">Back</button>
+                    )}
+                    <button type="button" onClick={nextTutorial}
+                      className="px-5 py-2 rounded-lg bg-violet-600 text-white text-[10px] font-bold hover:bg-violet-700 transition-all uppercase tracking-wider shadow-md shadow-violet-200">
+                      {tutorialStep < tutorialSteps.length - 1 ? 'Next' : 'Got it!'}
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>

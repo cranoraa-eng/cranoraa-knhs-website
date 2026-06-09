@@ -52,7 +52,7 @@ const GuidedTour = () => {
 
   const step = activeTour?.steps?.[activeStepIndex];
   const totalSteps = activeTour?.steps?.length || 0;
-  const isLastStep = activeStepIndex >= totalSteps - 1;
+  const progress = totalSteps > 0 ? ((activeStepIndex + 1) / totalSteps) * 100 : 0;
 
   useEffect(() => {
     if (!step?.path) return;
@@ -104,6 +104,13 @@ const GuidedTour = () => {
 
     const onKeyDown = (event) => {
       if (event.key === 'Escape') endTour(false);
+      if (event.key === 'ArrowRight') {
+        if (activeStepIndex < totalSteps - 1) setActiveStepIndex(activeStepIndex + 1);
+        else endTour(true);
+      }
+      if (event.key === 'ArrowLeft' && activeStepIndex > 0) {
+        setActiveStepIndex(activeStepIndex - 1);
+      }
     };
 
     document.addEventListener('keydown', onKeyDown);
@@ -111,7 +118,7 @@ const GuidedTour = () => {
       document.removeEventListener('keydown', onKeyDown);
       previous?.focus?.();
     };
-  }, [activeTour, endTour]);
+  }, [activeTour, endTour, activeStepIndex, totalSteps, setActiveStepIndex]);
 
   useLayoutEffect(() => {
     const node = dialogRef.current;
@@ -186,18 +193,35 @@ const GuidedTour = () => {
       >
         <div className="absolute inset-0 bg-slate-950/65 backdrop-blur-[1px]" />
 
+        {/* Spotlight highlight with pulse ring */}
         {targetRect && (
-          <motion.div
-            className="pointer-events-none fixed rounded-2xl border-2 border-white bg-transparent shadow-[0_0_0_9999px_rgba(15,23,42,0.52),0_20px_70px_rgba(255,255,255,0.2)]"
-            initial={false}
-            animate={{
-              top: targetRect.top - 8,
-              left: targetRect.left - 8,
-              width: targetRect.width + 16,
-              height: targetRect.height + 16,
-            }}
-            transition={{ duration: reduceMotion ? 0 : 0.22, ease: 'easeOut' }}
-          />
+          <>
+            <motion.div
+              className="pointer-events-none fixed rounded-2xl border-2 border-white bg-transparent shadow-[0_0_0_9999px_rgba(15,23,42,0.52),0_20px_70px_rgba(255,255,255,0.2)]"
+              initial={false}
+              animate={{
+                top: targetRect.top - 8,
+                left: targetRect.left - 8,
+                width: targetRect.width + 16,
+                height: targetRect.height + 16,
+              }}
+              transition={{ duration: reduceMotion ? 0 : 0.22, ease: 'easeOut' }}
+            />
+            {!reduceMotion && (
+              <motion.div
+                className="pointer-events-none fixed rounded-2xl border-2 border-violet-400/60"
+                initial={false}
+                animate={{
+                  top: targetRect.top - 16,
+                  left: targetRect.left - 16,
+                  width: targetRect.width + 32,
+                  height: targetRect.height + 32,
+                  opacity: [0.7, 0],
+                }}
+                transition={{ duration: 1.5, repeat: Infinity, ease: 'easeOut' }}
+              />
+            )}
+          </>
         )}
 
         <motion.div
@@ -214,10 +238,20 @@ const GuidedTour = () => {
           exit={reduceMotion ? { opacity: 1 } : { y: 10, opacity: 0, scale: 0.98 }}
           transition={{ duration: 0.18, ease: 'easeOut' }}
         >
-          <div className="mb-4 flex items-center justify-between gap-4">
+          {/* Progress bar at top */}
+          <div className="mb-3 h-1 w-full overflow-hidden rounded-full bg-slate-100">
+            <motion.div
+              className="h-full rounded-full bg-gradient-to-r from-violet-600 to-violet-400"
+              initial={false}
+              animate={{ width: `${progress}%` }}
+              transition={{ duration: 0.3, ease: 'easeOut' }}
+            />
+          </div>
+
+          <div className="mb-3 flex items-center justify-between gap-4">
             <div className="flex items-center gap-2">
               <span className="rounded-full bg-violet-50 px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-violet-600">
-                Step {activeStepIndex + 1} of {totalSteps}
+                {activeStepIndex + 1} / {totalSteps}
               </span>
               {!targetRect && (
                 <span className="rounded-full bg-amber-50 px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-amber-600">
@@ -250,16 +284,7 @@ const GuidedTour = () => {
             />
           </div>
 
-          <div className="mt-4 flex shrink-0 items-center gap-1.5" aria-hidden="true">
-            {activeTour.steps.map((item, index) => (
-              <span
-                key={item.id}
-                className={`h-1.5 flex-1 rounded-full ${index <= activeStepIndex ? 'bg-violet-600' : 'bg-slate-200'}`}
-              />
-            ))}
-          </div>
-
-          <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div className="mt-4 flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between">
             <button
               type="button"
               onClick={() => endTour(false)}
@@ -279,12 +304,12 @@ const GuidedTour = () => {
               <button
                 type="button"
                 onClick={() => {
-                  if (isLastStep) endTour(true);
+                  if (activeStepIndex >= totalSteps - 1) endTour(true);
                   else setActiveStepIndex(activeStepIndex + 1);
                 }}
                 className="rounded-xl bg-violet-600 px-4 py-2 text-xs font-black uppercase tracking-widest text-white shadow-lg shadow-violet-200 transition-all hover:bg-violet-700 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2"
               >
-                {isLastStep ? 'Finish' : 'Next'}
+                {activeStepIndex >= totalSteps - 1 ? 'Finish' : 'Next'}
               </button>
             </div>
           </div>

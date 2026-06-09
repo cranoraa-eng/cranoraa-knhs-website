@@ -108,7 +108,7 @@ const HelpCenter = () => {
                     <p className="text-[10px] font-black uppercase tracking-[0.22em] text-violet-500">{role} guide</p>
                     <h2 id="help-center-title" className="mt-1 text-xl font-black tracking-tight text-slate-900">Help center</h2>
                     <p className="mt-1 text-xs font-medium leading-5 text-slate-500">
-                      Search quick guides, replay tours, and continue onboarding.
+                      Search guides, replay tours, and track onboarding.
                     </p>
                   </div>
                   <button

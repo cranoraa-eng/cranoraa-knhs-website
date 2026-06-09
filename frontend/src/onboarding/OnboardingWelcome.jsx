@@ -80,15 +80,15 @@ const OnboardingWelcome = () => {
                   {[
                     {
                       label: 'Guided tour',
-                      body: 'Walk through each main menu item with numbered steps, highlights, and what to do on that page.',
+                      body: 'Step-by-step walkthrough of each menu item.',
                     },
                     {
                       label: 'Smart tips',
-                      body: 'Context tips appear on the page you are viewing—open them for short how-to steps, then dismiss when done.',
+                      body: 'Page-specific hints that appear when useful.',
                     },
                     {
                       label: 'Help center',
-                      body: 'Search detailed guides anytime from Need help, replay the tour, or reset onboarding to start over.',
+                      body: 'Search guides, replay tours, reset onboarding.',
                     },
                   ].map((item) => (
                     <div key={item.label} className="rounded-2xl border border-white/10 bg-white/[0.08] p-4">
@@ -106,7 +106,7 @@ const OnboardingWelcome = () => {
                 <p className="text-[10px] font-black uppercase tracking-[0.22em] text-slate-400">Recommended</p>
                 <p className="mt-1 text-sm font-black text-slate-900">Take the 2-minute tour</p>
                 <p className="mt-2 text-xs font-medium leading-6 text-slate-500">
-                  The tour takes about 3–5 minutes and explains where to click and what each section is for. You can skip now and replay anytime from <strong className="text-slate-700">Need help</strong> → <strong className="text-slate-700">Tour</strong>.
+                  Takes about 2 minutes. You can replay anytime from <strong className="text-slate-700">Need help</strong> → <strong className="text-slate-700">Tour</strong>.
                 </p>
                 <div className="mt-4 flex flex-col gap-2 sm:flex-row">
                   <button
