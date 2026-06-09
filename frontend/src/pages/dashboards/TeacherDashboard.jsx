@@ -151,7 +151,7 @@ const TeacherDashboard = () => {
                   <button
                     key={c.id}
                     onClick={() => navigate(`/my-classes/${c.id}`)}
-                    className="p-4 text-left rounded-md border-2 border-slate-200 bg-white hover:border-blue-400 hover:shadow-md transition-all group"
+                    className="p-4 text-left rounded-md border-2 border-slate-200 bg-white hover:border-violet-400 hover:shadow-md transition-all group"
                   >
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex-1 min-w-0">

@@ -175,7 +175,7 @@ const StudentDashboard = () => {
         <CardBody className="p-5 md:p-6">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             <div>
-              <p className="text-xs font-bold uppercase tracking-wide text-blue-200 mb-2">
+              <p className="text-xs font-bold uppercase tracking-wide text-violet-200 mb-2">
                 {today}
               </p>
               <h1 className="text-2xl md:text-3xl font-extrabold text-white tracking-tight">
@@ -336,7 +336,7 @@ const StudentDashboard = () => {
 
         {/* Grade Summary */}
         <div className="lg:col-span-3">
-          <Card className="h-full min-h-[320px] flex flex-col border-l-4 border-l-blue-500">
+          <Card className="h-full min-h-[320px] flex flex-col border-l-4 border-l-violet-500">
             <CardHeader divider>
               <div className="flex items-center gap-2">
                 <svg className="w-4 h-4 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">

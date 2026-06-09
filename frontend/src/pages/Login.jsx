@@ -24,7 +24,7 @@ const ROLES = {
       border: 'group-focus-within:border-violet-600/20',
       accent: 'bg-violet-400',
       hover: 'hover:bg-violet-700',
-      gradient: 'from-violet-400 to-blue-400'
+      gradient: 'from-violet-400 to-violet-500'
     }
   },
   teacher: {

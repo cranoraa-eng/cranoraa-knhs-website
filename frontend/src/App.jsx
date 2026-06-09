@@ -203,7 +203,7 @@ function App() {
                 <Route path="password-reset" element={<PasswordReset />} />
                 <Route path="class-management" element={<Navigate to="/enrollment-classes?tab=classrooms" replace />} />
                 <Route path="my-classes" element={<Navigate to="/academics-hub?tab=classes" replace />} />
-                <Route path="subject-assignment" element={<Navigate to="/academics-hub?tab=assignments" replace />} />
+                <Route path="subject-assignment" element={<Navigate to="/academics-hub?tab=subjects" replace />} />
                 <Route path="student-enrollment" element={<Navigate to="/enrollment-classes?tab=student-enrollment" replace />} />
                 <Route path="student-management" element={<Navigate to="/people-directory?tab=students" replace />} />
 

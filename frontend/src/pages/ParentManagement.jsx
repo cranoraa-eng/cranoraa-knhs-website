@@ -206,7 +206,7 @@ export default function ParentManagement() {
 
       {/* Info Banner */}
       <div className="bg-violet-50 border border-violet-200 rounded-2xl p-4 flex gap-3">
-        <svg className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="w-5 h-5 text-violet-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
         <div className="text-sm text-violet-700">
@@ -268,7 +268,7 @@ export default function ParentManagement() {
                           </div>
                           <div>
                             <p className="text-sm font-bold text-slate-800">{p.first_name} {p.last_name}</p>
-                            <p className="text-[10px] text-blue-500 font-black uppercase tracking-widest">Parent</p>
+                            <p className="text-[10px] text-violet-500 font-black uppercase tracking-widest">Parent</p>
                             {/* Show email inline on mobile */}
                             <p className="text-[10px] text-slate-400 md:hidden">{p.email || '—'}</p>
                           </div>

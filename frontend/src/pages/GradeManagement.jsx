@@ -337,7 +337,7 @@ const GradeManagement = () => {
         <>
           {/* Summary Stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-            <Card className="border-l-4 border-l-blue-500">
+            <Card className="border-l-4 border-l-violet-500">
               <CardBody className="p-4 text-center">
                 <div className="text-2xl md:text-3xl font-extrabold text-violet-600">
                   {sortedClassrooms.length}
@@ -394,7 +394,7 @@ const GradeManagement = () => {
                 <Card 
                   interactive
                   onClick={() => setSelectedClass(classroom)}
-                  className="border-l-4 border-l-blue-500 hover:shadow-lg transition-all"
+                  className="border-l-4 border-l-violet-500 hover:shadow-lg transition-all"
                 >
                   <CardHeader divider>
                     <div className="flex items-center justify-between">

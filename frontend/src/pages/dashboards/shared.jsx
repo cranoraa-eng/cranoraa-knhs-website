@@ -76,7 +76,7 @@ export const StatCard = memo(({ label, value, sub, icon, color = 'blue', onClick
       onClick={onClick}
       className={cn(
         "border-l-4 transition-all",
-        color === 'blue' && "border-l-blue-500 hover:border-l-blue-600",
+        color === 'blue' && "border-l-violet-500 hover:border-l-violet-600",
         color === 'emerald' && "border-l-emerald-500 hover:border-l-emerald-600",
         color === 'rose' && "border-l-rose-500 hover:border-l-rose-600",
         color === 'amber' && "border-l-amber-500 hover:border-l-amber-600",
@@ -199,7 +199,7 @@ export const TodayScheduleWidget = memo(({ navigate }) => {
                     </p>
                     <p className={cn(
                       "text-[10px] font-semibold",
-                      isCurrent ? "text-blue-200" : "text-slate-500"
+                      isCurrent ? "text-violet-200" : "text-slate-500"
                     )}>
                       {s.time_slot_detail?.end_time_display}
                     </p>
@@ -213,7 +213,7 @@ export const TodayScheduleWidget = memo(({ navigate }) => {
                     </p>
                     <p className={cn(
                       "text-xs font-semibold truncate",
-                      isCurrent ? "text-blue-100" : "text-slate-600"
+                      isCurrent ? "text-violet-100" : "text-slate-600"
                     )}>
                       {s.classroom_detail?.name || 'Classroom'}
                     </p>
@@ -294,7 +294,7 @@ export const RecentAnnouncementsWidget = memo(({ navigate }) => {
               <button
                 key={a.id}
                 onClick={() => navigate('/announcements')}
-                className="w-full text-left p-3 rounded-md border-2 border-slate-200 bg-white hover:border-blue-400 hover:shadow-md transition-all group"
+                className="w-full text-left p-3 rounded-md border-2 border-slate-200 bg-white hover:border-violet-400 hover:shadow-md transition-all group"
               >
                 <p className="text-sm font-extrabold text-slate-900 line-clamp-1 group-hover:text-violet-700 transition-colors">
                   {a.title}

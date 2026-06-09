@@ -1137,7 +1137,7 @@ const Messages = () => {
 
                 return (
                   <button key={room.id} onClick={() => setSelectedRoom(room)}
-                    className={`w-full p-2 md:p-3 flex items-center gap-2 md:gap-2.5 transition-all border-b border-slate-50 min-w-0 overflow-hidden ${isSelected ? 'bg-violet-50/80 border-l-4 border-l-blue-500' : 'hover:bg-white'}`}>
+                    className={`w-full p-2 md:p-3 flex items-center gap-2 md:gap-2.5 transition-all border-b border-slate-50 min-w-0 overflow-hidden ${isSelected ? 'bg-violet-50/80 border-l-4 border-l-violet-500' : 'hover:bg-white'}`}>
 
                     {/* Avatar */}
                     <div className="relative shrink-0">

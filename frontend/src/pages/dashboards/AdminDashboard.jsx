@@ -149,7 +149,7 @@ const AdminDashboard = () => {
               className={`border-l-4 ${
                 alert.type === 'warning' ? 'border-l-amber-500 bg-amber-50' : 
                 alert.type === 'error' ? 'border-l-red-500 bg-red-50' : 
-                'border-l-blue-500 bg-violet-50'
+                'border-l-violet-500 bg-violet-50'
               }`}
             >
               <CardBody className="p-4">

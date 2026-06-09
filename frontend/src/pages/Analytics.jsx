@@ -452,7 +452,7 @@ const ExportButton = ({ onClick, loading }) => (
     className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-xl text-[10px] font-black text-slate-600 uppercase tracking-widest hover:bg-slate-50 hover:border-violet-300 hover:text-violet-700 active:scale-95 transition-all shadow-sm disabled:opacity-50"
   >
     {loading ? (
-      <div className="w-3.5 h-3.5 border-2 border-slate-300 border-t-blue-600 rounded-full animate-spin" />
+      <div className="w-3.5 h-3.5 border-2 border-slate-300 border-t-violet-600 rounded-full animate-spin" />
     ) : (
       <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -487,7 +487,7 @@ const EmptyState = ({ message, submessage }) => (
 const StatChip = ({ label, value, color }) => {
   const colors = {
     emerald: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
-    blue: 'bg-violet-500/10 text-blue-500 border-blue-500/20',
+    blue: 'bg-violet-500/10 text-violet-500 border-violet-500/20',
     indigo: 'bg-indigo-500/10 text-indigo-500 border-indigo-500/20',
   };
   return (

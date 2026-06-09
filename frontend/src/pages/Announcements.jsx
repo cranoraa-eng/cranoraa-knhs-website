@@ -412,7 +412,7 @@ const Announcements = () => {
         {canManage && (
           <div className="bg-white rounded-lg shadow-sm border border-slate-200/80 p-3 md:p-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white text-sm font-bold shrink-0">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center text-white text-sm font-bold shrink-0">
                 {authorInitial(user?.full_name || user?.username)}
               </div>
               <button
@@ -474,7 +474,7 @@ const Announcements = () => {
           <div className="bg-white rounded-lg shadow-sm border border-slate-200/80">
             <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
               <div className="w-14 h-14 rounded-full bg-violet-100 flex items-center justify-center mb-4">
-                <svg className="w-7 h-7 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-7 h-7 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
                     d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
                 </svg>
@@ -518,7 +518,7 @@ const Announcements = () => {
                         className="mt-2.5 w-4 h-4 rounded border-slate-300 text-violet-600 focus:ring-violet-500 cursor-pointer shrink-0"
                       />
                     )}
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white text-sm font-bold shrink-0">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center text-white text-sm font-bold shrink-0">
                       {authorInitial(a.author_name)}
                     </div>
                     <div className="flex-1 min-w-0">

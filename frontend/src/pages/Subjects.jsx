@@ -221,7 +221,7 @@ const Subjects = () => {
               const numB = parseInt(b.replace(/\D/g, '')) || 999;
               return numA - numB;
             }).map(([level, items]) => (
-              <Card key={level} className="border-l-4 border-l-blue-500">
+              <Card key={level} className="border-l-4 border-l-violet-500">
                 <CardHeader divider className="bg-slate-50">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-md bg-violet-100 flex items-center justify-center font-extrabold text-sm text-violet-700 border border-violet-200">

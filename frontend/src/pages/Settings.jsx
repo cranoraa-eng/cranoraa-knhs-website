@@ -222,7 +222,7 @@ const SchoolInfoTab = () => {
             </div>
             <button type="button" onClick={() => logoRef.current?.click()}
               disabled={uploadingLogo}
-              className="mt-2 w-20 text-center text-[10px] font-black text-violet-600 hover:text-blue-800 uppercase tracking-widest disabled:opacity-50">
+              className="mt-2 w-20 text-center text-[10px] font-black text-violet-600 hover:text-violet-800 uppercase tracking-widest disabled:opacity-50">
               {uploadingLogo ? 'Uploading…' : 'Change'}
             </button>
             <input ref={logoRef} type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} />
@@ -373,7 +373,7 @@ const AcademicYearsTab = () => {
                 <div className="flex items-center gap-3">
                   <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${y.is_active ? 'bg-violet-500 shadow-[0_0_6px_rgba(37,99,235,0.6)]' : 'bg-slate-300'}`} />
                   <div>
-                    <p className={`text-sm font-black ${y.is_active ? 'text-blue-800' : 'text-slate-800'}`}>{y.name}</p>
+                    <p className={`text-sm font-black ${y.is_active ? 'text-violet-800' : 'text-slate-800'}`}>{y.name}</p>
                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
                       {y.start_date} → {y.end_date}
                       {y.is_active && <span className="ml-2 text-violet-600">● Active</span>}
@@ -383,7 +383,7 @@ const AcademicYearsTab = () => {
                 <div className="flex items-center gap-2">
                   {!y.is_active && (
                     <button onClick={() => handleSetActive(y)}
-                      className="px-3 py-1.5 text-[10px] font-black text-violet-700 bg-violet-100 hover:bg-blue-200 rounded-lg transition-all uppercase tracking-widest">
+                      className="px-3 py-1.5 text-[10px] font-black text-violet-700 bg-violet-100 hover:bg-violet-200 rounded-lg transition-all uppercase tracking-widest">
                       Set Active
                     </button>
                   )}

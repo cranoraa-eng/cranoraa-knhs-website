@@ -118,7 +118,7 @@ const MyClasses = () => {
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 md:gap-6">
           {groupedAssignments.map((classroom) => (
-            <Card key={classroom.id} className="border-l-4 border-l-blue-500">
+            <Card key={classroom.id} className="border-l-4 border-l-violet-500">
               <CardHeader divider>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">

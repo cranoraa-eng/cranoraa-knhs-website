@@ -203,8 +203,7 @@ const Layout = () => {
     if (path === '/analytics') return 'Analytics';
     if (path === '/system-health') return 'System Health';
     if (path === '/subjects') return 'Subjects';
-    if (path === '/subject-assignment') return 'Subject Assignment';
-    if (path === '/class-management') return 'Classes';
+    if (path === '/class-management') return 'Class Management';
     if (path === '/materials') return 'Materials';
     if (path === '/grade-input') return 'Grade Input';
     if (path === '/grade-management') return 'Grade Management';

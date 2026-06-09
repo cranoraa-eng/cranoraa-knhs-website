@@ -244,12 +244,12 @@ const StudentGradeView = () => {
       {/* PAGE HEADER WITH SCHOOL IDENTITY */}
       {/* ══════════════════════════════════════════════════════════════ */}
       
-      <Card className="border-b-4 border-b-blue-600">
+      <Card className="border-b-4 border-b-violet-600">
         <CardBody className="p-4 md:p-6">
           <div className="text-center">
             {/* School Seal */}
             <div className="flex justify-center mb-3">
-              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center text-white font-extrabold text-2xl shadow-lg border-4 border-white ring-2 ring-violet-200">
+              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-violet-600 to-violet-700 flex items-center justify-center text-white font-extrabold text-2xl shadow-lg border-4 border-white ring-2 ring-violet-200">
                 K
               </div>
             </div>
@@ -422,7 +422,7 @@ const StudentGradeView = () => {
       {/* ══════════════════════════════════════════════════════════════ */}
 
       {overallAvg && !loading && (
-        <Card className="border-l-4 border-l-blue-600 bg-gradient-to-r from-blue-50 to-white">
+        <Card className="border-l-4 border-l-violet-600 bg-gradient-to-r from-violet-50 to-white">
           <CardBody className="p-6">
             <div className="flex flex-col md:flex-row items-center justify-between gap-4">
               <div>
@@ -484,7 +484,7 @@ const StudentGradeView = () => {
 
       {!loading && subjectEntries.length > 0 && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-          <Card className="border-l-4 border-l-blue-500">
+          <Card className="border-l-4 border-l-violet-500">
             <CardBody className="p-4 text-center">
               <div className="text-2xl md:text-3xl font-extrabold text-violet-600">
                 {subjectEntries.length}

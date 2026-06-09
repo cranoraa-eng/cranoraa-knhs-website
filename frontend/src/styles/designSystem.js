@@ -159,7 +159,7 @@ export const SHADOWS = {
   lg:  'shadow-lg shadow-slate-200',
   xl:  'shadow-xl shadow-slate-200',
   card: 'shadow-sm hover:shadow-md transition-shadow',
-  purple: 'shadow-lg shadow-purple-100',
+  violet: 'shadow-lg shadow-violet-100',
 };
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -168,8 +168,8 @@ export const SHADOWS = {
 
 export const BORDERS = {
   default: 'border border-slate-200',
-  hover:   'border border-slate-200 hover:border-purple-300',
-  focus:   'border border-slate-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-100',
+  hover:   'border border-slate-200 hover:border-violet-300',
+  focus:   'border border-slate-200 focus:border-violet-500 focus:ring-2 focus:ring-violet-100',
   error:   'border border-red-300',
   success: 'border border-emerald-300',
 };
@@ -294,7 +294,7 @@ export const CARDS = {
     rounded-md
     border border-slate-200
     shadow-sm
-    hover:shadow-md hover:border-blue-300
+    hover:shadow-md hover:border-violet-300
     transition-all duration-200
     cursor-pointer
     overflow-hidden
@@ -302,9 +302,9 @@ export const CARDS = {
 
   // Highlighted (for official notices, announcements)
   highlighted: `
-    bg-blue-50
+    bg-violet-50
     rounded-md
-    border border-blue-200
+    border border-violet-200
     shadow-sm
     overflow-hidden
   `,
@@ -335,7 +335,7 @@ export const INPUTS = {
     text-sm text-slate-900
     border border-slate-300
     placeholder:text-slate-400
-    focus:outline-none focus:ring-2 focus:ring-purple-100 focus:border-purple-500
+    focus:outline-none focus:ring-2 focus:ring-violet-100 focus:border-violet-500
     disabled:bg-slate-50 disabled:text-slate-500 disabled:cursor-not-allowed
     transition-all duration-150
   `,
@@ -349,7 +349,7 @@ export const INPUTS = {
     text-sm text-slate-900
     border border-slate-300
     placeholder:text-slate-400
-    focus:outline-none focus:ring-2 focus:ring-purple-100 focus:border-purple-500
+    focus:outline-none focus:ring-2 focus:ring-violet-100 focus:border-violet-500
     disabled:bg-slate-50 disabled:text-slate-500 disabled:cursor-not-allowed
     resize-none
     transition-all duration-150
@@ -363,7 +363,7 @@ export const INPUTS = {
     bg-white
     text-sm text-slate-900 font-medium
     border border-slate-300
-    focus:outline-none focus:ring-2 focus:ring-purple-100 focus:border-purple-500
+    focus:outline-none focus:ring-2 focus:ring-violet-100 focus:border-violet-500
     disabled:bg-slate-50 disabled:text-slate-500 disabled:cursor-not-allowed
     cursor-pointer
     transition-all duration-150
@@ -374,8 +374,8 @@ export const INPUTS = {
     w-4 h-4
     rounded
     border-slate-300
-    text-purple-600
-    focus:ring-2 focus:ring-purple-100 focus:ring-offset-0
+    text-violet-600
+    focus:ring-2 focus:ring-violet-100 focus:ring-offset-0
     cursor-pointer
     transition-all duration-150
   `,
@@ -389,7 +389,7 @@ export const INPUTS = {
     text-sm text-slate-900
     border border-slate-200
     placeholder:text-slate-400
-    focus:outline-none focus:ring-2 focus:ring-purple-100 focus:border-purple-500 focus:bg-white
+    focus:outline-none focus:ring-2 focus:ring-violet-100 focus:border-violet-500 focus:bg-white
     transition-all duration-150
   `,
 
@@ -409,7 +409,7 @@ export const BADGES = {
   default: 'inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-bold border',
   
   variants: {
-    purple:  'bg-purple-50 text-purple-700 border-purple-200',      // School color
+    violet:  'bg-violet-50 text-violet-700 border-violet-200',      // School color
     blue:    'bg-blue-50 text-blue-700 border-blue-200',            // Academic
     deped:   'bg-sky-50 text-sky-700 border-sky-200',               // DepEd
     green:   'bg-emerald-50 text-emerald-700 border-emerald-200',  // Success
@@ -544,7 +544,7 @@ export const EMPTY_STATE = {
 export const LOADING = {
   spinner: `
     w-5 h-5
-    border-2 border-slate-200 border-t-purple-600
+    border-2 border-slate-200 border-t-violet-600
     rounded-full
     animate-spin
   `,

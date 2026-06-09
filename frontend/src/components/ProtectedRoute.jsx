@@ -30,7 +30,6 @@ const ROUTE_ACCESS = {
   'password-reset': ['parent'],
   'class-management': ['admin'],
   'my-classes': ['teacher'],
-  'subject-assignment': ['admin'],
   'student-enrollment': ['admin'],
   'student-management': ['admin', 'teacher'],
   'audit-logs': ['admin'],

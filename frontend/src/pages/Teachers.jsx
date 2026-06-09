@@ -567,7 +567,7 @@ const Teachers = () => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
             {filteredTeachers.map((teacher) => (
-              <div key={teacher.id} className="bg-white border border-slate-200 rounded-lg md:rounded-2xl p-3 md:p-6 hover:shadow-xl transition-all duration-300 group relative border-t-2 md:border-t-4 border-t-blue-500 overflow-visible min-w-0">
+              <div key={teacher.id} className="bg-white border border-slate-200 rounded-lg md:rounded-2xl p-3 md:p-6 hover:shadow-xl transition-all duration-300 group relative border-t-2 md:border-t-4 border-t-violet-500 overflow-visible min-w-0">
                 <div className="flex items-start justify-between mb-3 md:mb-6">
                   <div className="flex items-center gap-2 md:gap-4">
                     <div className="relative flex-shrink-0">

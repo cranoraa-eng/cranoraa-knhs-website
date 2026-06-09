@@ -1024,7 +1024,7 @@ const Attendance = () => {
             <>
               {/* Summary Stats */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <Card className="border-l-4 border-l-blue-500">
+                <Card className="border-l-4 border-l-violet-500">
                   <CardBody className="p-4 text-center">
                     <div className="text-3xl font-extrabold text-violet-600 mb-1">
                       {analytics.total_records || 0}

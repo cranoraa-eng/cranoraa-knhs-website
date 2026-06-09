@@ -97,7 +97,7 @@ const SystemHealth = () => {
       </div>
 
       {/* OVERALL STATUS */}
-      <Card className="bg-gradient-to-r from-emerald-50 to-blue-50 border-emerald-200">
+      <Card className="bg-gradient-to-r from-emerald-50 to-violet-50 border-emerald-200">
         <CardBody className="p-6">
           <div className="flex items-center gap-4">
             <div className="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
@@ -204,7 +204,7 @@ const SystemHealth = () => {
           <CardBody>
             <div className="space-y-3">
               {[
-                { label: 'Total Users', value: totalUsers, icon: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z', color: 'bg-violet-50 border-blue-100 text-violet-700' },
+                { label: 'Total Users', value: totalUsers, icon: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z', color: 'bg-violet-50 border-violet-100 text-violet-700' },
                 { label: 'Active Now', value: activeSessions, icon: 'M5.636 18.364a9 9 0 010-12.728m12.728 0a9 9 0 010 12.728M9 10a2 2 0 11-4 0 2 2 0 014 0zm6 0a2 2 0 11-4 0 2 2 0 014 0z', color: 'bg-emerald-50 border-emerald-100 text-emerald-700' },
                 { label: 'Students', value: stats?.total_students ?? 0, icon: 'M12 14l9-5-9-5-9 5 9 5zm0 7l-9-5 9-5 9 5-9 5z', color: 'bg-sky-50 border-sky-100 text-sky-700' },
                 { label: 'Teachers', value: stats?.total_teachers ?? 0, icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z', color: 'bg-indigo-50 border-indigo-100 text-indigo-700' },

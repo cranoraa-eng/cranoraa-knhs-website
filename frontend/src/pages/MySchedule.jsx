@@ -65,31 +65,31 @@ export default function MySchedule() {
       <div className="bg-gradient-to-br from-[#1A0B2E] to-[#2D1452] rounded-2xl p-6 text-white">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <p className="text-[10px] font-black text-blue-300 uppercase tracking-widest">Today</p>
+            <p className="text-[10px] font-black text-violet-300 uppercase tracking-widest">Today</p>
             <h3 className="text-lg font-black">{new Date().toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' })}</h3>
           </div>
           <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
-            <svg className="w-5 h-5 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+            <svg className="w-5 h-5 text-violet-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
           </div>
         </div>
         {todaySchedule.length === 0 ? (
-          <p className="text-blue-300 text-sm font-medium">No classes scheduled for today.</p>
+          <p className="text-violet-300 text-sm font-medium">No classes scheduled for today.</p>
         ) : (
           <div className="space-y-2">
             {todaySchedule.map(s => (
               <div key={s.id} className="flex items-center gap-4 p-3 rounded-xl bg-white/10 border border-white/10">
                 <div className="text-center min-w-[60px]">
-                  <p className="text-xs font-black text-blue-200">{s.time_slot_detail?.start_time_display}</p>
-                  <p className="text-[9px] text-blue-400">{s.time_slot_detail?.end_time_display}</p>
+                  <p className="text-xs font-black text-violet-200">{s.time_slot_detail?.start_time_display}</p>
+                  <p className="text-[9px] text-violet-400">{s.time_slot_detail?.end_time_display}</p>
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-bold text-white truncate">{s.subject_name}</p>
-                  <p className="text-[10px] text-blue-300 truncate">
+                  <p className="text-[10px] text-violet-300 truncate">
                     {isTeacher ? s.classroom_name : s.teacher_name}
                     {s.room_name ? ` · 📍 ${s.room_name}` : ''}
                   </p>
                 </div>
-                <span className="text-[9px] font-black text-blue-300 uppercase tracking-widest bg-white/10 px-2 py-1 rounded-lg">{s.subject_code}</span>
+                <span className="text-[9px] font-black text-violet-300 uppercase tracking-widest bg-white/10 px-2 py-1 rounded-lg">{s.subject_code}</span>
               </div>
             ))}
           </div>
