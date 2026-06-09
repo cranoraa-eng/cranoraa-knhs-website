@@ -785,7 +785,6 @@ const Messages = () => {
     socketRef.current = ws;
 
     ws.onopen = () => {
-      console.log('WS connected to room', roomId);
       // Reset backoff on successful connection
       reconnectAttemptsRef.current = 0;
       if (reconnectTimeoutRef.current) {
@@ -1014,7 +1013,6 @@ const Messages = () => {
     };
 
     ws.onclose = (e) => {
-      console.log('Chat WS disconnected', e.code, e.reason);
       if (e.code !== 1000 && e.code !== 1001) {
         if (reconnectTimeoutRef.current) clearTimeout(reconnectTimeoutRef.current);
         // OPTIMIZATION: exponential backoff — 3s → 6s → 12s → 24s → 48s → 60s (cap)

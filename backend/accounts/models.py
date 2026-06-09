@@ -19,14 +19,14 @@ class User(AbstractUser):
     ]
     
     email = models.EmailField(unique=True, null=True, blank=True)
-    role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='student')
+    role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='student', db_index=True)
     is_verified = models.BooleanField(default=False)
     is_approved = models.BooleanField(default=False)
     last_activity = models.DateTimeField(null=True, blank=True)
     
     # School System Fields
     must_change_password = models.BooleanField(default=False)
-    account_status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active')
+    account_status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active', db_index=True)
     
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = ['role']
@@ -96,7 +96,7 @@ class Profile(models.Model):
         ('Prof.', 'Prof.'),
     ]
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
-    lrn = models.CharField(max_length=12, blank=True, null=True, help_text="Learner Reference Number (12 digits)")
+    lrn = models.CharField(max_length=12, blank=True, null=True, db_index=True, help_text="Learner Reference Number (12 digits)")
     title = models.CharField(max_length=10, choices=TITLE_CHOICES, blank=True, null=True, help_text="Honorific title for teachers")
     grade_level = models.CharField(max_length=20, blank=True, null=True, help_text="For students")
     employee_id = models.CharField(max_length=20, blank=True, null=True, help_text="For teachers")
@@ -215,7 +215,7 @@ class ChatMessage(models.Model):
     attachment_filename = models.CharField(max_length=255, blank=True)
     attachment_content_type = models.CharField(max_length=120, blank=True)
     file_size_bytes = models.PositiveIntegerField(null=True, blank=True)
-    timestamp = models.DateTimeField(auto_now_add=True)
+    timestamp = models.DateTimeField(auto_now_add=True, db_index=True)
     is_delivered = models.BooleanField(default=False)
     is_read = models.BooleanField(default=False)
     is_pinned = models.BooleanField(default=False)
@@ -717,12 +717,15 @@ class Notification(models.Model):
     notification_type = models.CharField(max_length=20, choices=NOTIFICATION_TYPES, default='system')
     title = models.CharField(max_length=200)
     message = models.TextField()
-    is_read = models.BooleanField(default=False)
+    is_read = models.BooleanField(default=False, db_index=True)
     link = models.CharField(max_length=500, blank=True, null=True, help_text="Relative or absolute URL to redirect user when clicked")
     created_at = models.DateTimeField(auto_now_add=True)
     
     class Meta:
         ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['recipient', 'is_read'], name='notif_recipient_read_idx'),
+        ]
     
     def __str__(self):
         return f"{self.recipient.username} - {self.title}"

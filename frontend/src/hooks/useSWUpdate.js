@@ -21,8 +21,6 @@ export function useSWUpdate() {
   const sw = useRegisterSW({
     onRegistered(registration) {
       if (!registration) return;
-      console.log('[SW] Registered. Checking for updates every 60 minutes.');
-
       // Poll for updates every 60 minutes while the app is open.
       // Render's free tier redeploys can happen any time — this catches them.
       if (intervalRef.current) clearInterval(intervalRef.current);

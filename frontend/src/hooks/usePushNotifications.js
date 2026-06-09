@@ -39,10 +39,8 @@ export function usePushNotifications(user) {
   // ── Save token to backend ────────────────────────────────────────────────
   const saveToken = useCallback(async (token) => {
     try {
-      console.log('FCM: Attempting to save token to backend...');
       await api.post('/fcm-tokens/', { token, device_type: 'web' });
       localStorage.setItem(STORAGE_KEY, token);
-      console.log('FCM: token saved to backend successfully!');
     } catch (err) {
       console.error('FCM: failed to save token to backend:', err);
     }
@@ -68,26 +66,18 @@ export function usePushNotifications(user) {
     let cancelled = false;
 
     (async () => {
-      console.log('FCM: Initializing push notifications setup...');
       const sw = await registerSW();
       if (!sw) {
         console.warn('FCM: Service worker registration failed or returned null');
-      } else {
-        console.log('FCM: Service worker registered successfully');
       }
 
-      console.log('FCM: Requesting token...');
       const token = await requestFCMToken();
-      if (cancelled) {
-        console.log('FCM: Setup cancelled');
-        return;
-      }
+      if (cancelled) return;
       if (!token) {
         console.warn('FCM: Failed to get token (permission denied or VAPID key missing)');
         return;
       }
 
-      console.log('FCM: Token received:', token.substring(0, 10) + '...');
       tokenRef.current = token;
       registeredRef.current = true;
 
