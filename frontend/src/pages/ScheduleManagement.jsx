@@ -12,11 +12,11 @@ const DAY_SHORT = { monday:'Mon', tuesday:'Tue', wednesday:'Wed', thursday:'Thu'
 const DEFAULT_PERIODS = [
   { start_time: '07:30', end_time: '08:30', label: 'Period 1' },
   { start_time: '08:30', end_time: '09:30', label: 'Period 2' },
-  { start_time: '09:30', end_time: '10:30', label: 'Period 3' },
+  { start_time: '09:45', end_time: '10:45', label: 'Period 3' },
   { start_time: '10:45', end_time: '11:45', label: 'Period 4' },
-  { start_time: '11:45', end_time: '12:45', label: 'Period 5' },
-  { start_time: '13:30', end_time: '14:30', label: 'Period 6' },
-  { start_time: '14:30', end_time: '15:30', label: 'Period 7' },
+  { start_time: '13:00', end_time: '14:00', label: 'Period 5' },
+  { start_time: '14:00', end_time: '15:00', label: 'Period 6' },
+  { start_time: '15:00', end_time: '16:00', label: 'Period 7' },
 ];
 
 const normalizeTime = (v) => {
