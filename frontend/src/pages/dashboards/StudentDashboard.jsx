@@ -7,6 +7,7 @@ import {
   Card, CardHeader, CardBody, CardTitle, Button, Badge,
   LoadingSpinner, EmptyState
 } from '../../components/ui';
+import RoleManual from './RoleManual';
 
 /**
  * Student Dashboard - DepEd Government Education Style
@@ -209,6 +210,8 @@ const StudentDashboard = () => {
           </div>
         </CardBody>
       </Card>
+
+      <RoleManual role="student" />
 
       {/* ══════════════════════════════════════════════════════════════ */}
       {/* ROW 1: TODAY'S SCHEDULE | ATTENDANCE | GRADES */}

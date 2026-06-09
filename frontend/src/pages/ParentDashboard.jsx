@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../utils/api';
 import Spinner from '../components/Spinner';
+import RoleManual from './dashboards/RoleManual';
 
 const DAYS = ['monday','tuesday','wednesday','thursday','friday','saturday'];
 const DAY_FULL = { monday:'Monday', tuesday:'Tuesday', wednesday:'Wednesday', thursday:'Thursday', friday:'Friday', saturday:'Saturday' };
@@ -98,6 +99,8 @@ export default function ParentDashboard() {
           </div>
         </div>
       </div>
+
+      <RoleManual role="parent" />
 
       {children.length === 0 ? (
         <div className="bg-white border border-slate-200 rounded-lg p-8 sm:p-12 text-center">

@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import api from '../../utils/api';
 import { Card, CardHeader, CardBody, CardTitle, Button, Badge, EmptyState, LoadingSpinner } from '../../components/ui';
 import { SchoolHeaderBanner, StatCard, TodayScheduleWidget, RecentAnnouncementsWidget } from './shared';
+import RoleManual from './RoleManual';
 
 const getLocalDateStr = () => {
   const d = new Date();
@@ -66,6 +67,8 @@ const TeacherDashboard = () => {
     >
       {/* Official School Header */}
       <SchoolHeaderBanner user={user} today={today} />
+
+      <RoleManual role="teacher" />
 
       {/* Quick Stats */}
       <div>

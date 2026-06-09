@@ -6,6 +6,7 @@ import api from '../../utils/api';
 import { getCurrentAcademicYear } from '../../utils/dateHelpers';
 import { Card, CardHeader, CardBody, CardTitle, Button, LoadingSpinner, EmptyState, Badge } from '../../components/ui';
 import { SchoolHeaderBanner, StatCard, RecentAnnouncementsWidget } from './shared';
+import RoleManual from './RoleManual';
 
 /**
  * Admin Dashboard - Enhanced DepEd Government Education Style
@@ -136,6 +137,8 @@ const AdminDashboard = () => {
           </Button>
         </div>
       </div>
+
+      <RoleManual role="admin" />
 
       {/* ══════════════════════════════════════════════════════════════ */}
       {/* CRITICAL ALERTS */}
