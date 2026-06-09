@@ -885,21 +885,6 @@ class ScheduleSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 f"Room '{room.name}' is already booked at this time slot."
             )
-        # Same subject already on this day for this section
-        day = time_slot.day
-        subject = data.get('subject', getattr(self.instance, 'subject', None))
-        if subject and classroom:
-            day_slots = TimeSlot.objects.filter(classroom=classroom, day=day)
-            day_qs = Schedule.objects.filter(
-                classroom=classroom, subject=subject, academic_year=academic_year,
-                time_slot__in=day_slots
-            )
-            if exclude_id:
-                day_qs = day_qs.exclude(id=exclude_id)
-            if day_qs.exists():
-                raise serializers.ValidationError(
-                    f"This subject is already assigned on {time_slot.get_day_display()}. Only one occurrence per day is allowed."
-                )
         return data
 
 

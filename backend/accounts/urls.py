@@ -3,7 +3,7 @@ from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenObtainPairView
 from .views import (
     login_view, logout_view, cookie_token_refresh_view,
-    admin_create_user_view, force_password_change_view, user_profile, student_profile,
+    admin_create_user_view, force_password_change_view, change_password_view, user_profile, student_profile,
     teacher_dashboard_stats, student_dashboard_stats, ClassroomViewSet, StudentClassEnrollmentViewSet, UserViewSet,
     AnnouncementViewSet, AttendanceViewSet, LearningMaterialViewSet, SubjectViewSet,
     ClassroomSubjectViewSet, ScratchCardViewSet, FeeViewSet, NotificationViewSet,
@@ -50,6 +50,7 @@ urlpatterns = [
     path('logout/', logout_view, name='logout'),
     path('admin/create-user/', admin_create_user_view, name='admin_create_user'),
     path('force-password-change/', force_password_change_view, name='force_password_change'),
+    path('auth/change-password/', change_password_view, name='change_password'),
     path('profile/', user_profile, name='profile'),
     path('student/profile/', student_profile, name='student_profile'),
     path('onboarding/state/', onboarding_state_view, name='onboarding_state'),

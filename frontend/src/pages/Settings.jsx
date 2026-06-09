@@ -714,11 +714,12 @@ const SecurityTab = () => {
 
   const save = async (e) => {
     e.preventDefault();
+    if (!form.currentPassword) return toast.error('Please enter your current password');
     if (form.newPassword !== form.confirmPassword) return toast.error('Passwords do not match');
     if (form.newPassword.length < 8) return toast.error('Password must be at least 8 characters');
     setSaving(true);
     try {
-      await api.post('/force-password-change/', { password: form.newPassword });
+      await api.post('/auth/change-password/', { current_password: form.currentPassword, new_password: form.newPassword });
       setForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
       setStrength(0);
       toast.success('Password changed successfully');
@@ -735,6 +736,9 @@ const SecurityTab = () => {
           <p className="text-xs font-bold text-amber-800">Use at least 8 characters with a mix of uppercase, numbers, and symbols for a strong password.</p>
         </div>
         <div className="space-y-4">
+          <Field label="Current Password">
+            <Input type="password" value={form.currentPassword} onChange={e => setForm(p => ({...p, currentPassword: e.target.value}))} placeholder="••••••••" required />
+          </Field>
           <Field label="New Password">
             <Input type="password" value={form.newPassword} onChange={e => handleNewPw(e.target.value)} placeholder="••••••••" required />
             {form.newPassword && (

@@ -212,6 +212,41 @@ def force_password_change_view(request):
 
 
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def change_password_view(request):
+    """
+    Change password for authenticated users. Verifies current password before allowing change.
+    """
+    user = request.user
+    current_password = request.data.get('current_password')
+    new_password = request.data.get('new_password')
+
+    if not current_password:
+        return Response({'error': 'Current password is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+    if not new_password:
+        return Response({'error': 'New password is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+    if not user.check_password(current_password):
+        return Response({'error': 'Current password is incorrect'}, status=status.HTTP_400_BAD_REQUEST)
+
+    if len(new_password) < 8:
+        return Response({'error': 'Password must be at least 8 characters long'}, status=status.HTTP_400_BAD_REQUEST)
+
+    user.set_password(new_password)
+    user.save()
+
+    refresh = RefreshToken.for_user(user)
+
+    response = Response({
+        'message': 'Password changed successfully!',
+        'access': str(refresh.access_token),
+    })
+    _set_refresh_cookie(response, str(refresh))
+    return response
+
+
+@api_view(['POST'])
 @permission_classes([AllowAny])
 def logout_view(request):
     """
@@ -1331,7 +1366,11 @@ class UserViewSet(viewsets.ModelViewSet):
         profile, created = Profile.objects.get_or_create(user=user)
         profile.is_suspended = not profile.is_suspended
         profile.save()
-        
+
+        user.account_status = 'suspended' if profile.is_suspended else 'active'
+        user.is_active = not profile.is_suspended
+        user.save()
+
         status_str = 'suspended' if profile.is_suspended else 'unsuspended'
         return Response({'status': f'User {status_str} successfully'})
 

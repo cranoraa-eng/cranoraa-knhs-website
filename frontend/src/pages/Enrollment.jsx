@@ -9,11 +9,11 @@ const SHS_TRACKS = [
 ];
 
 const ENROLLMENT_TYPES = [
-  { value: 'new', label: 'New Student', desc: 'First-time enrollment', icon: '\u2728' },
-  { value: 'returning', label: 'Returning Student', desc: 'Previously enrolled', icon: '\uD83D\uDD04' },
-  { value: 'transferee', label: 'Transferee', desc: 'From another school', icon: '\uD83D\uDCC6' },
-  { value: 'sh_applicant', label: 'SHS Applicant', desc: 'Senior High School', icon: '\uD83C\uDF93' },
-  { value: 'parent_assisted', label: 'Parent-Assisted', desc: 'With parent help', icon: '\uD83D\uDC65' },
+  { value: 'new', label: 'New Student', desc: 'First-time enrollment', icon: 'M12 6v6m0 0v6m0-6h6m-6 0H6' },
+  { value: 'returning', label: 'Returning Student', desc: 'Previously enrolled', icon: 'M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15' },
+  { value: 'transferee', label: 'Transferee', desc: 'From another school', icon: 'M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4' },
+  { value: 'sh_applicant', label: 'SHS Applicant', desc: 'Senior High School', icon: 'M12 14l9-5-9-5-9 5 9 5zm0 7l-9-5 9-5 9 5-9 5z' },
+  { value: 'parent_assisted', label: 'Parent-Assisted', desc: 'With parent help', icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z' },
 ];
 
 const TYPE_LABELS = {
@@ -358,7 +358,6 @@ const Enrollment = () => {
     return (
       <div className="bg-gray-50 min-h-screen py-12 flex items-center">
         <div className="max-w-lg mx-auto px-4 w-full">
-          {/* Official header */}
           <div className="bg-violet-950 text-white text-center py-4 px-6 rounded-t-sm border-b-4 border-yellow-400">
             <p className="text-[10px] font-bold uppercase tracking-widest text-violet-200">REPUBLIKA NG PILIPINAS</p>
             <p className="text-xs font-bold uppercase tracking-wide mt-0.5">KAGAWARAN NG EDUKASYON</p>
@@ -402,7 +401,7 @@ const Enrollment = () => {
           <div className="flex items-center justify-center gap-3 mb-1">
             <img src="/icons/school-logo-source.png" alt="KNHS" className="w-10 h-10 object-contain" />
             <div>
-              <p className="text-[9px] font-bold uppercase tracking-widest text-violet-200">Republic of the Philippines • Department of Education</p>
+              <p className="text-[9px] font-bold uppercase tracking-widest text-violet-200">Republic of the Philippines / Department of Education</p>
               <h1 className="text-base font-black uppercase tracking-tight">Kiwalan National High School</h1>
               <p className="text-[9px] text-violet-200 uppercase tracking-wide">Iligan City</p>
             </div>
@@ -462,7 +461,7 @@ const Enrollment = () => {
           {step === 0 && (
             <div className="space-y-4">
               <div className="border-b-2 border-violet-800 pb-2 mb-4">
-                <h2 className="text-base font-black text-slate-900 uppercase tracking-wide">Step 1 of 7 — Enrollment Type</h2>
+                <h2 className="text-base font-black text-slate-900 uppercase tracking-wide">Step 1 of 7 / Enrollment Type</h2>
                 <p className="text-xs text-gray-600 mt-0.5">Select the category that best describes your application.</p>
               </div>
               <div className="grid gap-3">
@@ -472,7 +471,11 @@ const Enrollment = () => {
                       enrollmentType === t.value ? 'border-violet-800 bg-slate-50' : 'border-gray-300 hover:border-violet-400 bg-white'
                     }`}>
                     <div className="flex items-center gap-3">
-                      <span className="text-xl">{t.icon}</span>
+                      <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                        enrollmentType === t.value ? 'bg-violet-900 text-white' : 'bg-gray-100 text-gray-500'
+                      }`}>
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={t.icon} /></svg>
+                      </div>
                       <div>
                         <p className="text-sm font-black text-gray-800 uppercase">{t.label}</p>
                         <p className="text-xs text-gray-600">{t.desc}</p>
@@ -488,7 +491,7 @@ const Enrollment = () => {
           {step === 1 && (
             <div className="space-y-4">
               <div className="border-b-2 border-violet-800 pb-2 mb-4">
-                <h2 className="text-base font-black text-slate-900 uppercase tracking-wide">Step 2 of 7 — Personal Information</h2>
+                <h2 className="text-base font-black text-slate-900 uppercase tracking-wide">Step 2 of 7 / Personal Information</h2>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Field label="First Name" required><Input value={firstName} onChange={e => setFirstName(e.target.value)} placeholder="Juan" /></Field>
@@ -514,7 +517,7 @@ const Enrollment = () => {
           {step === 2 && (
             <div className="space-y-4">
               <div className="border-b-2 border-violet-800 pb-2 mb-4">
-                <h2 className="text-base font-black text-slate-900 uppercase tracking-wide">Step 3 of 7 — Address Information</h2>
+                <h2 className="text-base font-black text-slate-900 uppercase tracking-wide">Step 3 of 7 / Address Information</h2>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="sm:col-span-2"><Field label="Street Address" required><Input value={streetAddress} onChange={e => setStreetAddress(e.target.value)} /></Field></div>
@@ -530,7 +533,7 @@ const Enrollment = () => {
           {step === 3 && (
             <div className="space-y-4">
               <div className="border-b-2 border-violet-800 pb-2 mb-4">
-                <h2 className="text-base font-black text-slate-900 uppercase tracking-wide">Step 4 of 7 — Parent / Guardian Information</h2>
+                <h2 className="text-base font-black text-slate-900 uppercase tracking-wide">Step 4 of 7 / Parent / Guardian Information</h2>
               </div>
               {isParentAssisted ? (
                 <div className="bg-gray-50 border border-gray-200 p-5 space-y-4">
@@ -580,7 +583,7 @@ const Enrollment = () => {
           {step === 4 && (
             <div className="space-y-4">
               <div className="border-b-2 border-violet-800 pb-2 mb-4">
-                <h2 className="text-base font-black text-slate-900 uppercase tracking-wide">Step 5 of 7 — Academic & Contact Information</h2>
+                <h2 className="text-base font-black text-slate-900 uppercase tracking-wide">Step 5 of 7 / Academic & Contact Information</h2>
               </div>
               <div className="bg-gray-50 border border-gray-200 p-5 space-y-4">
                 <p className="text-xs font-black text-gray-600 uppercase tracking-widest border-b border-gray-300 pb-2">Academic Information</p>
@@ -680,14 +683,14 @@ const Enrollment = () => {
           {step === 5 && (
             <div className="space-y-4">
               <div className="border-b-2 border-violet-800 pb-2 mb-4">
-                <h2 className="text-base font-black text-slate-900 uppercase tracking-wide">Step 6 of 7 — Document Requirements</h2>
+                <h2 className="text-base font-black text-slate-900 uppercase tracking-wide">Step 6 of 7 / Document Requirements</h2>
               </div>
               <div className="flex items-start gap-3 p-4 bg-amber-50 border border-amber-300">
                 <svg className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                 <p className="text-xs text-amber-800 font-medium">
                   Requirements for <strong>{TYPE_LABELS[enrollmentType]}</strong>
-                  {!isSHS && gradeLevel && !isAls ? ` — Grade ${gradeLevel}` : ''}
-                  {isAls ? ' — ALS' : ''}. Upload clear, legible copies (PDF, JPG, or PNG, max 10MB each).
+                  {!isSHS && gradeLevel && !isAls ? ` / Grade ${gradeLevel}` : ''}
+                  {isAls ? ' / ALS' : ''}. Upload clear, legible copies (PDF, JPG, or PNG, max 10MB each).
                 </p>
               </div>
               <div className="space-y-3">
@@ -703,7 +706,7 @@ const Enrollment = () => {
           {step === 6 && (
             <div className="space-y-4">
               <div className="border-b-2 border-violet-800 pb-2 mb-4">
-                <h2 className="text-base font-black text-slate-900 uppercase tracking-wide">Step 7 of 7 — Review & Submit</h2>
+                <h2 className="text-base font-black text-slate-900 uppercase tracking-wide">Step 7 of 7 / Review & Submit</h2>
                 <p className="text-xs text-gray-600 mt-0.5">Please verify all information before submitting. You cannot edit after submission.</p>
               </div>
 
@@ -731,13 +734,13 @@ const Enrollment = () => {
               </ReviewSection>
 
               <ReviewSection title="Parents / Guardian">
-                {fatherName && <ReviewRow label="Father" value={`${fatherName} ${fatherContact ? `— ${fatherContact}` : ''}`} />}
-                {motherName && <ReviewRow label="Mother" value={`${motherName} ${motherContact ? `— ${motherContact}` : ''}`} />}
-                {guardianName && <ReviewRow label="Guardian" value={`${guardianName} (${guardianRelationship}) ${guardianContact ? `— ${guardianContact}` : ''}`} />}
+                {fatherName && <ReviewRow label="Father" value={`${fatherName} ${fatherContact ? `- ${fatherContact}` : ''}`} />}
+                {motherName && <ReviewRow label="Mother" value={`${motherName} ${motherContact ? `- ${motherContact}` : ''}`} />}
+                {guardianName && <ReviewRow label="Guardian" value={`${guardianName} (${guardianRelationship}) ${guardianContact ? `- ${guardianContact}` : ''}`} />}
               </ReviewSection>
 
               <ReviewSection title="Academic">
-                <ReviewRow label="Grade Level" value={`Grade ${gradeLevel}${strand ? ` — ${strand}` : ''}`} />
+                <ReviewRow label="Grade Level" value={`Grade ${gradeLevel}${strand ? ` / ${strand}` : ''}`} />
                 <ReviewRow label="LRN" value={noLrn ? `Not available (${lrnRequestReason.replace(/_/g, ' ')})` : (lrn || 'N/A')} />
                 <ReviewRow label="Previous School" value={previousSchool || 'N/A'} />
                 <ReviewRow label="ALS Applicant" value={isAls ? 'Yes' : 'No'} />
@@ -752,7 +755,7 @@ const Enrollment = () => {
               <ReviewSection title="Documents">
                 {getRequirementsForGrade().map(req => {
                   const f = fileMap[req.key];
-                  return <ReviewRow key={req.key} label={req.label} value={f ? '✓ Uploaded' : (req.required ? '✗ Missing' : 'Not provided')} />;
+                  return <ReviewRow key={req.key} label={req.label} value={f ? 'Uploaded' : (req.required ? 'Missing' : 'Not provided')} />;
                 })}
               </ReviewSection>
 
@@ -796,7 +799,7 @@ const Enrollment = () => {
         {/* Footer */}
         <div className="bg-violet-950 text-center py-3 rounded-b-sm">
           <p className="text-[10px] text-violet-200 uppercase tracking-widest">
-            © {new Date().getFullYear()} Kiwalan National High School — Department of Education — Republic of the Philippines
+            {new Date().getFullYear()} Kiwalan National High School / Department of Education / Republic of the Philippines
           </p>
         </div>
       </div>
