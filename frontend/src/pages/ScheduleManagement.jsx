@@ -819,15 +819,17 @@ export default function ScheduleManagement() {
                                 </button>
                               </div>
                             ))}
-                            <button type="button" onClick={() => openCreateAtCell(d, period)} disabled={isAdding}
-                              title={ready ? 'Assign class' : 'Enable period & assign'}
-                              className={`w-full py-1.5 border border-dashed rounded-lg flex flex-col items-center justify-center gap-0.5 transition-all text-[9px] font-bold uppercase tracking-wide ${
-                                isAdding ? 'opacity-50 cursor-wait border-violet-200 text-violet-400' :
-                                ready ? `text-slate-300 hover:border-violet-300 hover:text-violet-500 hover:bg-violet-50/40 ${entries.length ? 'opacity-0 group-hover/cell:opacity-100' : 'opacity-60 hover:opacity-100'}` :
-                                'border-amber-200 text-amber-600 bg-amber-50/50 hover:border-amber-400 opacity-80 hover:opacity-100'
-                              }`}>
-                              {isAdding ? '...' : ready ? <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" /></svg> : <span>Enable + Add</span>}
-                            </button>
+                            {entries.length === 0 && (
+                              <button type="button" onClick={() => openCreateAtCell(d, period)} disabled={isAdding}
+                                title={ready ? 'Assign class' : 'Enable period & assign'}
+                                className={`w-full py-1.5 border border-dashed rounded-lg flex flex-col items-center justify-center gap-0.5 transition-all text-[9px] font-bold uppercase tracking-wide ${
+                                  isAdding ? 'opacity-50 cursor-wait border-violet-200 text-violet-400' :
+                                  ready ? 'text-slate-300 hover:border-violet-300 hover:text-violet-500 hover:bg-violet-50/40 opacity-60 hover:opacity-100' :
+                                  'border-amber-200 text-amber-600 bg-amber-50/50 hover:border-amber-400 opacity-80 hover:opacity-100'
+                                }`}>
+                                {isAdding ? '...' : ready ? <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" /></svg> : <span>Enable + Add</span>}
+                              </button>
+                            )}
                           </div>
                         </td>
                       );
