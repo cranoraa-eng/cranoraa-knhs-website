@@ -38,8 +38,24 @@ const ROLES = {
       accent: 'bg-purple-600',
     }
   },
+  parent: {
+    label: 'Parent',
+    subtitle: 'Parent Portal',
+    identifierLabel: 'Parent Email or ID',
+    identifierPlaceholder: 'Enter your email or ID',
+    icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z',
+    features: ['Monitor child progress', 'View grades & attendance', 'School announcements', 'Direct messaging'],
+    theme: {
+      text: 'text-purple-800',
+      bg: 'bg-purple-900',
+      hover: 'hover:bg-purple-800',
+      border: 'border-purple-300 focus:border-purple-600',
+      ring: 'focus:ring-purple-500/20',
+      accent: 'bg-purple-600',
+    }
+  },
   admin: {
-    label: 'Administrator',
+    label: 'Admin',
     subtitle: 'System Administration',
     identifierLabel: 'Admin Email or ID',
     identifierPlaceholder: 'admin@knhs.edu.ph',
@@ -238,11 +254,11 @@ const Login = () => {
           </button>
         </div>
 
-        <div className="flex-1 flex flex-col justify-center max-w-md mx-auto w-full px-6 py-12 lg:px-16">
+        <div className="flex-1 flex flex-col justify-center max-w-sm mx-auto w-full px-6 py-10 lg:px-12">
           {/* Back link */}
           <button
             onClick={() => navigate('/')}
-            className="hidden lg:inline-flex items-center gap-2 text-gray-400 hover:text-purple-900 text-sm font-medium mb-10 transition-colors group"
+            className="hidden lg:inline-flex items-center gap-2 text-gray-400 hover:text-purple-900 text-xs font-medium mb-6 transition-colors group"
           >
             <svg className="w-4 h-4 transition-transform group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -251,24 +267,24 @@ const Login = () => {
           </button>
 
           {/* Header */}
-          <div className="mb-8">
-            <h3 className="text-3xl font-bold text-gray-900 mb-2">Sign In</h3>
-            <p className="text-gray-500">Access your {role.subtitle.toLowerCase()}</p>
+          <div className="mb-6">
+            <h3 className="text-2xl font-bold text-gray-900 mb-1">Sign In</h3>
+            <p className="text-gray-500 text-sm">Access your {role.subtitle.toLowerCase()}</p>
           </div>
 
           {/* Role Tabs */}
-          <div className="flex bg-gray-100 rounded-xl p-1 mb-8">
+          <div className="grid grid-cols-4 bg-gray-100 rounded-xl p-1 mb-6">
             {Object.entries(ROLES).map(([key, r]) => (
               <button
                 key={key}
                 onClick={() => setLoginType(key)}
-                className={`flex-1 flex items-center justify-center gap-2 py-3 px-3 text-sm font-semibold rounded-lg transition-all ${
+                className={`flex flex-col items-center justify-center py-2.5 px-1 text-xs font-semibold rounded-lg transition-all ${
                   loginType === key
                     ? 'bg-white text-purple-900 shadow-sm'
                     : 'text-gray-500 hover:text-gray-700'
                 }`}
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={r.icon} />
                 </svg>
                 {r.label}
@@ -276,13 +292,13 @@ const Login = () => {
             ))}
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-4">
             {/* Identifier */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">{role.identifierLabel}</label>
               <div className="relative">
-                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                   </svg>
                 </div>
@@ -291,7 +307,7 @@ const Login = () => {
                   value={identifier}
                   onChange={e => setIdentifier(e.target.value)}
                   placeholder={role.identifierPlaceholder}
-                  className={`w-full bg-gray-50 border ${fieldErrors.identifier ? 'border-red-300 bg-red-50' : 'border-gray-200'} ${role.theme.border} rounded-xl py-4 pl-12 pr-4 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 ${role.theme.ring} transition-all`}
+                  className={`w-full bg-gray-50 border ${fieldErrors.identifier ? 'border-red-300 bg-red-50' : 'border-gray-200'} ${role.theme.border} rounded-lg py-3 pl-10 pr-4 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 ${role.theme.ring} transition-all`}
                 />
               </div>
               {fieldErrors.identifier && <p className="mt-2 text-sm text-red-600">{fieldErrors.identifier}</p>}
@@ -310,8 +326,8 @@ const Login = () => {
                 </button>
               </div>
               <div className="relative">
-                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                   </svg>
                 </div>
@@ -320,17 +336,17 @@ const Login = () => {
                   value={password}
                   onChange={e => setPassword(e.target.value)}
                   placeholder="Enter your password"
-                  className={`w-full bg-gray-50 border ${fieldErrors.password ? 'border-red-300 bg-red-50' : 'border-gray-200'} ${role.theme.border} rounded-xl py-4 pl-12 pr-12 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 ${role.theme.ring} transition-all`}
+                  className={`w-full bg-gray-50 border ${fieldErrors.password ? 'border-red-300 bg-red-50' : 'border-gray-200'} ${role.theme.border} rounded-lg py-3 pl-10 pr-11 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 ${role.theme.ring} transition-all`}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
                 >
                   {showPassword ? (
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
                   ) : (
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7a10.05 10.05 0 014.13-4.13m4.13-4.13A10.05 10.05 0 0112 5c4.478 0 8.268 2.943 9.542 7a10.05 10.05 0 01-1.127 2.127m-4.13-4.13A3 3 0 1112 12c.164 0 .324-.013.48-.039" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3l18 18" /></svg>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7a10.05 10.05 0 014.13-4.13m4.13-4.13A10.05 10.05 0 0112 5c4.478 0 8.268 2.943 9.542 7a10.05 10.05 0 01-1.127 2.127m-4.13-4.13A3 3 0 1112 12c.164 0 .324-.013.48-.039" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3l18 18" /></svg>
                   )}
                 </button>
               </div>
@@ -341,7 +357,7 @@ const Login = () => {
             <button
               type="submit"
               disabled={loading}
-              className={`w-full ${role.theme.bg} ${role.theme.hover} text-white font-semibold py-4 rounded-xl flex items-center justify-center gap-3 disabled:opacity-60 disabled:cursor-not-allowed transition-all shadow-lg shadow-purple-900/20 hover:shadow-xl hover:shadow-purple-900/30`}
+              className={`w-full ${role.theme.bg} ${role.theme.hover} text-white font-semibold py-3 rounded-lg flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed transition-all shadow-lg shadow-purple-900/20 hover:shadow-xl hover:shadow-purple-900/30 text-sm`}
             >
               {loading ? (
                 <svg className="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
@@ -358,13 +374,13 @@ const Login = () => {
           </form>
 
           {/* Features */}
-          <div className="mt-10 pt-8 border-t border-gray-100">
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Portal Features</p>
-            <div className="grid grid-cols-2 gap-3">
+          <div className="mt-8 pt-6 border-t border-gray-100">
+            <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-3">Portal Features</p>
+            <div className="grid grid-cols-2 gap-2">
               {role.features.map((f, i) => (
-                <div key={i} className="flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 bg-purple-500 rounded-full" />
-                  <span className="text-sm text-gray-600">{f}</span>
+                <div key={i} className="flex items-center gap-1.5">
+                  <div className="w-1 h-1 bg-purple-500 rounded-full" />
+                  <span className="text-xs text-gray-600">{f}</span>
                 </div>
               ))}
             </div>
