@@ -146,7 +146,7 @@ const StudentEnrollment = () => {
     if (!avg) return null;
     const n = parseFloat(avg);
     if (n >= 90) return { label: 'Outstanding', color: 'text-green-600 bg-green-50' };
-    if (n >= 85) return { label: 'Very Satisfactory', color: 'text-blue-600 bg-blue-50' };
+    if (n >= 85) return { label: 'Very Satisfactory', color: 'text-violet-600 bg-violet-50' };
     if (n >= 80) return { label: 'Satisfactory', color: 'text-yellow-600 bg-yellow-50' };
     if (n >= 75) return { label: 'Fairly Satisfactory', color: 'text-orange-600 bg-orange-50' };
     return { label: 'Did Not Meet Expectations', color: 'text-red-600 bg-red-50' };

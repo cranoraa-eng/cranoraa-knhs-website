@@ -25,7 +25,7 @@ export default {
           900: '#4c1d95',
           950: '#2e1065',
         },
-        sidebar: '#1A0B2E',
+        sidebar: '#ffffff',
       },
       borderRadius: {
         '2xl': '1rem',

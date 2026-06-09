@@ -8,8 +8,8 @@ const DAY_FULL = { monday:'Monday', tuesday:'Tuesday', wednesday:'Wednesday', th
 const DAY_SHORT = { monday:'Mon', tuesday:'Tue', wednesday:'Wed', thursday:'Thu', friday:'Fri' };
 
 const COLOR_MAP = [
-  'bg-blue-50 border-blue-200 text-blue-700',
-  'bg-blue-50 border-blue-200 text-blue-700',
+  'bg-violet-50 border-violet-200 text-violet-700',
+  'bg-violet-50 border-violet-200 text-violet-700',
   'bg-emerald-50 border-emerald-200 text-emerald-700',
   'bg-amber-50 border-amber-200 text-amber-700',
   'bg-rose-50 border-rose-200 text-rose-700',
@@ -138,11 +138,11 @@ export default function MySchedule() {
             return (
               <button key={d} onClick={() => setActiveDay(d)}
                 className={`flex-shrink-0 px-4 py-3 text-xs font-black uppercase tracking-widest border-b-2 transition-all relative ${
-                  activeDay === d ? 'border-blue-600 text-blue-600 bg-blue-50/50' : 'border-transparent text-slate-400 hover:text-slate-600'
+                  activeDay === d ? 'border-violet-600 text-violet-600 bg-violet-50/50' : 'border-transparent text-slate-400 hover:text-slate-600'
                 }`}>
                 {DAY_SHORT[d]}
                 {isToday && <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-emerald-500" />}
-                {count > 0 && <span className="ml-1 text-[9px] bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded-full font-black">{count}</span>}
+                {count > 0 && <span className="ml-1 text-[9px] bg-violet-100 text-violet-600 px-1.5 py-0.5 rounded-full font-black">{count}</span>}
               </button>
             );
           })}
@@ -183,7 +183,7 @@ export default function MySchedule() {
       {/* Summary Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="bg-white border border-slate-200 rounded-2xl p-4 text-center">
-          <p className="text-2xl font-black text-blue-600">{schedules.length}</p>
+          <p className="text-2xl font-black text-violet-600">{schedules.length}</p>
           <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Total Classes</p>
         </div>
         <div className="bg-white border border-slate-200 rounded-2xl p-4 text-center">
@@ -191,7 +191,7 @@ export default function MySchedule() {
           <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Today</p>
         </div>
         <div className="bg-white border border-slate-200 rounded-2xl p-4 text-center">
-          <p className="text-2xl font-black text-blue-600">{DAYS.filter(d => byDay[d].length > 0).length}</p>
+          <p className="text-2xl font-black text-violet-600">{DAYS.filter(d => byDay[d].length > 0).length}</p>
           <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">School Days</p>
         </div>
         <div className="bg-white border border-slate-200 rounded-2xl p-4 text-center">

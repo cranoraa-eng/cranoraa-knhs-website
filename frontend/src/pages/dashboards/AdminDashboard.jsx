@@ -108,7 +108,7 @@ const AdminDashboard = () => {
       
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2 text-xs font-bold text-blue-700 uppercase tracking-wide mb-2">
+          <div className="flex items-center gap-2 text-xs font-bold text-violet-700 uppercase tracking-wide mb-2">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
             </svg>
@@ -149,7 +149,7 @@ const AdminDashboard = () => {
               className={`border-l-4 ${
                 alert.type === 'warning' ? 'border-l-amber-500 bg-amber-50' : 
                 alert.type === 'error' ? 'border-l-red-500 bg-red-50' : 
-                'border-l-blue-500 bg-blue-50'
+                'border-l-blue-500 bg-violet-50'
               }`}
             >
               <CardBody className="p-4">
@@ -158,7 +158,7 @@ const AdminDashboard = () => {
                     <div className={`w-10 h-10 rounded-md flex items-center justify-center flex-shrink-0 ${
                       alert.type === 'warning' ? 'bg-amber-100 text-amber-700' :
                       alert.type === 'error' ? 'bg-red-100 text-red-700' :
-                      'bg-blue-100 text-blue-700'
+                      'bg-violet-100 text-violet-700'
                     }`}>
                       {alert.type === 'warning' ? (
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -178,14 +178,14 @@ const AdminDashboard = () => {
                       <p className={`text-sm font-extrabold mb-1 ${
                         alert.type === 'warning' ? 'text-amber-900' :
                         alert.type === 'error' ? 'text-red-900' :
-                        'text-blue-900'
+                        'text-violet-900'
                       }`}>
                         {alert.title}
                       </p>
                       <p className={`text-xs ${
                         alert.type === 'warning' ? 'text-amber-700' :
                         alert.type === 'error' ? 'text-red-700' :
-                        'text-blue-700'
+                        'text-violet-700'
                       }`}>
                         {alert.message}
                       </p>
@@ -308,9 +308,9 @@ const AdminDashboard = () => {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <button
                   onClick={() => navigate('/student-management')}
-                  className="h-auto flex flex-col items-center gap-3 py-5 px-3 bg-white hover:bg-slate-50 border border-slate-200 hover:border-blue-300 rounded-md transition-all group"
+                  className="h-auto flex flex-col items-center gap-3 py-5 px-3 bg-white hover:bg-slate-50 border border-slate-200 hover:border-violet-300 rounded-md transition-all group"
                 >
-                  <div className="w-12 h-12 rounded-md bg-blue-100 group-hover:bg-blue-200 text-blue-700 flex items-center justify-center transition-colors">
+                  <div className="w-12 h-12 rounded-md bg-violet-100 group-hover:bg-violet-200 text-violet-700 flex items-center justify-center transition-colors">
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
                     </svg>
@@ -369,9 +369,9 @@ const AdminDashboard = () => {
             </CardHeader>
             <CardBody>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="p-5 rounded-md bg-blue-50 border border-blue-200">
+                <div className="p-5 rounded-md bg-violet-50 border border-violet-200">
                   <p className="text-xs font-bold text-slate-600 uppercase tracking-wide mb-2">Average Grade</p>
-                  <p className="text-4xl font-extrabold text-blue-700">
+                  <p className="text-4xl font-extrabold text-violet-700">
                     {data?.average_grade != null ? data.average_grade.toFixed(1) : '—'}
                   </p>
                   <p className="text-xs text-slate-600 mt-1">Across all subjects</p>
@@ -409,7 +409,7 @@ const AdminDashboard = () => {
                   <div className="space-y-3">
                     {[
                       { label: 'Outstanding (90-100)',        pct: data?.all_subjects?.outstanding_pct ?? 0,         color: 'bg-emerald-500' },
-                      { label: 'Very Satisfactory (85-89)',   pct: data?.all_subjects?.very_satisfactory_pct ?? 0,    color: 'bg-blue-500'    },
+                      { label: 'Very Satisfactory (85-89)',   pct: data?.all_subjects?.very_satisfactory_pct ?? 0,    color: 'bg-violet-500'    },
                       { label: 'Satisfactory (80-84)',        pct: data?.all_subjects?.satisfactory_pct ?? 0,         color: 'bg-sky-500'     },
                       { label: 'Fairly Satisfactory (75-79)', pct: data?.all_subjects?.fairly_satisfactory_pct ?? 0,  color: 'bg-amber-500'   },
                       { label: 'Did Not Meet (Below 75)',     pct: data?.all_subjects?.below_75_pct ?? 0,             color: 'bg-rose-500'    },
@@ -478,9 +478,9 @@ const AdminDashboard = () => {
                   <span className="w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0" />
                 </div>
 
-                <div className="flex items-center justify-between p-3 rounded-md bg-blue-50 border border-blue-200">
+                <div className="flex items-center justify-between p-3 rounded-md bg-violet-50 border border-violet-200">
                   <div className="flex items-center gap-3 flex-1 min-w-0">
-                    <div className="w-8 h-8 rounded-md bg-blue-100 text-blue-700 flex items-center justify-center flex-shrink-0">
+                    <div className="w-8 h-8 rounded-md bg-violet-100 text-violet-700 flex items-center justify-center flex-shrink-0">
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4" />
                       </svg>

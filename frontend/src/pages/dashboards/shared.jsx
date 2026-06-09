@@ -11,7 +11,7 @@ import api from '../../utils/api';
 // Official KNHS School Header Banner
 export const SchoolHeaderBanner = ({ user, today }) => {
   return (
-    <Card className="relative overflow-hidden border-b-4 border-blue-600 shadow-md">
+    <Card className="relative overflow-hidden border-b-4 border-violet-600 shadow-md">
       <CardBody className="p-4 md:p-6">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           {/* School Identity */}
@@ -23,7 +23,7 @@ export const SchoolHeaderBanner = ({ user, today }) => {
               <h1 className="text-base md:text-lg font-extrabold text-slate-900 uppercase tracking-tight leading-tight">
                 Kiwalan National High School
               </h1>
-              <p className="text-xs md:text-sm font-bold text-blue-700 uppercase tracking-wide mt-0.5">
+              <p className="text-xs md:text-sm font-bold text-violet-700 uppercase tracking-wide mt-0.5">
                 Official Digital Campus Portal
               </p>
               <p className="text-[10px] md:text-xs font-semibold text-slate-600 uppercase tracking-wide mt-1">
@@ -33,8 +33,8 @@ export const SchoolHeaderBanner = ({ user, today }) => {
           </div>
 
           {/* User Info */}
-          <div className="flex items-center gap-3 p-3 rounded-md bg-blue-50 border border-blue-200">
-            <div className="w-12 h-12 rounded-md bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold shadow-sm overflow-hidden border border-blue-700 shrink-0">
+          <div className="flex items-center gap-3 p-3 rounded-md bg-violet-50 border border-violet-200">
+            <div className="w-12 h-12 rounded-md bg-gradient-to-br from-violet-500 to-violet-600 flex items-center justify-center text-white font-bold shadow-sm overflow-hidden border border-violet-700 shrink-0">
               {user?.profile_picture ? (
                 <img src={user.profile_picture} alt="Profile" className="w-full h-full object-cover" />
               ) : (
@@ -45,7 +45,7 @@ export const SchoolHeaderBanner = ({ user, today }) => {
               <p className="text-xs font-bold text-slate-900">
                 {user?.first_name} {user?.last_name}
               </p>
-              <p className="text-[10px] font-bold text-blue-700 uppercase tracking-wide">
+              <p className="text-[10px] font-bold text-violet-700 uppercase tracking-wide">
                 {user?.role}
               </p>
               <p className="text-[10px] font-semibold text-slate-600 mt-0.5">
@@ -62,7 +62,7 @@ export const SchoolHeaderBanner = ({ user, today }) => {
 // Academic Stat Card
 export const StatCard = memo(({ label, value, sub, icon, color = 'blue', onClick, badge }) => {
   const iconThemes = {
-    blue:    'bg-blue-50 text-blue-600 border-blue-200',
+    blue:    'bg-violet-50 text-violet-600 border-violet-200',
     emerald: 'bg-emerald-50 text-emerald-600 border-emerald-200',
     rose:    'bg-rose-50 text-rose-600 border-rose-200',
     amber:   'bg-amber-50 text-amber-600 border-amber-200',
@@ -154,7 +154,7 @@ export const TodayScheduleWidget = memo(({ navigate }) => {
           <CardTitle subtitle="Your teaching schedule">Today's Classes</CardTitle>
           <button
             onClick={() => navigate('/schedule')}
-            className="text-xs font-bold text-blue-600 hover:text-blue-700 uppercase tracking-wide"
+            className="text-xs font-bold text-violet-600 hover:text-violet-700 uppercase tracking-wide"
           >
             Full Schedule
           </button>
@@ -185,8 +185,8 @@ export const TodayScheduleWidget = memo(({ navigate }) => {
                   key={s.id}
                   className={cn(
                     "flex items-center gap-3 p-3 rounded-md border-2 transition-all",
-                    isCurrent && "bg-blue-600 border-blue-700 text-white shadow-md",
-                    !isCurrent && !isPast && "bg-white border-slate-200 hover:border-blue-300",
+                    isCurrent && "bg-violet-600 border-violet-700 text-white shadow-md",
+                    !isCurrent && !isPast && "bg-white border-slate-200 hover:border-violet-300",
                     isPast && "bg-slate-50 border-slate-100 opacity-60"
                   )}
                 >
@@ -267,7 +267,7 @@ export const RecentAnnouncementsWidget = memo(({ navigate }) => {
           <CardTitle subtitle="School updates">Recent Announcements</CardTitle>
           <button
             onClick={() => navigate('/announcements')}
-            className="text-xs font-bold text-blue-600 hover:text-blue-700 uppercase tracking-wide"
+            className="text-xs font-bold text-violet-600 hover:text-violet-700 uppercase tracking-wide"
           >
             View All
           </button>
@@ -296,13 +296,13 @@ export const RecentAnnouncementsWidget = memo(({ navigate }) => {
                 onClick={() => navigate('/announcements')}
                 className="w-full text-left p-3 rounded-md border-2 border-slate-200 bg-white hover:border-blue-400 hover:shadow-md transition-all group"
               >
-                <p className="text-sm font-extrabold text-slate-900 line-clamp-1 group-hover:text-blue-700 transition-colors">
+                <p className="text-sm font-extrabold text-slate-900 line-clamp-1 group-hover:text-violet-700 transition-colors">
                   {a.title}
                 </p>
                 <p className="text-xs text-slate-600 line-clamp-2 mt-1">
                   {a.content}
                 </p>
-                <p className="text-[10px] font-semibold text-blue-600 uppercase tracking-wide mt-2">
+                <p className="text-[10px] font-semibold text-violet-600 uppercase tracking-wide mt-2">
                   {formatTime(a.created_at)}
                 </p>
               </button>

@@ -71,7 +71,7 @@ const MyClasses = () => {
       {/* Page Header - Official DepEd Style */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2 text-xs font-bold text-blue-700 uppercase tracking-wide mb-2">
+          <div className="flex items-center gap-2 text-xs font-bold text-violet-700 uppercase tracking-wide mb-2">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
             </svg>
@@ -87,9 +87,9 @@ const MyClasses = () => {
 
         {/* Stats Summary */}
         <div className="flex gap-3">
-          <div className="px-4 py-2 rounded-md bg-blue-50 border border-blue-200">
+          <div className="px-4 py-2 rounded-md bg-violet-50 border border-violet-200">
             <p className="text-xs font-bold text-slate-600 uppercase tracking-wide">Sections</p>
-            <p className="text-2xl font-extrabold text-blue-700">{groupedAssignments.length}</p>
+            <p className="text-2xl font-extrabold text-violet-700">{groupedAssignments.length}</p>
           </div>
           <div className="px-4 py-2 rounded-md bg-emerald-50 border border-emerald-200">
             <p className="text-xs font-bold text-slate-600 uppercase tracking-wide">Subjects</p>
@@ -122,7 +122,7 @@ const MyClasses = () => {
               <CardHeader divider>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-md bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-extrabold text-lg shadow-sm border border-blue-700">
+                    <div className="w-12 h-12 rounded-md bg-gradient-to-br from-violet-500 to-violet-600 flex items-center justify-center text-white font-extrabold text-lg shadow-sm border border-violet-700">
                       {classroom.name?.match(/\d+/)?.[0] || 'C'}
                     </div>
                     <div>
@@ -152,10 +152,10 @@ const MyClasses = () => {
                     {classroom.subjects.map(subject => (
                       <div
                         key={subject.id}
-                        className="flex items-center justify-between p-3 rounded-md bg-slate-50 border border-slate-200 hover:border-blue-300 hover:bg-white transition-all group"
+                        className="flex items-center justify-between p-3 rounded-md bg-slate-50 border border-slate-200 hover:border-violet-300 hover:bg-white transition-all group"
                       >
                         <div className="flex-1 min-w-0">
-                          <p className="text-xs font-extrabold text-blue-700 uppercase tracking-wide mb-0.5">
+                          <p className="text-xs font-extrabold text-violet-700 uppercase tracking-wide mb-0.5">
                             {subject.subject_code}
                           </p>
                           <p className="text-sm font-bold text-slate-900 truncate">
@@ -170,7 +170,7 @@ const MyClasses = () => {
                                 subjectId: subject.subject 
                               } 
                             })}
-                            className="p-2 rounded-md bg-white border border-slate-300 text-blue-600 hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all shadow-sm"
+                            className="p-2 rounded-md bg-white border border-slate-300 text-violet-600 hover:bg-violet-600 hover:text-white hover:border-violet-600 transition-all shadow-sm"
                             title="Input Grades"
                           >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -244,7 +244,7 @@ const MyClasses = () => {
                                   <div className="flex items-center justify-center gap-1">
                                     <button 
                                       onClick={() => { setSelectedStudent(student); setShowProfileModal(true); }}
-                                      className="p-1.5 rounded text-blue-600 hover:bg-blue-50 transition-all"
+                                      className="p-1.5 rounded text-violet-600 hover:bg-violet-50 transition-all"
                                       title="View Profile"
                                     >
                                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -271,7 +271,7 @@ const MyClasses = () => {
                       {classroom.students.length > 5 && (
                         <button
                           onClick={() => setSelectedClassroom(classroom)}
-                          className="w-full mt-2 py-2 text-xs font-bold text-blue-600 hover:bg-blue-50 rounded-md transition-all uppercase tracking-wide"
+                          className="w-full mt-2 py-2 text-xs font-bold text-violet-600 hover:bg-violet-50 rounded-md transition-all uppercase tracking-wide"
                         >
                           + {classroom.students.length - 5} More Students
                         </button>
@@ -338,7 +338,7 @@ const MyClasses = () => {
                               setSelectedStudent(student); 
                               setShowProfileModal(true); 
                             }}
-                            className="p-2 rounded-md bg-white border border-slate-300 text-blue-600 hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all"
+                            className="p-2 rounded-md bg-white border border-slate-300 text-violet-600 hover:bg-violet-600 hover:text-white hover:border-violet-600 transition-all"
                             title="View Profile"
                           >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

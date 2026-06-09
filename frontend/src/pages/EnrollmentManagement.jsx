@@ -5,11 +5,11 @@ import { LoadingSpinner, Button } from '../components/ui';
 
 const STATUS_CONFIG = {
   pending: { color: 'bg-amber-100 text-amber-800 border-amber-200', label: 'Pending' },
-  under_review: { color: 'bg-blue-100 text-blue-800 border-blue-200', label: 'Under Review' },
+  under_review: { color: 'bg-violet-100 text-blue-800 border-violet-200', label: 'Under Review' },
   pending_requirements: { color: 'bg-orange-100 text-orange-800 border-orange-200', label: 'Pending Req' },
   approved: { color: 'bg-emerald-100 text-emerald-800 border-emerald-200', label: 'Approved' },
   rejected: { color: 'bg-rose-100 text-rose-800 border-rose-200', label: 'Rejected' },
-  enrolled: { color: 'bg-blue-100 text-blue-800 border-blue-200', label: 'Enrolled' },
+  enrolled: { color: 'bg-violet-100 text-blue-800 border-violet-200', label: 'Enrolled' },
 };
 
 const GRADE_LEVELS = ['','7','8','9','10','11','12'];
@@ -370,7 +370,7 @@ const EnrollmentManagement = () => {
           CSV
         </button>
         <button onClick={handleExportPDF}
-          className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-blue-600 text-white text-xs font-bold hover:bg-blue-700">
+          className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-violet-600 text-white text-xs font-bold hover:bg-violet-700">
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
           PDF
         </button>
@@ -381,9 +381,9 @@ const EnrollmentManagement = () => {
           {[
             { label: 'Total', value: analytics.total, color: 'text-slate-900', bg: 'bg-slate-50 border-slate-200' },
             { label: 'Pending', value: analytics.pending, color: 'text-amber-700', bg: 'bg-amber-50 border-amber-200' },
-            { label: 'Under Review', value: (analytics.status_breakdown?.under_review || 0), color: 'text-blue-700', bg: 'bg-blue-50 border-blue-200' },
+            { label: 'Under Review', value: (analytics.status_breakdown?.under_review || 0), color: 'text-violet-700', bg: 'bg-violet-50 border-violet-200' },
             { label: 'Approved', value: analytics.approved, color: 'text-emerald-700', bg: 'bg-emerald-50 border-emerald-200' },
-            { label: 'Enrolled', value: analytics.enrolled, color: 'text-blue-700', bg: 'bg-blue-50 border-blue-200' },
+            { label: 'Enrolled', value: analytics.enrolled, color: 'text-violet-700', bg: 'bg-violet-50 border-violet-200' },
             { label: 'Rejected', value: analytics.rejected, color: 'text-rose-700', bg: 'bg-rose-50 border-rose-200' },
           ].map(s => (
             <div key={s.label} className={`${s.bg} border rounded-xl p-4`}>
@@ -399,27 +399,27 @@ const EnrollmentManagement = () => {
           <div className="relative flex-1">
             <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
             <input value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Search name, email, or enrollment #..."
-              className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40" />
+              className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/40" />
           </div>
           <select value={filter} onChange={e => setFilter(e.target.value)}
-            className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500/40">
+            className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 focus:outline-none focus:ring-2 focus:ring-violet-500/40">
             <option value="all">All Status</option>
             {Object.entries(STATUS_CONFIG).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
           </select>
           <select value={gradeFilter} onChange={e => setGradeFilter(e.target.value)}
-            className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500/40">
+            className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 focus:outline-none focus:ring-2 focus:ring-violet-500/40">
             <option value="">All Grades</option>
             {GRADE_LEVELS.filter(Boolean).map(g => <option key={g} value={g}>Grade {g}</option>)}
           </select>
           <select value={typeFilter} onChange={e => setTypeFilter(e.target.value)}
-            className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500/40">
+            className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 focus:outline-none focus:ring-2 focus:ring-violet-500/40">
             <option value="">All Types</option>
             {[{ v: 'new', l: 'New' }, { v: 'returning', l: 'Returning' }, { v: 'transferee', l: 'Transferee' }, { v: 'sh_applicant', l: 'SHS' }, { v: 'parent_assisted', l: 'Parent-Assisted' }].map(t =>
               <option key={t.v} value={t.v}>{t.l}</option>
             )}
           </select>
           <select value={schoolYearFilter} onChange={e => setSchoolYearFilter(e.target.value)}
-            className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500/40">
+            className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 focus:outline-none focus:ring-2 focus:ring-violet-500/40">
             <option value="">All Years</option>
             <option value="2025-2026">2025-2026</option>
             <option value="2026-2027">2026-2027</option>
@@ -427,7 +427,7 @@ const EnrollmentManagement = () => {
         </div>
 
         {selectedIds.length > 0 && (
-          <div className="px-4 py-2 bg-blue-50 border-b border-blue-100 flex items-center gap-3">
+          <div className="px-4 py-2 bg-violet-50 border-b border-blue-100 flex items-center gap-3">
             <span className="text-xs font-bold text-blue-800">{selectedIds.length} selected</span>
             <button onClick={() => bulkAction('approve')} className="px-3 py-1 rounded-lg bg-emerald-600 text-white text-[10px] font-bold hover:bg-emerald-700">Approve All</button>
             <button onClick={() => bulkAction('reject')} className="px-3 py-1 rounded-lg bg-rose-600 text-white text-[10px] font-bold hover:bg-rose-700">Reject All</button>
@@ -439,7 +439,7 @@ const EnrollmentManagement = () => {
           <table className="w-full text-left">
             <thead className="bg-slate-50/50 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100">
               <tr>
-                <th className="px-3 py-3 w-8"><input type="checkbox" onChange={e => setSelectedIds(e.target.checked ? filtered.map(a => a.id) : [])} checked={selectedIds.length === filtered.length && filtered.length > 0} className="w-4 h-4 text-blue-600 rounded" /></th>
+                <th className="px-3 py-3 w-8"><input type="checkbox" onChange={e => setSelectedIds(e.target.checked ? filtered.map(a => a.id) : [])} checked={selectedIds.length === filtered.length && filtered.length > 0} className="w-4 h-4 text-violet-600 rounded" /></th>
                 <th className="px-3 py-3">Applicant</th>
                 <th className="px-3 py-3">Enrollment #</th>
                 <th className="px-3 py-3">Grade</th>
@@ -454,14 +454,14 @@ const EnrollmentManagement = () => {
                 <tr><td colSpan={8} className="px-6 py-12 text-center text-sm text-slate-400 font-bold">No applications found</td></tr>
               ) : filtered.map(app => (
                 <tr key={app.id} className="hover:bg-slate-50/50 transition-colors">
-                  <td className="px-3 py-3"><input type="checkbox" checked={selectedIds.includes(app.id)} onChange={() => toggleSelect(app.id)} className="w-4 h-4 text-blue-600 rounded" /></td>
+                  <td className="px-3 py-3"><input type="checkbox" checked={selectedIds.includes(app.id)} onChange={() => toggleSelect(app.id)} className="w-4 h-4 text-violet-600 rounded" /></td>
                   <td className="px-3 py-3">
                     <button onClick={() => setSelected(app)} className="text-left">
                       <p className="text-sm font-bold text-slate-900">{app.last_name}, {app.first_name}</p>
                       <p className="text-[10px] text-slate-400">{app.email}</p>
                     </button>
                   </td>
-                  <td className="px-3 py-3 text-xs font-bold text-blue-700">{app.enrollment_number || '—'}</td>
+                  <td className="px-3 py-3 text-xs font-bold text-violet-700">{app.enrollment_number || '—'}</td>
                   <td className="px-3 py-3">
                     <span className="text-sm font-bold text-slate-700">G{app.grade_level}</span>
                     {app.strand && <span className="text-[9px] text-slate-400 ml-1">{app.strand}</span>}
@@ -475,7 +475,7 @@ const EnrollmentManagement = () => {
                   <td className="px-3 py-3 text-xs text-slate-400 hidden md:table-cell">{new Date(app.submitted_at).toLocaleDateString()}</td>
                   <td className="px-3 py-3 text-center relative">
                     <div className="hidden md:flex items-center justify-center gap-1">
-                      <button onClick={() => handleView(app)} className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all" title="View">
+                      <button onClick={() => handleView(app)} className="p-1.5 text-slate-400 hover:text-violet-600 hover:bg-violet-50 rounded-lg transition-all" title="View">
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
                       </button>
                       {(app.status === 'pending' || app.status === 'under_review') && (
@@ -491,17 +491,17 @@ const EnrollmentManagement = () => {
                         </>
                       )}
                       {(app.status === 'pending' || app.status === 'under_review' || app.status === 'approved') && (
-                        <button onClick={() => assignSection(app.id, app.grade_level)} className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg" title="Set Section">
+                        <button onClick={() => assignSection(app.id, app.grade_level)} className="p-1.5 text-slate-400 hover:text-violet-600 hover:bg-violet-50 rounded-lg" title="Set Section">
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
                         </button>
                       )}
                       {app.status === 'approved' && (
-                        <button onClick={() => { setEnrollApp(app); setShowEnrollModal(true); }} className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg" title="Enroll">
+                        <button onClick={() => { setEnrollApp(app); setShowEnrollModal(true); }} className="p-1.5 text-slate-400 hover:text-violet-600 hover:bg-violet-50 rounded-lg" title="Enroll">
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" /></svg>
                         </button>
                       )}
                       {app.enrolled_student && (
-                        <span className="text-[9px] font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded-lg">Enrolled</span>
+                        <span className="text-[9px] font-bold text-violet-600 bg-violet-50 px-2 py-1 rounded-lg">Enrolled</span>
                       )}
                       {app.status !== 'enrolled' && (
                         <button onClick={() => promptDelete(app.id, `${app.first_name} ${app.last_name}`)} className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg" title="Delete">
@@ -510,12 +510,12 @@ const EnrollmentManagement = () => {
                       )}
                     </div>
                     <div className="md:hidden">
-                      <button onClick={() => setActiveMenu(activeMenu === app.id ? null : app.id)} className={`p-1 rounded-md ${activeMenu === app.id ? 'bg-blue-100 text-blue-600' : 'text-slate-400'}`}>
+                      <button onClick={() => setActiveMenu(activeMenu === app.id ? null : app.id)} className={`p-1 rounded-md ${activeMenu === app.id ? 'bg-violet-100 text-violet-600' : 'text-slate-400'}`}>
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 6h16M4 12h16m-7 6h7" /></svg>
                       </button>
                       {activeMenu === app.id && (
                         <div className="absolute right-0 top-full mt-1 bg-white border border-slate-100 rounded-xl shadow-xl z-50 py-1 min-w-[130px]">
-                          <button onClick={() => { handleView(app); setActiveMenu(null); }} className="w-full text-left px-3 py-2 text-[10px] font-bold text-slate-600 hover:bg-blue-50 flex items-center gap-2">View</button>
+                          <button onClick={() => { handleView(app); setActiveMenu(null); }} className="w-full text-left px-3 py-2 text-[10px] font-bold text-slate-600 hover:bg-violet-50 flex items-center gap-2">View</button>
                           {(app.status === 'pending' || app.status === 'under_review') && (
                             <>
                               <button onClick={() => { promptReject(app.id); setActiveMenu(null); }} className="w-full text-left px-3 py-2 text-[10px] font-bold text-rose-600 hover:bg-rose-50 flex items-center gap-2">Reject</button>
@@ -526,7 +526,7 @@ const EnrollmentManagement = () => {
                           )}
                           <button onClick={() => { promptRequestDocs(app.id); setActiveMenu(null); }} className="w-full text-left px-3 py-2 text-[10px] font-bold text-amber-600 hover:bg-amber-50 flex items-center gap-2">Request Docs</button>
                           {(app.status === 'pending' || app.status === 'under_review') && (
-                            <button onClick={() => { assignSection(app.id, app.grade_level); setActiveMenu(null); }} className="w-full text-left px-3 py-2 text-[10px] font-bold text-blue-600 hover:bg-blue-50 flex items-center gap-2">Set Section</button>
+                            <button onClick={() => { assignSection(app.id, app.grade_level); setActiveMenu(null); }} className="w-full text-left px-3 py-2 text-[10px] font-bold text-violet-600 hover:bg-violet-50 flex items-center gap-2">Set Section</button>
                           )}
                         </div>
                       )}
@@ -570,7 +570,7 @@ const EnrollmentManagement = () => {
                 <span className={`px-3 py-1 text-xs font-bold uppercase rounded-lg border ${(STATUS_CONFIG[selected.status] || STATUS_CONFIG.pending).color}`}>
                   {(STATUS_CONFIG[selected.status] || STATUS_CONFIG.pending).label}
                 </span>
-                {selected.assigned_classroom_name && <span className="text-xs font-bold text-blue-600">Section: {selected.assigned_classroom_name}</span>}
+                {selected.assigned_classroom_name && <span className="text-xs font-bold text-violet-600">Section: {selected.assigned_classroom_name}</span>}
               </div>
 
               <div className="grid grid-cols-2 gap-4 text-sm">
@@ -589,7 +589,7 @@ const EnrollmentManagement = () => {
                   <div className="bg-emerald-50 p-3 rounded-xl"><p className="text-[9px] font-bold text-emerald-600 uppercase">Father</p><p className="font-bold text-slate-800">{selected.father_name || 'N/A'}</p><p className="text-xs text-slate-500">{selected.father_contact || ''}</p>{selected.father_email && <p className="text-[10px] text-slate-400">{selected.father_email}</p>}</div>
                   <div className="bg-rose-50 p-3 rounded-xl"><p className="text-[9px] font-bold text-rose-600 uppercase">Mother</p><p className="font-bold text-slate-800">{selected.mother_name || 'N/A'}</p><p className="text-xs text-slate-500">{selected.mother_contact || ''}</p>{selected.mother_email && <p className="text-[10px] text-slate-400">{selected.mother_email}</p>}</div>
                   {selected.guardian_name && <div className="bg-amber-50 p-3 rounded-xl col-span-2"><p className="text-[9px] font-bold text-amber-600 uppercase">Guardian</p><p className="font-bold text-slate-800">{selected.guardian_name} ({selected.guardian_relationship})</p><p className="text-xs text-slate-500">{selected.guardian_contact || ''}</p></div>}
-                  {selected.linked_parent_email && <div className="bg-blue-50 p-3 rounded-xl col-span-2 border border-blue-200"><p className="text-[9px] font-bold text-blue-600 uppercase">Linked Parent Account</p><p className="text-xs text-blue-700 font-semibold">{selected.linked_parent_email}</p></div>}
+                  {selected.linked_parent_email && <div className="bg-violet-50 p-3 rounded-xl col-span-2 border border-violet-200"><p className="text-[9px] font-bold text-violet-600 uppercase">Linked Parent Account</p><p className="text-xs text-violet-700 font-semibold">{selected.linked_parent_email}</p></div>}
                 </div>
               </div>
 
@@ -615,7 +615,7 @@ const EnrollmentManagement = () => {
                           }`}>{doc.verification_status_display}</span>
                         </div>
                         <div className="flex items-center gap-1">
-                          <a href={doc.file_url} target="_blank" rel="noreferrer" className="p-1.5 text-slate-400 hover:text-blue-600 rounded-lg" title="View">
+                          <a href={doc.file_url} target="_blank" rel="noreferrer" className="p-1.5 text-slate-400 hover:text-violet-600 rounded-lg" title="View">
                             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
                           </a>
                           {doc.verification_status !== 'verified' && (
@@ -644,7 +644,7 @@ const EnrollmentManagement = () => {
                     {selected.status_history.map((h, i) => (
                       <div key={h.id} className="flex gap-3">
                         <div className="flex flex-col items-center">
-                          <div className={`w-4 h-4 rounded-full border-2 ${i === 0 ? 'bg-blue-500 border-violet-500' : 'bg-white border-slate-300'}`} />
+                          <div className={`w-4 h-4 rounded-full border-2 ${i === 0 ? 'bg-violet-500 border-violet-500' : 'bg-white border-slate-300'}`} />
                           {i < selected.status_history.length - 1 && <div className="w-0.5 h-6 bg-slate-200" />}
                         </div>
                         <div className="pb-3">
@@ -668,7 +668,7 @@ const EnrollmentManagement = () => {
             <div className="px-5 py-4 border-t border-gray-200 bg-gray-50 flex items-center justify-between gap-2 flex-shrink-0">
               <div className="flex gap-2">
                 <button onClick={() => promptRequestDocs(selected.id)} className="px-4 py-2 border border-amber-300 bg-amber-50 text-amber-700 text-xs font-black uppercase tracking-widest hover:bg-amber-100 rounded-sm">Request Docs</button>
-                <button onClick={() => assignSection(selected.id, selected.grade_level)} className="px-4 py-2 border border-blue-300 bg-blue-50 text-blue-700 text-xs font-black uppercase tracking-widest hover:bg-blue-100 rounded-sm">Set Section</button>
+                <button onClick={() => assignSection(selected.id, selected.grade_level)} className="px-4 py-2 border border-violet-300 bg-violet-50 text-violet-700 text-xs font-black uppercase tracking-widest hover:bg-violet-100 rounded-sm">Set Section</button>
                 <a href={`/api/enrollment-applications/export-form-pdf/?id=${selected.id}`} target="_blank" rel="noreferrer"
                   className="px-4 py-2 border border-gray-300 bg-white text-gray-700 text-xs font-black uppercase tracking-widest hover:bg-gray-100 rounded-sm">Print Form</a>
               </div>

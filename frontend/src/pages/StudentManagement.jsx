@@ -159,7 +159,7 @@ const StudentManagement = () => {
                           <tr>
                             <td class="px-3 py-2 font-bold">${u.name}</td>
                             <td class="px-3 py-2">${u.username}</td>
-                            <td class="px-3 py-2 font-mono text-blue-600">${u.password}</td>
+                            <td class="px-3 py-2 font-mono text-violet-600">${u.password}</td>
                           </tr>
                         `).join('')}
                       </tbody>
@@ -610,7 +610,7 @@ const StudentManagement = () => {
   );
 
   const StudentRow = ({ student, idx }) => (
-    <tr key={student.id} className={`group transition-all duration-200 ${selectedIds.includes(student.id) ? 'bg-blue-50/50' : 'hover:bg-slate-50/80'}`}>
+    <tr key={student.id} className={`group transition-all duration-200 ${selectedIds.includes(student.id) ? 'bg-violet-50/50' : 'hover:bg-slate-50/80'}`}>
       <td className="px-3 py-1.5 md:px-6 md:py-4">
         <div className="flex items-center gap-3">
           <input 
@@ -620,14 +620,14 @@ const StudentManagement = () => {
               if (e.target.checked) setSelectedIds(prev => [...prev, student.id]);
               else setSelectedIds(prev => prev.filter(id => id !== student.id));
             }}
-            className="w-3.5 h-3.5 md:w-4 md:h-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500 cursor-pointer"
+            className="w-3.5 h-3.5 md:w-4 md:h-4 text-violet-600 border-slate-300 rounded focus:ring-violet-500 cursor-pointer"
           />
           <span className="text-[8px] md:text-xs font-black text-slate-400">{idx + 1}</span>
         </div>
       </td>
       <td className="px-3 py-1.5 md:px-6 md:py-4">
         <div className="flex items-center gap-2 md:gap-3">
-          <div className="w-6 h-6 md:w-10 md:h-10 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-lg md:rounded-xl flex items-center justify-center text-white font-black text-[10px] md:text-sm shadow-sm">
+          <div className="w-6 h-6 md:w-10 md:h-10 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-lg md:rounded-xl flex items-center justify-center text-white font-black text-[10px] md:text-sm shadow-sm">
             {student.first_name?.charAt(0)}{student.last_name?.charAt(0)}
           </div>
           <div className="min-w-0">
@@ -672,7 +672,7 @@ const StudentManagement = () => {
          <select 
            value={student.account_status} 
            onChange={(e) => handleToggleStatus(student, e.target.value)}
-           className={`text-[7px] md:text-[10px] font-black px-1.5 py-0.5 md:px-2 md:py-1 rounded uppercase tracking-widest border-0 focus:ring-2 focus:ring-blue-500 cursor-pointer transition-all ${
+           className={`text-[7px] md:text-[10px] font-black px-1.5 py-0.5 md:px-2 md:py-1 rounded uppercase tracking-widest border-0 focus:ring-2 focus:ring-violet-500 cursor-pointer transition-all ${
              student.account_status === 'active' ? 'bg-emerald-100 text-emerald-600' : 
              student.account_status === 'suspended' ? 'bg-rose-100 text-rose-600' : 
              'bg-slate-100 text-slate-600'
@@ -695,7 +695,7 @@ const StudentManagement = () => {
           {(user?.role === 'admin' || user?.role === 'teacher') && (
             <button 
               onClick={() => handleAssignSection(student.id, student.profile?.classroom_name, student.profile?.grade_level)}
-              className="p-1 md:p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+              className="p-1 md:p-2 text-violet-600 hover:bg-violet-50 rounded-lg transition-all"
               title="Set Section"
             >
               <svg className="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
@@ -725,9 +725,9 @@ const StudentManagement = () => {
   return (
     <div className="page-bottom-safe bg-slate-50/50">
       {/* DepEd Official Header */}
-      <div className="bg-white border-b-4 border-blue-600 px-4 md:px-6 py-3 md:py-4 mb-3 md:mb-6">
+      <div className="bg-white border-b-4 border-violet-600 px-4 md:px-6 py-3 md:py-4 mb-3 md:mb-6">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 md:h-12 md:w-12 rounded-md bg-blue-600 flex items-center justify-center shrink-0">
+          <div className="h-10 w-10 md:h-12 md:w-12 rounded-md bg-violet-600 flex items-center justify-center shrink-0">
             <svg className="w-6 h-6 md:w-7 md:h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
             </svg>
@@ -736,7 +736,7 @@ const StudentManagement = () => {
             <h1 className="text-lg md:text-2xl font-extrabold text-slate-900 uppercase tracking-tight">
               {user?.role === 'teacher' ? 'Advisory Class' : 'Student Records'}
             </h1>
-            <p className="text-xs md:text-sm font-bold text-blue-700 uppercase tracking-wide mt-0.5">
+            <p className="text-xs md:text-sm font-bold text-violet-700 uppercase tracking-wide mt-0.5">
               {user?.role === 'teacher' ? 'Manage Advisory Students' : 'Student Management System'}
             </p>
           </div>
@@ -750,7 +750,7 @@ const StudentManagement = () => {
         <div className="flex flex-wrap items-center justify-center gap-2">
           <button 
             onClick={() => setShowAddModal(true)}
-            className="bg-blue-600 text-white px-3 py-1.5 md:px-5 md:py-2.5 rounded-xl md:rounded-2xl border border-blue-700 shadow-lg hover:bg-blue-700 flex items-center gap-2 transition-all active:scale-95"
+            className="bg-violet-600 text-white px-3 py-1.5 md:px-5 md:py-2.5 rounded-xl md:rounded-2xl border border-violet-700 shadow-lg hover:bg-violet-700 flex items-center gap-2 transition-all active:scale-95"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 4v16m8-8H4" /></svg>
             <span className="text-[10px] md:text-sm font-bold uppercase tracking-wider">Add Student</span>
@@ -875,16 +875,16 @@ const StudentManagement = () => {
             placeholder="Search name, email, or LRN..."
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
-            className="w-full pl-9 md:pl-12 pr-3 md:pr-4 py-1.5 md:py-3 bg-slate-50 border border-slate-200 rounded-lg md:rounded-xl focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white text-[10px] md:text-sm font-bold transition-all shadow-inner" 
+            className="w-full pl-9 md:pl-12 pr-3 md:pr-4 py-1.5 md:py-3 bg-slate-50 border border-slate-200 rounded-lg md:rounded-xl focus:outline-none focus:ring-1 focus:ring-violet-500 focus:bg-white text-[10px] md:text-sm font-bold transition-all shadow-inner" 
           />
         </div>
         <select value={gradeFilter} onChange={e => setGradeFilter(e.target.value)}
-          className="px-3 py-1.5 md:py-3 bg-slate-50 border border-slate-200 rounded-lg md:rounded-xl text-[10px] md:text-sm font-bold focus:outline-none focus:ring-1 focus:ring-blue-500">
+          className="px-3 py-1.5 md:py-3 bg-slate-50 border border-slate-200 rounded-lg md:rounded-xl text-[10px] md:text-sm font-bold focus:outline-none focus:ring-1 focus:ring-violet-500">
           <option value="">All Grades</option>
           {['Grade 7','Grade 8','Grade 9','Grade 10','Grade 11','Grade 12'].map(g => <option key={g} value={g}>{g}</option>)}
         </select>
         <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}
-          className="px-3 py-1.5 md:py-3 bg-slate-50 border border-slate-200 rounded-lg md:rounded-xl text-[10px] md:text-sm font-bold focus:outline-none focus:ring-1 focus:ring-blue-500">
+          className="px-3 py-1.5 md:py-3 bg-slate-50 border border-slate-200 rounded-lg md:rounded-xl text-[10px] md:text-sm font-bold focus:outline-none focus:ring-1 focus:ring-violet-500">
           <option value="">All Status</option>
           <option value="active">Active</option>
           <option value="inactive">Inactive</option>
@@ -893,7 +893,7 @@ const StudentManagement = () => {
 
         {selectedIds.length > 0 && (
           <div className="flex items-center gap-3 animate-in slide-in-from-right-4 duration-300">
-            <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100">
+            <span className="text-[10px] font-black text-violet-600 uppercase tracking-widest bg-violet-50 px-3 py-1.5 rounded-lg border border-blue-100">
               {selectedIds.length} Selected
             </span>
             <button 
@@ -962,7 +962,7 @@ const StudentManagement = () => {
                                   type="checkbox" 
                                   checked={cls.male.concat(cls.female).every(s => selectedIds.includes(s.id)) && (cls.male.length + cls.female.length) > 0}
                                   onChange={(e) => handleSelectAll(cls.male.concat(cls.female).map(s => s.id), e.target.checked)}
-                                  className="w-3.5 h-3.5 md:w-4 md:h-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500 cursor-pointer"
+                                  className="w-3.5 h-3.5 md:w-4 md:h-4 text-violet-600 border-slate-300 rounded focus:ring-violet-500 cursor-pointer"
                                 />
                                 <span>#</span>
                               </div>
@@ -980,8 +980,8 @@ const StudentManagement = () => {
                         <tbody className="divide-y divide-slate-100">
                           {/* Male Students */}
                           {cls.male.length > 0 && (
-                            <tr className="bg-blue-50/50">
-                              <td colSpan="8" className="px-6 py-2 text-[10px] font-black text-blue-600 uppercase tracking-widest border-y border-blue-100">
+                            <tr className="bg-violet-50/50">
+                              <td colSpan="8" className="px-6 py-2 text-[10px] font-black text-violet-600 uppercase tracking-widest border-y border-blue-100">
                                 <div className="flex items-center gap-2">
                                   <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a8 8 0 100 16 8 8 0 000-16zM9 9H5v2h4v4h2v-4h4V9h-4V5H9v4z" /></svg>
                                   Male ({cls.male.length})
@@ -1069,7 +1069,7 @@ const StudentManagement = () => {
               <button
                 type="button"
                 onClick={() => handleStartChat(selectedStudent.id)}
-                className="px-6 py-2.5 bg-blue-600 text-white text-xs font-black uppercase tracking-widest hover:bg-blue-700 rounded-sm flex items-center gap-2"
+                className="px-6 py-2.5 bg-violet-600 text-white text-xs font-black uppercase tracking-widest hover:bg-violet-700 rounded-sm flex items-center gap-2"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" /></svg>
                 Message Student

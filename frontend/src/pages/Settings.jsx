@@ -9,7 +9,7 @@ import { Button, LoadingSpinner } from '../components/ui';
 
 const Toggle = ({ checked, onChange, disabled, color = 'blue' }) => {
   const colors = {
-    blue:    'peer-checked:bg-blue-600',
+    blue:    'peer-checked:bg-violet-600',
     emerald: 'peer-checked:bg-emerald-600',
     amber:   'peer-checked:bg-amber-500',
     rose:    'peer-checked:bg-rose-600',
@@ -39,7 +39,7 @@ const Field = ({ label, hint, children }) => (
 const Input = ({ className = '', ...props }) => (
   <input
     className={`w-full px-4 py-2.5 bg-white border border-slate-300 rounded-md text-sm font-medium text-slate-900
-      focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500
+      focus:outline-none focus:ring-2 focus:ring-violet-100 focus:border-violet-500
       disabled:opacity-50 disabled:cursor-not-allowed transition-all ${className}`}
     {...props}
   />
@@ -222,7 +222,7 @@ const SchoolInfoTab = () => {
             </div>
             <button type="button" onClick={() => logoRef.current?.click()}
               disabled={uploadingLogo}
-              className="mt-2 w-20 text-center text-[10px] font-black text-blue-600 hover:text-blue-800 uppercase tracking-widest disabled:opacity-50">
+              className="mt-2 w-20 text-center text-[10px] font-black text-violet-600 hover:text-blue-800 uppercase tracking-widest disabled:opacity-50">
               {uploadingLogo ? 'Uploading…' : 'Change'}
             </button>
             <input ref={logoRef} type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} />
@@ -242,7 +242,7 @@ const SchoolInfoTab = () => {
         <Field label="School Address">
           <textarea value={form.school_address} onChange={e => setForm(p => ({...p, school_address: e.target.value}))}
             rows={2} placeholder="Complete school address"
-            className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 focus:bg-white transition-all resize-none" />
+            className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-100 focus:border-violet-500 focus:bg-white transition-all resize-none" />
         </Field>
       </SectionCard>
 
@@ -369,26 +369,26 @@ const AcademicYearsTab = () => {
         ) : (
           <div className="space-y-2">
             {years.map(y => (
-              <div key={y.id} className={`flex items-center justify-between p-4 rounded-xl border transition-all ${y.is_active ? 'bg-blue-50 border-blue-200' : 'bg-slate-50 border-slate-100 hover:bg-white hover:border-slate-200'}`}>
+              <div key={y.id} className={`flex items-center justify-between p-4 rounded-xl border transition-all ${y.is_active ? 'bg-violet-50 border-violet-200' : 'bg-slate-50 border-slate-100 hover:bg-white hover:border-slate-200'}`}>
                 <div className="flex items-center gap-3">
-                  <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${y.is_active ? 'bg-blue-500 shadow-[0_0_6px_rgba(37,99,235,0.6)]' : 'bg-slate-300'}`} />
+                  <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${y.is_active ? 'bg-violet-500 shadow-[0_0_6px_rgba(37,99,235,0.6)]' : 'bg-slate-300'}`} />
                   <div>
                     <p className={`text-sm font-black ${y.is_active ? 'text-blue-800' : 'text-slate-800'}`}>{y.name}</p>
                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
                       {y.start_date} → {y.end_date}
-                      {y.is_active && <span className="ml-2 text-blue-600">● Active</span>}
+                      {y.is_active && <span className="ml-2 text-violet-600">● Active</span>}
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
                   {!y.is_active && (
                     <button onClick={() => handleSetActive(y)}
-                      className="px-3 py-1.5 text-[10px] font-black text-blue-700 bg-blue-100 hover:bg-blue-200 rounded-lg transition-all uppercase tracking-widest">
+                      className="px-3 py-1.5 text-[10px] font-black text-violet-700 bg-violet-100 hover:bg-blue-200 rounded-lg transition-all uppercase tracking-widest">
                       Set Active
                     </button>
                   )}
                   <button onClick={() => openEdit(y)}
-                    className="px-3 py-1.5 text-[10px] font-black text-slate-600 bg-white border border-slate-200 hover:border-blue-300 rounded-lg transition-all uppercase tracking-widest">
+                    className="px-3 py-1.5 text-[10px] font-black text-slate-600 bg-white border border-slate-200 hover:border-violet-300 rounded-lg transition-all uppercase tracking-widest">
                     Edit
                   </button>
                   <button onClick={() => handleDelete(y)}
@@ -493,7 +493,7 @@ const PortalSettingsTab = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Field label="Current Quarter" hint="Used as default when entering grades">
             <select value={settings.current_quarter} onChange={e => setSettings(p => ({...p, current_quarter: e.target.value}))}
-              className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all">
+              className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-100 focus:border-violet-500 transition-all">
               <option value="1">1st Quarter</option>
               <option value="2">2nd Quarter</option>
               <option value="3">3rd Quarter</option>
@@ -632,14 +632,14 @@ const ProfileTab = () => {
         {/* Avatar */}
         <div className="flex items-center gap-5 mb-6">
           <div className="relative">
-            <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white text-2xl font-black overflow-hidden shadow-lg">
+            <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-violet-500 to-violet-600 flex items-center justify-center text-white text-2xl font-black overflow-hidden shadow-lg">
               {user?.profile_picture
                 ? <img src={user.profile_picture} alt="Avatar" className="w-full h-full object-cover" />
                 : <span>{user?.first_name?.[0]}{user?.last_name?.[0]}</span>
               }
             </div>
             <button type="button" onClick={() => picRef.current?.click()} disabled={uploadingPic}
-              className="absolute -bottom-1 -right-1 w-7 h-7 bg-blue-600 text-white rounded-full flex items-center justify-center shadow-md hover:bg-blue-700 transition-all disabled:opacity-50">
+              className="absolute -bottom-1 -right-1 w-7 h-7 bg-violet-600 text-white rounded-full flex items-center justify-center shadow-md hover:bg-violet-700 transition-all disabled:opacity-50">
               {uploadingPic
                 ? <LoadingSpinner size="xs" className="w-3 h-3" />
                 : <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
@@ -674,7 +674,7 @@ const ProfileTab = () => {
           <Field label="Address">
             <textarea value={form.address} onChange={e => setForm(p => ({...p, address: e.target.value}))}
               rows={2} placeholder="Your home address"
-              className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 focus:bg-white transition-all resize-none" />
+              className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-100 focus:border-violet-500 focus:bg-white transition-all resize-none" />
           </Field>
         </div>
       </SectionCard>
@@ -710,7 +710,7 @@ const SecurityTab = () => {
   };
 
   const strengthLabel = ['', 'Weak', 'Fair', 'Good', 'Strong'];
-  const strengthColor = ['', 'bg-red-500', 'bg-amber-500', 'bg-blue-500', 'bg-emerald-500'];
+  const strengthColor = ['', 'bg-red-500', 'bg-amber-500', 'bg-violet-500', 'bg-emerald-500'];
 
   const save = async (e) => {
     e.preventDefault();
@@ -801,7 +801,7 @@ const Settings = () => {
       
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2 text-xs font-bold text-blue-700 uppercase tracking-wide mb-2">
+          <div className="flex items-center gap-2 text-xs font-bold text-violet-700 uppercase tracking-wide mb-2">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
@@ -825,8 +825,8 @@ const Settings = () => {
               <button key={tab.id} onClick={() => setActiveTab(tab.id)}
                 className={`flex-shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-md text-xs font-bold transition-all whitespace-nowrap ${
                   activeTab === tab.id
-                    ? 'bg-blue-600 text-white shadow-sm'
-                    : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 hover:border-blue-300'
+                    ? 'bg-violet-600 text-white shadow-sm'
+                    : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 hover:border-violet-300'
                 }`}>
                 <span>{tab.icon}</span>
                 {tab.label}
@@ -839,7 +839,7 @@ const Settings = () => {
               <button key={tab.id} onClick={() => setActiveTab(tab.id)}
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-md text-sm font-bold transition-all text-left ${
                   activeTab === tab.id
-                    ? 'bg-blue-600 text-white shadow-sm'
+                    ? 'bg-violet-600 text-white shadow-sm'
                     : 'text-slate-600 hover:bg-slate-50'
                 }`}>
                 <span className="text-base">{tab.icon}</span>

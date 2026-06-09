@@ -226,7 +226,7 @@ const GradeInput = () => {
             ${overwriting.map(s => {
               const ex = existingGrades[s.student];
               return `<div class="py-1 border-b border-amber-100 last:border-0">
-                <strong>${formatName(s.student_name)}</strong>: ${ex.raw_score} → <span class="text-blue-700 font-bold">${cells[s.student]}</span>
+                <strong>${formatName(s.student_name)}</strong>: ${ex.raw_score} → <span class="text-violet-700 font-bold">${cells[s.student]}</span>
               </div>`;
             }).join('')}
           </div>
@@ -316,7 +316,7 @@ const GradeInput = () => {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           {/* Title Section */}
           <div>
-            <div className="flex items-center gap-2 text-xs font-bold text-blue-700 uppercase tracking-wide mb-2">
+            <div className="flex items-center gap-2 text-xs font-bold text-violet-700 uppercase tracking-wide mb-2">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
               </svg>
@@ -374,7 +374,7 @@ const GradeInput = () => {
                 setSelClassroom(e.target.value);
                 setSelSubject('');
               }}
-              className="w-full px-3 py-2.5 border border-slate-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 text-sm font-semibold shadow-sm transition-all"
+              className="w-full px-3 py-2.5 border border-slate-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-violet-100 focus:border-violet-500 text-sm font-semibold shadow-sm transition-all"
             >
               <option value="">Select classroom</option>
               {sortedClassrooms.map(c => (
@@ -392,7 +392,7 @@ const GradeInput = () => {
               value={selSubject}
               onChange={e => setSelSubject(e.target.value)}
               disabled={!selClassroom}
-              className="w-full px-3 py-2.5 border border-slate-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 text-sm font-semibold shadow-sm transition-all disabled:bg-slate-50 disabled:text-slate-400"
+              className="w-full px-3 py-2.5 border border-slate-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-violet-100 focus:border-violet-500 text-sm font-semibold shadow-sm transition-all disabled:bg-slate-50 disabled:text-slate-400"
             >
               <option value="">Select subject</option>
               {subjects.map(s => (
@@ -413,7 +413,7 @@ const GradeInput = () => {
                   onClick={() => setSelQuarter(q)}
                   className={`flex-1 px-3 py-2.5 text-xs font-extrabold uppercase tracking-wide transition-all ${
                     selQuarter === q
-                      ? 'bg-blue-600 text-white'
+                      ? 'bg-violet-600 text-white'
                       : 'bg-white text-slate-600 hover:bg-slate-50'
                   }`}
                 >
@@ -455,10 +455,10 @@ const GradeInput = () => {
         {/* Context Breadcrumb */}
         {selClassroom && selSubject && (
           <div className="mt-3 flex items-center gap-2 text-xs font-semibold text-slate-600">
-            <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <span className="font-bold text-blue-700">
+            <span className="font-bold text-violet-700">
               {classrooms.find(c => String(c.id) === String(selClassroom))?.name}
             </span>
             <span className="text-slate-400">/</span>
@@ -476,10 +476,10 @@ const GradeInput = () => {
       {/* ══════════════════════════════════════════════════════════════ */}
 
       {selClassroom && selSubject && students.length > 0 && scores.length > 0 && (
-        <div className="flex-shrink-0 px-4 py-3 md:px-6 bg-blue-50 border-b border-blue-100">
+        <div className="flex-shrink-0 px-4 py-3 md:px-6 bg-violet-50 border-b border-blue-100">
           <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
             <div className="text-center">
-              <div className="text-xl md:text-2xl font-extrabold text-blue-600">
+              <div className="text-xl md:text-2xl font-extrabold text-violet-600">
                 {filled.length}/{students.length}
               </div>
               <div className="text-xs font-bold text-slate-600 uppercase tracking-wide mt-0.5">
@@ -487,7 +487,7 @@ const GradeInput = () => {
               </div>
             </div>
             <div className="text-center">
-              <div className="text-xl md:text-2xl font-extrabold text-blue-600">
+              <div className="text-xl md:text-2xl font-extrabold text-violet-600">
                 {avg}
               </div>
               <div className="text-xs font-bold text-slate-600 uppercase tracking-wide mt-0.5">
@@ -511,7 +511,7 @@ const GradeInput = () => {
               </div>
             </div>
             <div className="text-center">
-              <div className="text-xl md:text-2xl font-extrabold text-blue-600">
+              <div className="text-xl md:text-2xl font-extrabold text-violet-600">
                 {passing}/{scores.length}
               </div>
               <div className="text-xs font-bold text-slate-600 uppercase tracking-wide mt-0.5">
@@ -611,7 +611,7 @@ const GradeInput = () => {
                                   <td colSpan="4" className="px-4 py-2 text-xs font-extrabold text-slate-600 uppercase tracking-wider">
                                     <div className="flex items-center gap-2">
                                       <div className={`w-2 h-2 rounded-full ${
-                                        currentSex === 'male' ? 'bg-blue-500' :
+                                        currentSex === 'male' ? 'bg-violet-500' :
                                         currentSex === 'female' ? 'bg-rose-500' :
                                         'bg-slate-400'
                                       }`} />
@@ -625,7 +625,7 @@ const GradeInput = () => {
                               <tr
                                 onClick={() => setActive(s.student)}
                                 className={`cursor-pointer transition-colors ${
-                                  isActive ? 'bg-blue-50 ring-2 ring-blue-500 ring-inset' :
+                                  isActive ? 'bg-violet-50 ring-2 ring-violet-500 ring-inset' :
                                   'hover:bg-slate-50'
                                 }`}
                               >
@@ -635,7 +635,7 @@ const GradeInput = () => {
                                 <td className="px-4 py-3">
                                   <div className="flex items-center gap-3">
                                     <div className={`w-9 h-9 rounded-md flex items-center justify-center text-white font-extrabold text-xs shadow-sm shrink-0 ${
-                                      currentSex === 'male' ? 'bg-gradient-to-br from-blue-500 to-blue-600 border border-blue-700' :
+                                      currentSex === 'male' ? 'bg-gradient-to-br from-violet-500 to-violet-600 border border-violet-700' :
                                       currentSex === 'female' ? 'bg-gradient-to-br from-rose-500 to-rose-600 border border-rose-700' :
                                       'bg-gradient-to-br from-slate-500 to-slate-600 border border-slate-700'
                                     }`}>
@@ -665,7 +665,7 @@ const GradeInput = () => {
                                     onFocus={() => setActive(s.student)}
                                     onKeyDown={e => handleKeyDown(e, s.student)}
                                     placeholder="0-100"
-                                    className={`w-full px-3 py-2 text-center font-mono text-sm font-bold border-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all ${
+                                    className={`w-full px-3 py-2 text-center font-mono text-sm font-bold border-2 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 transition-all ${
                                       isOver ? 'border-red-500 bg-red-50 text-red-700' :
                                       isActive ? 'border-blue-500 bg-white' :
                                       'border-slate-200 bg-white'
@@ -703,8 +703,8 @@ const GradeInput = () => {
             </Card>
 
             {/* Keyboard Navigation Hint */}
-            <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
-              <p className="text-xs font-semibold text-blue-700 uppercase tracking-wide">
+            <div className="mt-4 p-3 bg-violet-50 border border-violet-200 rounded-md">
+              <p className="text-xs font-semibold text-violet-700 uppercase tracking-wide">
                 <svg className="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>

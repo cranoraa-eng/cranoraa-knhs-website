@@ -76,7 +76,7 @@ const SystemHealth = () => {
       {/* HEADER */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2 text-xs font-bold text-blue-700 uppercase tracking-wide mb-2">
+          <div className="flex items-center gap-2 text-xs font-bold text-violet-700 uppercase tracking-wide mb-2">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
             </svg>
@@ -147,12 +147,12 @@ const SystemHealth = () => {
           <Card>
             <CardBody className="p-5">
               <div className="flex items-start justify-between mb-4">
-                <div className="w-12 h-12 rounded-md bg-blue-100 text-blue-700 flex items-center justify-center">
+                <div className="w-12 h-12 rounded-md bg-violet-100 text-violet-700 flex items-center justify-center">
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
                 </div>
-                <span className="w-3 h-3 rounded-full bg-blue-500 animate-pulse" />
+                <span className="w-3 h-3 rounded-full bg-violet-500 animate-pulse" />
               </div>
               <h3 className="text-sm font-bold text-slate-900 mb-1">REST API</h3>
               <p className="text-xs text-slate-600 mb-1">
@@ -204,7 +204,7 @@ const SystemHealth = () => {
           <CardBody>
             <div className="space-y-3">
               {[
-                { label: 'Total Users', value: totalUsers, icon: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z', color: 'bg-blue-50 border-blue-100 text-blue-700' },
+                { label: 'Total Users', value: totalUsers, icon: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z', color: 'bg-violet-50 border-blue-100 text-violet-700' },
                 { label: 'Active Now', value: activeSessions, icon: 'M5.636 18.364a9 9 0 010-12.728m12.728 0a9 9 0 010 12.728M9 10a2 2 0 11-4 0 2 2 0 014 0zm6 0a2 2 0 11-4 0 2 2 0 014 0z', color: 'bg-emerald-50 border-emerald-100 text-emerald-700' },
                 { label: 'Students', value: stats?.total_students ?? 0, icon: 'M12 14l9-5-9-5-9 5 9 5zm0 7l-9-5 9-5 9 5-9 5z', color: 'bg-sky-50 border-sky-100 text-sky-700' },
                 { label: 'Teachers', value: stats?.total_teachers ?? 0, icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z', color: 'bg-indigo-50 border-indigo-100 text-indigo-700' },
@@ -239,7 +239,7 @@ const SystemHealth = () => {
                 { label: 'Subjects', value: stats?.total_subjects ?? 0, sub: 'Registered subjects', color: 'text-slate-900' },
                 { label: 'Announcements', value: totalAnnouncements, sub: 'Published (live)', color: 'text-slate-900' },
                 { label: "Today's Attendance", value: `${attendanceRate}%`, sub: 'School-wide rate', color: attendanceRate >= 85 ? 'text-emerald-700' : attendanceRate >= 70 ? 'text-amber-700' : 'text-rose-700' },
-                { label: 'Average Grade', value: averageGrade != null ? averageGrade.toFixed(1) : '—', sub: 'All subjects, final grades only', color: averageGrade != null ? (averageGrade >= 85 ? 'text-emerald-700' : averageGrade >= 75 ? 'text-blue-700' : 'text-rose-700') : 'text-slate-400' },
+                { label: 'Average Grade', value: averageGrade != null ? averageGrade.toFixed(1) : '—', sub: 'All subjects, final grades only', color: averageGrade != null ? (averageGrade >= 85 ? 'text-emerald-700' : averageGrade >= 75 ? 'text-violet-700' : 'text-rose-700') : 'text-slate-400' },
                 { label: 'Pending Enrollments', value: stats?.pending_enrollments ?? 0, sub: 'Applications awaiting review', color: (stats?.pending_enrollments ?? 0) > 0 ? 'text-amber-700' : 'text-slate-900' },
               ].map((row, i) => (
                 <div key={i} className="flex items-center justify-between py-2.5 border-b border-slate-100 last:border-0">

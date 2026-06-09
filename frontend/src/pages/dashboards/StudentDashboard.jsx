@@ -171,7 +171,7 @@ const StudentDashboard = () => {
       {/* WELCOME BANNER */}
       {/* ══════════════════════════════════════════════════════════════ */}
       
-      <Card className="bg-gradient-to-r from-blue-600 to-blue-700 border-blue-700">
+      <Card className="bg-gradient-to-r from-violet-600 to-violet-700 border-violet-700">
         <CardBody className="p-5 md:p-6">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             <div>
@@ -179,7 +179,7 @@ const StudentDashboard = () => {
                 {today}
               </p>
               <h1 className="text-2xl md:text-3xl font-extrabold text-white tracking-tight">
-                {greeting}, <span className="text-blue-100">{user?.first_name || 'Student'}</span>
+                {greeting}, <span className="text-violet-100">{user?.first_name || 'Student'}</span>
               </h1>
               <div className="flex flex-wrap gap-2 mt-3">
                 <Badge variant="slate" className="bg-white/10 border-white/20 text-white">
@@ -220,7 +220,7 @@ const StudentDashboard = () => {
           <Card className="h-full min-h-[320px] flex flex-col">
             <CardHeader divider>
               <div className="flex items-center gap-2">
-                <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
                 <div className="flex-1">
@@ -254,10 +254,10 @@ const StudentDashboard = () => {
                       key={s.id}
                       className={`flex items-center gap-3 px-3 py-2.5 border rounded-md transition-all ${
                         isCurrent
-                          ? 'bg-blue-600 border-blue-600 text-white'
+                          ? 'bg-violet-600 border-violet-600 text-white'
                           : isPast
                           ? 'bg-slate-50 border-slate-200 opacity-60'
-                          : 'bg-white border-slate-200 hover:border-blue-300'
+                          : 'bg-white border-slate-200 hover:border-violet-300'
                       }`}
                     >
                       <div className="text-center min-w-[48px]">
@@ -269,7 +269,7 @@ const StudentDashboard = () => {
                         <p className={`text-sm font-bold truncate ${isCurrent ? 'text-white' : 'text-slate-900'}`}>
                           {s.subject_detail?.name}
                         </p>
-                        <p className={`text-xs truncate ${isCurrent ? 'text-blue-100' : 'text-slate-500'}`}>
+                        <p className={`text-xs truncate ${isCurrent ? 'text-violet-100' : 'text-slate-500'}`}>
                           {s.classroom_detail?.name}
                         </p>
                       </div>
@@ -307,7 +307,7 @@ const StudentDashboard = () => {
                       <p className="text-xs font-bold text-slate-600 uppercase tracking-wide mt-1">Rate</p>
                     </div>
                     <div className="text-right">
-                      <p className="text-2xl font-extrabold text-blue-600 tabular-nums">{streak}</p>
+                      <p className="text-2xl font-extrabold text-violet-600 tabular-nums">{streak}</p>
                       <p className="text-xs font-bold text-slate-600 uppercase tracking-wide mt-1">Streak</p>
                     </div>
                   </div>
@@ -339,7 +339,7 @@ const StudentDashboard = () => {
           <Card className="h-full min-h-[320px] flex flex-col border-l-4 border-l-blue-500">
             <CardHeader divider>
               <div className="flex items-center gap-2">
-                <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                 </svg>
                 <div className="flex-1">
@@ -354,7 +354,7 @@ const StudentDashboard = () => {
               ) : (
                 <>
                   <div className="mb-4">
-                    <p className="text-3xl font-extrabold text-blue-600 tabular-nums">{overallAvg}</p>
+                    <p className="text-3xl font-extrabold text-violet-600 tabular-nums">{overallAvg}</p>
                     <p className="text-xs font-bold text-slate-600 uppercase tracking-wide mt-1">Current Average</p>
                   </div>
                   <div className="mb-4">
@@ -364,7 +364,7 @@ const StudentDashboard = () => {
                     </div>
                     <div className="h-2 w-full bg-slate-200 rounded-full overflow-hidden">
                       <div
-                        className="h-full bg-blue-600 rounded-full transition-all"
+                        className="h-full bg-violet-600 rounded-full transition-all"
                         style={{ width: `${Math.min(100, parseFloat(overallAvg))}%` }}
                       />
                     </div>
@@ -392,7 +392,7 @@ const StudentDashboard = () => {
           <Card className="h-full min-h-[320px] flex flex-col">
             <CardHeader divider>
               <div className="flex items-center gap-2">
-                <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                 </svg>
                 <div className="flex-1">
@@ -410,12 +410,12 @@ const StudentDashboard = () => {
               ) : (
                 finalGrades.slice(0, 8).map((g) => {
                   const score = gradeScore(g);
-                  const barColor = score >= 90 ? 'bg-emerald-500' : score >= 75 ? 'bg-blue-500' : 'bg-red-500';
-                  const textColor = score >= 90 ? 'text-emerald-600' : score >= 75 ? 'text-blue-600' : 'text-red-600';
+                  const barColor = score >= 90 ? 'bg-emerald-500' : score >= 75 ? 'bg-violet-500' : 'bg-red-500';
+                  const textColor = score >= 90 ? 'text-emerald-600' : score >= 75 ? 'text-violet-600' : 'text-red-600';
                   return (
                     <div
                       key={g.id}
-                      className="px-3 py-2.5 border border-slate-200 rounded-md bg-white hover:bg-slate-50 hover:border-blue-300 cursor-pointer transition-all"
+                      className="px-3 py-2.5 border border-slate-200 rounded-md bg-white hover:bg-slate-50 hover:border-violet-300 cursor-pointer transition-all"
                       onClick={() => navigate('/student-grades')}
                     >
                       <div className="flex items-center justify-between gap-2 mb-2">
@@ -454,7 +454,7 @@ const StudentDashboard = () => {
                 upcomingAssignments.map((a) => (
                   <div
                     key={a.id}
-                    className="px-3 py-2.5 border border-slate-200 rounded-md bg-white hover:bg-slate-50 hover:border-blue-300 cursor-pointer transition-all"
+                    className="px-3 py-2.5 border border-slate-200 rounded-md bg-white hover:bg-slate-50 hover:border-violet-300 cursor-pointer transition-all"
                     onClick={() => navigate('/materials')}
                   >
                     <div className="flex items-start justify-between gap-2">
@@ -489,7 +489,7 @@ const StudentDashboard = () => {
         <Card className="min-h-[280px] flex flex-col">
           <CardHeader divider>
             <div className="flex items-center gap-2">
-              <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
               </svg>
               <div className="flex-1">
@@ -508,12 +508,12 @@ const StudentDashboard = () => {
               recentAnnouncements.map((a) => (
                 <div
                   key={a.id}
-                  className="px-3 py-2.5 border border-slate-200 rounded-md bg-white hover:bg-slate-50 hover:border-blue-300 cursor-pointer transition-all"
+                  className="px-3 py-2.5 border border-slate-200 rounded-md bg-white hover:bg-slate-50 hover:border-violet-300 cursor-pointer transition-all"
                   onClick={() => navigate('/announcements')}
                 >
                   <p className="text-sm font-bold text-slate-900 line-clamp-1">{a.title}</p>
                   <p className="text-xs text-slate-500 line-clamp-2 mt-1">{a.content}</p>
-                  <p className="text-xs font-semibold text-blue-600 mt-2">{formatFeedTime(a.created_at)}</p>
+                  <p className="text-xs font-semibold text-violet-600 mt-2">{formatFeedTime(a.created_at)}</p>
                 </div>
               ))
             )}
@@ -524,7 +524,7 @@ const StudentDashboard = () => {
         <Card className="min-h-[280px] flex flex-col">
           <CardHeader divider>
             <div className="flex items-center gap-2">
-              <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
               </svg>
               <div className="flex-1">
@@ -545,10 +545,10 @@ const StudentDashboard = () => {
               stats.latest_messages.map((m) => (
                 <div
                   key={m.id}
-                  className="flex gap-2.5 px-3 py-2.5 border border-slate-200 rounded-md bg-white hover:bg-slate-50 hover:border-blue-300 cursor-pointer transition-all"
+                  className="flex gap-2.5 px-3 py-2.5 border border-slate-200 rounded-md bg-white hover:bg-slate-50 hover:border-violet-300 cursor-pointer transition-all"
                   onClick={() => navigate('/messages')}
                 >
-                  <div className="w-9 h-9 rounded-md bg-blue-100 text-blue-700 flex items-center justify-center text-sm font-extrabold shrink-0">
+                  <div className="w-9 h-9 rounded-md bg-violet-100 text-violet-700 flex items-center justify-center text-sm font-extrabold shrink-0">
                     {(m.sender || '?')[0].toUpperCase()}
                   </div>
                   <div className="min-w-0 flex-1">

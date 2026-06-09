@@ -297,7 +297,7 @@ const Moderation = () => {
               key={f}
               onClick={() => setFilter(f)}
               className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${
-                filter === f ? 'bg-blue-600 text-white shadow-md' : 'text-slate-400 hover:text-slate-600'
+                filter === f ? 'bg-violet-600 text-white shadow-md' : 'text-slate-400 hover:text-slate-600'
               }`}
             >
                 {f}
@@ -320,18 +320,18 @@ const Moderation = () => {
             </div>
           ) : (
             reports.map((report) => (
-              <div key={report.id} className={`p-3 space-y-2 transition-colors ${selectedIds.includes(report.id) ? 'bg-blue-50/50' : ''}`}>
+              <div key={report.id} className={`p-3 space-y-2 transition-colors ${selectedIds.includes(report.id) ? 'bg-violet-50/50' : ''}`}>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <input
                       type="checkbox"
                       checked={selectedIds.includes(report.id)}
                       onChange={() => toggleSelect(report.id)}
-                      className="w-3.5 h-3.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                      className="w-3.5 h-3.5 rounded border-slate-300 text-violet-600 focus:ring-violet-500"
                     />
                     <span className="text-[10px] font-black text-slate-700 truncate max-w-[100px]">{report.reporter_name}</span>
                     <span className="text-[9px] text-slate-400 font-bold uppercase tracking-tighter">reported</span>
-                    <span className="text-[10px] font-black text-blue-600 truncate max-w-[80px]">@{report.message_sender}</span>
+                    <span className="text-[10px] font-black text-violet-600 truncate max-w-[80px]">@{report.message_sender}</span>
                   </div>
                   <span className={`px-1.5 py-0.5 rounded-md text-[7px] font-black uppercase tracking-widest ${
                     report.status === 'pending' ? 'bg-amber-100 text-amber-600' : 
@@ -400,7 +400,7 @@ const Moderation = () => {
                     type="checkbox"
                     checked={reports.length > 0 && selectedIds.length === reports.length}
                     onChange={toggleSelectAll}
-                    className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                    className="w-4 h-4 rounded border-slate-300 text-violet-600 focus:ring-violet-500"
                   />
                 </th>
                 <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Reporter</th>
@@ -426,13 +426,13 @@ const Moderation = () => {
                 </tr>
               ) : (
                 reports.map((report) => (
-                  <tr key={report.id} className={`hover:bg-slate-50 transition-colors ${selectedIds.includes(report.id) ? 'bg-blue-50/30' : ''}`}>
+                  <tr key={report.id} className={`hover:bg-slate-50 transition-colors ${selectedIds.includes(report.id) ? 'bg-violet-50/30' : ''}`}>
                     <td className="px-6 py-4">
                       <input
                         type="checkbox"
                         checked={selectedIds.includes(report.id)}
                         onChange={() => toggleSelect(report.id)}
-                        className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                        className="w-4 h-4 rounded border-slate-300 text-violet-600 focus:ring-violet-500"
                       />
                     </td>
                     <td className="px-6 py-4">

@@ -449,7 +449,7 @@ const ExportButton = ({ onClick, loading }) => (
   <button
     onClick={onClick}
     disabled={loading}
-    className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-xl text-[10px] font-black text-slate-600 uppercase tracking-widest hover:bg-slate-50 hover:border-blue-300 hover:text-blue-700 active:scale-95 transition-all shadow-sm disabled:opacity-50"
+    className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-xl text-[10px] font-black text-slate-600 uppercase tracking-widest hover:bg-slate-50 hover:border-violet-300 hover:text-violet-700 active:scale-95 transition-all shadow-sm disabled:opacity-50"
   >
     {loading ? (
       <div className="w-3.5 h-3.5 border-2 border-slate-300 border-t-blue-600 rounded-full animate-spin" />
@@ -487,7 +487,7 @@ const EmptyState = ({ message, submessage }) => (
 const StatChip = ({ label, value, color }) => {
   const colors = {
     emerald: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
-    blue: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
+    blue: 'bg-violet-500/10 text-blue-500 border-blue-500/20',
     indigo: 'bg-indigo-500/10 text-indigo-500 border-indigo-500/20',
   };
   return (
@@ -703,8 +703,8 @@ const AttendanceRankingsSection = ({ rankings, period }) => (
             <div className="text-right">
               {rank.total_records > 0 ? (
                 <>
-                  <div className={`text-xs font-black leading-none mb-1 ${rank.rate >= 90 ? 'text-emerald-600' : rank.rate >= 75 ? 'text-blue-600' : 'text-rose-600'}`}>{rank.rate}%</div>
-                  <div className="w-12 h-1 bg-slate-200 rounded-full overflow-hidden"><div className={`h-full rounded-full ${rank.rate >= 90 ? 'bg-emerald-500' : rank.rate >= 75 ? 'bg-blue-500' : 'bg-rose-500'}`} style={{ width: `${rank.rate}%` }} /></div>
+                  <div className={`text-xs font-black leading-none mb-1 ${rank.rate >= 90 ? 'text-emerald-600' : rank.rate >= 75 ? 'text-violet-600' : 'text-rose-600'}`}>{rank.rate}%</div>
+                  <div className="w-12 h-1 bg-slate-200 rounded-full overflow-hidden"><div className={`h-full rounded-full ${rank.rate >= 90 ? 'bg-emerald-500' : rank.rate >= 75 ? 'bg-violet-500' : 'bg-rose-500'}`} style={{ width: `${rank.rate}%` }} /></div>
                 </>
               ) : (
                 <div className="text-[8px] font-black text-slate-300 uppercase tracking-widest italic">N/A</div>
@@ -1118,7 +1118,7 @@ const Analytics = () => {
       
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2 text-xs font-bold text-blue-700 uppercase tracking-wide mb-2">
+          <div className="flex items-center gap-2 text-xs font-bold text-violet-700 uppercase tracking-wide mb-2">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
             </svg>
@@ -1142,7 +1142,7 @@ const Analytics = () => {
               onClick={() => setActiveTab(tab.id)}
               className={`flex items-center gap-2 px-4 py-2.5 rounded-md text-[10px] font-black uppercase tracking-widest transition-all ${
                 activeTab === tab.id
-                  ? 'bg-blue-600 text-white shadow-sm'
+                  ? 'bg-violet-600 text-white shadow-sm'
                   : 'text-slate-600 hover:bg-slate-50'
               }`}
             >
@@ -1316,7 +1316,7 @@ const Analytics = () => {
                 <div>
                   <h1 className="text-xl md:text-3xl font-black text-slate-50 tracking-tighter uppercase leading-none">Attendance Dynamics</h1>
                   <p className="text-slate-300 text-[10px] font-bold uppercase tracking-[0.2em] mt-3 flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-blue-500 animate-pulse shadow-[0_0_10px_rgba(59,130,246,0.5)]" />
+                    <span className="w-2.5 h-2.5 rounded-full bg-violet-500 animate-pulse shadow-[0_0_10px_rgba(59,130,246,0.5)]" />
                     Student Presence & Engagement Analytics — {academicYear}
                   </p>
                 </div>

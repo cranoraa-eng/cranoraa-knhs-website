@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import api from '../utils/api';
 import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
@@ -160,7 +160,7 @@ const AuditLogs = () => {
   const getActionColor = (actionType) => {
     const type = actionType?.toLowerCase() || '';
     if (type.includes('create') || type.includes('mark')) return 'bg-emerald-100 text-emerald-700 border-emerald-200';
-    if (type.includes('update') || type.includes('edit')) return 'bg-blue-100 text-blue-700 border-blue-200';
+    if (type.includes('update') || type.includes('edit')) return 'bg-violet-100 text-violet-700 border-violet-200';
     if (type.includes('delete') || type.includes('clear')) return 'bg-red-100 text-red-700 border-red-200';
     if (type.includes('login') || type.includes('auth')) return 'bg-indigo-100 text-indigo-700 border-indigo-200';
     if (type.includes('approve')) return 'bg-sky-100 text-sky-700 border-sky-200';
@@ -186,7 +186,7 @@ const AuditLogs = () => {
       
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2 text-xs font-bold text-blue-700 uppercase tracking-wide mb-2">
+          <div className="flex items-center gap-2 text-xs font-bold text-violet-700 uppercase tracking-wide mb-2">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
@@ -198,11 +198,11 @@ const AuditLogs = () => {
           <div className="flex items-center gap-3 mt-1 flex-wrap">
             <p className="text-xs text-slate-600 font-semibold">{totalCount} total entries</p>
             <span className={`text-[10px] font-bold px-2.5 py-1 rounded-md ${
-              (stats.size_mb / stats.max_mb) > 0.8 ? 'bg-red-100 text-red-600 border border-red-200' : 'bg-blue-100 text-blue-600 border border-blue-200'
+              (stats.size_mb / stats.max_mb) > 0.8 ? 'bg-red-100 text-red-600 border border-red-200' : 'bg-violet-100 text-violet-600 border border-violet-200'
             }`}>{stats.size_mb}MB / {stats.max_mb}MB</span>
             <div className="w-24 h-2 bg-slate-100 rounded-full overflow-hidden border border-slate-200">
               <div className={`h-full rounded-full transition-all duration-500 ${
-                (stats.size_mb / stats.max_mb) > 0.8 ? 'bg-red-500' : 'bg-blue-500'
+                (stats.size_mb / stats.max_mb) > 0.8 ? 'bg-red-500' : 'bg-violet-500'
               }`} style={{ width: `${Math.min((stats.size_mb / stats.max_mb) * 100, 100)}%` }} />
             </div>
           </div>
@@ -233,10 +233,10 @@ const AuditLogs = () => {
             </svg>
             <input type="text" placeholder="Search by user, model, or description…" value={search}
               onChange={e => setSearch(e.target.value)}
-              className="w-full pl-9 pr-4 py-2.5 bg-white border border-slate-300 rounded-md text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all" />
+              className="w-full pl-9 pr-4 py-2.5 bg-white border border-slate-300 rounded-md text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-100 focus:border-violet-500 transition-all" />
           </div>
           <select value={actionFilter} onChange={e => setActionFilter(e.target.value)}
-            className="px-4 py-2.5 bg-white border border-slate-300 rounded-md text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all">
+            className="px-4 py-2.5 bg-white border border-slate-300 rounded-md text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-100 focus:border-violet-500 transition-all">
             <option value="">All Actions</option>
             <option value="create">Create</option>
             <option value="update">Update</option>
@@ -270,7 +270,7 @@ const AuditLogs = () => {
                   <input type="checkbox"
                     checked={logs.length > 0 && selectedIds.length === logs.length}
                     onChange={handleSelectAll}
-                    className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer" />
+                    className="w-4 h-4 rounded border-slate-300 text-violet-600 focus:ring-violet-500 cursor-pointer" />
                   <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
                     {selectedIds.length > 0 ? `${selectedIds.length} selected` : 'Select all'}
                   </span>
@@ -279,18 +279,18 @@ const AuditLogs = () => {
 
               {logs.map((log) => (
                 <div key={log.id}
-                  className={`px-4 py-3.5 transition-colors ${selectedIds.includes(log.id) ? 'bg-blue-50/40' : ''}`}>
+                  className={`px-4 py-3.5 transition-colors ${selectedIds.includes(log.id) ? 'bg-violet-50/40' : ''}`}>
                   <div className="flex items-start gap-3">
                     {/* Checkbox */}
                     <label className="flex-shrink-0 mt-0.5 cursor-pointer no-min">
                       <input type="checkbox"
                         checked={selectedIds.includes(log.id)}
                         onChange={() => handleSelectLog(log.id)}
-                        className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer" />
+                        className="w-4 h-4 rounded border-slate-300 text-violet-600 focus:ring-violet-500 cursor-pointer" />
                     </label>
 
                     {/* Avatar */}
-                    <div className="w-8 h-8 rounded-md bg-blue-100 flex items-center justify-center text-blue-700 font-black text-xs flex-shrink-0">
+                    <div className="w-8 h-8 rounded-md bg-violet-100 flex items-center justify-center text-violet-700 font-black text-xs flex-shrink-0">
                       {log.user_name?.charAt(0).toUpperCase() || 'S'}
                     </div>
 
@@ -342,7 +342,7 @@ const AuditLogs = () => {
                     <th className="px-5 py-3.5 w-10">
                       <input type="checkbox" checked={logs?.length > 0 && selectedIds.length === logs.length}
                         onChange={handleSelectAll}
-                        className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer" />
+                        className="w-4 h-4 rounded border-slate-300 text-violet-600 focus:ring-violet-500 cursor-pointer" />
                     </th>
                     <th className="px-5 py-3.5 text-[10px] font-black text-slate-500 uppercase tracking-[0.15em] whitespace-nowrap">Time</th>
                     <th className="px-5 py-3.5 text-[10px] font-black text-slate-500 uppercase tracking-[0.15em] whitespace-nowrap">User</th>
@@ -354,11 +354,11 @@ const AuditLogs = () => {
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {logs.map((log) => (
-                    <tr key={log.id} className={`group hover:bg-blue-50/40 transition-colors ${selectedIds.includes(log.id) ? 'bg-blue-50/30' : ''}`}>
+                    <tr key={log.id} className={`group hover:bg-violet-50/40 transition-colors ${selectedIds.includes(log.id) ? 'bg-violet-50/30' : ''}`}>
                       <td className="px-5 py-3.5">
                         <input type="checkbox" checked={selectedIds.includes(log.id)}
                           onChange={() => handleSelectLog(log.id)}
-                          className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer" />
+                          className="w-4 h-4 rounded border-slate-300 text-violet-600 focus:ring-violet-500 cursor-pointer" />
                       </td>
                       <td className="px-5 py-3.5 whitespace-nowrap">
                         <p className="text-xs font-bold text-slate-700">{new Date(log.timestamp).toLocaleDateString()}</p>
@@ -366,7 +366,7 @@ const AuditLogs = () => {
                       </td>
                       <td className="px-5 py-3.5">
                         <div className="flex items-center gap-2.5">
-                          <div className="w-7 h-7 rounded-md bg-blue-100 flex items-center justify-center text-blue-700 font-black text-[10px] flex-shrink-0">
+                          <div className="w-7 h-7 rounded-md bg-violet-100 flex items-center justify-center text-violet-700 font-black text-[10px] flex-shrink-0">
                             {log.user_name?.charAt(0).toUpperCase() || 'S'}
                           </div>
                           <div className="min-w-0">
@@ -410,7 +410,7 @@ const AuditLogs = () => {
             <span className="text-xs font-bold text-slate-500">
               Page {page} of {totalPages}
               <span className="hidden sm:inline"> · {totalCount} entries</span>
-              {selectedIds.length > 0 && <span className="ml-2 text-blue-600">{selectedIds.length} selected</span>}
+              {selectedIds.length > 0 && <span className="ml-2 text-violet-600">{selectedIds.length} selected</span>}
             </span>
             <div className="flex items-center gap-2">
               <button disabled={page === 1} onClick={() => setPage(p => Math.max(1, p - 1))}

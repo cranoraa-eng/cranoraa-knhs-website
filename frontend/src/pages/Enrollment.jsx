@@ -764,7 +764,7 @@ const Enrollment = () => {
                 })}
               </ReviewSection>
 
-              <div className="p-4 bg-blue-50 border border-blue-200">
+              <div className="p-4 bg-violet-50 border border-violet-200">
                 <p className="text-xs text-blue-800 font-medium">
                   <strong>Declaration:</strong> I hereby certify that all information provided in this application form is true and correct to the best of my knowledge. I understand that providing false information may result in the cancellation of my enrollment.
                 </p>

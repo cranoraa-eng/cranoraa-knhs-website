@@ -139,7 +139,7 @@ const Subjects = () => {
 
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2 text-xs font-bold text-blue-700 uppercase tracking-wide mb-2">
+          <div className="flex items-center gap-2 text-xs font-bold text-violet-700 uppercase tracking-wide mb-2">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
             </svg>
@@ -176,13 +176,13 @@ const Subjects = () => {
                 placeholder="Search by name or code..."
                 value={search}
                 onChange={e => setSearch(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 border border-slate-300 rounded-md bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all"
+                className="w-full pl-10 pr-4 py-2.5 border border-slate-300 rounded-md bg-white text-sm focus:outline-none focus:ring-2 focus:ring-violet-100 focus:border-violet-500 transition-all"
               />
             </div>
             <select
               value={filterLevel}
               onChange={e => setFilterLevel(e.target.value)}
-              className="px-4 py-2.5 border border-slate-300 rounded-md bg-white text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all"
+              className="px-4 py-2.5 border border-slate-300 rounded-md bg-white text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-violet-100 focus:border-violet-500 transition-all"
             >
               <option value="">All Grade Levels</option>
               {gradeLevels.map(l => <option key={l} value={l}>{l}</option>)}
@@ -224,7 +224,7 @@ const Subjects = () => {
               <Card key={level} className="border-l-4 border-l-blue-500">
                 <CardHeader divider className="bg-slate-50">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-md bg-blue-100 flex items-center justify-center font-extrabold text-sm text-blue-700 border border-blue-200">
+                    <div className="w-10 h-10 rounded-md bg-violet-100 flex items-center justify-center font-extrabold text-sm text-violet-700 border border-violet-200">
                       {parseInt(level.replace(/\D/g, '')) || level.charAt(0)}
                     </div>
                     <div>

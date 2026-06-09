@@ -249,7 +249,7 @@ const StudentGradeView = () => {
           <div className="text-center">
             {/* School Seal */}
             <div className="flex justify-center mb-3">
-              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center text-white font-extrabold text-2xl shadow-lg border-4 border-white ring-2 ring-blue-200">
+              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center text-white font-extrabold text-2xl shadow-lg border-4 border-white ring-2 ring-violet-200">
                 K
               </div>
             </div>
@@ -258,7 +258,7 @@ const StudentGradeView = () => {
             <h1 className="text-xl md:text-2xl font-extrabold text-slate-900 uppercase tracking-tight">
               Kiwalan National High School
             </h1>
-            <p className="text-xs md:text-sm font-bold text-blue-700 uppercase tracking-wider mt-1">
+            <p className="text-xs md:text-sm font-bold text-violet-700 uppercase tracking-wider mt-1">
               Official Student Report Card
             </p>
             <p className="text-xs font-semibold text-slate-600 mt-1">
@@ -274,7 +274,7 @@ const StudentGradeView = () => {
 
       <Card>
         <CardHeader divider>
-          <div className="flex items-center gap-2 text-xs font-bold text-blue-700 uppercase tracking-wide">
+          <div className="flex items-center gap-2 text-xs font-bold text-violet-700 uppercase tracking-wide">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
             </svg>
@@ -332,7 +332,7 @@ const StudentGradeView = () => {
               <select
                 value={filterQuarter}
                 onChange={e => setFilterQuarter(e.target.value)}
-                className="w-full px-3 py-2.5 border border-slate-300 rounded-md bg-white text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all"
+                className="w-full px-3 py-2.5 border border-slate-300 rounded-md bg-white text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-violet-100 focus:border-violet-500 transition-all"
               >
                 <option value="">All Quarters</option>
                 <option value="1">Quarter 1</option>
@@ -350,7 +350,7 @@ const StudentGradeView = () => {
               <select
                 value={filterSubject}
                 onChange={e => setFilterSubject(e.target.value)}
-                className="w-full px-3 py-2.5 border border-slate-300 rounded-md bg-white text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all"
+                className="w-full px-3 py-2.5 border border-slate-300 rounded-md bg-white text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-violet-100 focus:border-violet-500 transition-all"
               >
                 <option value="">All Subjects</option>
                 {uniqueSubjects.map(s => (
@@ -430,7 +430,7 @@ const StudentGradeView = () => {
                   General Average
                 </p>
                 <div className="flex items-center gap-3">
-                  <div className="text-4xl md:text-5xl font-extrabold text-blue-600">
+                  <div className="text-4xl md:text-5xl font-extrabold text-violet-600">
                     {overallRounded}
                   </div>
                   {overallPerformance && (
@@ -486,7 +486,7 @@ const StudentGradeView = () => {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
           <Card className="border-l-4 border-l-blue-500">
             <CardBody className="p-4 text-center">
-              <div className="text-2xl md:text-3xl font-extrabold text-blue-600">
+              <div className="text-2xl md:text-3xl font-extrabold text-violet-600">
                 {subjectEntries.length}
               </div>
               <div className="text-xs font-bold text-slate-600 uppercase tracking-wide mt-1">
@@ -577,7 +577,7 @@ const StudentGradeView = () => {
                     <th className="px-4 py-3 text-center text-xs font-extrabold text-slate-700 uppercase tracking-wider w-24">
                       Q4
                     </th>
-                    <th className="px-4 py-3 text-center text-xs font-extrabold text-slate-700 uppercase tracking-wider w-24 bg-blue-50">
+                    <th className="px-4 py-3 text-center text-xs font-extrabold text-slate-700 uppercase tracking-wider w-24 bg-violet-50">
                       Final
                     </th>
                     <th className="px-4 py-3 text-center text-xs font-extrabold text-slate-700 uppercase tracking-wider w-40">
@@ -627,7 +627,7 @@ const StudentGradeView = () => {
                         <td className="px-4 py-3 text-center">
                           <ScoreBadge score={q4Score} size="sm" />
                         </td>
-                        <td className="px-4 py-3 text-center bg-blue-50">
+                        <td className="px-4 py-3 text-center bg-violet-50">
                           <ScoreBadge score={finalAvg} size="md" />
                         </td>
                         <td className="px-4 py-3 text-center">

@@ -36,13 +36,13 @@ const ROLES = {
     features: ['Grade input & management', 'Class attendance', 'Upload materials', 'Post announcements', 'Student communication'],
     theme: {
       primary: 'blue-600',
-      primaryBg: 'bg-blue-600/20',
-      text: 'text-blue-600',
-      bg: 'bg-blue-600',
-      ring: 'focus:ring-blue-600/5',
-      border: 'group-focus-within:border-blue-600/20',
+      primaryBg: 'bg-violet-600/20',
+      text: 'text-violet-600',
+      bg: 'bg-violet-600',
+      ring: 'focus:ring-violet-600/5',
+      border: 'group-focus-within:border-violet-600/20',
       accent: 'bg-blue-400',
-      hover: 'hover:bg-blue-700',
+      hover: 'hover:bg-violet-700',
       gradient: 'from-blue-400 to-cyan-400'
     }
   },
@@ -178,7 +178,7 @@ const Login = () => {
           <div className="absolute inset-0 z-0">
             <div className="absolute top-0 left-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10" />
             <div className={`absolute top-[-10%] right-[-10%] w-[500px] h-[500px] ${role.theme.primaryBg} rounded-full blur-[120px] transition-colors duration-500`} />
-            <div className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[120px]" />
+            <div className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] bg-violet-600/10 rounded-full blur-[120px]" />
           </div>
 
           <div className="relative z-10">

@@ -4,7 +4,7 @@ import api from '../utils/api';
 
 const STATUS_CONFIG = {
   pending:              { color: 'bg-amber-500',   light: 'bg-amber-50 border-amber-300',   text: 'text-amber-800',   label: 'Pending',               desc: 'Your application is awaiting review by the admissions office.',   icon: '⏳' },
-  under_review:         { color: 'bg-blue-600',    light: 'bg-blue-50 border-blue-300',     text: 'text-blue-800',    label: 'Under Review',           desc: 'Your application is currently being evaluated by our staff.',      icon: '🔍' },
+  under_review:         { color: 'bg-violet-600',    light: 'bg-violet-50 border-violet-300',     text: 'text-blue-800',    label: 'Under Review',           desc: 'Your application is currently being evaluated by our staff.',      icon: '🔍' },
   pending_requirements: { color: 'bg-orange-500',  light: 'bg-orange-50 border-orange-300', text: 'text-orange-800',  label: 'Pending Requirements',   desc: 'Additional documents are required. Please check the remarks.',    icon: '📋' },
   approved:             { color: 'bg-green-600',   light: 'bg-green-50 border-green-300',   text: 'text-green-800',   label: 'Approved',               desc: 'Your application has been approved. Enrollment will proceed shortly.', icon: '✅' },
   rejected:             { color: 'bg-red-600',     light: 'bg-red-50 border-red-300',       text: 'text-red-800',     label: 'Rejected',               desc: 'Your application was not approved. See remarks for details.',     icon: '❌' },

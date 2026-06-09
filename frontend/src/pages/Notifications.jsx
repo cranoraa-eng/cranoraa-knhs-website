@@ -15,7 +15,7 @@ const TYPE_BADGE = {
   attendance:   { label: 'Attendance',   dot: 'bg-amber-500' },
   fee:          { label: 'Fee',          dot: 'bg-red-500' },
   system:       { label: 'System',       dot: 'bg-indigo-500' },
-  message:      { label: 'Message',      dot: 'bg-blue-500' },
+  message:      { label: 'Message',      dot: 'bg-violet-500' },
 };
 const getTypeConfig = (type) => TYPE_BADGE[type] || { label: type, dot: 'bg-slate-400' };
 

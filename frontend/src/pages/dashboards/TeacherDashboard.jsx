@@ -155,7 +155,7 @@ const TeacherDashboard = () => {
                   >
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-extrabold text-sm text-slate-900 truncate group-hover:text-blue-700 transition-colors">
+                        <h3 className="font-extrabold text-sm text-slate-900 truncate group-hover:text-violet-700 transition-colors">
                           {c.name}
                         </h3>
                         <p className="text-xs font-semibold text-slate-600 truncate uppercase tracking-wide mt-0.5">
@@ -175,7 +175,7 @@ const TeacherDashboard = () => {
                         </svg>
                         <span>{c.student_count || 0} students</span>
                       </div>
-                      <svg className="w-4 h-4 text-blue-600 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-4 h-4 text-violet-600 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                       </svg>
                     </div>

@@ -188,7 +188,7 @@ const WebsiteContentManagement = () => {
         <div className="flex flex-row gap-1 shrink-0">
           <button
             onClick={() => setShowAddModal(true)}
-            className="flex-1 sm:flex-none flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white font-bold py-1.5 md:py-2.5 px-2.5 md:px-5 rounded-lg md:rounded-xl transition-all shadow-md md:shadow-lg shadow-blue-200 active:scale-95 text-[9px] md:text-base whitespace-nowrap"
+            className="flex-1 sm:flex-none flex items-center justify-center bg-violet-600 hover:bg-violet-700 text-white font-bold py-1.5 md:py-2.5 px-2.5 md:px-5 rounded-lg md:rounded-xl transition-all shadow-md md:shadow-lg shadow-blue-200 active:scale-95 text-[9px] md:text-base whitespace-nowrap"
           >
             <svg className="w-2.5 h-2.5 md:w-5 md:h-5 mr-1 md:mr-2 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
@@ -223,7 +223,7 @@ const WebsiteContentManagement = () => {
             placeholder="Search sections..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="block w-full pl-7 pr-3 py-1.5 md:py-2.5 border border-slate-200 rounded-lg md:rounded-xl bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500 transition-all text-[10px] md:text-sm"
+            className="block w-full pl-7 pr-3 py-1.5 md:py-2.5 border border-slate-200 rounded-lg md:rounded-xl bg-slate-50 focus:bg-white focus:ring-2 focus:ring-violet-500 transition-all text-[10px] md:text-sm"
           />
         </div>
         <div className="flex overflow-x-auto gap-1 scrollbar-none pb-0.5 -mx-0.5 px-0.5 min-w-0">
@@ -232,7 +232,7 @@ const WebsiteContentManagement = () => {
               key={cat.id}
               onClick={() => setActiveCategory(cat.id)}
               className={`flex items-center whitespace-nowrap px-2 py-1 md:px-4 md:py-2 rounded-lg md:rounded-xl text-[9px] md:text-sm font-bold transition-all shrink-0 ${
-                activeCategory === cat.id ? 'bg-blue-100 text-blue-700 ring-1 ring-blue-300' : 'bg-white text-slate-500 hover:bg-slate-50 border border-slate-100'
+                activeCategory === cat.id ? 'bg-violet-100 text-violet-700 ring-1 ring-violet-300' : 'bg-white text-slate-500 hover:bg-slate-50 border border-slate-100'
               }`}
             >
               {cat.label}
@@ -254,8 +254,8 @@ const WebsiteContentManagement = () => {
               
               <div className="grid grid-cols-1 xl:grid-cols-2 gap-2.5 md:gap-6">
                 {items.map((item) => (
-                  <div key={item.id} className="group bg-white rounded-xl md:rounded-3xl shadow-sm border border-slate-100 hover:shadow-lg md:hover:shadow-xl hover:border-blue-100 transition-all duration-300 overflow-hidden flex flex-col">
-                    <div className="px-2 py-1 md:px-6 md:py-4 bg-slate-50/50 border-b border-slate-100 flex justify-between items-center group-hover:bg-blue-50/30 transition-colors">
+                  <div key={item.id} className="group bg-white rounded-xl md:rounded-3xl shadow-sm border border-slate-100 hover:shadow-lg md:hover:shadow-xl hover:border-violet-100 transition-all duration-300 overflow-hidden flex flex-col">
+                    <div className="px-2 py-1 md:px-6 md:py-4 bg-slate-50/50 border-b border-slate-100 flex justify-between items-center group-hover:bg-violet-50/30 transition-colors">
                       <div className="flex items-center min-w-0">
                         <h3 className="font-bold text-slate-800 text-[8px] md:text-sm truncate uppercase tracking-tight">{item.section_display || item.section}</h3>
                       </div>
@@ -271,7 +271,7 @@ const WebsiteContentManagement = () => {
                           </>
                         ) : (
                           <>
-                            <button onClick={() => handleEdit(item)} className="p-0.5 md:p-2 text-blue-600 hover:bg-blue-100 rounded-lg md:rounded-xl transition-colors">
+                            <button onClick={() => handleEdit(item)} className="p-0.5 md:p-2 text-violet-600 hover:bg-violet-100 rounded-lg md:rounded-xl transition-colors">
                               <svg className="w-2.5 h-2.5 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
                             </button>
                             <button onClick={() => handleDelete(item.id, item.section)} className="p-0.5 md:p-2 text-red-400 hover:bg-red-50 rounded-lg md:rounded-xl transition-colors">
@@ -289,7 +289,7 @@ const WebsiteContentManagement = () => {
                           <textarea
                             value={editValue}
                             onChange={(e) => setEditValue(e.target.value)}
-                            className="w-full px-1.5 py-1 md:px-4 md:py-3 border-2 border-blue-100 rounded-lg md:rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none bg-blue-50/20 text-[9px] md:text-sm"
+                            className="w-full px-1.5 py-1 md:px-4 md:py-3 border-2 border-violet-100 rounded-lg md:rounded-2xl focus:ring-2 focus:ring-violet-500 outline-none bg-violet-50/20 text-[9px] md:text-sm"
                             rows={3}
                           />
                         ) : (
@@ -317,7 +317,7 @@ const WebsiteContentManagement = () => {
       {showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-black/60 backdrop-blur-sm animate-fadeIn">
           <div className="bg-white rounded-2xl md:rounded-[2rem] shadow-2xl w-full max-w-xl overflow-hidden animate-slideUp max-h-[90vh] flex flex-col">
-            <div className="p-4 md:p-8 border-b border-slate-100 flex justify-between items-center bg-blue-50/30 shrink-0">
+            <div className="p-4 md:p-8 border-b border-slate-100 flex justify-between items-center bg-violet-50/30 shrink-0">
               <h2 className="text-lg md:text-2xl font-black text-slate-900">Add New Section</h2>
               <button onClick={() => setShowAddModal(false)} className="p-1.5 hover:bg-white rounded-full transition-colors"><svg className="w-4 h-4 md:w-6 md:h-6 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg></button>
             </div>
@@ -329,7 +329,7 @@ const WebsiteContentManagement = () => {
                   <select
                     value={newSection.category}
                     onChange={(e) => setNewSection({ ...newSection, category: e.target.value })}
-                    className="w-full px-3 py-2 md:px-4 md:py-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:ring-2 focus:ring-blue-500 text-xs md:text-base"
+                    className="w-full px-3 py-2 md:px-4 md:py-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:ring-2 focus:ring-violet-500 text-xs md:text-base"
                   >
                     {categories.filter(c => c.id !== 'all').map(cat => (<option key={cat.id} value={cat.id}>{cat.label}</option>))}
                   </select>
@@ -341,7 +341,7 @@ const WebsiteContentManagement = () => {
                     placeholder="e.g. programs_academic_details"
                     value={newSection.section}
                     onChange={(e) => setNewSection({ ...newSection, section: e.target.value })}
-                    className="w-full px-3 py-2 md:px-4 md:py-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:ring-2 focus:ring-blue-500 text-xs md:text-base"
+                    className="w-full px-3 py-2 md:px-4 md:py-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:ring-2 focus:ring-violet-500 text-xs md:text-base"
                   />
                   <datalist id="section-suggestions">
                     {sectionSuggestions[newSection.category]?.map(s => (<option key={s} value={s} />))}
@@ -355,14 +355,14 @@ const WebsiteContentManagement = () => {
                   placeholder="Enter content..."
                   value={newSection.content}
                   onChange={(e) => setNewSection({ ...newSection, content: e.target.value })}
-                  className="w-full px-3 py-2 md:px-4 md:py-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:ring-2 focus:ring-blue-500 text-xs md:text-base"
+                  className="w-full px-3 py-2 md:px-4 md:py-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:ring-2 focus:ring-violet-500 text-xs md:text-base"
                   rows={3}
                 />
               </div>
 
               <div className="flex flex-col sm:flex-row gap-2 pt-1 md:pt-4">
                 <button type="button" onClick={() => setShowAddModal(false)} className="order-2 sm:order-1 flex-grow py-2.5 md:py-3 bg-slate-100 text-slate-600 font-bold rounded-xl md:rounded-2xl text-xs md:text-base">Cancel</button>
-                <button type="submit" className="order-1 sm:order-2 flex-grow py-2.5 md:py-3 bg-blue-600 text-white font-bold rounded-xl md:rounded-2xl shadow-lg active:scale-95 text-xs md:text-base">Create Section</button>
+                <button type="submit" className="order-1 sm:order-2 flex-grow py-2.5 md:py-3 bg-violet-600 text-white font-bold rounded-xl md:rounded-2xl shadow-lg active:scale-95 text-xs md:text-base">Create Section</button>
               </div>
             </form>
           </div>

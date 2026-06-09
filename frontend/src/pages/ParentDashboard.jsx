@@ -12,7 +12,7 @@ const AttBadge = ({ status }) => {
     present: 'bg-emerald-100 text-emerald-700',
     late:    'bg-amber-100 text-amber-700',
     absent:  'bg-rose-100 text-rose-700',
-    excused: 'bg-blue-100 text-blue-700',
+    excused: 'bg-violet-100 text-violet-700',
   };
   return (
     <span className={`px-2 py-0.5 rounded-full text-xs font-black uppercase tracking-widest ${cfg[status] || 'bg-slate-100 text-slate-500'}`}>
@@ -23,7 +23,7 @@ const AttBadge = ({ status }) => {
 
 const GradeBadge = ({ score }) => {
   if (score == null) return <span className="text-slate-400">—</span>;
-  const color = score >= 90 ? 'text-emerald-600' : score >= 85 ? 'text-blue-600' : score >= 80 ? 'text-violet-600' : score >= 75 ? 'text-amber-600' : 'text-rose-600';
+  const color = score >= 90 ? 'text-emerald-600' : score >= 85 ? 'text-violet-600' : score >= 80 ? 'text-violet-600' : score >= 75 ? 'text-amber-600' : 'text-rose-600';
   return <span className={`font-black text-sm ${color}`}>{score}</span>;
 };
 
@@ -154,8 +154,8 @@ export default function ParentDashboard() {
                   <p className="text-[10px] sm:text-xs text-slate-400 mt-0.5">{child.grades?.length || 0} subjects graded</p>
                 </div>
                 <div className="bg-white border border-slate-200 rounded-lg p-3 sm:p-4 hover:shadow-md transition-all">
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-md bg-blue-50 flex items-center justify-center mb-2 sm:mb-3">
-                    <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-md bg-violet-50 flex items-center justify-center mb-2 sm:mb-3">
+                    <svg className="w-5 h-5 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
                   </div>
                   <p className="text-[10px] sm:text-xs font-black text-slate-400 uppercase tracking-widest">Classroom</p>
                   <p className="text-xs sm:text-sm font-black text-slate-900 mt-0.5 sm:mt-1 truncate">{child.classroom_name || '—'}</p>
@@ -260,7 +260,7 @@ export default function ParentDashboard() {
                       <div key={i} className="flex gap-3 p-3 rounded-md bg-slate-50 mb-2">
                         <div className={`w-8 h-8 rounded flex items-center justify-center flex-shrink-0 text-xs ${
                           n.type === 'grade' ? 'bg-violet-100 text-violet-600' :
-                          n.type === 'attendance' ? 'bg-amber-100 text-amber-600' : 'bg-blue-100 text-blue-600'
+                          n.type === 'attendance' ? 'bg-amber-100 text-amber-600' : 'bg-violet-100 text-violet-600'
                         }`}>
                           {n.type === 'grade' ? '📊' : n.type === 'attendance' ? '📋' : '🔔'}
                         </div>

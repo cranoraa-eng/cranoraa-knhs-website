@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import api from '../utils/api';
 import { getStoredUser } from '../utils/auth';
 import { useNavigate } from 'react-router-dom';
@@ -259,8 +259,8 @@ const SubjectAssignment = () => {
 
                           <div className="flex items-center gap-2">
                             {/* Teacher badge */}
-                            <div className="flex items-center gap-2.5 px-4 py-2 bg-blue-50 border border-blue-100 rounded-xl shadow-sm transition-all group-hover:bg-blue-600 group-hover:text-white group-hover:border-blue-600 group">
-                              <div className="w-6 h-6 rounded-lg bg-blue-600 text-white flex items-center justify-center group-hover:bg-white group-hover:text-blue-600 transition-colors">
+                            <div className="flex items-center gap-2.5 px-4 py-2 bg-violet-50 border border-blue-100 rounded-xl shadow-sm transition-all group-hover:bg-violet-600 group-hover:text-white group-hover:border-violet-600 group">
+                              <div className="w-6 h-6 rounded-lg bg-violet-600 text-white flex items-center justify-center group-hover:bg-white group-hover:text-violet-600 transition-colors">
                                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                                 </svg>
@@ -271,7 +271,7 @@ const SubjectAssignment = () => {
                             <div className="flex items-center gap-2">
                               <button
                                 onClick={() => handleEdit(a)}
-                                className="p-2.5 text-blue-600 bg-blue-50 hover:bg-blue-600 hover:text-white rounded-xl transition-all shadow-sm active:scale-95"
+                                className="p-2.5 text-violet-600 bg-violet-50 hover:bg-violet-600 hover:text-white rounded-xl transition-all shadow-sm active:scale-95"
                                 title="Edit Teacher"
                               >
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>

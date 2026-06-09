@@ -91,7 +91,7 @@ export const GhostButton = ({ children, onClick, disabled, type = 'button', clas
 const ACTION_VARIANTS = {
   default: 'text-slate-400 hover:bg-slate-100 hover:text-slate-600',
   violet:  'text-violet-500 hover:bg-violet-50 hover:text-violet-700',
-  blue:    'text-blue-500 hover:bg-blue-50 hover:text-blue-700',
+  blue:    'text-violet-500 hover:bg-violet-50 hover:text-violet-700',
   green:   'text-emerald-500 hover:bg-emerald-50 hover:text-emerald-700',
   amber:   'text-amber-500 hover:bg-amber-50 hover:text-amber-700',
   red:     'text-red-500 hover:bg-red-50 hover:text-red-700',

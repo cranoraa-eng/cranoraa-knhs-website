@@ -25,7 +25,7 @@ const NavItem = ({ to, label, isActive, icon, onClick, tourId }) => (
     aria-current={isActive(to) ? 'page' : undefined}
     className={`flex items-center px-3 py-2.5 rounded-md transition-all duration-150 mb-0.5 text-xs group ${
       isActive(to)
-        ? 'bg-blue-600 text-white font-bold shadow-sm'
+        ? 'bg-violet-600 text-white font-bold shadow-sm'
         : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 font-semibold'
     }`}
   >
@@ -376,21 +376,21 @@ const Layout = () => {
         <aside data-tour="portal-sidebar" className={`fixed inset-y-0 left-0 z-50 flex h-screen w-64 transform flex-col overflow-hidden border-r border-slate-200 bg-white shadow-xl transition-all duration-300 ease-in-out lg:static lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
 
           {/* School Header */}
-          <div className="flex items-center gap-3 px-4 py-4 border-b-4 border-blue-600 bg-white">
+          <div className="flex items-center gap-3 px-4 py-4 border-b-4 border-violet-600 bg-white">
             <div className="h-12 w-12 rounded-md bg-white p-1.5 flex items-center justify-center border-2 border-slate-200 shadow-sm shrink-0">
               <img src="/icons/school-logo-source.png" alt="KNHS Logo" className="h-full w-full object-contain" />
             </div>
             <div className="flex flex-col min-w-0">
               <span className="text-sm font-extrabold tracking-tight leading-none text-slate-900 uppercase">Kiwalan NHS</span>
-              <span className="text-[10px] font-bold text-blue-700 uppercase tracking-wide mt-0.5">Digital Campus</span>
+              <span className="text-[10px] font-bold text-violet-700 uppercase tracking-wide mt-0.5">Digital Campus</span>
             </div>
           </div>
 
           {/* Academic Year Info */}
-          <div className="flex-shrink-0 px-4 py-3 bg-blue-50 border-b border-blue-100">
+          <div className="flex-shrink-0 px-4 py-3 bg-violet-50 border-b border-violet-100">
             <div className="flex items-center justify-between text-[10px] font-bold text-slate-700 uppercase tracking-wide">
               <span>SY 2025-2026</span>
-              <span className="text-blue-700">2nd Semester</span>
+              <span className="text-violet-700">2nd Semester</span>
             </div>
           </div>
 
@@ -398,7 +398,7 @@ const Layout = () => {
           <div className="flex-shrink-0 px-4 py-3 border-b border-slate-100">
             <div data-tour="sidebar-profile" onClick={() => navigate('/profile')}
               className="flex items-center gap-3 p-3 rounded-md bg-slate-50 border border-slate-200 hover:bg-slate-100 hover:border-slate-300 transition-colors cursor-pointer group">
-              <div className="h-10 w-10 rounded-md bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold shadow-sm group-hover:scale-105 transition-transform uppercase overflow-hidden border border-blue-700 shrink-0">
+              <div className="h-10 w-10 rounded-md bg-gradient-to-br from-violet-500 to-violet-600 flex items-center justify-center text-white font-bold shadow-sm group-hover:scale-105 transition-transform uppercase overflow-hidden border border-violet-700 shrink-0">
                 {user?.profile_picture ? (
                   <img src={user.profile_picture} alt="Avatar" className="w-full h-full object-cover" />
                 ) : (
@@ -407,7 +407,7 @@ const Layout = () => {
               </div>
               <div className="flex flex-col min-w-0">
                 <span className="text-xs font-bold truncate text-slate-900">{user?.first_name} {user?.last_name}</span>
-                <span className="text-[10px] font-bold text-blue-700 uppercase tracking-wide">{user?.role}</span>
+                <span className="text-[10px] font-bold text-violet-700 uppercase tracking-wide">{user?.role}</span>
               </div>
             </div>
           </div>
@@ -476,9 +476,9 @@ const Layout = () => {
               {/* Title & Breadcrumbs */}
               <div className="hidden sm:block">
                 <nav className="flex items-center text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
-                  <Link to="/dashboard" className="hover:text-blue-700 transition-colors">KNHS Portal</Link>
+                  <Link to="/dashboard" className="hover:text-violet-700 transition-colors">KNHS Portal</Link>
                   <svg className="w-3 h-3 mx-1.5 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" /></svg>
-                  <span className="text-blue-700">{pageTitle}</span>
+                  <span className="text-violet-700">{pageTitle}</span>
                 </nav>
                 <h1 className="text-lg font-extrabold text-slate-900 tracking-tight leading-none">{pageTitle}</h1>
               </div>

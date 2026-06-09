@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import api from '../utils/api';
 import { getUser } from '../utils/auth';
 import toast from 'react-hot-toast';
@@ -9,7 +9,7 @@ const GRADE_LEVEL_ORDER = ['Grade 7', 'Grade 8', 'Grade 9', 'Grade 10', 'Grade 1
 
 const MATERIAL_TYPE_CONFIG = {
   dlp:        { label: 'Daily Lesson Plan (DLP)',    color: 'bg-violet-100 text-violet-700 border-violet-200', icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' },
-  dll:        { label: 'Daily Lesson Log (DLL)',     color: 'bg-blue-100 text-blue-700 border-blue-200',       icon: 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253' },
+  dll:        { label: 'Daily Lesson Log (DLL)',     color: 'bg-violet-100 text-violet-700 border-violet-200',       icon: 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253' },
   module:     { label: 'Learning Module',            color: 'bg-green-100 text-green-700 border-green-200',    icon: 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253' },
   activity:   { label: 'Learning Activity Sheet',    color: 'bg-yellow-100 text-yellow-700 border-yellow-200', icon: 'M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z' },
   assessment: { label: 'Assessment Material',        color: 'bg-red-100 text-red-700 border-red-200',          icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4' },
@@ -292,7 +292,7 @@ const Materials = () => {
                     </div>
                   )}
                   {material.quarter && (
-                    <div className="text-[11px] font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded-md">
+                    <div className="text-[11px] font-bold text-violet-600 bg-violet-50 px-2 py-1 rounded-md">
                       Q{material.quarter}
                     </div>
                   )}

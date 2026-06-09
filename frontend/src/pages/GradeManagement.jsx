@@ -206,7 +206,7 @@ const GradeManagement = () => {
 
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2 text-xs font-bold text-blue-700 uppercase tracking-wide mb-2">
+          <div className="flex items-center gap-2 text-xs font-bold text-violet-700 uppercase tracking-wide mb-2">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
@@ -264,7 +264,7 @@ const GradeManagement = () => {
                 placeholder="Search student, subject, or classroom..."
                 value={search}
                 onChange={e => setSearch(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 border border-slate-300 rounded-md bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all"
+                className="w-full pl-10 pr-4 py-2.5 border border-slate-300 rounded-md bg-white text-sm focus:outline-none focus:ring-2 focus:ring-violet-100 focus:border-violet-500 transition-all"
               />
             </div>
 
@@ -273,7 +273,7 @@ const GradeManagement = () => {
               <select
                 value={filterQuarter}
                 onChange={e => setFilterQuarter(e.target.value)}
-                className="w-full px-3 py-2.5 border border-slate-300 rounded-md bg-white text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all"
+                className="w-full px-3 py-2.5 border border-slate-300 rounded-md bg-white text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-violet-100 focus:border-violet-500 transition-all"
               >
                 <option value="">All Quarters</option>
                 <option value="1">Quarter 1</option>
@@ -339,7 +339,7 @@ const GradeManagement = () => {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
             <Card className="border-l-4 border-l-blue-500">
               <CardBody className="p-4 text-center">
-                <div className="text-2xl md:text-3xl font-extrabold text-blue-600">
+                <div className="text-2xl md:text-3xl font-extrabold text-violet-600">
                   {sortedClassrooms.length}
                 </div>
                 <div className="text-xs font-bold text-slate-600 uppercase tracking-wide mt-1">
@@ -399,7 +399,7 @@ const GradeManagement = () => {
                   <CardHeader divider>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-md bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-extrabold text-lg shadow-sm border border-blue-700">
+                        <div className="w-12 h-12 rounded-md bg-gradient-to-br from-violet-500 to-violet-600 flex items-center justify-center text-white font-extrabold text-lg shadow-sm border border-violet-700">
                           {classroom.name?.match(/\d+/)?.[0] || classroom.name?.charAt(0)}
                         </div>
                         <div>
@@ -421,7 +421,7 @@ const GradeManagement = () => {
                     {/* Stats */}
                     <div className="grid grid-cols-3 gap-3 mb-4">
                       <div className="text-center">
-                        <div className="text-lg font-extrabold text-blue-600">
+                        <div className="text-lg font-extrabold text-violet-600">
                           {classroom.subjectCount}
                         </div>
                         <div className="text-xs font-bold text-slate-600 uppercase tracking-wide">
@@ -549,7 +549,7 @@ const ClassroomDetailModal = ({ classroom, onClose, user, formatName, calculateF
               onClick={() => setSelectedSubject(selectedSubject?.id === subject.id ? null : subject)}
               className={`px-4 py-2 rounded-md text-xs font-extrabold uppercase tracking-wide transition-all ${
                 selectedSubject?.id === subject.id
-                  ? 'bg-blue-600 text-white shadow-md'
+                  ? 'bg-violet-600 text-white shadow-md'
                   : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
               }`}
             >
@@ -614,11 +614,11 @@ const SubjectGradeTable = ({ subject, user, formatName, calculateFinal, handleLo
 
   return (
     <div>
-      <div className="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-md">
+      <div className="mb-3 p-3 bg-violet-50 border border-violet-200 rounded-md">
         <h3 className="text-sm font-extrabold text-blue-900 uppercase tracking-wide">
           {subject.name}
         </h3>
-        <p className="text-xs font-semibold text-blue-700 mt-0.5">
+        <p className="text-xs font-semibold text-violet-700 mt-0.5">
           {subject.code} • {sortedStudents.length} Students
         </p>
       </div>
@@ -645,7 +645,7 @@ const SubjectGradeTable = ({ subject, user, formatName, calculateFinal, handleLo
               <th className="px-4 py-3 text-center text-xs font-extrabold text-slate-700 uppercase tracking-wider">
                 Q4
               </th>
-              <th className="px-4 py-3 text-center text-xs font-extrabold text-slate-700 uppercase tracking-wider bg-blue-50">
+              <th className="px-4 py-3 text-center text-xs font-extrabold text-slate-700 uppercase tracking-wider bg-violet-50">
                 Final
               </th>
               <th className="px-4 py-3 text-center text-xs font-extrabold text-slate-700 uppercase tracking-wider">
@@ -678,7 +678,7 @@ const SubjectGradeTable = ({ subject, user, formatName, calculateFinal, handleLo
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
                       <div className={`w-9 h-9 rounded-md flex items-center justify-center text-white font-extrabold text-xs shadow-sm shrink-0 ${
-                        currentSex === 'male' ? 'bg-gradient-to-br from-blue-500 to-blue-600 border border-blue-700' :
+                        currentSex === 'male' ? 'bg-gradient-to-br from-violet-500 to-violet-600 border border-violet-700' :
                         currentSex === 'female' ? 'bg-gradient-to-br from-rose-500 to-rose-600 border border-rose-700' :
                         'bg-gradient-to-br from-slate-500 to-slate-600 border border-slate-700'
                       }`}>
@@ -711,7 +711,7 @@ const SubjectGradeTable = ({ subject, user, formatName, calculateFinal, handleLo
                   })}
 
                   {/* Final Grade */}
-                  <td className="px-4 py-3 text-center bg-blue-50">
+                  <td className="px-4 py-3 text-center bg-violet-50">
                     <ScoreBadge score={rounded} />
                   </td>
 
@@ -732,7 +732,7 @@ const SubjectGradeTable = ({ subject, user, formatName, calculateFinal, handleLo
                       <div className="flex items-center justify-center gap-1">
                         <button
                           onClick={() => navigate(`/profile?student_id=${student.id}`)}
-                          className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-md transition-all"
+                          className="p-1.5 text-violet-600 hover:bg-violet-50 rounded-md transition-all"
                           title="View Profile"
                         >
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

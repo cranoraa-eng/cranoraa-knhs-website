@@ -40,7 +40,7 @@ const STATUS_CONFIG = {
     label: 'Excused', 
     short: 'E', 
     color: 'blue',
-    buttonClass: 'bg-blue-600 text-white hover:bg-blue-700 border-blue-700'
+    buttonClass: 'bg-violet-600 text-white hover:bg-violet-700 border-violet-700'
   },
 };
 
@@ -341,7 +341,7 @@ const Attendance = () => {
         {/* Page Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2 text-xs font-bold text-blue-700 uppercase tracking-wide mb-2">
+            <div className="flex items-center gap-2 text-xs font-bold text-violet-700 uppercase tracking-wide mb-2">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
               </svg>
@@ -364,7 +364,7 @@ const Attendance = () => {
               type="month" 
               value={filterMonth} 
               onChange={e => setFilterMonth(e.target.value)}
-              className="px-3 py-2 border border-slate-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all text-sm font-semibold shadow-sm"
+              className="px-3 py-2 border border-slate-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-violet-100 focus:border-violet-500 transition-all text-sm font-semibold shadow-sm"
             />
           </div>
         </div>
@@ -512,7 +512,7 @@ const Attendance = () => {
       {/* Page Header */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2 text-xs font-bold text-blue-700 uppercase tracking-wide mb-2">
+          <div className="flex items-center gap-2 text-xs font-bold text-violet-700 uppercase tracking-wide mb-2">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
             </svg>
@@ -536,7 +536,7 @@ const Attendance = () => {
             )}
             {academicYear && (
               <Badge variant="blue" size="sm">
-                <span className="w-1.5 h-1.5 rounded-full bg-blue-500 mr-1" />
+                <span className="w-1.5 h-1.5 rounded-full bg-violet-500 mr-1" />
                 {academicYear}
               </Badge>
             )}
@@ -555,7 +555,7 @@ const Attendance = () => {
               onClick={() => setView(v.key)}
               className={`px-4 md:px-6 py-2.5 text-xs font-extrabold uppercase tracking-wide transition-all ${
                 view === v.key
-                  ? 'bg-blue-600 text-white'
+                  ? 'bg-violet-600 text-white'
                   : 'bg-white text-slate-600 hover:bg-slate-50'
               }`}
             >
@@ -596,7 +596,7 @@ const Attendance = () => {
               <select
                 value={selectedClassroom}
                 onChange={e => setSelectedClassroom(e.target.value)}
-                className="w-full px-3 py-2.5 border border-slate-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 text-sm font-semibold shadow-sm transition-all"
+                className="w-full px-3 py-2.5 border border-slate-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-violet-100 focus:border-violet-500 text-sm font-semibold shadow-sm transition-all"
               >
                 <option value="">Select classroom</option>
                 {sortedClassrooms.map(c => (
@@ -616,7 +616,7 @@ const Attendance = () => {
                   value={view === 'mark' ? selectedDate : historyDate}
                   onChange={e => view === 'mark' ? setSelectedDate(e.target.value) : setHistoryDate(e.target.value)}
                   max={getLocalDate()}
-                  className="flex-1 px-3 py-2.5 border border-slate-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 text-sm font-semibold shadow-sm transition-all"
+                  className="flex-1 px-3 py-2.5 border border-slate-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-violet-100 focus:border-violet-500 text-sm font-semibold shadow-sm transition-all"
                 />
                 {view === 'history' && historyDate && (
                   <Button
@@ -805,7 +805,7 @@ const Attendance = () => {
                               </td>
                               <td className="px-4 py-3">
                                 <div className="flex items-center gap-3">
-                                  <div className="w-9 h-9 rounded-md bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-extrabold text-xs shadow-sm border border-blue-700 shrink-0">
+                                  <div className="w-9 h-9 rounded-md bg-gradient-to-br from-violet-500 to-violet-600 flex items-center justify-center text-white font-extrabold text-xs shadow-sm border border-violet-700 shrink-0">
                                     {s.student_name?.charAt(0).toUpperCase()}
                                   </div>
                                   <div>
@@ -848,7 +848,7 @@ const Attendance = () => {
                                   value={draftRemarks[s.student] || ''}
                                   onChange={e => setDraftRemarks(prev => ({ ...prev, [s.student]: e.target.value }))}
                                   placeholder="Add note..."
-                                  className="w-full px-2 py-1 text-xs border border-slate-200 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                                  className="w-full px-2 py-1 text-xs border border-slate-200 rounded focus:outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500"
                                 />
                               </td>
                             </tr>
@@ -1026,7 +1026,7 @@ const Attendance = () => {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <Card className="border-l-4 border-l-blue-500">
                   <CardBody className="p-4 text-center">
-                    <div className="text-3xl font-extrabold text-blue-600 mb-1">
+                    <div className="text-3xl font-extrabold text-violet-600 mb-1">
                       {analytics.total_records || 0}
                     </div>
                     <div className="text-xs font-bold text-slate-600 uppercase tracking-wide">
