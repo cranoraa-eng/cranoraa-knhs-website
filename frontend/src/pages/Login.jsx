@@ -185,13 +185,13 @@ const Login = () => {
               <img src="/icons/school-logo-source.png" alt="KNHS Logo" className="w-16 h-16 object-contain drop-shadow-2xl" />
               <div>
                 <h1 className="text-xl font-black text-white uppercase tracking-tight leading-none">Kiwalan</h1>
-                <p className={`text-xs font-bold ${role.theme.text} uppercase tracking-widest mt-1 transition-colors duration-500`}>National High School</p>
+                <p className={`text-xs font-bold ${role.theme.text} uppercase tracking-widest mt-1`}>National High School</p>
               </div>
             </div>
 
             <div className="max-w-md">
               <h2 className="text-5xl font-black text-white mb-6 leading-[1.1]">
-                Digital Campus <span className={`${role.theme.text} transition-colors duration-500`}>Portal</span>
+                Digital Campus <span className={role.theme.text}>Portal</span>
               </h2>
               <p className="text-slate-400 text-lg leading-relaxed mb-10">
                 Official management system for students, faculty, and administration of Kiwalan National High School.
@@ -203,7 +203,7 @@ const Login = () => {
                   <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Digital Access</p>
                 </div>
                 <div className="bg-white/10 border border-white/10 p-4 rounded-lg">
-                  <p className={`text-2xl font-black ${role.theme.text} transition-colors duration-500`}>Secure</p>
+                  <p className={`text-2xl font-black ${role.theme.text}`}>Secure</p>
                   <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Authentication</p>
                 </div>
               </div>
@@ -240,7 +240,7 @@ const Login = () => {
                 onClick={() => navigate('/')} 
                 className={`hidden lg:inline-flex items-center gap-2 text-slate-400 hover:${role.theme.text} text-xs font-bold uppercase tracking-widest mb-8 transition-colors group`}
               >
-                <svg className="w-4 h-4 transition-transform group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" /></svg>
+                <svg className="w-4 h-4 transition-colors group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" /></svg>
                 Return to Home
               </button>
               
@@ -330,7 +330,7 @@ const Login = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className={`w-full ${role.theme.bg} ${role.theme.hover} text-white font-black uppercase tracking-[0.2em] py-5 rounded-lg text-xs shadow-xl shadow-slate-900/10 hover:shadow-slate-900/20 active:scale-[0.98] transition-all flex items-center justify-center gap-3 disabled:opacity-70 disabled:cursor-not-allowed`}
+                className={`w-full ${role.theme.bg} ${role.theme.hover} text-white font-black uppercase tracking-[0.2em] py-5 rounded-lg text-xs shadow-xl shadow-slate-900/10 hover:shadow-slate-900/20 transition-colors flex items-center justify-center gap-3 disabled:opacity-70 disabled:cursor-not-allowed`}
               >
                 {loading ? (
                   <svg className="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">

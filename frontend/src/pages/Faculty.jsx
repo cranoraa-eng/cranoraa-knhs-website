@@ -68,7 +68,7 @@ const Faculty = () => {
             ].map((dept, i) => (
               <div key={i} className="bg-slate-50 rounded-2xl border-2 border-violet-200 p-6 hover:shadow-lg transition-all group">
                 <div className="flex items-start justify-between mb-4">
-                  <div className="w-12 h-12 rounded-xl bg-violet-900 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <div className="w-12 h-12 rounded-xl bg-violet-900 flex items-center justify-center">
                     <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={dept.icon} />
                     </svg>

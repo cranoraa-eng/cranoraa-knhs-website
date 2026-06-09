@@ -96,7 +96,7 @@ const PublicLayout = () => {
         </div>
       </div>
 
-      <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/95 backdrop-blur animate-fade-in-down">
+      <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/95 backdrop-blur">
         <div className="max-w-7xl mx-auto px-4 py-4 md:py-5">
           <div className="grid grid-cols-[auto_1fr_auto] items-center gap-3 md:gap-6">
             <div className="flex items-center justify-start">
@@ -280,7 +280,7 @@ const PublicLayout = () => {
                 ) : (
                   <Link
                     to="/login"
-                    className="inline-flex items-center justify-center rounded-lg bg-violet-700 px-6 py-2 text-xs font-bold uppercase tracking-wider text-white hover:bg-violet-600 transition-all hover:scale-105 active:scale-95 shadow-md shadow-violet-950/20 border border-violet-500/30"
+                    className="inline-flex items-center justify-center rounded-lg bg-violet-700 px-6 py-2 text-xs font-bold uppercase tracking-wider text-white hover:bg-violet-600 transition-colors shadow-md shadow-violet-950/20 border border-violet-500/30"
                   >
                     Portal Login
                   </Link>

@@ -78,7 +78,7 @@ const Portals = () => {
                   className={`group bg-gradient-to-br ${getColorClasses(portal.color)} rounded-3xl p-8 text-white hover:shadow-2xl transition-all`}
                 >
                   <div className="flex items-start gap-6">
-                    <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                    <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center flex-shrink-0">
                       <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={portal.icon} />
                       </svg>
@@ -88,7 +88,7 @@ const Portals = () => {
                       <p className="text-white/90 leading-relaxed mb-4">{portal.desc}</p>
                       <div className="inline-flex items-center gap-2 text-sm font-bold">
                         Access Portal
-                        <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                         </svg>
                       </div>
@@ -104,7 +104,7 @@ const Portals = () => {
                   className={`group bg-gradient-to-br ${getColorClasses(portal.color)} rounded-3xl p-8 text-white hover:shadow-2xl transition-all`}
                 >
                   <div className="flex items-start gap-6">
-                    <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                    <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center flex-shrink-0">
                       <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={portal.icon} />
                       </svg>

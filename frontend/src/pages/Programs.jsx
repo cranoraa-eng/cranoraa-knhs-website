@@ -109,7 +109,7 @@ const Programs = () => {
               <div key={i} className="group bg-white rounded-2xl border-2 border-violet-200 overflow-hidden hover:shadow-xl hover:border-violet-400 transition-all duration-300 flex flex-col">
                 {/* Image */}
                 <div className="relative h-56 overflow-hidden">
-                  <img src={program.image} alt={program.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                  <img src={program.image} alt={program.title} className="w-full h-full object-cover" />
                   <div className="absolute inset-0 bg-gradient-to-t from-violet-950/70 via-violet-900/30 to-transparent" />
                   {/* Number badge */}
                   <div className="absolute top-4 left-4 w-10 h-10 rounded-xl bg-white/20 border border-white/40 backdrop-blur-sm flex items-center justify-center">
