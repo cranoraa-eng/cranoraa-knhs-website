@@ -119,7 +119,12 @@ const Layout = () => {
     return () => document.removeEventListener('mousedown', handler);
   }, [showNotifications]);
 
-  const isActive = (path) => location.pathname === path;
+  const normalizePath = (path) => path.split('?')[0];
+  const activeWorkspaceTab = new URLSearchParams(location.search).get('tab');
+  const isActive = (path) => location.pathname === normalizePath(path);
+  const isCommunicationTabActive = (tab) =>
+    location.pathname === '/communication-center' &&
+    (tab === 'bulletins' ? activeWorkspaceTab !== 'inbox' : activeWorkspaceTab === tab);
   const homePath = user?.role === 'parent' ? '/parent-dashboard' : '/dashboard';
   const isHomeActive = isActive(homePath);
 
@@ -245,7 +250,6 @@ const Layout = () => {
         items: [
           { to: '/profile', label: 'Profile', icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' },
           ...(user?.is_adviser ? [{ to: '/people-directory?tab=students', label: 'Advisory Class', icon: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z' }] : []),
-          { to: '/analytics', label: 'Analytics', icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z' },
           { to: '/settings', label: 'Settings', icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z' },
         ]
       }
@@ -279,7 +283,6 @@ const Layout = () => {
         header: 'System',
         items: [
           { to: '/system-admin', label: 'System Admin Hub', icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' },
-          { to: '/analytics', label: 'Analytics', icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z' },
           { to: '/settings', label: 'Settings', icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z' },
         ]
       }
@@ -678,18 +681,18 @@ const Layout = () => {
             <span className={`text-[9px] font-bold uppercase tracking-wide ${isHomeActive ? 'text-violet-600' : 'text-slate-400'}`}>Home</span>
           </Link>
 
-          {/* Announcements */}
+          {/* Bulletins */}
           <Link
-            to="/announcements"
-            data-tour={getNavTourId('/announcements')}
+            to="/communication-center?tab=bulletins"
+            data-tour={getNavTourId('/communication-center')}
             className={`flex flex-col items-center gap-0.5 px-3 py-2 rounded-xl transition-all active:scale-90 min-w-[56px] ${
-              isActive('/announcements') ? 'text-violet-600' : 'text-slate-400'
+              isCommunicationTabActive('bulletins') ? 'text-violet-600' : 'text-slate-400'
             }`}
           >
-            <svg className="w-5 h-5" fill={isActive('/announcements') ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={isActive('/announcements') ? 0 : 2} d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
+            <svg className="w-5 h-5" fill={isCommunicationTabActive('bulletins') ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={isCommunicationTabActive('bulletins') ? 0 : 2} d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
             </svg>
-            <span className={`text-[9px] font-bold uppercase tracking-wide ${isActive('/announcements') ? 'text-violet-600' : 'text-slate-400'}`}>News</span>
+            <span className={`text-[9px] font-bold uppercase tracking-wide ${isCommunicationTabActive('bulletins') ? 'text-violet-600' : 'text-slate-400'}`}>News</span>
           </Link>
 
           {/* Messages (students/teachers) or Calendar (parents) */}
@@ -708,16 +711,16 @@ const Layout = () => {
             </Link>
           ) : (
             <Link
-              to="/messages"
-              data-tour={getNavTourId('/messages')}
+              to="/communication-center?tab=inbox"
+              data-tour={getNavTourId('/communication-center')}
               className={`flex flex-col items-center gap-0.5 px-3 py-2 rounded-xl transition-all active:scale-90 min-w-[56px] ${
-                isActive('/messages') ? 'text-violet-600' : 'text-slate-400'
+                isCommunicationTabActive('inbox') ? 'text-violet-600' : 'text-slate-400'
               }`}
             >
-              <svg className="w-5 h-5" fill={isActive('/messages') ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={isActive('/messages') ? 0 : 2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+              <svg className="w-5 h-5" fill={isCommunicationTabActive('inbox') ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={isCommunicationTabActive('inbox') ? 0 : 2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
               </svg>
-              <span className={`text-[9px] font-bold uppercase tracking-wide ${isActive('/messages') ? 'text-violet-600' : 'text-slate-400'}`}>Chat</span>
+              <span className={`text-[9px] font-bold uppercase tracking-wide ${isCommunicationTabActive('inbox') ? 'text-violet-600' : 'text-slate-400'}`}>Chat</span>
             </Link>
           )}
 

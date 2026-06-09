@@ -57,43 +57,20 @@ const TermsOfService = lazy(() => import('./pages/TermsOfService'));
 const EnrollmentTracking = lazy(() => import('./pages/EnrollmentTracking'));
 
 // ── Portal pages (lazy loaded for better initial bundle) ──────────────────────
-const Announcements = lazy(() => import('./pages/Announcements'));
 const Attendance = lazy(() => import('./pages/Attendance'));
-const Materials = lazy(() => import('./pages/Materials'));
-const Subjects = lazy(() => import('./pages/Subjects'));
-const Teachers = lazy(() => import('./pages/Teachers'));
 const Profile = lazy(() => import('./pages/Profile'));
 
 const ClassMembers = lazy(() => import('./pages/ClassMembers'));
 const PasswordReset = lazy(() => import('./pages/PasswordReset'));
-const ClassManagement = lazy(() => import('./pages/ClassManagement'));
-const MyClasses = lazy(() => import('./pages/MyClasses'));
-const SubjectAssignment = lazy(() => import('./pages/SubjectAssignment'));
-const StudentEnrollment = lazy(() => import('./pages/StudentEnrollment'));
-const StudentManagement = lazy(() => import('./pages/StudentManagement'));
-const AuditLogs = lazy(() => import('./pages/AuditLogs'));
-const Backups = lazy(() => import('./pages/Backups'));
-const WebsiteContentManagement = lazy(() => import('./pages/WebsiteContentManagement'));
-const EnrollmentManagement = lazy(() => import('./pages/EnrollmentManagement'));
 const Settings = lazy(() => import('./pages/Settings'));
-const GradeInput = lazy(() => import('./pages/GradeInput'));
-const GradeManagement = lazy(() => import('./pages/GradeManagement'));
-const StudentGradeView = lazy(() => import('./pages/StudentGradeView'));
-const Moderation = lazy(() => import('./pages/Moderation'));
-const Analytics = lazy(() => import('./pages/Analytics'));
-const SystemHealth = lazy(() => import('./pages/SystemHealth'));
 const Notifications = lazy(() => import('./pages/Notifications'));
-const Messages = lazy(() => import('./pages/Messages'));
 const AcademicsHub = lazy(() => import('./pages/AcademicsHub'));
 const EnrollmentClassesHub = lazy(() => import('./pages/EnrollmentClassesHub'));
 const GradingSuite = lazy(() => import('./pages/GradingSuite'));
 const PeopleDirectory = lazy(() => import('./pages/PeopleDirectory'));
 const SystemAdminHub = lazy(() => import('./pages/SystemAdminHub'));
 const CommunicationCenter = lazy(() => import('./pages/CommunicationCenter'));
-const ScheduleManagement = lazy(() => import('./pages/ScheduleManagement'));
-const MySchedule = lazy(() => import('./pages/MySchedule'));
 const ParentDashboard = lazy(() => import('./pages/ParentDashboard'));
-const ParentManagement = lazy(() => import('./pages/ParentManagement'));
 
 // Fallback while lazy pages load
 const PageLoader = () => (
@@ -212,40 +189,40 @@ function App() {
                 <Route path="people-directory" element={<PeopleDirectory />} />
                 <Route path="system-admin" element={<SystemAdminHub />} />
                 <Route path="communication-center" element={<CommunicationCenter />} />
-                <Route path="announcements" element={<Announcements />} />
-                <Route path="grades" element={<Navigate to="/grade-management" replace />} />
+                <Route path="announcements" element={<Navigate to="/communication-center?tab=bulletins" replace />} />
+                <Route path="grades" element={<Navigate to="/grading-suite?tab=grade-management" replace />} />
                 <Route path="attendance" element={<Attendance />} />
-                <Route path="materials" element={<Materials />} />
-                <Route path="messages" element={<Messages />} />
-                <Route path="subjects" element={<Subjects />} />
-                <Route path="teachers" element={<Teachers />} />
+                <Route path="materials" element={<Navigate to="/academics-hub?tab=materials" replace />} />
+                <Route path="messages" element={<Navigate to="/communication-center?tab=inbox" replace />} />
+                <Route path="subjects" element={<Navigate to="/academics-hub?tab=subjects" replace />} />
+                <Route path="teachers" element={<Navigate to="/people-directory?tab=teachers" replace />} />
                 <Route path="profile" element={<Profile />} />
 
                 <Route path="class-members" element={<ClassMembers />} />
                 <Route path="portal-calendar" element={<Calendar mode="portal" />} />
                 <Route path="password-reset" element={<PasswordReset />} />
-                <Route path="class-management" element={<ClassManagement />} />
-                <Route path="my-classes" element={<MyClasses />} />
-                <Route path="subject-assignment" element={<SubjectAssignment />} />
-                <Route path="student-enrollment" element={<StudentEnrollment />} />
-                <Route path="student-management" element={<StudentManagement />} />
+                <Route path="class-management" element={<Navigate to="/enrollment-classes?tab=classrooms" replace />} />
+                <Route path="my-classes" element={<Navigate to="/academics-hub?tab=classes" replace />} />
+                <Route path="subject-assignment" element={<Navigate to="/academics-hub?tab=assignments" replace />} />
+                <Route path="student-enrollment" element={<Navigate to="/enrollment-classes?tab=student-enrollment" replace />} />
+                <Route path="student-management" element={<Navigate to="/people-directory?tab=students" replace />} />
 
-                <Route path="audit-logs" element={<AuditLogs />} />
-                <Route path="backups" element={<Backups />} />
-                <Route path="website-content" element={<WebsiteContentManagement />} />
-                <Route path="enrollment-management" element={<EnrollmentManagement />} />
+                <Route path="audit-logs" element={<Navigate to="/system-admin?tab=audit-logs" replace />} />
+                <Route path="backups" element={<Navigate to="/system-admin?tab=backups" replace />} />
+                <Route path="website-content" element={<Navigate to="/system-admin?tab=website-editor" replace />} />
+                <Route path="enrollment-management" element={<Navigate to="/enrollment-classes?tab=applications" replace />} />
                 <Route path="settings" element={<Settings />} />
-                <Route path="grade-input" element={<GradeInput />} />
-                <Route path="grade-management" element={<GradeManagement />} />
-                <Route path="student-grades" element={<StudentGradeView />} />
-                <Route path="moderation" element={<Moderation />} />
-                <Route path="analytics" element={<Analytics />} />
-                <Route path="system-health" element={<SystemHealth />} />
+                <Route path="grade-input" element={<Navigate to="/grading-suite?tab=grade-input" replace />} />
+                <Route path="grade-management" element={<Navigate to="/grading-suite?tab=grade-management" replace />} />
+                <Route path="student-grades" element={<Navigate to="/grading-suite?tab=my-grades" replace />} />
+                <Route path="moderation" element={<Navigate to="/system-admin?tab=moderation" replace />} />
+                <Route path="analytics" element={<Navigate to="/grading-suite?tab=grade-analytics" replace />} />
+                <Route path="system-health" element={<Navigate to="/system-admin?tab=system-health" replace />} />
                 <Route path="notifications" element={<Notifications />} />
-                <Route path="schedule-management" element={<ScheduleManagement />} />
-                <Route path="schedule" element={<MySchedule />} />
+                <Route path="schedule-management" element={<Navigate to="/academics-hub?tab=schedules" replace />} />
+                <Route path="schedule" element={<Navigate to="/academics-hub?tab=schedule" replace />} />
                 <Route path="parent-dashboard" element={<ParentDashboard />} />
-                <Route path="parent-management" element={<ParentManagement />} />
+                <Route path="parent-management" element={<Navigate to="/people-directory?tab=parents" replace />} />
               </Route>
             </Routes>
             </ErrorBoundary>

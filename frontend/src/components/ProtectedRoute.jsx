@@ -11,6 +11,12 @@ const ROLE_HOME = {
 const ALL_ROLES = ['admin', 'teacher', 'student', 'parent'];
 
 const ROUTE_ACCESS = {
+  'academics-hub': ['admin', 'teacher', 'student'],
+  'enrollment-classes': ['admin'],
+  'grading-suite': ['admin', 'teacher', 'student'],
+  'people-directory': ['admin', 'teacher'],
+  'system-admin': ['admin'],
+  'communication-center': ALL_ROLES,
   dashboard: ['admin', 'teacher', 'student'],
   announcements: ALL_ROLES,
   attendance: ['admin', 'teacher'],
@@ -95,7 +101,9 @@ const ProtectedRoute = ({ children }) => {
 
   const routeKey = getRouteKey(location.pathname);
   const allowedRoles = ROUTE_ACCESS[routeKey];
-  const isTeacherAdvisoryRoute = routeKey === 'student-management' && user.role === 'teacher';
+  const isTeacherAdvisoryRoute =
+    user.role === 'teacher' &&
+    (routeKey === 'student-management' || routeKey === 'people-directory');
 
   if (
     allowedRoles &&
