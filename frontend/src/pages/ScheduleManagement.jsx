@@ -294,6 +294,22 @@ export default function ScheduleManagement() {
     catch { toast.error('Failed to delete'); }
   };
 
+  const clearAllSchedules = async () => {
+    const section = classrooms.find(c => String(c.id) === filterClassroom);
+    const sectionName = section?.name || 'this section';
+    const count = filtered.length;
+    const r = await fireStackedAlert({ title:`Clear all classes in ${sectionName}?`, text:`This will remove ${count} schedule assignment${count === 1 ? '' : 's'}. This cannot be undone.`, icon:'warning', showCancelButton:true, confirmButtonColor:'#ef4444', confirmButtonText:'Clear All', customClass:{popup:'rounded-2xl'} });
+    if (!r.isConfirmed) return;
+    setSaving(true);
+    try {
+      const ids = filtered.map(s => s.id);
+      await Promise.all(ids.map(id => api.delete(`/schedules/${id}/`)));
+      toast.success(`Cleared ${ids.length} assignment${ids.length === 1 ? '' : 's'}`);
+      fetchAll();
+    } catch { toast.error('Failed to clear schedules'); }
+    finally { setSaving(false); }
+  };
+
   const applyStandardBell = async (incSat = false) => {
     const days = incSat ? DAYS : WEEKDAYS;
     setSavingSlot(true);
@@ -703,6 +719,13 @@ export default function ScheduleManagement() {
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" /></svg>
                 Add Class
               </button>
+              {filtered.length > 0 && (
+                <button type="button" onClick={clearAllSchedules} disabled={saving}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-rose-200 bg-rose-50 text-rose-700 text-xs font-bold hover:bg-rose-100 hover:border-rose-300 disabled:opacity-50 transition-colors">
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                  Clear All
+                </button>
+              )}
             </div>
           </div>
 
