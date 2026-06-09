@@ -1,18 +1,19 @@
+import { memo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import { useOnboarding } from './OnboardingContext';
 
-const CheckIcon = ({ checked }) => (
+const CheckIcon = memo(({ checked }) => (
   <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border ${checked ? 'border-emerald-200 bg-emerald-500 text-white' : 'border-slate-200 bg-white text-slate-300'}`}>
     <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
     </svg>
   </span>
-);
+));
+CheckIcon.displayName = 'CheckIcon';
 
 const OnboardingChecklist = ({ compact = false }) => {
-  const navigate = useNavigate();
   const { checklistPercent, config, markChecklistItem, state } = useOnboarding();
+  const navigate = useNavigate();
 
   return (
     <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
@@ -28,11 +29,9 @@ const OnboardingChecklist = ({ compact = false }) => {
           </div>
         </div>
         <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-100">
-          <motion.div
-            className="h-full rounded-full bg-gradient-to-r from-violet-600 to-emerald-500"
-            initial={false}
-            animate={{ width: `${checklistPercent}%` }}
-            transition={{ duration: 0.35, ease: 'easeOut' }}
+          <div
+            className="h-full rounded-full bg-gradient-to-r from-violet-600 to-emerald-500 transition-[width] duration-300 ease-out"
+            style={{ width: `${checklistPercent}%` }}
           />
         </div>
       </div>
@@ -68,16 +67,12 @@ const OnboardingChecklist = ({ compact = false }) => {
           );
         })}
         {checklistPercent === 100 && (
-          <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="m-2 rounded-2xl border border-emerald-100 bg-emerald-50 p-4"
-          >
+          <div className="m-2 rounded-2xl border border-emerald-100 bg-emerald-50 p-4">
             <p className="text-xs font-black text-emerald-700">Onboarding complete</p>
             <p className="mt-1 text-[11px] font-medium leading-5 text-emerald-700/80">
               You can replay the tour any time from the Need help button.
             </p>
-          </motion.div>
+          </div>
         )}
       </div>
     </div>

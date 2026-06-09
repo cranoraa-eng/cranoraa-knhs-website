@@ -162,7 +162,7 @@ const HelpCenter = () => {
                     </button>
                   </div>
                   <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-100">
-                    <div className="h-full rounded-full bg-gradient-to-r from-violet-600 to-emerald-500" style={{ width: `${checklistPercent}%` }} />
+                    <div className="h-full rounded-full bg-gradient-to-r from-violet-600 to-emerald-500 transition-[width] duration-300 ease-out" style={{ width: `${checklistPercent}%` }} />
                   </div>
                 </div>
 

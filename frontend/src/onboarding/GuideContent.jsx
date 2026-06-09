@@ -1,3 +1,5 @@
+import { memo, useMemo } from 'react';
+
 /**
  * Renders tutorial / help copy with visual indicators.
  */
@@ -36,4 +38,4 @@ const GuideContent = ({ body, bullets, note, size = 'sm', className = '' }) => {
   );
 };
 
-export default GuideContent;
+export default memo(GuideContent);

@@ -50,11 +50,13 @@ export const OnboardingProvider = ({ children }) => {
 
   const role = user?.role || 'student';
   const config = useMemo(() => getOnboardingConfig(role), [role]);
-  const activeTour = activeTourKey ? config.tours?.[activeTourKey] : null;
+  const activeTour = useMemo(() => activeTourKey ? config.tours?.[activeTourKey] : null, [activeTourKey, config.tours]);
 
-  const checklistTotal = config.checklist.length;
-  const checklistCompleted = config.checklist.filter(item => state.checklist_progress?.[item.id]).length;
-  const checklistPercent = checklistTotal > 0 ? Math.round((checklistCompleted / checklistTotal) * 100) : 0;
+  const checklistPercent = useMemo(() => {
+    const total = config.checklist.length;
+    const completed = config.checklist.filter(item => state.checklist_progress?.[item.id]).length;
+    return total > 0 ? Math.round((completed / total) * 100) : 0;
+  }, [config.checklist, state.checklist_progress]);
 
   useEffect(() => {
     userRef.current = user;
@@ -205,9 +207,7 @@ export const OnboardingProvider = ({ children }) => {
     activeStepIndex,
     activeTour,
     activeTourKey,
-    checklistCompleted,
     checklistPercent,
-    checklistTotal,
     config,
     dismissTip,
     endTour,
@@ -227,9 +227,7 @@ export const OnboardingProvider = ({ children }) => {
     activeStepIndex,
     activeTour,
     activeTourKey,
-    checklistCompleted,
     checklistPercent,
-    checklistTotal,
     config,
     dismissTip,
     endTour,

@@ -1,8 +1,14 @@
-import { useEffect, useRef } from 'react';
+import { memo, useEffect, useRef } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import { useOnboarding } from './OnboardingContext';
 import OnboardingChecklist from './OnboardingChecklist';
+
+const FEATURES = [
+  { label: 'Guided tour', body: 'Step-by-step walkthrough of each menu item.' },
+  { label: 'Smart tips', body: 'Page-specific hints that appear when useful.' },
+  { label: 'Help center', body: 'Search guides, replay tours, reset onboarding.' },
+];
 
 const OnboardingWelcome = () => {
   const { user } = useAuth();
@@ -77,20 +83,7 @@ const OnboardingWelcome = () => {
                 </div>
 
                 <div className="mt-auto grid gap-3 pt-10 sm:grid-cols-3">
-                  {[
-                    {
-                      label: 'Guided tour',
-                      body: 'Step-by-step walkthrough of each menu item.',
-                    },
-                    {
-                      label: 'Smart tips',
-                      body: 'Page-specific hints that appear when useful.',
-                    },
-                    {
-                      label: 'Help center',
-                      body: 'Search guides, replay tours, reset onboarding.',
-                    },
-                  ].map((item) => (
+                  {FEATURES.map((item) => (
                     <div key={item.label} className="rounded-2xl border border-white/10 bg-white/[0.08] p-4">
                       <p className="text-xs font-black text-white">{item.label}</p>
                       <p className="mt-2 text-[11px] font-medium leading-relaxed text-slate-300">{item.body}</p>
