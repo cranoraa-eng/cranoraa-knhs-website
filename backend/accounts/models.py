@@ -1336,7 +1336,7 @@ class Room(models.Model):
 
 
 class TimeSlot(models.Model):
-    """Time slot definition scoped to a classroom section (e.g. 7:00 AM – 8:00 AM).
+    """Time slot definition scoped to a classroom section (e.g. 7:30 AM – 8:30 AM Period 1).
     
     Each section can have its own bell schedule. The classroom field is nullable
     for backward compatibility with universally-created slots.

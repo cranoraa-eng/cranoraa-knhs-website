@@ -297,7 +297,8 @@ export default function ScheduleManagement() {
   const applyStandardBell = async (incSat = false) => {
     const days = incSat ? DAYS : WEEKDAYS;
     setSavingSlot(true);
-    let c = 0; const n = [];
+    let created = 0; let deleted = 0; const n = [];
+    const standardKeys = new Set(DEFAULT_PERIODS.map(p => `${normalizeTime(p.start_time)}-${normalizeTime(p.end_time)}`));
     try {
       for (const p of DEFAULT_PERIODS) {
         for (const d of days) {
@@ -305,11 +306,30 @@ export default function ScheduleManagement() {
           const payload = { day: d, ...p };
           if (filterClassroom) payload.classroom = filterClassroom;
           const r = await api.post('/time-slots/', payload);
-          n.push(r.data); c++;
+          n.push(r.data); created++;
         }
       }
-      if (c) { setTimeSlots(prev => [...prev, ...n]); toast.success(`Created ${c} bell periods`); }
-      else toast.success('Standard schedule already set up');
+      for (const slot of timeSlots) {
+        if (!days.includes(slot.day)) continue;
+        if (filterClassroom && String(slot.classroom) !== String(filterClassroom)) continue;
+        const key = `${normalizeTime(slot.start_time)}-${normalizeTime(slot.end_time)}`;
+        if (!standardKeys.has(key)) {
+          await api.delete(`/time-slots/${slot.id}/`);
+          deleted++;
+        }
+      }
+      if (created || deleted) {
+        setTimeSlots(prev => [...prev.filter(s => {
+          if (!days.includes(s.day)) return true;
+          if (filterClassroom && String(s.classroom) !== String(filterClassroom)) return true;
+          const key = `${normalizeTime(s.start_time)}-${normalizeTime(s.end_time)}`;
+          return standardKeys.has(key);
+        }), ...n]);
+        const parts = [];
+        if (created) parts.push(`Created ${created}`);
+        if (deleted) parts.push(`Removed ${deleted} non-standard`);
+        toast.success(parts.join(' · '));
+      } else toast.success('Standard schedule already set up');
     } catch { toast.error('Failed to apply bell schedule'); }
     finally { setSavingSlot(false); }
   };
