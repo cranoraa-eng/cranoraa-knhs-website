@@ -316,6 +316,30 @@ class AnnouncementSerializer(serializers.ModelSerializer):
         return obj.read_by.filter(id=request.user.id).exists()
 
 
+class RoomSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Room
+        fields = ['id', 'name', 'building', 'capacity', 'room_type', 'is_active', 'created_at']
+
+
+class TimeSlotSerializer(serializers.ModelSerializer):
+    day_display = serializers.CharField(source='get_day_display', read_only=True)
+    start_time_display = serializers.SerializerMethodField()
+    end_time_display = serializers.SerializerMethodField()
+    classroom_name = serializers.CharField(source='classroom.name', read_only=True)
+
+    class Meta:
+        model = TimeSlot
+        fields = ['id', 'classroom', 'classroom_name', 'day', 'day_display', 'start_time', 'end_time',
+                  'start_time_display', 'end_time_display', 'label']
+
+    def get_start_time_display(self, obj):
+        return obj.start_time.strftime('%I:%M %p')
+
+    def get_end_time_display(self, obj):
+        return obj.end_time.strftime('%I:%M %p')
+
+
 class AttendanceSerializer(serializers.ModelSerializer):
     student_name = serializers.SerializerMethodField()
     student_email = serializers.CharField(source='student.email', read_only=True)
@@ -824,30 +848,6 @@ class FriendshipSerializer(serializers.ModelSerializer):
 
 
 # ─── Schedule / Timetable Serializers ────────────────────────────────────────
-
-class RoomSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Room
-        fields = ['id', 'name', 'building', 'capacity', 'room_type', 'is_active', 'created_at']
-
-
-class TimeSlotSerializer(serializers.ModelSerializer):
-    day_display = serializers.CharField(source='get_day_display', read_only=True)
-    start_time_display = serializers.SerializerMethodField()
-    end_time_display = serializers.SerializerMethodField()
-    classroom_name = serializers.CharField(source='classroom.name', read_only=True)
-
-    class Meta:
-        model = TimeSlot
-        fields = ['id', 'classroom', 'classroom_name', 'day', 'day_display', 'start_time', 'end_time',
-                  'start_time_display', 'end_time_display', 'label']
-
-    def get_start_time_display(self, obj):
-        return obj.start_time.strftime('%I:%M %p')
-
-    def get_end_time_display(self, obj):
-        return obj.end_time.strftime('%I:%M %p')
-
 
 class ScheduleSerializer(serializers.ModelSerializer):
     classroom_name = serializers.CharField(source='classroom.name', read_only=True)
