@@ -231,13 +231,51 @@ const Layout = () => {
   const hubTabs = (() => {
     const path = location.pathname;
     const tab = new URLSearchParams(location.search).get('tab');
-    if (path === '/communication-center') return { tabs: [{ id: 'bulletins', label: 'Bulletins' }, { id: 'inbox', label: 'Inbox' }], isActive: (id) => tab === id || (!tab && id === 'bulletins') };
-    if (path === '/academics-hub') return { tabs: [{ id: 'subjects', label: 'Subjects' }, { id: 'schedules', label: 'Schedules' }, { id: 'materials', label: 'Materials' }, { id: 'classes', label: 'My Classes' }, { id: 'schedule', label: 'My Schedule' }], isActive: (id) => tab === id || (!tab && id === 'subjects') };
-    if (path === '/grading-suite') return { tabs: [{ id: 'grade-input', label: 'Grade Input' }, { id: 'grade-management', label: 'Grade Management' }, { id: 'grade-analytics', label: 'Grade Analytics' }, { id: 'my-grades', label: 'My Grades' }], isActive: (id) => tab === id || (!tab && id === 'grade-input') };
-    if (path === '/people-directory') return { tabs: [{ id: 'teachers', label: 'Teachers' }, { id: 'students', label: 'Students' }, { id: 'parents', label: 'Parents' }], isActive: (id) => tab === id || (!tab && id === 'teachers') };
-    if (path === '/system-admin') return { tabs: [{ id: 'audit-logs', label: 'Audit Logs' }, { id: 'backups', label: 'Backups' }, { id: 'website-editor', label: 'Website Editor' }, { id: 'moderation', label: 'Moderation' }, { id: 'system-health', label: 'System Health' }], isActive: (id) => tab === id || (!tab && id === 'audit-logs') };
-    if (path === '/enrollment-classes') return { tabs: [{ id: 'student-enrollment', label: 'Student Enrollment' }, { id: 'applications', label: 'Applications' }, { id: 'classrooms', label: 'Class Management' }], isActive: (id) => tab === id || (!tab && id === 'student-enrollment') };
-    return null;
+    const allTabs = {
+      '/communication-center': [
+        { id: 'bulletins', label: 'Bulletins', roles: ['admin', 'teacher', 'student', 'parent'] },
+        { id: 'inbox', label: 'Inbox', roles: ['admin', 'teacher', 'student'] }
+      ],
+      '/academics-hub': [
+        { id: 'subjects', label: 'Subjects', roles: ['admin'] },
+        { id: 'schedules', label: 'Schedules', roles: ['admin'] },
+        { id: 'materials', label: 'Materials', roles: ['admin', 'teacher', 'student'] },
+        { id: 'classes', label: 'My Classes', roles: ['teacher'] },
+        { id: 'schedule', label: 'My Schedule', roles: ['teacher', 'student'] }
+      ],
+      '/grading-suite': [
+        { id: 'grade-input', label: 'Grade Input', roles: ['admin', 'teacher'] },
+        { id: 'grade-management', label: 'Grade Management', roles: ['admin', 'teacher'] },
+        { id: 'grade-analytics', label: 'Grade Analytics', roles: ['admin', 'teacher'] },
+        { id: 'my-grades', label: 'My Grades', roles: ['student'] }
+      ],
+      '/people-directory': [
+        { id: 'teachers', label: 'Teachers', roles: ['admin'] },
+        { id: 'students', label: 'Students', roles: ['admin', 'teacher'] },
+        { id: 'parents', label: 'Parents', roles: ['admin'] }
+      ],
+      '/system-admin': [
+        { id: 'audit-logs', label: 'Audit Logs', roles: ['admin'] },
+        { id: 'backups', label: 'Backups', roles: ['admin'] },
+        { id: 'website-editor', label: 'Website Editor', roles: ['admin'] },
+        { id: 'moderation', label: 'Moderation', roles: ['admin'] },
+        { id: 'system-health', label: 'System Health', roles: ['admin'] }
+      ],
+      '/enrollment-classes': [
+        { id: 'student-enrollment', label: 'Student Enrollment', roles: ['admin'] },
+        { id: 'applications', label: 'Applications', roles: ['admin'] },
+        { id: 'classrooms', label: 'Class Management', roles: ['admin'] }
+      ]
+    };
+    const tabs = allTabs[path];
+    if (!tabs) return null;
+    const visibleTabs = tabs.filter(t => t.roles.includes(user?.role));
+    if (!visibleTabs.length) return null;
+    const firstTab = visibleTabs[0];
+    return {
+      tabs: visibleTabs,
+      isActive: (id) => tab === id || (!tab && id === firstTab.id)
+    };
   })();
 
   const isCommunicationTabActive = (tab) => hubTabs?.isActive?.(tab) || false;
