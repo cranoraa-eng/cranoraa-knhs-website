@@ -1,0 +1,1287 @@
+import { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
+import api from '../utils/api';
+import { getUser } from '../utils/auth';
+import toast from 'react-hot-toast';
+import Swal from 'sweetalert2';
+import { jsPDF } from 'jspdf';
+import * as XLSX from 'xlsx';
+import { useScrollLock } from '../hooks/useScrollLock';
+import { LoadingSpinner } from '../components/ui';
+
+const StudentManagement = () => {
+  const user = getUser();
+  const navigate = useNavigate();
+  const [students, setStudents] = useState([]);
+  const [classrooms, setClassrooms] = useState([]);
+  const [advisoryClass, setAdvisoryClass] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [gradeFilter, setGradeFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
+  const [selectedStudent, setSelectedStudent] = useState(null);
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [newStudent, setNewStudent] = useState({
+    username: '',
+    email: '',
+    first_name: '',
+    last_name: '',
+    grade_level: '',
+    password: '',
+    sex: ''
+  });
+
+  useScrollLock(showProfileModal || showAddModal || showImportModal);
+
+  const GRADE_ORDER = ['Grade 7', 'Grade 8', 'Grade 9', 'Grade 10', 'Grade 11', 'Grade 12'];
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const [studentsRes, classesRes] = await Promise.all([
+        api.get('/users/?role=student'),
+        api.get('/classrooms/'),
+      ]);
+      
+      setStudents(Array.isArray(studentsRes.data) ? studentsRes.data : []);
+      setClassrooms(Array.isArray(classesRes.data) ? classesRes.data : []);
+      
+      if (user?.role === 'teacher' && Array.isArray(classesRes.data)) {
+        const advisory = classesRes.data.find(c => String(c.teacher) === String(user.id));
+        if (advisory) setAdvisoryClass(advisory);
+      }
+      
+      setLoading(false);
+    } catch (err) {
+      console.error('Failed to fetch data:', err);
+      toast.error('Failed to load students');
+      setStudents([]);
+      setLoading(false);
+    }
+  };
+
+  const handleAddStudent = async (e) => {
+    e.preventDefault();
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+    try {
+      const response = await api.post('/admin/create-user/', {
+        ...newStudent,
+        role: 'student',
+        profile: {
+          lrn: newStudent.username,
+          grade_level: newStudent.grade_level,
+          sex: newStudent.sex
+        }
+      });
+      
+      setShowAddModal(false);
+      setNewStudent({ username: '', first_name: '', last_name: '', email: '', password: '', grade_level: '', sex: '' });
+      fetchData();
+
+      // Show success with password
+      Swal.fire({
+        icon: 'success',
+        title: 'Account Created',
+        html: `
+          <div class="text-left space-y-2 text-sm">
+            <p><strong>Student ID:</strong> ${response.data.username}</p>
+            <p><strong>Temporary Password:</strong> <span class="bg-yellow-100 px-2 py-1 rounded font-mono text-lg border border-yellow-300 select-all">${response.data.temporary_password}</span></p>
+            <p class="text-xs text-slate-500 mt-4 italic">Please provide this password to the student. They will be required to change it on their first login.</p>
+          </div>
+        `,
+        confirmButtonColor: '#9333ea'
+      });
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed to create student');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleImportExcel = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const loadingToast = toast.loading('Processing file...');
+    try {
+      const reader = new FileReader();
+      reader.onload = async (evt) => {
+        try {
+          const bstr = evt.target.result;
+          const wb = XLSX.read(bstr, { type: 'binary' });
+          const wsname = wb.SheetNames[0];
+          const ws = wb.Sheets[wsname];
+          
+          // Convert sheet to CSV format for the backend
+          const csvData = XLSX.utils.sheet_to_csv(ws);
+          
+          const blob = new Blob([csvData], { type: 'text/csv' });
+          const formData = new FormData();
+          formData.append('file', blob, 'import.csv');
+
+          toast.loading('Importing students...', { id: loadingToast });
+          const response = await api.post('/users/import_csv/', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+          });
+          toast.dismiss(loadingToast);
+          
+          const { created_count, created_users, errors } = response.data;
+
+          if (created_count > 0) {
+            Swal.fire({
+              icon: 'success',
+              title: 'Import Successful',
+              width: '600px',
+              html: `
+                <div class="text-left">
+                  <p class="mb-4 text-sm font-bold text-emerald-600">Successfully created ${created_count} students!</p>
+                  <div class="max-h-60 overflow-y-auto border border-slate-200 rounded-lg">
+                    <table class="w-full text-[10px] text-left">
+                      <thead class="bg-slate-50 border-b border-slate-200">
+                        <tr>
+                          <th class="px-3 py-2">Name</th>
+                          <th class="px-3 py-2">ID</th>
+                          <th class="px-3 py-2">Temp Password</th>
+                        </tr>
+                      </thead>
+                      <tbody class="divide-y divide-slate-100">
+                        ${created_users.map(u => `
+                          <tr>
+                            <td class="px-3 py-2 font-bold">${u.name}</td>
+                            <td class="px-3 py-2">${u.username}</td>
+                            <td class="px-3 py-2 font-mono text-violet-600">${u.password}</td>
+                          </tr>
+                        `).join('')}
+                      </tbody>
+                    </table>
+                  </div>
+                  <p class="mt-4 text-[10px] text-slate-500 italic">Please copy these credentials and provide them to the students.</p>
+                  ${errors.length > 0 ? `
+                    <div class="mt-4 p-3 bg-red-50 rounded-lg">
+                      <p class="text-[10px] font-bold text-red-600 mb-1">Errors (${errors.length}):</p>
+                      <ul class="text-[9px] text-red-500 list-disc list-inside">
+                        ${errors.map(e => `<li>${e}</li>`).join('')}
+                      </ul>
+                    </div>
+                  ` : ''}
+                </div>
+              `,
+              confirmButtonColor: '#9333ea'
+            });
+          } else if (errors.length > 0) {
+            Swal.fire({
+              icon: 'error',
+              title: 'Import Failed',
+              html: `
+                <div class="text-left text-sm text-red-500">
+                  <ul class="list-disc list-inside">${errors.map(e => `<li>${e}</li>`).join('')}</ul>
+                </div>
+              `
+            });
+          }
+          
+          setShowImportModal(false);
+          fetchData();
+        } catch (err) {
+          toast.dismiss(loadingToast);
+          toast.error('Failed to parse Excel file');
+        }
+      };
+      reader.readAsBinaryString(file);
+    } catch (err) {
+      toast.dismiss(loadingToast);
+      toast.error('Failed to read file');
+    }
+  };
+
+  const handleDelete = async (id) => {
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: "You won't be able to revert this! All associated data (grades, attendance) will be deleted.",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Yes, delete it!'
+    });
+
+    if (result.isConfirmed) {
+      try {
+        await api.delete(`/users/${id}/`);
+        fetchData();
+        toast.success('Student account deleted');
+      } catch (err) {
+        console.error('Failed to delete student:', err);
+        toast.error('Failed to delete student');
+      }
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedIds.length === 0) return;
+
+    const result = await Swal.fire({
+      title: `Delete ${selectedIds.length} students?`,
+      text: "This action cannot be undone. All associated data will be permanently removed.",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: `Yes, delete ${selectedIds.length} accounts`
+    });
+
+    if (result.isConfirmed) {
+      try {
+        await api.post('/users/bulk-delete/', { user_ids: selectedIds });
+        setSelectedIds([]);
+        fetchData();
+        toast.success(`Successfully deleted ${selectedIds.length} students`);
+      } catch (err) {
+        toast.error(err.response?.data?.error || 'Failed to perform bulk delete');
+      }
+    }
+  };
+
+  const handleSelectAll = (ids, isChecked) => {
+    if (isChecked) {
+      setSelectedIds(prev => [...new Set([...prev, ...ids])]);
+    } else {
+      setSelectedIds(prev => prev.filter(id => !ids.includes(id)));
+    }
+  };
+
+  const handleResetPassword = async (studentId) => {
+    const result = await Swal.fire({
+      title: 'Reset Password',
+      text: 'Enter a new temporary password or leave blank for auto-generation:',
+      input: 'text',
+      inputPlaceholder: 'New password (optional)',
+      showCancelButton: true,
+      confirmButtonText: 'Reset',
+      confirmButtonColor: '#f59e0b',
+    });
+
+    if (result.isConfirmed) {
+      try {
+        const response = await api.post(`/users/${studentId}/reset_password/`, { password: result.value });
+        Swal.fire({
+          icon: 'success',
+          title: 'Password Reset',
+          html: `New temporary password: <strong>${response.data.temporary_password}</strong><br/>Please provide this to the student. They will be forced to change it on login.`,
+        });
+      } catch (err) {
+        toast.error('Failed to reset password');
+      }
+    }
+  };
+
+  const handleAssignSection = async (studentId, currentClassroomName, gradeLevel) => {
+    const hasSection = currentClassroomName && currentClassroomName !== 'No Section';
+    const normalizedGrade = gradeLevel ? (/^\d+$/.test(gradeLevel) ? `Grade ${gradeLevel}` : gradeLevel) : '';
+    const filtered = (hasSection && normalizedGrade)
+      ? classrooms.filter(c => String(c.grade_level) === String(normalizedGrade))
+      : classrooms;
+
+    const { value } = await Swal.fire({
+      title: 'Assign Section',
+      html: `
+        <div class="text-left">
+          <p class="text-xs text-slate-500 mb-3">Current: <strong>${currentClassroomName || 'No Section'}</strong>${gradeLevel ? ` | Grade: <strong>${gradeLevel}</strong>` : ''}</p>
+          <select id="swal-select" class="swal2-select" style="width:100%;padding:8px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px;">
+            <option value="">-- Select Section --</option>
+            ${filtered.map(c => {
+              const count = c.student_count || 0;
+              const cap = c.capacity || 40;
+              const full = count >= cap;
+              return `<option value="${c.id}" ${full ? 'disabled' : ''}>${c.name} (${count}/${cap})${full ? ' - FULL' : ''}</option>`;
+            }).join('')}
+          </select>
+          ${filtered.length === 0 ? '<p class="text-xs text-amber-600 mt-2">No sections available for this grade level.</p>' : ''}
+        </div>
+      `,
+      showCancelButton: true,
+      confirmButtonText: 'Assign',
+      confirmButtonColor: '#7C3AED',
+      preConfirm: () => document.getElementById('swal-select')?.value || ''
+    });
+
+    if (value) {
+      try {
+        await api.post('/enrollments/assign-classroom/', {
+          student: parseInt(studentId),
+          classroom: parseInt(value),
+        });
+
+        const classroom = classrooms.find(c => String(c.id) === String(value));
+        toast.success(`Assigned to ${classroom?.name || 'section'}`);
+        fetchData();
+      } catch (err) {
+        toast.error(err.response?.data?.error || err.response?.data?.detail?.[0] || 'Failed to assign section');
+      }
+    }
+  };
+
+  const handleStartChat = async (studentId) => {
+    try {
+      await api.post('/chat/rooms/get_or_create_private_chat/', { user_id: studentId });
+      navigate('/messages');
+    } catch (err) {
+      const msg = err.response?.data?.error || 'Failed to start chat';
+      toast.error(msg);
+    }
+  };
+
+  const handleToggleStatus = async (student, newStatus) => {
+    try {
+      const response = await api.post(`/users/${student.id}/update_status/`, { status: newStatus });
+      toast.success(response.data.status);
+      fetchData();
+    } catch (err) {
+      toast.error('Failed to update status');
+    }
+  };
+
+  const handleExportExcel = () => {
+    const data = students.map(s => {
+      const row = {
+        'First Name': s.first_name,
+        'Last Name': s.last_name,
+        'Student ID': s.profile?.registration_number || s.username,
+        'Sex': s.profile?.sex || 'N/A',
+        'Classroom': s.profile?.classroom_name || 'N/A',
+        'Email': s.email || '',
+        'Temp Password': s.must_change_password ? (s.temp_password_storage || 'Pending') : 'Changed',
+        'Status': s.account_status
+      };
+
+      // Only include Grade Level for admins
+      if (user?.role === 'admin') {
+        return {
+          ...row,
+          'Grade Level': s.profile?.grade_level || 'N/A'
+        };
+      }
+      return row;
+    });
+
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Students");
+    XLSX.writeFile(wb, `students_export_${new Date().toISOString().split('T')[0]}.xlsx`);
+    toast.success('Excel exported successfully');
+  };
+
+  const handleExportPDF = () => {
+    const doc = new jsPDF();
+    const timestamp = new Date().toLocaleString();
+    const dateStr = new Date().toISOString().split('T')[0];
+    
+    // School Header
+    doc.setFillColor(45, 27, 77); // #2D1B4D
+    doc.rect(0, 0, 210, 40, 'F');
+    
+    doc.setTextColor(255);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(22);
+    doc.text('KASIGUYAN NATIONAL HIGH SCHOOL', 105, 15, { align: 'center' });
+    
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.text('OFFICIAL STUDENT DIRECTORY & CLASS LIST', 105, 22, { align: 'center' });
+    
+    doc.setFontSize(8);
+    doc.setTextColor(200);
+    doc.text(`Generated on: ${timestamp} | Authorized Personnel Only`, 105, 30, { align: 'center' });
+
+    let y = 50;
+
+    // Process organized data for the PDF
+    organizedData.forEach((gradeGroup) => {
+      // Grade Header
+      if (y > 250) { doc.addPage(); y = 20; }
+      
+      doc.setFillColor(243, 244, 246);
+      doc.rect(14, y, 182, 10, 'F');
+      doc.setTextColor(31, 41, 55);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(12);
+      doc.text(gradeGroup.grade.toUpperCase(), 16, y + 7);
+      y += 15;
+
+      gradeGroup.classrooms.forEach((cls) => {
+        // Classroom Header
+        if (y > 250) { doc.addPage(); y = 20; }
+        
+        doc.setTextColor(79, 70, 229);
+        doc.setFontSize(10);
+        doc.text(`SECTION: ${cls.name.toUpperCase()}`, 14, y);
+        doc.setTextColor(107, 114, 128);
+        doc.setFontSize(8);
+        doc.text(`Total: ${cls.totalCount} Students`, 196, y, { align: 'right' });
+        y += 5;
+
+        const headers = ['#', 'STUDENT NAME', 'SEX', 'STUDENT ID / LRN', 'STATUS'];
+        const colWidths = [12, 80, 20, 45, 25];
+        
+        const drawTable = (studentsList, title, color) => {
+          if (studentsList.length === 0) return;
+          
+          if (y > 250) { doc.addPage(); y = 20; }
+          
+          // Gender Sub-header
+          doc.setFillColor(color[0], color[1], color[2], 0.1);
+          doc.rect(14, y, 182, 6, 'F');
+          doc.setTextColor(color[0], color[1], color[2]);
+          doc.setFontSize(8);
+          doc.text(title, 16, y + 4.5);
+          y += 6;
+
+          // Table Header
+          doc.setFillColor(45, 27, 77);
+          doc.rect(14, y, 182, 7, 'F');
+          doc.setTextColor(255);
+          doc.setFont("helvetica", "bold");
+          
+          let x = 14;
+          headers.forEach((h, i) => {
+            doc.text(h, x + 2, y + 5);
+            x += colWidths[i];
+          });
+          y += 7;
+
+          // Rows
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(8);
+          studentsList.forEach((s, idx) => {
+            if (y > 275) {
+              doc.addPage();
+              y = 20;
+              // Redraw header on new page
+              doc.setFillColor(45, 27, 77);
+              doc.rect(14, y, 182, 7, 'F');
+              doc.setTextColor(255);
+              let rx = 14;
+              headers.forEach((h, i) => { doc.text(h, rx + 2, y + 5); rx += colWidths[i]; });
+              y += 7;
+            }
+
+            doc.setTextColor(0);
+            if (idx % 2 === 0) {
+              doc.setFillColor(249, 250, 251);
+              doc.rect(14, y, 182, 7, 'F');
+            }
+
+            const name = `${s.last_name}, ${s.first_name}`.toUpperCase();
+            const lrn = s.profile?.registration_number || s.username || '—';
+            const sex = (s.profile?.sex || 'N/A').toUpperCase();
+            const status = s.account_status.toUpperCase();
+
+            let cx = 14;
+            doc.text(String(idx + 1), cx + 2, y + 5); cx += colWidths[0];
+            doc.text(name.substring(0, 45), cx + 2, y + 5); cx += colWidths[1];
+            doc.text(sex, cx + 2, y + 5); cx += colWidths[2];
+            doc.text(String(lrn), cx + 2, y + 5); cx += colWidths[3];
+            
+            if (status === 'ACTIVE') doc.setTextColor(16, 185, 129);
+            else if (status === 'SUSPENDED') doc.setTextColor(239, 68, 68);
+            else doc.setTextColor(107, 114, 128);
+            
+            doc.text(status, cx + 2, y + 5);
+            
+            y += 7;
+          });
+          y += 5; // Space after gender block
+        };
+
+        drawTable(cls.male, `MALE STUDENTS (${cls.male.length})`, [59, 130, 246]);
+        drawTable(cls.female, `FEMALE STUDENTS (${cls.female.length})`, [236, 72, 153]);
+        
+        y += 10; // Space after classroom
+      });
+    });
+
+    // Footer on all pages
+    const pageCount = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFontSize(7);
+      doc.setTextColor(150);
+      doc.text(`Page ${i} of ${pageCount}`, 105, 290, { align: 'center' });
+      doc.text('KASIGUYAN NATIONAL HIGH SCHOOL - SYSTEM GENERATED REPORT', 20, 290);
+    }
+
+    doc.save(`KNHS_Student_Directory_${dateStr}.pdf`);
+    toast.success('Professional PDF directory generated');
+  };
+
+  const organizedData = useMemo(() => {
+    const normalizeGrade = (g) => {
+      if (!g || g === 'Unassigned') return 'Unassigned';
+      if (/^\d+$/.test(g)) return `Grade ${g}`;
+      return g;
+    };
+
+    const filtered = students.filter(s => {
+      const search = searchQuery.toLowerCase();
+      const fullName = `${s.first_name || ''} ${s.last_name || ''}`.toLowerCase();
+      const lrn = (s.profile?.registration_number || s.username || '').toLowerCase();
+      const email = (s.email || '').toLowerCase();
+      const matchesSearch = !search || email.includes(search) || fullName.includes(search) || lrn.includes(search);
+      const matchesGrade = !gradeFilter || normalizeGrade(s.profile?.grade_level) === gradeFilter;
+      const matchesStatus = !statusFilter || s.account_status === statusFilter;
+      return matchesSearch && matchesGrade && matchesStatus;
+    });
+
+    // Group by Grade -> Classroom
+    const groups = {};
+
+    filtered.forEach(s => {
+      let grade = normalizeGrade(s.profile?.grade_level);
+      let classroom = s.profile?.classroom_name || 'No Classroom';
+      
+      // For teachers, force students into their advisory classroom grouping
+      if (user?.role === 'teacher' && advisoryClass) {
+        if (!grade || grade === 'Unassigned') {
+          const match = advisoryClass.name?.match(/Grade\s+(\d+)/i);
+          grade = match ? `Grade ${match[1]}` : (advisoryClass.grade_level || 'Unassigned');
+        }
+        classroom = advisoryClass.name;
+      }
+      
+      if (!groups[grade]) groups[grade] = {};
+      if (!groups[grade][classroom]) groups[grade][classroom] = [];
+      groups[grade][classroom].push(s);
+    });
+
+    // Sort Grades
+    const sortedGrades = Object.keys(groups).sort((a, b) => {
+      const indexA = GRADE_ORDER.indexOf(a);
+      const indexB = GRADE_ORDER.indexOf(b);
+      if (indexA === -1 && indexB === -1) return a.localeCompare(b);
+      if (indexA === -1) return 1;
+      if (indexB === -1) return -1;
+      return indexA - indexB;
+    });
+
+    return sortedGrades.map(grade => ({
+      grade,
+      classrooms: Object.keys(groups[grade]).sort().map(classroom => {
+        const classStudents = groups[grade][classroom];
+        
+        // Sort all students by Last Name first
+        const sorted = [...classStudents].sort((a, b) => 
+          (a.last_name || '').localeCompare(b.last_name || '')
+        );
+
+        // Split into Male and Female
+        return {
+          name: classroom,
+          male: sorted.filter(s => (s.profile?.sex || '').toLowerCase() === 'male'),
+          female: sorted.filter(s => (s.profile?.sex || '').toLowerCase() === 'female'),
+          totalCount: classStudents.length
+        };
+      })
+    }));
+  }, [students, searchQuery, gradeFilter, statusFilter]);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <LoadingSpinner />
+      </div>
+    );
+  }
+
+  const ProfileField = ({ label, value }) => (
+    <div className="py-1 md:py-2 border-b border-slate-50 last:border-0">
+      <p className="text-[7px] md:text-[9px] font-black text-indigo-400 uppercase tracking-widest mb-0.5">{label}</p>
+      <p className="text-[10px] md:text-sm font-bold text-slate-700 truncate">{value || '—'}</p>
+    </div>
+  );
+
+  const StudentRow = ({ student, idx }) => (
+    <tr key={student.id} className={`group transition-all duration-200 ${selectedIds.includes(student.id) ? 'bg-violet-50/50' : 'hover:bg-slate-50/80'}`}>
+      <td className="px-3 py-1.5 md:px-6 md:py-4">
+        <div className="flex items-center gap-3">
+          <input 
+            type="checkbox" 
+            checked={selectedIds.includes(student.id)}
+            onChange={(e) => {
+              if (e.target.checked) setSelectedIds(prev => [...prev, student.id]);
+              else setSelectedIds(prev => prev.filter(id => id !== student.id));
+            }}
+            className="w-3.5 h-3.5 md:w-4 md:h-4 text-violet-600 border-slate-300 rounded focus:ring-violet-500 cursor-pointer"
+          />
+          <span className="text-[8px] md:text-xs font-black text-slate-400">{idx + 1}</span>
+        </div>
+      </td>
+      <td className="px-3 py-1.5 md:px-6 md:py-4">
+        <div className="flex items-center gap-2 md:gap-3">
+          <div className="w-6 h-6 md:w-10 md:h-10 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-lg md:rounded-xl flex items-center justify-center text-white font-black text-[10px] md:text-sm shadow-sm">
+            {student.first_name?.charAt(0)}{student.last_name?.charAt(0)}
+          </div>
+          <div className="min-w-0">
+             <p className="text-[9px] md:text-sm font-black text-slate-800 truncate uppercase tracking-tight leading-none mb-0.5 md:mb-1">
+               {student.last_name}, {student.first_name}
+             </p>
+            <div className="flex items-center gap-1">
+              <span className={`w-1 h-1 md:w-1.5 md:h-1.5 rounded-full ${student.is_online ? 'bg-green-500 animate-pulse' : 'bg-slate-300'}`}></span>
+              <p className="text-[6px] md:text-[10px] font-bold text-slate-400 uppercase tracking-widest">{student.is_online ? 'Online' : 'Offline'}</p>
+            </div>
+          </div>
+        </div>
+      </td>
+      <td className="hidden md:table-cell px-6 py-4">
+        <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{student.profile?.sex || '—'}</span>
+      </td>
+      <td className="hidden md:table-cell px-6 py-4">
+        <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded-md">{(/^\d+$/.test(student.profile?.grade_level) ? `Grade ${student.profile.grade_level}` : student.profile?.grade_level) || '—'}</span>
+      </td>
+      <td className="hidden md:table-cell px-6 py-4">
+        <span className={`text-[10px] font-bold px-2 py-1 rounded-md ${student.profile?.classroom_name ? 'text-emerald-600 bg-emerald-50' : 'text-amber-600 bg-amber-50'}`}>{student.profile?.classroom_name || 'No Section'}</span>
+      </td>
+      <td className="hidden md:table-cell px-6 py-4">
+        <p className="text-[10px] font-bold text-slate-500 truncate max-w-[150px] lowercase italic">{student.email || '—'}</p>
+      </td>
+      <td className="hidden md:table-cell px-6 py-4">
+         <div className="flex flex-col">
+           <span className="text-[10px] font-mono font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded-md w-fit">
+             {student.profile?.registration_number || student.username}
+           </span>
+           {student.must_change_password && student.temp_password_storage && (
+             <div className="mt-1 flex items-center gap-1 group/pass">
+               <span className="text-[8px] font-black text-amber-500 uppercase tracking-widest">Temp Pass:</span>
+               <span className="text-[10px] font-mono font-bold text-amber-600 bg-amber-50 px-1 rounded border border-amber-100 select-all cursor-help" title="Visible until student changes password">
+                 {student.temp_password_storage}
+               </span>
+             </div>
+           )}
+         </div>
+       </td>
+      <td className="px-3 py-1.5 md:px-6 md:py-4 text-center">
+         <select 
+           value={student.account_status} 
+           onChange={(e) => handleToggleStatus(student, e.target.value)}
+           className={`text-[7px] md:text-[10px] font-black px-1.5 py-0.5 md:px-2 md:py-1 rounded uppercase tracking-widest border-0 focus:ring-2 focus:ring-violet-500 cursor-pointer transition-all ${
+             student.account_status === 'active' ? 'bg-emerald-100 text-emerald-600' : 
+             student.account_status === 'suspended' ? 'bg-rose-100 text-rose-600' : 
+             'bg-slate-100 text-slate-600'
+           }`}
+         >
+           <option value="active">Active</option>
+           <option value="inactive">Inactive</option>
+           <option value="suspended">Suspended</option>
+         </select>
+       </td>
+      <td className="px-3 py-1.5 md:px-6 md:py-4">
+        <div className="flex items-center justify-center gap-1 md:gap-2">
+          <button 
+            onClick={() => { setSelectedStudent(student); setShowProfileModal(true); }}
+            className="p-1 md:p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all"
+            title="View Profile"
+          >
+            <svg className="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+          </button>
+          {(user?.role === 'admin' || user?.role === 'teacher') && (
+            <button 
+              onClick={() => handleAssignSection(student.id, student.profile?.classroom_name, student.profile?.grade_level)}
+              className="p-1 md:p-2 text-violet-600 hover:bg-violet-50 rounded-lg transition-all"
+              title="Set Section"
+            >
+              <svg className="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+            </button>
+          )}
+          <button 
+            onClick={() => handleResetPassword(student.id)}
+            className="p-1 md:p-2 text-amber-600 hover:bg-amber-50 rounded-lg transition-all"
+            title="Reset Password"
+          >
+            <svg className="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" /></svg>
+          </button>
+          {(user?.role === 'admin' || user?.role === 'teacher') && (
+             <button 
+               onClick={() => handleDelete(student.id)}
+               className="p-1 md:p-2 text-rose-600 hover:bg-rose-50 rounded-lg transition-all"
+               title="Delete Account"
+             >
+               <svg className="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+             </button>
+           )}
+        </div>
+      </td>
+    </tr>
+  );
+
+  return (
+    <div className="page-bottom-safe bg-slate-50/50">
+      {/* DepEd Official Header */}
+      <div className="bg-white border-b-4 border-violet-600 px-4 md:px-6 py-3 md:py-4 mb-3 md:mb-6">
+        <div className="flex items-center gap-3">
+          <div className="h-10 w-10 md:h-12 md:w-12 rounded-md bg-violet-600 flex items-center justify-center shrink-0">
+            <svg className="w-6 h-6 md:w-7 md:h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+            </svg>
+          </div>
+          <div>
+            <h1 className="text-lg md:text-2xl font-extrabold text-slate-900 uppercase tracking-tight">
+              {user?.role === 'teacher' ? 'Advisory Class' : 'Student Records'}
+            </h1>
+            <p className="text-xs md:text-sm font-bold text-violet-700 uppercase tracking-wide mt-0.5">
+              {user?.role === 'teacher' ? 'Manage Advisory Students' : 'Student Management System'}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div className="p-1.5 md:p-6 space-y-2 md:space-y-6">
+      {/* Action buttons */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 md:gap-6">
+        <div className="flex-1"></div>
+        <div className="flex flex-wrap items-center justify-center gap-2">
+          <button 
+            onClick={() => setShowAddModal(true)}
+            className="bg-violet-600 text-white px-3 py-1.5 md:px-5 md:py-2.5 rounded-xl md:rounded-2xl border border-violet-700 shadow-lg hover:bg-violet-700 flex items-center gap-2 transition-all active:scale-95"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 4v16m8-8H4" /></svg>
+            <span className="text-[10px] md:text-sm font-bold uppercase tracking-wider">Add Student</span>
+          </button>
+          <button 
+            onClick={() => setShowImportModal(true)}
+            className="bg-indigo-600 text-white px-3 py-1.5 md:px-5 md:py-2.5 rounded-xl md:rounded-2xl border border-indigo-700 shadow-lg hover:bg-indigo-700 flex items-center gap-2 transition-all active:scale-95"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
+            <span className="text-[10px] md:text-sm font-bold uppercase tracking-wider">Import Excel</span>
+          </button>
+
+          <div className="flex items-center gap-1">
+            <button 
+              onClick={() => {
+                const headers = [['Student ID', 'First Name', 'Last Name', 'Grade Level', 'Sex', 'Email']];
+                const sampleData = [
+                  ['128150150092', 'Arc', 'Capisen', 'Grade 12', 'Male', ''],
+                  ['128150150093', 'Arcc', 'Capisenq', 'Grade 12', 'Female', ''],
+                  ['128150150094', 'Arcy', 'Capisenw', 'Grade 12', 'Male', ''],
+                ];
+                
+                const ws = XLSX.utils.aoa_to_sheet([...headers, ...sampleData]);
+                
+                // Apply basic styling to headers
+                const headerRange = XLSX.utils.decode_range(ws['!ref']);
+                for (let C = headerRange.s.c; C <= 5; ++C) {
+                  const address = XLSX.utils.encode_col(C) + '1';
+                  if (!ws[address]) continue;
+                  ws[address].s = {
+                    font: { bold: true, color: { rgb: "FFFFFF" } },
+                    fill: { fgColor: { rgb: "4F46E5" } }, // Indigo 600
+                    alignment: { horizontal: "center" }
+                  };
+                }
+
+                // Set column widths
+                ws['!cols'] = [
+                  { wch: 20 }, // Student ID
+                  { wch: 20 }, // First Name
+                  { wch: 20 }, // Last Name
+                  { wch: 15 }, // Grade Level
+                  { wch: 10 }, // Sex
+                  { wch: 30 }, // Email
+                ];
+
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, "Student Template");
+                XLSX.writeFile(wb, "KNHS_Student_Import_Template.xlsx");
+                toast.success('Professional template downloaded');
+              }}
+              className="bg-emerald-600 text-white px-3 py-1.5 md:px-5 md:py-2.5 rounded-xl md:rounded-2xl border border-emerald-700 shadow-lg hover:bg-emerald-700 flex items-center gap-2 transition-all active:scale-95"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+              <span className="text-[10px] md:text-sm font-bold uppercase tracking-wider">Download Template</span>
+            </button>
+            
+            <div className="relative group/info">
+              <button className="w-6 h-6 md:w-10 md:h-10 flex items-center justify-center rounded-xl md:rounded-2xl bg-white text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all border border-slate-200 shadow-sm active:scale-90">
+                <span className="font-black text-xs md:text-lg">!</span>
+              </button>
+              
+              <div className="absolute top-full right-0 mt-2 w-48 md:w-80 p-3 md:p-6 bg-slate-900/95 backdrop-blur-md text-white rounded-2xl md:rounded-3xl shadow-2xl opacity-0 invisible group-hover/info:opacity-100 group-hover/info:visible transition-all z-[110] border border-white/10 scale-95 group-hover/info:scale-100 origin-top-right">
+                <h4 className="text-[8px] md:text-xs font-black uppercase tracking-[0.2em] text-indigo-400 mb-2 md:mb-4 border-b border-white/10 pb-2">Import Instructions</h4>
+                <ul className="space-y-1.5 md:space-y-3">
+                  <li className="flex gap-1.5 md:gap-3">
+                    <span className="text-indigo-400 font-black text-[9px] md:text-xs mt-0.5">01</span>
+                    <p className="text-[8px] md:text-[11px] font-bold leading-relaxed text-slate-300">Student ID must be exactly <span className="text-white">12 digits (LRN)</span>.</p>
+                  </li>
+                  <li className="flex gap-1.5 md:gap-3">
+                    <span className="text-indigo-400 font-black text-[9px] md:text-xs mt-0.5">02</span>
+                    <p className="text-[8px] md:text-[11px] font-bold leading-relaxed text-slate-300">Email is <span className="text-white">optional</span> - you can leave it blank.</p>
+                  </li>
+                  <li className="flex gap-1.5 md:gap-3">
+                    <span className="text-indigo-400 font-black text-[9px] md:text-xs mt-0.5">03</span>
+                    <p className="text-[8px] md:text-[11px] font-bold leading-relaxed text-slate-300">Grade Level: <span className="text-white">Grade 7 to Grade 12</span>.</p>
+                  </li>
+                  <li className="flex gap-1.5 md:gap-3">
+                    <span className="text-indigo-400 font-black text-[9px] md:text-xs mt-0.5">04</span>
+                    <p className="text-[8px] md:text-[11px] font-bold leading-relaxed text-slate-300">Do <span className="text-rose-400">NOT</span> change the header names in the first row.</p>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-1 bg-white p-1 rounded-xl md:rounded-2xl border border-slate-200 shadow-sm">
+            <button 
+              onClick={handleExportExcel}
+              className="p-1.5 md:p-2.5 text-emerald-600 hover:bg-emerald-50 rounded-lg md:rounded-xl transition-all"
+              title="Export Excel"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+            </button>
+            <button 
+              onClick={handleExportPDF}
+              className="p-1.5 md:p-2.5 text-rose-600 hover:bg-rose-50 rounded-lg md:rounded-xl transition-all"
+              title="Export PDF"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
+            </button>
+          </div>
+          <div className="bg-white px-3 py-1.5 md:px-5 md:py-2.5 rounded-xl md:rounded-2xl border border-slate-200 shadow-sm flex items-center gap-2 md:gap-3">
+            <div>
+              <p className="text-[7px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                {user?.role === 'teacher' ? 'Advisory Students' : 'Total Students'}
+              </p>
+              <p className="text-sm md:text-xl font-black text-slate-800 leading-none">{students.length}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Search Bar */}
+      <div className="bg-white p-1.5 md:p-4 rounded-xl md:rounded-2xl border border-slate-100 shadow-sm flex flex-col md:flex-row gap-3 items-center">
+        <div className="relative group flex-1 w-full">
+          <svg className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 md:w-5 md:h-5 text-slate-400 group-focus-within:text-blue-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          <input 
+            type="text" 
+            placeholder="Search name, email, or LRN..."
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            className="w-full pl-9 md:pl-12 pr-3 md:pr-4 py-1.5 md:py-3 bg-slate-50 border border-slate-200 rounded-lg md:rounded-xl focus:outline-none focus:ring-1 focus:ring-violet-500 focus:bg-white text-[10px] md:text-sm font-bold transition-all shadow-inner" 
+          />
+        </div>
+        <select value={gradeFilter} onChange={e => setGradeFilter(e.target.value)}
+          className="px-3 py-1.5 md:py-3 bg-slate-50 border border-slate-200 rounded-lg md:rounded-xl text-[10px] md:text-sm font-bold focus:outline-none focus:ring-1 focus:ring-violet-500">
+          <option value="">All Grades</option>
+          {['Grade 7','Grade 8','Grade 9','Grade 10','Grade 11','Grade 12'].map(g => <option key={g} value={g}>{g}</option>)}
+        </select>
+        <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}
+          className="px-3 py-1.5 md:py-3 bg-slate-50 border border-slate-200 rounded-lg md:rounded-xl text-[10px] md:text-sm font-bold focus:outline-none focus:ring-1 focus:ring-violet-500">
+          <option value="">All Status</option>
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
+          <option value="suspended">Suspended</option>
+        </select>
+
+        {selectedIds.length > 0 && (
+          <div className="flex items-center gap-3 animate-in slide-in-from-right-4 duration-300">
+            <span className="text-[10px] font-black text-violet-600 uppercase tracking-widest bg-violet-50 px-3 py-1.5 rounded-lg border border-blue-100">
+              {selectedIds.length} Selected
+            </span>
+            <button 
+              onClick={handleBulkDelete}
+              className="bg-rose-500 text-white px-4 py-2 rounded-xl border border-rose-600 shadow-md hover:bg-rose-600 flex items-center gap-2 transition-all active:scale-95"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+              <span className="text-xs font-bold uppercase tracking-wider">Bulk Delete</span>
+            </button>
+            <button 
+              onClick={() => setSelectedIds([])}
+              className="text-slate-400 hover:text-slate-600 text-[10px] font-black uppercase tracking-widest"
+            >
+              Clear
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Organized List */}
+      <div className="space-y-4 md:space-y-10 pb-6 md:pb-10">
+        {organizedData.length === 0 ? (
+          <div className="bg-white rounded-2xl md:rounded-3xl border border-slate-200 shadow-sm p-10 md:p-20 text-center">
+            <div className="w-12 h-12 md:w-24 md:h-24 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-3 md:mb-6">
+              <svg className="w-6 h-6 md:w-12 md:h-12 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+              </svg>
+            </div>
+            <h3 className="text-sm md:text-2xl font-black text-slate-700 mb-1 md:mb-2 uppercase tracking-tight">No Students Found</h3>
+            <p className="text-[10px] md:text-base text-slate-400 font-bold uppercase tracking-widest">Try a different search.</p>
+          </div>
+        ) : (
+          organizedData.map((gradeGroup) => (
+            <div key={gradeGroup.grade} className="space-y-2 md:space-y-6">
+              {user?.role === 'admin' && (
+                <div className="flex items-center gap-2 md:gap-4 px-1 md:px-2">
+                  <h2 className="text-xs md:text-xl font-black text-slate-800 uppercase tracking-tight">{gradeGroup.grade}</h2>
+                  <div className="h-px flex-1 bg-gradient-to-r from-gray-200 to-transparent"></div>
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 gap-3 md:gap-8">
+                {gradeGroup.classrooms.map((cls) => (
+                  <div key={cls.name} className="bg-white rounded-lg md:rounded-2xl border border-slate-200 shadow-sm overflow-hidden min-w-0">
+                    <div className="px-3 py-1.5 md:px-6 md:py-4 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
+                      <div className="flex items-center gap-1.5 md:gap-3">
+                        <div className="w-5 h-5 md:w-8 md:h-8 bg-indigo-100 rounded md:rounded-lg flex items-center justify-center">
+                          <svg className="w-3 h-3 md:w-4 md:h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                          </svg>
+                        </div>
+                        <h3 className="font-black text-slate-700 text-[9px] md:text-sm uppercase tracking-wider">{cls.name}</h3>
+                      </div>
+                      <span className="text-[7px] md:text-[10px] font-black text-indigo-500 bg-indigo-50 px-1.5 py-0.5 md:px-2.5 md:py-1 rounded-full uppercase tracking-widest">
+                        {cls.totalCount}
+                      </span>
+                    </div>
+
+                    <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-slate-200 max-w-full">
+                      <table className="w-full text-left min-w-[480px] md:min-w-full">
+                        <thead>
+                          <tr className="text-[7px] md:text-[10px] font-black text-white uppercase tracking-widest border-b border-slate-50 bg-[#2D1B4D]">
+                            <th className="px-3 py-1.5 md:px-6 md:py-4 w-10 md:w-16">
+                              <div className="flex items-center gap-3">
+                                <input 
+                                  type="checkbox" 
+                                  checked={cls.male.concat(cls.female).every(s => selectedIds.includes(s.id)) && (cls.male.length + cls.female.length) > 0}
+                                  onChange={(e) => handleSelectAll(cls.male.concat(cls.female).map(s => s.id), e.target.checked)}
+                                  className="w-3.5 h-3.5 md:w-4 md:h-4 text-violet-600 border-slate-300 rounded focus:ring-violet-500 cursor-pointer"
+                                />
+                                <span>#</span>
+                              </div>
+                            </th>
+                            <th className="px-3 py-1.5 md:px-6 md:py-4">Student</th>
+                            <th className="hidden md:table-cell px-6 py-4">Sex</th>
+                            <th className="hidden md:table-cell px-6 py-4">Grade</th>
+                            <th className="hidden md:table-cell px-6 py-4">Section</th>
+                            <th className="hidden md:table-cell px-6 py-4">Email</th>
+                            <th className="hidden md:table-cell px-6 py-4">LRN</th>
+                            <th className="px-3 py-1.5 md:px-6 md:py-4 text-center">Status</th>
+                            <th className="px-3 py-1.5 md:px-6 md:py-4 text-center">Opt</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100">
+                          {/* Male Students */}
+                          {cls.male.length > 0 && (
+                            <tr className="bg-violet-50/50">
+                              <td colSpan="8" className="px-6 py-2 text-[10px] font-black text-violet-600 uppercase tracking-widest border-y border-blue-100">
+                                <div className="flex items-center gap-2">
+                                  <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a8 8 0 100 16 8 8 0 000-16zM9 9H5v2h4v4h2v-4h4V9h-4V5H9v4z" /></svg>
+                                  Male ({cls.male.length})
+                                </div>
+                              </td>
+                            </tr>
+                          )}
+                          {cls.male.map((student, idx) => (
+                            <StudentRow key={student.id} student={student} idx={idx} />
+                          ))}
+
+                          {/* Female Students */}
+                          {cls.female.length > 0 && (
+                            <tr className="bg-rose-50/50">
+                              <td colSpan="8" className="px-6 py-2 text-[10px] font-black text-rose-600 uppercase tracking-widest border-y border-rose-100">
+                                <div className="flex items-center gap-2">
+                                  <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a8 8 0 100 16 8 8 0 000-16zM9 9H5v2h4v4h2v-4h4V9h-4V5H9v4z" /></svg>
+                                  Female ({cls.female.length})
+                                </div>
+                              </td>
+                            </tr>
+                          )}
+                          {cls.female.map((student, idx) => (
+                            <StudentRow key={student.id} student={student} idx={idx} />
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Profile Modal */}
+      {showProfileModal && selectedStudent && (
+        <div className="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center p-4">
+          <div className="bg-white w-full max-w-lg border border-gray-300 shadow-2xl rounded-sm flex flex-col max-h-[92vh]" onClick={e => e.stopPropagation()}>
+            <div className="bg-[#5e2a84] flex items-center justify-between px-5 py-3 flex-shrink-0 border-b-2 border-violet-900">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-7 h-7 rounded-full bg-white/20 border border-white/30 flex items-center justify-center flex-shrink-0">
+                  <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                  </svg>
+                </div>
+                <div>
+                  <h2 className="text-sm font-black text-white uppercase tracking-widest leading-none">{selectedStudent.last_name}, {selectedStudent.first_name}</h2>
+                  <p className="text-violet-200 text-[10px] mt-0.5 font-medium uppercase tracking-wide">Student Academic Profile</p>
+                </div>
+              </div>
+              <button type="button" onClick={() => setShowProfileModal(false)}
+                className="ml-4 w-7 h-7 flex items-center justify-center rounded text-white/60 hover:bg-white/20 hover:text-white transition-all">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+              </button>
+            </div>
+
+            <div className="px-6 py-5 overflow-y-auto flex-1 grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1">
+              <div className="md:col-span-2 mb-4">
+                <h3 className="text-xs font-black text-gray-500 uppercase tracking-[0.2em] pb-2 border-b-2 border-gray-100">Personal Information</h3>
+              </div>
+              <ProfileField label="LRN (Learner Reference Number)" value={selectedStudent.profile?.registration_number} />
+              <ProfileField label="Grade Level" value={selectedStudent.profile?.grade_level} />
+              <ProfileField label="Sex" value={selectedStudent.profile?.sex} />
+              <ProfileField label="Date of Birth" value={selectedStudent.profile?.date_of_birth} />
+              <ProfileField label="Nationality" value={selectedStudent.profile?.nationality} />
+              <ProfileField label="Province / State" value={selectedStudent.profile?.state} />
+
+              <div className="md:col-span-2 mt-6 mb-4">
+                <h3 className="text-xs font-black text-gray-500 uppercase tracking-[0.2em] pb-2 border-b-2 border-gray-100">Family & Contact</h3>
+              </div>
+              <ProfileField label="Father's Name" value={selectedStudent.profile?.father_name} />
+              <ProfileField label="Mother's Name" value={selectedStudent.profile?.mother_name} />
+              <ProfileField label="Phone Number" value={selectedStudent.profile?.phone_number} />
+              <ProfileField label="Home Address" value={selectedStudent.profile?.address} />
+              <div className="md:col-span-2">
+                <ProfileField label="Emergency Contact Info" value={selectedStudent.profile?.contact_information} />
+              </div>
+            </div>
+
+            <div className="px-6 py-4 border-t border-gray-200 bg-gray-50 flex items-center justify-end gap-3 flex-shrink-0">
+              <button
+                type="button"
+                onClick={() => handleStartChat(selectedStudent.id)}
+                className="px-6 py-2.5 bg-violet-600 text-white text-xs font-black uppercase tracking-widest hover:bg-violet-700 rounded-sm flex items-center gap-2"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" /></svg>
+                Message Student
+              </button>
+              <button type="button" onClick={() => setShowProfileModal(false)}
+                className="px-6 py-2.5 bg-white text-gray-700 text-xs font-black uppercase tracking-widest border border-gray-300 hover:bg-gray-100 rounded-sm">
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Student Modal */}
+      {showAddModal && (
+        <div className="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center p-4">
+          <div className="bg-white w-full max-w-lg border border-gray-300 shadow-2xl rounded-sm flex flex-col max-h-[92vh]" onClick={e => e.stopPropagation()}>
+            <div className="bg-[#5e2a84] flex items-center justify-between px-5 py-3 flex-shrink-0 border-b-2 border-violet-900">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-7 h-7 rounded-full bg-white/20 border border-white/30 flex items-center justify-center flex-shrink-0">
+                  <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
+                  </svg>
+                </div>
+                <div>
+                  <h2 className="text-sm font-black text-white uppercase tracking-widest leading-none">Create Student Account</h2>
+                  <p className="text-violet-200 text-[10px] mt-0.5 font-medium uppercase tracking-wide">New Learner Registration</p>
+                </div>
+              </div>
+              <button type="button" onClick={() => setShowAddModal(false)}
+                className="ml-4 w-7 h-7 flex items-center justify-center rounded text-white/60 hover:bg-white/20 hover:text-white transition-all">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+              </button>
+            </div>
+            <form onSubmit={handleAddStudent} className="flex flex-col flex-1 overflow-hidden">
+              <div className="px-6 py-5 overflow-y-auto flex-1 space-y-4">
+                <div>
+                  <label className="block text-xs font-black text-gray-700 uppercase tracking-wider mb-1.5">
+                    Student ID / LRN <span className="text-red-600">*</span>
+                  </label>
+                  <input type="text" value={newStudent.username}
+                    onChange={e => setNewStudent({...newStudent, username: e.target.value})}
+                    className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500 placeholder:text-gray-400"
+                    required />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-black text-gray-700 uppercase tracking-wider mb-1.5">
+                      First Name <span className="text-red-600">*</span>
+                    </label>
+                    <input type="text" value={newStudent.first_name}
+                      onChange={e => setNewStudent({...newStudent, first_name: e.target.value})}
+                      className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500 placeholder:text-gray-400"
+                      required />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-black text-gray-700 uppercase tracking-wider mb-1.5">
+                      Last Name <span className="text-red-600">*</span>
+                    </label>
+                    <input type="text" value={newStudent.last_name}
+                      onChange={e => setNewStudent({...newStudent, last_name: e.target.value})}
+                      className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500 placeholder:text-gray-400"
+                      required />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-black text-gray-700 uppercase tracking-wider mb-1.5">
+                      Grade Level <span className="text-red-600">*</span>
+                    </label>
+                    <select value={newStudent.grade_level}
+                      onChange={e => setNewStudent({...newStudent, grade_level: e.target.value})}
+                      className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500"
+                      required>
+                      <option value="">Select Grade</option>
+                      {GRADE_ORDER.map(g => <option key={g} value={g}>{g}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-black text-gray-700 uppercase tracking-wider mb-1.5">
+                      Sex <span className="text-red-600">*</span>
+                    </label>
+                    <select value={newStudent.sex}
+                      onChange={e => setNewStudent({...newStudent, sex: e.target.value})}
+                      className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500"
+                      required>
+                      <option value="">Select Sex</option>
+                      <option value="male">Male</option>
+                      <option value="female">Female</option>
+                    </select>
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-black text-gray-700 uppercase tracking-wider mb-1.5">Email (Optional)</label>
+                  <input type="email" value={newStudent.email}
+                    onChange={e => setNewStudent({...newStudent, email: e.target.value})}
+                    className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500 placeholder:text-gray-400" />
+                </div>
+                <div>
+                  <label className="block text-xs font-black text-gray-700 uppercase tracking-wider mb-1.5">Temporary Password</label>
+                  <input type="text" value={newStudent.password}
+                    onChange={e => setNewStudent({...newStudent, password: e.target.value})}
+                    placeholder="Leave blank for auto-gen"
+                    className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500 placeholder:text-gray-400" />
+                </div>
+              </div>
+              <div className="px-6 py-4 border-t border-gray-200 bg-gray-50 flex items-center justify-end gap-3 flex-shrink-0">
+                <button type="button" onClick={() => setShowAddModal(false)}
+                  className="px-6 py-2.5 bg-white text-gray-700 text-xs font-black uppercase tracking-widest border border-gray-300 hover:bg-gray-100 rounded-sm">
+                  Cancel
+                </button>
+                <button type="submit" disabled={isSubmitting}
+                  className="px-6 py-2.5 bg-[#5e2a84] text-white text-xs font-black uppercase tracking-widest hover:bg-violet-700 rounded-sm">
+                  {isSubmitting ? 'Creating...' : 'Create Account'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Import Modal */}
+      {showImportModal && (
+        <div className="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center p-4">
+          <div className="bg-white w-full max-w-lg border border-gray-300 shadow-2xl rounded-sm flex flex-col max-h-[92vh]" onClick={e => e.stopPropagation()}>
+            <div className="bg-[#5e2a84] flex items-center justify-between px-5 py-3 flex-shrink-0 border-b-2 border-violet-900">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-7 h-7 rounded-full bg-white/20 border border-white/30 flex items-center justify-center flex-shrink-0">
+                  <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                  </svg>
+                </div>
+                <div>
+                  <h2 className="text-sm font-black text-white uppercase tracking-widest leading-none">Bulk Import Students</h2>
+                  <p className="text-violet-200 text-[10px] mt-0.5 font-medium uppercase tracking-wide">Upload Excel or CSV File</p>
+                </div>
+              </div>
+              <button type="button" onClick={() => setShowImportModal(false)}
+                className="ml-4 w-7 h-7 flex items-center justify-center rounded text-white/60 hover:bg-white/20 hover:text-white transition-all">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+              </button>
+            </div>
+            <div className="px-6 py-5 overflow-y-auto flex-1 space-y-5">
+              {user?.role === 'teacher' && (
+                <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest bg-indigo-50 px-3 py-2 rounded border border-indigo-100">
+                  Students will be auto-enrolled to your advisory classroom
+                </p>
+              )}
+              <p className="text-sm text-gray-500 font-medium">
+                Upload an Excel file (.xlsx, .xls) with headers:<br/>
+                <code className="bg-gray-100 px-2 py-1 rounded text-xs">
+                  Student ID, First Name, Last Name, {user?.role === 'admin' ? 'Grade Level, ' : ''}Sex, Email
+                </code>
+              </p>
+              <div
+                onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+                onDragLeave={() => setIsDragging(false)}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  setIsDragging(false);
+                  const file = e.dataTransfer.files[0];
+                  if (file && (file.name.endsWith('.xlsx') || file.name.endsWith('.xls'))) {
+                    handleImportExcel({ target: { files: [file] } });
+                  } else {
+                    toast.error('Please drop a valid Excel file (.xlsx or .xls)');
+                  }
+                }}
+                className={`relative border-2 border-dashed rounded p-10 text-center transition-all duration-300 ${
+                  isDragging
+                    ? 'border-violet-500 bg-violet-50 scale-[1.02] shadow-xl shadow-violet-100'
+                    : 'border-gray-300 hover:border-violet-400 bg-gray-50'
+                }`}
+              >
+                <input
+                  type="file"
+                  accept=".xlsx, .xls"
+                  onChange={handleImportExcel}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                  id="excel-upload"
+                />
+                <div className="space-y-4">
+                  <div className={`w-16 h-16 rounded mx-auto flex items-center justify-center transition-colors ${isDragging ? 'bg-violet-600 text-white' : 'bg-white text-violet-500 shadow-sm'}`}>
+                    <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v12m0 0l-3-3m3 3l3-3m-9 8h12" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-sm font-black text-gray-700 uppercase tracking-tight">
+                      {isDragging ? 'Drop it here!' : 'Click or drag file here'}
+                    </p>
+                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">Supports .xlsx, .xls</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="px-6 py-4 border-t border-gray-200 bg-gray-50 flex items-center justify-end gap-3 flex-shrink-0">
+              <button type="button" onClick={() => setShowImportModal(false)}
+                className="px-6 py-2.5 bg-white text-gray-700 text-xs font-black uppercase tracking-widest border border-gray-300 hover:bg-gray-100 rounded-sm">
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      </div>
+    </div>
+  );
+};
+
+export default StudentManagement;
+
