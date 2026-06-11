@@ -592,15 +592,33 @@ class Attendance(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='present')
     remarks = models.TextField(blank=True, null=True)
     marked_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='marked_attendances')
+    schedule = models.ForeignKey('Schedule', on_delete=models.SET_NULL, null=True, blank=True, related_name='attendances',
+        help_text="Links attendance to a specific schedule period. Null = class-level (adviser) attendance.")
+    subject = models.ForeignKey(Subject, on_delete=models.SET_NULL, null=True, blank=True, related_name='attendances',
+        help_text="Denormalized from schedule for quick queries.")
+    time_slot = models.ForeignKey('TimeSlot', on_delete=models.SET_NULL, null=True, blank=True, related_name='attendances',
+        help_text="Denormalized from schedule for quick queries.")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
     class Meta:
-        unique_together = ['student', 'classroom', 'date']
+        constraints = [
+            models.UniqueConstraint(
+                fields=['student', 'classroom', 'date'],
+                condition=models.Q(schedule__isnull=True),
+                name='unique_class_level_attendance'
+            ),
+            models.UniqueConstraint(
+                fields=['student', 'schedule', 'date'],
+                condition=models.Q(schedule__isnull=False),
+                name='unique_schedule_attendance'
+            ),
+        ]
         ordering = ['-date', 'student__username']
     
     def __str__(self):
-        return f"{self.student.username} - {self.date} - {self.status}"
+        scope = f" [{self.subject.code}]" if self.subject else ""
+        return f"{self.student.username} - {self.date} - {self.status}{scope}"
 
 
 class LearningMaterial(models.Model):

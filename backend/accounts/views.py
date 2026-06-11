@@ -1866,11 +1866,12 @@ class AttendanceViewSet(viewsets.ModelViewSet):
     
     def get_queryset(self):
         user = self.request.user
-        queryset = Attendance.objects.all().select_related('student', 'classroom')
+        queryset = Attendance.objects.all().select_related('student', 'classroom', 'schedule', 'subject', 'time_slot')
         classroom_id = self.request.query_params.get('classroom')
         date = self.request.query_params.get('date')
         status = self.request.query_params.get('status')
         academic_year = self.request.query_params.get('academic_year')
+        schedule_id = self.request.query_params.get('schedule')
 
         # RBAC: Students can only see their own attendance
         if user.role == 'student':
@@ -1880,10 +1881,12 @@ class AttendanceViewSet(viewsets.ModelViewSet):
             profile = getattr(user, 'profile', None)
             linked_student_ids = profile.linked_students.values_list('id', flat=True) if profile else []
             queryset = queryset.filter(student_id__in=linked_student_ids)
-        # Teachers can only see attendance for their classrooms
+        # Teachers can see attendance for their classrooms and scheduled subjects
         elif user.role == 'teacher':
             assigned_classrooms = ClassroomSubject.objects.filter(teacher=user).values_list('classroom_id', flat=True)
-            queryset = queryset.filter(Q(classroom__teacher=user) | Q(classroom_id__in=assigned_classrooms))
+            scheduled_classrooms = Schedule.objects.filter(teacher=user, is_active=True).values_list('classroom_id', flat=True)
+            all_classroom_ids = set(list(assigned_classrooms) + list(scheduled_classrooms))
+            queryset = queryset.filter(Q(classroom__teacher=user) | Q(classroom_id__in=all_classroom_ids))
 
         if classroom_id:
             queryset = queryset.filter(classroom_id=classroom_id)
@@ -1891,13 +1894,138 @@ class AttendanceViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(date=date)
         if status:
             queryset = queryset.filter(status=status)
+        if schedule_id:
+            queryset = queryset.filter(schedule_id=schedule_id)
         # Strict academic year filter — only show records for classrooms in that year.
-        # No isnull fallback here: unassigned classrooms bleed into every year otherwise.
         if academic_year:
             queryset = queryset.filter(
                 classroom__academic_year__name=academic_year
             )
         return queryset
+
+    @action(detail=False, methods=['get'])
+    def today_schedules(self, request):
+        """Return the teacher's or student's scheduled classes for today with attendance status."""
+        import datetime
+        from django.utils import timezone
+
+        user = request.user
+        now = timezone.localtime(timezone.now())
+        today = now.date()
+        today_name = today.strftime('%A').lower()
+
+        if user.role == 'teacher':
+            schedules = Schedule.objects.filter(
+                teacher=user, is_active=True, time_slot__day=today_name
+            ).select_related('classroom', 'subject', 'teacher', 'room', 'time_slot', 'academic_year')
+        elif user.role == 'student':
+            enrolled_classrooms = StudentClassEnrollment.objects.filter(
+                student=user
+            ).values_list('classroom_id', flat=True)
+            schedules = Schedule.objects.filter(
+                classroom_id__in=enrolled_classrooms, is_active=True, time_slot__day=today_name
+            ).select_related('classroom', 'subject', 'teacher', 'room', 'time_slot', 'academic_year')
+        elif user.role == 'admin':
+            schedules = Schedule.objects.filter(
+                is_active=True, time_slot__day=today_name
+            ).select_related('classroom', 'subject', 'teacher', 'room', 'time_slot', 'academic_year')
+        else:
+            return Response({'error': 'Unauthorized'}, status=403)
+
+        result = []
+        for sch in schedules:
+            total_students = StudentClassEnrollment.objects.filter(
+                classroom=sch.classroom
+            ).count()
+            marked_count = Attendance.objects.filter(
+                schedule=sch, date=today
+            ).count()
+            present_count = Attendance.objects.filter(
+                schedule=sch, date=today, status__in=['present', 'late', 'excused']
+            ).count()
+            result.append({
+                'id': sch.id,
+                'classroom': sch.classroom.id,
+                'classroom_name': sch.classroom.name,
+                'subject': sch.subject.id,
+                'subject_name': sch.subject.name,
+                'subject_code': sch.subject.code,
+                'teacher': sch.teacher.id,
+                'teacher_name': full_name(sch.teacher),
+                'room': sch.room.id if sch.room else None,
+                'room_name': sch.room.name if sch.room else '',
+                'time_slot': sch.time_slot.id,
+                'time_slot_label': sch.time_slot.label or f"{sch.time_slot.start_time.strftime('%I:%M %p')} - {sch.time_slot.end_time.strftime('%I:%M %p')}",
+                'start_time': sch.time_slot.start_time.strftime('%I:%M %p'),
+                'end_time': sch.time_slot.end_time.strftime('%I:%M %p'),
+                'total_students': total_students,
+                'marked_count': marked_count,
+                'present_count': present_count,
+                'is_complete': marked_count >= total_students and total_students > 0,
+            })
+
+        # Sort by start_time
+        result.sort(key=lambda x: x['start_time'])
+        return Response(result)
+
+    @action(detail=False, methods=['get'])
+    def by_schedule(self, request):
+        """Return per-student attendance for a specific schedule period and date."""
+        schedule_id = request.query_params.get('schedule')
+        date = request.query_params.get('date')
+
+        if not schedule_id:
+            return Response({'error': 'schedule parameter required'}, status=400)
+        if not date:
+            return Response({'error': 'date parameter required'}, status=400)
+
+        try:
+            sch = Schedule.objects.select_related(
+                'classroom', 'subject', 'teacher', 'time_slot'
+            ).get(id=schedule_id)
+        except Schedule.DoesNotExist:
+            return Response({'error': 'Schedule not found'}, status=404)
+
+        # Get enrolled students
+        enrollments = StudentClassEnrollment.objects.filter(
+            classroom=sch.classroom
+        ).select_related('student', 'student__profile').order_by('student__last_name', 'student__first_name')
+
+        # Get existing attendance records for this schedule+date
+        existing = Attendance.objects.filter(
+            schedule=sch, date=date
+        ).select_related('student')
+
+        attendance_map = {a.student_id: a for a in existing}
+
+        students = []
+        for enrollment in enrollments:
+            student = enrollment.student
+            att = attendance_map.get(student.id)
+            students.append({
+                'student_id': student.id,
+                'student_name': full_name(student),
+                'student_email': student.email,
+                'status': att.status if att else None,
+                'remarks': att.remarks if att else '',
+                'attendance_id': att.id if att else None,
+            })
+
+        return Response({
+            'schedule': {
+                'id': sch.id,
+                'classroom': sch.classroom.id,
+                'classroom_name': sch.classroom.name,
+                'subject': sch.subject.id,
+                'subject_name': sch.subject.name,
+                'subject_code': sch.subject.code,
+                'teacher': sch.teacher.id,
+                'teacher_name': full_name(sch.teacher),
+                'time_slot_label': sch.time_slot.label or f"{sch.time_slot.start_time.strftime('%I:%M %p')} - {sch.time_slot.end_time.strftime('%I:%M %p')}",
+            },
+            'date': date,
+            'students': students,
+        })
 
     @action(detail=False, methods=['get'])
     def summary(self, request):
@@ -1909,7 +2037,6 @@ class AttendanceViewSet(viewsets.ModelViewSet):
         from django.utils import timezone
         import datetime
         
-        # Use localtime for accurate daily filtering in GMT+8
         now = timezone.localtime(timezone.now())
         today = now.date()
         
@@ -1917,18 +2044,13 @@ class AttendanceViewSet(viewsets.ModelViewSet):
         timeframe = request.query_params.get('timeframe', 'all')
         academic_year_name = request.query_params.get('academic_year')
         
-        # Base queryset
         base_att = Attendance.objects.all()
 
-        # Strict academic year filter — no isnull fallback to prevent year bleed-through
         if academic_year_name:
             base_att = base_att.filter(
                 classroom__academic_year__name=academic_year_name
             )
         
-        # Apply timeframe filter
-        # If 'today' is selected, we show data even if it's a weekend (e.g. for makeup classes)
-        # For 'weekly' and 'all', we strictly exclude weekends as per project requirements
         if timeframe == 'today':
             base_att = base_att.filter(date=today)
         elif timeframe == 'weekly':
@@ -1937,8 +2059,6 @@ class AttendanceViewSet(viewsets.ModelViewSet):
         else:
             base_att = base_att.exclude(date__week_day__in=[1, 7])
 
-        # Sections: Trends, Pie, Grade
-        # For charts, we usually want a 30-day window if 'all' is selected
         chart_att = base_att
         if timeframe == 'all':
             last_30_days = today - datetime.timedelta(days=30)
@@ -1964,7 +2084,6 @@ class AttendanceViewSet(viewsets.ModelViewSet):
                 'total': day_total
             })
         
-        # Overall status for Pie Chart
         overall_status = chart_att.aggregate(
             present=Count(Case(When(status='present', then=1), output_field=IntegerField())),
             absent=Count(Case(When(status='absent', then=1), output_field=IntegerField())),
@@ -1978,7 +2097,6 @@ class AttendanceViewSet(viewsets.ModelViewSet):
             {'name': 'Excused', 'value': overall_status['excused'] or 0},
         ]
 
-        # Attendance by Grade for Bar Chart
         grade_data = []
         grade_levels = chart_att.values('student__profile__grade_level').annotate(
             present=Count(Case(When(status__in=['present', 'late', 'excused'], then=1), output_field=IntegerField())),
@@ -1992,10 +2110,8 @@ class AttendanceViewSet(viewsets.ModelViewSet):
                 'rate': round(g['present'] / g['total'] * 100, 1) if g['total'] > 0 else 0
             })
 
-        # Section Rankings (Overall Attendance Rate)
         rankings = []
         if request.user.role in ['admin', 'teacher']:
-            # Get all classrooms for the academic year
             classrooms = Classroom.objects.all()
             if academic_year_name:
                 classrooms = classrooms.filter(
@@ -2003,7 +2119,6 @@ class AttendanceViewSet(viewsets.ModelViewSet):
                     Q(academic_year__isnull=True)
                 )
             
-            # Aggregate stats from base_att (filtered by academic year and timeframe)
             classroom_stats = base_att.values('classroom__id').annotate(
                 total=Count('id'),
                 present=Count(Case(When(status__in=['present', 'late', 'excused'], then=1), output_field=IntegerField()))
@@ -2019,7 +2134,6 @@ class AttendanceViewSet(viewsets.ModelViewSet):
                     'rate': rate,
                     'total_records': r['total']
                 })
-            # Sort by rate descending, then by name
             rankings = sorted(rankings, key=lambda x: (-x['rate'], x['name']))
 
         return Response({
@@ -2031,11 +2145,29 @@ class AttendanceViewSet(viewsets.ModelViewSet):
         })
     
     def perform_create(self, serializer):
-        # Teachers and admins can mark attendance
         if self.request.user.role not in ['teacher', 'admin']:
             from rest_framework.exceptions import PermissionDenied
             raise PermissionDenied("Only teachers and admins can mark attendance")
-        attendance = serializer.save(marked_by=self.request.user)
+        
+        data = self.request.data.copy()
+        schedule_id = data.get('schedule')
+        
+        # If schedule is provided, auto-populate subject and time_slot
+        if schedule_id:
+            try:
+                sch = Schedule.objects.get(id=schedule_id)
+                attendance = serializer.save(
+                    marked_by=self.request.user,
+                    subject=sch.subject,
+                    time_slot=sch.time_slot,
+                    classroom=sch.classroom
+                )
+            except Schedule.DoesNotExist:
+                from rest_framework.exceptions import ValidationError
+                raise ValidationError("Invalid schedule ID")
+        else:
+            attendance = serializer.save(marked_by=self.request.user)
+        
         from portal.views import log_audit_action
         log_audit_action(
             user=self.request.user,

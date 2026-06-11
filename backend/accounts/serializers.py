@@ -321,13 +321,21 @@ class AttendanceSerializer(serializers.ModelSerializer):
     student_email = serializers.CharField(source='student.email', read_only=True)
     classroom_name = serializers.CharField(source='classroom.name', read_only=True)
     marked_by_name = serializers.SerializerMethodField()
+    schedule_id = serializers.PrimaryKeyRelatedField(queryset=Schedule.objects.all(), source='schedule', required=False, allow_null=True)
+    subject_id = serializers.PrimaryKeyRelatedField(queryset=Subject.objects.all(), source='subject', required=False, allow_null=True)
+    subject_name = serializers.CharField(source='subject.name', read_only=True)
+    subject_code = serializers.CharField(source='subject.code', read_only=True)
+    time_slot_id = serializers.PrimaryKeyRelatedField(queryset=TimeSlot.objects.all(), source='time_slot', required=False, allow_null=True)
+    time_slot_detail = TimeSlotSerializer(source='time_slot', read_only=True)
 
     class Meta:
         model = Attendance
         fields = ['id', 'student', 'student_name', 'student_email', 'classroom',
                   'classroom_name', 'date', 'status', 'remarks', 'marked_by',
-                  'marked_by_name', 'created_at', 'updated_at']
-        read_only_fields = ['marked_by']
+                  'marked_by_name', 'schedule', 'schedule_id', 'subject', 'subject_id',
+                  'subject_name', 'subject_code', 'time_slot', 'time_slot_id',
+                  'time_slot_detail', 'created_at', 'updated_at']
+        read_only_fields = ['marked_by', 'subject', 'time_slot']
 
     def get_student_name(self, obj): return full_name(obj.student)
     def get_marked_by_name(self, obj): return full_name(obj.marked_by) if obj.marked_by else ''
