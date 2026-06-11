@@ -14,6 +14,7 @@ const PeopleDirectory = () => (
     title="People Directory"
     description="Keeps teacher, student, and parent records together so account management stays in one place."
     tabs={tabs}
+    showHeader={false}
   />
 );
 

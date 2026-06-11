@@ -14,6 +14,7 @@ const EnrollmentClassesHub = () => (
     title="Enrollment & Classes"
     description="Handles application review, roster placement, and classroom setup from a single admissions workspace."
     tabs={tabs}
+    showHeader={false}
   />
 );
 

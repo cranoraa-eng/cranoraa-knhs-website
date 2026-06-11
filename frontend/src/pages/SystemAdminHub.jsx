@@ -18,6 +18,7 @@ const SystemAdminHub = () => (
     title="System Admin Hub"
     description="Combines audit, recovery, website operations, moderation, and system monitoring into one admin console."
     tabs={tabs}
+    showHeader={false}
   />
 );
 

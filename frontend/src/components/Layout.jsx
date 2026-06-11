@@ -128,9 +128,6 @@ const Layout = () => {
   const normalizePath = (path) => path.split('?')[0];
   const activeWorkspaceTab = new URLSearchParams(location.search).get('tab');
   const isActive = (path) => location.pathname === normalizePath(path);
-  const isCommunicationTabActive = (tab) =>
-    location.pathname === '/communication-center' &&
-    (tab === 'bulletins' ? activeWorkspaceTab !== 'inbox' : activeWorkspaceTab === tab);
   const homePath = user?.role === 'parent' ? '/parent-dashboard' : '/dashboard';
   const isHomeActive = isActive(homePath);
 
@@ -230,6 +227,20 @@ const Layout = () => {
     if (path === '/parent-management') return 'Parents';
     return 'Portal';
   })();
+
+  const hubTabs = (() => {
+    const path = location.pathname;
+    const tab = new URLSearchParams(location.search).get('tab');
+    if (path === '/communication-center') return { tabs: [{ id: 'bulletins', label: 'Bulletins' }, { id: 'inbox', label: 'Inbox' }], isActive: (id) => tab === id || (!tab && id === 'bulletins') };
+    if (path === '/academics-hub') return { tabs: [{ id: 'subjects', label: 'Subjects' }, { id: 'schedules', label: 'Schedules' }, { id: 'materials', label: 'Materials' }, { id: 'classes', label: 'My Classes' }, { id: 'schedule', label: 'My Schedule' }], isActive: (id) => tab === id || (!tab && id === 'subjects') };
+    if (path === '/grading-suite') return { tabs: [{ id: 'grade-input', label: 'Grade Input' }, { id: 'grade-management', label: 'Grade Management' }, { id: 'grade-analytics', label: 'Grade Analytics' }, { id: 'my-grades', label: 'My Grades' }], isActive: (id) => tab === id || (!tab && id === 'grade-input') };
+    if (path === '/people-directory') return { tabs: [{ id: 'teachers', label: 'Teachers' }, { id: 'students', label: 'Students' }, { id: 'parents', label: 'Parents' }], isActive: (id) => tab === id || (!tab && id === 'teachers') };
+    if (path === '/system-admin') return { tabs: [{ id: 'audit-logs', label: 'Audit Logs' }, { id: 'backups', label: 'Backups' }, { id: 'website-editor', label: 'Website Editor' }, { id: 'moderation', label: 'Moderation' }, { id: 'system-health', label: 'System Health' }], isActive: (id) => tab === id || (!tab && id === 'audit-logs') };
+    if (path === '/enrollment-classes') return { tabs: [{ id: 'student-enrollment', label: 'Student Enrollment' }, { id: 'applications', label: 'Applications' }, { id: 'classrooms', label: 'Class Management' }], isActive: (id) => tab === id || (!tab && id === 'student-enrollment') };
+    return null;
+  })();
+
+  const isCommunicationTabActive = (tab) => hubTabs?.isActive?.(tab) || false;
 
   const NAV_STRUCTURE = {
     teacher: [
@@ -470,21 +481,18 @@ const Layout = () => {
               {/* Mobile Title */}
               <h1 className="text-base font-extrabold text-slate-900 sm:hidden tracking-tight">{pageTitle}</h1>
 
-              {/* Communication Center Tabs in Header (Mobile) */}
-              {location.pathname === '/communication-center' && (
+              {/* Hub Tabs in Header (Mobile) */}
+              {hubTabs && (
                 <div className="sm:hidden mt-3 flex gap-2 overflow-x-auto pb-1">
-                  {[
-                    { id: 'bulletins', label: 'Bulletins' },
-                    { id: 'inbox', label: 'Inbox' }
-                  ].map((tab) => {
-                    const isActive = isCommunicationTabActive(tab.id);
+                  {hubTabs.tabs.map((tab) => {
+                    const active = hubTabs.isActive(tab.id);
                     return (
                       <button
                         key={tab.id}
                         type="button"
-                        onClick={() => navigate(`/communication-center?tab=${tab.id}`)}
+                        onClick={() => navigate(`${location.pathname}?tab=${tab.id}`)}
                         className={`shrink-0 rounded-md border px-3 py-2 text-xs font-extrabold uppercase tracking-wider transition-all ${
-                          isActive
+                          active
                             ? 'border-violet-700 bg-violet-700 text-white'
                             : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:text-slate-900'
                         }`}
@@ -497,23 +505,20 @@ const Layout = () => {
               )}
             </div>
 
-            {/* Communication Center Tabs in Header */}
-            {location.pathname === '/communication-center' && (
+            {/* Hub Tabs in Header (Desktop) */}
+            {hubTabs && (
               <div className="hidden md:flex items-center gap-2 lg:gap-3 ml-6 border-l border-slate-200 pl-6">
                 <span className="text-[10px] font-black uppercase tracking-[0.24em] text-violet-700">Portal Workspace</span>
                 <div className="flex gap-1.5">
-                  {[
-                    { id: 'bulletins', label: 'Bulletins' },
-                    { id: 'inbox', label: 'Inbox' }
-                  ].map((tab) => {
-                    const isActive = isCommunicationTabActive(tab.id);
+                  {hubTabs.tabs.map((tab) => {
+                    const active = hubTabs.isActive(tab.id);
                     return (
                       <button
                         key={tab.id}
                         type="button"
-                        onClick={() => navigate(`/communication-center?tab=${tab.id}`)}
+                        onClick={() => navigate(`${location.pathname}?tab=${tab.id}`)}
                         className={`rounded-md border px-3 py-1.5 text-xs font-extrabold uppercase tracking-wider transition-all ${
-                          isActive
+                          active
                             ? 'border-violet-700 bg-violet-700 text-white'
                             : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:text-slate-900'
                         }`}

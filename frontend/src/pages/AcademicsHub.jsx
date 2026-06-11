@@ -18,6 +18,7 @@ const AcademicsHub = () => (
     title="Academics Hub"
     description="Centralizes curriculum setup, schedules, class assignments, and learning resources in one workspace."
     tabs={tabs}
+    showHeader={false}
   />
 );
 

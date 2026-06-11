@@ -16,6 +16,7 @@ const GradingSuite = () => (
     title="Grading Suite"
     description="Groups grade entry, review, and academic performance analysis into one grading workflow."
     tabs={tabs}
+    showHeader={false}
   />
 );
 
