@@ -286,10 +286,11 @@ const MyClasses = () => {
       )}
 
       {/* Full Classroom Modal */}
+      {selectedClassroom && (
       <Modal isOpen={!!selectedClassroom} onClose={() => setSelectedClassroom(null)} size="lg">
         <ModalHeader onClose={() => setSelectedClassroom(null)}>
           <ModalTitle
-            title={selectedClassroom?.name || 'Classroom'}
+            title={selectedClassroom.name || 'Classroom'}
             subtitle="Complete Student Roster"
           />
         </ModalHeader>
@@ -372,12 +373,14 @@ const MyClasses = () => {
             </ModalBtnSecondary>
           </ModalFooter>
         </Modal>
+      )}
 
       {/* Student Profile Modal */}
+      {selectedStudent && (
       <Modal isOpen={showProfileModal && !!selectedStudent} onClose={() => setShowProfileModal(false)} size="md">
         <ModalHeader onClose={() => setShowProfileModal(false)}>
           <ModalTitle
-            title={selectedStudent ? `${selectedStudent.last_name}, ${selectedStudent.first_name}` : ''}
+            title={`${selectedStudent.last_name}, ${selectedStudent.first_name}`}
             subtitle="Student Profile"
           />
         </ModalHeader>
@@ -457,6 +460,7 @@ const MyClasses = () => {
             </div>
           </ModalFooter>
         </Modal>
+      )}
     </motion.div>
   );
 };
