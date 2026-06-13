@@ -4,51 +4,44 @@ import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
 
-// ─── SVG Icons ───────────────────────────────────────────────────────────────
+const FileIcon = (p) => <svg width={p.size||16} height={p.size||16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={p.className}><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>;
+const ImageIcon = (p) => <svg width={p.size||16} height={p.size||16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={p.className}><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>;
+const PaperclipIcon = (p) => <svg width={p.size||16} height={p.size||16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={p.className}><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>;
+const SearchIcon = (p) => <svg width={p.size||16} height={p.size||16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={p.className}><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>;
+const PlusIcon = (p) => <svg width={p.size||16} height={p.size||16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={p.className}><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>;
+const SendIcon = (p) => <svg width={p.size||16} height={p.size||16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={p.className}><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>;
+const XIcon = (p) => <svg width={p.size||16} height={p.size||16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={p.className}><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>;
+const ChevronDownIcon = (p) => <svg width={p.size||16} height={p.size||16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={p.className}><polyline points="6 9 12 15 18 9"/></svg>;
+const ChevronRightIcon = (p) => <svg width={p.size||16} height={p.size||16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={p.className}><polyline points="9 18 15 12 9 6"/></svg>;
+const ClockIcon = (p) => <svg width={p.size||16} height={p.size||16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={p.className}><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>;
+const CalendarIcon = (p) => <svg width={p.size||16} height={p.size||16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={p.className}><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>;
+const UserIcon = (p) => <svg width={p.size||16} height={p.size||16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={p.className}><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>;
+const BuildingIcon = (p) => <svg width={p.size||16} height={p.size||16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={p.className}><rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><line x1="9" y1="6" x2="9" y2="6.01"/><line x1="15" y1="6" x2="15" y2="6.01"/><line x1="9" y1="10" x2="9" y2="10.01"/><line x1="15" y1="10" x2="15" y2="10.01"/><line x1="9" y1="14" x2="9" y2="14.01"/><line x1="15" y1="14" x2="15" y2="14.01"/><line x1="9" y1="18" x2="15" y2="18"/></svg>;
+const PriorityIcon = (p) => <svg width={p.size||16} height={p.size||16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={p.className}><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>;
+const RefreshIcon = (p) => <svg width={p.size||16} height={p.size||16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={p.className}><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>;
+const DownloadIcon = (p) => <svg width={p.size||16} height={p.size||16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={p.className}><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>;
 
-const Icon = ({ d: paths, size = 16, className = '', fill = 'none', ...rest }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill={fill} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} {...rest}>
-    {paths.split('|').map((p, i) => <path key={i} d={p.trim()} />)}
-  </svg>
-);
-
-const Icons = {
-  Search: (p) => <Icon d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" {...p} />,
-  Send: (p) => <Icon d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" {...p} />,
-  MessageSquare: (p) => <Icon d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" {...p} />,
-  Users: (p) => <Icon d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2|M9 11a4 4 0 100-8 4 4 0 000 8z|M23 21v-2a4 4 0 00-3-3.87|M16 3.13a4 4 0 010 7.75" {...p} />,
-  Trash: (p) => <Icon d="M3 6h18|M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6|M3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" {...p} />,
-  FileText: (p) => <Icon d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z|M14 2v6h6" {...p} />,
-  Loader: (p) => <Icon d="M12 2v4|M12 18v4|M4.93 4.93l2.83 2.83|M16.24 16.24l2.83 2.83|M2 12h4|M18 12h4|M4.93 19.07l2.83-2.83|M16.24 7.76l2.83-2.83" className={`animate-spin ${p.className || ''}`} {...p} />,
-  GraduationCap: (p) => <Icon d="M22 10v6|M2 10l10-5 10 5-10 5z|M6 12v5c0 2 3 3 6 3s6-1 6-3v-5" {...p} />,
-  BookOpen: (p) => <Icon d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z|M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z" {...p} />,
-  Shield: (p) => <Icon d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" {...p} />,
-  UserCheck: (p) => <Icon d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2|M8.5 7a4 4 0 100-8 4 4 0 000 8z|M17 11l2 2 4-4" {...p} />,
-  Settings: (p) => <Icon d="M12.22 2h-.44a2 2 0 00-2 2v.18a2 2 0 01-1 1.73l-.43.25a2 2 0 01-2 0l-.15-.08a2 2 0 00-2.73.73l-.22.38a2 2 0 00.73 2.73l.15.1a2 2 0 011 1.72v.51a2 2 0 01-1 1.74l-.15.09a2 2 0 00-.73 2.73l.22.38a2 2 0 002.73.73l.15-.08a2 2 0 012 0l.43.25a2 2 0 011 1.73V20a2 2 0 002 2h.44a2 2 0 002-2v-.18a2 2 0 011-1.73l.43-.25a2 2 0 012 0l.15.08a2 2 0 002.73-.73l.22-.39a2 2 0 00-.73-2.73l-.15-.08a2 2 0 01-1-1.74v-.5a2 2 0 011-1.74l.15-.09a2 2 0 00.73-2.73l-.22-.38a2 2 0 00-2.73-.73l-.15.08a2 2 0 01-2 0l-.43-.25a2 2 0 01-1-1.73V4a2 2 0 00-2-2z|M12 12a3 3 0 100-6 3 3 0 000 6z" {...p} />,
-  X: (p) => <Icon d="M18 6L6 18|M6 6l12 12" {...p} />,
-  ChevronDown: (p) => <Icon d="M6 9l6 6 6-6" {...p} />,
-  ChevronRight: (p) => <Icon d="M9 18l6-6-6-6" {...p} />,
-  Circle: (p) => <Icon d="M12 12a4 4 0 100-8 4 4 0 000 8z" fill="currentColor" {...p} />,
+const DEPT_META = {
+  faculty:    { label: 'Faculty',    color: 'bg-blue-500',  icon: 'graduation' },
+  registrar:  { label: 'Registrar',  color: 'bg-emerald-500', icon: 'book' },
+  guidance:   { label: 'Guidance',   color: 'bg-amber-500', icon: 'shield' },
+  ict:        { label: 'ICT',        color: 'bg-violet-500', icon: 'settings' },
+  admin:      { label: 'Administration', color: 'bg-rose-500', icon: 'building' },
 };
 
-// ─── Config ──────────────────────────────────────────────────────────────────
-
-const DEPT_ICONS = {
-  FileText: Icons.FileText,
-  GraduationCap: Icons.GraduationCap,
-  BookOpen: Icons.BookOpen,
-  Shield: Icons.Shield,
-  UserCheck: Icons.UserCheck,
-  Settings: Icons.Settings,
-  Users: Icons.Users,
+const STATUS_CONFIG = {
+  open:               { label: 'Open',             color: 'bg-blue-100 text-blue-700 border-blue-200' },
+  pending:            { label: 'Awaiting Response', color: 'bg-amber-100 text-amber-700 border-amber-200' },
+  replied:            { label: 'In Progress',       color: 'bg-emerald-100 text-emerald-700 border-emerald-200' },
+  resolved:           { label: 'Closed',            color: 'bg-violet-100 text-violet-700 border-violet-200' },
+  closed:             { label: 'Closed',            color: 'bg-slate-100 text-slate-600 border-slate-200' },
 };
 
-const STATUS_COLORS = {
-  open: 'bg-blue-500',
-  pending: 'bg-amber-500',
-  replied: 'bg-emerald-500',
-  resolved: 'bg-violet-500',
-  closed: 'bg-slate-400',
+const PRIORITY_CONFIG = {
+  critical: { label: 'Critical', color: 'text-red-600 bg-red-50 border-red-200' },
+  high:     { label: 'High',     color: 'text-amber-600 bg-amber-50 border-amber-200' },
+  medium:   { label: 'Medium',   color: 'text-blue-600 bg-blue-50 border-blue-200' },
+  low:      { label: 'Low',      color: 'text-slate-500 bg-slate-50 border-slate-200' },
 };
 
 const AVATAR_COLORS = ['bg-blue-500', 'bg-emerald-500', 'bg-violet-500', 'bg-amber-500', 'bg-rose-500', 'bg-indigo-500'];
@@ -63,377 +56,418 @@ function getInitials(name) {
   return (name || 'U').split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
 }
 
-function formatTime(ts) {
+function formatDate(ts, short) {
   if (!ts) return '';
-  const date = new Date(ts);
+  const d = new Date(ts);
   const now = new Date();
-  const diffMs = now - date;
-  if (diffMs < 0) return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-  const diffMins = Math.floor(diffMs / 60000);
-  const diffHrs = Math.floor(diffMs / 3600000);
-  const diffDays = Math.floor(diffMs / 86400000);
-  if (diffMins < 1) return 'now';
-  if (diffMins < 60) return `${diffMins}m`;
-  if (diffHrs < 24) return `${diffHrs}h`;
-  if (diffDays < 7) return `${diffDays}d`;
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  const today = now.toDateString() === d.toDateString();
+  const yesterday = new Date(now); yesterday.setDate(now.getDate() - 1);
+  const isYesterday = yesterday.toDateString() === d.toDateString();
+  const time = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+  if (today) return short ? time : `Today at ${time}`;
+  if (isYesterday) return short ? `Yesterday ${time}` : `Yesterday at ${time}`;
+  const date = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  if (short) return `${date}`;
+  return `${date} at ${time}`;
 }
 
-// ─── Components ──────────────────────────────────────────────────────────────
+function formatFileSize(bytes) {
+  if (!bytes) return '';
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1048576) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / 1048576).toFixed(1)} MB`;
+}
 
-function Avatar({ name, size = 'md', online }) {
+function getDeptIcon(deptKey, size) {
+  const s = size || 16;
+  switch (deptKey) {
+    case 'faculty': return <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>;
+    case 'registrar': return <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>;
+    case 'guidance': return <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>;
+    case 'ict': return <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>;
+    case 'admin': return <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><line x1="9" y1="6" x2="9" y2="6.01"/><line x1="15" y1="6" x2="15" y2="6.01"/><line x1="9" y1="10" x2="9" y2="10.01"/><line x1="15" y1="10" x2="15" y2="10.01"/></svg>;
+    default: return <BuildingIcon size={s} />;
+  }
+}
+
+function StatusBadge({ status }) {
+  const cfg = STATUS_CONFIG[status] || STATUS_CONFIG.closed;
+  return (
+    <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${cfg.color}`}>
+      <span className={`w-1.5 h-1.5 rounded-full ${status === 'open' ? 'bg-blue-500' : status === 'pending' ? 'bg-amber-500' : status === 'replied' ? 'bg-emerald-500' : 'bg-slate-400'}`} />
+      {cfg.label}
+    </span>
+  );
+}
+
+function PriorityBadge({ priority }) {
+  const cfg = PRIORITY_CONFIG[priority] || PRIORITY_CONFIG.low;
+  return (
+    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${cfg.color}`}>
+      {cfg.label}
+    </span>
+  );
+}
+
+function Avatar({ name, size = 'md' }) {
   const sizes = { sm: 'w-8 h-8 text-xs', md: 'w-10 h-10 text-sm', lg: 'w-12 h-12 text-base' };
   return (
-    <div className="relative flex-shrink-0" role="img" aria-label={name || 'User avatar'}>
-      <div className={`${sizes[size]} ${getAvatarColor(name)} rounded-full flex items-center justify-center text-white font-semibold`}>
-        {getInitials(name)}
+    <div className={`${sizes[size]} ${getAvatarColor(name)} rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0`} title={name}>
+      {getInitials(name)}
+    </div>
+  );
+}
+
+function DeptBadge({ dept }) {
+  const meta = DEPT_META[dept?.toLowerCase()];
+  if (!meta) return null;
+  return (
+    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold text-white ${meta.color}`}>
+      {getDeptIcon(dept, 12)}
+      {meta.label}
+    </span>
+  );
+}
+
+function formatRelativeTime(ts) {
+  if (!ts) return '';
+  const diff = Date.now() - new Date(ts).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'Just now';
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  if (days < 7) return `${days}d ago`;
+  return new Date(ts).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+function TicketCard({ ticket, selected, onSelect }) {
+  return (
+    <button
+      onClick={() => onSelect(ticket.id)}
+      className={`w-full text-left px-5 py-4 border-b border-slate-100 transition-all hover:bg-violet-50/30 ${
+        selected ? 'bg-violet-50 border-l-2 border-l-violet-600 shadow-sm' : 'border-l-2 border-l-transparent'
+      }`}
+    >
+      <div className="flex items-start justify-between mb-1.5">
+        <div className="flex items-center gap-2 min-w-0 flex-1">
+          <span className="text-sm font-semibold text-slate-900 truncate">{ticket.subject || 'No Subject'}</span>
+        </div>
+        <StatusBadge status={ticket.status} />
       </div>
-      {online !== undefined && (
-        <span className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white ${online ? 'bg-emerald-500' : 'bg-slate-300'}`} aria-label={online ? 'Online' : 'Offline'} />
+      <div className="flex items-center gap-3 text-xs text-slate-500 mb-2">
+        <span className="flex items-center gap-1">
+          <UserIcon size={12} />
+          {ticket.assigned_name || ticket.assigned_to_name || ticket.staff_name || 'Unassigned'}
+        </span>
+        {ticket.department_name && (
+          <span className="flex items-center gap-1">
+            <BuildingIcon size={12} />
+            {ticket.department_name}
+          </span>
+        )}
+      </div>
+      {ticket.last_message && (
+        <p className="text-xs text-slate-400 truncate mb-2">{ticket.last_message}</p>
       )}
+      <div className="flex items-center justify-between">
+        <span className="text-[10px] text-slate-400 flex items-center gap-1">
+          <ClockIcon size={10} />
+          {formatRelativeTime(ticket.updated_at)}
+        </span>
+        {Number(ticket.unread_count) > 0 && (
+          <span className="bg-violet-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full min-w-[18px] text-center">
+            {ticket.unread_count}
+          </span>
+        )}
+      </div>
+    </button>
+  );
+}
+
+function MessageCard({ msg, isOwn, onDownload }) {
+  const isImage = msg.message_type === 'image' || msg.attachment_is_image;
+  const isFile = msg.message_type === 'file' && msg.attachment_url;
+
+  return (
+    <div className={`flex ${isOwn ? 'justify-end' : 'justify-start'} mb-3`}>
+      <div className={`max-w-[75%] min-w-0 ${isOwn ? 'order-1' : 'order-1'}`}>
+        <div className={`flex items-center gap-2 mb-1 ${isOwn ? 'justify-end' : 'justify-start'}`}>
+          <span className="text-[11px] font-medium text-slate-600">{isOwn ? 'You' : msg.sender_name}</span>
+          <span className="text-[9px] text-slate-400">{formatDate(msg.created_at, true)}</span>
+        </div>
+        <div className={`rounded-lg border px-4 py-2.5 ${
+          isOwn
+            ? 'bg-violet-600 text-white border-violet-700'
+            : 'bg-white text-slate-700 border-slate-200 shadow-sm'
+        }`}>
+          {isImage && msg.attachment_url && (
+            <a href={msg.attachment_url} target="_blank" rel="noopener noreferrer" className="block mb-2" onClick={e => e.stopPropagation()}>
+              <img src={msg.attachment_url} alt={msg.attachment_filename || 'Image'} className="max-w-full max-h-64 rounded object-contain" loading="lazy" />
+            </a>
+          )}
+          {isFile && (
+            <a href={msg.attachment_url} target="_blank" rel="noopener noreferrer" download={msg.attachment_filename}
+              className={`flex items-center gap-3 p-2.5 rounded-lg border transition-colors ${
+                isOwn ? 'bg-violet-700/30 border-violet-400/30 hover:bg-violet-700/40' : 'bg-slate-50 border-slate-200 hover:bg-slate-100'
+              }`}
+              onClick={e => e.stopPropagation()}
+            >
+              <FileIcon size={20} className={isOwn ? 'text-white' : 'text-violet-600'} />
+              <div className="min-w-0 flex-1">
+                <p className={`text-xs font-semibold truncate ${isOwn ? 'text-white' : 'text-slate-800'}`}>{msg.attachment_filename || 'File'}</p>
+                {msg.file_size_bytes && <p className={`text-[10px] ${isOwn ? 'text-violet-200' : 'text-slate-400'}`}>{formatFileSize(msg.file_size_bytes)}</p>}
+              </div>
+              <DownloadIcon size={14} className={isOwn ? 'text-violet-200' : 'text-slate-400'} />
+            </a>
+          )}
+          {msg.content && <p className={`text-sm leading-relaxed whitespace-pre-wrap ${msg.attachment_url ? 'mt-1' : ''}`}>{msg.content}</p>}
+        </div>
+      </div>
     </div>
   );
 }
 
-function StatusDot({ status }) {
-  return <span className={`w-2 h-2 rounded-full ${STATUS_COLORS[status] || 'bg-slate-400'}`} aria-label={`Status: ${status || 'unknown'}`} title={status || 'unknown'} />;
-}
-
-// ─── Panel 1: Conversation List ─────────────────────────────────────────────
-
-function ConversationList({ tickets, selectedId, onSelect, loading, searchQuery, onSearchChange }) {
+function DetailsPanel({ ticket, onBack }) {
+  if (!ticket) return null;
   return (
-    <div className="w-80 min-w-0 bg-white border-r border-slate-200 flex flex-col h-full">
-      {/* Header */}
-      <div className="px-4 py-2 border-b border-slate-100">
-        <h1 className="text-sm font-bold text-slate-900 mb-2">Messages</h1>
-
-        {/* Search */}
-        <div className="relative">
-          <Icons.Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-          <input
-            type="text"
-            placeholder="Search conversations..."
-            value={searchQuery}
-            onChange={(e) => onSearchChange(e.target.value)}
-            aria-label="Search conversations"
-            className="w-full pl-9 pr-4 py-2 bg-slate-100 rounded-lg text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-colors"
-          />
+    <div className="w-80 bg-white border-l border-slate-200 flex flex-col h-full overflow-hidden">
+      <div className="px-5 py-4 border-b border-slate-100">
+        <div className="flex items-center justify-between mb-1">
+          <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Details</h3>
+          <button onClick={onBack} className="text-slate-400 hover:text-slate-600 p-1 rounded hover:bg-slate-100 transition-colors lg:hidden">
+            <XIcon size={14} />
+          </button>
         </div>
+        <h4 className="text-sm font-semibold text-slate-900 leading-snug">{ticket.subject || 'No Subject'}</h4>
       </div>
-
-      {/* Conversation List */}
       <div className="flex-1 overflow-y-auto">
-        {loading ? (
-          <div className="flex items-center justify-center h-24">
-            <Icons.Loader size={24} className="text-blue-500" />
+        <div className="divide-y divide-slate-50">
+          <div className="px-5 py-3.5">
+            <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Status</p>
+            <StatusBadge status={ticket.status} />
           </div>
-        ) : tickets.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-24 text-slate-400">
-            <Icons.MessageSquare size={32} className="mb-2" />
-            <p className="text-sm">No conversations yet</p>
-            <p className="text-xs mt-1">Click a staff member to start chatting</p>
+          <div className="px-5 py-3.5">
+            <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Priority</p>
+            <PriorityBadge priority={ticket.priority} />
           </div>
-        ) : (
-          <div className="divide-y divide-slate-100" role="list" aria-label="Conversations">
-            {tickets.map(ticket => (
-              <button
-                key={ticket.id}
-                onClick={() => onSelect(ticket.id)}
-                role="listitem"
-                aria-current={selectedId === ticket.id ? 'true' : undefined}
-                className={`w-full text-left px-4 py-2 hover:bg-slate-50 transition-colors ${
-                  selectedId === ticket.id ? 'bg-blue-50 ring-2 ring-inset ring-blue-200' : ''
-                }`}
-              >
-                <div className="flex items-start gap-3">
-                  <Avatar name={ticket.sender_name} />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between mb-0.5">
-                      <span className="text-sm font-semibold text-slate-900 truncate">{ticket.sender_name}</span>
-                      <span className="text-[10px] text-slate-400 flex-shrink-0 ml-2">{formatTime(ticket.updated_at)}</span>
-                    </div>
-                    <p className="text-xs font-medium text-slate-700 truncate mb-1">{ticket.subject}</p>
-                    <p className="text-xs text-slate-400 truncate mb-1.5">{ticket.last_message}</p>
-                    <div className="flex items-center gap-2">
-                      <StatusDot status={ticket.status} />
-                      {Number(ticket.unread_count) > 0 && (
-                        <span className="ml-auto bg-blue-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center" aria-label={`${ticket.unread_count} unread messages`}>
-                          {ticket.unread_count}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </button>
-            ))}
+          <div className="px-5 py-3.5">
+            <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Department</p>
+            <p className="text-sm font-medium text-slate-800">{ticket.department_name || '—'}</p>
           </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-// ─── Panel 2: Message Thread ────────────────────────────────────────────────
-
-function MessageThread({ ticket, messages, onSend, sending, onDelete, currentUserId }) {
-  const [text, setText] = useState('');
-  const messagesEndRef = useRef(null);
-  const inputRef = useRef(null);
-
-  useEffect(() => {
-    const container = messagesEndRef.current?.parentElement;
-    if (!container) return;
-    const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 150;
-    if (isNearBottom) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, [messages]);
-
-  useEffect(() => {
-    if (ticket?.id) inputRef.current?.focus();
-  }, [ticket?.id]);
-
-  const handleSend = () => {
-    if (!text.trim() || sending) return;
-    onSend(text.trim());
-    setText('');
-  };
-
-  const handleKeyDown = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
-    }
-  };
-
-  if (!ticket) {
-    return (
-      <div className="flex-1 flex flex-col items-center justify-center bg-slate-50">
-        <Icons.MessageSquare size={48} className="text-slate-300 mb-4" />
-        <p className="text-slate-400">Select a conversation</p>
-        <p className="text-slate-300 text-sm mt-1">or click a staff member to start chatting</p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="flex-1 flex flex-col min-w-0 bg-slate-50 h-full">
-      {/* Conversation Header */}
-      <div className="flex items-center justify-between px-3 py-1.5 bg-white border-b border-slate-200">
-        <div className="flex items-center gap-2 min-w-0">
-          <Avatar name={ticket.sender_name} size="sm" />
-          <div className="min-w-0">
-            <p className="text-sm font-medium text-slate-900 truncate leading-tight">{ticket.sender_name}</p>
-            <p className="text-[10px] text-slate-500 truncate">{ticket.subject}</p>
+          <div className="px-5 py-3.5">
+            <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Assigned To</p>
+            <div className="flex items-center gap-2">
+              <Avatar name={ticket.assigned_name || ticket.staff_name} size="sm" />
+              <span className="text-sm font-medium text-slate-800">{ticket.assigned_name || ticket.staff_name || 'Unassigned'}</span>
+            </div>
           </div>
-        </div>
-        <button
-          onClick={onDelete}
-          aria-label="Delete conversation"
-          className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-        >
-          <Icons.Trash size={14} />
-        </button>
-      </div>
-
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-3 py-2 space-y-2">
-        {messages.length === 0 && (
-          <div className="text-center text-slate-400 text-xs py-4">
-            <p>No messages yet. Start the conversation!</p>
+          {ticket.category && (
+            <div className="px-5 py-3.5">
+              <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Category</p>
+              <span className="text-sm font-medium text-slate-800 capitalize">{ticket.category.replace(/_/g, ' ')}</span>
+            </div>
+          )}
+          <div className="px-5 py-3.5">
+            <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Created</p>
+            <div className="flex items-center gap-1.5 text-sm text-slate-700">
+              <CalendarIcon size={14} className="text-slate-400" />
+              {formatDate(ticket.created_at)}
+            </div>
           </div>
-        )}
-        {messages.map((msg) => {
-          const isOwn = msg.sender === currentUserId;
-          return (
-            <div key={msg.id} className={`flex gap-2 ${isOwn ? 'flex-row-reverse ml-auto' : ''}`} role="group" aria-label={`Message from ${msg.sender_name}`}>
-              <Avatar name={msg.sender_name} size="sm" />
-              <div className={`max-w-[70%] min-w-0`}>
-                <div className={`flex items-center gap-1.5 mb-0.5 ${isOwn ? 'flex-row-reverse' : ''}`}>
-                  <span className="text-[11px] font-medium text-slate-700">{msg.sender_name}</span>
-                  <span className="text-[9px] text-slate-400">{formatTime(msg.created_at)}</span>
-                </div>
-                <div className={`px-3 py-1.5 rounded-2xl text-sm break-words ${
-                  isOwn
-                    ? 'bg-blue-600 text-white rounded-tr-md'
-                    : 'bg-white border border-slate-200 rounded-tl-md'
-                }`}>
-                  <p className={`leading-snug whitespace-pre-wrap ${isOwn ? '' : 'text-slate-700'}`}>
-                    {msg.content}
-                  </p>
-                </div>
+          <div className="px-5 py-3.5">
+            <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Last Updated</p>
+            <div className="flex items-center gap-1.5 text-sm text-slate-700">
+              <ClockIcon size={14} className="text-slate-400" />
+              {formatDate(ticket.updated_at)}
+            </div>
+          </div>
+          {ticket.sender_name && (
+            <div className="px-5 py-3.5">
+              <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Reported By</p>
+              <div className="flex items-center gap-2">
+                <Avatar name={ticket.sender_name} size="sm" />
+                <span className="text-sm font-medium text-slate-800">{ticket.sender_name}</span>
               </div>
             </div>
-          );
-        })}
-        <div ref={messagesEndRef} />
-      </div>
-
-      {/* Input */}
-      <div className="bg-white border-t border-slate-200 px-2 py-1">
-        <div className="flex items-end gap-1.5">
-          <div className="flex-1 relative">
-            <textarea
-              ref={inputRef}
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="Type a message..."
-              aria-label="Type your message"
-              rows={1}
-              className="w-full px-2 py-1 bg-slate-100 rounded-xl text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white resize-none transition-colors"
-            />
+          )}
+          <div className="px-5 py-3.5">
+            <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Ticket ID</p>
+            <code className="text-xs font-mono text-slate-500 bg-slate-100 px-2 py-1 rounded">#{ticket.ticket_number || ticket.id}</code>
           </div>
-          <button
-            onClick={handleSend}
-            disabled={!text.trim() || sending}
-            aria-label="Send message"
-            className={`p-1.5 rounded-xl transition-all ${
-              text.trim() && !sending
-                ? 'bg-blue-600 text-white hover:bg-blue-700'
-                : 'bg-slate-100 text-slate-400'
-            }`}
-          >
-            {sending ? <Icons.Loader size={15} /> : <Icons.Send size={15} />}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function NewConversationModal({ open, onClose, onSubmit }) {
+  const [departments, setDepartments] = useState([]);
+  const [deptLoading, setDeptLoading] = useState(true);
+  const [selectedDept, setSelectedDept] = useState('');
+  const [staffList, setStaffList] = useState([]);
+  const [selectedStaff, setSelectedStaff] = useState('');
+  const [subject, setSubject] = useState('');
+  const [message, setMessage] = useState('');
+  const [attachment, setAttachment] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (!open) return;
+    let cancelled = false;
+    const fetchDepts = async () => {
+      try {
+        setDeptLoading(true);
+        const res = await api.get('/tickets/staff-by-department/');
+        if (!cancelled) setDepartments(res.data);
+      } catch {
+        if (!cancelled) toast.error('Failed to load departments');
+      } finally {
+        if (!cancelled) setDeptLoading(false);
+      }
+    };
+    fetchDepts();
+    return () => { cancelled = true; };
+  }, [open]);
+
+  useEffect(() => {
+    setSelectedStaff('');
+    if (!selectedDept) { setStaffList([]); return; }
+    const dept = departments.find(d => String(d.id) === String(selectedDept));
+    setStaffList(dept?.members || []);
+  }, [selectedDept, departments]);
+
+  const handleSubmit = async () => {
+    if (!subject.trim() || !message.trim()) {
+      toast.error('Subject and message are required');
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const payload = {
+        subject: subject.trim(),
+        message: message.trim(),
+        department_id: selectedDept || undefined,
+        assigned_to: selectedStaff || undefined,
+      };
+      const formData = new FormData();
+      Object.entries(payload).forEach(([k, v]) => { if (v) formData.append(k, v); });
+      if (attachment) formData.append('attachment', attachment);
+
+      await api.post('/tickets/create/', formData, {
+        headers: attachment ? { 'Content-Type': 'multipart/form-data' } : {},
+      });
+      toast.success('Conversation created successfully');
+      onClose(true);
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed to create conversation');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!open) {
+      setSelectedDept('');
+      setSelectedStaff('');
+      setSubject('');
+      setMessage('');
+      setAttachment(null);
+    }
+  }, [open]);
+
+  if (!open) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => onClose(false)} />
+      <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-hidden animate-[fadeIn_0.2s_ease-out]">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200">
+          <div>
+            <h2 className="text-base font-bold text-slate-900">New Support Request</h2>
+            <p className="text-xs text-slate-500 mt-0.5">Submit a request for assistance</p>
+          </div>
+          <button onClick={() => onClose(false)} className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">
+            <XIcon size={18} />
+          </button>
+        </div>
+        <div className="px-6 py-4 overflow-y-auto max-h-[calc(90vh-130px)] space-y-4">
+          {deptLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="w-5 h-5 border-2 border-slate-200 border-t-violet-600 rounded-full animate-spin" />
+            </div>
+          ) : (
+            <>
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 mb-1.5">Department</label>
+                <select value={selectedDept} onChange={e => setSelectedDept(e.target.value)}
+                  className="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-lg text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-colors">
+                  <option value="">Select a department</option>
+                  {departments.map(d => (
+                    <option key={d.id} value={d.id}>{d.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 mb-1.5">Staff Member</label>
+                <select value={selectedStaff} onChange={e => setSelectedStaff(e.target.value)}
+                  className="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-lg text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-colors"
+                  disabled={!selectedDept}>
+                  <option value="">Select staff member</option>
+                  {staffList.map(m => (
+                    <option key={m.id} value={m.id}>{m.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 mb-1.5">Subject <span className="text-red-400">*</span></label>
+                <input type="text" value={subject} onChange={e => setSubject(e.target.value)}
+                  placeholder="Brief title of your request"
+                  className="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-lg text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-colors" />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 mb-1.5">Message <span className="text-red-400">*</span></label>
+                <textarea value={message} onChange={e => setMessage(e.target.value)} rows={4}
+                  placeholder="Describe your concern in detail..."
+                  className="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-lg text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-colors resize-none" />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 mb-1.5">Attachment <span className="text-slate-400 font-normal">(optional)</span></label>
+                <label className="flex items-center gap-2 px-3 py-2.5 border border-dashed border-slate-300 rounded-lg cursor-pointer hover:border-violet-400 hover:bg-violet-50/30 transition-colors">
+                  <PaperclipIcon size={16} className="text-slate-400" />
+                  <span className="text-sm text-slate-500 flex-1">{attachment ? attachment.name : 'Attach a file'}</span>
+                  {attachment && (
+                    <button onClick={(e) => { e.preventDefault(); setAttachment(null); }} className="text-red-400 hover:text-red-600">
+                      <XIcon size={14} />
+                    </button>
+                  )}
+                  <input type="file" className="hidden" onChange={e => setAttachment(e.target.files?.[0] || null)}
+                    accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.gif,.txt" />
+                </label>
+                <p className="text-[10px] text-slate-400 mt-1">Supported: PDF, DOC, XLS, images, TXT (max 25 MB)</p>
+              </div>
+            </>
+          )}
+        </div>
+        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-200 bg-slate-50">
+          <button onClick={() => onClose(false)}
+            className="px-4 py-2 text-sm font-semibold text-slate-600 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors">
+            Cancel
+          </button>
+          <button onClick={handleSubmit} disabled={submitting || !subject.trim() || !message.trim()}
+            className="px-5 py-2 text-sm font-bold text-white bg-violet-600 rounded-lg hover:bg-violet-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+            {submitting ? (
+              <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Submitting...</>
+            ) : (
+              <><SendIcon size={14} /> Submit Request</>
+            )}
           </button>
         </div>
       </div>
     </div>
   );
 }
-
-// ─── Panel 3: Department Directory ──────────────────────────────────────────
-
-function DepartmentDirectory({ onStaffClick, openingId }) {
-  const [departments, setDepartments] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [expanded, setExpanded] = useState({});
-  const [dirSearch, setDirSearch] = useState('');
-
-  useEffect(() => {
-    let cancelled = false;
-    const fetchDepartments = async () => {
-      try {
-        const response = await api.get('/tickets/staff-by-department/');
-        if (cancelled) return;
-        setDepartments(response.data);
-        const exp = {};
-        response.data.forEach(d => { exp[d.id] = true; });
-        setExpanded(exp);
-      } catch (err) {
-        if (!cancelled) console.error('Failed to fetch departments:', err);
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    };
-    fetchDepartments();
-    return () => { cancelled = true; };
-  }, []);
-
-  const toggleDept = (id) => {
-    setExpanded(prev => ({ ...prev, [id]: !prev[id] }));
-  };
-
-  const filteredDepts = useMemo(() => departments.map(dept => ({
-    ...dept,
-    members: dept.members.filter(m =>
-      (m.name || '').toLowerCase().includes(dirSearch.toLowerCase()) ||
-      (m.username || '').toLowerCase().includes(dirSearch.toLowerCase())
-    ),
-  })).filter(dept => dept.members.length > 0), [departments, dirSearch]);
-
-  return (
-    <div className="w-72 min-w-0 bg-white border-l border-slate-200 flex flex-col h-full">
-      {/* Header */}
-      <div className="px-4 py-2 border-b border-slate-100">
-        <h2 className="text-xs font-bold text-slate-900 mb-2">Staff Directory</h2>
-        <div className="relative">
-          <Icons.Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-          <input
-            type="text"
-            placeholder="Find staff..."
-            value={dirSearch}
-            onChange={(e) => setDirSearch(e.target.value)}
-            aria-label="Search staff directory"
-            className="w-full pl-9 pr-4 py-2 bg-slate-100 rounded-lg text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-colors"
-          />
-        </div>
-      </div>
-
-      {/* Department List */}
-      <div className="flex-1 overflow-y-auto">
-        {loading ? (
-            <div className="flex items-center justify-center h-24">
-            <Icons.Loader size={20} className="text-blue-500" />
-          </div>
-        ) : filteredDepts.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-24 text-slate-400">
-            <Icons.Users size={24} className="mb-2" />
-            <p className="text-xs">No staff found</p>
-          </div>
-        ) : (
-          <div className="py-2">
-            {filteredDepts.map(dept => {
-              const DeptIcon = DEPT_ICONS[dept.icon] || Icons.Users;
-              const isExpanded = expanded[dept.id] !== false;
-              return (
-                <div key={dept.id} className="mb-1">
-                  {/* Department Header */}
-                  <button
-                    onClick={() => toggleDept(dept.id)}
-                    aria-expanded={isExpanded}
-                    className="w-full flex items-center gap-2.5 px-4 py-2 hover:bg-slate-50 transition-colors"
-                  >
-                    <div className={`w-7 h-7 ${dept.color} rounded-lg flex items-center justify-center`}>
-                      <DeptIcon size={14} className="text-white" />
-                    </div>
-                    <span className="flex-1 text-xs font-semibold text-slate-700 text-left">{dept.name}</span>
-                    <span className="text-[10px] text-slate-400 mr-1">{dept.members.length}</span>
-                    <span className={`transition-transform ${isExpanded ? '' : '-rotate-90'}`}>
-                      <Icons.ChevronDown size={12} className="text-slate-400" />
-                    </span>
-                  </button>
-
-                  {/* Staff Members */}
-                  {isExpanded && (
-                    <div className="pb-1">
-                      {dept.members.map(member => (
-                        <button
-                          key={member.id}
-                          onClick={() => onStaffClick(member.id)}
-                          disabled={openingId === member.id}
-                          className="w-full flex items-center gap-3 pl-14 pr-5 py-1.5 hover:bg-blue-50 transition-colors group disabled:opacity-50"
-                        >
-                          <Avatar name={member.name} size="sm" online={member.is_online} />
-                          <div className="flex-1 min-w-0 text-left">
-                            <p className="text-sm font-medium text-slate-700 truncate group-hover:text-blue-700 transition-colors">
-                              {member.name}
-                            </p>
-                            <p className="text-[10px] text-slate-400">
-                              {[member.title, member.staff_title?.replace(/_/g, ' ')].filter(Boolean).join(' · ')}
-                            </p>
-                          </div>
-                          {openingId === member.id ? (
-                            <Icons.Loader size={14} className="text-blue-500" />
-                          ) : (
-                            <Icons.MessageSquare size={14} className="text-slate-300 group-hover:text-blue-500 transition-colors" />
-                          )}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-// ─── Main Component ──────────────────────────────────────────────────────────
 
 export default function CommunicationCenter() {
   const { user } = useAuth();
@@ -443,9 +477,15 @@ export default function CommunicationCenter() {
   const [messages, setMessages] = useState([]);
   const [sending, setSending] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [openingStaffId, setOpeningStaffId] = useState(null);
+  const [activeFilter, setActiveFilter] = useState('all');
+  const [showNewModal, setShowNewModal] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
+  const [text, setText] = useState('');
+  const [attachmentFile, setAttachmentFile] = useState(null);
+  const messagesEndRef = useRef(null);
+  const inputRef = useRef(null);
+  const fileInputRef = useRef(null);
 
-  // Debounce search before fetching
   const debouncedSearch = useRef(null);
   const [effectiveSearch, setEffectiveSearch] = useState('');
 
@@ -473,8 +513,7 @@ export default function CommunicationCenter() {
     try {
       const response = await api.get(`/tickets/${ticketId}/messages/`);
       setMessages(response.data);
-    } catch (err) {
-      console.error('Failed to fetch messages:', err);
+    } catch {
       setMessages([]);
     }
   }, []);
@@ -489,42 +528,69 @@ export default function CommunicationCenter() {
   useEffect(() => {
     if (selectedId) {
       fetchMessages(selectedId);
+      setShowDetails(false);
     } else {
       setMessages([]);
     }
   }, [selectedId, fetchMessages]);
 
-  const handleSend = async (content) => {
-    if (!selectedId || !content) return;
+  useEffect(() => {
+    const container = messagesEndRef.current?.parentElement;
+    if (!container) return;
+    const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 150;
+    if (isNearBottom) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages]);
+
+  useEffect(() => {
+    if (selectedTicket?.id) inputRef.current?.focus();
+  }, [selectedTicket?.id]);
+
+  const filteredTickets = useMemo(() => {
+    let list = [...tickets];
+    switch (activeFilter) {
+      case 'unread': list = list.filter(t => Number(t.unread_count) > 0); break;
+      case 'open': list = list.filter(t => t.status === 'open'); break;
+      case 'pending': list = list.filter(t => t.status === 'pending'); break;
+      case 'replied': list = list.filter(t => t.status === 'replied'); break;
+      case 'closed': list = list.filter(t => t.status === 'closed' || t.status === 'resolved'); break;
+      default: break;
+    }
+    return list.sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
+  }, [tickets, activeFilter]);
+
+  const handleSend = async () => {
+    if (!selectedId) return;
+    const content = text.trim();
+    if (!content && !attachmentFile) return;
     try {
       setSending(true);
-      const response = await api.post(`/tickets/${selectedId}/send-message/`, { content });
-      setMessages(prev => [...prev, { ...response.data, sender: user.id }]);
+      if (attachmentFile) {
+        const formData = new FormData();
+        formData.append('content', content);
+        formData.append('file', attachmentFile);
+        await api.post(`/tickets/${selectedId}/send-message/`, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+        setAttachmentFile(null);
+      } else {
+        await api.post(`/tickets/${selectedId}/send-message/`, { content });
+      }
+      setText('');
+      fetchMessages(selectedId);
       fetchTickets();
     } catch (err) {
-      console.error('Failed to send message:', err);
-      toast.error('Failed to send message.');
+      toast.error('Failed to send message');
     } finally {
       setSending(false);
     }
   };
 
-  const handleStaffClick = async (staffUserId) => {
-    try {
-      setOpeningStaffId(staffUserId);
-      const response = await api.post('/tickets/open-conversation/', { user_id: staffUserId });
-      const ticket = response.data;
-      setTickets(prev => {
-        const exists = prev.some(t => t.id === ticket.id);
-        return exists ? prev : [ticket, ...prev];
-      });
-      setSelectedId(ticket.id);
-      await fetchTickets();
-    } catch (err) {
-      console.error('Failed to open conversation:', err);
-      toast.error('Failed to open conversation.');
-    } finally {
-      setOpeningStaffId(null);
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
     }
   };
 
@@ -532,7 +598,7 @@ export default function CommunicationCenter() {
     if (!selectedId) return;
     const result = await Swal.fire({
       title: 'Delete conversation?',
-      text: 'This cannot be undone.',
+      text: 'This action cannot be undone.',
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#dc2626',
@@ -544,40 +610,194 @@ export default function CommunicationCenter() {
       await api.delete(`/tickets/${selectedId}/delete/`);
       setSelectedId(null);
       fetchTickets();
-      toast.success('Conversation deleted.');
-    } catch (err) {
-      console.error('Failed to delete ticket:', err);
-      toast.error('Failed to delete conversation.');
+      toast.success('Conversation deleted');
+    } catch {
+      toast.error('Failed to delete conversation');
     }
   };
 
+  const handleNewModalClose = (created) => {
+    setShowNewModal(false);
+    if (created) fetchTickets();
+  };
+
+  const unreadCount = tickets.filter(t => Number(t.unread_count) > 0).length;
+
+  const FILTERS = [
+    { id: 'all', label: 'All' },
+    { id: 'unread', label: 'Unread', count: unreadCount },
+    { id: 'open', label: 'Open' },
+    { id: 'pending', label: 'Awaiting' },
+    { id: 'replied', label: 'In Progress' },
+    { id: 'closed', label: 'Closed' },
+  ];
+
   return (
     <div className="h-[calc(100vh-57px)] flex bg-slate-100">
-      {/* Left: Conversation List */}
-      <ConversationList
-        tickets={tickets}
-        selectedId={selectedId}
-        onSelect={setSelectedId}
-        loading={loading}
-        searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
-      />
+      {/* Left Panel — Ticket List */}
+      <div className="w-[340px] min-w-0 bg-white border-r border-slate-200 flex flex-col h-full">
+        {/* Header */}
+        <div className="px-5 py-4 border-b border-slate-100">
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <h1 className="text-sm font-extrabold text-slate-900 uppercase tracking-tight">Support Center</h1>
+              <p className="text-[10px] text-slate-500 mt-0.5">Manage support requests</p>
+            </div>
+            <button onClick={() => setShowNewModal(true)}
+              className="flex items-center gap-1.5 px-3 py-2 bg-violet-600 text-white text-xs font-bold rounded-lg hover:bg-violet-700 transition-colors shadow-sm">
+              <PlusIcon size={14} />
+              New
+            </button>
+          </div>
+          <div className="relative">
+            <SearchIcon size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+            <input type="text" placeholder="Search requests..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
+              aria-label="Search support requests"
+              className="w-full pl-9 pr-4 py-2 bg-slate-100 rounded-lg text-xs placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:bg-white transition-colors" />
+          </div>
+        </div>
 
-      {/* Center: Message Thread */}
-      <MessageThread
-        ticket={selectedTicket}
-        messages={messages}
-        onSend={handleSend}
-        sending={sending}
-        onDelete={handleDelete}
-        currentUserId={user?.id}
-      />
+        {/* Filters */}
+        <div className="px-5 py-2.5 border-b border-slate-100 overflow-x-auto">
+          <div className="flex gap-1.5">
+            {FILTERS.map(f => (
+              <button key={f.id} onClick={() => setActiveFilter(f.id)}
+                className={`px-2.5 py-1.5 rounded-md text-[10px] font-bold uppercase tracking-wider whitespace-nowrap transition-colors ${
+                  activeFilter === f.id
+                    ? 'bg-violet-600 text-white shadow-sm'
+                    : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100'
+                }`}>
+                {f.label}
+                {f.count > 0 && (
+                  <span className={`ml-1 px-1 py-0.5 rounded text-[8px] ${activeFilter === f.id ? 'bg-white/20' : 'bg-violet-100 text-violet-600'}`}>
+                    {f.count}
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
 
-      {/* Right: Department Directory */}
-      <DepartmentDirectory
-        onStaffClick={handleStaffClick}
-        openingId={openingStaffId}
-      />
+        {/* Ticket List */}
+        <div className="flex-1 overflow-y-auto">
+          {loading ? (
+            <div className="flex items-center justify-center h-24">
+              <div className="w-5 h-5 border-2 border-slate-200 border-t-violet-600 rounded-full animate-spin" />
+            </div>
+          ) : filteredTickets.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-48 text-slate-400 px-6">
+              <svg width={40} height={40} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="mb-3 text-slate-300"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+              <p className="text-sm font-medium">No requests found</p>
+              <p className="text-xs mt-1 text-center">{activeFilter !== 'all' ? 'Try a different filter' : 'Click "+ New" to submit a request'}</p>
+            </div>
+          ) : (
+            <div className="divide-y divide-slate-50">
+              {filteredTickets.map(ticket => (
+                <TicketCard key={ticket.id} ticket={ticket} selected={selectedId === ticket.id} onSelect={setSelectedId} />
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Center Panel — Message Thread */}
+      <div className="flex-1 flex flex-col min-w-0 bg-slate-50 h-full">
+        {selectedTicket ? (
+          <>
+            {/* Thread Header */}
+            <div className="flex items-center justify-between px-5 py-3 bg-white border-b border-slate-200 min-h-[57px]">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-semibold text-slate-900 truncate">{selectedTicket.subject || 'No Subject'}</span>
+                  <StatusBadge status={selectedTicket.status} />
+                </div>
+              </div>
+              <div className="flex items-center gap-1">
+                <button onClick={() => setShowDetails(v => !v)}
+                  className={`p-2 rounded-lg transition-colors text-xs font-medium ${
+                    showDetails ? 'bg-violet-100 text-violet-700' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100'
+                  }`} title="View details">
+                  <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                </button>
+                <button onClick={handleDelete} className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="Delete conversation">
+                  <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/><path d="M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+                </button>
+              </div>
+            </div>
+
+            {/* Messages */}
+            <div className="flex-1 overflow-y-auto px-5 py-4">
+              {messages.length === 0 && (
+                <div className="flex flex-col items-center justify-center h-full text-slate-400">
+                  <svg width={32} height={32} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="mb-2 text-slate-300"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+                  <p className="text-sm font-medium">No messages yet</p>
+                  <p className="text-xs mt-1">Type a message to start the conversation</p>
+                </div>
+              )}
+              {messages.map((msg) => (
+                <MessageCard key={msg.id} msg={msg} isOwn={msg.sender === user?.id} />
+              ))}
+              <div ref={messagesEndRef} />
+            </div>
+
+            {/* Attachment preview */}
+            {attachmentFile && (
+              <div className="flex items-center gap-3 px-5 py-2.5 bg-white border-t border-slate-200">
+                <FileIcon size={18} className="text-violet-500" />
+                <span className="text-xs font-medium text-slate-700 flex-1 truncate">{attachmentFile.name}</span>
+                <span className="text-[10px] text-slate-400">{formatFileSize(attachmentFile.size)}</span>
+                <button onClick={() => setAttachmentFile(null)} className="text-slate-400 hover:text-red-500 transition-colors">
+                  <XIcon size={14} />
+                </button>
+              </div>
+            )}
+
+            {/* Input */}
+            <div className="bg-white border-t border-slate-200 px-4 py-3">
+              <div className="flex items-end gap-2">
+                <button onClick={() => fileInputRef.current?.click()} className="p-2 text-slate-400 hover:text-violet-600 hover:bg-violet-50 rounded-lg transition-colors flex-shrink-0" title="Attach file">
+                  <PaperclipIcon size={18} />
+                </button>
+                <input ref={fileInputRef} type="file" className="hidden" accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.gif,.txt"
+                  onChange={e => setAttachmentFile(e.target.files?.[0] || null)} />
+                <div className="flex-1 relative">
+                  <textarea ref={inputRef} value={text} onChange={e => setText(e.target.value)}
+                    onKeyDown={handleKeyDown} placeholder="Type your message..." rows={1}
+                    aria-label="Type your message"
+                    className="w-full px-4 py-2.5 bg-slate-100 rounded-lg text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:bg-white resize-none transition-colors" />
+                </div>
+                <button onClick={handleSend} disabled={(!text.trim() && !attachmentFile) || sending}
+                  aria-label="Send message"
+                  className="p-2.5 rounded-lg transition-all flex-shrink-0 disabled:opacity-40 disabled:cursor-not-allowed bg-violet-600 text-white hover:bg-violet-700 shadow-sm">
+                  {sending ? (
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  ) : (
+                    <SendIcon size={16} />
+                  )}
+                </button>
+              </div>
+            </div>
+          </>
+        ) : (
+          <div className="flex-1 flex flex-col items-center justify-center bg-slate-50">
+            <svg width={56} height={56} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="text-slate-300 mb-4"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+            <h3 className="text-base font-bold text-slate-400 mb-1">Select a Request</h3>
+            <p className="text-sm text-slate-300">Choose a conversation from the list or create a new one</p>
+            <button onClick={() => setShowNewModal(true)}
+              className="mt-4 px-5 py-2 bg-violet-600 text-white text-sm font-bold rounded-lg hover:bg-violet-700 transition-colors shadow-sm flex items-center gap-2">
+              <PlusIcon size={14} /> New Support Request
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Right Panel — Details (desktop: always visible when selected, mobile: toggle) */}
+      <div className={`${showDetails ? 'flex' : 'hidden'} lg:flex`}>
+        <DetailsPanel ticket={selectedTicket} onBack={() => setShowDetails(false)} />
+      </div>
+
+      {/* New Conversation Modal */}
+      <NewConversationModal open={showNewModal} onClose={handleNewModalClose} />
     </div>
   );
 }
