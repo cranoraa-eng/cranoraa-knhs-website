@@ -105,8 +105,8 @@ function ConversationList({ tickets, selectedId, onSelect, loading, searchQuery,
   return (
     <div className="w-80 min-w-0 bg-white border-r border-slate-200 flex flex-col h-full">
       {/* Header */}
-      <div className="px-4 py-4 border-b border-slate-100">
-        <h1 className="text-lg font-bold text-slate-900 mb-3">Messages</h1>
+      <div className="px-4 py-2 border-b border-slate-100">
+        <h1 className="text-sm font-bold text-slate-900 mb-2">Messages</h1>
 
         {/* Search */}
         <div className="relative">
@@ -117,7 +117,7 @@ function ConversationList({ tickets, selectedId, onSelect, loading, searchQuery,
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
             aria-label="Search conversations"
-            className="w-full pl-9 pr-4 py-2.5 bg-slate-100 rounded-lg text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-colors"
+            className="w-full pl-9 pr-4 py-2 bg-slate-100 rounded-lg text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-colors"
           />
         </div>
       </div>
@@ -125,11 +125,11 @@ function ConversationList({ tickets, selectedId, onSelect, loading, searchQuery,
       {/* Conversation List */}
       <div className="flex-1 overflow-y-auto">
         {loading ? (
-          <div className="flex items-center justify-center h-32">
+          <div className="flex items-center justify-center h-24">
             <Icons.Loader size={24} className="text-blue-500" />
           </div>
         ) : tickets.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-32 text-slate-400">
+          <div className="flex flex-col items-center justify-center h-24 text-slate-400">
             <Icons.MessageSquare size={32} className="mb-2" />
             <p className="text-sm">No conversations yet</p>
             <p className="text-xs mt-1">Click a staff member to start chatting</p>
@@ -142,7 +142,7 @@ function ConversationList({ tickets, selectedId, onSelect, loading, searchQuery,
                 onClick={() => onSelect(ticket.id)}
                 role="listitem"
                 aria-current={selectedId === ticket.id ? 'true' : undefined}
-                className={`w-full text-left px-4 py-3 hover:bg-slate-50 transition-colors ${
+                className={`w-full text-left px-4 py-2 hover:bg-slate-50 transition-colors ${
                   selectedId === ticket.id ? 'bg-blue-50 ring-2 ring-inset ring-blue-200' : ''
                 }`}
               >
@@ -220,7 +220,7 @@ function MessageThread({ ticket, messages, onSend, sending, onDelete, currentUse
   return (
     <div className="flex-1 flex flex-col min-w-0 bg-slate-50 h-full">
       {/* Conversation Header */}
-      <div className="flex items-center justify-between px-4 py-2 bg-white border-b border-slate-200">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-white border-b border-slate-200">
         <div className="flex items-center gap-2 min-w-0">
           <Avatar name={ticket.sender_name} size="sm" />
           <div className="min-w-0">
@@ -238,9 +238,9 @@ function MessageThread({ ticket, messages, onSend, sending, onDelete, currentUse
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
+      <div className="flex-1 overflow-y-auto px-3 py-2 space-y-2">
         {messages.length === 0 && (
-          <div className="text-center text-slate-400 text-sm py-6">
+          <div className="text-center text-slate-400 text-xs py-4">
             <p>No messages yet. Start the conversation!</p>
           </div>
         )}
@@ -254,7 +254,7 @@ function MessageThread({ ticket, messages, onSend, sending, onDelete, currentUse
                   <span className="text-[11px] font-medium text-slate-700">{msg.sender_name}</span>
                   <span className="text-[9px] text-slate-400">{formatTime(msg.created_at)}</span>
                 </div>
-                <div className={`px-3 py-2 rounded-2xl text-sm break-words ${
+                <div className={`px-3 py-1.5 rounded-2xl text-sm break-words ${
                   isOwn
                     ? 'bg-blue-600 text-white rounded-tr-md'
                     : 'bg-white border border-slate-200 rounded-tl-md'
@@ -271,7 +271,7 @@ function MessageThread({ ticket, messages, onSend, sending, onDelete, currentUse
       </div>
 
       {/* Input */}
-      <div className="bg-white border-t border-slate-200 px-3 py-1.5">
+      <div className="bg-white border-t border-slate-200 px-2 py-1">
         <div className="flex items-end gap-1.5">
           <div className="flex-1 relative">
             <textarea
@@ -282,7 +282,7 @@ function MessageThread({ ticket, messages, onSend, sending, onDelete, currentUse
               placeholder="Type a message..."
               aria-label="Type your message"
               rows={1}
-              className="w-full px-2.5 py-1.5 bg-slate-100 rounded-xl text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white resize-none transition-colors"
+              className="w-full px-2 py-1 bg-slate-100 rounded-xl text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white resize-none transition-colors"
             />
           </div>
           <button
@@ -346,8 +346,8 @@ function DepartmentDirectory({ onStaffClick, openingId }) {
   return (
     <div className="w-72 min-w-0 bg-white border-l border-slate-200 flex flex-col h-full">
       {/* Header */}
-      <div className="px-5 py-4 border-b border-slate-100">
-        <h2 className="text-sm font-bold text-slate-900 mb-3">Staff Directory</h2>
+      <div className="px-4 py-2 border-b border-slate-100">
+        <h2 className="text-xs font-bold text-slate-900 mb-2">Staff Directory</h2>
         <div className="relative">
           <Icons.Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
           <input
@@ -356,7 +356,7 @@ function DepartmentDirectory({ onStaffClick, openingId }) {
             value={dirSearch}
             onChange={(e) => setDirSearch(e.target.value)}
             aria-label="Search staff directory"
-            className="w-full pl-9 pr-4 py-2.5 bg-slate-100 rounded-lg text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-colors"
+            className="w-full pl-9 pr-4 py-2 bg-slate-100 rounded-lg text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-colors"
           />
         </div>
       </div>
@@ -364,11 +364,11 @@ function DepartmentDirectory({ onStaffClick, openingId }) {
       {/* Department List */}
       <div className="flex-1 overflow-y-auto">
         {loading ? (
-          <div className="flex items-center justify-center h-32">
+            <div className="flex items-center justify-center h-24">
             <Icons.Loader size={20} className="text-blue-500" />
           </div>
         ) : filteredDepts.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-32 text-slate-400">
+            <div className="flex flex-col items-center justify-center h-24 text-slate-400">
             <Icons.Users size={24} className="mb-2" />
             <p className="text-xs">No staff found</p>
           </div>
@@ -383,7 +383,7 @@ function DepartmentDirectory({ onStaffClick, openingId }) {
                   <button
                     onClick={() => toggleDept(dept.id)}
                     aria-expanded={isExpanded}
-                    className="w-full flex items-center gap-2.5 px-5 py-2.5 hover:bg-slate-50 transition-colors"
+                    className="w-full flex items-center gap-2.5 px-4 py-2 hover:bg-slate-50 transition-colors"
                   >
                     <div className={`w-7 h-7 ${dept.color} rounded-lg flex items-center justify-center`}>
                       <DeptIcon size={14} className="text-white" />
@@ -403,7 +403,7 @@ function DepartmentDirectory({ onStaffClick, openingId }) {
                           key={member.id}
                           onClick={() => onStaffClick(member.id)}
                           disabled={openingId === member.id}
-                          className="w-full flex items-center gap-3 pl-14 pr-5 py-2 hover:bg-blue-50 transition-colors group disabled:opacity-50"
+                          className="w-full flex items-center gap-3 pl-14 pr-5 py-1.5 hover:bg-blue-50 transition-colors group disabled:opacity-50"
                         >
                           <Avatar name={member.name} size="sm" online={member.is_online} />
                           <div className="flex-1 min-w-0 text-left">
