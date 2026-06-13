@@ -6258,3 +6258,275 @@ def test_push_notification(request):
     except Exception as e:
         logger.error(f"Firebase error: {str(e)}", exc_info=True)
         return Response({'error': 'Failed to process notification request.'}, status=500)
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# COMMUNICATION CENTER — Ticket Views
+# ═══════════════════════════════════════════════════════════════════════════════
+
+from .models import Ticket, TicketParticipant, TicketMessage, TicketAttachment, DepartmentContact
+from .serializers import (
+    TicketListSerializer, TicketDetailSerializer, TicketCreateSerializer,
+    TicketMessageSerializer, TicketParticipantSerializer, TicketAttachmentSerializer,
+    DepartmentContactSerializer,
+)
+
+
+class TicketViewSet(viewsets.ModelViewSet):
+    serializer_class = TicketDetailSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        qs = Ticket.objects.filter(is_archived=False).select_related(
+            'created_by', 'assigned_to'
+        ).prefetch_related('messages', 'participants', 'attachments')
+
+        # Filter by status
+        status_filter = self.request.query_params.get('status')
+        if status_filter:
+            if status_filter == 'resolved':
+                qs = qs.filter(status__in=['resolved', 'closed'])
+            else:
+                qs = qs.filter(status=status_filter)
+
+        # Filter by category
+        category = self.request.query_params.get('category')
+        if category and category != 'All':
+            qs = qs.filter(category=category.lower())
+
+        # Search
+        search = self.request.query_params.get('search')
+        if search:
+            from django.db.models import Q
+            qs = qs.filter(
+                Q(subject__icontains=search) |
+                Q(ticket_id__icontains=search) |
+                Q(created_by__first_name__icontains=search) |
+                Q(created_by__last_name__icontains=search) |
+                Q(messages__content__icontains=search)
+            ).distinct()
+
+        # Role-based filtering
+        if user.role == 'student':
+            # Students see tickets they created
+            qs = qs.filter(created_by=user)
+        elif user.role == 'parent':
+            # Parents see tickets they created
+            qs = qs.filter(created_by=user)
+        elif user.role == 'teacher':
+            # Teachers see tickets they created or are assigned to
+            qs = qs.filter(
+                Q(created_by=user) |
+                Q(assigned_to=user) |
+                Q(participants__user=user)
+            ).distinct()
+
+        # Admins see all
+
+        return qs.order_by('-updated_at')
+
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return TicketListSerializer
+        if self.action == 'create':
+            return TicketCreateSerializer
+        return TicketDetailSerializer
+
+    def perform_create(self, serializer):
+        ticket = serializer.save(created_by=self.request.user)
+        from portal.views import log_audit_action
+        log_audit_action(
+            user=self.request.user,
+            action='create',
+            model_name='Ticket',
+            object_id=ticket.id,
+            object_repr=ticket.ticket_id,
+            description=f'Created ticket: {ticket.subject}',
+            request=self.request
+        )
+
+    @action(detail=True, methods=['post'], url_path='send-message')
+    def send_message(self, request, pk=None):
+        """Add a message to a ticket."""
+        ticket = self.get_object()
+        content = request.data.get('content', '').strip()
+
+        if not content:
+            return Response({'error': 'Message content is required'}, status=400)
+
+        message = TicketMessage.objects.create(
+            ticket=ticket,
+            sender=request.user,
+            content=content
+        )
+
+        # Update ticket status to replied if it was open
+        if ticket.status == 'open':
+            ticket.status = 'replied'
+            ticket.save(update_fields=['status', 'updated_at'])
+
+        # Mark other participants' messages as read
+        ticket.messages.filter(is_read=False).exclude(sender=request.user).update(is_read=True)
+
+        # Create notification for participants
+        participants = ticket.participants.exclude(user=request.user)
+        for p in participants:
+            Notification.objects.create(
+                recipient=p.user,
+                notification_type='message',
+                title=f'New message on {ticket.ticket_id}',
+                message=f'{full_name(request.user)}: {content[:100]}...' if len(content) > 100 else f'{full_name(request.user)}: {content}',
+                link='/communication-center'
+            )
+
+        return Response(TicketMessageSerializer(message).data, status=201)
+
+    @action(detail=True, methods=['post'], url_path='update-status')
+    def update_status(self, request, pk=None):
+        """Update ticket status."""
+        ticket = self.get_object()
+        new_status = request.data.get('status')
+
+        if new_status not in ['open', 'pending', 'replied', 'resolved', 'closed']:
+            return Response({'error': 'Invalid status'}, status=400)
+
+        ticket.status = new_status
+        ticket.save(update_fields=['status', 'updated_at'])
+
+        return Response({'status': new_status})
+
+    @action(detail=True, methods=['post'], url_path='update-priority')
+    def update_priority(self, request, pk=None):
+        """Update ticket priority."""
+        ticket = self.get_object()
+        new_priority = request.data.get('priority')
+
+        if new_priority not in ['normal', 'high', 'urgent']:
+            return Response({'error': 'Invalid priority'}, status=400)
+
+        ticket.priority = new_priority
+        ticket.save(update_fields=['priority', 'updated_at'])
+
+        return Response({'priority': new_priority})
+
+    @action(detail=True, methods=['post'], url_path='assign')
+    def assign_ticket(self, request, pk=None):
+        """Assign a ticket to a user."""
+        ticket = self.get_object()
+        user_id = request.data.get('user_id')
+
+        if not user_id:
+            return Response({'error': 'user_id is required'}, status=400)
+
+        try:
+            assignee = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            return Response({'error': 'User not found'}, status=404)
+
+        ticket.assigned_to = assignee
+        ticket.save(update_fields=['assigned_to', 'updated_at'])
+
+        # Add as collaborator participant
+        TicketParticipant.objects.get_or_create(
+            ticket=ticket,
+            user=assignee,
+            defaults={'role': 'collaborator'}
+        )
+
+        return Response({'assigned_to': full_name(assignee)})
+
+    @action(detail=True, methods=['post'], url_path='add-participant')
+    def add_participant(self, request, pk=None):
+        """Add a participant to a ticket."""
+        ticket = self.get_object()
+        user_id = request.data.get('user_id')
+        role = request.data.get('role', 'viewer')
+
+        if not user_id:
+            return Response({'error': 'user_id is required'}, status=400)
+
+        try:
+            user = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            return Response({'error': 'User not found'}, status=404)
+
+        participant, created = TicketParticipant.objects.get_or_create(
+            ticket=ticket,
+            user=user,
+            defaults={'role': role}
+        )
+
+        if not created:
+            participant.role = role
+            participant.save(update_fields=['role'])
+
+        return Response({'status': 'added', 'created': created})
+
+    @action(detail=True, methods=['post'], url_path='archive')
+    def archive_ticket(self, request, pk=None):
+        """Archive a ticket."""
+        ticket = self.get_object()
+        ticket.is_archived = True
+        ticket.save(update_fields=['is_archived', 'updated_at'])
+        return Response({'status': 'archived'})
+
+    @action(detail=True, methods=['get'], url_path='messages')
+    def get_messages(self, request, pk=None):
+        """Get all messages for a ticket."""
+        ticket = self.get_object()
+        messages = ticket.messages.select_related('sender').order_by('created_at')
+
+        # Mark messages as read
+        messages.filter(is_read=False).exclude(sender=request.user).update(is_read=True)
+
+        return Response(TicketMessageSerializer(messages, many=True).data)
+
+    @action(detail=False, methods=['get'])
+    def stats(self, request):
+        """Get ticket statistics."""
+        user = request.user
+        base_qs = Ticket.objects.all()
+
+        # Role-based filtering
+        if user.role == 'student':
+            base_qs = base_qs.filter(created_by=user)
+        elif user.role == 'parent':
+            base_qs = base_qs.filter(created_by=user)
+
+        stats = {
+            'total': base_qs.count(),
+            'open': base_qs.filter(status='open').count(),
+            'pending': base_qs.filter(status='pending').count(),
+            'replied': base_qs.filter(status='replied').count(),
+            'resolved': base_qs.filter(status='resolved').count(),
+            'closed': base_qs.filter(status='closed').count(),
+        }
+        return Response(stats)
+
+
+class DepartmentContactViewSet(viewsets.ModelViewSet):
+    serializer_class = DepartmentContactSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return DepartmentContact.objects.filter(is_active=True).select_related('contact_person')
+
+    def perform_create(self, serializer):
+        if self.request.user.role != 'admin':
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("Only admins can manage department contacts.")
+        serializer.save()
+
+    def perform_update(self, serializer):
+        if self.request.user.role != 'admin':
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("Only admins can manage department contacts.")
+        serializer.save()
+
+    def perform_destroy(self, instance):
+        if self.request.user.role != 'admin':
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("Only admins can manage department contacts.")
+        instance.is_active = False
+        instance.save(update_fields=['is_active'])

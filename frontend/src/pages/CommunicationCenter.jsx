@@ -1,6 +1,7 @@
-import { useState, useMemo } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import api from '../utils/api';
 
-// ─── SVG Icons (no external dependencies) ────────────────────────────────────
+// ─── SVG Icons ───────────────────────────────────────────────────────────────
 
 const Icon = ({ d, size = 16, className = '' }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
@@ -35,9 +36,11 @@ const Icons = {
   BookOpen: (p) => <Icon {...p} d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2zM22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z" />,
   Shield: (p) => <Icon {...p} d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />,
   UserCheck: (p) => <svg width={p.size||16} height={p.size||16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={p.className}><path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" /><circle cx="8.5" cy="7" r="4" /><polyline points="17 11 19 13 23 9" /></svg>,
+  Loader: (p) => <svg width={p.size||16} height={p.size||16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`${p.className || ''} animate-spin`}><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" /></svg>,
+  AlertCircle: (p) => <Icon {...p} d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10zM12 8v4M12 16h.01" />,
 };
 
-// ─── Mock Data ───────────────────────────────────────────────────────────────
+// ─── Config ──────────────────────────────────────────────────────────────────
 
 const DEPARTMENTS = [
   { id: 'registrar', name: 'Registrar', icon: 'FileText', color: 'bg-blue-500', members: 4 },
@@ -45,131 +48,6 @@ const DEPARTMENTS = [
   { id: 'faculty', name: 'Faculty', icon: 'BookOpen', color: 'bg-violet-500', members: 28 },
   { id: 'admin', name: "Principal's Office", icon: 'Shield', color: 'bg-amber-500', members: 3 },
   { id: 'guidance', name: 'Guidance', icon: 'UserCheck', color: 'bg-rose-500', members: 2 },
-];
-
-const CONVERSATIONS = [
-  {
-    id: 1,
-    subject: 'Enrollment Inquiry for SY 2026-2027',
-    category: 'Enrollment',
-    sender: { name: 'Maria Santos', role: 'Parent', avatar: 'MS' },
-    participants: [
-      { name: 'Maria Santos', role: 'Parent' },
-      { name: 'Juan Dela Cruz', role: 'Registrar Staff' },
-      { name: 'Prof. Reyes', role: 'Grade 10 Adviser' },
-    ],
-    lastMessage: 'Thank you for the update. We will submit the requirements this week.',
-    timestamp: '2026-06-13T10:30:00',
-    status: 'open',
-    priority: 'normal',
-    unread: 2,
-    messages: [
-      { id: 1, sender: 'Maria Santos', role: 'Parent', content: 'Good morning. I would like to inquire about the enrollment process for my daughter who will be entering Grade 11. What documents are required?', timestamp: '2026-06-12T09:00:00', read: true },
-      { id: 2, sender: 'Juan Dela Cruz', role: 'Registrar Staff', content: 'Good morning, Mrs. Santos. For Grade 11 enrollment, we require:\n\n1. Report Card (Form 138)\n2. Birth Certificate (PSA copy)\n3. Certificate of Good Moral Character\n4. 2x2 ID Photos (4 copies)\n\nPlease bring the original documents for verification.', timestamp: '2026-06-12T09:45:00', read: true },
-      { id: 3, sender: 'Prof. Reyes', role: 'Grade 10 Adviser', content: "I can confirm that Maria has been an exemplary student. Her grades are well within the passing range for Senior High School enrollment.", timestamp: '2026-06-12T14:20:00', read: true },
-      { id: 4, sender: 'Maria Santos', role: 'Parent', content: 'Thank you for the update. We will submit the requirements this week.', timestamp: '2026-06-13T10:30:00', read: false },
-    ],
-  },
-  {
-    id: 2,
-    subject: 'Absence Notification - Juan Dela Cruz',
-    category: 'Attendance',
-    sender: { name: 'Pedro Dela Cruz', role: 'Parent', avatar: 'PC' },
-    participants: [
-      { name: 'Pedro Dela Cruz', role: 'Parent' },
-      { name: 'Ms. Garcia', role: 'Grade 9 Adviser' },
-    ],
-    lastMessage: "Noted. Thank you for informing us. We'll mark the absence as excused.",
-    timestamp: '2026-06-13T08:15:00',
-    status: 'replied',
-    priority: 'normal',
-    unread: 0,
-    messages: [
-      { id: 1, sender: 'Pedro Dela Cruz', role: 'Parent', content: "Good morning. My son Juan will be absent today due to a medical appointment. He will return tomorrow.", timestamp: '2026-06-13T07:30:00', read: true },
-      { id: 2, sender: 'Ms. Garcia', role: 'Grade 9 Adviser', content: "Noted. Thank you for informing us. We'll mark the absence as excused. Please submit a medical certificate upon his return.", timestamp: '2026-06-13T08:15:00', read: true },
-    ],
-  },
-  {
-    id: 3,
-    subject: 'Grade Discrepancy Report',
-    category: 'Academic',
-    sender: { name: 'Ana Reyes', role: 'Student', avatar: 'AR' },
-    participants: [
-      { name: 'Ana Reyes', role: 'Student' },
-      { name: 'Prof. Martinez', role: 'Math Teacher' },
-      { name: 'Dr. Cruz', role: 'Academic Coordinator' },
-    ],
-    lastMessage: 'We have reviewed the records. The grade has been corrected. Thank you for bringing this to our attention.',
-    timestamp: '2026-06-12T16:45:00',
-    status: 'resolved',
-    priority: 'high',
-    unread: 0,
-    messages: [
-      { id: 1, sender: 'Ana Reyes', role: 'Student', content: "Good afternoon. I noticed that my grade in Mathematics was recorded as 78 instead of 87. Could you please check?", timestamp: '2026-06-12T14:00:00', read: true },
-      { id: 2, sender: 'Prof. Martinez', role: 'Math Teacher', content: 'Thank you for reporting this, Ana. Let me verify the records in our system.', timestamp: '2026-06-12T15:30:00', read: true },
-      { id: 3, sender: 'Dr. Cruz', role: 'Academic Coordinator', content: 'We have reviewed the records. The grade has been corrected to 87. Thank you for bringing this to our attention.', timestamp: '2026-06-12T16:45:00', read: true },
-    ],
-  },
-  {
-    id: 4,
-    subject: 'Faculty Meeting Schedule',
-    category: 'Collaboration',
-    sender: { name: 'Dr. Ramos', role: 'Principal', avatar: 'DR' },
-    participants: [
-      { name: 'Dr. Ramos', role: 'Principal' },
-      { name: 'All Faculty Members', role: 'Faculty' },
-    ],
-    lastMessage: 'Meeting agenda has been updated. Please review the attached document.',
-    timestamp: '2026-06-12T11:00:00',
-    status: 'open',
-    priority: 'normal',
-    unread: 1,
-    messages: [
-      { id: 1, sender: 'Dr. Ramos', role: 'Principal', content: "Good morning, everyone. There will be a faculty meeting this Friday at 3:00 PM in the Audio-Visual Room. We will discuss the upcoming Foundation Day activities.", timestamp: '2026-06-12T09:00:00', read: true },
-      { id: 2, sender: 'Dr. Ramos', role: 'Principal', content: 'Meeting agenda has been updated. Please review the attached document.', timestamp: '2026-06-12T11:00:00', read: false },
-    ],
-  },
-  {
-    id: 5,
-    subject: 'Library Book Replacement',
-    category: 'Facilities',
-    sender: { name: 'Carlo Mendoza', role: 'Student', avatar: 'CM' },
-    participants: [
-      { name: 'Carlo Mendoza', role: 'Student' },
-      { name: 'Mrs. Torres', role: 'Librarian' },
-    ],
-    lastMessage: 'The replacement copy has been received. Please return it to the library counter.',
-    timestamp: '2026-06-11T14:20:00',
-    status: 'closed',
-    priority: 'normal',
-    unread: 0,
-    messages: [
-      { id: 1, sender: 'Carlo Mendoza', role: 'Student', content: "Good afternoon. I accidentally damaged a library book. How can I settle the replacement?", timestamp: '2026-06-11T10:00:00', read: true },
-      { id: 2, sender: 'Mrs. Torres', role: 'Librarian', content: 'Good afternoon, Carlo. You can purchase a replacement copy of the same edition. Please bring it to the library counter once acquired.', timestamp: '2026-06-11T10:30:00', read: true },
-      { id: 3, sender: 'Carlo Mendoza', role: 'Student', content: 'Understood. I have already purchased the replacement. I will return it tomorrow.', timestamp: '2026-06-11T14:00:00', read: true },
-      { id: 4, sender: 'Mrs. Torres', role: 'Librarian', content: 'The replacement copy has been received. Please return it to the library counter.', timestamp: '2026-06-11T14:20:00', read: true },
-    ],
-  },
-  {
-    id: 6,
-    subject: 'IT Support Request - Lab Equipment',
-    category: 'IT Support',
-    sender: { name: 'Prof. Lim', role: 'Teacher', avatar: 'PL' },
-    participants: [
-      { name: 'Prof. Lim', role: 'Teacher' },
-      { name: 'Mr. Bautista', role: 'IT Staff' },
-    ],
-    lastMessage: 'Scheduled for maintenance tomorrow afternoon. Thank you for your patience.',
-    timestamp: '2026-06-11T09:30:00',
-    status: 'pending',
-    priority: 'high',
-    unread: 0,
-    messages: [
-      { id: 1, sender: 'Prof. Lim', role: 'Teacher', content: "Hello. Three computers in Computer Lab 2 are not turning on. This is affecting our ICT classes. Can someone look into this?", timestamp: '2026-06-11T08:00:00', read: true },
-      { id: 2, sender: 'Mr. Bautista', role: 'IT Staff', content: 'Thank you for reporting, Prof. Lim. I will check the equipment during the break. It might be a power supply issue.', timestamp: '2026-06-11T08:30:00', read: true },
-      { id: 3, sender: 'Mr. Bautista', role: 'IT Staff', content: 'Scheduled for maintenance tomorrow afternoon. Thank you for your patience.', timestamp: '2026-06-11T09:30:00', read: true },
-    ],
-  },
 ];
 
 const STATUS_CONFIG = {
@@ -188,9 +66,22 @@ const PRIORITY_CONFIG = {
 
 const CATEGORIES = ['All', 'Enrollment', 'Attendance', 'Academic', 'Collaboration', 'Facilities', 'IT Support', 'Finance', 'Guidance'];
 
+const AVATAR_COLORS = ['bg-blue-500', 'bg-emerald-500', 'bg-violet-500', 'bg-amber-500', 'bg-rose-500', 'bg-indigo-500'];
+
+function getAvatarColor(name) {
+  let hash = 0;
+  for (let i = 0; i < (name || '').length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
+}
+
+function getInitials(name) {
+  return (name || 'U').split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+}
+
 // ─── Utility Functions ───────────────────────────────────────────────────────
 
 function formatTimestamp(ts) {
+  if (!ts) return '';
   const date = new Date(ts);
   const now = new Date();
   const diffMs = now - date;
@@ -206,6 +97,7 @@ function formatTimestamp(ts) {
 }
 
 function formatFullTimestamp(ts) {
+  if (!ts) return '';
   const date = new Date(ts);
   return date.toLocaleDateString('en-US', {
     weekday: 'long',
@@ -220,7 +112,7 @@ function formatFullTimestamp(ts) {
 // ─── Components ──────────────────────────────────────────────────────────────
 
 function StatusBadge({ status }) {
-  const config = STATUS_CONFIG[status];
+  const config = STATUS_CONFIG[status] || STATUS_CONFIG.open;
   return (
     <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${config.color}`}>
       <span className={`w-1.5 h-1.5 rounded-full ${config.dot}`} />
@@ -229,14 +121,14 @@ function StatusBadge({ status }) {
   );
 }
 
-function Avatar({ initials, size = 'md', color = 'bg-blue-500' }) {
+function Avatar({ initials, size = 'md', color }) {
   const sizes = {
     sm: 'w-7 h-7 text-xs',
     md: 'w-9 h-9 text-sm',
     lg: 'w-11 h-11 text-base',
   };
   return (
-    <div className={`${sizes[size]} ${color} rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0`}>
+    <div className={`${sizes[size]} ${color || 'bg-blue-500'} rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0`}>
       {initials}
     </div>
   );
@@ -244,36 +136,23 @@ function Avatar({ initials, size = 'md', color = 'bg-blue-500' }) {
 
 function RoleBadge({ role }) {
   const colors = {
-    'Parent': 'bg-sky-50 text-sky-700',
-    'Student': 'bg-emerald-50 text-emerald-700',
-    'Teacher': 'bg-violet-50 text-violet-700',
-    'Grade Adviser': 'bg-violet-50 text-violet-700',
-    'Registrar Staff': 'bg-blue-50 text-blue-700',
-    "Principal's Office": 'bg-amber-50 text-amber-700',
-    'Admin': 'bg-amber-50 text-amber-700',
-    'IT Staff': 'bg-orange-50 text-orange-700',
-    'Librarian': 'bg-teal-50 text-teal-700',
-    'Math Teacher': 'bg-violet-50 text-violet-700',
-    'Academic Coordinator': 'bg-indigo-50 text-indigo-700',
-    'Faculty': 'bg-violet-50 text-violet-700',
+    'parent': 'bg-sky-50 text-sky-700',
+    'student': 'bg-emerald-50 text-emerald-700',
+    'teacher': 'bg-violet-50 text-violet-700',
+    'admin': 'bg-amber-50 text-amber-700',
+    'staff': 'bg-blue-50 text-blue-700',
   };
+  const label = role ? role.charAt(0).toUpperCase() + role.slice(1) : 'User';
   return (
     <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${colors[role] || 'bg-slate-50 text-slate-600'}`}>
-      {role}
+      {label}
     </span>
   );
 }
 
 // ─── Sidebar ─────────────────────────────────────────────────────────────────
 
-function Sidebar({ activeSection, onSectionChange, conversations }) {
-  const stats = useMemo(() => ({
-    total: conversations.length,
-    open: conversations.filter(c => c.status === 'open').length,
-    pending: conversations.filter(c => c.status === 'pending').length,
-    resolved: conversations.filter(c => c.status === 'resolved' || c.status === 'closed').length,
-  }), [conversations]);
-
+function Sidebar({ activeSection, onSectionChange, stats }) {
   const sections = [
     { id: 'all', label: 'All Conversations', icon: Icons.Inbox, count: stats.total },
     { id: 'open', label: 'Open Tickets', icon: Icons.MessageSquare, count: stats.open },
@@ -359,31 +238,13 @@ function Sidebar({ activeSection, onSectionChange, conversations }) {
           })}
         </div>
       </div>
-
-      <div className="px-3 py-3 border-t border-slate-100 flex-1 overflow-y-auto">
-        <p className="px-2 mb-2 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Recent</p>
-        <div className="space-y-1">
-          {conversations.slice(0, 3).map(conv => (
-            <button
-              key={conv.id}
-              className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-slate-50 transition-colors text-left"
-            >
-              <Avatar initials={conv.sender.avatar} size="sm" color="bg-blue-500" />
-              <div className="flex-1 min-w-0">
-                <p className="text-xs font-medium text-slate-700 truncate">{conv.sender.name}</p>
-                <p className="text-[10px] text-slate-400 truncate">{conv.subject}</p>
-              </div>
-            </button>
-          ))}
-        </div>
-      </div>
     </div>
   );
 }
 
 // ─── Conversation List ───────────────────────────────────────────────────────
 
-function ConversationList({ conversations, selectedId, onSelect, searchQuery, onSearchChange, categoryFilter, onCategoryChange }) {
+function ConversationList({ conversations, selectedId, onSelect, searchQuery, onSearchChange, categoryFilter, onCategoryChange, loading, onCreateNew }) {
   return (
     <div className="w-96 bg-white border-r border-slate-200 flex flex-col h-full">
       <div className="px-4 py-3 border-b border-slate-100">
@@ -393,7 +254,10 @@ function ConversationList({ conversations, selectedId, onSelect, searchQuery, on
             <button className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 transition-colors">
               <Icons.Bell size={16} />
             </button>
-            <button className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 transition-colors">
+            <button
+              onClick={onCreateNew}
+              className="p-1.5 rounded-lg hover:bg-blue-50 text-blue-600 transition-colors"
+            >
               <Icons.Plus size={16} />
             </button>
           </div>
@@ -428,7 +292,12 @@ function ConversationList({ conversations, selectedId, onSelect, searchQuery, on
       </div>
 
       <div className="flex-1 overflow-y-auto">
-        {conversations.length === 0 ? (
+        {loading ? (
+          <div className="flex flex-col items-center justify-center h-48 text-slate-400">
+            <Icons.Loader size={32} className="mb-2" />
+            <p className="text-sm font-medium">Loading...</p>
+          </div>
+        ) : conversations.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-48 text-slate-400">
             <Icons.Inbox size={40} className="mb-2" />
             <p className="text-sm font-medium">No conversations found</p>
@@ -444,24 +313,27 @@ function ConversationList({ conversations, selectedId, onSelect, searchQuery, on
                 }`}
               >
                 <div className="flex items-start gap-3">
-                  <Avatar initials={conv.sender.avatar} color="bg-blue-500" />
+                  <Avatar
+                    initials={getInitials(conv.sender_name)}
+                    color={getAvatarColor(conv.sender_name)}
+                  />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between mb-0.5">
-                      <span className="text-sm font-semibold text-slate-900 truncate">{conv.sender.name}</span>
+                      <span className="text-sm font-semibold text-slate-900 truncate">{conv.sender_name}</span>
                       <span className="text-[10px] text-slate-400 flex-shrink-0 ml-2">
-                        {formatTimestamp(conv.timestamp)}
+                        {formatTimestamp(conv.updated_at)}
                       </span>
                     </div>
                     <p className="text-xs font-medium text-slate-700 truncate mb-1">{conv.subject}</p>
-                    <p className="text-xs text-slate-500 truncate mb-2">{conv.lastMessage}</p>
+                    <p className="text-xs text-slate-500 truncate mb-2">{conv.last_message}</p>
                     <div className="flex items-center gap-2">
                       <StatusBadge status={conv.status} />
-                      <span className={`text-[10px] font-medium ${PRIORITY_CONFIG[conv.priority].color}`}>
-                        {conv.priority !== 'normal' && PRIORITY_CONFIG[conv.priority].label}
+                      <span className={`text-[10px] font-medium ${PRIORITY_CONFIG[conv.priority]?.color || ''}`}>
+                        {conv.priority !== 'normal' && PRIORITY_CONFIG[conv.priority]?.label}
                       </span>
-                      {conv.unread > 0 && (
+                      {conv.unread_count > 0 && (
                         <span className="ml-auto bg-blue-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
-                          {conv.unread}
+                          {conv.unread_count}
                         </span>
                       )}
                     </div>
@@ -478,9 +350,27 @@ function ConversationList({ conversations, selectedId, onSelect, searchQuery, on
 
 // ─── Message Thread ──────────────────────────────────────────────────────────
 
-function MessageThread({ conversation }) {
+function MessageThread({ conversation, messages, onSendMessage, sending }) {
   const [replyText, setReplyText] = useState('');
   const [showParticipants, setShowParticipants] = useState(false);
+  const messagesEndRef = useRef(null);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  const handleSend = () => {
+    if (!replyText.trim() || sending) return;
+    onSendMessage(replyText.trim());
+    setReplyText('');
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  };
 
   if (!conversation) {
     return (
@@ -505,8 +395,8 @@ function MessageThread({ conversation }) {
               <h2 className="text-lg font-bold text-slate-900">{conv.subject}</h2>
               <StatusBadge status={conv.status} />
               {conv.priority !== 'normal' && (
-                <span className={`text-xs font-semibold ${PRIORITY_CONFIG[conv.priority].color}`}>
-                  {PRIORITY_CONFIG[conv.priority].label}
+                <span className={`text-xs font-semibold ${PRIORITY_CONFIG[conv.priority]?.color || ''}`}>
+                  {PRIORITY_CONFIG[conv.priority]?.label}
                 </span>
               )}
             </div>
@@ -517,93 +407,75 @@ function MessageThread({ conversation }) {
               </span>
               <span className="flex items-center gap-1.5">
                 <Icons.Clock size={14} />
-                Created {formatFullTimestamp(conv.messages[0].timestamp)}
+                Created {formatFullTimestamp(conv.created_at)}
               </span>
+              <span className="font-mono text-slate-400">{conv.ticket_id}</span>
             </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <button className="p-2 rounded-lg hover:bg-slate-100 text-slate-400 transition-colors">
-              <Icons.Phone size={16} />
-            </button>
-            <button className="p-2 rounded-lg hover:bg-slate-100 text-slate-400 transition-colors">
-              <Icons.Video size={16} />
-            </button>
-            <button className="p-2 rounded-lg hover:bg-slate-100 text-slate-400 transition-colors">
-              <Icons.Star size={16} />
-            </button>
-            <button className="p-2 rounded-lg hover:bg-slate-100 text-slate-400 transition-colors">
-              <Icons.MoreHorizontal size={16} />
-            </button>
           </div>
         </div>
 
-        <div className="mt-3 flex items-center gap-2">
-          <span className="text-xs text-slate-500 font-medium">Participants:</span>
-          <div className="flex items-center gap-1.5 flex-wrap">
-            {conv.participants.slice(0, showParticipants ? conv.participants.length : 3).map((p, i) => (
-              <span
-                key={i}
-                className="inline-flex items-center gap-1 px-2 py-1 bg-slate-100 rounded-lg text-xs font-medium text-slate-600"
-              >
-                <span className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center text-[9px] text-white font-bold">
-                  {p.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+        {conv.participants && conv.participants.length > 0 && (
+          <div className="mt-3 flex items-center gap-2">
+            <span className="text-xs text-slate-500 font-medium">Participants:</span>
+            <div className="flex items-center gap-1.5 flex-wrap">
+              {conv.participants.slice(0, showParticipants ? conv.participants.length : 3).map((p, i) => (
+                <span
+                  key={i}
+                  className="inline-flex items-center gap-1 px-2 py-1 bg-slate-100 rounded-lg text-xs font-medium text-slate-600"
+                >
+                  <span className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center text-[9px] text-white font-bold">
+                    {getInitials(p.user_name || p.name)}
+                  </span>
+                  {p.user_name || p.name}
+                  <RoleBadge role={p.role} />
                 </span>
-                {p.name}
-                <RoleBadge role={p.role} />
-              </span>
-            ))}
-            {conv.participants.length > 3 && !showParticipants && (
-              <button
-                onClick={() => setShowParticipants(true)}
-                className="text-xs text-blue-600 hover:text-blue-700 font-medium"
-              >
-                +{conv.participants.length - 3} more
-              </button>
-            )}
+              ))}
+              {conv.participants.length > 3 && !showParticipants && (
+                <button
+                  onClick={() => setShowParticipants(true)}
+                  className="text-xs text-blue-600 hover:text-blue-700 font-medium"
+                >
+                  +{conv.participants.length - 3} more
+                </button>
+              )}
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
-        {conv.messages.map((msg) => {
-          const isParent = msg.role === 'Parent';
-          const isStudent = msg.role === 'Student';
-          const isStaff = !isParent && !isStudent;
+        {messages.map((msg) => {
+          const isOwnMessage = msg.is_own;
+          const senderName = msg.sender_name || 'Unknown';
+          const senderRole = msg.sender_role || 'user';
 
           return (
-            <div key={msg.id} className={`flex gap-3 ${isStaff ? 'flex-row' : 'flex-row-reverse'}`}>
+            <div key={msg.id} className={`flex gap-3 ${isOwnMessage ? 'flex-row-reverse' : 'flex-row'}`}>
               <Avatar
-                initials={msg.sender.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                initials={getInitials(senderName)}
                 size="md"
-                color={isStaff ? 'bg-blue-600' : isParent ? 'bg-emerald-600' : 'bg-violet-600'}
+                color={isOwnMessage ? 'bg-blue-600' : getAvatarColor(senderName)}
               />
-              <div className={`max-w-lg ${isStaff ? '' : 'text-right'}`}>
-                <div className="flex items-center gap-2 mb-1" style={{ flexDirection: isStaff ? 'row' : 'row-reverse' }}>
-                  <span className="text-sm font-semibold text-slate-900">{msg.sender}</span>
-                  <RoleBadge role={msg.role} />
-                  <span className="text-[10px] text-slate-400">{formatTimestamp(msg.timestamp)}</span>
+              <div className={`max-w-lg ${isOwnMessage ? 'text-right' : ''}`}>
+                <div className="flex items-center gap-2 mb-1" style={{ flexDirection: isOwnMessage ? 'row-reverse' : 'row' }}>
+                  <span className="text-sm font-semibold text-slate-900">{senderName}</span>
+                  <RoleBadge role={senderRole} />
+                  <span className="text-[10px] text-slate-400">{formatTimestamp(msg.created_at)}</span>
                 </div>
                 <div className={`p-4 rounded-2xl ${
-                  isStaff
-                    ? 'bg-white border border-slate-200 rounded-tl-md'
-                    : 'bg-blue-600 text-white rounded-tr-md'
+                  isOwnMessage
+                    ? 'bg-blue-600 text-white rounded-tr-md'
+                    : 'bg-white border border-slate-200 rounded-tl-md'
                 }`}>
-                  <p className={`text-sm leading-relaxed whitespace-pre-wrap ${isStaff ? 'text-slate-700' : 'text-white'}`}>
+                  <p className={`text-sm leading-relaxed whitespace-pre-wrap ${isOwnMessage ? 'text-white' : 'text-slate-700'}`}>
                     {msg.content}
                   </p>
-                </div>
-                <div className="flex items-center gap-1.5 mt-1" style={{ flexDirection: isStaff ? 'row' : 'row-reverse' }}>
-                  {msg.read ? (
-                    <Icons.CheckCircle size={12} className="text-blue-500" />
-                  ) : (
-                    <Icons.Eye size={12} className="text-slate-300" />
-                  )}
-                  <span className="text-[10px] text-slate-400">{msg.read ? 'Read' : 'Sent'}</span>
                 </div>
               </div>
             </div>
           );
         })}
+        <div ref={messagesEndRef} />
       </div>
 
       <div className="bg-white border-t border-slate-200 px-6 py-4">
@@ -615,38 +487,23 @@ function MessageThread({ conversation }) {
             <textarea
               value={replyText}
               onChange={(e) => setReplyText(e.target.value)}
+              onKeyDown={handleKeyDown}
               placeholder="Type your reply..."
               rows={1}
               className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
             />
           </div>
           <button
+            onClick={handleSend}
+            disabled={!replyText.trim() || sending}
             className={`p-2.5 rounded-xl flex-shrink-0 transition-colors ${
-              replyText.trim()
+              replyText.trim() && !sending
                 ? 'bg-blue-600 text-white hover:bg-blue-700'
                 : 'bg-slate-100 text-slate-400'
             }`}
           >
-            <Icons.Send size={20} />
+            {sending ? <Icons.Loader size={20} /> : <Icons.Send size={20} />}
           </button>
-        </div>
-        <div className="flex items-center gap-4 mt-2 text-[10px] text-slate-400">
-          <span className="flex items-center gap-1">
-            <Icons.Reply size={12} />
-            Reply
-          </span>
-          <span className="flex items-center gap-1">
-            <Icons.Forward size={12} />
-            Forward
-          </span>
-          <span className="flex items-center gap-1">
-            <Icons.Archive size={12} />
-            Archive
-          </span>
-          <span className="flex items-center gap-1">
-            <Icons.Trash2 size={12} />
-            Delete
-          </span>
         </div>
       </div>
     </div>
@@ -655,7 +512,7 @@ function MessageThread({ conversation }) {
 
 // ─── Right Panel ─────────────────────────────────────────────────────────────
 
-function RightPanel({ conversation }) {
+function RightPanel({ conversation, onStatusChange, onPriorityChange, onArchive }) {
   if (!conversation) return null;
 
   const conv = conversation;
@@ -667,7 +524,7 @@ function RightPanel({ conversation }) {
         <div className="space-y-3">
           <div>
             <p className="text-[10px] text-slate-400 mb-1">Ticket ID</p>
-            <p className="text-sm font-mono font-semibold text-slate-700">TKT-{String(conv.id).padStart(4, '0')}</p>
+            <p className="text-sm font-mono font-semibold text-slate-700">{conv.ticket_id}</p>
           </div>
           <div>
             <p className="text-[10px] text-slate-400 mb-1">Category</p>
@@ -679,90 +536,177 @@ function RightPanel({ conversation }) {
           </div>
           <div>
             <p className="text-[10px] text-slate-400 mb-1">Priority</p>
-            <p className={`text-sm font-medium ${PRIORITY_CONFIG[conv.priority].color}`}>
-              {PRIORITY_CONFIG[conv.priority].label}
-            </p>
+            <select
+              value={conv.priority}
+              onChange={(e) => onPriorityChange(e.target.value)}
+              className="text-sm font-medium text-slate-700 bg-transparent border border-slate-200 rounded px-2 py-1"
+            >
+              <option value="normal">Normal</option>
+              <option value="high">High Priority</option>
+              <option value="urgent">Urgent</option>
+            </select>
           </div>
           <div>
-            <p className="text-[10px] text-slate-400 mb-1">Messages</p>
-            <p className="text-sm font-medium text-slate-700">{conv.messages.length} messages</p>
+            <p className="text-[10px] text-slate-400 mb-1">Created</p>
+            <p className="text-sm font-medium text-slate-700">{formatFullTimestamp(conv.created_at)}</p>
           </div>
         </div>
       </div>
 
       <div className="px-5 py-4 border-b border-slate-100">
-        <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Participants</h3>
-        <div className="space-y-2.5">
-          {conv.participants.map((p, i) => (
-            <div key={i} className="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50">
-              <Avatar
-                initials={p.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
-                size="sm"
-                color="bg-blue-500"
-              />
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-slate-700 truncate">{p.name}</p>
-                <RoleBadge role={p.role} />
-              </div>
-            </div>
+        <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Update Status</h3>
+        <div className="grid grid-cols-2 gap-2">
+          {['open', 'pending', 'replied', 'resolved', 'closed'].map(status => (
+            <button
+              key={status}
+              onClick={() => onStatusChange(status)}
+              className={`px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
+                conv.status === status
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+              }`}
+            >
+              {STATUS_CONFIG[status].label}
+            </button>
           ))}
         </div>
       </div>
 
-      <div className="px-5 py-4 border-b border-slate-100">
+      {conv.participants && conv.participants.length > 0 && (
+        <div className="px-5 py-4 border-b border-slate-100">
+          <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Participants</h3>
+          <div className="space-y-2.5">
+            {conv.participants.map((p, i) => (
+              <div key={i} className="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50">
+                <Avatar
+                  initials={getInitials(p.user_name || p.name)}
+                  size="sm"
+                  color={getAvatarColor(p.user_name || p.name)}
+                />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-slate-700 truncate">{p.user_name || p.name}</p>
+                  <RoleBadge role={p.role} />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div className="px-5 py-4">
         <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Actions</h3>
         <div className="space-y-2">
-          <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors">
+          <button
+            onClick={onArchive}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors"
+          >
             <Icons.Archive size={16} className="text-slate-400" />
             Archive Conversation
-          </button>
-          <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors">
-            <Icons.ArrowUpRight size={16} className="text-slate-400" />
-            Escalate to Principal
           </button>
           <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors">
             <Icons.Users size={16} className="text-slate-400" />
             Add Participant
           </button>
-          <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-colors">
-            <Icons.Trash2 size={16} />
-            Delete
-          </button>
         </div>
       </div>
+    </div>
+  );
+}
 
-      <div className="px-5 py-4">
-        <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Attachments</h3>
-        <div className="space-y-2">
-          <div className="flex items-center gap-3 p-2.5 bg-slate-50 rounded-lg">
-            <div className="w-9 h-9 bg-blue-100 rounded-lg flex items-center justify-center">
-              <Icons.FileText size={16} className="text-blue-600" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-xs font-medium text-slate-700 truncate">enrollment_requirements.pdf</p>
-              <p className="text-[10px] text-slate-400">245 KB</p>
-            </div>
-            <button className="p-1 rounded hover:bg-slate-200 text-slate-400">
-              <Icons.Download size={14} />
-            </button>
-          </div>
-          <div className="flex items-center gap-3 p-2.5 bg-slate-50 rounded-lg">
-            <div className="w-9 h-9 bg-emerald-100 rounded-lg flex items-center justify-center">
-              <Icons.FileText size={16} className="text-emerald-600" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-xs font-medium text-slate-700 truncate">report_card_form138.jpg</p>
-              <p className="text-[10px] text-slate-400">1.2 MB</p>
-            </div>
-            <button className="p-1 rounded hover:bg-slate-200 text-slate-400">
-              <Icons.Download size={14} />
+// ─── New Ticket Modal ────────────────────────────────────────────────────────
+
+function NewTicketModal({ onClose, onSubmit }) {
+  const [subject, setSubject] = useState('');
+  const [category, setCategory] = useState('enrollment');
+  const [priority, setPriority] = useState('normal');
+  const [content, setContent] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!subject.trim() || !content.trim()) return;
+    setSubmitting(true);
+    await onSubmit({ subject: subject.trim(), category, priority, content: content.trim() });
+    setSubmitting(false);
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-2xl w-full max-w-lg mx-4 shadow-2xl">
+        <div className="px-6 py-4 border-b border-slate-200">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-bold text-slate-900">New Ticket</h2>
+            <button onClick={onClose} className="p-2 rounded-lg hover:bg-slate-100 text-slate-400">
+              <Icons.Trash2 size={16} />
             </button>
           </div>
         </div>
-        <button className="w-full mt-3 flex items-center justify-center gap-2 px-3 py-2 border border-dashed border-slate-300 rounded-lg text-xs font-medium text-slate-500 hover:bg-slate-50 transition-colors">
-          <Icons.Plus size={14} />
-          Upload File
-        </button>
+        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Subject</label>
+            <input
+              type="text"
+              value={subject}
+              onChange={(e) => setSubject(e.target.value)}
+              placeholder="Brief description of your issue"
+              className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Category</label>
+              <select
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                {CATEGORIES.filter(c => c !== 'All').map(cat => (
+                  <option key={cat} value={cat.toLowerCase()}>{cat}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Priority</label>
+              <select
+                value={priority}
+                onChange={(e) => setPriority(e.target.value)}
+                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="normal">Normal</option>
+                <option value="high">High</option>
+                <option value="urgent">Urgent</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Message</label>
+            <textarea
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              placeholder="Describe your issue in detail..."
+              rows={4}
+              className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+              required
+            />
+          </div>
+          <div className="flex justify-end gap-3 pt-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={submitting || !subject.trim() || !content.trim()}
+              className="px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
+            >
+              {submitting ? 'Creating...' : 'Create Ticket'}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );
@@ -775,56 +719,173 @@ export default function CommunicationCenter() {
   const [selectedId, setSelectedId] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('All');
+  const [conversations, setConversations] = useState([]);
+  const [stats, setStats] = useState({ total: 0, open: 0, pending: 0, resolved: 0 });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [selectedConversation, setSelectedConversation] = useState(null);
+  const [messages, setMessages] = useState([]);
+  const [messagesLoading, setMessagesLoading] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [showNewTicket, setShowNewTicket] = useState(false);
 
-  const filteredConversations = useMemo(() => {
-    let filtered = CONVERSATIONS;
+  const fetchConversations = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const params = new URLSearchParams();
+      if (activeSection !== 'all') params.append('status', activeSection);
+      if (categoryFilter !== 'All') params.append('category', categoryFilter);
+      if (searchQuery) params.append('search', searchQuery);
 
-    if (activeSection === 'open') {
-      filtered = filtered.filter(c => c.status === 'open');
-    } else if (activeSection === 'pending') {
-      filtered = filtered.filter(c => c.status === 'pending');
-    } else if (activeSection === 'resolved') {
-      filtered = filtered.filter(c => c.status === 'resolved' || c.status === 'closed');
+      const response = await api.get(`/accounts/tickets/?${params.toString()}`);
+      setConversations(response.data.results || response.data);
+    } catch (err) {
+      console.error('Failed to fetch tickets:', err);
+      setError('Failed to load conversations. Please try again.');
+    } finally {
+      setLoading(false);
     }
+  }, [activeSection, categoryFilter, searchQuery]);
 
-    if (categoryFilter !== 'All') {
-      filtered = filtered.filter(c => c.category === categoryFilter);
+  const fetchStats = useCallback(async () => {
+    try {
+      const response = await api.get('/accounts/tickets/stats/');
+      setStats(response.data);
+    } catch (err) {
+      console.error('Failed to fetch stats:', err);
     }
+  }, []);
 
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(c =>
-        c.subject.toLowerCase().includes(query) ||
-        c.sender.name.toLowerCase().includes(query) ||
-        c.lastMessage.toLowerCase().includes(query)
-      );
+  const fetchMessages = useCallback(async (ticketId) => {
+    try {
+      setMessagesLoading(true);
+      const response = await api.get(`/accounts/tickets/${ticketId}/messages/`);
+      setMessages(response.data);
+    } catch (err) {
+      console.error('Failed to fetch messages:', err);
+      setMessages([]);
+    } finally {
+      setMessagesLoading(false);
     }
+  }, []);
 
-    return filtered;
-  }, [activeSection, searchQuery, categoryFilter]);
+  useEffect(() => {
+    fetchConversations();
+    fetchStats();
+  }, [fetchConversations, fetchStats]);
 
-  const selectedConversation = useMemo(() => {
-    return CONVERSATIONS.find(c => c.id === selectedId) || null;
-  }, [selectedId]);
+  useEffect(() => {
+    if (selectedId) {
+      const conv = conversations.find(c => c.id === selectedId);
+      setSelectedConversation(conv || null);
+      fetchMessages(selectedId);
+    } else {
+      setSelectedConversation(null);
+      setMessages([]);
+    }
+  }, [selectedId, conversations, fetchMessages]);
+
+  const handleSendMessage = async (content) => {
+    if (!selectedId || !content) return;
+    try {
+      setSending(true);
+      const response = await api.post(`/accounts/tickets/${selectedId}/send-message/`, { content });
+      setMessages(prev => [...prev, response.data]);
+      fetchConversations();
+      fetchStats();
+    } catch (err) {
+      console.error('Failed to send message:', err);
+      alert('Failed to send message. Please try again.');
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const handleStatusChange = async (newStatus) => {
+    if (!selectedId) return;
+    try {
+      await api.post(`/accounts/tickets/${selectedId}/update-status/`, { status: newStatus });
+      setSelectedConversation(prev => prev ? { ...prev, status: newStatus } : null);
+      fetchConversations();
+      fetchStats();
+    } catch (err) {
+      console.error('Failed to update status:', err);
+    }
+  };
+
+  const handlePriorityChange = async (newPriority) => {
+    if (!selectedId) return;
+    try {
+      await api.post(`/accounts/tickets/${selectedId}/update-priority/`, { priority: newPriority });
+      setSelectedConversation(prev => prev ? { ...prev, priority: newPriority } : null);
+      fetchConversations();
+    } catch (err) {
+      console.error('Failed to update priority:', err);
+    }
+  };
+
+  const handleArchive = async () => {
+    if (!selectedId) return;
+    try {
+      await api.post(`/accounts/tickets/${selectedId}/archive/`);
+      setSelectedId(null);
+      fetchConversations();
+      fetchStats();
+    } catch (err) {
+      console.error('Failed to archive ticket:', err);
+    }
+  };
+
+  const handleCreateTicket = async ({ subject, category, priority, content }) => {
+    try {
+      const response = await api.post('/accounts/tickets/', { subject, category, priority, content });
+      setShowNewTicket(false);
+      fetchConversations();
+      fetchStats();
+      setSelectedId(response.data.id);
+    } catch (err) {
+      console.error('Failed to create ticket:', err);
+      alert('Failed to create ticket. Please try again.');
+    }
+  };
 
   return (
     <div className="h-screen flex bg-slate-100">
       <Sidebar
         activeSection={activeSection}
         onSectionChange={setActiveSection}
-        conversations={CONVERSATIONS}
+        stats={stats}
       />
       <ConversationList
-        conversations={filteredConversations}
+        conversations={conversations}
         selectedId={selectedId}
         onSelect={setSelectedId}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
         categoryFilter={categoryFilter}
         onCategoryChange={setCategoryFilter}
+        loading={loading}
+        onCreateNew={() => setShowNewTicket(true)}
       />
-      <MessageThread conversation={selectedConversation} />
-      <RightPanel conversation={selectedConversation} />
+      <MessageThread
+        conversation={selectedConversation}
+        messages={messages}
+        onSendMessage={handleSendMessage}
+        sending={sending}
+      />
+      <RightPanel
+        conversation={selectedConversation}
+        onStatusChange={handleStatusChange}
+        onPriorityChange={handlePriorityChange}
+        onArchive={handleArchive}
+      />
+      {showNewTicket && (
+        <NewTicketModal
+          onClose={() => setShowNewTicket(false)}
+          onSubmit={handleCreateTicket}
+        />
+      )}
     </div>
   );
 }

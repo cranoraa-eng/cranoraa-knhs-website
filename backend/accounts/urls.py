@@ -17,6 +17,7 @@ from .views import (
     fcm_token_register, fcm_token_delete, test_push_notification,
     storage_analytics_view,
     onboarding_state_view,
+    TicketViewSet, DepartmentContactViewSet,
 )
 
 app_name = 'accounts'
@@ -46,6 +47,8 @@ router.register(r'friendships', FriendshipViewSet, basename='friendship')
 router.register(r'rooms', RoomViewSet, basename='room')
 router.register(r'time-slots', TimeSlotViewSet, basename='time-slot')
 router.register(r'schedules', ScheduleViewSet, basename='schedule')
+router.register(r'tickets', TicketViewSet, basename='ticket')
+router.register(r'department-contacts', DepartmentContactViewSet, basename='department-contact')
 
 urlpatterns = [
     path('login/', login_view, name='login'),
