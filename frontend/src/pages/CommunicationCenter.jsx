@@ -688,7 +688,7 @@ export default function CommunicationCenter() {
   const unreadCount = tickets.filter(t => Number(t.unread_count) > 0).length;
 
   return (
-    <div className="h-[calc(100vh-80px)] flex bg-slate-100">
+    <div className="h-[calc(100vh-100px)] flex bg-slate-100">
       {/* Left Panel — Ticket List */}
       <div className="w-[340px] min-w-0 bg-white border-r border-slate-200 flex flex-col h-full">
         {/* Header */}
