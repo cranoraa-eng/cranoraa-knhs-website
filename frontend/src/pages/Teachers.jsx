@@ -761,6 +761,14 @@ const Teachers = () => {
                 </div>
 
                 <div className="pt-2 border-t border-slate-100">
+                  {teacher.is_adviser && (
+                    <div className="mb-2 flex items-center gap-1.5">
+                      <svg className="w-3 h-3 text-emerald-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                      <span className="text-[10px] font-bold text-emerald-600">
+                        Advisory of {getTeacherClassrooms(teacher.id).find(c => c.teacher === teacher.id)?.name || '—'}
+                      </span>
+                    </div>
+                  )}
                   <div className="flex items-center justify-between mb-1">
                     <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wide">Classes</p>
                     <span className="text-[9px] font-bold text-violet-600 bg-violet-50 px-1.5 py-0.5 rounded uppercase">{getTeacherClassrooms(teacher.id).length}</span>
@@ -768,7 +776,11 @@ const Teachers = () => {
                   {getTeacherClassrooms(teacher.id).length > 0 ? (
                     <div className="flex flex-wrap gap-1">
                       {getTeacherClassrooms(teacher.id).map(cls => (
-                        <span key={cls.id} className="px-1.5 py-0.5 bg-slate-50 text-slate-600 text-[9px] font-medium border border-slate-100 rounded">
+                        <span key={cls.id} className={`px-1.5 py-0.5 text-[9px] font-medium border rounded ${
+                          cls.teacher === teacher.id
+                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                            : 'bg-slate-50 text-slate-600 border-slate-100'
+                        }`}>
                           {cls.name}
                         </span>
                       ))}

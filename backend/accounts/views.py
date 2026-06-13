@@ -684,7 +684,11 @@ class ClassroomViewSet(viewsets.ModelViewSet):
             classroom = serializer.save(teacher=self.request.user)
         else:
             classroom = serializer.save()
-            
+
+        # Auto-add advisory role to assigned teacher
+        if classroom.teacher:
+            self._ensure_advisory_role(classroom.teacher)
+
         log_audit_action(
             user=self.request.user,
             action='create',
@@ -694,6 +698,82 @@ class ClassroomViewSet(viewsets.ModelViewSet):
             description=f'Created classroom: {classroom.name}',
             request=self.request
         )
+
+    def perform_update(self, serializer):
+        from portal.views import log_audit_action
+        old_teacher = serializer.instance.teacher
+        classroom = serializer.save()
+        new_teacher = classroom.teacher
+
+        # If teacher changed, manage advisory roles
+        if old_teacher != new_teacher:
+            if new_teacher:
+                self._ensure_advisory_role(new_teacher)
+            if old_teacher:
+                self._maybe_remove_advisory_role(old_teacher)
+
+        log_audit_action(
+            user=self.request.user,
+            action='update',
+            model_name='Classroom',
+            object_id=classroom.id,
+            object_repr=str(classroom),
+            description=f'Updated classroom: {classroom.name}',
+            request=self.request
+        )
+
+    def perform_destroy(self, instance):
+        from portal.views import log_audit_action
+        teacher = instance.teacher
+        log_audit_action(
+            user=self.request.user,
+            action='delete',
+            model_name='Classroom',
+            object_id=instance.id,
+            object_repr=str(instance),
+            description=f'Deleted classroom: {instance.name}',
+            request=self.request
+        )
+        instance.delete()
+        # Remove advisory role if teacher no longer advises any class
+        if teacher:
+            self._maybe_remove_advisory_role(teacher)
+
+    @staticmethod
+    def _ensure_advisory_role(user):
+        """Add 'advisory' to staff_title or additional_roles if not already present."""
+        if user.role != 'staff':
+            return
+        titles = set()
+        if user.staff_title:
+            titles.add(user.staff_title)
+        if user.additional_roles:
+            titles.update(r.strip() for r in user.additional_roles.split(',') if r.strip())
+        if 'advisory' not in titles:
+            # Add to additional_roles
+            extra = [r.strip() for r in (user.additional_roles or '').split(',') if r.strip()]
+            extra.append('advisory')
+            user.additional_roles = ','.join(extra)
+            user.save(update_fields=['additional_roles'])
+
+    @staticmethod
+    def _maybe_remove_advisory_role(user):
+        """Remove 'advisory' from additional_roles if teacher no longer advises any class."""
+        if user.role != 'staff':
+            return
+        # Check if still advising any classroom
+        still_advising = Classroom.objects.filter(teacher=user).exists()
+        if still_advising:
+            return
+        # Remove advisory from additional_roles
+        if user.additional_roles:
+            extra = [r.strip() for r in user.additional_roles.split(',') if r.strip() and r.strip() != 'advisory']
+            user.additional_roles = ','.join(extra)
+            user.save(update_fields=['additional_roles'])
+        # Also remove from staff_title if it was advisory
+        if user.staff_title == 'advisory':
+            user.staff_title = 'teacher'
+            user.save(update_fields=['staff_title'])
     
     @action(detail=True, methods=['get', 'post'])
     def students(self, request, pk=None):
