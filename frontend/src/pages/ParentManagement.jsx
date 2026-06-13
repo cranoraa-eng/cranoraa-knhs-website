@@ -20,6 +20,7 @@ export default function ParentManagement() {
   const [linkSearch, setLinkSearch] = useState('');
   const [linkedIds, setLinkedIds] = useState([]);
   const [linkSaving, setLinkSaving] = useState(false);
+  const [openMenuId, setOpenMenuId] = useState(null);
 
   useScrollLock(showAddModal || showLinkModal);
 
@@ -253,7 +254,7 @@ export default function ParentManagement() {
                   <th className="px-5 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Linked Children</th>
                   <th className="px-5 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest hidden sm:table-cell">Status</th>
                   <th className="px-5 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest hidden lg:table-cell">Temp Password</th>
-                  <th className="px-5 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Actions</th>
+                  <th className="px-5 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest w-12"></th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-50">
@@ -263,13 +264,9 @@ export default function ParentManagement() {
                     <tr key={p.id} className="hover:bg-slate-50 transition-colors">
                       <td className="px-5 py-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-white font-black text-sm flex-shrink-0">
-                            {p.first_name?.[0]}{p.last_name?.[0]}
-                          </div>
                           <div>
                             <p className="text-sm font-bold text-slate-800">{p.first_name} {p.last_name}</p>
                             <p className="text-[10px] text-violet-500 font-black uppercase tracking-widest">Parent</p>
-                            {/* Show email inline on mobile */}
                             <p className="text-[10px] text-slate-400 md:hidden">{p.email || '—'}</p>
                           </div>
                         </div>
@@ -308,34 +305,47 @@ export default function ParentManagement() {
                         )}
                       </td>
                       <td className="px-5 py-4">
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center justify-center relative">
                           <button
-                            onClick={() => openLinkModal(p)}
-                            title="Link Children"
-                            className="p-2 rounded-lg text-violet-600 hover:bg-violet-50 transition-all"
+                            onClick={() => setOpenMenuId(openMenuId === p.id ? null : p.id)}
+                            className="p-2 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all"
                           >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                            </svg>
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="5" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/><circle cx="12" cy="19" r="1.5" fill="currentColor"/></svg>
                           </button>
-                          <button
-                            onClick={() => handleResetPassword(p.id)}
-                            title="Reset Password"
-                            className="p-2 rounded-lg text-amber-600 hover:bg-amber-50 transition-all"
-                          >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
-                            </svg>
-                          </button>
-                          <button
-                            onClick={() => handleDelete(p.id, `${p.first_name} ${p.last_name}`)}
-                            title="Delete Account"
-                            className="p-2 rounded-lg text-rose-500 hover:bg-rose-50 transition-all"
-                          >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                            </svg>
-                          </button>
+                          {openMenuId === p.id && (
+                            <>
+                              <div className="fixed inset-0 z-40" onClick={() => setOpenMenuId(null)} />
+                              <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-lg shadow-lg border border-slate-200 py-1 z-50">
+                                <button
+                                  onClick={() => { openLinkModal(p); setOpenMenuId(null); }}
+                                  className="w-full flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
+                                >
+                                  <svg className="w-4 h-4 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                                  </svg>
+                                  Link Children
+                                </button>
+                                <button
+                                  onClick={() => { handleResetPassword(p.id); setOpenMenuId(null); }}
+                                  className="w-full flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
+                                >
+                                  <svg className="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                                  </svg>
+                                  Reset Password
+                                </button>
+                                <button
+                                  onClick={() => { handleDelete(p.id, `${p.first_name} ${p.last_name}`); setOpenMenuId(null); }}
+                                  className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                                >
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                  </svg>
+                                  Delete Account
+                                </button>
+                              </div>
+                            </>
+                          )}
                         </div>
                       </td>
                     </tr>

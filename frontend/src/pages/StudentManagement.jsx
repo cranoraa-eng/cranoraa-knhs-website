@@ -26,6 +26,7 @@ const StudentManagement = () => {
   const [isDragging, setIsDragging] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedIds, setSelectedIds] = useState([]);
+  const [openMenuId, setOpenMenuId] = useState(null);
   const [newStudent, setNewStudent] = useState({
     username: '',
     email: '',
@@ -627,9 +628,6 @@ const StudentManagement = () => {
       </td>
       <td className="px-3 py-1.5 md:px-6 md:py-4">
         <div className="flex items-center gap-2 md:gap-3">
-          <div className="w-6 h-6 md:w-10 md:h-10 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-lg md:rounded-xl flex items-center justify-center text-white font-black text-[10px] md:text-sm shadow-sm">
-            {student.first_name?.charAt(0)}{student.last_name?.charAt(0)}
-          </div>
           <div className="min-w-0">
              <p className="text-[9px] md:text-sm font-black text-slate-800 truncate uppercase tracking-tight leading-none mb-0.5 md:mb-1">
                {student.last_name}, {student.first_name}
@@ -684,39 +682,52 @@ const StudentManagement = () => {
          </select>
        </td>
       <td className="px-3 py-1.5 md:px-6 md:py-4">
-        <div className="flex items-center justify-center gap-1 md:gap-2">
-          <button 
-            onClick={() => { setSelectedStudent(student); setShowProfileModal(true); }}
-            className="p-1 md:p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all"
-            title="View Profile"
+        <div className="flex items-center justify-center relative">
+          <button
+            onClick={() => setOpenMenuId(openMenuId === student.id ? null : student.id)}
+            className="p-1.5 md:p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-all"
           >
-            <svg className="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="5" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/><circle cx="12" cy="19" r="1.5" fill="currentColor"/></svg>
           </button>
-          {(user?.role === 'admin' || user?.role === 'staff') && (
-            <button 
-              onClick={() => handleAssignSection(student.id, student.profile?.classroom_name, student.profile?.grade_level)}
-              className="p-1 md:p-2 text-violet-600 hover:bg-violet-50 rounded-lg transition-all"
-              title="Set Section"
-            >
-              <svg className="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
-            </button>
+          {openMenuId === student.id && (
+            <>
+              <div className="fixed inset-0 z-40" onClick={() => setOpenMenuId(null)} />
+              <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-lg shadow-lg border border-slate-200 py-1 z-50">
+                <button
+                  onClick={() => { setSelectedStudent(student); setShowProfileModal(true); setOpenMenuId(null); }}
+                  className="w-full flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
+                >
+                  <svg className="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                  View Profile
+                </button>
+                {(user?.role === 'admin' || user?.role === 'staff') && (
+                  <button
+                    onClick={() => { handleAssignSection(student.id, student.profile?.classroom_name, student.profile?.grade_level); setOpenMenuId(null); }}
+                    className="w-full flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
+                  >
+                    <svg className="w-4 h-4 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+                    Set Section
+                  </button>
+                )}
+                <button
+                  onClick={() => { handleResetPassword(student.id); setOpenMenuId(null); }}
+                  className="w-full flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
+                >
+                  <svg className="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" /></svg>
+                  Reset Password
+                </button>
+                {(user?.role === 'admin' || user?.role === 'staff') && (
+                  <button
+                    onClick={() => { handleDelete(student.id); setOpenMenuId(null); }}
+                    className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                    Delete Account
+                  </button>
+                )}
+              </div>
+            </>
           )}
-          <button 
-            onClick={() => handleResetPassword(student.id)}
-            className="p-1 md:p-2 text-amber-600 hover:bg-amber-50 rounded-lg transition-all"
-            title="Reset Password"
-          >
-            <svg className="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" /></svg>
-          </button>
-          {(user?.role === 'admin' || user?.role === 'staff') && (
-             <button 
-               onClick={() => handleDelete(student.id)}
-               className="p-1 md:p-2 text-rose-600 hover:bg-rose-50 rounded-lg transition-all"
-               title="Delete Account"
-             >
-               <svg className="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-             </button>
-           )}
         </div>
       </td>
     </tr>
@@ -974,7 +985,7 @@ const StudentManagement = () => {
                             <th className="hidden md:table-cell px-6 py-4">Email</th>
                             <th className="hidden md:table-cell px-6 py-4">LRN</th>
                             <th className="px-3 py-1.5 md:px-6 md:py-4 text-center">Status</th>
-                            <th className="px-3 py-1.5 md:px-6 md:py-4 text-center">Opt</th>
+                            <th className="px-3 py-1.5 md:px-6 md:py-4 text-center w-12"></th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100">
