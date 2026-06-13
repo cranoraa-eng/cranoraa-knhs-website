@@ -374,11 +374,12 @@ function NewConversationModal({ open, onClose }) {
         assigned_to: parseInt(selectedStaff),
         department: selectedDept,
       });
-      await api.post(`/tickets/${res.data.id}/send-message/`, {
+      const ticketId = res.data.id;
+      await api.post(`/tickets/${ticketId}/send-message/`, {
         content: message.trim(),
       });
-      toast.success('Support request submitted');
-      onClose(true);
+      toast.success(res.status === 200 ? 'Existing conversation found — message added' : 'Support request submitted');
+      onClose(true, ticketId);
     } catch (err) {
       toast.error(err.response?.data?.detail || err.response?.data?.error || err.message || 'Failed to submit request');
     } finally {
@@ -676,9 +677,12 @@ export default function CommunicationCenter() {
     }
   };
 
-  const handleNewModalClose = (created) => {
+  const handleNewModalClose = (created, ticketId) => {
     setShowNewModal(false);
-    if (created) fetchTickets();
+    if (created) {
+      fetchTickets();
+      if (ticketId) setSelectedId(ticketId);
+    }
   };
 
   const unreadCount = tickets.filter(t => Number(t.unread_count) > 0).length;

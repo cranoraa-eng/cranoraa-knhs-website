@@ -6453,6 +6453,21 @@ class TicketViewSet(viewsets.ModelViewSet):
             return TicketCreateSerializer
         return TicketDetailSerializer
 
+    def create(self, request, *args, **kwargs):
+        assigned_to = request.data.get('assigned_to')
+        if assigned_to:
+            existing = Ticket.objects.filter(
+                created_by=request.user,
+                assigned_to_id=assigned_to,
+                is_archived=False,
+            ).exclude(status__in=['resolved', 'closed']).order_by('-updated_at').first()
+            if existing:
+                return Response(
+                    TicketDetailSerializer(existing, context={'request': request}).data,
+                    status=200,
+                )
+        return super().create(request, *args, **kwargs)
+
     def perform_create(self, serializer):
         ticket = serializer.save(created_by=self.request.user)
         
