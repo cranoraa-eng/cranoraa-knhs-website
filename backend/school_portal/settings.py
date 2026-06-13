@@ -158,6 +158,9 @@ AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
+    {
+        'NAME': 'accounts.validators.StrongPasswordValidator',
+    },
 ]
 
 
@@ -215,6 +218,7 @@ REST_FRAMEWORK = {
         'auth': '20/minute',            # login / password-reset (per IP + username)
         'check_result': '10/hour',    # scratch-card grade lookup
         'enrollment': '20/hour',      # public enrollment form submissions
+        'csv_import': '5/hour',       # CSV import per user
     },
 }
 
@@ -232,23 +236,20 @@ SIMPLE_JWT = {
 }
 
 # CORS Configuration
-# We allow the specific Vercel production URL and localhost for development.
+# All origins must be configured via environment variables.
 _frontend_url = os.environ.get('FRONTEND_URL', 'http://localhost:5173')
 _cors_env = os.environ.get('CORS_ALLOWED_ORIGINS', '')
-
-# Hardcoded production Vercel URL
-_vercel_url = 'https://cranoraa-eng-cranoraa-knhs-website.vercel.app'
 
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:5173',
     'http://127.0.0.1:5173',
-    _vercel_url,
 ]
 
-# Add origins from environment variables if they exist
+# Add frontend URL from env
 if _frontend_url and _frontend_url not in CORS_ALLOWED_ORIGINS:
     CORS_ALLOWED_ORIGINS.append(_frontend_url)
 
+# Add additional origins from CORS_ALLOWED_ORIGINS env var
 if _cors_env:
     for o in _cors_env.split(','):
         if o.strip() and o.strip() not in CORS_ALLOWED_ORIGINS:
@@ -265,7 +266,6 @@ CORS_ALLOW_HEADERS = list(default_headers) + [
 CSRF_TRUSTED_ORIGINS = [
     'http://localhost:5173',
     'http://127.0.0.1:5173',
-    _vercel_url,
 ]
 
 # Sync with CORS origins
@@ -355,15 +355,15 @@ CSP_DEFAULT_SRC = ("'self'",)
 CSP_SCRIPT_SRC = ("'self'", "https://www.gstatic.com", "https://www.googleapis.com")
 CSP_STYLE_SRC = ("'self'", "'unsafe-inline'", "https://fonts.googleapis.com")
 CSP_FONT_SRC = ("'self'", "https://fonts.gstatic.com")
-CSP_IMG_SRC = ("'self'", "data:", "https:", "blob:")
-CSP_CONNECT_SRC = (
-    "'self'",
-    "https://fcm.googleapis.com",
-    "https://firebaseinstallations.googleapis.com",
-    "https://*.supabase.co",
-    _vercel_url,
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
+CSP_IMG_SRC = ("'self'", "data:", "https://*.supabase.co", "https://*.supabase.in", "https://firebasestorage.googleapis.com", "blob:")
+_csp_connect_extra = [_frontend_url] if _frontend_url else []
+CSP_CONNECT_SRC = tuple(
+    ["'self'",
+     "https://fcm.googleapis.com",
+     "https://firebaseinstallations.googleapis.com",
+     "https://*.supabase.co",
+     "http://localhost:5173",
+     "http://127.0.0.1:5173"] + _csp_connect_extra
 )
 CSP_WORKER_SRC = ("'self'", "blob:")
 CSP_FRAME_ANCESTORS = ("'none'",)

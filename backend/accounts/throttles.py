@@ -3,7 +3,7 @@ Custom DRF throttle classes for fine-grained rate limiting.
 
 Rates are configured in settings.REST_FRAMEWORK['DEFAULT_THROTTLE_RATES'].
 """
-from rest_framework.throttling import AnonRateThrottle
+from rest_framework.throttling import AnonRateThrottle, UserRateThrottle
 
 
 def _login_identifier(request):
@@ -53,3 +53,11 @@ class EnrollmentRateThrottle(AnonRateThrottle):
     Prevents spam submissions of the public enrollment form.
     """
     scope = 'enrollment'
+
+
+class CsvImportRateThrottle(UserRateThrottle):
+    """
+    Limit CSV imports to prevent abuse.
+    5 imports per hour per user.
+    """
+    scope = 'csv_import'

@@ -1,5 +1,7 @@
 import json
 import asyncio
+import time
+from collections import defaultdict
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
 from django.contrib.auth import get_user_model
@@ -18,6 +20,33 @@ PRESENCE_DEBOUNCE_SECONDS = 60
 # Typing indicator: server-side throttle — ignore typing signals sent faster
 # than this interval (client already throttles at 3s, this is a safety net).
 TYPING_THROTTLE_SECONDS = 3
+
+# Message rate limiting: maximum messages per user per time window
+MESSAGE_RATE_LIMIT = 30  # max messages
+MESSAGE_RATE_WINDOW = 60  # per 60 seconds
+
+
+class RateLimiter:
+    """Simple in-memory rate limiter for WebSocket messages."""
+
+    def __init__(self):
+        self._requests = defaultdict(list)
+
+    def is_rate_limited(self, key: str, limit: int, window: int) -> bool:
+        """Check if a key has exceeded the rate limit. Returns True if limited."""
+        now = time.monotonic()
+        # Remove expired entries
+        self._requests[key] = [
+            t for t in self._requests[key] if now - t < window
+        ]
+        if len(self._requests[key]) >= limit:
+            return True
+        self._requests[key].append(now)
+        return False
+
+
+# Global rate limiter instance
+_rate_limiter = RateLimiter()
 
 
 class ChatConsumer(AsyncWebsocketConsumer):
@@ -191,6 +220,14 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         # ── Reaction ──────────────────────────────────────────────────────
         if msg_type == 'reaction':
+            # Rate limit reactions too
+            reaction_key = f'reaction_{self.user.id}'
+            if _rate_limiter.is_rate_limited(reaction_key, 20, 60):
+                await self.send(text_data=json.dumps({
+                    'type': 'error',
+                    'message': 'You are reacting too quickly. Please slow down.'
+                }))
+                return
             await self.handle_reaction(data)
             return
 
@@ -200,6 +237,15 @@ class ChatConsumer(AsyncWebsocketConsumer):
             await self.send(text_data=json.dumps({
                 'type': 'error',
                 'message': reason
+            }))
+            return
+
+        # ── Rate limiting ────────────────────────────────────────────────
+        rate_limit_key = f'user_{self.user.id}'
+        if _rate_limiter.is_rate_limited(rate_limit_key, MESSAGE_RATE_LIMIT, MESSAGE_RATE_WINDOW):
+            await self.send(text_data=json.dumps({
+                'type': 'error',
+                'message': 'You are sending messages too quickly. Please slow down.'
             }))
             return
 

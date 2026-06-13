@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { getAccessToken, updateTokens, clearSession } from './auth';
 
 const RAW_API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 
@@ -53,7 +54,7 @@ const api = axios.create({
 // Attach the short-lived access token (kept in memory via auth.js) to every request.
 // The refresh token lives in an httpOnly cookie — JS never touches it directly.
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('access_token');
+  const token = getAccessToken();
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -87,8 +88,8 @@ api.interceptors.response.use(
           { withCredentials: true }
         );
 
-        // Store only the short-lived access token in localStorage
-        localStorage.setItem('access_token', data.access);
+        // Store the short-lived access token in memory (not localStorage)
+        updateTokens(data.access);
         original.headers.Authorization = `Bearer ${data.access}`;
         return api(original);
       } catch {
@@ -101,11 +102,5 @@ api.interceptors.response.use(
   }
 );
 
-export function clearSession() {
-  localStorage.removeItem('access_token');
-  localStorage.removeItem('user');
-  // Dispatch a custom event so AuthContext can react without a hard reload
-  window.dispatchEvent(new Event('auth:logout'));
-}
-
+export { clearSession };
 export default api;

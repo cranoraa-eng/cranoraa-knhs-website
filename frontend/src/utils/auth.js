@@ -1,10 +1,10 @@
-import api, { clearSession } from './api';
+import api from './api';
 
 // ---------------------------------------------------------------------------
 // Token / session helpers
 //
 // Security model:
-//   - access_token  → localStorage (short-lived: 15 min, acceptable XSS risk)
+//   - access_token  → in-memory only (short-lived: 15 min, NOT accessible to XSS)
 //   - refresh_token → httpOnly cookie set by the backend (never readable by JS)
 //   - user          → localStorage (non-sensitive profile data for UI rendering)
 //
@@ -12,12 +12,19 @@ import api, { clearSession } from './api';
 // On logout, the backend blacklists the refresh token and clears the cookie.
 // ---------------------------------------------------------------------------
 
+// In-memory access token - NOT accessible to XSS scripts
+let _accessToken = null;
+
 export const saveSession = (access, user) => {
-  localStorage.setItem('access_token', access);
+  _accessToken = access;
   localStorage.setItem('user', JSON.stringify(user));
 };
 
-export { clearSession };
+export const clearAccessToken = () => {
+  _accessToken = null;
+};
+
+export const getAccessToken = () => _accessToken;
 
 export const updateStoredUser = (updatedUser) => {
   const current = getStoredUser();
@@ -27,7 +34,7 @@ export const updateStoredUser = (updatedUser) => {
 };
 
 export const updateTokens = (access) => {
-  if (access) localStorage.setItem('access_token', access);
+  if (access) _accessToken = access;
   // refresh token is managed exclusively by the httpOnly cookie — never stored here
 };
 
@@ -40,10 +47,17 @@ export const getStoredUser = () => {
   }
 };
 
+export const clearSession = () => {
+  clearAccessToken();
+  localStorage.removeItem('user');
+  // Dispatch a custom event so AuthContext can react without a hard reload
+  window.dispatchEvent(new Event('auth:logout'));
+};
+
 // Aliases kept for backward compatibility with existing pages
 export const getUser = getStoredUser;
-export const isAuthenticated = () => !!localStorage.getItem('access_token');
-export const hasToken = () => !!localStorage.getItem('access_token');
+export const isAuthenticated = () => !!_accessToken;
+export const hasToken = () => !!_accessToken;
 
 // ---------------------------------------------------------------------------
 // API calls

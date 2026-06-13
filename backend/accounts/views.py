@@ -19,7 +19,7 @@ from .serializers import (UserSerializer, ClassroomSerializer, StudentClassEnrol
     full_name)
 from .models import User, Profile, Classroom, StudentClassEnrollment, Announcement, AnnouncementAttachment, AnnouncementComment, Attendance, LearningMaterial, Subject, ClassroomSubject, ScratchCard, Fee, Notification, EnrollmentApplication, EnrollmentDocument, EnrollmentStatusHistory, WebsiteContent, Grade, GradeReport, ChatRoom, ChatMessage, MessageReaction, Friendship, SystemSetting, Assignment, Submission, ReportedMessage, Room, TimeSlot, Schedule, FCMToken, OnboardingState
 from .permissions import IsAdmin, IsAdminOrTeacher, IsAdminOrReadOnly
-from .throttles import AuthRateThrottle, CheckResultRateThrottle, EnrollmentRateThrottle
+from .throttles import AuthRateThrottle, CheckResultRateThrottle, EnrollmentRateThrottle, CsvImportRateThrottle
 # Moved portal imports inside functions to avoid circular dependencies
 import logging
 import secrets
@@ -72,7 +72,8 @@ def login_view(request):
         password = request.data.get('password')
         required_role = request.data.get('role') # Optional role validation
         
-        logger.info(f"Login attempt for ID: {login_id}, Role: {required_role}")
+        # Use generic error message to prevent user enumeration
+        GENERIC_ERROR = 'Invalid credentials'
         
         if login_id is None or password is None:
             return Response(
@@ -84,26 +85,9 @@ def login_view(request):
         user = authenticate(request=request, username=login_id, password=password)
         
         if user is None:
-            # Check if user exists but is suspended/inactive
-            try:
-                potential_user = User.objects.filter(
-                    Q(username=login_id)
-                    | Q(email=login_id)
-                    | Q(profile__lrn=login_id)
-                    | Q(profile__registration_number=login_id)
-                ).first()
-                if potential_user:
-                    if potential_user.account_status == 'suspended' or not potential_user.is_active:
-                        if potential_user.check_password(password):
-                            return Response(
-                                {'error': 'This account has been suspended. Please contact the administrator.'},
-                                status=status.HTTP_403_FORBIDDEN
-                            )
-            except Exception as e:
-                logger.error(f"Error checking potential suspended user: {str(e)}")
-
+            # Always return the same generic error to prevent user enumeration
             return Response(
-                {'error': 'Invalid credentials'},
+                {'error': GENERIC_ERROR},
                 status=status.HTTP_401_UNAUTHORIZED
             )
             
@@ -112,33 +96,26 @@ def login_view(request):
         # Admins can bypass this to log in from any portal.
         if required_role and user.role != 'admin':
             if user.role != required_role:
-                role_display = "Student" if required_role == 'student' else "Teacher/Staff"
+                # Use same generic error to prevent role enumeration
                 return Response(
-                    {'error': f'This account is not registered as a {role_display}. Please use the correct login portal.'},
-                    status=status.HTTP_403_FORBIDDEN
+                    {'error': GENERIC_ERROR},
+                    status=status.HTTP_401_UNAUTHORIZED
                 )
 
         # Check Account Status
-        if user.account_status == 'inactive':
+        if user.account_status == 'inactive' or user.account_status == 'suspended' or not user.is_active:
+            # Use same generic error - don't reveal specific status
             return Response(
-                {'error': 'This account is currently inactive. Please contact the administrator.'},
-                status=status.HTTP_403_FORBIDDEN
-            )
-        elif user.account_status == 'suspended':
-            return Response(
-                {'error': 'This account has been suspended. Please contact the administrator.'},
-                status=status.HTTP_403_FORBIDDEN
+                {'error': GENERIC_ERROR},
+                status=status.HTTP_401_UNAUTHORIZED
             )
 
         if not user.is_approved:
+            # Don't reveal approval status - use generic error
             return Response(
-                {'error': 'Your account is pending admin approval. Please wait for an administrator to approve your account.', 'code': 'not_approved'},
-                status=status.HTTP_403_FORBIDDEN
+                {'error': GENERIC_ERROR},
+                status=status.HTTP_401_UNAUTHORIZED
             )
-        
-        # If email verification is still required for some roles but optional for others,
-        # we can check user.is_verified here if needed. 
-        # But per requirements: "Do NOT require email verification to access the system."
         
         # Check if password change is forced
         if user.must_change_password:
@@ -192,8 +169,13 @@ def force_password_change_view(request):
     if not new_password:
         return Response({'error': 'Password is required'}, status=status.HTTP_400_BAD_REQUEST)
         
-    if len(new_password) < 8:
-        return Response({'error': 'Password must be at least 8 characters long'}, status=status.HTTP_400_BAD_REQUEST)
+    # Validate password strength using Django validators
+    from django.contrib.auth.password_validation import validate_password
+    from django.core.exceptions import ValidationError as DjangoValidationError
+    try:
+        validate_password(new_password, user=user)
+    except DjangoValidationError as e:
+        return Response({'error': ' '.join(e.messages)}, status=status.HTTP_400_BAD_REQUEST)
         
     user.set_password(new_password)
     user.must_change_password = False
@@ -229,8 +211,13 @@ def change_password_view(request):
     if not user.check_password(current_password):
         return Response({'error': 'Current password is incorrect'}, status=status.HTTP_400_BAD_REQUEST)
 
-    if len(new_password) < 8:
-        return Response({'error': 'Password must be at least 8 characters long'}, status=status.HTTP_400_BAD_REQUEST)
+    # Validate password strength using Django validators
+    from django.contrib.auth.password_validation import validate_password
+    from django.core.exceptions import ValidationError as DjangoValidationError
+    try:
+        validate_password(new_password, user=user)
+    except DjangoValidationError as e:
+        return Response({'error': ' '.join(e.messages)}, status=status.HTTP_400_BAD_REQUEST)
 
     user.set_password(new_password)
     user.save()
@@ -343,8 +330,16 @@ def admin_create_user_view(request):
         return Response({'error': 'Student LRN must be exactly 12 digits'}, status=status.HTTP_400_BAD_REQUEST)
     
     if not password:
-        # Generate a random temporary password if not provided
-        password = ''.join(secrets.choice(string.ascii_letters + string.digits) for i in range(10))
+        # Generate a random temporary password that meets complexity requirements
+        while True:
+            password = ''.join(secrets.choice(string.ascii_letters + string.digits + '!@#$%^&*') for i in range(12))
+            from django.contrib.auth.password_validation import validate_password
+            from django.core.exceptions import ValidationError as DjangoValidationError
+            try:
+                validate_password(password)
+                break
+            except DjangoValidationError:
+                continue
 
     if User.objects.filter(username=username).exists():
         return Response({'error': 'User with this ID/Username already exists'}, status=status.HTTP_400_BAD_REQUEST)
@@ -1069,9 +1064,18 @@ class UserViewSet(viewsets.ModelViewSet):
         new_password = request.data.get('password')
         
         if not new_password:
-            # Generate random password
-            new_password = ''.join(secrets.choice(string.ascii_letters + string.digits) for i in range(10))
-            
+            # Generate random password that meets complexity requirements
+            import string as _string
+            while True:
+                new_password = ''.join(secrets.choice(_string.ascii_letters + _string.digits + '!@#$%^&*') for i in range(12))
+                from django.contrib.auth.password_validation import validate_password
+                from django.core.exceptions import ValidationError as DjangoValidationError
+                try:
+                    validate_password(new_password, user=user)
+                    break
+                except DjangoValidationError:
+                    continue
+        
         user.set_password(new_password)
         user.must_change_password = True  # Force them to change it on next login
         user.save()
@@ -1091,7 +1095,7 @@ class UserViewSet(viewsets.ModelViewSet):
             'temporary_password': new_password
         })
 
-    @action(detail=False, methods=['post'], parser_classes=[parsers.MultiPartParser])
+    @action(detail=False, methods=['post'], parser_classes=[parsers.MultiPartParser], throttle_classes=[CsvImportRateThrottle])
     def import_csv(self, request):
         """Import students from CSV (admin and teachers)"""
         user_role = request.user.role
@@ -1108,6 +1112,15 @@ class UserViewSet(viewsets.ModelViewSet):
         file = request.FILES.get('file')
         if not file:
             return Response({'error': 'No file provided'}, status=400)
+
+        # Validate file size (max 5MB)
+        max_file_size = 5 * 1024 * 1024  # 5MB
+        if file.size > max_file_size:
+            return Response({'error': 'File too large. Maximum size is 5MB.'}, status=400)
+
+        # Validate file type
+        if not file.name.endswith('.csv'):
+            return Response({'error': 'Invalid file type. Only CSV files are allowed.'}, status=400)
             
         import csv
         import io
@@ -1170,8 +1183,16 @@ class UserViewSet(viewsets.ModelViewSet):
                     errors.append(f"Student ID {student_id} already exists")
                     continue
                 
-                # Generate temporary password
-                temp_password = ''.join(secrets.choice(string.ascii_letters + string.digits) for i in range(10))
+                # Generate temporary password that meets complexity requirements
+                while True:
+                    temp_password = ''.join(secrets.choice(string.ascii_letters + string.digits + '!@#$%^&*') for i in range(12))
+                    from django.contrib.auth.password_validation import validate_password
+                    from django.core.exceptions import ValidationError as DjangoValidationError
+                    try:
+                        validate_password(temp_password)
+                        break
+                    except DjangoValidationError:
+                        continue
 
                 # Create user with raw create to ensure email=None stays NULL in PostgreSQL
                 user = User(
@@ -1236,7 +1257,7 @@ class UserViewSet(viewsets.ModelViewSet):
             'errors': errors
         })
 
-    @action(detail=False, methods=['post'])
+    @action(detail=False, methods=['post'], throttle_classes=[CsvImportRateThrottle])
     def import_teachers_csv(self, request):
         """Import teachers from CSV (admin only)"""
         if request.user.role != 'admin':
@@ -1245,6 +1266,15 @@ class UserViewSet(viewsets.ModelViewSet):
         file = request.FILES.get('file')
         if not file:
             return Response({'error': 'No file provided'}, status=400)
+
+        # Validate file size (max 5MB)
+        max_file_size = 5 * 1024 * 1024  # 5MB
+        if file.size > max_file_size:
+            return Response({'error': 'File too large. Maximum size is 5MB.'}, status=400)
+
+        # Validate file type
+        if not file.name.endswith('.csv'):
+            return Response({'error': 'Invalid file type. Only CSV files are allowed.'}, status=400)
             
         import csv
         import io
@@ -1289,8 +1319,16 @@ class UserViewSet(viewsets.ModelViewSet):
                 else:
                     sex = None
                 
-                # Generate temporary password
-                temp_password = ''.join(secrets.choice(string.ascii_letters + string.digits) for i in range(10))
+                # Generate temporary password that meets complexity requirements
+                while True:
+                    temp_password = ''.join(secrets.choice(string.ascii_letters + string.digits + '!@#$%^&*') for i in range(12))
+                    from django.contrib.auth.password_validation import validate_password
+                    from django.core.exceptions import ValidationError as DjangoValidationError
+                    try:
+                        validate_password(temp_password)
+                        break
+                    except DjangoValidationError:
+                        continue
 
                 # Create user
                 user = User(
@@ -1866,12 +1904,11 @@ class AttendanceViewSet(viewsets.ModelViewSet):
     
     def get_queryset(self):
         user = self.request.user
-        queryset = Attendance.objects.all().select_related('student', 'classroom', 'schedule', 'subject', 'time_slot')
+        queryset = Attendance.objects.all().select_related('student', 'classroom')
         classroom_id = self.request.query_params.get('classroom')
         date = self.request.query_params.get('date')
         status = self.request.query_params.get('status')
         academic_year = self.request.query_params.get('academic_year')
-        schedule_id = self.request.query_params.get('schedule')
 
         # RBAC: Students can only see their own attendance
         if user.role == 'student':
@@ -1881,12 +1918,10 @@ class AttendanceViewSet(viewsets.ModelViewSet):
             profile = getattr(user, 'profile', None)
             linked_student_ids = profile.linked_students.values_list('id', flat=True) if profile else []
             queryset = queryset.filter(student_id__in=linked_student_ids)
-        # Teachers can see attendance for their classrooms and scheduled subjects
+        # Teachers can only see attendance for their classrooms
         elif user.role == 'teacher':
             assigned_classrooms = ClassroomSubject.objects.filter(teacher=user).values_list('classroom_id', flat=True)
-            scheduled_classrooms = Schedule.objects.filter(teacher=user, is_active=True).values_list('classroom_id', flat=True)
-            all_classroom_ids = set(list(assigned_classrooms) + list(scheduled_classrooms))
-            queryset = queryset.filter(Q(classroom__teacher=user) | Q(classroom_id__in=all_classroom_ids))
+            queryset = queryset.filter(Q(classroom__teacher=user) | Q(classroom_id__in=assigned_classrooms))
 
         if classroom_id:
             queryset = queryset.filter(classroom_id=classroom_id)
@@ -1894,138 +1929,13 @@ class AttendanceViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(date=date)
         if status:
             queryset = queryset.filter(status=status)
-        if schedule_id:
-            queryset = queryset.filter(schedule_id=schedule_id)
         # Strict academic year filter — only show records for classrooms in that year.
+        # No isnull fallback here: unassigned classrooms bleed into every year otherwise.
         if academic_year:
             queryset = queryset.filter(
                 classroom__academic_year__name=academic_year
             )
         return queryset
-
-    @action(detail=False, methods=['get'])
-    def today_schedules(self, request):
-        """Return the teacher's or student's scheduled classes for today with attendance status."""
-        import datetime
-        from django.utils import timezone
-
-        user = request.user
-        now = timezone.localtime(timezone.now())
-        today = now.date()
-        today_name = today.strftime('%A').lower()
-
-        if user.role == 'teacher':
-            schedules = Schedule.objects.filter(
-                teacher=user, is_active=True, time_slot__day=today_name
-            ).select_related('classroom', 'subject', 'teacher', 'room', 'time_slot', 'academic_year')
-        elif user.role == 'student':
-            enrolled_classrooms = StudentClassEnrollment.objects.filter(
-                student=user
-            ).values_list('classroom_id', flat=True)
-            schedules = Schedule.objects.filter(
-                classroom_id__in=enrolled_classrooms, is_active=True, time_slot__day=today_name
-            ).select_related('classroom', 'subject', 'teacher', 'room', 'time_slot', 'academic_year')
-        elif user.role == 'admin':
-            schedules = Schedule.objects.filter(
-                is_active=True, time_slot__day=today_name
-            ).select_related('classroom', 'subject', 'teacher', 'room', 'time_slot', 'academic_year')
-        else:
-            return Response({'error': 'Unauthorized'}, status=403)
-
-        result = []
-        for sch in schedules:
-            total_students = StudentClassEnrollment.objects.filter(
-                classroom=sch.classroom
-            ).count()
-            marked_count = Attendance.objects.filter(
-                schedule=sch, date=today
-            ).count()
-            present_count = Attendance.objects.filter(
-                schedule=sch, date=today, status__in=['present', 'late', 'excused']
-            ).count()
-            result.append({
-                'id': sch.id,
-                'classroom': sch.classroom.id,
-                'classroom_name': sch.classroom.name,
-                'subject': sch.subject.id,
-                'subject_name': sch.subject.name,
-                'subject_code': sch.subject.code,
-                'teacher': sch.teacher.id,
-                'teacher_name': full_name(sch.teacher),
-                'room': sch.room.id if sch.room else None,
-                'room_name': sch.room.name if sch.room else '',
-                'time_slot': sch.time_slot.id,
-                'time_slot_label': sch.time_slot.label or f"{sch.time_slot.start_time.strftime('%I:%M %p')} - {sch.time_slot.end_time.strftime('%I:%M %p')}",
-                'start_time': sch.time_slot.start_time.strftime('%I:%M %p'),
-                'end_time': sch.time_slot.end_time.strftime('%I:%M %p'),
-                'total_students': total_students,
-                'marked_count': marked_count,
-                'present_count': present_count,
-                'is_complete': marked_count >= total_students and total_students > 0,
-            })
-
-        # Sort by start_time
-        result.sort(key=lambda x: x['start_time'])
-        return Response(result)
-
-    @action(detail=False, methods=['get'])
-    def by_schedule(self, request):
-        """Return per-student attendance for a specific schedule period and date."""
-        schedule_id = request.query_params.get('schedule')
-        date = request.query_params.get('date')
-
-        if not schedule_id:
-            return Response({'error': 'schedule parameter required'}, status=400)
-        if not date:
-            return Response({'error': 'date parameter required'}, status=400)
-
-        try:
-            sch = Schedule.objects.select_related(
-                'classroom', 'subject', 'teacher', 'time_slot'
-            ).get(id=schedule_id)
-        except Schedule.DoesNotExist:
-            return Response({'error': 'Schedule not found'}, status=404)
-
-        # Get enrolled students
-        enrollments = StudentClassEnrollment.objects.filter(
-            classroom=sch.classroom
-        ).select_related('student', 'student__profile').order_by('student__last_name', 'student__first_name')
-
-        # Get existing attendance records for this schedule+date
-        existing = Attendance.objects.filter(
-            schedule=sch, date=date
-        ).select_related('student')
-
-        attendance_map = {a.student_id: a for a in existing}
-
-        students = []
-        for enrollment in enrollments:
-            student = enrollment.student
-            att = attendance_map.get(student.id)
-            students.append({
-                'student_id': student.id,
-                'student_name': full_name(student),
-                'student_email': student.email,
-                'status': att.status if att else None,
-                'remarks': att.remarks if att else '',
-                'attendance_id': att.id if att else None,
-            })
-
-        return Response({
-            'schedule': {
-                'id': sch.id,
-                'classroom': sch.classroom.id,
-                'classroom_name': sch.classroom.name,
-                'subject': sch.subject.id,
-                'subject_name': sch.subject.name,
-                'subject_code': sch.subject.code,
-                'teacher': sch.teacher.id,
-                'teacher_name': full_name(sch.teacher),
-                'time_slot_label': sch.time_slot.label or f"{sch.time_slot.start_time.strftime('%I:%M %p')} - {sch.time_slot.end_time.strftime('%I:%M %p')}",
-            },
-            'date': date,
-            'students': students,
-        })
 
     @action(detail=False, methods=['get'])
     def summary(self, request):
@@ -2037,6 +1947,7 @@ class AttendanceViewSet(viewsets.ModelViewSet):
         from django.utils import timezone
         import datetime
         
+        # Use localtime for accurate daily filtering in GMT+8
         now = timezone.localtime(timezone.now())
         today = now.date()
         
@@ -2044,13 +1955,18 @@ class AttendanceViewSet(viewsets.ModelViewSet):
         timeframe = request.query_params.get('timeframe', 'all')
         academic_year_name = request.query_params.get('academic_year')
         
+        # Base queryset
         base_att = Attendance.objects.all()
 
+        # Strict academic year filter — no isnull fallback to prevent year bleed-through
         if academic_year_name:
             base_att = base_att.filter(
                 classroom__academic_year__name=academic_year_name
             )
         
+        # Apply timeframe filter
+        # If 'today' is selected, we show data even if it's a weekend (e.g. for makeup classes)
+        # For 'weekly' and 'all', we strictly exclude weekends as per project requirements
         if timeframe == 'today':
             base_att = base_att.filter(date=today)
         elif timeframe == 'weekly':
@@ -2059,6 +1975,8 @@ class AttendanceViewSet(viewsets.ModelViewSet):
         else:
             base_att = base_att.exclude(date__week_day__in=[1, 7])
 
+        # Sections: Trends, Pie, Grade
+        # For charts, we usually want a 30-day window if 'all' is selected
         chart_att = base_att
         if timeframe == 'all':
             last_30_days = today - datetime.timedelta(days=30)
@@ -2084,6 +2002,7 @@ class AttendanceViewSet(viewsets.ModelViewSet):
                 'total': day_total
             })
         
+        # Overall status for Pie Chart
         overall_status = chart_att.aggregate(
             present=Count(Case(When(status='present', then=1), output_field=IntegerField())),
             absent=Count(Case(When(status='absent', then=1), output_field=IntegerField())),
@@ -2097,6 +2016,7 @@ class AttendanceViewSet(viewsets.ModelViewSet):
             {'name': 'Excused', 'value': overall_status['excused'] or 0},
         ]
 
+        # Attendance by Grade for Bar Chart
         grade_data = []
         grade_levels = chart_att.values('student__profile__grade_level').annotate(
             present=Count(Case(When(status__in=['present', 'late', 'excused'], then=1), output_field=IntegerField())),
@@ -2110,8 +2030,10 @@ class AttendanceViewSet(viewsets.ModelViewSet):
                 'rate': round(g['present'] / g['total'] * 100, 1) if g['total'] > 0 else 0
             })
 
+        # Section Rankings (Overall Attendance Rate)
         rankings = []
         if request.user.role in ['admin', 'teacher']:
+            # Get all classrooms for the academic year
             classrooms = Classroom.objects.all()
             if academic_year_name:
                 classrooms = classrooms.filter(
@@ -2119,6 +2041,7 @@ class AttendanceViewSet(viewsets.ModelViewSet):
                     Q(academic_year__isnull=True)
                 )
             
+            # Aggregate stats from base_att (filtered by academic year and timeframe)
             classroom_stats = base_att.values('classroom__id').annotate(
                 total=Count('id'),
                 present=Count(Case(When(status__in=['present', 'late', 'excused'], then=1), output_field=IntegerField()))
@@ -2134,6 +2057,7 @@ class AttendanceViewSet(viewsets.ModelViewSet):
                     'rate': rate,
                     'total_records': r['total']
                 })
+            # Sort by rate descending, then by name
             rankings = sorted(rankings, key=lambda x: (-x['rate'], x['name']))
 
         return Response({
@@ -2145,29 +2069,11 @@ class AttendanceViewSet(viewsets.ModelViewSet):
         })
     
     def perform_create(self, serializer):
+        # Teachers and admins can mark attendance
         if self.request.user.role not in ['teacher', 'admin']:
             from rest_framework.exceptions import PermissionDenied
             raise PermissionDenied("Only teachers and admins can mark attendance")
-        
-        data = self.request.data.copy()
-        schedule_id = data.get('schedule')
-        
-        # If schedule is provided, auto-populate subject and time_slot
-        if schedule_id:
-            try:
-                sch = Schedule.objects.get(id=schedule_id)
-                attendance = serializer.save(
-                    marked_by=self.request.user,
-                    subject=sch.subject,
-                    time_slot=sch.time_slot,
-                    classroom=sch.classroom
-                )
-            except Schedule.DoesNotExist:
-                from rest_framework.exceptions import ValidationError
-                raise ValidationError("Invalid schedule ID")
-        else:
-            attendance = serializer.save(marked_by=self.request.user)
-        
+        attendance = serializer.save(marked_by=self.request.user)
         from portal.views import log_audit_action
         log_audit_action(
             user=self.request.user,
