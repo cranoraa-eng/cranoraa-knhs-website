@@ -538,7 +538,7 @@ const StudentDashboard = () => {
                     : 'Recent Conversations'}
                 </p>
               </div>
-              <Button variant="ghost" size="sm" onClick={() => navigate('/messages')}>
+              <Button variant="ghost" size="sm" onClick={() => navigate('/communication-center')}>
                 Open Inbox
               </Button>
             </div>
@@ -549,7 +549,7 @@ const StudentDashboard = () => {
                 <div
                   key={m.id}
                   className="flex gap-2.5 px-3 py-2.5 border border-slate-200 rounded-md bg-white hover:bg-slate-50 hover:border-violet-300 cursor-pointer transition-all"
-                  onClick={() => navigate('/messages')}
+                  onClick={() => navigate('/communication-center')}
                 >
                   <div className="w-9 h-9 rounded-md bg-violet-100 text-violet-700 flex items-center justify-center text-sm font-extrabold shrink-0">
                     {(m.sender || '?')[0].toUpperCase()}

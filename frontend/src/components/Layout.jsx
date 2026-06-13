@@ -180,8 +180,6 @@ const Layout = () => {
     if (path === '/system-admin') return 'System Admin Hub';
     if (path === '/communication-center') return 'Communication Center';
     if (path === '/notifications') return 'Notifications';
-    if (path === '/announcements') return 'Announcements';
-    if (path === '/messages') return 'Messages';
     if (path === '/portal-calendar') return 'Calendar';
     if (path === '/analytics') return 'Analytics';
     if (path === '/system-health') return 'System Health';

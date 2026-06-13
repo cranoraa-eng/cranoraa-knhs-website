@@ -44,7 +44,7 @@ const ClassMembers = () => {
   const handleStartChat = async (userId) => {
     try {
       await api.post('/chat/rooms/get_or_create_private_chat/', { user_id: userId });
-      navigate('/messages');
+      navigate('/communication-center');
     } catch (err) {
       const msg = err.response?.data?.error || 'Failed to start chat';
       toast.error(msg);

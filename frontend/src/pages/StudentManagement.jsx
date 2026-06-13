@@ -332,7 +332,7 @@ const StudentManagement = () => {
   const handleStartChat = async (studentId) => {
     try {
       await api.post('/chat/rooms/get_or_create_private_chat/', { user_id: studentId });
-      navigate('/messages');
+      navigate('/communication-center');
     } catch (err) {
       const msg = err.response?.data?.error || 'Failed to start chat';
       toast.error(msg);

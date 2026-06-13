@@ -562,7 +562,7 @@ const StudentDashboardView = () => {
           <StudentMessagesFeed
             messages={stats?.latest_messages}
             unreadCount={stats?.unread_notifications || 0}
-            onOpenChat={() => navigate('/messages')}
+            onOpenChat={() => navigate('/communication-center')}
           />
         </div>
       </div>

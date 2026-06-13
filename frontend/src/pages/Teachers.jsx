@@ -173,7 +173,7 @@ const Teachers = () => {
   const handleStartChat = async (teacherId) => {
     try {
       await api.post('/chat/rooms/get_or_create_private_chat/', { user_id: teacherId });
-      navigate('/messages');
+      navigate('/communication-center');
     } catch (err) {
       const msg = err.response?.data?.error || 'Failed to open chat';
       toast.error(msg);
