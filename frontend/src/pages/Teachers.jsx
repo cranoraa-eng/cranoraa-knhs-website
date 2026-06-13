@@ -359,11 +359,11 @@ const Teachers = () => {
             Swal.fire({
               icon: 'success',
               title: 'Import Successful',
-              width: '600px',
+              width: '90%',
               html: `
                 <div class="text-left">
                   <p class="mb-4 text-sm font-bold text-emerald-600">Successfully created ${created_count} teachers!</p>
-                  <div class="max-h-60 overflow-y-auto border border-slate-200 rounded-lg">
+                  <div class="max-h-60 overflow-auto border border-slate-200 rounded">
                     <table class="w-full text-[10px] text-left">
                       <thead class="bg-slate-50 border-b border-slate-200">
                         <tr>

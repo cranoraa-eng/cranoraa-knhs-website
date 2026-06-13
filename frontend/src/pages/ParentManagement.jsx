@@ -71,7 +71,7 @@ export default function ParentManagement() {
               Share these credentials with the parent. They must change their password on first login.
             </p>
           </div>`,
-        confirmButtonColor: '#2563eb',
+        confirmButtonColor: '#5e2a84',
       });
     } catch (err) {
       toast.error(err.response?.data?.error || 'Failed to create parent account');
@@ -170,35 +170,35 @@ export default function ParentManagement() {
   );
 
   return (
-    <div className="page-bottom-safe bg-slate-50/50">
-      {/* DepEd Official Header */}
-      <div className="bg-white border-b-4 border-violet-600 px-4 md:px-6 py-3 md:py-4 mb-3 md:mb-6">
+    <div className="page-bottom-safe bg-slate-50">
+      {/* Official Header */}
+      <div className="bg-white border-b-2 border-slate-200 px-4 md:px-6 py-3 md:py-4 mb-4">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 md:h-12 md:w-12 rounded-md bg-violet-600 flex items-center justify-center shrink-0">
-            <svg className="w-6 h-6 md:w-7 md:h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="h-10 w-10 md:h-11 md:w-11 bg-[#5e2a84] flex items-center justify-center shrink-0">
+            <svg className="w-5 h-5 md:w-6 md:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
             </svg>
           </div>
           <div>
-            <h1 className="text-lg md:text-2xl font-extrabold text-slate-900 uppercase tracking-tight">
+            <h1 className="text-base md:text-lg font-black text-slate-900 uppercase tracking-wide">
               Parent Accounts
             </h1>
-            <p className="text-xs md:text-sm font-bold text-violet-700 uppercase tracking-wide mt-0.5">
+            <p className="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-widest mt-0.5">
               Guardian Management & Student Linking
             </p>
           </div>
         </div>
       </div>
 
-      <div className="p-1.5 md:p-6 space-y-2 md:space-y-6">
+      <div className="px-4 md:px-6 space-y-3 md:space-y-4">
       {/* Header Actions */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div></div>
         <button
           onClick={() => { setForm(emptyForm); setShowAddModal(true); }}
-          className="flex items-center gap-2 bg-violet-600 hover:bg-violet-700 text-white font-bold py-2.5 px-5 rounded-xl transition-all shadow-md text-sm uppercase tracking-widest"
+          className="flex items-center gap-1.5 bg-[#5e2a84] hover:bg-violet-700 text-white font-bold py-1.5 px-4 transition-colors text-xs uppercase tracking-wide"
         >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
           </svg>
           Add Parent
@@ -206,13 +206,13 @@ export default function ParentManagement() {
       </div>
 
       {/* Info Banner */}
-      <div className="bg-violet-50 border border-violet-200 rounded-2xl p-4 flex gap-3">
-        <svg className="w-5 h-5 text-violet-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div className="bg-slate-50 border border-slate-200 p-3 flex gap-2">
+        <svg className="w-4 h-4 text-slate-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
-        <div className="text-sm text-violet-700">
+        <div className="text-xs text-slate-600">
           <p className="font-bold">How it works:</p>
-          <p className="text-violet-600 text-xs mt-0.5">
+          <p className="text-slate-500 mt-0.5">
             1. Create a parent account with their email. &nbsp;
             2. Click <strong>Link Children</strong> to connect them to their student(s). &nbsp;
             3. Share the temporary password — they log in at <strong>/login → Parent tab</strong>.
@@ -221,23 +221,25 @@ export default function ParentManagement() {
       </div>
 
       {/* Search */}
-      <div className="relative max-w-md">
-        <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-        </svg>
-        <input
-          type="text" value={search} onChange={e => setSearch(e.target.value)}
-          placeholder="Search by name or email..."
-          className="w-full pl-9 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
-        />
+      <div className="bg-white p-2.5 border border-slate-200">
+        <div className="relative max-w-md">
+          <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          <input
+            type="text" value={search} onChange={e => setSearch(e.target.value)}
+            placeholder="Search by name or email..."
+            className="w-full pl-9 pr-4 py-1.5 bg-slate-50 border border-slate-200 text-xs font-medium focus:outline-none focus:ring-1 focus:ring-violet-500 focus:bg-white transition-colors"
+          />
+        </div>
       </div>
 
       {/* Table */}
-      <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+      <div className="bg-white border border-slate-200 overflow-hidden">
         {filtered.length === 0 ? (
           <div className="py-16 text-center">
-            <div className="w-16 h-16 bg-violet-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <svg className="w-8 h-8 text-violet-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="w-12 h-12 bg-slate-100 flex items-center justify-center mx-auto mb-3">
+              <svg className="w-6 h-6 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
             </div>
@@ -246,99 +248,97 @@ export default function ParentManagement() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-separate border-spacing-0">
-              <thead className="bg-slate-50 border-b border-slate-200">
-                <tr>
-                  <th className="px-5 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Parent</th>
-                  <th className="px-5 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest hidden md:table-cell">Email</th>
-                  <th className="px-5 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Linked Children</th>
-                  <th className="px-5 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest hidden sm:table-cell">Status</th>
-                  <th className="px-5 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest hidden lg:table-cell">Temp Password</th>
-                  <th className="px-5 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest w-12"></th>
+            <table className="w-full text-left">
+              <thead className="bg-[#5e2a84]">
+                <tr className="text-[9px] font-bold text-white uppercase tracking-widest">
+                  <th className="px-4 py-2.5">Parent</th>
+                  <th className="px-4 py-2.5 hidden md:table-cell">Email</th>
+                  <th className="px-4 py-2.5">Linked Children</th>
+                  <th className="px-4 py-2.5 hidden sm:table-cell">Status</th>
+                  <th className="px-4 py-2.5 hidden lg:table-cell">Temp Password</th>
+                  <th className="px-4 py-2.5 w-10"></th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-50">
+              <tbody className="divide-y divide-slate-100">
                 {filtered.map(p => {
                   const linked = p.profile?.linked_students || [];
                   return (
                     <tr key={p.id} className="hover:bg-slate-50 transition-colors">
-                      <td className="px-5 py-4">
-                        <div className="flex items-center gap-3">
-                          <div>
-                            <p className="text-sm font-bold text-slate-800">{p.first_name} {p.last_name}</p>
-                            <p className="text-[10px] text-violet-500 font-black uppercase tracking-widest">Parent</p>
-                            <p className="text-[10px] text-slate-400 md:hidden">{p.email || '—'}</p>
-                          </div>
+                      <td className="px-4 py-3">
+                        <div>
+                          <p className="text-xs font-bold text-slate-800">{p.first_name} {p.last_name}</p>
+                          <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">Parent</p>
+                          <p className="text-[10px] text-slate-400 md:hidden">{p.email || '—'}</p>
                         </div>
                       </td>
-                      <td className="px-5 py-4 text-xs text-slate-500 hidden md:table-cell">{p.email || '—'}</td>
-                      <td className="px-5 py-4">
+                      <td className="px-4 py-3 text-[10px] text-slate-500 hidden md:table-cell">{p.email || '—'}</td>
+                      <td className="px-4 py-3">
                         {linked.length === 0 ? (
                           <span className="text-[10px] text-slate-400 italic">No children linked</span>
                         ) : (
-                          <div className="flex flex-wrap gap-1">
+                          <div className="flex flex-wrap gap-1 max-h-[60px] overflow-hidden">
                             {linked.slice(0, 3).map((s, i) => (
-                              <span key={i} className="px-2 py-0.5 rounded-full bg-violet-100 text-violet-700 text-[10px] font-bold">
+                              <span key={i} className="px-1.5 py-0.5 bg-slate-100 text-slate-600 text-[9px] font-bold border border-slate-200">
                                 {typeof s === 'object' ? `${s.first_name} ${s.last_name}` : `Student #${s}`}
                               </span>
                             ))}
                             {linked.length > 3 && (
-                              <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 text-[10px] font-bold">+{linked.length - 3} more</span>
+                              <span className="px-1.5 py-0.5 bg-slate-100 text-slate-500 text-[9px] font-bold border border-slate-200">+{linked.length - 3} more</span>
                             )}
                           </div>
                         )}
                       </td>
-                      <td className="px-5 py-4 hidden sm:table-cell">
-                        <span className={`px-2 py-1 rounded-full text-[10px] font-black uppercase ${
-                          p.account_status === 'active' ? 'bg-emerald-100 text-emerald-700' :
-                          p.account_status === 'suspended' ? 'bg-rose-100 text-rose-700' :
-                          'bg-slate-100 text-slate-500'
+                      <td className="px-4 py-3 hidden sm:table-cell">
+                        <span className={`px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide border ${
+                          p.account_status === 'active' ? 'text-emerald-600 bg-emerald-50 border-emerald-200' :
+                          p.account_status === 'suspended' ? 'text-rose-600 bg-rose-50 border-rose-200' :
+                          'text-slate-500 bg-slate-50 border-slate-200'
                         }`}>{p.account_status}</span>
                       </td>
-                      <td className="px-5 py-4 hidden lg:table-cell">
+                      <td className="px-4 py-3 hidden lg:table-cell">
                         {p.must_change_password && p.temp_password_storage ? (
-                          <span className="font-mono text-xs text-amber-600 bg-amber-50 px-2 py-1 rounded border border-amber-100 select-all cursor-help" title="Visible until parent changes password">
+                          <span className="font-mono text-[10px] text-amber-600 bg-amber-50 px-1.5 py-0.5 border border-amber-200 select-all cursor-help" title="Visible until parent changes password">
                             {p.temp_password_storage}
                           </span>
                         ) : (
                           <span className="text-[10px] text-slate-400">Changed</span>
                         )}
                       </td>
-                      <td className="px-5 py-4">
+                      <td className="px-4 py-3">
                         <div className="flex items-center justify-center relative">
                           <button
                             onClick={() => setOpenMenuId(openMenuId === p.id ? null : p.id)}
-                            className="p-2 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all"
+                            className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
                           >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="5" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/><circle cx="12" cy="19" r="1.5" fill="currentColor"/></svg>
                           </button>
                           {openMenuId === p.id && (
                             <>
                               <div className="fixed inset-0 z-40" onClick={() => setOpenMenuId(null)} />
-                              <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-lg shadow-lg border border-slate-200 py-1 z-50">
+                              <div className="absolute right-0 top-full mt-1 w-44 bg-white border border-slate-200 shadow-lg py-1 z-50">
                                 <button
                                   onClick={() => { openLinkModal(p); setOpenMenuId(null); }}
-                                  className="w-full flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
+                                  className="w-full flex items-center gap-2 px-3 py-2 text-xs text-slate-700 hover:bg-slate-50 text-left"
                                 >
-                                  <svg className="w-4 h-4 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <svg className="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
                                   </svg>
                                   Link Children
                                 </button>
                                 <button
                                   onClick={() => { handleResetPassword(p.id); setOpenMenuId(null); }}
-                                  className="w-full flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
+                                  className="w-full flex items-center gap-2 px-3 py-2 text-xs text-slate-700 hover:bg-slate-50 text-left"
                                 >
-                                  <svg className="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <svg className="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
                                   </svg>
                                   Reset Password
                                 </button>
                                 <button
                                   onClick={() => { handleDelete(p.id, `${p.first_name} ${p.last_name}`); setOpenMenuId(null); }}
-                                  className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                                  className="w-full flex items-center gap-2 px-3 py-2 text-xs text-red-600 hover:bg-red-50 text-left"
                                 >
-                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                   </svg>
                                   Delete Account
@@ -359,53 +359,64 @@ export default function ParentManagement() {
 
       {/* Create Parent Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md">
-            <div className="p-6 border-b border-slate-100">
-              <h3 className="text-lg font-black text-slate-900">Create Parent Account</h3>
-              <p className="text-slate-500 text-xs mt-1">A temporary password will be generated automatically.</p>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-white border border-gray-300 shadow-2xl w-full max-w-md flex flex-col max-h-[92vh]" onClick={e => e.stopPropagation()}>
+            <div className="bg-[#5e2a84] flex items-center justify-between px-5 py-3 border-b-2 border-violet-900">
+              <div className="flex items-center gap-3">
+                <div className="w-7 h-7 bg-white/20 border border-white/30 flex items-center justify-center">
+                  <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
+                  </svg>
+                </div>
+                <div>
+                  <h2 className="text-sm font-black text-white uppercase tracking-widest leading-none">Create Parent Account</h2>
+                  <p className="text-violet-200 text-[10px] mt-0.5 font-medium uppercase tracking-wide">A temporary password will be generated automatically.</p>
+                </div>
+              </div>
+              <button type="button" onClick={() => setShowAddModal(false)}
+                className="ml-4 w-7 h-7 flex items-center justify-center rounded text-white/60 hover:bg-white/20 hover:text-white transition-all">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+              </button>
             </div>
-            <form onSubmit={handleCreate} className="p-6 space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-black text-slate-500 uppercase tracking-widest mb-1">First Name *</label>
-                  <input required value={form.first_name} onChange={e => setForm(f => ({ ...f, first_name: e.target.value }))}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500" />
+            <form onSubmit={handleCreate} className="flex flex-col flex-1 overflow-hidden">
+              <div className="px-5 py-4 overflow-y-auto flex-1 space-y-3">
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1">First Name *</label>
+                    <input required value={form.first_name} onChange={e => setForm(f => ({ ...f, first_name: e.target.value }))}
+                      className="w-full px-3 py-2 border border-gray-300 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1">Last Name *</label>
+                    <input required value={form.last_name} onChange={e => setForm(f => ({ ...f, last_name: e.target.value }))}
+                      className="w-full px-3 py-2 border border-gray-300 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500" />
+                  </div>
                 </div>
                 <div>
-                  <label className="block text-xs font-black text-slate-500 uppercase tracking-widest mb-1">Last Name *</label>
-                  <input required value={form.last_name} onChange={e => setForm(f => ({ ...f, last_name: e.target.value }))}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500" />
+                  <label className="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1">Email Address *</label>
+                  <input required type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+                    placeholder="parent@email.com"
+                    className="w-full px-3 py-2 border border-gray-300 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500" />
+                  <p className="text-[10px] text-slate-400 mt-1">This will also be their username for login.</p>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1">Password (optional)</label>
+                  <input type="text" value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
+                    placeholder="Leave blank to auto-generate"
+                    className="w-full px-3 py-2 border border-gray-300 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500" />
                 </div>
               </div>
-              <div>
-                <label className="block text-xs font-black text-slate-500 uppercase tracking-widest mb-1">Email Address *</label>
-                <input required type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
-                  placeholder="parent@email.com"
-                  className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500" />
-                <p className="text-[10px] text-slate-400 mt-1">This will also be their username for login.</p>
-              </div>
-              <div>
-                <label className="block text-xs font-black text-slate-500 uppercase tracking-widest mb-1">Password (optional)</label>
-                <input type="text" value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
-                  placeholder="Leave blank to auto-generate"
-                  className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500" />
-              </div>
-              <div className="flex justify-end gap-3 pt-2">
-                <Button
-                  type="button"
-                  onClick={() => setShowAddModal(false)}
-                  variant="secondary"
-                >
+              <div className="px-5 py-3 border-t border-gray-200 bg-gray-50 flex items-center justify-end gap-3">
+                <button type="button" onClick={() => setShowAddModal(false)}
+                  className="px-5 py-2 bg-white text-gray-700 text-xs font-bold uppercase tracking-wider border border-gray-300 hover:bg-gray-100">
                   Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  variant="primary"
-                  loading={saving}
-                >
-                  Create Account
-                </Button>
+                </button>
+                <button type="submit" disabled={saving}
+                  className="px-5 py-2 bg-[#5e2a84] text-white text-xs font-bold uppercase tracking-wider hover:bg-violet-700 disabled:opacity-50">
+                  {saving ? 'Creating...' : 'Create Account'}
+                </button>
               </div>
             </form>
           </div>
@@ -414,58 +425,71 @@ export default function ParentManagement() {
 
       {/* Link Children Modal */}
       {showLinkModal && selectedParent && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[85vh] flex flex-col">
-            <div className="p-6 border-b border-slate-100 flex-shrink-0">
-              <h3 className="text-lg font-black text-slate-900">
-                Link Children — {selectedParent.first_name} {selectedParent.last_name}
-              </h3>
-              <p className="text-slate-500 text-xs mt-1">
-                Select the students linked to this parent. Changes are saved when you click Save.
-              </p>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-white border border-gray-300 shadow-2xl w-full max-w-lg max-h-[85vh] flex flex-col" onClick={e => e.stopPropagation()}>
+            <div className="bg-[#5e2a84] flex items-center justify-between px-5 py-3 border-b-2 border-violet-900">
+              <div className="flex items-center gap-3">
+                <div className="w-7 h-7 bg-white/20 border border-white/30 flex items-center justify-center">
+                  <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                  </svg>
+                </div>
+                <div>
+                  <h2 className="text-sm font-black text-white uppercase tracking-widest leading-none">Link Children</h2>
+                  <p className="text-violet-200 text-[10px] mt-0.5 font-medium uppercase tracking-wide">
+                    {selectedParent.first_name} {selectedParent.last_name}
+                  </p>
+                </div>
+              </div>
+              <button type="button" onClick={() => setShowLinkModal(false)}
+                className="ml-4 w-7 h-7 flex items-center justify-center rounded text-white/60 hover:bg-white/20 hover:text-white transition-all">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+              </button>
             </div>
-            <div className="p-4 border-b border-slate-100 flex-shrink-0">
+            <div className="p-3 border-b border-gray-200">
               <div className="relative">
                 <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
                 <input type="text" value={linkSearch} onChange={e => setLinkSearch(e.target.value)}
                   placeholder="Search students by name or ID..."
-                  className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-500" />
+                  className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-1 focus:ring-violet-500 focus:bg-white" />
               </div>
               {linkedIds.length > 0 && (
-                <p className="text-[10px] text-violet-600 font-black uppercase tracking-widest mt-2">
+                <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest mt-1.5">
                   {linkedIds.length} student{linkedIds.length !== 1 ? 's' : ''} selected
                 </p>
               )}
             </div>
-            <div className="flex-1 overflow-y-auto p-4 space-y-2">
+            <div className="flex-1 overflow-y-auto p-3 space-y-1.5">
               {filteredStudents.length === 0 ? (
                 <p className="text-center text-slate-400 text-sm py-8">No students found.</p>
               ) : filteredStudents.map(s => {
                 const isLinked = linkedIds.includes(s.id);
                 return (
                   <button key={s.id} onClick={() => toggleLink(s.id)}
-                    className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-all text-left ${
+                    className={`w-full flex items-center gap-3 p-2.5 border transition-colors text-left ${
                       isLinked
-                        ? 'bg-violet-50 border-violet-300 shadow-sm'
-                        : 'bg-white border-slate-200 hover:border-violet-200 hover:bg-violet-50/30'
+                        ? 'bg-violet-50 border-violet-300'
+                        : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50'
                     }`}>
-                    <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center flex-shrink-0 transition-all ${
+                    <div className={`w-4.5 h-4.5 border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
                       isLinked ? 'bg-violet-600 border-violet-600' : 'border-slate-300'
-                    }`}>
+                    }`} style={{ width: '18px', height: '18px' }}>
                       {isLinked && (
                         <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                         </svg>
                       )}
                     </div>
-                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center text-white font-black text-xs flex-shrink-0">
+                    <div className="w-7 h-7 bg-[#5e2a84] flex items-center justify-center text-white font-bold text-[10px] flex-shrink-0">
                       {s.first_name?.[0]}{s.last_name?.[0]}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-bold text-slate-800 truncate">{s.first_name} {s.last_name}</p>
-                      <p className="text-[10px] text-slate-400 truncate">
+                      <p className="text-xs font-bold text-slate-800 truncate">{s.first_name} {s.last_name}</p>
+                      <p className="text-[9px] text-slate-400 truncate">
                         {s.username} · {s.profile?.grade_level || 'No grade'} · {s.profile?.classroom_name || 'No class'}
                       </p>
                     </div>
@@ -473,20 +497,15 @@ export default function ParentManagement() {
                 );
               })}
             </div>
-            <div className="p-4 border-t border-slate-100 flex justify-end gap-3 flex-shrink-0">
-              <Button
-                onClick={() => setShowLinkModal(false)}
-                variant="secondary"
-              >
+            <div className="p-3 border-t border-gray-200 bg-gray-50 flex justify-end gap-3">
+              <button type="button" onClick={() => setShowLinkModal(false)}
+                className="px-5 py-2 bg-white text-gray-700 text-xs font-bold uppercase tracking-wider border border-gray-300 hover:bg-gray-100">
                 Cancel
-              </Button>
-              <Button
-                onClick={saveLinks}
-                variant="primary"
-                loading={linkSaving}
-              >
-                Save Links
-              </Button>
+              </button>
+              <button onClick={saveLinks} disabled={linkSaving}
+                className="px-5 py-2 bg-[#5e2a84] text-white text-xs font-bold uppercase tracking-wider hover:bg-violet-700 disabled:opacity-50">
+                {linkSaving ? 'Saving...' : 'Save Links'}
+              </button>
             </div>
           </div>
         </div>
@@ -495,4 +514,3 @@ export default function ParentManagement() {
     </div>
   );
 }
-

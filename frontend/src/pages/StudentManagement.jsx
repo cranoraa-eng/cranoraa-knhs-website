@@ -89,7 +89,6 @@ const StudentManagement = () => {
       setNewStudent({ username: '', first_name: '', last_name: '', email: '', password: '', grade_level: '', sex: '' });
       fetchData();
 
-      // Show success with password
       Swal.fire({
         icon: 'success',
         title: 'Account Created',
@@ -100,7 +99,7 @@ const StudentManagement = () => {
             <p class="text-xs text-slate-500 mt-4 italic">Please provide this password to the student. They will be required to change it on their first login.</p>
           </div>
         `,
-        confirmButtonColor: '#9333ea'
+        confirmButtonColor: '#5e2a84'
       });
     } catch (err) {
       toast.error(err.response?.data?.error || 'Failed to create student');
@@ -123,9 +122,7 @@ const StudentManagement = () => {
           const wsname = wb.SheetNames[0];
           const ws = wb.Sheets[wsname];
           
-          // Convert sheet to CSV format for the backend
           const csvData = XLSX.utils.sheet_to_csv(ws);
-          
           const blob = new Blob([csvData], { type: 'text/csv' });
           const formData = new FormData();
           formData.append('file', blob, 'import.csv');
@@ -142,11 +139,11 @@ const StudentManagement = () => {
             Swal.fire({
               icon: 'success',
               title: 'Import Successful',
-              width: '600px',
+              width: '90%',
               html: `
                 <div class="text-left">
                   <p class="mb-4 text-sm font-bold text-emerald-600">Successfully created ${created_count} students!</p>
-                  <div class="max-h-60 overflow-y-auto border border-slate-200 rounded-lg">
+                    <div className="max-h-60 overflow-auto border border-slate-200 rounded">
                     <table class="w-full text-[10px] text-left">
                       <thead class="bg-slate-50 border-b border-slate-200">
                         <tr>
@@ -168,7 +165,7 @@ const StudentManagement = () => {
                   </div>
                   <p class="mt-4 text-[10px] text-slate-500 italic">Please copy these credentials and provide them to the students.</p>
                   ${errors.length > 0 ? `
-                    <div class="mt-4 p-3 bg-red-50 rounded-lg">
+                    <div class="mt-4 p-3 bg-red-50 rounded">
                       <p class="text-[10px] font-bold text-red-600 mb-1">Errors (${errors.length}):</p>
                       <ul class="text-[9px] text-red-500 list-disc list-inside">
                         ${errors.map(e => `<li>${e}</li>`).join('')}
@@ -177,7 +174,7 @@ const StudentManagement = () => {
                   ` : ''}
                 </div>
               `,
-              confirmButtonColor: '#9333ea'
+              confirmButtonColor: '#5e2a84'
             });
           } else if (errors.length > 0) {
             Swal.fire({
@@ -298,7 +295,7 @@ const StudentManagement = () => {
       html: `
         <div class="text-left">
           <p class="text-xs text-slate-500 mb-3">Current: <strong>${currentClassroomName || 'No Section'}</strong>${gradeLevel ? ` | Grade: <strong>${gradeLevel}</strong>` : ''}</p>
-          <select id="swal-select" class="swal2-select" style="width:100%;padding:8px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px;">
+          <select id="swal-select" class="swal2-select" style="width:100%;padding:8px;border:1px solid #e2e8f0;border-radius:4px;font-size:14px;">
             <option value="">-- Select Section --</option>
             ${filtered.map(c => {
               const count = c.student_count || 0;
@@ -312,7 +309,7 @@ const StudentManagement = () => {
       `,
       showCancelButton: true,
       confirmButtonText: 'Assign',
-      confirmButtonColor: '#7C3AED',
+      confirmButtonColor: '#5e2a84',
       preConfirm: () => document.getElementById('swal-select')?.value || ''
     });
 
@@ -365,7 +362,6 @@ const StudentManagement = () => {
         'Status': s.account_status
       };
 
-      // Only include Grade Level for admins
       if (user?.role === 'admin') {
         return {
           ...row,
@@ -387,8 +383,7 @@ const StudentManagement = () => {
     const timestamp = new Date().toLocaleString();
     const dateStr = new Date().toISOString().split('T')[0];
     
-    // School Header
-    doc.setFillColor(45, 27, 77); // #2D1B4D
+    doc.setFillColor(45, 27, 77);
     doc.rect(0, 0, 210, 40, 'F');
     
     doc.setTextColor(255);
@@ -406,9 +401,7 @@ const StudentManagement = () => {
 
     let y = 50;
 
-    // Process organized data for the PDF
     organizedData.forEach((gradeGroup) => {
-      // Grade Header
       if (y > 250) { doc.addPage(); y = 20; }
       
       doc.setFillColor(243, 244, 246);
@@ -420,7 +413,6 @@ const StudentManagement = () => {
       y += 15;
 
       gradeGroup.classrooms.forEach((cls) => {
-        // Classroom Header
         if (y > 250) { doc.addPage(); y = 20; }
         
         doc.setTextColor(79, 70, 229);
@@ -439,7 +431,6 @@ const StudentManagement = () => {
           
           if (y > 250) { doc.addPage(); y = 20; }
           
-          // Gender Sub-header
           doc.setFillColor(color[0], color[1], color[2], 0.1);
           doc.rect(14, y, 182, 6, 'F');
           doc.setTextColor(color[0], color[1], color[2]);
@@ -447,7 +438,6 @@ const StudentManagement = () => {
           doc.text(title, 16, y + 4.5);
           y += 6;
 
-          // Table Header
           doc.setFillColor(45, 27, 77);
           doc.rect(14, y, 182, 7, 'F');
           doc.setTextColor(255);
@@ -460,14 +450,12 @@ const StudentManagement = () => {
           });
           y += 7;
 
-          // Rows
           doc.setFont("helvetica", "normal");
           doc.setFontSize(8);
           studentsList.forEach((s, idx) => {
             if (y > 275) {
               doc.addPage();
               y = 20;
-              // Redraw header on new page
               doc.setFillColor(45, 27, 77);
               doc.rect(14, y, 182, 7, 'F');
               doc.setTextColor(255);
@@ -501,17 +489,16 @@ const StudentManagement = () => {
             
             y += 7;
           });
-          y += 5; // Space after gender block
+          y += 5;
         };
 
         drawTable(cls.male, `MALE STUDENTS (${cls.male.length})`, [59, 130, 246]);
         drawTable(cls.female, `FEMALE STUDENTS (${cls.female.length})`, [236, 72, 153]);
         
-        y += 10; // Space after classroom
+        y += 10;
       });
     });
 
-    // Footer on all pages
     const pageCount = doc.internal.getNumberOfPages();
     for (let i = 1; i <= pageCount; i++) {
       doc.setPage(i);
@@ -543,14 +530,12 @@ const StudentManagement = () => {
       return matchesSearch && matchesGrade && matchesStatus;
     });
 
-    // Group by Grade -> Classroom
     const groups = {};
 
     filtered.forEach(s => {
       let grade = normalizeGrade(s.profile?.grade_level);
       let classroom = s.profile?.classroom_name || 'No Classroom';
       
-      // For teachers, force students into their advisory classroom grouping
       if (user?.role === 'staff' && advisoryClass) {
         if (!grade || grade === 'Unassigned') {
           const match = advisoryClass.name?.match(/Grade\s+(\d+)/i);
@@ -564,7 +549,6 @@ const StudentManagement = () => {
       groups[grade][classroom].push(s);
     });
 
-    // Sort Grades
     const sortedGrades = Object.keys(groups).sort((a, b) => {
       const indexA = GRADE_ORDER.indexOf(a);
       const indexB = GRADE_ORDER.indexOf(b);
@@ -579,12 +563,10 @@ const StudentManagement = () => {
       classrooms: Object.keys(groups[grade]).sort().map(classroom => {
         const classStudents = groups[grade][classroom];
         
-        // Sort all students by Last Name first
         const sorted = [...classStudents].sort((a, b) => 
           (a.last_name || '').localeCompare(b.last_name || '')
         );
 
-        // Split into Male and Female
         return {
           name: classroom,
           male: sorted.filter(s => (s.profile?.sex || '').toLowerCase() === 'male'),
@@ -604,16 +586,16 @@ const StudentManagement = () => {
   }
 
   const ProfileField = ({ label, value }) => (
-    <div className="py-1 md:py-2 border-b border-slate-50 last:border-0">
-      <p className="text-[7px] md:text-[9px] font-black text-indigo-400 uppercase tracking-widest mb-0.5">{label}</p>
-      <p className="text-[10px] md:text-sm font-bold text-slate-700 truncate">{value || '—'}</p>
+    <div className="py-1 md:py-2 border-b border-slate-100 last:border-0">
+      <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">{label}</p>
+      <p className="text-xs font-bold text-slate-700 truncate">{value || '—'}</p>
     </div>
   );
 
   const StudentRow = ({ student, idx }) => (
-    <tr key={student.id} className={`group transition-all duration-200 ${selectedIds.includes(student.id) ? 'bg-violet-50/50' : 'hover:bg-slate-50/80'}`}>
-      <td className="px-3 py-1.5 md:px-6 md:py-4">
-        <div className="flex items-center gap-3">
+    <tr key={student.id} className={`group transition-colors ${selectedIds.includes(student.id) ? 'bg-violet-50' : 'hover:bg-slate-50'}`}>
+      <td className="px-3 py-2 md:px-4 md:py-3">
+        <div className="flex items-center gap-2">
           <input 
             type="checkbox" 
             checked={selectedIds.includes(student.id)}
@@ -621,107 +603,95 @@ const StudentManagement = () => {
               if (e.target.checked) setSelectedIds(prev => [...prev, student.id]);
               else setSelectedIds(prev => prev.filter(id => id !== student.id));
             }}
-            className="w-3.5 h-3.5 md:w-4 md:h-4 text-violet-600 border-slate-300 rounded focus:ring-violet-500 cursor-pointer"
+            className="w-3.5 h-3.5 text-violet-600 border-slate-300 rounded focus:ring-violet-500 cursor-pointer"
           />
-          <span className="text-[8px] md:text-xs font-black text-slate-400">{idx + 1}</span>
+          <span className="text-[10px] font-bold text-slate-400">{idx + 1}</span>
         </div>
       </td>
-      <td className="px-3 py-1.5 md:px-6 md:py-4">
-        <div className="flex items-center gap-2 md:gap-3">
-          <div className="min-w-0">
-             <p className="text-[9px] md:text-sm font-black text-slate-800 truncate uppercase tracking-tight leading-none mb-0.5 md:mb-1">
-               {student.last_name}, {student.first_name}
-             </p>
-            <div className="flex items-center gap-1">
-              <span className={`w-1 h-1 md:w-1.5 md:h-1.5 rounded-full ${student.is_online ? 'bg-green-500 animate-pulse' : 'bg-slate-300'}`}></span>
-              <p className="text-[6px] md:text-[10px] font-bold text-slate-400 uppercase tracking-widest">{student.is_online ? 'Online' : 'Offline'}</p>
-            </div>
-          </div>
-        </div>
+      <td className="px-3 py-2 md:px-4 md:py-3">
+        <p className="text-xs font-bold text-slate-800 truncate uppercase">
+          {student.last_name}, {student.first_name}
+        </p>
       </td>
-      <td className="hidden md:table-cell px-6 py-4">
-        <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{student.profile?.sex || '—'}</span>
+      <td className="hidden md:table-cell px-4 py-3">
+        <span className="text-[10px] font-bold text-slate-500 uppercase">{student.profile?.sex || '—'}</span>
       </td>
-      <td className="hidden md:table-cell px-6 py-4">
-        <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded-md">{(/^\d+$/.test(student.profile?.grade_level) ? `Grade ${student.profile.grade_level}` : student.profile?.grade_level) || '—'}</span>
+      <td className="hidden md:table-cell px-4 py-3">
+        <span className="text-[10px] font-bold text-slate-600 bg-slate-100 px-2 py-0.5 border border-slate-200">
+          {(/^\d+$/.test(student.profile?.grade_level) ? `Grade ${student.profile.grade_level}` : student.profile?.grade_level) || '—'}
+        </span>
       </td>
-      <td className="hidden md:table-cell px-6 py-4">
-        <span className={`text-[10px] font-bold px-2 py-1 rounded-md ${student.profile?.classroom_name ? 'text-emerald-600 bg-emerald-50' : 'text-amber-600 bg-amber-50'}`}>{student.profile?.classroom_name || 'No Section'}</span>
+      <td className="hidden md:table-cell px-4 py-3">
+        <span className={`text-[10px] font-bold px-2 py-0.5 border ${
+          student.profile?.classroom_name 
+            ? 'text-slate-700 bg-slate-50 border-slate-200' 
+            : 'text-amber-600 bg-amber-50 border-amber-200'
+        }`}>{student.profile?.classroom_name || 'No Section'}</span>
       </td>
-      <td className="hidden md:table-cell px-6 py-4">
-        <p className="text-[10px] font-bold text-slate-500 truncate max-w-[150px] lowercase italic">{student.email || '—'}</p>
+      <td className="hidden md:table-cell px-4 py-3">
+        <p className="text-[10px] font-medium text-slate-500 truncate max-w-[150px] lowercase">{student.email || '—'}</p>
       </td>
-      <td className="hidden md:table-cell px-6 py-4">
-         <div className="flex flex-col">
-           <span className="text-[10px] font-mono font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded-md w-fit">
-             {student.profile?.registration_number || student.username}
-           </span>
-           {student.must_change_password && student.temp_password_storage && (
-             <div className="mt-1 flex items-center gap-1 group/pass">
-               <span className="text-[8px] font-black text-amber-500 uppercase tracking-widest">Temp Pass:</span>
-               <span className="text-[10px] font-mono font-bold text-amber-600 bg-amber-50 px-1 rounded border border-amber-100 select-all cursor-help" title="Visible until student changes password">
-                 {student.temp_password_storage}
-               </span>
-             </div>
-           )}
-         </div>
-       </td>
-      <td className="px-3 py-1.5 md:px-6 md:py-4 text-center">
-         <select 
-           value={student.account_status} 
-           onChange={(e) => handleToggleStatus(student, e.target.value)}
-           className={`text-[7px] md:text-[10px] font-black px-1.5 py-0.5 md:px-2 md:py-1 rounded uppercase tracking-widest border-0 focus:ring-2 focus:ring-violet-500 cursor-pointer transition-all ${
-             student.account_status === 'active' ? 'bg-emerald-100 text-emerald-600' : 
-             student.account_status === 'suspended' ? 'bg-rose-100 text-rose-600' : 
-             'bg-slate-100 text-slate-600'
-           }`}
-         >
-           <option value="active">Active</option>
-           <option value="inactive">Inactive</option>
-           <option value="suspended">Suspended</option>
-         </select>
-       </td>
-      <td className="px-3 py-1.5 md:px-6 md:py-4">
+      <td className="hidden md:table-cell px-4 py-3">
+        <span className="text-[10px] font-mono font-bold text-slate-600 bg-slate-50 px-2 py-0.5 border border-slate-200">
+          {student.profile?.registration_number || student.username}
+        </span>
+      </td>
+      <td className="px-3 py-2 md:px-4 md:py-3 text-center">
+        <select 
+          value={student.account_status} 
+          onChange={(e) => handleToggleStatus(student, e.target.value)}
+          className={`text-[10px] font-bold px-1.5 py-0.5 border uppercase tracking-wide cursor-pointer focus:ring-1 focus:ring-violet-500 ${
+            student.account_status === 'active' ? 'text-emerald-600 bg-emerald-50 border-emerald-200' : 
+            student.account_status === 'suspended' ? 'text-rose-600 bg-rose-50 border-rose-200' : 
+            'text-slate-500 bg-slate-50 border-slate-200'
+          }`}
+        >
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
+          <option value="suspended">Suspended</option>
+        </select>
+      </td>
+      <td className="px-3 py-2 md:px-4 md:py-3">
         <div className="flex items-center justify-center relative">
           <button
             onClick={() => setOpenMenuId(openMenuId === student.id ? null : student.id)}
-            className="p-1.5 md:p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-all"
+            className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded transition-colors"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="5" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/><circle cx="12" cy="19" r="1.5" fill="currentColor"/></svg>
           </button>
           {openMenuId === student.id && (
             <>
               <div className="fixed inset-0 z-40" onClick={() => setOpenMenuId(null)} />
-              <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-lg shadow-lg border border-slate-200 py-1 z-50">
+              <div className="absolute right-0 top-full mt-1 w-44 bg-white border border-slate-200 shadow-lg py-1 z-50">
                 <button
                   onClick={() => { setSelectedStudent(student); setShowProfileModal(true); setOpenMenuId(null); }}
-                  className="w-full flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
+                  className="w-full flex items-center gap-2 px-3 py-2 text-xs text-slate-700 hover:bg-slate-50 text-left"
                 >
-                  <svg className="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                  <svg className="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
                   View Profile
                 </button>
                 {(user?.role === 'admin' || user?.role === 'staff') && (
                   <button
                     onClick={() => { handleAssignSection(student.id, student.profile?.classroom_name, student.profile?.grade_level); setOpenMenuId(null); }}
-                    className="w-full flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
+                    className="w-full flex items-center gap-2 px-3 py-2 text-xs text-slate-700 hover:bg-slate-50 text-left"
                   >
-                    <svg className="w-4 h-4 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+                    <svg className="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
                     Set Section
                   </button>
                 )}
                 <button
                   onClick={() => { handleResetPassword(student.id); setOpenMenuId(null); }}
-                  className="w-full flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
+                  className="w-full flex items-center gap-2 px-3 py-2 text-xs text-slate-700 hover:bg-slate-50 text-left"
                 >
-                  <svg className="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" /></svg>
+                  <svg className="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" /></svg>
                   Reset Password
                 </button>
                 {(user?.role === 'admin' || user?.role === 'staff') && (
                   <button
                     onClick={() => { handleDelete(student.id); setOpenMenuId(null); }}
-                    className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                    className="w-full flex items-center gap-2 px-3 py-2 text-xs text-red-600 hover:bg-red-50 text-left"
                   >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                     Delete Account
                   </button>
                 )}
@@ -734,44 +704,44 @@ const StudentManagement = () => {
   );
 
   return (
-    <div className="page-bottom-safe bg-slate-50/50">
-      {/* DepEd Official Header */}
-      <div className="bg-white border-b-4 border-violet-600 px-4 md:px-6 py-3 md:py-4 mb-3 md:mb-6">
+    <div className="page-bottom-safe bg-slate-50">
+      {/* Official Header */}
+      <div className="bg-white border-b-2 border-slate-200 px-4 md:px-6 py-3 md:py-4 mb-4">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 md:h-12 md:w-12 rounded-md bg-violet-600 flex items-center justify-center shrink-0">
-            <svg className="w-6 h-6 md:w-7 md:h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="h-10 w-10 md:h-11 md:w-11 bg-[#5e2a84] flex items-center justify-center shrink-0">
+            <svg className="w-5 h-5 md:w-6 md:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
             </svg>
           </div>
           <div>
-            <h1 className="text-lg md:text-2xl font-extrabold text-slate-900 uppercase tracking-tight">
+            <h1 className="text-base md:text-lg font-black text-slate-900 uppercase tracking-wide">
               {user?.role === 'staff' ? 'Advisory Class' : 'Student Records'}
             </h1>
-            <p className="text-xs md:text-sm font-bold text-violet-700 uppercase tracking-wide mt-0.5">
+            <p className="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-widest mt-0.5">
               {user?.role === 'staff' ? 'Manage Advisory Students' : 'Student Management System'}
             </p>
           </div>
         </div>
       </div>
 
-      <div className="p-1.5 md:p-6 space-y-2 md:space-y-6">
+      <div className="px-4 md:px-6 space-y-3 md:space-y-4">
       {/* Action buttons */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 md:gap-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 md:gap-4">
         <div className="flex-1"></div>
-        <div className="flex flex-wrap items-center justify-center gap-2">
+        <div className="flex flex-wrap items-center justify-center gap-1.5">
           <button 
             onClick={() => setShowAddModal(true)}
-            className="bg-violet-600 text-white px-3 py-1.5 md:px-5 md:py-2.5 rounded-xl md:rounded-2xl border border-violet-700 shadow-lg hover:bg-violet-700 flex items-center gap-2 transition-all active:scale-95"
+            className="bg-[#5e2a84] text-white px-3 py-1.5 md:px-4 md:py-2 border border-violet-800 hover:bg-violet-700 flex items-center gap-1.5 transition-colors text-xs font-bold uppercase tracking-wide"
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 4v16m8-8H4" /></svg>
-            <span className="text-[10px] md:text-sm font-bold uppercase tracking-wider">Add Student</span>
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" /></svg>
+            Add Student
           </button>
           <button 
             onClick={() => setShowImportModal(true)}
-            className="bg-indigo-600 text-white px-3 py-1.5 md:px-5 md:py-2.5 rounded-xl md:rounded-2xl border border-indigo-700 shadow-lg hover:bg-indigo-700 flex items-center gap-2 transition-all active:scale-95"
+            className="bg-white border border-slate-200 text-slate-700 px-3 py-1.5 md:px-4 md:py-2 hover:bg-slate-50 flex items-center gap-1.5 transition-colors text-xs font-bold uppercase tracking-wide"
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
-            <span className="text-[10px] md:text-sm font-bold uppercase tracking-wider">Import Excel</span>
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
+            Import
           </button>
 
           <div className="flex items-center gap-1">
@@ -785,215 +755,206 @@ const StudentManagement = () => {
                 ];
                 
                 const ws = XLSX.utils.aoa_to_sheet([...headers, ...sampleData]);
-                
-                // Apply basic styling to headers
                 const headerRange = XLSX.utils.decode_range(ws['!ref']);
                 for (let C = headerRange.s.c; C <= 5; ++C) {
                   const address = XLSX.utils.encode_col(C) + '1';
                   if (!ws[address]) continue;
                   ws[address].s = {
                     font: { bold: true, color: { rgb: "FFFFFF" } },
-                    fill: { fgColor: { rgb: "4F46E5" } }, // Indigo 600
+                    fill: { fgColor: { rgb: "5e2a84" } },
                     alignment: { horizontal: "center" }
                   };
                 }
-
-                // Set column widths
                 ws['!cols'] = [
-                  { wch: 20 }, // Student ID
-                  { wch: 20 }, // First Name
-                  { wch: 20 }, // Last Name
-                  { wch: 15 }, // Grade Level
-                  { wch: 10 }, // Sex
-                  { wch: 30 }, // Email
+                  { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 15 }, { wch: 10 }, { wch: 30 },
                 ];
-
                 const wb = XLSX.utils.book_new();
                 XLSX.utils.book_append_sheet(wb, ws, "Student Template");
                 XLSX.writeFile(wb, "KNHS_Student_Import_Template.xlsx");
-                toast.success('Professional template downloaded');
+                toast.success('Template downloaded');
               }}
-              className="bg-emerald-600 text-white px-3 py-1.5 md:px-5 md:py-2.5 rounded-xl md:rounded-2xl border border-emerald-700 shadow-lg hover:bg-emerald-700 flex items-center gap-2 transition-all active:scale-95"
+              className="bg-white border border-slate-200 text-slate-700 px-3 py-1.5 md:px-4 md:py-2 hover:bg-slate-50 flex items-center gap-1.5 transition-colors text-xs font-bold uppercase tracking-wide"
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-              <span className="text-[10px] md:text-sm font-bold uppercase tracking-wider">Download Template</span>
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+              Template
             </button>
             
             <div className="relative group/info">
-              <button className="w-6 h-6 md:w-10 md:h-10 flex items-center justify-center rounded-xl md:rounded-2xl bg-white text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all border border-slate-200 shadow-sm active:scale-90">
-                <span className="font-black text-xs md:text-lg">!</span>
+              <button className="w-7 h-7 flex items-center justify-center bg-white border border-slate-200 text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition-colors text-xs font-bold">
+                ?
               </button>
-              
-              <div className="absolute top-full right-0 mt-2 w-48 md:w-80 p-3 md:p-6 bg-slate-900/95 backdrop-blur-md text-white rounded-2xl md:rounded-3xl shadow-2xl opacity-0 invisible group-hover/info:opacity-100 group-hover/info:visible transition-all z-[110] border border-white/10 scale-95 group-hover/info:scale-100 origin-top-right">
-                <h4 className="text-[8px] md:text-xs font-black uppercase tracking-[0.2em] text-indigo-400 mb-2 md:mb-4 border-b border-white/10 pb-2">Import Instructions</h4>
-                <ul className="space-y-1.5 md:space-y-3">
-                  <li className="flex gap-1.5 md:gap-3">
-                    <span className="text-indigo-400 font-black text-[9px] md:text-xs mt-0.5">01</span>
-                    <p className="text-[8px] md:text-[11px] font-bold leading-relaxed text-slate-300">Student ID must be exactly <span className="text-white">12 digits (LRN)</span>.</p>
+              <div className="absolute top-full right-0 mt-2 w-64 p-4 bg-slate-900 text-white rounded shadow-xl opacity-0 invisible group-hover/info:opacity-100 group-hover/info:visible transition-all z-[110]">
+                <h4 className="text-[10px] font-bold uppercase tracking-wide text-violet-400 mb-3 border-b border-white/10 pb-2">Import Instructions</h4>
+                <ul className="space-y-2">
+                  <li className="flex gap-2">
+                    <span className="text-violet-400 font-bold text-[10px]">01</span>
+                    <p className="text-[10px] leading-relaxed text-slate-300">Student ID must be exactly <span className="text-white">12 digits (LRN)</span>.</p>
                   </li>
-                  <li className="flex gap-1.5 md:gap-3">
-                    <span className="text-indigo-400 font-black text-[9px] md:text-xs mt-0.5">02</span>
-                    <p className="text-[8px] md:text-[11px] font-bold leading-relaxed text-slate-300">Email is <span className="text-white">optional</span> - you can leave it blank.</p>
+                  <li className="flex gap-2">
+                    <span className="text-violet-400 font-bold text-[10px]">02</span>
+                    <p className="text-[10px] leading-relaxed text-slate-300">Email is <span className="text-white">optional</span>.</p>
                   </li>
-                  <li className="flex gap-1.5 md:gap-3">
-                    <span className="text-indigo-400 font-black text-[9px] md:text-xs mt-0.5">03</span>
-                    <p className="text-[8px] md:text-[11px] font-bold leading-relaxed text-slate-300">Grade Level: <span className="text-white">Grade 7 to Grade 12</span>.</p>
+                  <li className="flex gap-2">
+                    <span className="text-violet-400 font-bold text-[10px]">03</span>
+                    <p className="text-[10px] leading-relaxed text-slate-300">Grade Level: <span className="text-white">Grade 7 to Grade 12</span>.</p>
                   </li>
-                  <li className="flex gap-1.5 md:gap-3">
-                    <span className="text-indigo-400 font-black text-[9px] md:text-xs mt-0.5">04</span>
-                    <p className="text-[8px] md:text-[11px] font-bold leading-relaxed text-slate-300">Do <span className="text-rose-400">NOT</span> change the header names in the first row.</p>
+                  <li className="flex gap-2">
+                    <span className="text-violet-400 font-bold text-[10px]">04</span>
+                    <p className="text-[10px] leading-relaxed text-slate-300">Do <span className="text-rose-400">NOT</span> change the header names.</p>
                   </li>
                 </ul>
               </div>
             </div>
           </div>
           
-          <div className="flex items-center gap-1 bg-white p-1 rounded-xl md:rounded-2xl border border-slate-200 shadow-sm">
+          <div className="flex items-center gap-1 bg-white p-0.5 border border-slate-200">
             <button 
               onClick={handleExportExcel}
-              className="p-1.5 md:p-2.5 text-emerald-600 hover:bg-emerald-50 rounded-lg md:rounded-xl transition-all"
+              className="p-1.5 text-emerald-600 hover:bg-emerald-50 transition-colors"
               title="Export Excel"
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
             </button>
             <button 
               onClick={handleExportPDF}
-              className="p-1.5 md:p-2.5 text-rose-600 hover:bg-rose-50 rounded-lg md:rounded-xl transition-all"
+              className="p-1.5 text-rose-600 hover:bg-rose-50 transition-colors"
               title="Export PDF"
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
             </button>
           </div>
-          <div className="bg-white px-3 py-1.5 md:px-5 md:py-2.5 rounded-xl md:rounded-2xl border border-slate-200 shadow-sm flex items-center gap-2 md:gap-3">
+          <div className="bg-white px-3 py-1.5 md:px-4 md:py-2 border border-slate-200 flex items-center gap-2">
             <div>
-              <p className="text-[7px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest">
+              <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
                 {user?.role === 'staff' ? 'Advisory Students' : 'Total Students'}
               </p>
-              <p className="text-sm md:text-xl font-black text-slate-800 leading-none">{students.length}</p>
+              <p className="text-sm font-black text-slate-800 leading-none">{students.length}</p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Search Bar */}
-      <div className="bg-white p-1.5 md:p-4 rounded-xl md:rounded-2xl border border-slate-100 shadow-sm flex flex-col md:flex-row gap-3 items-center">
-        <div className="relative group flex-1 w-full">
-          <svg className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 md:w-5 md:h-5 text-slate-400 group-focus-within:text-blue-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-          <input 
-            type="text" 
-            placeholder="Search name, email, or LRN..."
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-            className="w-full pl-9 md:pl-12 pr-3 md:pr-4 py-1.5 md:py-3 bg-slate-50 border border-slate-200 rounded-lg md:rounded-xl focus:outline-none focus:ring-1 focus:ring-violet-500 focus:bg-white text-[10px] md:text-sm font-bold transition-all shadow-inner" 
-          />
-        </div>
-        <select value={gradeFilter} onChange={e => setGradeFilter(e.target.value)}
-          className="px-3 py-1.5 md:py-3 bg-slate-50 border border-slate-200 rounded-lg md:rounded-xl text-[10px] md:text-sm font-bold focus:outline-none focus:ring-1 focus:ring-violet-500">
-          <option value="">All Grades</option>
-          {['Grade 7','Grade 8','Grade 9','Grade 10','Grade 11','Grade 12'].map(g => <option key={g} value={g}>{g}</option>)}
-        </select>
-        <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}
-          className="px-3 py-1.5 md:py-3 bg-slate-50 border border-slate-200 rounded-lg md:rounded-xl text-[10px] md:text-sm font-bold focus:outline-none focus:ring-1 focus:ring-violet-500">
-          <option value="">All Status</option>
-          <option value="active">Active</option>
-          <option value="inactive">Inactive</option>
-          <option value="suspended">Suspended</option>
-        </select>
-
-        {selectedIds.length > 0 && (
-          <div className="flex items-center gap-3 animate-in slide-in-from-right-4 duration-300">
-            <span className="text-[10px] font-black text-violet-600 uppercase tracking-widest bg-violet-50 px-3 py-1.5 rounded-lg border border-blue-100">
-              {selectedIds.length} Selected
-            </span>
-            <button 
-              onClick={handleBulkDelete}
-              className="bg-rose-500 text-white px-4 py-2 rounded-xl border border-rose-600 shadow-md hover:bg-rose-600 flex items-center gap-2 transition-all active:scale-95"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-              <span className="text-xs font-bold uppercase tracking-wider">Bulk Delete</span>
-            </button>
-            <button 
-              onClick={() => setSelectedIds([])}
-              className="text-slate-400 hover:text-slate-600 text-[10px] font-black uppercase tracking-widest"
-            >
-              Clear
-            </button>
+      <div className="bg-white p-2.5 md:p-3 border border-slate-200">
+        <div className="flex flex-col md:flex-row gap-2 items-center">
+          <div className="relative flex-1 w-full">
+            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <input 
+              type="text" 
+              placeholder="Search name, email, or LRN..."
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              className="w-full pl-9 pr-4 py-1.5 bg-slate-50 border border-slate-200 focus:outline-none focus:ring-1 focus:ring-violet-500 focus:bg-white text-xs font-medium transition-colors" 
+            />
           </div>
-        )}
+          <select value={gradeFilter} onChange={e => setGradeFilter(e.target.value)}
+            className="px-2.5 py-1.5 bg-slate-50 border border-slate-200 text-xs font-medium focus:outline-none focus:ring-1 focus:ring-violet-500">
+            <option value="">All Grades</option>
+            {['Grade 7','Grade 8','Grade 9','Grade 10','Grade 11','Grade 12'].map(g => <option key={g} value={g}>{g}</option>)}
+          </select>
+          <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}
+            className="px-2.5 py-1.5 bg-slate-50 border border-slate-200 text-xs font-medium focus:outline-none focus:ring-1 focus:ring-violet-500">
+            <option value="">All Status</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+            <option value="suspended">Suspended</option>
+          </select>
+
+          {selectedIds.length > 0 && (
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-bold text-violet-600 bg-violet-50 px-2 py-1 border border-violet-200 uppercase tracking-wide">
+                {selectedIds.length} Selected
+              </span>
+              <button 
+                onClick={handleBulkDelete}
+                className="bg-rose-500 text-white px-3 py-1.5 border border-rose-600 hover:bg-rose-600 flex items-center gap-1.5 transition-colors text-xs font-bold uppercase tracking-wide"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                Bulk Delete
+              </button>
+              <button 
+                onClick={() => setSelectedIds([])}
+                className="text-slate-400 hover:text-slate-600 text-[10px] font-bold uppercase tracking-wide"
+              >
+                Clear
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Organized List */}
-      <div className="space-y-4 md:space-y-10 pb-6 md:pb-10">
+      <div className="space-y-4 md:space-y-6 pb-6 md:pb-10">
         {organizedData.length === 0 ? (
-          <div className="bg-white rounded-2xl md:rounded-3xl border border-slate-200 shadow-sm p-10 md:p-20 text-center">
-            <div className="w-12 h-12 md:w-24 md:h-24 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-3 md:mb-6">
-              <svg className="w-6 h-6 md:w-12 md:h-12 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="bg-white border border-slate-200 p-10 md:p-16 text-center">
+            <div className="w-12 h-12 bg-slate-100 flex items-center justify-center mx-auto mb-3">
+              <svg className="w-6 h-6 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
               </svg>
             </div>
-            <h3 className="text-sm md:text-2xl font-black text-slate-700 mb-1 md:mb-2 uppercase tracking-tight">No Students Found</h3>
-            <p className="text-[10px] md:text-base text-slate-400 font-bold uppercase tracking-widest">Try a different search.</p>
+            <h3 className="text-sm font-black text-slate-700 mb-1 uppercase tracking-wide">No Students Found</h3>
+            <p className="text-xs text-slate-400 font-medium uppercase tracking-widest">Try a different search.</p>
           </div>
         ) : (
           organizedData.map((gradeGroup) => (
-            <div key={gradeGroup.grade} className="space-y-2 md:space-y-6">
+            <div key={gradeGroup.grade} className="space-y-2 md:space-y-4">
               {user?.role === 'admin' && (
-                <div className="flex items-center gap-2 md:gap-4 px-1 md:px-2">
-                  <h2 className="text-xs md:text-xl font-black text-slate-800 uppercase tracking-tight">{gradeGroup.grade}</h2>
-                  <div className="h-px flex-1 bg-gradient-to-r from-gray-200 to-transparent"></div>
+                <div className="flex items-center gap-2 px-1">
+                  <h2 className="text-xs font-black text-slate-800 uppercase tracking-wide">{gradeGroup.grade}</h2>
+                  <div className="h-px flex-1 bg-slate-200"></div>
                 </div>
               )}
 
-              <div className="grid grid-cols-1 gap-3 md:gap-8">
+              <div className="grid grid-cols-1 gap-2 md:gap-4">
                 {gradeGroup.classrooms.map((cls) => (
-                  <div key={cls.name} className="bg-white rounded-lg md:rounded-2xl border border-slate-200 shadow-sm overflow-hidden min-w-0">
-                    <div className="px-3 py-1.5 md:px-6 md:py-4 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
-                      <div className="flex items-center gap-1.5 md:gap-3">
-                        <div className="w-5 h-5 md:w-8 md:h-8 bg-indigo-100 rounded md:rounded-lg flex items-center justify-center">
-                          <svg className="w-3 h-3 md:w-4 md:h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                  <div key={cls.name} className="bg-white border border-slate-200 overflow-hidden">
+                    <div className="px-3 py-2 md:px-4 md:py-2.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="w-6 h-6 bg-[#5e2a84] flex items-center justify-center">
+                          <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                           </svg>
                         </div>
-                        <h3 className="font-black text-slate-700 text-[9px] md:text-sm uppercase tracking-wider">{cls.name}</h3>
+                        <h3 className="font-black text-slate-700 text-xs uppercase tracking-wide">{cls.name}</h3>
                       </div>
-                      <span className="text-[7px] md:text-[10px] font-black text-indigo-500 bg-indigo-50 px-1.5 py-0.5 md:px-2.5 md:py-1 rounded-full uppercase tracking-widest">
-                        {cls.totalCount}
+                      <span className="text-[9px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 border border-slate-200 uppercase tracking-widest">
+                        {cls.totalCount} Students
                       </span>
                     </div>
 
-                    <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-slate-200 max-w-full">
-                      <table className="w-full text-left min-w-[480px] md:min-w-full">
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left min-w-[320px]">
                         <thead>
-                          <tr className="text-[7px] md:text-[10px] font-black text-white uppercase tracking-widest border-b border-slate-50 bg-[#2D1B4D]">
-                            <th className="px-3 py-1.5 md:px-6 md:py-4 w-10 md:w-16">
-                              <div className="flex items-center gap-3">
+                          <tr className="text-[9px] font-bold text-white uppercase tracking-widest bg-[#5e2a84]">
+                            <th className="px-3 py-2 md:px-4 md:py-2.5 w-10">
+                              <div className="flex items-center gap-2">
                                 <input 
                                   type="checkbox" 
                                   checked={cls.male.concat(cls.female).every(s => selectedIds.includes(s.id)) && (cls.male.length + cls.female.length) > 0}
                                   onChange={(e) => handleSelectAll(cls.male.concat(cls.female).map(s => s.id), e.target.checked)}
-                                  className="w-3.5 h-3.5 md:w-4 md:h-4 text-violet-600 border-slate-300 rounded focus:ring-violet-500 cursor-pointer"
+                                  className="w-3 h-3 text-violet-600 border-slate-300 rounded focus:ring-violet-500 cursor-pointer"
                                 />
                                 <span>#</span>
                               </div>
                             </th>
-                            <th className="px-3 py-1.5 md:px-6 md:py-4">Student</th>
-                            <th className="hidden md:table-cell px-6 py-4">Sex</th>
-                            <th className="hidden md:table-cell px-6 py-4">Grade</th>
-                            <th className="hidden md:table-cell px-6 py-4">Section</th>
-                            <th className="hidden md:table-cell px-6 py-4">Email</th>
-                            <th className="hidden md:table-cell px-6 py-4">LRN</th>
-                            <th className="px-3 py-1.5 md:px-6 md:py-4 text-center">Status</th>
-                            <th className="px-3 py-1.5 md:px-6 md:py-4 text-center w-12"></th>
+                            <th className="px-3 py-2 md:px-4 md:py-2.5">Student</th>
+                            <th className="hidden md:table-cell px-4 py-2.5">Sex</th>
+                            <th className="hidden md:table-cell px-4 py-2.5">Grade</th>
+                            <th className="hidden md:table-cell px-4 py-2.5">Section</th>
+                            <th className="hidden md:table-cell px-4 py-2.5">Email</th>
+                            <th className="hidden md:table-cell px-4 py-2.5">LRN</th>
+                            <th className="px-3 py-2 md:px-4 md:py-2.5 text-center">Status</th>
+                            <th className="px-3 py-2 md:px-4 md:py-2.5 text-center w-10"></th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100">
                           {/* Male Students */}
                           {cls.male.length > 0 && (
-                            <tr className="bg-violet-50/50">
-                              <td colSpan="8" className="px-6 py-2 text-[10px] font-black text-violet-600 uppercase tracking-widest border-y border-blue-100">
-                                <div className="flex items-center gap-2">
+                            <tr className="bg-blue-50">
+                              <td colSpan="8" className="px-4 py-1.5 text-[9px] font-bold text-blue-600 uppercase tracking-widest border-y border-blue-100">
+                                <div className="flex items-center gap-1.5">
                                   <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a8 8 0 100 16 8 8 0 000-16zM9 9H5v2h4v4h2v-4h4V9h-4V5H9v4z" /></svg>
                                   Male ({cls.male.length})
                                 </div>
@@ -1006,9 +967,9 @@ const StudentManagement = () => {
 
                           {/* Female Students */}
                           {cls.female.length > 0 && (
-                            <tr className="bg-rose-50/50">
-                              <td colSpan="8" className="px-6 py-2 text-[10px] font-black text-rose-600 uppercase tracking-widest border-y border-rose-100">
-                                <div className="flex items-center gap-2">
+                            <tr className="bg-rose-50">
+                              <td colSpan="8" className="px-4 py-1.5 text-[9px] font-bold text-rose-600 uppercase tracking-widest border-y border-rose-100">
+                                <div className="flex items-center gap-1.5">
                                   <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a8 8 0 100 16 8 8 0 000-16zM9 9H5v2h4v4h2v-4h4V9h-4V5H9v4z" /></svg>
                                   Female ({cls.female.length})
                                 </div>
@@ -1032,61 +993,41 @@ const StudentManagement = () => {
       {/* Profile Modal */}
       {showProfileModal && selectedStudent && (
         <div className="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-lg border border-gray-300 shadow-2xl rounded-sm flex flex-col max-h-[92vh]" onClick={e => e.stopPropagation()}>
-            <div className="bg-[#5e2a84] flex items-center justify-between px-5 py-3 flex-shrink-0 border-b-2 border-violet-900">
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="w-7 h-7 rounded-full bg-white/20 border border-white/30 flex items-center justify-center flex-shrink-0">
+          <div className="bg-white border border-gray-300 shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <div className="bg-[#5e2a84] flex items-center justify-between px-5 py-3 border-b-2 border-violet-900">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-white/20 border border-white/30 flex items-center justify-center">
                   <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                   </svg>
                 </div>
                 <div>
-                  <h2 className="text-sm font-black text-white uppercase tracking-widest leading-none">{selectedStudent.last_name}, {selectedStudent.first_name}</h2>
-                  <p className="text-violet-200 text-[10px] mt-0.5 font-medium uppercase tracking-wide">Student Academic Profile</p>
+                  <h2 className="text-sm font-black text-white uppercase tracking-widest leading-none">Student Profile</h2>
+                  <p className="text-violet-200 text-[10px] mt-0.5 font-medium uppercase tracking-wide">{selectedStudent.first_name} {selectedStudent.last_name}</p>
                 </div>
               </div>
-              <button type="button" onClick={() => setShowProfileModal(false)}
+              <button type="button" onClick={() => { setShowProfileModal(false); setSelectedStudent(null); }}
                 className="ml-4 w-7 h-7 flex items-center justify-center rounded text-white/60 hover:bg-white/20 hover:text-white transition-all">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12"/>
                 </svg>
               </button>
             </div>
-
-            <div className="px-6 py-5 overflow-y-auto flex-1 grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1">
-              <div className="md:col-span-2 mb-4">
-                <h3 className="text-xs font-black text-gray-500 uppercase tracking-[0.2em] pb-2 border-b-2 border-gray-100">Personal Information</h3>
-              </div>
-              <ProfileField label="LRN (Learner Reference Number)" value={selectedStudent.profile?.registration_number} />
-              <ProfileField label="Grade Level" value={selectedStudent.profile?.grade_level} />
+            <div className="p-5 space-y-1">
+              <ProfileField label="Full Name" value={`${selectedStudent.profile?.title || ''} ${selectedStudent.first_name} ${selectedStudent.last_name}`} />
+              <ProfileField label="Student ID / LRN" value={selectedStudent.profile?.registration_number || selectedStudent.username} />
               <ProfileField label="Sex" value={selectedStudent.profile?.sex} />
-              <ProfileField label="Date of Birth" value={selectedStudent.profile?.date_of_birth} />
-              <ProfileField label="Nationality" value={selectedStudent.profile?.nationality} />
-              <ProfileField label="Province / State" value={selectedStudent.profile?.state} />
-
-              <div className="md:col-span-2 mt-6 mb-4">
-                <h3 className="text-xs font-black text-gray-500 uppercase tracking-[0.2em] pb-2 border-b-2 border-gray-100">Family & Contact</h3>
-              </div>
-              <ProfileField label="Father's Name" value={selectedStudent.profile?.father_name} />
-              <ProfileField label="Mother's Name" value={selectedStudent.profile?.mother_name} />
-              <ProfileField label="Phone Number" value={selectedStudent.profile?.phone_number} />
-              <ProfileField label="Home Address" value={selectedStudent.profile?.address} />
-              <div className="md:col-span-2">
-                <ProfileField label="Emergency Contact Info" value={selectedStudent.profile?.contact_information} />
-              </div>
+              <ProfileField label="Grade Level" value={selectedStudent.profile?.grade_level} />
+              <ProfileField label="Section" value={selectedStudent.profile?.classroom_name} />
+              <ProfileField label="Email" value={selectedStudent.email} />
+              <ProfileField label="Status" value={selectedStudent.account_status} />
+              {selectedStudent.must_change_password && selectedStudent.temp_password_storage && (
+                <ProfileField label="Temp Password" value={selectedStudent.temp_password_storage} />
+              )}
             </div>
-
-            <div className="px-6 py-4 border-t border-gray-200 bg-gray-50 flex items-center justify-end gap-3 flex-shrink-0">
-              <button
-                type="button"
-                onClick={() => handleStartChat(selectedStudent.id)}
-                className="px-6 py-2.5 bg-violet-600 text-white text-xs font-black uppercase tracking-widest hover:bg-violet-700 rounded-sm flex items-center gap-2"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" /></svg>
-                Message Student
-              </button>
-              <button type="button" onClick={() => setShowProfileModal(false)}
-                className="px-6 py-2.5 bg-white text-gray-700 text-xs font-black uppercase tracking-widest border border-gray-300 hover:bg-gray-100 rounded-sm">
+            <div className="px-5 py-3 border-t border-gray-200 bg-gray-50 flex justify-end">
+              <button type="button" onClick={() => { setShowProfileModal(false); setSelectedStudent(null); }}
+                className="px-5 py-2 bg-white text-gray-700 text-xs font-bold uppercase tracking-wide border border-gray-300 hover:bg-gray-100">
                 Close
               </button>
             </div>
@@ -1097,17 +1038,17 @@ const StudentManagement = () => {
       {/* Add Student Modal */}
       {showAddModal && (
         <div className="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-lg border border-gray-300 shadow-2xl rounded-sm flex flex-col max-h-[92vh]" onClick={e => e.stopPropagation()}>
-            <div className="bg-[#5e2a84] flex items-center justify-between px-5 py-3 flex-shrink-0 border-b-2 border-violet-900">
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="w-7 h-7 rounded-full bg-white/20 border border-white/30 flex items-center justify-center flex-shrink-0">
+          <div className="bg-white border border-gray-300 shadow-2xl w-full max-w-md flex flex-col max-h-[92vh]" onClick={e => e.stopPropagation()}>
+            <div className="bg-[#5e2a84] flex items-center justify-between px-5 py-3 border-b-2 border-violet-900">
+              <div className="flex items-center gap-3">
+                <div className="w-7 h-7 bg-white/20 border border-white/30 flex items-center justify-center">
                   <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                   </svg>
                 </div>
                 <div>
-                  <h2 className="text-sm font-black text-white uppercase tracking-widest leading-none">Create Student Account</h2>
-                  <p className="text-violet-200 text-[10px] mt-0.5 font-medium uppercase tracking-wide">New Learner Registration</p>
+                  <h2 className="text-sm font-black text-white uppercase tracking-widest leading-none">Add New Student</h2>
+                  <p className="text-violet-200 text-[10px] mt-0.5 font-medium uppercase tracking-wide">Create Student Account</p>
                 </div>
               </div>
               <button type="button" onClick={() => setShowAddModal(false)}
@@ -1118,84 +1059,57 @@ const StudentManagement = () => {
               </button>
             </div>
             <form onSubmit={handleAddStudent} className="flex flex-col flex-1 overflow-hidden">
-              <div className="px-6 py-5 overflow-y-auto flex-1 space-y-4">
+              <div className="px-5 py-4 overflow-y-auto flex-1 space-y-3">
                 <div>
-                  <label className="block text-xs font-black text-gray-700 uppercase tracking-wider mb-1.5">
-                    Student ID / LRN <span className="text-red-600">*</span>
-                  </label>
-                  <input type="text" value={newStudent.username}
-                    onChange={e => setNewStudent({...newStudent, username: e.target.value})}
-                    className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500 placeholder:text-gray-400"
-                    required />
+                  <label className="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1">Student ID (LRN) *</label>
+                  <input required value={newStudent.username} onChange={e => setNewStudent({...newStudent, username: e.target.value})}
+                    placeholder="12-digit LRN"
+                    className="w-full px-3 py-2 border border-gray-300 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500" />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-black text-gray-700 uppercase tracking-wider mb-1.5">
-                      First Name <span className="text-red-600">*</span>
-                    </label>
-                    <input type="text" value={newStudent.first_name}
-                      onChange={e => setNewStudent({...newStudent, first_name: e.target.value})}
-                      className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500 placeholder:text-gray-400"
-                      required />
+                    <label className="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1">First Name *</label>
+                    <input required value={newStudent.first_name} onChange={e => setNewStudent({...newStudent, first_name: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500" />
                   </div>
                   <div>
-                    <label className="block text-xs font-black text-gray-700 uppercase tracking-wider mb-1.5">
-                      Last Name <span className="text-red-600">*</span>
-                    </label>
-                    <input type="text" value={newStudent.last_name}
-                      onChange={e => setNewStudent({...newStudent, last_name: e.target.value})}
-                      className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500 placeholder:text-gray-400"
-                      required />
+                    <label className="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1">Last Name *</label>
+                    <input required value={newStudent.last_name} onChange={e => setNewStudent({...newStudent, last_name: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500" />
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1">Email (optional)</label>
+                  <input type="email" value={newStudent.email} onChange={e => setNewStudent({...newStudent, email: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500" />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-black text-gray-700 uppercase tracking-wider mb-1.5">
-                      Grade Level <span className="text-red-600">*</span>
-                    </label>
-                    <select value={newStudent.grade_level}
-                      onChange={e => setNewStudent({...newStudent, grade_level: e.target.value})}
-                      className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500"
-                      required>
+                    <label className="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1">Grade Level *</label>
+                    <select required value={newStudent.grade_level} onChange={e => setNewStudent({...newStudent, grade_level: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500">
                       <option value="">Select Grade</option>
-                      {GRADE_ORDER.map(g => <option key={g} value={g}>{g}</option>)}
+                      {['7','8','9','10','11','12'].map(g => <option key={g} value={g}>Grade {g}</option>)}
                     </select>
                   </div>
                   <div>
-                    <label className="block text-xs font-black text-gray-700 uppercase tracking-wider mb-1.5">
-                      Sex <span className="text-red-600">*</span>
-                    </label>
-                    <select value={newStudent.sex}
-                      onChange={e => setNewStudent({...newStudent, sex: e.target.value})}
-                      className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500"
-                      required>
+                    <label className="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1">Sex *</label>
+                    <select required value={newStudent.sex} onChange={e => setNewStudent({...newStudent, sex: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500">
                       <option value="">Select Sex</option>
                       <option value="male">Male</option>
                       <option value="female">Female</option>
                     </select>
                   </div>
                 </div>
-                <div>
-                  <label className="block text-xs font-black text-gray-700 uppercase tracking-wider mb-1.5">Email (Optional)</label>
-                  <input type="email" value={newStudent.email}
-                    onChange={e => setNewStudent({...newStudent, email: e.target.value})}
-                    className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500 placeholder:text-gray-400" />
-                </div>
-                <div>
-                  <label className="block text-xs font-black text-gray-700 uppercase tracking-wider mb-1.5">Temporary Password</label>
-                  <input type="text" value={newStudent.password}
-                    onChange={e => setNewStudent({...newStudent, password: e.target.value})}
-                    placeholder="Leave blank for auto-gen"
-                    className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500 placeholder:text-gray-400" />
-                </div>
               </div>
-              <div className="px-6 py-4 border-t border-gray-200 bg-gray-50 flex items-center justify-end gap-3 flex-shrink-0">
+              <div className="px-5 py-3 border-t border-gray-200 bg-gray-50 flex items-center justify-end gap-3">
                 <button type="button" onClick={() => setShowAddModal(false)}
-                  className="px-6 py-2.5 bg-white text-gray-700 text-xs font-black uppercase tracking-widest border border-gray-300 hover:bg-gray-100 rounded-sm">
+                  className="px-5 py-2 bg-white text-gray-700 text-xs font-bold uppercase tracking-wider border border-gray-300 hover:bg-gray-100">
                   Cancel
                 </button>
                 <button type="submit" disabled={isSubmitting}
-                  className="px-6 py-2.5 bg-[#5e2a84] text-white text-xs font-black uppercase tracking-widest hover:bg-violet-700 rounded-sm">
+                  className="px-5 py-2 bg-[#5e2a84] text-white text-xs font-bold uppercase tracking-wider hover:bg-violet-700 disabled:opacity-50">
                   {isSubmitting ? 'Creating...' : 'Create Account'}
                 </button>
               </div>
@@ -1207,17 +1121,17 @@ const StudentManagement = () => {
       {/* Import Modal */}
       {showImportModal && (
         <div className="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-lg border border-gray-300 shadow-2xl rounded-sm flex flex-col max-h-[92vh]" onClick={e => e.stopPropagation()}>
-            <div className="bg-[#5e2a84] flex items-center justify-between px-5 py-3 flex-shrink-0 border-b-2 border-violet-900">
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="w-7 h-7 rounded-full bg-white/20 border border-white/30 flex items-center justify-center flex-shrink-0">
+          <div className="bg-white border border-gray-300 shadow-2xl w-full max-w-md flex flex-col" onClick={e => e.stopPropagation()}>
+            <div className="bg-[#5e2a84] flex items-center justify-between px-5 py-3 border-b-2 border-violet-900">
+              <div className="flex items-center gap-3">
+                <div className="w-7 h-7 bg-white/20 border border-white/30 flex items-center justify-center">
                   <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                   </svg>
                 </div>
                 <div>
-                  <h2 className="text-sm font-black text-white uppercase tracking-widest leading-none">Bulk Import Students</h2>
-                  <p className="text-violet-200 text-[10px] mt-0.5 font-medium uppercase tracking-wide">Upload Excel or CSV File</p>
+                  <h2 className="text-sm font-black text-white uppercase tracking-widest leading-none">Import Students</h2>
+                  <p className="text-violet-200 text-[10px] mt-0.5 font-medium uppercase tracking-wide">Upload Excel File</p>
                 </div>
               </div>
               <button type="button" onClick={() => setShowImportModal(false)}
@@ -1227,64 +1141,40 @@ const StudentManagement = () => {
                 </svg>
               </button>
             </div>
-            <div className="px-6 py-5 overflow-y-auto flex-1 space-y-5">
-              {user?.role === 'staff' && (
-                <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest bg-indigo-50 px-3 py-2 rounded border border-indigo-100">
-                  Students will be auto-enrolled to your advisory classroom
-                </p>
-              )}
-              <p className="text-sm text-gray-500 font-medium">
-                Upload an Excel file (.xlsx, .xls) with headers:<br/>
-                <code className="bg-gray-100 px-2 py-1 rounded text-xs">
-                  Student ID, First Name, Last Name, {user?.role === 'admin' ? 'Grade Level, ' : ''}Sex, Email
-                </code>
-              </p>
-              <div
+            <div className="p-5">
+              <div 
+                className={`border-2 border-dashed p-8 text-center transition-colors ${
+                  isDragging ? 'border-violet-500 bg-violet-50' : 'border-slate-300 hover:border-slate-400'
+                }`}
                 onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
                 onDragLeave={() => setIsDragging(false)}
                 onDrop={(e) => {
                   e.preventDefault();
                   setIsDragging(false);
-                  const file = e.dataTransfer.files[0];
-                  if (file && (file.name.endsWith('.xlsx') || file.name.endsWith('.xls'))) {
-                    handleImportExcel({ target: { files: [file] } });
-                  } else {
-                    toast.error('Please drop a valid Excel file (.xlsx or .xls)');
+                  if (e.dataTransfer.files.length > 0) {
+                    handleImportExcel({ target: { files: e.dataTransfer.files } });
                   }
                 }}
-                className={`relative border-2 border-dashed rounded p-10 text-center transition-all duration-300 ${
-                  isDragging
-                    ? 'border-violet-500 bg-violet-50 scale-[1.02] shadow-xl shadow-violet-100'
-                    : 'border-gray-300 hover:border-violet-400 bg-gray-50'
-                }`}
               >
-                <input
-                  type="file"
-                  accept=".xlsx, .xls"
+                <svg className="w-8 h-8 mx-auto text-slate-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                </svg>
+                <p className="text-sm font-bold text-slate-700 mb-1">Drop Excel file here or click to browse</p>
+                <p className="text-xs text-slate-400">Supports .xlsx, .xls, .csv</p>
+                <input 
+                  type="file" 
+                  accept=".xlsx,.xls,.csv" 
                   onChange={handleImportExcel}
-                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                  id="excel-upload"
+                  className="hidden" 
+                  id="import-input"
                 />
-                <div className="space-y-4">
-                  <div className={`w-16 h-16 rounded mx-auto flex items-center justify-center transition-colors ${isDragging ? 'bg-violet-600 text-white' : 'bg-white text-violet-500 shadow-sm'}`}>
-                    <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v12m0 0l-3-3m3 3l3-3m-9 8h12" />
-                    </svg>
-                  </div>
-                  <div>
-                    <p className="text-sm font-black text-gray-700 uppercase tracking-tight">
-                      {isDragging ? 'Drop it here!' : 'Click or drag file here'}
-                    </p>
-                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">Supports .xlsx, .xls</p>
-                  </div>
-                </div>
+                <label 
+                  htmlFor="import-input"
+                  className="mt-4 inline-block px-4 py-2 bg-[#5e2a84] text-white text-xs font-bold uppercase tracking-wider hover:bg-violet-700 cursor-pointer transition-colors"
+                >
+                  Select File
+                </label>
               </div>
-            </div>
-            <div className="px-6 py-4 border-t border-gray-200 bg-gray-50 flex items-center justify-end gap-3 flex-shrink-0">
-              <button type="button" onClick={() => setShowImportModal(false)}
-                className="px-6 py-2.5 bg-white text-gray-700 text-xs font-black uppercase tracking-widest border border-gray-300 hover:bg-gray-100 rounded-sm">
-                Cancel
-              </button>
             </div>
           </div>
         </div>
@@ -1295,4 +1185,3 @@ const StudentManagement = () => {
 };
 
 export default StudentManagement;
-

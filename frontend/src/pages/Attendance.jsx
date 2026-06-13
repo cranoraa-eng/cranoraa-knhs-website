@@ -428,9 +428,9 @@ const Attendance = () => {
                   <thead className="bg-slate-50 border-b border-slate-200">
                     <tr>
                       <th className="px-4 py-3 text-left text-xs font-extrabold text-slate-700 uppercase tracking-wider">Subject</th>
-                      <th className="px-4 py-3 text-center text-xs font-extrabold text-slate-700 uppercase tracking-wider">Present</th>
-                      <th className="px-4 py-3 text-center text-xs font-extrabold text-slate-700 uppercase tracking-wider">Late</th>
-                      <th className="px-4 py-3 text-center text-xs font-extrabold text-slate-700 uppercase tracking-wider">Absent</th>
+                      <th className="px-4 py-3 text-center text-xs font-extrabold text-slate-700 uppercase tracking-wider hidden sm:table-cell">Present</th>
+                      <th className="px-4 py-3 text-center text-xs font-extrabold text-slate-700 uppercase tracking-wider hidden md:table-cell">Late</th>
+                      <th className="px-4 py-3 text-center text-xs font-extrabold text-slate-700 uppercase tracking-wider hidden md:table-cell">Absent</th>
                       <th className="px-4 py-3 text-center text-xs font-extrabold text-slate-700 uppercase tracking-wider">Rate</th>
                     </tr>
                   </thead>
@@ -439,10 +439,10 @@ const Attendance = () => {
                       const rate = data.total > 0 ? Math.round(((data.present + data.late) / data.total) * 100) : 0;
                       return (
                         <tr key={subject} className="hover:bg-slate-50">
-                          <td className="px-4 py-3 text-sm font-bold text-slate-900">{subject}</td>
-                          <td className="px-4 py-3 text-center text-sm font-bold text-emerald-600">{data.present || 0}</td>
-                          <td className="px-4 py-3 text-center text-sm font-bold text-amber-600">{data.late || 0}</td>
-                          <td className="px-4 py-3 text-center text-sm font-bold text-red-600">{data.absent || 0}</td>
+                          <td className="px-4 py-3 text-sm font-bold text-slate-900 truncate max-w-[120px] md:max-w-none">{subject}</td>
+                          <td className="px-4 py-3 text-center text-sm font-bold text-emerald-600 hidden sm:table-cell">{data.present || 0}</td>
+                          <td className="px-4 py-3 text-center text-sm font-bold text-amber-600 hidden md:table-cell">{data.late || 0}</td>
+                          <td className="px-4 py-3 text-center text-sm font-bold text-red-600 hidden md:table-cell">{data.absent || 0}</td>
                           <td className="px-4 py-3 text-center">
                             <Badge variant={rate >= 75 ? 'green' : 'red'}>{rate}%</Badge>
                           </td>
@@ -476,9 +476,9 @@ const Attendance = () => {
                   <thead className="bg-slate-50 border-b border-slate-200">
                     <tr>
                       <th className="px-4 py-3 text-left text-xs font-extrabold text-slate-700 uppercase tracking-wider">Date</th>
-                      <th className="px-4 py-3 text-left text-xs font-extrabold text-slate-700 uppercase tracking-wider">Day</th>
-                      <th className="px-4 py-3 text-left text-xs font-extrabold text-slate-700 uppercase tracking-wider">Classroom</th>
-                      <th className="px-4 py-3 text-center text-xs font-extrabold text-slate-700 uppercase tracking-wider">Subject</th>
+                      <th className="px-4 py-3 text-left text-xs font-extrabold text-slate-700 uppercase tracking-wider hidden md:table-cell">Day</th>
+                      <th className="px-4 py-3 text-left text-xs font-extrabold text-slate-700 uppercase tracking-wider hidden lg:table-cell">Classroom</th>
+                      <th className="px-4 py-3 text-center text-xs font-extrabold text-slate-700 uppercase tracking-wider hidden md:table-cell">Subject</th>
                       <th className="px-4 py-3 text-center text-xs font-extrabold text-slate-700 uppercase tracking-wider">Status</th>
                       <th className="px-4 py-3 text-left text-xs font-extrabold text-slate-700 uppercase tracking-wider hidden md:table-cell">Remarks</th>
                     </tr>
@@ -492,11 +492,11 @@ const Attendance = () => {
                           <td className="px-4 py-3 text-sm font-bold text-slate-900">
                             {date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                           </td>
-                          <td className="px-4 py-3 text-xs font-semibold text-slate-600 uppercase">
+                          <td className="px-4 py-3 text-xs font-semibold text-slate-600 uppercase hidden md:table-cell">
                             {date.toLocaleDateString('en-US', { weekday: 'long' })}
                           </td>
-                          <td className="px-4 py-3 text-sm font-bold text-slate-700">{r.classroom_name}</td>
-                          <td className="px-4 py-3 text-center text-sm font-semibold text-slate-600">{r.subject_name || '—'}</td>
+                          <td className="px-4 py-3 text-sm font-bold text-slate-700 hidden lg:table-cell">{r.classroom_name}</td>
+                          <td className="px-4 py-3 text-center text-sm font-semibold text-slate-600 hidden md:table-cell">{r.subject_name || '—'}</td>
                           <td className="px-4 py-3 text-center">
                             <Badge variant={cfg?.color || 'slate'}>{cfg?.label || r.status}</Badge>
                           </td>
@@ -697,11 +697,11 @@ const Attendance = () => {
                                               {Object.keys(STATUS_CONFIG).map(key => {
                                                 const cfg = STATUS_CONFIG[key];
                                                 return (
-                                                  <button key={key} onClick={() => markScheduleDraft(s.student_id, key)}
-                                                    className={`px-2.5 py-1.5 text-xs font-extrabold uppercase tracking-wide rounded-md border transition-all ${status === key ? cfg.buttonClass + ' shadow-sm' : 'bg-white text-slate-600 border-slate-300 hover:border-slate-400'}`}
-                                                    title={cfg.label}>
-                                                    {cfg.short}
-                                                  </button>
+                              <button key={key} onClick={() => markScheduleDraft(s.student_id, key)}
+                                                        className={`px-1.5 py-1 sm:px-2.5 sm:py-1.5 text-[10px] sm:text-xs font-extrabold uppercase tracking-wide rounded border transition-all ${status === key ? cfg.buttonClass + ' shadow-sm' : 'bg-white text-slate-600 border-slate-300 hover:border-slate-400'}`}
+                                                        title={cfg.label}>
+                                                        {cfg.short}
+                                                      </button>
                                                 );
                                               })}
                                             </div>
@@ -874,7 +874,7 @@ const Attendance = () => {
                                         const cfg = STATUS_CONFIG[key];
                                         return (
                                           <button key={key} onClick={() => markDraft(s.student, key)}
-                                            className={`px-2.5 py-1.5 text-xs font-extrabold uppercase tracking-wide rounded-md border transition-all ${status === key ? cfg.buttonClass + ' shadow-sm' : 'bg-white text-slate-600 border-slate-300 hover:border-slate-400'}`}
+                                            className={`px-1.5 py-1 sm:px-2.5 sm:py-1.5 text-[10px] sm:text-xs font-extrabold uppercase tracking-wide rounded border transition-all ${status === key ? cfg.buttonClass + ' shadow-sm' : 'bg-white text-slate-600 border-slate-300 hover:border-slate-400'}`}
                                             title={cfg.label}>
                                             {cfg.short}
                                           </button>
@@ -970,7 +970,7 @@ const Attendance = () => {
                         <tr>
                           <th className="px-4 py-3 text-left text-xs font-extrabold text-slate-700 uppercase tracking-wider">Date</th>
                           <th className="px-4 py-3 text-left text-xs font-extrabold text-slate-700 uppercase tracking-wider">Student</th>
-                          <th className="px-4 py-3 text-center text-xs font-extrabold text-slate-700 uppercase tracking-wider">Subject</th>
+                          <th className="px-4 py-3 text-center text-xs font-extrabold text-slate-700 uppercase tracking-wider hidden md:table-cell">Subject</th>
                           <th className="px-4 py-3 text-center text-xs font-extrabold text-slate-700 uppercase tracking-wider">Status</th>
                           <th className="px-4 py-3 text-left text-xs font-extrabold text-slate-700 uppercase tracking-wider hidden md:table-cell">Remarks</th>
                           <th className="px-4 py-3 text-center text-xs font-extrabold text-slate-700 uppercase tracking-wider">Actions</th>
@@ -986,7 +986,7 @@ const Attendance = () => {
                                 {date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                               </td>
                               <td className="px-4 py-3 text-sm font-bold text-slate-900">{record.student_name}</td>
-                              <td className="px-4 py-3 text-center text-sm font-semibold text-slate-600">{record.subject_name || '—'}</td>
+                              <td className="px-4 py-3 text-center text-sm font-semibold text-slate-600 hidden md:table-cell">{record.subject_name || '—'}</td>
                               <td className="px-4 py-3 text-center">
                                 <Badge variant={cfg?.color || 'slate'}>{cfg?.label || record.status}</Badge>
                               </td>
@@ -1101,8 +1101,8 @@ const Attendance = () => {
                           <tr>
                             <th className="px-4 py-3 text-left text-xs font-extrabold text-slate-700 uppercase tracking-wider">Date</th>
                             <th className="px-4 py-3 text-center text-xs font-extrabold text-slate-700 uppercase tracking-wider">Present</th>
-                            <th className="px-4 py-3 text-center text-xs font-extrabold text-slate-700 uppercase tracking-wider">Late</th>
-                            <th className="px-4 py-3 text-center text-xs font-extrabold text-slate-700 uppercase tracking-wider">Excused</th>
+                            <th className="px-4 py-3 text-center text-xs font-extrabold text-slate-700 uppercase tracking-wider hidden sm:table-cell">Late</th>
+                            <th className="px-4 py-3 text-center text-xs font-extrabold text-slate-700 uppercase tracking-wider hidden md:table-cell">Excused</th>
                             <th className="px-4 py-3 text-center text-xs font-extrabold text-slate-700 uppercase tracking-wider">Rate</th>
                           </tr>
                         </thead>
@@ -1113,8 +1113,8 @@ const Attendance = () => {
                                 {new Date(d.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                               </td>
                               <td className="px-4 py-3 text-center text-sm font-bold text-emerald-600">{d.present}</td>
-                              <td className="px-4 py-3 text-center text-sm font-bold text-amber-600">{d.late}</td>
-                              <td className="px-4 py-3 text-center text-sm font-bold text-violet-600">{d.excused}</td>
+                              <td className="px-4 py-3 text-center text-sm font-bold text-amber-600 hidden sm:table-cell">{d.late}</td>
+                              <td className="px-4 py-3 text-center text-sm font-bold text-violet-600 hidden md:table-cell">{d.excused}</td>
                               <td className="px-4 py-3 text-center">
                                 <Badge variant={d.rate >= 75 ? 'green' : 'red'}>{d.rate}%</Badge>
                               </td>
