@@ -83,7 +83,6 @@ const Layout = () => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sysSettings, setSysSettings] = useState(null);
-  const { isOnline } = useNetworkStatus();
   const notifDropdownRef = useRef(null);
 
   // Fetch system settings for academic year
@@ -95,16 +94,6 @@ const Layout = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [location.pathname]);
-
-  // Show push prompt once if permission not yet decided and not previously dismissed
-  useEffect(() => {
-    if (!user) return;
-    if (!('Notification' in window)) return;
-    if (Notification.permission !== 'default') return;
-    if (localStorage.getItem(PUSH_DISMISSED_KEY)) return;
-    const t = setTimeout(() => setShowPushPrompt(true), 4000);
-    return () => clearTimeout(t);
-  }, [user]);
 
   // Close notification dropdown on outside click
   useEffect(() => {
@@ -119,7 +108,6 @@ const Layout = () => {
   }, [showNotifications]);
 
   const normalizePath = (path) => path.split('?')[0];
-  const activeWorkspaceTab = new URLSearchParams(location.search).get('tab');
   const isActive = (path) => location.pathname === normalizePath(path);
   const homePath = user?.role === 'parent' ? '/parent-dashboard' : '/dashboard';
   const isHomeActive = isActive(homePath);
@@ -161,8 +149,7 @@ const Layout = () => {
       setUnreadCount(0);
       setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
       toast.success('All notifications marked as read');
-    } catch (err) {
-      console.error(err);
+    } catch {
       toast.error('Failed to mark all as read');
     }
   };
@@ -175,8 +162,8 @@ const Layout = () => {
       if (r.data.unread_count !== undefined) setUnreadCount(r.data.unread_count);
       else setUnreadCount(prev => Math.max(0, prev - 1));
       setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n));
-    } catch (err) {
-      console.error(err);
+    } catch {
+      toast.error('Failed to mark as read');
     }
   };
 

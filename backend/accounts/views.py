@@ -6384,11 +6384,10 @@ def test_push_notification(request):
 # COMMUNICATION CENTER — Ticket Views
 # ═══════════════════════════════════════════════════════════════════════════════
 
-from .models import Ticket, TicketParticipant, TicketMessage, TicketAttachment, DepartmentContact
+from .models import Ticket, TicketParticipant, TicketMessage, DepartmentContact
 from .serializers import (
     TicketListSerializer, TicketDetailSerializer, TicketCreateSerializer,
-    TicketMessageSerializer, TicketParticipantSerializer, TicketAttachmentSerializer,
-    DepartmentContactSerializer,
+    TicketMessageSerializer, DepartmentContactSerializer,
 )
 
 
@@ -6418,7 +6417,6 @@ class TicketViewSet(viewsets.ModelViewSet):
         # Search
         search = self.request.query_params.get('search')
         if search:
-            from django.db.models import Q
             qs = qs.filter(
                 Q(subject__icontains=search) |
                 Q(ticket_id__icontains=search) |
@@ -6428,21 +6426,14 @@ class TicketViewSet(viewsets.ModelViewSet):
             ).distinct()
 
         # Role-based filtering
-        if user.role == 'student':
-            # Students see tickets they created
-            qs = qs.filter(created_by=user)
-        elif user.role == 'parent':
-            # Parents see tickets they created
+        if user.role in ('student', 'parent'):
             qs = qs.filter(created_by=user)
         elif user.role == 'staff':
-            # Teachers see tickets they created or are assigned to
             qs = qs.filter(
                 Q(created_by=user) |
                 Q(assigned_to=user) |
                 Q(participants__user=user)
             ).distinct()
-
-        # Admins see all
 
         return qs.order_by('-updated_at')
 
@@ -6486,10 +6477,7 @@ class TicketViewSet(viewsets.ModelViewSet):
         
         staff_title = category_to_staff_title.get(ticket.category)
         if staff_title:
-            # Find staff with this title (prefer advisory for advisory category)
             if ticket.category == 'advisory':
-                # Try to find the student's advisory teacher first
-                from .models import Classroom, Profile
                 profile = Profile.objects.filter(user=ticket.created_by).first()
                 if profile and profile.current_classroom:
                     advisory_teacher = profile.current_classroom.teacher
@@ -6502,9 +6490,8 @@ class TicketViewSet(viewsets.ModelViewSet):
                             role='collaborator'
                         )
             
-            # If no assignment yet, find any staff with the matching title (primary or additional)
+            # If no assignment yet, find any staff with the matching title
             if not ticket.assigned_to:
-                from django.db.models import Q
                 staff_users = User.objects.filter(
                     role='staff', is_active=True
                 ).filter(
@@ -6875,9 +6862,7 @@ class TicketViewSet(viewsets.ModelViewSet):
         base_qs = Ticket.objects.all()
 
         # Role-based filtering
-        if user.role == 'student':
-            base_qs = base_qs.filter(created_by=user)
-        elif user.role == 'parent':
+        if user.role in ('student', 'parent'):
             base_qs = base_qs.filter(created_by=user)
 
         stats = {
