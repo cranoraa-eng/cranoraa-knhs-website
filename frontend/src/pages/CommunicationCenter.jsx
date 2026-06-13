@@ -176,7 +176,7 @@ function ConversationList({ tickets, selectedId, onSelect, loading, searchQuery,
 
 // ─── Panel 2: Message Thread ────────────────────────────────────────────────
 
-function MessageThread({ ticket, messages, onSend, sending, onDelete }) {
+function MessageThread({ ticket, messages, onSend, sending, onDelete, currentUserId }) {
   const [text, setText] = useState('');
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
@@ -245,7 +245,7 @@ function MessageThread({ ticket, messages, onSend, sending, onDelete }) {
           </div>
         )}
         {messages.map((msg) => {
-          const isOwn = msg.is_own;
+          const isOwn = msg.sender === currentUserId;
           return (
             <div key={msg.id} className={`flex gap-2 ${isOwn ? 'flex-row-reverse ml-auto' : ''}`} role="group" aria-label={`Message from ${msg.sender_name}`}>
               <Avatar name={msg.sender_name} size="sm" />
@@ -499,7 +499,7 @@ export default function CommunicationCenter() {
     try {
       setSending(true);
       const response = await api.post(`/tickets/${selectedId}/send-message/`, { content });
-      setMessages(prev => [...prev, response.data]);
+      setMessages(prev => [...prev, { ...response.data, sender: user.id }]);
       fetchTickets();
     } catch (err) {
       console.error('Failed to send message:', err);
@@ -570,6 +570,7 @@ export default function CommunicationCenter() {
         onSend={handleSend}
         sending={sending}
         onDelete={handleDelete}
+        currentUserId={user?.id}
       />
 
       {/* Right: Department Directory */}
