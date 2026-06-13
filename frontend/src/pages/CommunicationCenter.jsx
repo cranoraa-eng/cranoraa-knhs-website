@@ -302,17 +302,6 @@ function DetailsPanel({ ticket, onBack }) {
   );
 }
 
-const DEPT_CATEGORY_MAP = {
-  registrar: 'enrollment',
-  advisory: 'attendance',
-  faculty: 'academic',
-  admin: 'other',
-  guidance: 'guidance',
-  it: 'it_support',
-  library: 'other',
-  finance: 'finance',
-};
-
 function NewConversationModal({ open, onClose }) {
   const [departments, setDepartments] = useState([]);
   const [deptLoading, setDeptLoading] = useState(true);
@@ -355,13 +344,18 @@ function NewConversationModal({ open, onClose }) {
     }
     setSubmitting(true);
     try {
-      const category = DEPT_CATEGORY_MAP[selectedDept] || 'other';
-      const ticket = await api.post('/tickets/', {
-        subject: subject.trim(),
-        category,
-        assigned_to: selectedStaff || undefined,
+      if (!selectedStaff) {
+        toast.error('Please select a staff member');
+        setSubmitting(false);
+        return;
+      }
+      const ticket = await api.post('/tickets/open-conversation/', {
+        user_id: selectedStaff,
       });
       const ticketId = ticket.data.id;
+      await api.patch(`/tickets/${ticketId}/`, {
+        subject: subject.trim(),
+      });
       await api.post(`/tickets/${ticketId}/send-message/`, {
         content: message.trim(),
       });
