@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { hasToken, getStoredUser, logoutRequest } from '../utils/auth';
+import { hasToken, getStoredUser, logoutRequest, tryRefreshToken } from '../utils/auth';
 import api from '../utils/api';
 
 const AuthContext = createContext(null);
@@ -31,16 +31,33 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
-  // Sync state from localStorage on mount
+  // Sync state from localStorage on mount; attempt token refresh if needed
   useEffect(() => {
-    if (hasToken()) {
+    const initAuth = async () => {
       const storedUser = getStoredUser();
-      setUser(storedUser);
-      refreshUser(); // Get latest data including profile picture
-    } else {
-      setUser(null);
-    }
-    setReady(true);
+      
+      if (hasToken()) {
+        // Already have access token in memory
+        setUser(storedUser);
+        refreshUser();
+      } else if (storedUser) {
+        // Has stored user but no access token (page refresh) - try to refresh
+        const refreshed = await tryRefreshToken();
+        if (refreshed) {
+          setUser(storedUser);
+          refreshUser();
+        } else {
+          // Refresh failed - cookie expired or invalid
+          setUser(null);
+          localStorage.removeItem('user');
+        }
+      } else {
+        setUser(null);
+      }
+      setReady(true);
+    };
+    
+    initAuth();
   }, [refreshUser]);
 
   // Listen for the custom logout event fired by api.js interceptor (e.g. 401 on refresh)

@@ -60,6 +60,23 @@ export const isAuthenticated = () => !!_accessToken;
 export const hasToken = () => !!_accessToken;
 
 // ---------------------------------------------------------------------------
+// Token refresh - attempt to get a new access token using the httpOnly cookie
+// ---------------------------------------------------------------------------
+
+export const tryRefreshToken = async () => {
+  try {
+    const { data } = await api.post('/token/refresh/');
+    if (data.access) {
+      _accessToken = data.access;
+      return true;
+    }
+    return false;
+  } catch {
+    return false;
+  }
+};
+
+// ---------------------------------------------------------------------------
 // API calls
 // ---------------------------------------------------------------------------
 
