@@ -51,7 +51,7 @@ export default function MySchedule() {
   });
 
   const todayName = new Date().toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
-  const isTeacher = user?.role === 'teacher';
+  const isTeacher = user?.role === 'staff';
 
   return (
     <div className="page-bottom-safe bg-slate-50/50">

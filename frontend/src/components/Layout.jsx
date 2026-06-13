@@ -233,25 +233,25 @@ const Layout = () => {
     const tab = new URLSearchParams(location.search).get('tab');
     const allTabs = {
       '/communication-center': [
-        { id: 'bulletins', label: 'Bulletins', roles: ['admin', 'teacher', 'student', 'parent'] },
-        { id: 'inbox', label: 'Inbox', roles: ['admin', 'teacher', 'student'] }
+        { id: 'bulletins', label: 'Bulletins', roles: ['admin', 'staff', 'student', 'parent'] },
+        { id: 'inbox', label: 'Inbox', roles: ['admin', 'staff', 'student'] }
       ],
       '/academics-hub': [
         { id: 'subjects', label: 'Subjects', roles: ['admin'] },
         { id: 'schedules', label: 'Schedules', roles: ['admin'] },
-        { id: 'materials', label: 'Materials', roles: ['admin', 'teacher', 'student'] },
-        { id: 'classes', label: 'My Classes', roles: ['teacher'] },
-        { id: 'schedule', label: 'My Schedule', roles: ['teacher', 'student'] }
+        { id: 'materials', label: 'Materials', roles: ['admin', 'staff', 'student'] },
+        { id: 'classes', label: 'My Classes', roles: ['staff'] },
+        { id: 'schedule', label: 'My Schedule', roles: ['staff', 'student'] }
       ],
       '/grading-suite': [
-        { id: 'grade-input', label: 'Grade Input', roles: ['admin', 'teacher'] },
-        { id: 'grade-management', label: 'Grade Management', roles: ['admin', 'teacher'] },
-        { id: 'grade-analytics', label: 'Grade Analytics', roles: ['admin', 'teacher'] },
+        { id: 'grade-input', label: 'Grade Input', roles: ['admin', 'staff'] },
+        { id: 'grade-management', label: 'Grade Management', roles: ['admin', 'staff'] },
+        { id: 'grade-analytics', label: 'Grade Analytics', roles: ['admin', 'staff'] },
         { id: 'my-grades', label: 'My Grades', roles: ['student'] }
       ],
       '/people-directory': [
         { id: 'teachers', label: 'Teachers', roles: ['admin'] },
-        { id: 'students', label: 'Students', roles: ['admin', 'teacher'] },
+        { id: 'students', label: 'Students', roles: ['admin', 'staff'] },
         { id: 'parents', label: 'Parents', roles: ['admin'] }
       ],
       '/system-admin': [

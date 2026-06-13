@@ -753,7 +753,7 @@ const Messages = () => {
 
     searchResults.forEach(u => {
       if (u.role === 'admin') results.admins.push(u);
-      else if (u.role === 'teacher') results.teachers.push(u);
+      else if (u.role === 'staff') results.teachers.push(u);
       else if (u.role === 'student') {
         const groupName = u.profile?.grade_level || 'Other Students';
         if (!results.studentGroups[groupName]) results.studentGroups[groupName] = [];

@@ -134,15 +134,30 @@ function Avatar({ initials, size = 'md', color }) {
   );
 }
 
-function RoleBadge({ role }) {
+function RoleBadge({ role, staffTitle }) {
   const colors = {
     'parent': 'bg-sky-50 text-sky-700',
     'student': 'bg-emerald-50 text-emerald-700',
-    'teacher': 'bg-violet-50 text-violet-700',
+    'staff': 'bg-violet-50 text-violet-700',
     'admin': 'bg-amber-50 text-amber-700',
-    'staff': 'bg-blue-50 text-blue-700',
   };
-  const label = role ? role.charAt(0).toUpperCase() + role.slice(1) : 'User';
+  
+  let label = role ? role.charAt(0).toUpperCase() + role.slice(1) : 'User';
+  if (role === 'staff' && staffTitle) {
+    const titleLabels = {
+      'teacher': 'Teacher',
+      'registrar': 'Registrar',
+      'advisory': 'Advisory',
+      'principal': 'Principal',
+      'guidance_counselor': 'Guidance Counselor',
+      'it_staff': 'IT Staff',
+      'librarian': 'Librarian',
+      'cashier': 'Cashier',
+      'other': 'Staff',
+    };
+    label = titleLabels[staffTitle] || 'Staff';
+  }
+  
   return (
     <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${colors[role] || 'bg-slate-50 text-slate-600'}`}>
       {label}

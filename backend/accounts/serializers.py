@@ -65,7 +65,7 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'email', 'username', 'first_name', 'last_name', 'full_name',
-                  'role', 'is_verified', 'is_approved', 'is_online', 'profile',
+                  'role', 'staff_title', 'is_verified', 'is_approved', 'is_online', 'profile',
                   'must_change_password', 'account_status',
                   'is_adviser']
 
@@ -73,9 +73,11 @@ class UserSerializer(serializers.ModelSerializer):
         return full_name(obj)
 
     def get_is_adviser(self, obj):
-        if obj.role != 'teacher':
-            return False
-        return Classroom.objects.filter(teacher=obj).exists()
+        if obj.role == 'staff' and obj.staff_title == 'advisory':
+            return Classroom.objects.filter(teacher=obj).exists()
+        if obj.role == 'staff' and obj.staff_title == 'teacher':
+            return Classroom.objects.filter(teacher=obj).exists()
+        return False
 
     def update(self, instance, validated_data):
         profile_data = validated_data.pop('profile', None)
@@ -173,7 +175,7 @@ class ClassroomSerializer(serializers.ModelSerializer):
 
     def get_subject_name(self, obj):
         request = self.context.get('request')
-        if request and request.user.is_authenticated and request.user.role == 'teacher':
+        if request and request.user.is_authenticated and request.user.role == 'staff':
             assignment = obj.classroom_subjects.filter(teacher=request.user).select_related('subject').first()
             if assignment:
                 return assignment.subject.name
@@ -181,7 +183,7 @@ class ClassroomSerializer(serializers.ModelSerializer):
 
     def get_subject_code(self, obj):
         request = self.context.get('request')
-        if request and request.user.is_authenticated and request.user.role == 'teacher':
+        if request and request.user.is_authenticated and request.user.role == 'staff':
             assignment = obj.classroom_subjects.filter(teacher=request.user).select_related('subject').first()
             if assignment:
                 return assignment.subject.code

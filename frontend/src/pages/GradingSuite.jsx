@@ -5,9 +5,9 @@ import Analytics from './Analytics';
 import StudentGradeView from './StudentGradeView';
 
 const tabs = [
-  { id: 'grade-input', label: 'Grade Input', component: GradeInput, roles: ['admin', 'teacher'] },
-  { id: 'grade-management', label: 'Grade Management', component: GradeManagement, roles: ['admin', 'teacher'] },
-  { id: 'grade-analytics', label: 'Grade Analytics', component: Analytics, roles: ['admin', 'teacher'] },
+  { id: 'grade-input', label: 'Grade Input', component: GradeInput, roles: ['admin', 'staff'] },
+  { id: 'grade-management', label: 'Grade Management', component: GradeManagement, roles: ['admin', 'staff'] },
+  { id: 'grade-analytics', label: 'Grade Analytics', component: Analytics, roles: ['admin', 'staff'] },
   { id: 'my-grades', label: 'My Grades', component: StudentGradeView, roles: ['student'] },
 ];
 

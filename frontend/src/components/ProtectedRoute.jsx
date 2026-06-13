@@ -101,7 +101,7 @@ const ProtectedRoute = ({ children }) => {
   const routeKey = getRouteKey(location.pathname);
   const allowedRoles = ROUTE_ACCESS[routeKey];
   const isTeacherAdvisoryRoute =
-    user.role === 'teacher' &&
+    user.role === 'staff' &&
     (routeKey === 'student-management' || routeKey === 'people-directory');
 
   if (

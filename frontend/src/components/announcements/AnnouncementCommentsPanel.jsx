@@ -14,7 +14,7 @@ const formatCommentTime = (dateStr) => {
 };
 
 const roleLabel = (role) => {
-  if (role === 'teacher') return 'Teacher';
+  if (role === 'staff') return 'Teacher';
   if (role === 'admin') return 'Admin';
   if (role === 'student') return 'Student';
   return role;

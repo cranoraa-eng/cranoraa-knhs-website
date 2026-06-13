@@ -5,7 +5,7 @@ import ParentManagement from './ParentManagement';
 
 const tabs = [
   { id: 'teachers', label: 'Teachers', component: Teachers, roles: ['admin'] },
-  { id: 'students', label: 'Students', component: StudentManagement, roles: ['admin', 'teacher'], show: (user) => user?.role === 'admin' || user?.is_adviser },
+  { id: 'students', label: 'Students', component: StudentManagement, roles: ['admin', 'staff'], show: (user) => user?.role === 'admin' || user?.is_adviser },
   { id: 'parents', label: 'Parents', component: ParentManagement, roles: ['admin'] },
 ];
 

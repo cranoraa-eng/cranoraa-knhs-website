@@ -38,7 +38,7 @@ const Materials = () => {
   const [newMaterial, setNewMaterial] = useState(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
   const user = getUser();
-  const canManage = user?.role === 'admin' || user?.role === 'teacher';
+  const canManage = user?.role === 'admin' || user?.role === 'staff';
 
   const sortedClassrooms = useMemo(() => {
     return [...classrooms].sort((a, b) => {

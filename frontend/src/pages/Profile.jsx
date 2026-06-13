@@ -211,7 +211,7 @@ const Profile = () => {
                   <div className="h-px w-full bg-slate-100" />
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-4 gap-5">
-                  {user?.role === 'teacher' && (
+                  {user?.role === 'staff' && (
                     <div className="sm:col-span-1">
                       <Select
                         label="Title"
@@ -343,7 +343,7 @@ const Profile = () => {
                   <div className="h-px w-full bg-slate-100" />
                 </div>
                 <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 gap-x-8 gap-y-6">
-                  {user?.role === 'teacher' && <Field label="Title" value={profile?.profile?.title} />}
+                  {user?.role === 'staff' && <Field label="Title" value={profile?.profile?.title} />}
                   <Field label="First Name"   value={profile?.first_name} />
                   <Field label="Middle Name"  value={profile?.profile?.middle_name} />
                   <Field label="Last Name"    value={profile?.last_name} />

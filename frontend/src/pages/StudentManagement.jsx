@@ -55,7 +55,7 @@ const StudentManagement = () => {
       setStudents(Array.isArray(studentsRes.data) ? studentsRes.data : []);
       setClassrooms(Array.isArray(classesRes.data) ? classesRes.data : []);
       
-      if (user?.role === 'teacher' && Array.isArray(classesRes.data)) {
+      if (user?.role === 'staff' && Array.isArray(classesRes.data)) {
         const advisory = classesRes.data.find(c => String(c.teacher) === String(user.id));
         if (advisory) setAdvisoryClass(advisory);
       }
@@ -550,7 +550,7 @@ const StudentManagement = () => {
       let classroom = s.profile?.classroom_name || 'No Classroom';
       
       // For teachers, force students into their advisory classroom grouping
-      if (user?.role === 'teacher' && advisoryClass) {
+      if (user?.role === 'staff' && advisoryClass) {
         if (!grade || grade === 'Unassigned') {
           const match = advisoryClass.name?.match(/Grade\s+(\d+)/i);
           grade = match ? `Grade ${match[1]}` : (advisoryClass.grade_level || 'Unassigned');
@@ -692,7 +692,7 @@ const StudentManagement = () => {
           >
             <svg className="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
           </button>
-          {(user?.role === 'admin' || user?.role === 'teacher') && (
+          {(user?.role === 'admin' || user?.role === 'staff') && (
             <button 
               onClick={() => handleAssignSection(student.id, student.profile?.classroom_name, student.profile?.grade_level)}
               className="p-1 md:p-2 text-violet-600 hover:bg-violet-50 rounded-lg transition-all"
@@ -708,7 +708,7 @@ const StudentManagement = () => {
           >
             <svg className="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" /></svg>
           </button>
-          {(user?.role === 'admin' || user?.role === 'teacher') && (
+          {(user?.role === 'admin' || user?.role === 'staff') && (
              <button 
                onClick={() => handleDelete(student.id)}
                className="p-1 md:p-2 text-rose-600 hover:bg-rose-50 rounded-lg transition-all"
@@ -734,10 +734,10 @@ const StudentManagement = () => {
           </div>
           <div>
             <h1 className="text-lg md:text-2xl font-extrabold text-slate-900 uppercase tracking-tight">
-              {user?.role === 'teacher' ? 'Advisory Class' : 'Student Records'}
+              {user?.role === 'staff' ? 'Advisory Class' : 'Student Records'}
             </h1>
             <p className="text-xs md:text-sm font-bold text-violet-700 uppercase tracking-wide mt-0.5">
-              {user?.role === 'teacher' ? 'Manage Advisory Students' : 'Student Management System'}
+              {user?.role === 'staff' ? 'Manage Advisory Students' : 'Student Management System'}
             </p>
           </div>
         </div>
@@ -856,7 +856,7 @@ const StudentManagement = () => {
           <div className="bg-white px-3 py-1.5 md:px-5 md:py-2.5 rounded-xl md:rounded-2xl border border-slate-200 shadow-sm flex items-center gap-2 md:gap-3">
             <div>
               <p className="text-[7px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                {user?.role === 'teacher' ? 'Advisory Students' : 'Total Students'}
+                {user?.role === 'staff' ? 'Advisory Students' : 'Total Students'}
               </p>
               <p className="text-sm md:text-xl font-black text-slate-800 leading-none">{students.length}</p>
             </div>
@@ -1217,7 +1217,7 @@ const StudentManagement = () => {
               </button>
             </div>
             <div className="px-6 py-5 overflow-y-auto flex-1 space-y-5">
-              {user?.role === 'teacher' && (
+              {user?.role === 'staff' && (
                 <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest bg-indigo-50 px-3 py-2 rounded border border-indigo-100">
                   Students will be auto-enrolled to your advisory classroom
                 </p>

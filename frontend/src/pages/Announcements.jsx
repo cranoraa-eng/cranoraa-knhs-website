@@ -73,8 +73,8 @@ const EMPTY_FORM = {
 
 const Announcements = () => {
   const user = getUser();
-  const canManage = user?.role === 'admin' || user?.role === 'teacher';
-  const canComment = ['student', 'teacher', 'admin'].includes(user?.role);
+  const canManage = user?.role === 'admin' || user?.role === 'staff';
+  const canComment = ['student', 'staff', 'admin'].includes(user?.role);
 
   const [announcements, setAnnouncements] = useState([]);
   const [classrooms, setClassrooms]     = useState([]);

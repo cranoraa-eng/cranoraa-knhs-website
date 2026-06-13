@@ -110,7 +110,7 @@ export default function ScheduleManagement() {
     try {
       const [schR, roomR, clsR, subR, tchR, ayR] = await Promise.all([
         api.get('/schedules/'), api.get('/rooms/'),
-        api.get('/classrooms/'), api.get('/subjects/'), api.get('/users/?role=teacher'),
+        api.get('/classrooms/'), api.get('/subjects/'), api.get('/users/?role=staff'),
         api.get('/admin/academic-years/'),
       ]);
       setSchedules(schR.data.results || schR.data);

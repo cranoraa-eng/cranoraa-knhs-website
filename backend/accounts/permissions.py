@@ -4,9 +4,9 @@ class IsAdmin(permissions.BasePermission):
     def has_permission(self, request, view):
         return request.user.is_authenticated and request.user.role == 'admin'
 
-class IsTeacher(permissions.BasePermission):
+class IsStaff(permissions.BasePermission):
     def has_permission(self, request, view):
-        return request.user.is_authenticated and request.user.role == 'teacher'
+        return request.user.is_authenticated and request.user.role == 'staff'
 
 class IsStudent(permissions.BasePermission):
     def has_permission(self, request, view):
@@ -16,9 +16,9 @@ class IsParent(permissions.BasePermission):
     def has_permission(self, request, view):
         return request.user.is_authenticated and request.user.role == 'parent'
 
-class IsAdminOrTeacher(permissions.BasePermission):
+class IsAdminOrStaff(permissions.BasePermission):
     def has_permission(self, request, view):
-        return request.user.is_authenticated and request.user.role in ['admin', 'teacher']
+        return request.user.is_authenticated and request.user.role in ['admin', 'staff']
 
 class IsAdminOrReadOnly(permissions.BasePermission):
     def has_permission(self, request, view):

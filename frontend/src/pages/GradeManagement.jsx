@@ -233,7 +233,7 @@ const GradeManagement = () => {
             </svg>
             Refresh
           </Button>
-          {(user?.role === 'admin' || user?.role === 'teacher') && (
+          {(user?.role === 'admin' || user?.role === 'staff') && (
             <Button
               variant="primary"
               onClick={() => navigate('/grade-input')}
@@ -651,7 +651,7 @@ const SubjectGradeTable = ({ subject, user, formatName, calculateFinal, handleLo
               <th className="px-4 py-3 text-center text-xs font-extrabold text-slate-700 uppercase tracking-wider">
                 Remarks
               </th>
-              {(user?.role === 'admin' || user?.role === 'teacher') && (
+              {(user?.role === 'admin' || user?.role === 'staff') && (
                 <th className="px-4 py-3 text-center text-xs font-extrabold text-slate-700 uppercase tracking-wider">
                   Actions
                 </th>
@@ -727,7 +727,7 @@ const SubjectGradeTable = ({ subject, user, formatName, calculateFinal, handleLo
                   </td>
 
                   {/* Actions */}
-                  {(user?.role === 'admin' || user?.role === 'teacher') && (
+                  {(user?.role === 'admin' || user?.role === 'staff') && (
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-center gap-1">
                         <button

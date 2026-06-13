@@ -49,7 +49,7 @@ const ClassManagement = () => {
     const init = async () => {
       try {
         const [teacherRes, yearRes, subjectRes] = await Promise.all([
-          api.get('/users/?role=teacher'),
+          api.get('/users/?role=staff'),
           api.get('/admin/academic-years/'),
           api.get('/subjects/'),
         ]);

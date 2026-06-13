@@ -6,9 +6,21 @@ from django.utils import timezone
 class User(AbstractUser):
     ROLE_CHOICES = [
         ('admin', 'Admin'),
-        ('teacher', 'Teacher'),
+        ('staff', 'Staff'),
         ('student', 'Student'),
         ('parent', 'Parent'),
+    ]
+    
+    STAFF_TITLE_CHOICES = [
+        ('teacher', 'Teacher'),
+        ('registrar', 'Registrar'),
+        ('advisory', 'Advisory'),
+        ('principal', 'Principal'),
+        ('guidance_counselor', 'Guidance Counselor'),
+        ('it_staff', 'IT Staff'),
+        ('librarian', 'Librarian'),
+        ('cashier', 'Cashier'),
+        ('other', 'Other'),
     ]
     
     STATUS_CHOICES = [
@@ -20,6 +32,7 @@ class User(AbstractUser):
     
     email = models.EmailField(unique=True, null=True, blank=True)
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='student', db_index=True)
+    staff_title = models.CharField(max_length=20, choices=STAFF_TITLE_CHOICES, null=True, blank=True, db_index=True)
     is_verified = models.BooleanField(default=False)
     is_approved = models.BooleanField(default=False)
     last_activity = models.DateTimeField(null=True, blank=True)

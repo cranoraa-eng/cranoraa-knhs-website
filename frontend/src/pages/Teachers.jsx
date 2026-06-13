@@ -39,7 +39,7 @@ const Teachers = () => {
 
   const fetchTeachers = async () => {
     try {
-      const response = await api.get('/users/?role=teacher');
+      const response = await api.get('/users/?role=staff');
       setTeachers(Array.isArray(response.data) ? response.data : []);
       setLoading(false);
     } catch (err) {
@@ -68,7 +68,8 @@ const Teachers = () => {
       const response = await api.post('/admin/create-user/', { 
         username: newTeacher.email, 
         ...newTeacher, 
-        role: 'teacher',
+        role: 'staff',
+        staff_title: 'teacher',
         profile: {
           title: newTeacher.title,
           sex: newTeacher.sex

@@ -13,7 +13,7 @@ const Dashboard = () => {
   const { user } = useAuth();
   
   if (user?.role === 'admin')   return <AdminDashboard />;
-  if (user?.role === 'teacher') return <TeacherDashboard />;
+  if (user?.role === 'staff') return <TeacherDashboard />;
   if (user?.role === 'parent')  return <ParentRedirect />;
   return <StudentDashboard />;
 };
