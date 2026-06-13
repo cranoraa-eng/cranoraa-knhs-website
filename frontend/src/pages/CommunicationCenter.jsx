@@ -254,7 +254,7 @@ function MessageThread({ ticket, messages, onSend, sending, onDelete }) {
                   <span className="text-[11px] font-medium text-slate-700">{msg.sender_name}</span>
                   <span className="text-[9px] text-slate-400">{formatTime(msg.created_at)}</span>
                 </div>
-                <div className={`px-3 py-2 rounded-2xl text-sm ${
+                <div className={`px-3 py-2 rounded-2xl text-sm break-words ${
                   isOwn
                     ? 'bg-blue-600 text-white rounded-tr-md'
                     : 'bg-white border border-slate-200 rounded-tl-md'
