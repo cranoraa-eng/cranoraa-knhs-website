@@ -484,7 +484,7 @@ const Layout = () => {
         </aside>
 
         {/* ── Main Content ── */}
-        <main data-tour="portal-main" className="flex-1 flex flex-col min-h-0 bg-[#F8FAFC]">
+        <main data-tour="portal-main" className="flex-1 flex flex-col min-h-0 overflow-y-auto bg-[#F8FAFC]">
           {/* Top bar */}
           <header data-tour="portal-header" className="sticky top-0 z-30 flex items-center justify-between border-b-2 border-slate-200 bg-white px-4 py-2 shadow-sm lg:px-6">
             <div className="flex items-center gap-4 lg:gap-6">
@@ -695,7 +695,7 @@ const Layout = () => {
 
           {/* Main Viewport */}
 
-          <div className="mx-auto w-full max-w-[1600px] p-3 lg:p-4 scroll-smooth pb-20 lg:pb-4">
+          <div className="flex-1 min-h-0 mx-auto w-full max-w-[1600px] p-3 lg:p-4 scroll-smooth pb-20 lg:pb-4">
             <Outlet />
           </div>
         </main>
