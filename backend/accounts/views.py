@@ -6339,6 +6339,80 @@ class TicketViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         ticket = serializer.save(created_by=self.request.user)
+        
+        # Add creator as participant
+        TicketParticipant.objects.create(
+            ticket=ticket,
+            user=self.request.user,
+            role='collaborator'
+        )
+        
+        # Auto-assign to staff based on category
+        category_to_staff_title = {
+            'enrollment': 'registrar',
+            'attendance': 'advisory',
+            'academic': 'teacher',
+            'guidance': 'guidance_counselor',
+            'it_support': 'it_staff',
+            'facilities': 'other',
+            'collaboration': 'teacher',
+            'finance': 'cashier',
+        }
+        
+        staff_title = category_to_staff_title.get(ticket.category)
+        if staff_title:
+            # Find staff with this title (prefer advisory for advisory category)
+            if ticket.category == 'advisory':
+                # Try to find the student's advisory teacher first
+                from .models import Classroom, Profile
+                profile = Profile.objects.filter(user=ticket.created_by).first()
+                if profile and profile.current_classroom:
+                    advisory_teacher = profile.current_classroom.teacher
+                    if advisory_teacher:
+                        ticket.assigned_to = advisory_teacher
+                        ticket.save(update_fields=['assigned_to'])
+                        TicketParticipant.objects.create(
+                            ticket=ticket,
+                            user=advisory_teacher,
+                            role='collaborator'
+                        )
+            
+            # If no assignment yet, find any staff with the matching title
+            if not ticket.assigned_to:
+                staff_users = User.objects.filter(role='staff', staff_title=staff_title, is_active=True)
+                if staff_users.exists():
+                    assignee = staff_users.first()
+                    ticket.assigned_to = assignee
+                    ticket.save(update_fields=['assigned_to'])
+                    TicketParticipant.objects.create(
+                        ticket=ticket,
+                        user=assignee,
+                        role='collaborator'
+                    )
+        
+        # If still no assignment, assign to any admin
+        if not ticket.assigned_to:
+            admin_users = User.objects.filter(role='admin', is_active=True)
+            if admin_users.exists():
+                assignee = admin_users.first()
+                ticket.assigned_to = assignee
+                ticket.save(update_fields=['assigned_to'])
+                TicketParticipant.objects.create(
+                    ticket=ticket,
+                    user=assignee,
+                    role='collaborator'
+                )
+        
+        # Create initial notification to assigned staff
+        if ticket.assigned_to and ticket.assigned_to != self.request.user:
+            Notification.objects.create(
+                recipient=ticket.assigned_to,
+                notification_type='message',
+                title=f'New ticket: {ticket.ticket_id}',
+                message=f'{full_name(self.request.user)}: {ticket.subject}',
+                link='/communication-center'
+            )
+        
         from portal.views import log_audit_action
         log_audit_action(
             user=self.request.user,
@@ -6373,11 +6447,37 @@ class TicketViewSet(viewsets.ModelViewSet):
         # Mark other participants' messages as read
         ticket.messages.filter(is_read=False).exclude(sender=request.user).update(is_read=True)
 
-        # Create notification for participants
+        # Notify all participants AND assigned_to user
+        notified_users = set()
+        
+        # Notify assigned_to if not the sender
+        if ticket.assigned_to and ticket.assigned_to != request.user:
+            Notification.objects.create(
+                recipient=ticket.assigned_to,
+                notification_type='message',
+                title=f'New message on {ticket.ticket_id}',
+                message=f'{full_name(request.user)}: {content[:100]}...' if len(content) > 100 else f'{full_name(request.user)}: {content}',
+                link='/communication-center'
+            )
+            notified_users.add(ticket.assigned_to.id)
+        
+        # Notify participants
         participants = ticket.participants.exclude(user=request.user)
         for p in participants:
+            if p.user.id not in notified_users:
+                Notification.objects.create(
+                    recipient=p.user,
+                    notification_type='message',
+                    title=f'New message on {ticket.ticket_id}',
+                    message=f'{full_name(request.user)}: {content[:100]}...' if len(content) > 100 else f'{full_name(request.user)}: {content}',
+                    link='/communication-center'
+                )
+                notified_users.add(p.user.id)
+        
+        # Also notify the creator if they're not the sender and not already notified
+        if ticket.created_by != request.user and ticket.created_by.id not in notified_users:
             Notification.objects.create(
-                recipient=p.user,
+                recipient=ticket.created_by,
                 notification_type='message',
                 title=f'New message on {ticket.ticket_id}',
                 message=f'{full_name(request.user)}: {content[:100]}...' if len(content) > 100 else f'{full_name(request.user)}: {content}',
@@ -6474,6 +6574,15 @@ class TicketViewSet(viewsets.ModelViewSet):
         ticket.is_archived = True
         ticket.save(update_fields=['is_archived', 'updated_at'])
         return Response({'status': 'archived'})
+
+    @action(detail=True, methods=['delete'], url_path='delete')
+    def delete_ticket(self, request, pk=None):
+        """Delete a ticket (only by creator or admin)."""
+        ticket = self.get_object()
+        if ticket.created_by != request.user and request.user.role != 'admin':
+            return Response({'error': 'Only the creator or admin can delete this ticket'}, status=403)
+        ticket.delete()
+        return Response({'status': 'deleted'})
 
     @action(detail=True, methods=['get'], url_path='messages')
     def get_messages(self, request, pk=None):

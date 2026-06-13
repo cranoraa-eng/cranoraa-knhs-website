@@ -20,15 +20,27 @@ const Icons = {
   MessageSquare: (p) => <Icon {...p} d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />,
   Users: (p) => <Icon {...p} d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" />,
   ArrowLeft: (p) => <Icon {...p} d="M19 12H5M12 19l-7-7 7-7" />,
-  MoreVertical: (p) => <Icon {...p} d="M12 12h.01M12 8h.01M12 16h.01" />,
   FileText: (p) => <Icon {...p} d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z M14 2v6h6" />,
   Loader: (p) => <svg width={p.size||16} height={p.size||16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`${p.className || ''} animate-spin`}><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" /></svg>,
   Inbox: (p) => <Icon {...p} d="M22 12h-6l-2 3h-4l-2-3H2M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z" />,
   Trash: (p) => <Icon {...p} d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />,
-  Archive: (p) => <Icon {...p} d="M21 8v13H3V8M1 3h22v5H1z" />,
+  GraduationCap: (p) => <svg width={p.size||16} height={p.size||16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={p.className}><path d="M22 10v6M2 10l10-5 10 5-10 5z" /><path d="M6 12v5c0 2 3 3 6 3s6-1 6-3v-5" /></svg>,
+  BookOpen: (p) => <Icon {...p} d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2zM22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z" />,
+  Shield: (p) => <Icon {...p} d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />,
+  UserCheck: (p) => <svg width={p.size||16} height={p.size||16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={p.className}><path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" /><circle cx="8.5" cy="7" r="4" /><polyline points="17 11 19 13 23 9" /></svg>,
+  Settings: (p) => <svg width={p.size||16} height={p.size||16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={p.className}><path d="M12.22 2h-.44a2 2 0 00-2 2v.18a2 2 0 01-1 1.73l-.43.25a2 2 0 01-2 0l-.15-.08a2 2 0 00-2.73.73l-.22.38a2 2 0 00.73 2.73l.15.1a2 2 0 011 1.72v.51a2 2 0 01-1 1.74l-.15.09a2 2 0 00-.73 2.73l.22.38a2 2 0 002.73.73l.15-.08a2 2 0 012 0l.43.25a2 2 0 011 1.73V20a2 2 0 002 2h.44a2 2 0 002-2v-.18a2 2 0 011-1.73l.43-.25a2 2 0 012 0l.15.08a2 2 0 002.73-.73l.22-.39a2 2 0 00-.73-2.73l-.15-.08a2 2 0 01-1-1.74v-.5a2 2 0 011-1.74l.15-.09a2 2 0 00.73-2.73l-.22-.38a2 2 0 00-2.73-.73l-.15.08a2 2 0 01-2 0l-.43-.25a2 2 0 01-1-1.73V4a2 2 0 00-2-2z" /><circle cx="12" cy="12" r="3" /></svg>,
+  AlertTriangle: (p) => <Icon {...p} d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z M12 9v4M12 17h.01" />,
 };
 
 // ─── Config ──────────────────────────────────────────────────────────────────
+
+const DEPARTMENTS = [
+  { id: 'registrar', name: 'Registrar', icon: 'FileText', color: 'bg-blue-500', categories: ['enrollment'] },
+  { id: 'advisory', name: 'Advisory', icon: 'GraduationCap', color: 'bg-emerald-500', categories: ['attendance', 'academic'] },
+  { id: 'faculty', name: 'Faculty', icon: 'BookOpen', color: 'bg-violet-500', categories: ['academic', 'collaboration'] },
+  { id: 'admin', name: "Principal's Office", icon: 'Shield', color: 'bg-amber-500', categories: ['collaboration', 'facilities'] },
+  { id: 'guidance', name: 'Guidance', icon: 'UserCheck', color: 'bg-rose-500', categories: ['guidance'] },
+];
 
 const CATEGORIES = [
   { id: 'enrollment', label: 'Enrollment', color: 'bg-blue-100 text-blue-700' },
@@ -75,13 +87,6 @@ function formatTime(ts) {
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
-function formatDate(ts) {
-  if (!ts) return '';
-  return new Date(ts).toLocaleDateString('en-US', {
-    weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'
-  });
-}
-
 // ─── Components ──────────────────────────────────────────────────────────────
 
 function Avatar({ name, size = 'md' }) {
@@ -104,29 +109,6 @@ function CategoryBadge({ category }) {
 
 function StatusDot({ status }) {
   return <span className={`w-2 h-2 rounded-full ${STATUS_COLORS[status] || 'bg-slate-400'}`} />;
-}
-
-// ─── Empty State ─────────────────────────────────────────────────────────────
-
-function EmptyState({ onCreateNew }) {
-  return (
-    <div className="flex-1 flex flex-col items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50 p-8">
-      <div className="w-20 h-20 bg-blue-100 rounded-2xl flex items-center justify-center mb-6">
-        <Icons.Inbox size={40} className="text-blue-500" />
-      </div>
-      <h2 className="text-xl font-bold text-slate-800 mb-2">Welcome to Communication Center</h2>
-      <p className="text-sm text-slate-500 text-center max-w-sm mb-6">
-        Send messages to teachers, staff, or administrators. Create a ticket to get started.
-      </p>
-      <button
-        onClick={onCreateNew}
-        className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors shadow-lg shadow-blue-200"
-      >
-        <Icons.Plus size={18} />
-        New Message
-      </button>
-    </div>
-  );
 }
 
 // ─── Ticket List ─────────────────────────────────────────────────────────────
@@ -229,10 +211,12 @@ function TicketList({ tickets, selectedId, onSelect, loading, searchQuery, onSea
 
 // ─── Message Thread ──────────────────────────────────────────────────────────
 
-function MessageThread({ ticket, messages, onSend, onBack, sending }) {
+function MessageThread({ ticket, messages, onSend, onBack, onDelete, sending, user }) {
   const [text, setText] = useState('');
+  const [showMenu, setShowMenu] = useState(false);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
+  const menuRef = useRef(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -241,6 +225,17 @@ function MessageThread({ ticket, messages, onSend, onBack, sending }) {
   useEffect(() => {
     if (ticket) inputRef.current?.focus();
   }, [ticket]);
+
+  // Close menu on outside click
+  useEffect(() => {
+    const handleClick = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setShowMenu(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
 
   const handleSend = () => {
     if (!text.trim() || sending) return;
@@ -255,6 +250,13 @@ function MessageThread({ ticket, messages, onSend, onBack, sending }) {
     }
   };
 
+  const handleDelete = () => {
+    setShowMenu(false);
+    if (window.confirm('Are you sure you want to delete this conversation? This cannot be undone.')) {
+      onDelete();
+    }
+  };
+
   if (!ticket) {
     return (
       <div className="flex-1 hidden md:flex flex-col items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50">
@@ -263,6 +265,9 @@ function MessageThread({ ticket, messages, onSend, onBack, sending }) {
       </div>
     );
   }
+
+  const isCreator = ticket.created_by === user?.id;
+  const isAdmin = user?.role === 'admin';
 
   return (
     <div className="flex-1 flex flex-col bg-slate-50 h-full">
@@ -279,11 +284,39 @@ function MessageThread({ ticket, messages, onSend, onBack, sending }) {
               <span>{ticket.sender_name}</span>
               <span className="text-slate-300">·</span>
               <span className="font-mono text-slate-400">{ticket.ticket_id}</span>
+              {ticket.assigned_to_name && (
+                <>
+                  <span className="text-slate-300">→</span>
+                  <span className="text-blue-600">{ticket.assigned_to_name}</span>
+                </>
+              )}
             </div>
           </div>
-          <div className="flex items-center gap-1">
-            <StatusDot status={ticket.status} />
-            <span className="text-xs text-slate-500 capitalize">{ticket.status}</span>
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
+              <StatusDot status={ticket.status} />
+              <span className="text-xs text-slate-500 capitalize">{ticket.status}</span>
+            </div>
+            {/* Menu */}
+            <div className="relative" ref={menuRef}>
+              <button
+                onClick={() => setShowMenu(!showMenu)}
+                className="p-2 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-slate-600"
+              >
+                <Icons.Settings size={16} />
+              </button>
+              {showMenu && (
+                <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-lg shadow-lg border border-slate-200 py-1 z-50">
+                  <button
+                    onClick={handleDelete}
+                    className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                  >
+                    <Icons.Trash size={14} />
+                    Delete Conversation
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -364,6 +397,9 @@ function NewTicketModal({ onClose, onSubmit, user }) {
   const [content, setContent] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
+  // Find which department handles this category
+  const selectedDept = DEPARTMENTS.find(d => d.categories.includes(category));
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!subject.trim() || !content.trim()) return;
@@ -384,6 +420,19 @@ function NewTicketModal({ onClose, onSubmit, user }) {
           </div>
         </div>
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          {/* To - Department */}
+          <div className="p-3 bg-blue-50 rounded-lg">
+            <div className="flex items-center gap-2 text-sm">
+              <span className="text-slate-500">To:</span>
+              <span className="font-medium text-blue-700">
+                {selectedDept ? selectedDept.name : 'Select a category'}
+              </span>
+            </div>
+            <p className="text-xs text-slate-400 mt-1">
+              Your message will be sent to the {selectedDept ? selectedDept.name : 'appropriate'} department
+            </p>
+          </div>
+
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1.5">Subject</label>
             <input
@@ -546,6 +595,19 @@ export default function CommunicationCenter() {
     }
   };
 
+  // Delete ticket
+  const handleDelete = async () => {
+    if (!selectedId) return;
+    try {
+      await api.delete(`/tickets/${selectedId}/delete/`);
+      setSelectedId(null);
+      fetchTickets();
+    } catch (err) {
+      console.error('Failed to delete ticket:', err);
+      alert('Failed to delete conversation.');
+    }
+  };
+
   return (
     <div className="h-screen flex bg-slate-100">
       {/* Ticket List - Hidden on mobile when ticket is selected */}
@@ -570,7 +632,9 @@ export default function CommunicationCenter() {
           messages={messages}
           onSend={handleSend}
           onBack={() => setSelectedId(null)}
+          onDelete={handleDelete}
           sending={sending}
+          user={user}
         />
       </div>
 
