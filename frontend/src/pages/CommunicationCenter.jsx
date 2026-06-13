@@ -12,45 +12,35 @@ const Icon = ({ d, size = 16, className = '' }) => (
 
 const Icons = {
   Search: (p) => <Icon {...p} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />,
-  Plus: (p) => <Icon {...p} d="M12 5v14M5 12h14" />,
   Send: (p) => <Icon {...p} d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" />,
   Paperclip: (p) => <Icon {...p} d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48" />,
-  CheckCircle: (p) => <Icon {...p} d="M22 11.08V12a10 10 0 11-5.93-9.14M22 4L12 14.01l-3-3" />,
-  Clock: (p) => <Icon {...p} d="M12 2a10 10 0 100 20 10 10 0 000-20zM12 6v6l4 2" />,
   MessageSquare: (p) => <Icon {...p} d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />,
   Users: (p) => <Icon {...p} d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" />,
-  ArrowLeft: (p) => <Icon {...p} d="M19 12H5M12 19l-7-7 7-7" />,
+  Trash: (p) => <Icon {...p} d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />,
   FileText: (p) => <Icon {...p} d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z M14 2v6h6" />,
   Loader: (p) => <svg width={p.size||16} height={p.size||16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`${p.className || ''} animate-spin`}><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" /></svg>,
-  Inbox: (p) => <Icon {...p} d="M22 12h-6l-2 3h-4l-2-3H2M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z" />,
-  Trash: (p) => <Icon {...p} d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />,
   GraduationCap: (p) => <svg width={p.size||16} height={p.size||16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={p.className}><path d="M22 10v6M2 10l10-5 10 5-10 5z" /><path d="M6 12v5c0 2 3 3 6 3s6-1 6-3v-5" /></svg>,
   BookOpen: (p) => <Icon {...p} d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2zM22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z" />,
   Shield: (p) => <Icon {...p} d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />,
   UserCheck: (p) => <svg width={p.size||16} height={p.size||16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={p.className}><path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" /><circle cx="8.5" cy="7" r="4" /><polyline points="17 11 19 13 23 9" /></svg>,
   Settings: (p) => <svg width={p.size||16} height={p.size||16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={p.className}><path d="M12.22 2h-.44a2 2 0 00-2 2v.18a2 2 0 01-1 1.73l-.43.25a2 2 0 01-2 0l-.15-.08a2 2 0 00-2.73.73l-.22.38a2 2 0 00.73 2.73l.15.1a2 2 0 011 1.72v.51a2 2 0 01-1 1.74l-.15.09a2 2 0 00-.73 2.73l.22.38a2 2 0 002.73.73l.15-.08a2 2 0 012 0l.43.25a2 2 0 011 1.73V20a2 2 0 002 2h.44a2 2 0 002-2v-.18a2 2 0 011-1.73l.43-.25a2 2 0 012 0l.15.08a2 2 0 002.73-.73l.22-.39a2 2 0 00-.73-2.73l-.15-.08a2 2 0 01-1-1.74v-.5a2 2 0 011-1.74l.15-.09a2 2 0 00.73-2.73l-.22-.38a2 2 0 00-2.73-.73l-.15.08a2 2 0 01-2 0l-.43-.25a2 2 0 01-1-1.73V4a2 2 0 00-2-2z" /><circle cx="12" cy="12" r="3" /></svg>,
-  AlertTriangle: (p) => <Icon {...p} d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z M12 9v4M12 17h.01" />,
+  X: (p) => <Icon {...p} d="M18 6L6 18M6 6l12 12" />,
+  ChevronDown: (p) => <Icon {...p} d="M6 9l6 6 6-6" />,
+  ChevronRight: (p) => <Icon {...p} d="M9 18l6-6-6-6" />,
+  Circle: (p) => <svg width={p.size||16} height={p.size||16} viewBox="0 0 24 24" fill="currentColor" className={p.className}><circle cx="12" cy="12" r="4" /></svg>,
 };
 
 // ─── Config ──────────────────────────────────────────────────────────────────
 
-const DEPARTMENTS = [
-  { id: 'registrar', name: 'Registrar', icon: 'FileText', color: 'bg-blue-500', categories: ['enrollment'] },
-  { id: 'advisory', name: 'Advisory', icon: 'GraduationCap', color: 'bg-emerald-500', categories: ['attendance', 'academic'] },
-  { id: 'faculty', name: 'Faculty', icon: 'BookOpen', color: 'bg-violet-500', categories: ['academic', 'collaboration'] },
-  { id: 'admin', name: "Principal's Office", icon: 'Shield', color: 'bg-amber-500', categories: ['collaboration', 'facilities'] },
-  { id: 'guidance', name: 'Guidance', icon: 'UserCheck', color: 'bg-rose-500', categories: ['guidance'] },
-];
-
-const CATEGORIES = [
-  { id: 'enrollment', label: 'Enrollment', color: 'bg-blue-100 text-blue-700' },
-  { id: 'attendance', label: 'Attendance', color: 'bg-amber-100 text-amber-700' },
-  { id: 'academic', label: 'Academic', color: 'bg-emerald-100 text-emerald-700' },
-  { id: 'collaboration', label: 'Collaboration', color: 'bg-violet-100 text-violet-700' },
-  { id: 'facilities', label: 'Facilities', color: 'bg-rose-100 text-rose-700' },
-  { id: 'guidance', label: 'Guidance', color: 'bg-indigo-100 text-indigo-700' },
-  { id: 'other', label: 'Other', color: 'bg-slate-100 text-slate-700' },
-];
+const DEPT_ICONS = {
+  FileText: Icons.FileText,
+  GraduationCap: Icons.GraduationCap,
+  BookOpen: Icons.BookOpen,
+  Shield: Icons.Shield,
+  UserCheck: Icons.UserCheck,
+  Settings: Icons.Settings,
+  Users: Icons.Users,
+};
 
 const STATUS_COLORS = {
   open: 'bg-blue-500',
@@ -89,21 +79,17 @@ function formatTime(ts) {
 
 // ─── Components ──────────────────────────────────────────────────────────────
 
-function Avatar({ name, size = 'md' }) {
+function Avatar({ name, size = 'md', online }) {
   const sizes = { sm: 'w-8 h-8 text-xs', md: 'w-10 h-10 text-sm', lg: 'w-12 h-12 text-base' };
   return (
-    <div className={`${sizes[size]} ${getAvatarColor(name)} rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0`}>
-      {getInitials(name)}
+    <div className="relative flex-shrink-0">
+      <div className={`${sizes[size]} ${getAvatarColor(name)} rounded-full flex items-center justify-center text-white font-semibold`}>
+        {getInitials(name)}
+      </div>
+      {online !== undefined && (
+        <span className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white ${online ? 'bg-emerald-500' : 'bg-slate-300'}`} />
+      )}
     </div>
-  );
-}
-
-function CategoryBadge({ category }) {
-  const cat = CATEGORIES.find(c => c.id === category) || CATEGORIES.find(c => c.id === 'other');
-  return (
-    <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium ${cat.color}`}>
-      {cat.label}
-    </span>
   );
 }
 
@@ -111,55 +97,29 @@ function StatusDot({ status }) {
   return <span className={`w-2 h-2 rounded-full ${STATUS_COLORS[status] || 'bg-slate-400'}`} />;
 }
 
-// ─── Ticket List ─────────────────────────────────────────────────────────────
+// ─── Panel 1: Conversation List ─────────────────────────────────────────────
 
-function TicketList({ tickets, selectedId, onSelect, loading, searchQuery, onSearchChange, statusFilter, onStatusFilter, onCreateNew }) {
+function ConversationList({ tickets, selectedId, onSelect, loading, searchQuery, onSearchChange }) {
   return (
-    <div className="w-full md:w-96 bg-white border-r border-slate-200 flex flex-col h-full">
+    <div className="w-80 bg-white border-r border-slate-200 flex flex-col h-full">
       {/* Header */}
       <div className="px-4 py-4 border-b border-slate-100">
-        <div className="flex items-center justify-between mb-3">
-          <h1 className="text-lg font-bold text-slate-900">Messages</h1>
-          <button
-            onClick={onCreateNew}
-            className="flex items-center gap-1.5 px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            <Icons.Plus size={14} />
-            New
-          </button>
-        </div>
+        <h1 className="text-lg font-bold text-slate-900 mb-3">Messages</h1>
 
         {/* Search */}
         <div className="relative">
           <Icons.Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
             type="text"
-            placeholder="Search messages..."
+            placeholder="Search conversations..."
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
             className="w-full pl-9 pr-4 py-2.5 bg-slate-100 rounded-lg text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-colors"
           />
         </div>
-
-        {/* Status Filter Tabs */}
-        <div className="flex gap-1 mt-3 bg-slate-100 p-1 rounded-lg">
-          {['all', 'open', 'pending', 'resolved'].map(status => (
-            <button
-              key={status}
-              onClick={() => onStatusFilter(status)}
-              className={`flex-1 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
-                statusFilter === status
-                  ? 'bg-white text-slate-900 shadow-sm'
-                  : 'text-slate-500 hover:text-slate-700'
-              }`}
-            >
-              {status === 'all' ? 'All' : status.charAt(0).toUpperCase() + status.slice(1)}
-            </button>
-          ))}
-        </div>
       </div>
 
-      {/* Ticket List */}
+      {/* Conversation List */}
       <div className="flex-1 overflow-y-auto">
         {loading ? (
           <div className="flex items-center justify-center h-32">
@@ -168,7 +128,8 @@ function TicketList({ tickets, selectedId, onSelect, loading, searchQuery, onSea
         ) : tickets.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-32 text-slate-400">
             <Icons.MessageSquare size={32} className="mb-2" />
-            <p className="text-sm">No messages found</p>
+            <p className="text-sm">No conversations yet</p>
+            <p className="text-xs mt-1">Click a staff member to start chatting</p>
           </div>
         ) : (
           <div className="divide-y divide-slate-100">
@@ -177,7 +138,7 @@ function TicketList({ tickets, selectedId, onSelect, loading, searchQuery, onSea
                 key={ticket.id}
                 onClick={() => onSelect(ticket.id)}
                 className={`w-full text-left px-4 py-3 hover:bg-slate-50 transition-colors ${
-                  selectedId === ticket.id ? 'bg-blue-50 border-l-3 border-blue-600' : ''
+                  selectedId === ticket.id ? 'bg-blue-50' : ''
                 }`}
               >
                 <div className="flex items-start gap-3">
@@ -191,7 +152,6 @@ function TicketList({ tickets, selectedId, onSelect, loading, searchQuery, onSea
                     <p className="text-xs text-slate-400 truncate mb-1.5">{ticket.last_message}</p>
                     <div className="flex items-center gap-2">
                       <StatusDot status={ticket.status} />
-                      <CategoryBadge category={ticket.category} />
                       {ticket.unread_count > 0 && (
                         <span className="ml-auto bg-blue-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
                           {ticket.unread_count}
@@ -209,14 +169,12 @@ function TicketList({ tickets, selectedId, onSelect, loading, searchQuery, onSea
   );
 }
 
-// ─── Message Thread ──────────────────────────────────────────────────────────
+// ─── Panel 2: Message Thread ────────────────────────────────────────────────
 
-function MessageThread({ ticket, messages, onSend, onBack, onDelete, sending, user }) {
+function MessageThread({ ticket, messages, onSend, sending }) {
   const [text, setText] = useState('');
-  const [showMenu, setShowMenu] = useState(false);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
-  const menuRef = useRef(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -225,17 +183,6 @@ function MessageThread({ ticket, messages, onSend, onBack, onDelete, sending, us
   useEffect(() => {
     if (ticket) inputRef.current?.focus();
   }, [ticket]);
-
-  // Close menu on outside click
-  useEffect(() => {
-    const handleClick = (e) => {
-      if (menuRef.current && !menuRef.current.contains(e.target)) {
-        setShowMenu(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClick);
-    return () => document.removeEventListener('mousedown', handleClick);
-  }, []);
 
   const handleSend = () => {
     if (!text.trim() || sending) return;
@@ -250,79 +197,20 @@ function MessageThread({ ticket, messages, onSend, onBack, onDelete, sending, us
     }
   };
 
-  const handleDelete = () => {
-    setShowMenu(false);
-    if (window.confirm('Are you sure you want to delete this conversation? This cannot be undone.')) {
-      onDelete();
-    }
-  };
-
   if (!ticket) {
     return (
-      <div className="flex-1 hidden md:flex flex-col items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50">
+      <div className="flex-1 flex flex-col items-center justify-center bg-slate-50">
         <Icons.MessageSquare size={48} className="text-slate-300 mb-4" />
-        <p className="text-slate-400">Select a conversation to start messaging</p>
+        <p className="text-slate-400">Select a conversation</p>
+        <p className="text-slate-300 text-sm mt-1">or click a staff member to start chatting</p>
       </div>
     );
   }
 
-  const isCreator = ticket.created_by === user?.id;
-  const isAdmin = user?.role === 'admin';
-
   return (
     <div className="flex-1 flex flex-col bg-slate-50 h-full">
-      {/* Header */}
-      <div className="bg-white border-b border-slate-200 px-4 py-3">
-        <div className="flex items-center gap-3">
-          <button onClick={onBack} className="md:hidden p-2 hover:bg-slate-100 rounded-lg">
-            <Icons.ArrowLeft size={18} />
-          </button>
-          <Avatar name={ticket.sender_name} />
-          <div className="flex-1 min-w-0">
-            <h2 className="text-sm font-bold text-slate-900 truncate">{ticket.subject}</h2>
-            <div className="flex items-center gap-2 text-xs text-slate-500">
-              <span>{ticket.sender_name}</span>
-              <span className="text-slate-300">·</span>
-              <span className="font-mono text-slate-400">{ticket.ticket_id}</span>
-              {ticket.assigned_to_name && (
-                <>
-                  <span className="text-slate-300">→</span>
-                  <span className="text-blue-600">{ticket.assigned_to_name}</span>
-                </>
-              )}
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1">
-              <StatusDot status={ticket.status} />
-              <span className="text-xs text-slate-500 capitalize">{ticket.status}</span>
-            </div>
-            {/* Menu */}
-            <div className="relative" ref={menuRef}>
-              <button
-                onClick={() => setShowMenu(!showMenu)}
-                className="p-2 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-slate-600"
-              >
-                <Icons.Settings size={16} />
-              </button>
-              {showMenu && (
-                <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-lg shadow-lg border border-slate-200 py-1 z-50">
-                  <button
-                    onClick={handleDelete}
-                    className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50"
-                  >
-                    <Icons.Trash size={14} />
-                    Delete Conversation
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+      <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
         {messages.length === 0 && (
           <div className="text-center text-slate-400 text-sm py-8">
             <p>No messages yet. Start the conversation!</p>
@@ -331,9 +219,9 @@ function MessageThread({ ticket, messages, onSend, onBack, onDelete, sending, us
         {messages.map((msg) => {
           const isOwn = msg.is_own;
           return (
-            <div key={msg.id} className={`flex gap-2 ${isOwn ? 'flex-row-reverse' : ''}`}>
+            <div key={msg.id} className={`flex gap-3 ${isOwn ? 'flex-row-reverse' : ''}`}>
               <Avatar name={msg.sender_name} size="sm" />
-              <div className={`max-w-[75%] ${isOwn ? 'items-end' : ''}`}>
+              <div className={`max-w-[70%] ${isOwn ? 'items-end' : ''}`}>
                 <div className="flex items-center gap-2 mb-1" style={{ flexDirection: isOwn ? 'row-reverse' : 'row' }}>
                   <span className="text-xs font-medium text-slate-700">{msg.sender_name}</span>
                   <span className="text-[10px] text-slate-400">{formatTime(msg.created_at)}</span>
@@ -355,8 +243,8 @@ function MessageThread({ ticket, messages, onSend, onBack, onDelete, sending, us
       </div>
 
       {/* Input */}
-      <div className="bg-white border-t border-slate-200 px-4 py-3">
-        <div className="flex items-end gap-2">
+      <div className="bg-white border-t border-slate-200 px-6 py-4">
+        <div className="flex items-end gap-3">
           <button className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">
             <Icons.Paperclip size={18} />
           </button>
@@ -388,116 +276,127 @@ function MessageThread({ ticket, messages, onSend, onBack, onDelete, sending, us
   );
 }
 
-// ─── New Ticket Modal ────────────────────────────────────────────────────────
+// ─── Panel 3: Department Directory ──────────────────────────────────────────
 
-function NewTicketModal({ onClose, onSubmit, user }) {
-  const [subject, setSubject] = useState('');
-  const [category, setCategory] = useState('enrollment');
-  const [priority, setPriority] = useState('normal');
-  const [content, setContent] = useState('');
-  const [submitting, setSubmitting] = useState(false);
+function DepartmentDirectory({ onStaffClick, openingId }) {
+  const [departments, setDepartments] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [expanded, setExpanded] = useState({});
+  const [dirSearch, setDirSearch] = useState('');
 
-  // Find which department handles this category
-  const selectedDept = DEPARTMENTS.find(d => d.categories.includes(category));
+  useEffect(() => {
+    const fetchDepartments = async () => {
+      try {
+        const response = await api.get('/tickets/staff-by-department/');
+        setDepartments(response.data);
+        // Expand all by default
+        const exp = {};
+        response.data.forEach(d => { exp[d.id] = true; });
+        setExpanded(exp);
+      } catch (err) {
+        console.error('Failed to fetch departments:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchDepartments();
+  }, []);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!subject.trim() || !content.trim()) return;
-    setSubmitting(true);
-    await onSubmit({ subject: subject.trim(), category, priority, content: content.trim() });
-    setSubmitting(false);
+  const toggleDept = (id) => {
+    setExpanded(prev => ({ ...prev, [id]: !prev[id] }));
   };
 
-  return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl">
-        <div className="px-6 py-4 border-b border-slate-200">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-bold text-slate-900">New Message</h2>
-            <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-slate-600">
-              <Icons.Trash size={16} />
-            </button>
-          </div>
-        </div>
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          {/* To - Department */}
-          <div className="p-3 bg-blue-50 rounded-lg">
-            <div className="flex items-center gap-2 text-sm">
-              <span className="text-slate-500">To:</span>
-              <span className="font-medium text-blue-700">
-                {selectedDept ? selectedDept.name : 'Select a category'}
-              </span>
-            </div>
-            <p className="text-xs text-slate-400 mt-1">
-              Your message will be sent to the {selectedDept ? selectedDept.name : 'appropriate'} department
-            </p>
-          </div>
+  const filteredDepts = departments.map(dept => ({
+    ...dept,
+    members: dept.members.filter(m =>
+      m.name.toLowerCase().includes(dirSearch.toLowerCase()) ||
+      m.username.toLowerCase().includes(dirSearch.toLowerCase())
+    ),
+  })).filter(dept => dept.members.length > 0);
 
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1.5">Subject</label>
-            <input
-              type="text"
-              value={subject}
-              onChange={(e) => setSubject(e.target.value)}
-              placeholder="What is this about?"
-              className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              required
-            />
+  return (
+    <div className="w-72 bg-white border-l border-slate-200 flex flex-col h-full">
+      {/* Header */}
+      <div className="px-5 py-4 border-b border-slate-100">
+        <h3 className="text-sm font-bold text-slate-900 mb-3">Staff Directory</h3>
+        <div className="relative">
+          <Icons.Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+          <input
+            type="text"
+            placeholder="Find staff..."
+            value={dirSearch}
+            onChange={(e) => setDirSearch(e.target.value)}
+            className="w-full pl-8 pr-3 py-2 bg-slate-100 rounded-lg text-xs placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-colors"
+          />
+        </div>
+      </div>
+
+      {/* Department List */}
+      <div className="flex-1 overflow-y-auto">
+        {loading ? (
+          <div className="flex items-center justify-center h-32">
+            <Icons.Loader size={20} className="text-blue-500" />
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">Category</label>
-              <select
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                {CATEGORIES.map(cat => (
-                  <option key={cat.id} value={cat.id}>{cat.label}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">Priority</label>
-              <select
-                value={priority}
-                onChange={(e) => setPriority(e.target.value)}
-                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="normal">Normal</option>
-                <option value="high">High</option>
-                <option value="urgent">Urgent</option>
-              </select>
-            </div>
+        ) : filteredDepts.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-32 text-slate-400">
+            <Icons.Users size={24} className="mb-2" />
+            <p className="text-xs">No staff found</p>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1.5">Message</label>
-            <textarea
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              placeholder="Describe your question or concern..."
-              rows={4}
-              className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-              required
-            />
+        ) : (
+          <div className="py-2">
+            {filteredDepts.map(dept => {
+              const DeptIcon = DEPT_ICONS[dept.icon] || Icons.Users;
+              const isExpanded = expanded[dept.id] !== false;
+              return (
+                <div key={dept.id} className="mb-1">
+                  {/* Department Header */}
+                  <button
+                    onClick={() => toggleDept(dept.id)}
+                    className="w-full flex items-center gap-2.5 px-5 py-2.5 hover:bg-slate-50 transition-colors"
+                  >
+                    <div className={`w-7 h-7 ${dept.color} rounded-lg flex items-center justify-center`}>
+                      <DeptIcon size={14} className="text-white" />
+                    </div>
+                    <span className="flex-1 text-xs font-semibold text-slate-700 text-left">{dept.name}</span>
+                    <span className="text-[10px] text-slate-400 mr-1">{dept.members.length}</span>
+                    <span className={`transition-transform ${isExpanded ? '' : '-rotate-90'}`}>
+                      <Icons.ChevronDown size={12} className="text-slate-400" />
+                    </span>
+                  </button>
+
+                  {/* Staff Members */}
+                  {isExpanded && (
+                    <div className="pb-1">
+                      {dept.members.map(member => (
+                        <button
+                          key={member.id}
+                          onClick={() => onStaffClick(member.id)}
+                          disabled={openingId === member.id}
+                          className="w-full flex items-center gap-3 pl-14 pr-5 py-2 hover:bg-blue-50 transition-colors group disabled:opacity-50"
+                        >
+                          <Avatar name={member.name} size="sm" online={member.is_online} />
+                          <div className="flex-1 min-w-0 text-left">
+                            <p className="text-sm font-medium text-slate-700 truncate group-hover:text-blue-700 transition-colors">
+                              {member.name}
+                            </p>
+                            <p className="text-[10px] text-slate-400 capitalize">
+                              {member.title ? `${member.title} ` : ''}{member.staff_title?.replace('_', ' ')}
+                            </p>
+                          </div>
+                          {openingId === member.id ? (
+                            <Icons.Loader size={14} className="text-blue-500" />
+                          ) : (
+                            <Icons.MessageSquare size={14} className="text-slate-300 group-hover:text-blue-500 transition-colors" />
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
-          <div className="flex justify-end gap-3 pt-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={submitting || !subject.trim() || !content.trim()}
-              className="px-6 py-2.5 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
-            >
-              {submitting ? 'Sending...' : 'Send Message'}
-            </button>
-          </div>
-        </form>
+        )}
       </div>
     </div>
   );
@@ -512,20 +411,15 @@ export default function CommunicationCenter() {
   const [selectedId, setSelectedId] = useState(null);
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [messages, setMessages] = useState([]);
-  const [messagesLoading, setMessagesLoading] = useState(false);
   const [sending, setSending] = useState(false);
-  const [showNewTicket, setShowNewTicket] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
+  const [openingStaffId, setOpeningStaffId] = useState(null);
 
-  // Fetch tickets
   const fetchTickets = useCallback(async () => {
     try {
       setLoading(true);
       const params = new URLSearchParams();
-      if (statusFilter !== 'all') params.append('status', statusFilter);
       if (searchQuery) params.append('search', searchQuery);
-
       const response = await api.get(`/tickets/?${params.toString()}`);
       setTickets(response.data.results || response.data);
     } catch (err) {
@@ -533,28 +427,20 @@ export default function CommunicationCenter() {
     } finally {
       setLoading(false);
     }
-  }, [statusFilter, searchQuery]);
+  }, [searchQuery]);
 
-  // Fetch messages for selected ticket
   const fetchMessages = useCallback(async (ticketId) => {
     try {
-      setMessagesLoading(true);
       const response = await api.get(`/tickets/${ticketId}/messages/`);
       setMessages(response.data);
     } catch (err) {
       console.error('Failed to fetch messages:', err);
       setMessages([]);
-    } finally {
-      setMessagesLoading(false);
     }
   }, []);
 
-  // Load tickets on mount and filter changes
-  useEffect(() => {
-    fetchTickets();
-  }, [fetchTickets]);
+  useEffect(() => { fetchTickets(); }, [fetchTickets]);
 
-  // Load messages when ticket selected
   useEffect(() => {
     if (selectedId) {
       const ticket = tickets.find(t => t.id === selectedId);
@@ -566,86 +452,76 @@ export default function CommunicationCenter() {
     }
   }, [selectedId, tickets, fetchMessages]);
 
-  // Send message
   const handleSend = async (content) => {
     if (!selectedId || !content) return;
     try {
       setSending(true);
       const response = await api.post(`/tickets/${selectedId}/send-message/`, { content });
       setMessages(prev => [...prev, response.data]);
-      fetchTickets(); // Refresh list to update last message
+      fetchTickets();
     } catch (err) {
       console.error('Failed to send message:', err);
-      alert('Failed to send message. Please try again.');
+      alert('Failed to send message.');
     } finally {
       setSending(false);
     }
   };
 
-  // Create ticket
-  const handleCreateTicket = async ({ subject, category, priority, content }) => {
+  const handleStaffClick = async (staffUserId) => {
     try {
-      const response = await api.post('/tickets/', { subject, category, priority, content });
-      setShowNewTicket(false);
-      fetchTickets();
-      setSelectedId(response.data.id);
+      setOpeningStaffId(staffUserId);
+      const response = await api.post('/tickets/open-conversation/', { user_id: staffUserId });
+      const ticket = response.data;
+      // Refresh list
+      await fetchTickets();
+      // Select this ticket
+      setSelectedId(ticket.id);
     } catch (err) {
-      console.error('Failed to create ticket:', err);
-      alert('Failed to create message. Please try again.');
+      console.error('Failed to open conversation:', err);
+      alert('Failed to open conversation.');
+    } finally {
+      setOpeningStaffId(null);
     }
   };
 
-  // Delete ticket
   const handleDelete = async () => {
     if (!selectedId) return;
+    if (!window.confirm('Delete this conversation? This cannot be undone.')) return;
     try {
       await api.delete(`/tickets/${selectedId}/delete/`);
       setSelectedId(null);
       fetchTickets();
     } catch (err) {
       console.error('Failed to delete ticket:', err);
-      alert('Failed to delete conversation.');
+      alert('Failed to delete.');
     }
   };
 
   return (
     <div className="h-screen flex bg-slate-100">
-      {/* Ticket List - Hidden on mobile when ticket is selected */}
-      <div className={`${selectedId ? 'hidden md:flex' : 'flex'} w-full md:w-96 flex-col`}>
-        <TicketList
-          tickets={tickets}
-          selectedId={selectedId}
-          onSelect={setSelectedId}
-          loading={loading}
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
-          statusFilter={statusFilter}
-          onStatusFilter={setStatusFilter}
-          onCreateNew={() => setShowNewTicket(true)}
-        />
-      </div>
+      {/* Left: Conversation List */}
+      <ConversationList
+        tickets={tickets}
+        selectedId={selectedId}
+        onSelect={setSelectedId}
+        loading={loading}
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+      />
 
-      {/* Message Thread - Hidden on mobile when no ticket is selected */}
-      <div className={`${selectedId ? 'flex' : 'hidden md:flex'} flex-1 flex-col`}>
-        <MessageThread
-          ticket={selectedTicket}
-          messages={messages}
-          onSend={handleSend}
-          onBack={() => setSelectedId(null)}
-          onDelete={handleDelete}
-          sending={sending}
-          user={user}
-        />
-      </div>
+      {/* Center: Message Thread */}
+      <MessageThread
+        ticket={selectedTicket}
+        messages={messages}
+        onSend={handleSend}
+        sending={sending}
+      />
 
-      {/* New Ticket Modal */}
-      {showNewTicket && (
-        <NewTicketModal
-          onClose={() => setShowNewTicket(false)}
-          onSubmit={handleCreateTicket}
-          user={user}
-        />
-      )}
+      {/* Right: Department Directory */}
+      <DepartmentDirectory
+        onStaffClick={handleStaffClick}
+        openingId={openingStaffId}
+      />
     </div>
   );
 }

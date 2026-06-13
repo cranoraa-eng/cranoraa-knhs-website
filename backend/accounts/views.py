@@ -6595,6 +6595,125 @@ class TicketViewSet(viewsets.ModelViewSet):
 
         return Response(TicketMessageSerializer(messages, many=True).data)
 
+    @action(detail=False, methods=['get'], url_path='staff-by-department')
+    def staff_by_department(self, request):
+        """Get staff grouped by department for the directory panel."""
+        DEPT_MAP = {
+            'registrar': {'name': 'Registrar', 'icon': 'FileText', 'color': 'bg-blue-500', 'titles': ['registrar']},
+            'advisory': {'name': 'Advisory', 'icon': 'GraduationCap', 'color': 'bg-emerald-500', 'titles': ['advisory']},
+            'faculty': {'name': 'Faculty', 'icon': 'BookOpen', 'color': 'bg-violet-500', 'titles': ['teacher']},
+            'admin': {'name': "Principal's Office", 'icon': 'Shield', 'color': 'bg-amber-500', 'titles': ['principal']},
+            'guidance': {'name': 'Guidance', 'icon': 'UserCheck', 'color': 'bg-rose-500', 'titles': ['guidance_counselor']},
+            'it': {'name': 'IT Support', 'icon': 'Settings', 'color': 'bg-indigo-500', 'titles': ['it_staff']},
+            'library': {'name': 'Library', 'icon': 'BookOpen', 'color': 'bg-teal-500', 'titles': ['librarian']},
+            'finance': {'name': 'Finance', 'icon': 'FileText', 'color': 'bg-orange-500', 'titles': ['cashier']},
+        }
+
+        staff_users = User.objects.filter(
+            role='staff', is_active=True
+        ).select_related('profile').order_by('first_name', 'last_name')
+
+        departments = {}
+        for dept_id, dept_info in DEPT_MAP.items():
+            dept_staff = staff_users.filter(staff_title__in=dept_info['titles'])
+            if dept_staff.exists():
+                members = []
+                for u in dept_staff:
+                    full = full_name(u) or u.username
+                    profile = getattr(u, 'profile', None)
+                    members.append({
+                        'id': u.id,
+                        'name': full,
+                        'username': u.username,
+                        'staff_title': u.staff_title,
+                        'title': getattr(profile, 'title', '') or '',
+                        'is_online': u.is_online,
+                    })
+                departments[dept_id] = {
+                    'id': dept_id,
+                    'name': dept_info['name'],
+                    'icon': dept_info['icon'],
+                    'color': dept_info['color'],
+                    'members': members,
+                }
+
+        # Include any staff with unmapped titles under "Other"
+        mapped_titles = set()
+        for d in DEPT_MAP.values():
+            mapped_titles.update(d['titles'])
+        other_staff = staff_users.exclude(staff_title__in=mapped_titles)
+        if other_staff.exists():
+            members = []
+            for u in other_staff:
+                full = full_name(u) or u.username
+                profile = getattr(u, 'profile', None)
+                members.append({
+                    'id': u.id,
+                    'name': full,
+                    'username': u.username,
+                    'staff_title': u.staff_title,
+                    'title': getattr(profile, 'title', '') or '',
+                    'is_online': u.is_online,
+                })
+            departments['other'] = {
+                'id': 'other',
+                'name': 'Other Staff',
+                'icon': 'Users',
+                'color': 'bg-slate-500',
+                'members': members,
+            }
+
+        return Response(list(departments.values()))
+
+    @action(detail=False, methods=['post'], url_path='open-conversation')
+    def open_conversation(self, request):
+        """Find or create a ticket conversation with a specific staff member."""
+        user_id = request.data.get('user_id')
+        if not user_id:
+            return Response({'error': 'user_id is required'}, status=400)
+
+        try:
+            target_user = User.objects.get(id=user_id, is_active=True)
+        except User.DoesNotExist:
+            return Response({'error': 'User not found'}, status=404)
+
+        user = request.user
+
+        # Look for existing non-archived ticket between these two users
+        existing = Ticket.objects.filter(
+            is_archived=False
+        ).filter(
+            Q(created_by=user, assigned_to=target_user) |
+            Q(created_by=target_user, assigned_to=user)
+        ).order_by('-updated_at').first()
+
+        if existing:
+            return Response(TicketDetailSerializer(existing, context={'request': request}).data)
+
+        # Create a new ticket
+        ticket = Ticket.objects.create(
+            subject=f'Conversation with {full_name(target_user)}',
+            category='other',
+            priority='normal',
+            created_by=user,
+            assigned_to=target_user,
+        )
+
+        # Add participants
+        TicketParticipant.objects.create(ticket=ticket, user=user, role='collaborator')
+        TicketParticipant.objects.create(ticket=ticket, user=target_user, role='collaborator')
+
+        # Notify the target user
+        Notification.objects.create(
+            recipient=target_user,
+            notification_type='message',
+            title=f'New conversation',
+            message=f'{full_name(user)} started a conversation with you',
+            link='/communication-center'
+        )
+
+        return Response(TicketDetailSerializer(ticket, context={'request': request}).data, status=201)
+
     @action(detail=False, methods=['get'])
     def stats(self, request):
         """Get ticket statistics."""
