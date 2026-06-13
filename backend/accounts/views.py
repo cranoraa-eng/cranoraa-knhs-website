@@ -1046,6 +1046,41 @@ class UserViewSet(viewsets.ModelViewSet):
         
         return Response({'status': f'User account status updated to {status_val}', 'account_status': user.account_status, 'is_active': user.is_active})
 
+    @action(detail=True, methods=['post'], url_path='update-roles')
+    def update_roles(self, request, pk=None):
+        """Update staff primary role and additional roles."""
+        if request.user.role != 'admin':
+            return Response({'error': 'Only admins can change roles'}, status=403)
+
+        user = self.get_object()
+        if user.role != 'staff':
+            return Response({'error': 'Can only set roles on staff accounts'}, status=400)
+
+        staff_title = request.data.get('staff_title')
+        additional_roles = request.data.get('additional_roles', '')
+
+        valid_titles = [t[0] for t in User.STAFF_TITLE_CHOICES]
+        if staff_title and staff_title not in valid_titles:
+            return Response({'error': f'Invalid staff_title. Valid: {valid_titles}'}, status=400)
+
+        if staff_title:
+            user.staff_title = staff_title
+
+        # Store additional roles as comma-separated string
+        if isinstance(additional_roles, list):
+            # Filter out the primary title from additional
+            additional_roles = [r for r in additional_roles if r != staff_title and r in valid_titles]
+            user.additional_roles = ','.join(additional_roles)
+        elif isinstance(additional_roles, str):
+            user.additional_roles = additional_roles
+
+        user.save(update_fields=['staff_title', 'additional_roles'])
+
+        return Response({
+            'staff_title': user.staff_title,
+            'additional_roles': user.additional_roles,
+        })
+
     @action(detail=True, methods=['post'])
     def reset_password(self, request, pk=None):
         """Manually reset a user's password (admin and advisory teachers)"""
@@ -6378,9 +6413,14 @@ class TicketViewSet(viewsets.ModelViewSet):
                             role='collaborator'
                         )
             
-            # If no assignment yet, find any staff with the matching title
+            # If no assignment yet, find any staff with the matching title (primary or additional)
             if not ticket.assigned_to:
-                staff_users = User.objects.filter(role='staff', staff_title=staff_title, is_active=True)
+                from django.db.models import Q
+                staff_users = User.objects.filter(
+                    role='staff', is_active=True
+                ).filter(
+                    Q(staff_title=staff_title) | Q(additional_roles__contains=staff_title)
+                )
                 if staff_users.exists():
                     assignee = staff_users.first()
                     ticket.assigned_to = assignee
@@ -6610,14 +6650,33 @@ class TicketViewSet(viewsets.ModelViewSet):
             'finance': {'name': 'Finance', 'icon': 'FileText', 'color': 'bg-orange-500', 'titles': ['cashier']},
         }
 
+        def get_all_titles(u):
+            """Return set of all titles for a user (primary + additional)."""
+            titles = set()
+            if u.staff_title:
+                titles.add(u.staff_title)
+            if u.additional_roles:
+                titles.update(r.strip() for r in u.additional_roles.split(',') if r.strip())
+            return titles
+
         staff_users = User.objects.filter(
             role='staff', is_active=True
         ).select_related('profile').order_by('first_name', 'last_name')
 
         departments = {}
+        assigned_user_ids = set()
+
         for dept_id, dept_info in DEPT_MAP.items():
-            dept_staff = staff_users.filter(staff_title__in=dept_info['titles'])
-            if dept_staff.exists():
+            dept_staff = []
+            for u in staff_users:
+                if u.id in assigned_user_ids:
+                    continue
+                user_titles = get_all_titles(u)
+                if user_titles & set(dept_info['titles']):
+                    dept_staff.append(u)
+                    assigned_user_ids.add(u.id)
+
+            if dept_staff:
                 members = []
                 for u in dept_staff:
                     full = full_name(u) or u.username
@@ -6627,6 +6686,7 @@ class TicketViewSet(viewsets.ModelViewSet):
                         'name': full,
                         'username': u.username,
                         'staff_title': u.staff_title,
+                        'all_titles': sorted(get_all_titles(u)),
                         'title': getattr(profile, 'title', '') or '',
                         'is_online': u.is_online,
                     })
@@ -6638,12 +6698,9 @@ class TicketViewSet(viewsets.ModelViewSet):
                     'members': members,
                 }
 
-        # Include any staff with unmapped titles under "Other"
-        mapped_titles = set()
-        for d in DEPT_MAP.values():
-            mapped_titles.update(d['titles'])
-        other_staff = staff_users.exclude(staff_title__in=mapped_titles)
-        if other_staff.exists():
+        # Include any unmapped staff under "Other"
+        other_staff = [u for u in staff_users if u.id not in assigned_user_ids]
+        if other_staff:
             members = []
             for u in other_staff:
                 full = full_name(u) or u.username
@@ -6653,6 +6710,7 @@ class TicketViewSet(viewsets.ModelViewSet):
                     'name': full,
                     'username': u.username,
                     'staff_title': u.staff_title,
+                    'all_titles': sorted(get_all_titles(u)),
                     'title': getattr(profile, 'title', '') or '',
                     'is_online': u.is_online,
                 })

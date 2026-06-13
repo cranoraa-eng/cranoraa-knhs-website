@@ -22,12 +22,15 @@ const Teachers = () => {
   const [editingTeacher, setEditingTeacher] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [activeMenu, setActiveMenu] = useState(null);
+  const [editingRolesId, setEditingRolesId] = useState(null);
+  const [roleForm, setRoleForm] = useState({ staff_title: '', additional_roles: [] });
   const [newTeacher, setNewTeacher] = useState({
     title: '',
     first_name: '',
     last_name: '',
     email: '',
-    sex: ''
+    sex: '',
+    staff_title: 'teacher'
   });
 
   useScrollLock(showAddModal || showEditModal || showImportModal);
@@ -60,6 +63,18 @@ const Teachers = () => {
     }
   };
 
+  const STAFF_TITLES = [
+    { value: 'teacher', label: 'Teacher' },
+    { value: 'registrar', label: 'Registrar' },
+    { value: 'advisory', label: 'Advisory' },
+    { value: 'principal', label: 'Principal' },
+    { value: 'guidance_counselor', label: 'Guidance Counselor' },
+    { value: 'it_staff', label: 'IT Staff' },
+    { value: 'librarian', label: 'Librarian' },
+    { value: 'cashier', label: 'Cashier' },
+    { value: 'other', label: 'Other' },
+  ];
+
   const handleAddTeacher = async (e) => {
     e.preventDefault();
     if (isSubmitting) return;
@@ -69,7 +84,7 @@ const Teachers = () => {
         username: newTeacher.email, 
         ...newTeacher, 
         role: 'staff',
-        staff_title: 'teacher',
+        staff_title: newTeacher.staff_title,
         profile: {
           title: newTeacher.title,
           sex: newTeacher.sex
@@ -82,27 +97,28 @@ const Teachers = () => {
         first_name: '',
         last_name: '',
         title: '',
-        sex: ''
+        sex: '',
+        staff_title: 'teacher'
       });
       fetchTeachers();
 
       Swal.fire({
         icon: 'success',
-        title: 'Teacher Account Created',
+        title: 'Staff Account Created',
         html: `
           <div class="text-left space-y-2 text-sm">
-            <p><strong>Title:</strong> ${newTeacher.title}</p>
+            <p><strong>Role:</strong> ${STAFF_TITLES.find(t => t.value === newTeacher.staff_title)?.label || newTeacher.staff_title}</p>
             <p><strong>Full Name:</strong> ${newTeacher.first_name} ${newTeacher.last_name}</p>
             <p><strong>Username/Email:</strong> ${response.data.username}</p>
             <p><strong>Temporary Password:</strong> <span class="bg-yellow-100 px-2 py-1 rounded font-mono text-lg border border-yellow-300 select-all">${response.data.temporary_password}</span></p>
-            <p class="text-xs text-slate-500 mt-4 italic">Please provide this password to the teacher. They will be required to change it on their first login.</p>
+            <p class="text-xs text-slate-500 mt-4 italic">Please provide this password to the staff member. They will be required to change it on their first login.</p>
           </div>
         `,
         confirmButtonColor: '#9333ea'
       });
     } catch (err) {
-      console.error('Failed to add teacher:', err);
-      toast.error(err.response?.data?.error || 'Failed to add teacher');
+      console.error('Failed to add staff:', err);
+      toast.error(err.response?.data?.error || 'Failed to add staff');
     } finally {
       setIsSubmitting(false);
     }
@@ -162,6 +178,43 @@ const Teachers = () => {
       const msg = err.response?.data?.error || 'Failed to open chat';
       toast.error(msg);
     }
+  };
+
+  const handleSaveRoles = async (teacherId) => {
+    try {
+      await api.post(`/users/${teacherId}/update-roles/`, {
+        staff_title: roleForm.staff_title,
+        additional_roles: roleForm.additional_roles,
+      });
+      setEditingRolesId(null);
+      fetchTeachers();
+      toast.success('Roles updated');
+    } catch (err) {
+      console.error('Failed to update roles:', err);
+      toast.error(err.response?.data?.error || 'Failed to update roles');
+    }
+  };
+
+  const openRoleEditor = (teacher) => {
+    const allTitles = [teacher.staff_title, ...(teacher.additional_roles || '').split(',').filter(Boolean)];
+    setRoleForm({
+      staff_title: teacher.staff_title || 'teacher',
+      additional_roles: allTitles.filter(t => t !== teacher.staff_title),
+    });
+    setEditingRolesId(teacher.id);
+    setActiveMenu(null);
+  };
+
+  const toggleAdditionalRole = (title) => {
+    setRoleForm(prev => {
+      const exists = prev.additional_roles.includes(title);
+      return {
+        ...prev,
+        additional_roles: exists
+          ? prev.additional_roles.filter(t => t !== title)
+          : [...prev.additional_roles, title],
+      };
+    });
   };
 
   const handleResetPassword = async (teacherId) => {
@@ -411,7 +464,7 @@ const Teachers = () => {
               Faculty Management
             </h1>
             <p className="text-xs md:text-sm font-bold text-violet-700 uppercase tracking-wide mt-0.5">
-              Teacher Accounts & Assignments
+              Staff Accounts & Assignments
             </p>
           </div>
         </div>
@@ -562,7 +615,7 @@ const Teachers = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
               </svg>
             }
-            title="No Teachers Found"
+            title="No Staff Found"
             message="Try a different search."
           />
         ) : (
@@ -574,7 +627,7 @@ const Teachers = () => {
                     <h3 className="text-xs md:text-sm font-bold text-slate-800 leading-tight truncate">
                       {teacher.profile?.title} {teacher.first_name} {teacher.last_name}
                     </h3>
-                    <div className="flex items-center gap-1.5 mt-0.5">
+                    <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
                       <span className={`text-[9px] font-bold uppercase tracking-wide ${
                         teacher.account_status === 'active' ? 'text-emerald-600' : 
                         teacher.account_status === 'suspended' ? 'text-rose-600' : 
@@ -582,6 +635,15 @@ const Teachers = () => {
                       }`}>
                         {teacher.account_status}
                       </span>
+                      <span className="text-[9px] text-slate-300">|</span>
+                      <span className="text-[9px] font-bold text-violet-600 bg-violet-50 px-1.5 py-0.5 rounded uppercase">
+                        {STAFF_TITLES.find(t => t.value === teacher.staff_title)?.label || teacher.staff_title}
+                      </span>
+                      {(teacher.additional_roles || '').split(',').filter(Boolean).map(r => (
+                        <span key={r} className="text-[9px] font-bold text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded uppercase">
+                          {STAFF_TITLES.find(t => t.value === r)?.label || r}
+                        </span>
+                      ))}
                     </div>
                     {teacher.must_change_password && teacher.temp_password_storage && (
                       <div className="mt-1 flex items-center gap-1">
@@ -646,6 +708,14 @@ const Teachers = () => {
                             Reset Password
                           </button>
 
+                          <button 
+                            onClick={() => openRoleEditor(teacher)}
+                            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 text-left"
+                          >
+                            <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                            Manage Roles
+                          </button>
+
                           <div className="border-t border-slate-100 mt-1 pt-1 px-3 py-2">
                             <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wide mb-1 block">Status</label>
                             <select 
@@ -664,8 +734,56 @@ const Teachers = () => {
                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                               <span className="text-xs font-bold">Delete</span>
                             </button>
-                          </div>
-                        </div>
+                </div>
+
+                {editingRolesId === teacher.id && (
+                  <div className="mt-2 pt-2 border-t border-slate-200">
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-[9px] font-bold text-slate-500 uppercase tracking-wide">Manage Roles</p>
+                      <button onClick={() => setEditingRolesId(null)} className="text-[9px] text-slate-400 hover:text-slate-600">Cancel</button>
+                    </div>
+                    <div className="mb-2">
+                      <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wide block mb-1">Primary Role</label>
+                      <select
+                        value={roleForm.staff_title}
+                        onChange={(e) => setRoleForm({ ...roleForm, staff_title: e.target.value })}
+                        className="w-full text-[10px] font-bold px-2 py-1.5 border border-slate-200 rounded bg-white focus:ring-1 focus:ring-violet-500"
+                      >
+                        {STAFF_TITLES.map(t => (
+                          <option key={t.value} value={t.value}>{t.label}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="mb-2">
+                      <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wide block mb-1">Additional Roles</label>
+                      <div className="flex flex-wrap gap-1">
+                        {STAFF_TITLES.filter(t => t.value !== roleForm.staff_title).map(t => {
+                          const isActive = roleForm.additional_roles.includes(t.value);
+                          return (
+                            <button
+                              key={t.value}
+                              onClick={() => toggleAdditionalRole(t.value)}
+                              className={`text-[9px] font-bold px-2 py-0.5 rounded border transition-colors ${
+                                isActive
+                                  ? 'bg-violet-100 text-violet-700 border-violet-300'
+                                  : 'bg-white text-slate-400 border-slate-200 hover:border-slate-300'
+                              }`}
+                            >
+                              {t.label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => handleSaveRoles(teacher.id)}
+                      className="w-full text-[10px] font-bold py-1.5 bg-violet-600 text-white rounded hover:bg-violet-700 transition-colors"
+                    >
+                      Save Roles
+                    </button>
+                  </div>
+                )}
+              </div>
                       </>
                     )}
                   </div>
@@ -713,7 +831,7 @@ const Teachers = () => {
         )}
       </div>
 
-      {/* Add Teacher Modal */}
+      {/* Add Staff Modal */}
       {showAddModal && (
         <div className="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center p-4 animate-in fade-in duration-300">
           <div className="bg-white w-full max-w-lg border border-gray-300 shadow-2xl rounded-sm flex flex-col max-h-[92vh]" onClick={e => e.stopPropagation()}>
@@ -725,8 +843,8 @@ const Teachers = () => {
                   </svg>
                 </div>
                 <div>
-                  <h2 className="text-sm font-black text-white uppercase tracking-widest leading-none">Add New Teacher</h2>
-                  <p className="text-violet-200 text-[10px] mt-0.5 font-medium uppercase tracking-wide">Create Faculty Account</p>
+                  <h2 className="text-sm font-black text-white uppercase tracking-widest leading-none">Add New Staff</h2>
+                  <p className="text-violet-200 text-[10px] mt-0.5 font-medium uppercase tracking-wide">Create Staff Account</p>
                 </div>
               </div>
               <button type="button" onClick={() => setShowAddModal(false)}
@@ -738,6 +856,15 @@ const Teachers = () => {
             </div>
             <form onSubmit={handleAddTeacher} className="flex flex-col flex-1 overflow-hidden">
               <div className="px-6 py-5 overflow-y-auto flex-1 space-y-4">
+                <div>
+                  <label className="block text-xs font-black text-gray-700 uppercase tracking-wider mb-1.5">
+                    Staff Role <span className="text-red-600">*</span>
+                  </label>
+                  <select required value={newTeacher.staff_title} onChange={(e) => setNewTeacher({ ...newTeacher, staff_title: e.target.value })}
+                    className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500">
+                    {STAFF_TITLES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+                  </select>
+                </div>
                 <div className="grid grid-cols-3 gap-4">
                   <div>
                     <label className="block text-xs font-black text-gray-700 uppercase tracking-wider mb-1.5">
