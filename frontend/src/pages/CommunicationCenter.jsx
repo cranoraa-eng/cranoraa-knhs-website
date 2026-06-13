@@ -215,7 +215,7 @@ function MessageCard({ msg, isOwn, onDownload }) {
               <DownloadIcon size={14} className={isOwn ? 'text-violet-200' : 'text-slate-400'} />
             </a>
           )}
-          {msg.content && <p className={`text-sm leading-relaxed whitespace-pre-wrap ${msg.attachment_url ? 'mt-1' : ''}`}>{msg.content}</p>}
+          {msg.content && <p className={`text-sm leading-relaxed whitespace-pre-wrap break-words ${msg.attachment_url ? 'mt-1' : ''}`}>{msg.content}</p>}
         </div>
       </div>
     </div>
