@@ -43,11 +43,11 @@ const Icons = {
 // ─── Config ──────────────────────────────────────────────────────────────────
 
 const DEPARTMENTS = [
-  { id: 'registrar', name: 'Registrar', icon: 'FileText', color: 'bg-blue-500', members: 4 },
-  { id: 'advisory', name: 'Advisory', icon: 'GraduationCap', color: 'bg-emerald-500', members: 12 },
-  { id: 'faculty', name: 'Faculty', icon: 'BookOpen', color: 'bg-violet-500', members: 28 },
-  { id: 'admin', name: "Principal's Office", icon: 'Shield', color: 'bg-amber-500', members: 3 },
-  { id: 'guidance', name: 'Guidance', icon: 'UserCheck', color: 'bg-rose-500', members: 2 },
+  { id: 'registrar', name: 'Registrar', icon: 'FileText', color: 'bg-blue-500', categories: ['enrollment'] },
+  { id: 'advisory', name: 'Advisory', icon: 'GraduationCap', color: 'bg-emerald-500', categories: ['attendance', 'academic'] },
+  { id: 'faculty', name: 'Faculty', icon: 'BookOpen', color: 'bg-violet-500', categories: ['academic', 'collaboration'] },
+  { id: 'admin', name: "Principal's Office", icon: 'Shield', color: 'bg-amber-500', categories: ['collaboration', 'facilities'] },
+  { id: 'guidance', name: 'Guidance', icon: 'UserCheck', color: 'bg-rose-500', categories: ['guidance'] },
 ];
 
 const STATUS_CONFIG = {
@@ -152,7 +152,7 @@ function RoleBadge({ role }) {
 
 // ─── Sidebar ─────────────────────────────────────────────────────────────────
 
-function Sidebar({ activeSection, onSectionChange, stats }) {
+function Sidebar({ activeSection, onSectionChange, stats, departmentFilter, onDepartmentChange, departmentCounts }) {
   const sections = [
     { id: 'all', label: 'All Conversations', icon: Icons.Inbox, count: stats.total },
     { id: 'open', label: 'Open Tickets', icon: Icons.MessageSquare, count: stats.open },
@@ -223,16 +223,26 @@ function Sidebar({ activeSection, onSectionChange, stats }) {
         <div className="space-y-0.5">
           {DEPARTMENTS.map(dept => {
             const DeptIcon = Icons[dept.icon];
+            const count = departmentCounts[dept.id] || 0;
             return (
               <button
                 key={dept.id}
-                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors"
+                onClick={() => onDepartmentChange(departmentFilter === dept.id ? null : dept.id)}
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                  departmentFilter === dept.id
+                    ? 'bg-blue-50 text-blue-700'
+                    : 'text-slate-600 hover:bg-slate-50'
+                }`}
               >
                 <div className={`w-7 h-7 ${dept.color} rounded-lg flex items-center justify-center`}>
                   <DeptIcon size={14} className="text-white" />
                 </div>
                 <span className="flex-1 text-left">{dept.name}</span>
-                <span className="text-xs text-slate-400">{dept.members}</span>
+                <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+                  departmentFilter === dept.id ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-500'
+                }`}>
+                  {count}
+                </span>
               </button>
             );
           })}
@@ -512,7 +522,7 @@ function MessageThread({ conversation, messages, onSendMessage, sending }) {
 
 // ─── Right Panel ─────────────────────────────────────────────────────────────
 
-function RightPanel({ conversation, onStatusChange, onPriorityChange, onArchive }) {
+function RightPanel({ conversation, onStatusChange, onPriorityChange, onArchive, onAddParticipant }) {
   if (!conversation) return null;
 
   const conv = conversation;
@@ -603,7 +613,10 @@ function RightPanel({ conversation, onStatusChange, onPriorityChange, onArchive 
             <Icons.Archive size={16} className="text-slate-400" />
             Archive Conversation
           </button>
-          <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors">
+          <button
+            onClick={onAddParticipant}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors"
+          >
             <Icons.Users size={16} className="text-slate-400" />
             Add Participant
           </button>
@@ -712,6 +725,144 @@ function NewTicketModal({ onClose, onSubmit }) {
   );
 }
 
+// ─── Add Participant Modal ───────────────────────────────────────────────────
+
+function AddParticipantModal({ onClose, onSubmit, existingParticipants }) {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [role, setRole] = useState('collaborator');
+  const [submitting, setSubmitting] = useState(false);
+
+  const searchUsers = useCallback(async () => {
+    if (!searchQuery.trim()) {
+      setUsers([]);
+      return;
+    }
+    try {
+      setLoading(true);
+      const response = await api.get(`/accounts/users/?search=${encodeURIComponent(searchQuery)}`);
+      const results = response.data.results || response.data;
+      const existingIds = existingParticipants?.map(p => p.user || p.user_id) || [];
+      setUsers(results.filter(u => !existingIds.includes(u.id)));
+    } catch (err) {
+      console.error('Failed to search users:', err);
+      setUsers([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [searchQuery, existingParticipants]);
+
+  useEffect(() => {
+    const timer = setTimeout(searchUsers, 300);
+    return () => clearTimeout(timer);
+  }, [searchUsers]);
+
+  const handleSubmit = async () => {
+    if (!selectedUser) return;
+    setSubmitting(true);
+    await onSubmit({ user_id: selectedUser.id, role });
+    setSubmitting(false);
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-2xl w-full max-w-md mx-4 shadow-2xl">
+        <div className="px-6 py-4 border-b border-slate-200">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-bold text-slate-900">Add Participant</h2>
+            <button onClick={onClose} className="p-2 rounded-lg hover:bg-slate-100 text-slate-400">
+              <Icons.Trash2 size={16} />
+            </button>
+          </div>
+        </div>
+        <div className="p-6 space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Search Users</label>
+            <div className="relative">
+              <Icons.Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search by name or email..."
+                className="w-full pl-9 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          </div>
+
+          {loading && (
+            <div className="flex items-center justify-center py-4">
+              <Icons.Loader size={24} className="text-blue-500" />
+            </div>
+          )}
+
+          {!loading && users.length > 0 && (
+            <div className="max-h-48 overflow-y-auto border border-slate-200 rounded-lg divide-y divide-slate-100">
+              {users.map(user => (
+                <button
+                  key={user.id}
+                  onClick={() => setSelectedUser(user)}
+                  className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors ${
+                    selectedUser?.id === user.id ? 'bg-blue-50' : 'hover:bg-slate-50'
+                  }`}
+                >
+                  <Avatar
+                    initials={getInitials(user.first_name + ' ' + user.last_name)}
+                    size="sm"
+                    color={getAvatarColor(user.first_name + ' ' + user.last_name)}
+                  />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-slate-700 truncate">
+                      {user.first_name} {user.last_name}
+                    </p>
+                    <p className="text-xs text-slate-400 truncate">{user.email}</p>
+                  </div>
+                  <RoleBadge role={user.role} />
+                </button>
+              ))}
+            </div>
+          )}
+
+          {!loading && searchQuery && users.length === 0 && (
+            <p className="text-sm text-slate-400 text-center py-4">No users found</p>
+          )}
+
+          {selectedUser && (
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Participant Role</label>
+              <select
+                value={role}
+                onChange={(e) => setRole(e.target.value)}
+                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="collaborator">Collaborator</option>
+                <option value="viewer">Viewer</option>
+              </select>
+            </div>
+          )}
+        </div>
+        <div className="px-6 py-4 border-t border-slate-200 flex justify-end gap-3">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleSubmit}
+            disabled={!selectedUser || submitting}
+            className="px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
+          >
+            {submitting ? 'Adding...' : 'Add Participant'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Main CommunicationCenter ────────────────────────────────────────────────
 
 export default function CommunicationCenter() {
@@ -719,8 +870,10 @@ export default function CommunicationCenter() {
   const [selectedId, setSelectedId] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('All');
+  const [departmentFilter, setDepartmentFilter] = useState(null);
   const [conversations, setConversations] = useState([]);
   const [stats, setStats] = useState({ total: 0, open: 0, pending: 0, resolved: 0 });
+  const [departmentCounts, setDepartmentCounts] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedConversation, setSelectedConversation] = useState(null);
@@ -728,6 +881,7 @@ export default function CommunicationCenter() {
   const [messagesLoading, setMessagesLoading] = useState(false);
   const [sending, setSending] = useState(false);
   const [showNewTicket, setShowNewTicket] = useState(false);
+  const [showAddParticipant, setShowAddParticipant] = useState(false);
 
   const fetchConversations = useCallback(async () => {
     try {
@@ -735,18 +889,38 @@ export default function CommunicationCenter() {
       setError(null);
       const params = new URLSearchParams();
       if (activeSection !== 'all') params.append('status', activeSection);
-      if (categoryFilter !== 'All') params.append('category', categoryFilter);
+      
+      // Handle category filter - either from category filter or department filter
+      let effectiveCategory = categoryFilter;
+      if (departmentFilter) {
+        const dept = DEPARTMENTS.find(d => d.id === departmentFilter);
+        if (dept && dept.categories.length === 1) {
+          effectiveCategory = dept.categories[0];
+        }
+      }
+      if (effectiveCategory !== 'All') params.append('category', effectiveCategory);
+      
       if (searchQuery) params.append('search', searchQuery);
 
       const response = await api.get(`/accounts/tickets/?${params.toString()}`);
-      setConversations(response.data.results || response.data);
+      let results = response.data.results || response.data;
+      
+      // If department has multiple categories, filter client-side
+      if (departmentFilter) {
+        const dept = DEPARTMENTS.find(d => d.id === departmentFilter);
+        if (dept && dept.categories.length > 1) {
+          results = results.filter(t => dept.categories.includes(t.category));
+        }
+      }
+      
+      setConversations(results);
     } catch (err) {
       console.error('Failed to fetch tickets:', err);
       setError('Failed to load conversations. Please try again.');
     } finally {
       setLoading(false);
     }
-  }, [activeSection, categoryFilter, searchQuery]);
+  }, [activeSection, categoryFilter, departmentFilter, searchQuery]);
 
   const fetchStats = useCallback(async () => {
     try {
@@ -754,6 +928,28 @@ export default function CommunicationCenter() {
       setStats(response.data);
     } catch (err) {
       console.error('Failed to fetch stats:', err);
+    }
+  }, []);
+
+  const fetchDepartmentCounts = useCallback(async () => {
+    try {
+      const counts = {};
+      for (const dept of DEPARTMENTS) {
+        const params = new URLSearchParams();
+        if (dept.categories.length === 1) {
+          params.append('category', dept.categories[0]);
+        }
+        const response = await api.get(`/accounts/tickets/?${params.toString()}`);
+        const results = response.data.results || response.data;
+        if (dept.categories.length > 1) {
+          counts[dept.id] = results.filter(t => dept.categories.includes(t.category)).length;
+        } else {
+          counts[dept.id] = results.length;
+        }
+      }
+      setDepartmentCounts(counts);
+    } catch (err) {
+      console.error('Failed to fetch department counts:', err);
     }
   }, []);
 
@@ -773,7 +969,8 @@ export default function CommunicationCenter() {
   useEffect(() => {
     fetchConversations();
     fetchStats();
-  }, [fetchConversations, fetchStats]);
+    fetchDepartmentCounts();
+  }, [fetchConversations, fetchStats, fetchDepartmentCounts]);
 
   useEffect(() => {
     if (selectedId) {
@@ -843,10 +1040,32 @@ export default function CommunicationCenter() {
       setShowNewTicket(false);
       fetchConversations();
       fetchStats();
+      fetchDepartmentCounts();
       setSelectedId(response.data.id);
     } catch (err) {
       console.error('Failed to create ticket:', err);
       alert('Failed to create ticket. Please try again.');
+    }
+  };
+
+  const handleAddParticipant = async ({ user_id, role }) => {
+    if (!selectedId) return;
+    try {
+      await api.post(`/accounts/tickets/${selectedId}/add-participant/`, { user_id, role });
+      setShowAddParticipant(false);
+      // Refresh messages to get updated participants
+      fetchMessages(selectedId);
+    } catch (err) {
+      console.error('Failed to add participant:', err);
+      alert('Failed to add participant. Please try again.');
+    }
+  };
+
+  const handleDepartmentChange = (deptId) => {
+    setDepartmentFilter(deptId);
+    // Clear category filter when selecting a department
+    if (deptId) {
+      setCategoryFilter('All');
     }
   };
 
@@ -856,6 +1075,9 @@ export default function CommunicationCenter() {
         activeSection={activeSection}
         onSectionChange={setActiveSection}
         stats={stats}
+        departmentFilter={departmentFilter}
+        onDepartmentChange={handleDepartmentChange}
+        departmentCounts={departmentCounts}
       />
       <ConversationList
         conversations={conversations}
@@ -879,11 +1101,19 @@ export default function CommunicationCenter() {
         onStatusChange={handleStatusChange}
         onPriorityChange={handlePriorityChange}
         onArchive={handleArchive}
+        onAddParticipant={() => setShowAddParticipant(true)}
       />
       {showNewTicket && (
         <NewTicketModal
           onClose={() => setShowNewTicket(false)}
           onSubmit={handleCreateTicket}
+        />
+      )}
+      {showAddParticipant && selectedConversation && (
+        <AddParticipantModal
+          onClose={() => setShowAddParticipant(false)}
+          onSubmit={handleAddParticipant}
+          existingParticipants={selectedConversation.participants}
         />
       )}
     </div>
