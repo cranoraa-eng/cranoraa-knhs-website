@@ -909,7 +909,7 @@ const StudentManagement = () => {
 
               <div className="grid grid-cols-1 gap-2 md:gap-4">
                 {gradeGroup.classrooms.map((cls) => (
-                  <div key={cls.name} className="bg-white border border-slate-200 overflow-hidden">
+                  <div key={cls.name} className="bg-white border border-slate-200">
                     <div className="px-3 py-2 md:px-4 md:py-2.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <div className="w-6 h-6 bg-[#5e2a84] flex items-center justify-center">
@@ -924,7 +924,7 @@ const StudentManagement = () => {
                       </span>
                     </div>
 
-                    <div className="overflow-x-auto">
+                    <div className="w-full">
                       <table className="w-full text-left min-w-[320px]">
                         <thead>
                           <tr className="text-[9px] font-bold text-white uppercase tracking-widest bg-[#5e2a84]">

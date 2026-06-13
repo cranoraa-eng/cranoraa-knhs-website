@@ -235,7 +235,7 @@ export default function ParentManagement() {
       </div>
 
       {/* Table */}
-      <div className="bg-white border border-slate-200 overflow-hidden">
+      <div className="bg-white border border-slate-200">
         {filtered.length === 0 ? (
           <div className="py-16 text-center">
             <div className="w-12 h-12 bg-slate-100 flex items-center justify-center mx-auto mb-3">
@@ -247,7 +247,7 @@ export default function ParentManagement() {
             <p className="text-slate-400 text-xs mt-1">Click "Add Parent" to create the first one.</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="">
             <table className="w-full text-left">
               <thead className="bg-[#5e2a84]">
                 <tr className="text-[9px] font-bold text-white uppercase tracking-widest">

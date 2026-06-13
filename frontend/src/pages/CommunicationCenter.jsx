@@ -498,7 +498,7 @@ export default function CommunicationCenter() {
   };
 
   return (
-    <div className="h-screen flex bg-slate-100">
+    <div className="h-[calc(100vh-57px)] flex bg-slate-100">
       {/* Left: Conversation List */}
       <ConversationList
         tickets={tickets}
