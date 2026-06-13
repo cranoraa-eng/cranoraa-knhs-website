@@ -1,20 +1,50 @@
 import { useState, useMemo } from 'react';
-import {
-  Search, Filter, Bell, ChevronDown, ChevronRight, Send, Paperclip,
-  CheckCircle2, Clock, AlertCircle, MessageSquare, Users, Building2,
-  Inbox, ArrowUpRight, MoreHorizontal, FileText, Phone, Video,
-  Star, Archive, Trash2, Reply, Forward, Download, Eye, Plus,
-  GraduationCap, BookOpen, Briefcase, Shield, UserCheck, Mail
-} from 'lucide-react';
+
+// ─── SVG Icons (no external dependencies) ────────────────────────────────────
+
+const Icon = ({ d, size = 16, className = '' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <path d={d} />
+  </svg>
+);
+
+const Icons = {
+  Search: (p) => <Icon {...p} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />,
+  Bell: (p) => <Icon {...p} d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0" />,
+  Plus: (p) => <Icon {...p} d="M12 5v14M5 12h14" />,
+  Send: (p) => <Icon {...p} d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" />,
+  Paperclip: (p) => <Icon {...p} d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48" />,
+  CheckCircle: (p) => <Icon {...p} d="M22 11.08V12a10 10 0 11-5.93-9.14M22 4L12 14.01l-3-3" />,
+  Clock: (p) => <Icon {...p} d="M12 2a10 10 0 100 20 10 10 0 000-20zM12 6v6l4 2" />,
+  MessageSquare: (p) => <Icon {...p} d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />,
+  Users: (p) => <Icon {...p} d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" />,
+  Inbox: (p) => <Icon {...p} d="M22 12h-6l-2 3h-4l-2-3H2M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z" />,
+  ArrowUpRight: (p) => <Icon {...p} d="M7 17l9.2-9.2M17 17V7H7" />,
+  MoreHorizontal: (p) => <Icon {...p} d="M12 12h.01M8 12h.01M16 12h.01" />,
+  FileText: (p) => <Icon {...p} d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z M14 2v6h6 M16 13H8 M16 17H8 M10 9H8" />,
+  Phone: (p) => <Icon {...p} d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z" />,
+  Video: (p) => <Icon {...p} d="M23 7l-7 5 7 5V7z M1 5h14a2 2 0 012 2v10a2 2 0 01-2 2H1" />,
+  Star: (p) => <Icon {...p} d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />,
+  Archive: (p) => <Icon {...p} d="M21 8v13H3V8M1 3h22v5H1zM10 12h4" />,
+  Trash2: (p) => <Icon {...p} d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2M10 11v6M14 11v6" />,
+  Reply: (p) => <Icon {...p} d="M9 17l-5-5 5-5M4 12h11a4 4 0 010 8h-1" />,
+  Forward: (p) => <Icon {...p} d="M15 17l5-5-5-5M20 12H9a4 4 0 000 8h1" />,
+  Download: (p) => <Icon {...p} d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" />,
+  Eye: (p) => <Icon {...p} d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z M12 9a3 3 0 100 6 3 3 0 000-6z" />,
+  GraduationCap: (p) => <svg width={p.size||16} height={p.size||16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={p.className}><path d="M22 10v6M2 10l10-5 10 5-10 5z" /><path d="M6 12v5c0 2 3 3 6 3s6-1 6-3v-5" /></svg>,
+  BookOpen: (p) => <Icon {...p} d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2zM22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z" />,
+  Shield: (p) => <Icon {...p} d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />,
+  UserCheck: (p) => <svg width={p.size||16} height={p.size||16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={p.className}><path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" /><circle cx="8.5" cy="7" r="4" /><polyline points="17 11 19 13 23 9" /></svg>,
+};
 
 // ─── Mock Data ───────────────────────────────────────────────────────────────
 
 const DEPARTMENTS = [
-  { id: 'registrar', name: 'Registrar', icon: FileText, color: 'bg-blue-500', members: 4 },
-  { id: 'advisory', name: 'Advisory', icon: GraduationCap, color: 'bg-emerald-500', members: 12 },
-  { id: 'faculty', name: 'Faculty', icon: BookOpen, color: 'bg-violet-500', members: 28 },
-  { id: 'admin', name: "Principal's Office", icon: Shield, color: 'bg-amber-500', members: 3 },
-  { id: 'guidance', name: 'Guidance', icon: UserCheck, color: 'bg-rose-500', members: 2 },
+  { id: 'registrar', name: 'Registrar', icon: 'FileText', color: 'bg-blue-500', members: 4 },
+  { id: 'advisory', name: 'Advisory', icon: 'GraduationCap', color: 'bg-emerald-500', members: 12 },
+  { id: 'faculty', name: 'Faculty', icon: 'BookOpen', color: 'bg-violet-500', members: 28 },
+  { id: 'admin', name: "Principal's Office", icon: 'Shield', color: 'bg-amber-500', members: 3 },
+  { id: 'guidance', name: 'Guidance', icon: 'UserCheck', color: 'bg-rose-500', members: 2 },
 ];
 
 const CONVERSATIONS = [
@@ -245,19 +275,18 @@ function Sidebar({ activeSection, onSectionChange, conversations }) {
   }), [conversations]);
 
   const sections = [
-    { id: 'all', label: 'All Conversations', icon: Inbox, count: stats.total },
-    { id: 'open', label: 'Open Tickets', icon: MessageSquare, count: stats.open },
-    { id: 'pending', label: 'Pending Action', icon: Clock, count: stats.pending },
-    { id: 'resolved', label: 'Resolved', icon: CheckCircle2, count: stats.resolved },
+    { id: 'all', label: 'All Conversations', icon: Icons.Inbox, count: stats.total },
+    { id: 'open', label: 'Open Tickets', icon: Icons.MessageSquare, count: stats.open },
+    { id: 'pending', label: 'Pending Action', icon: Icons.Clock, count: stats.pending },
+    { id: 'resolved', label: 'Resolved', icon: Icons.CheckCircle, count: stats.resolved },
   ];
 
   return (
     <div className="w-72 bg-white border-r border-slate-200 flex flex-col h-full">
-      {/* Header */}
       <div className="px-5 py-4 border-b border-slate-100">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center">
-            <MessageSquare className="w-5 h-5 text-white" />
+            <Icons.MessageSquare size={20} className="text-white" />
           </div>
           <div>
             <h1 className="text-base font-bold text-slate-900">Communication</h1>
@@ -266,7 +295,6 @@ function Sidebar({ activeSection, onSectionChange, conversations }) {
         </div>
       </div>
 
-      {/* Quick Stats */}
       <div className="px-4 py-3 border-b border-slate-100">
         <div className="grid grid-cols-3 gap-2">
           <div className="text-center p-2 bg-blue-50 rounded-lg">
@@ -284,7 +312,6 @@ function Sidebar({ activeSection, onSectionChange, conversations }) {
         </div>
       </div>
 
-      {/* Navigation */}
       <div className="px-3 py-3">
         <p className="px-2 mb-2 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Navigation</p>
         <div className="space-y-0.5">
@@ -298,7 +325,7 @@ function Sidebar({ activeSection, onSectionChange, conversations }) {
                   : 'text-slate-600 hover:bg-slate-50'
               }`}
             >
-              <section.icon className="w-4 h-4" />
+              <section.icon size={16} />
               <span className="flex-1 text-left">{section.label}</span>
               {section.count > 0 && (
                 <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
@@ -312,26 +339,27 @@ function Sidebar({ activeSection, onSectionChange, conversations }) {
         </div>
       </div>
 
-      {/* Departments */}
       <div className="px-3 py-3 border-t border-slate-100">
         <p className="px-2 mb-2 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Departments</p>
         <div className="space-y-0.5">
-          {DEPARTMENTS.map(dept => (
-            <button
-              key={dept.id}
-              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors"
-            >
-              <div className={`w-7 h-7 ${dept.color} rounded-lg flex items-center justify-center`}>
-                <dept.icon className="w-3.5 h-3.5 text-white" />
-              </div>
-              <span className="flex-1 text-left">{dept.name}</span>
-              <span className="text-xs text-slate-400">{dept.members}</span>
-            </button>
-          ))}
+          {DEPARTMENTS.map(dept => {
+            const DeptIcon = Icons[dept.icon];
+            return (
+              <button
+                key={dept.id}
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors"
+              >
+                <div className={`w-7 h-7 ${dept.color} rounded-lg flex items-center justify-center`}>
+                  <DeptIcon size={14} className="text-white" />
+                </div>
+                <span className="flex-1 text-left">{dept.name}</span>
+                <span className="text-xs text-slate-400">{dept.members}</span>
+              </button>
+            );
+          })}
         </div>
       </div>
 
-      {/* Recent Conversations */}
       <div className="px-3 py-3 border-t border-slate-100 flex-1 overflow-y-auto">
         <p className="px-2 mb-2 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Recent</p>
         <div className="space-y-1">
@@ -358,23 +386,21 @@ function Sidebar({ activeSection, onSectionChange, conversations }) {
 function ConversationList({ conversations, selectedId, onSelect, searchQuery, onSearchChange, categoryFilter, onCategoryChange }) {
   return (
     <div className="w-96 bg-white border-r border-slate-200 flex flex-col h-full">
-      {/* Header */}
       <div className="px-4 py-3 border-b border-slate-100">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-sm font-bold text-slate-900">Conversations</h2>
           <div className="flex items-center gap-2">
             <button className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 transition-colors">
-              <Bell className="w-4 h-4" />
+              <Icons.Bell size={16} />
             </button>
             <button className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 transition-colors">
-              <Plus className="w-4 h-4" />
+              <Icons.Plus size={16} />
             </button>
           </div>
         </div>
 
-        {/* Search */}
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <Icons.Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
             type="text"
             placeholder="Search conversations..."
@@ -384,7 +410,6 @@ function ConversationList({ conversations, selectedId, onSelect, searchQuery, on
           />
         </div>
 
-        {/* Category Filter */}
         <div className="flex gap-1.5 mt-3 overflow-x-auto pb-1">
           {CATEGORIES.map(cat => (
             <button
@@ -402,11 +427,10 @@ function ConversationList({ conversations, selectedId, onSelect, searchQuery, on
         </div>
       </div>
 
-      {/* List */}
       <div className="flex-1 overflow-y-auto">
         {conversations.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-48 text-slate-400">
-            <Inbox className="w-10 h-10 mb-2" />
+            <Icons.Inbox size={40} className="mb-2" />
             <p className="text-sm font-medium">No conversations found</p>
           </div>
         ) : (
@@ -462,7 +486,7 @@ function MessageThread({ conversation }) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center bg-slate-50">
         <div className="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mb-4">
-          <MessageSquare className="w-8 h-8 text-slate-300" />
+          <Icons.MessageSquare size={32} className="text-slate-300" />
         </div>
         <h3 className="text-lg font-semibold text-slate-600 mb-1">Select a Conversation</h3>
         <p className="text-sm text-slate-400">Choose a conversation from the list to view details</p>
@@ -474,7 +498,6 @@ function MessageThread({ conversation }) {
 
   return (
     <div className="flex-1 flex flex-col bg-slate-50 h-full">
-      {/* Header */}
       <div className="bg-white border-b border-slate-200 px-6 py-4">
         <div className="flex items-start justify-between">
           <div className="flex-1">
@@ -489,35 +512,34 @@ function MessageThread({ conversation }) {
             </div>
             <div className="flex items-center gap-4 text-xs text-slate-500">
               <span className="flex items-center gap-1.5">
-                <FileText className="w-3.5 h-3.5" />
+                <Icons.FileText size={14} />
                 {conv.category}
               </span>
               <span className="flex items-center gap-1.5">
-                <Clock className="w-3.5 h-3.5" />
+                <Icons.Clock size={14} />
                 Created {formatFullTimestamp(conv.messages[0].timestamp)}
               </span>
             </div>
           </div>
           <div className="flex items-center gap-2">
             <button className="p-2 rounded-lg hover:bg-slate-100 text-slate-400 transition-colors">
-              <Phone className="w-4 h-4" />
+              <Icons.Phone size={16} />
             </button>
             <button className="p-2 rounded-lg hover:bg-slate-100 text-slate-400 transition-colors">
-              <Video className="w-4 h-4" />
+              <Icons.Video size={16} />
             </button>
             <button className="p-2 rounded-lg hover:bg-slate-100 text-slate-400 transition-colors">
-              <Star className="w-4 h-4" />
+              <Icons.Star size={16} />
             </button>
             <button className="p-2 rounded-lg hover:bg-slate-100 text-slate-400 transition-colors">
-              <MoreHorizontal className="w-4 h-4" />
+              <Icons.MoreHorizontal size={16} />
             </button>
           </div>
         </div>
 
-        {/* Participants */}
         <div className="mt-3 flex items-center gap-2">
           <span className="text-xs text-slate-500 font-medium">Participants:</span>
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1.5 flex-wrap">
             {conv.participants.slice(0, showParticipants ? conv.participants.length : 3).map((p, i) => (
               <span
                 key={i}
@@ -542,9 +564,8 @@ function MessageThread({ conversation }) {
         </div>
       </div>
 
-      {/* Messages */}
       <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
-        {conv.messages.map((msg, idx) => {
+        {conv.messages.map((msg) => {
           const isParent = msg.role === 'Parent';
           const isStudent = msg.role === 'Student';
           const isStaff = !isParent && !isStudent;
@@ -573,9 +594,9 @@ function MessageThread({ conversation }) {
                 </div>
                 <div className="flex items-center gap-1.5 mt-1" style={{ flexDirection: isStaff ? 'row' : 'row-reverse' }}>
                   {msg.read ? (
-                    <CheckCircle2 className="w-3 h-3 text-blue-500" />
+                    <Icons.CheckCircle size={12} className="text-blue-500" />
                   ) : (
-                    <Eye className="w-3 h-3 text-slate-300" />
+                    <Icons.Eye size={12} className="text-slate-300" />
                   )}
                   <span className="text-[10px] text-slate-400">{msg.read ? 'Read' : 'Sent'}</span>
                 </div>
@@ -585,11 +606,10 @@ function MessageThread({ conversation }) {
         })}
       </div>
 
-      {/* Reply Area */}
       <div className="bg-white border-t border-slate-200 px-6 py-4">
         <div className="flex items-end gap-3">
           <button className="p-2.5 rounded-lg hover:bg-slate-100 text-slate-400 transition-colors flex-shrink-0">
-            <Paperclip className="w-5 h-5" />
+            <Icons.Paperclip size={20} />
           </button>
           <div className="flex-1 relative">
             <textarea
@@ -607,24 +627,24 @@ function MessageThread({ conversation }) {
                 : 'bg-slate-100 text-slate-400'
             }`}
           >
-            <Send className="w-5 h-5" />
+            <Icons.Send size={20} />
           </button>
         </div>
         <div className="flex items-center gap-4 mt-2 text-[10px] text-slate-400">
           <span className="flex items-center gap-1">
-            <Reply className="w-3 h-3" />
+            <Icons.Reply size={12} />
             Reply
           </span>
           <span className="flex items-center gap-1">
-            <Forward className="w-3 h-3" />
+            <Icons.Forward size={12} />
             Forward
           </span>
           <span className="flex items-center gap-1">
-            <Archive className="w-3 h-3" />
+            <Icons.Archive size={12} />
             Archive
           </span>
           <span className="flex items-center gap-1">
-            <Trash2 className="w-3 h-3" />
+            <Icons.Trash2 size={12} />
             Delete
           </span>
         </div>
@@ -642,7 +662,6 @@ function RightPanel({ conversation }) {
 
   return (
     <div className="w-80 bg-white border-l border-slate-200 flex flex-col h-full overflow-y-auto">
-      {/* Ticket Info */}
       <div className="px-5 py-4 border-b border-slate-100">
         <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Ticket Details</h3>
         <div className="space-y-3">
@@ -671,7 +690,6 @@ function RightPanel({ conversation }) {
         </div>
       </div>
 
-      {/* Participants */}
       <div className="px-5 py-4 border-b border-slate-100">
         <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Participants</h3>
         <div className="space-y-2.5">
@@ -691,60 +709,58 @@ function RightPanel({ conversation }) {
         </div>
       </div>
 
-      {/* Actions */}
       <div className="px-5 py-4 border-b border-slate-100">
         <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Actions</h3>
         <div className="space-y-2">
           <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors">
-            <Archive className="w-4 h-4 text-slate-400" />
+            <Icons.Archive size={16} className="text-slate-400" />
             Archive Conversation
           </button>
           <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors">
-            <ArrowUpRight className="w-4 h-4 text-slate-400" />
+            <Icons.ArrowUpRight size={16} className="text-slate-400" />
             Escalate to Principal
           </button>
           <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors">
-            <Users className="w-4 h-4 text-slate-400" />
+            <Icons.Users size={16} className="text-slate-400" />
             Add Participant
           </button>
           <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-colors">
-            <Trash2 className="w-4 h-4" />
+            <Icons.Trash2 size={16} />
             Delete
           </button>
         </div>
       </div>
 
-      {/* Attachments */}
       <div className="px-5 py-4">
         <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Attachments</h3>
         <div className="space-y-2">
           <div className="flex items-center gap-3 p-2.5 bg-slate-50 rounded-lg">
             <div className="w-9 h-9 bg-blue-100 rounded-lg flex items-center justify-center">
-              <FileText className="w-4 h-4 text-blue-600" />
+              <Icons.FileText size={16} className="text-blue-600" />
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-xs font-medium text-slate-700 truncate">enrollment_requirements.pdf</p>
               <p className="text-[10px] text-slate-400">245 KB</p>
             </div>
             <button className="p-1 rounded hover:bg-slate-200 text-slate-400">
-              <Download className="w-3.5 h-3.5" />
+              <Icons.Download size={14} />
             </button>
           </div>
           <div className="flex items-center gap-3 p-2.5 bg-slate-50 rounded-lg">
             <div className="w-9 h-9 bg-emerald-100 rounded-lg flex items-center justify-center">
-              <FileText className="w-4 h-4 text-emerald-600" />
+              <Icons.FileText size={16} className="text-emerald-600" />
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-xs font-medium text-slate-700 truncate">report_card_form138.jpg</p>
               <p className="text-[10px] text-slate-400">1.2 MB</p>
             </div>
             <button className="p-1 rounded hover:bg-slate-200 text-slate-400">
-              <Download className="w-3.5 h-3.5" />
+              <Icons.Download size={14} />
             </button>
           </div>
         </div>
         <button className="w-full mt-3 flex items-center justify-center gap-2 px-3 py-2 border border-dashed border-slate-300 rounded-lg text-xs font-medium text-slate-500 hover:bg-slate-50 transition-colors">
-          <Plus className="w-3.5 h-3.5" />
+          <Icons.Plus size={14} />
           Upload File
         </button>
       </div>
@@ -763,7 +779,6 @@ export default function CommunicationCenter() {
   const filteredConversations = useMemo(() => {
     let filtered = CONVERSATIONS;
 
-    // Filter by section
     if (activeSection === 'open') {
       filtered = filtered.filter(c => c.status === 'open');
     } else if (activeSection === 'pending') {
@@ -772,12 +787,10 @@ export default function CommunicationCenter() {
       filtered = filtered.filter(c => c.status === 'resolved' || c.status === 'closed');
     }
 
-    // Filter by category
     if (categoryFilter !== 'All') {
       filtered = filtered.filter(c => c.category === categoryFilter);
     }
 
-    // Filter by search
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(c =>
