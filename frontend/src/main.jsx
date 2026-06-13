@@ -5,8 +5,6 @@ import './index.css'
 import { Toaster } from 'react-hot-toast'
 import Swal from 'sweetalert2'
 import OfflineBanner from './components/OfflineBanner.jsx'
-import PWAInstallBanner from './components/PWAInstallBanner.jsx'
-import UpdateModal from './components/UpdateModal.jsx'
 import { getModalZ } from './components/ui/Modal.jsx'
 
 const baseSwalOptions = {
@@ -77,10 +75,8 @@ Swal.fire = (...args) => {
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    {/* Global offline/PWA overlays — outside App so they always render */}
+    {/* Global overlays — outside App so they always render */}
     <OfflineBanner />
-    <PWAInstallBanner />
-    <UpdateModal />
     <App />
     <Toaster
       position="top-right"

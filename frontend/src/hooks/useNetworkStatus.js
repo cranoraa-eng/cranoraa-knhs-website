@@ -11,7 +11,7 @@ export function useNetworkStatus() {
   const probe = useCallback(async () => {
     try {
       // Lightweight probe — HEAD request to our own origin
-      const res = await fetch('/manifest.webmanifest', {
+      const res = await fetch('/favicon.ico', {
         method: 'HEAD',
         cache: 'no-store',
         signal: AbortSignal.timeout(5000),

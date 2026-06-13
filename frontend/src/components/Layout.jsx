@@ -7,15 +7,12 @@ import Swal from 'sweetalert2';
 import toast from 'react-hot-toast';
 import { useNetworkStatus } from '../hooks/useNetworkStatus';
 import { getMuted, toggleMute, playSound } from '../utils/sounds';
-import PullToRefresh from './PullToRefresh';
-import { usePushNotifications } from '../hooks/usePushNotifications';
+
 import { getNotifConfig, formatNotifTime } from '../utils/notificationConfig';
 import { OnboardingProvider } from '../onboarding/OnboardingContext';
 import OnboardingShell from '../onboarding/OnboardingShell';
 import { HelpHeaderButton } from '../onboarding/HelpCenter';
 import { getNavTourId } from '../onboarding/onboardingConfig';
-
-const PUSH_DISMISSED_KEY = 'push_prompt_dismissed';
 
 const NavItem = ({ to, label, isActive, icon, onClick, tourId }) => (
   <Link
@@ -85,13 +82,9 @@ const Layout = () => {
   const { notifications, setNotifications, unreadCount, setUnreadCount, realtimeConnected, isPolling } = useNotifications();
   const [showNotifications, setShowNotifications] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [showPushPrompt, setShowPushPrompt] = useState(false);
   const [sysSettings, setSysSettings] = useState(null);
   const { isOnline } = useNetworkStatus();
   const notifDropdownRef = useRef(null);
-
-  // FCM Web Push
-  usePushNotifications(user);
 
   // Fetch system settings for academic year
   useEffect(() => {
@@ -701,62 +694,10 @@ const Layout = () => {
           </header>
 
           {/* Main Viewport */}
-          {/* Push notification permission prompt */}
-          {showPushPrompt && (
-            <div className="flex-shrink-0 mx-3 mt-2 lg:mx-4">
-              <div className="flex items-center gap-3 bg-violet-50 border border-violet-200 rounded-2xl px-4 py-3">
-                <div className="w-8 h-8 rounded-xl bg-violet-100 flex items-center justify-center flex-shrink-0">
-                  <svg className="w-4 h-4 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                  </svg>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-bold text-violet-800">Enable push notifications</p>
-                  <p className="text-[10px] text-violet-600 mt-0.5">Get alerts for grades, attendance, and announcements even when the app is closed.</p>
-                </div>
-                <div className="flex items-center gap-2 flex-shrink-0">
-                  <button
-                    onClick={async () => {
-                      setShowPushPrompt(false);
-                      localStorage.setItem(PUSH_DISMISSED_KEY, '1');
-                      const { requestFCMToken } = await import('../utils/firebase');
-                      const token = await requestFCMToken();
-                      if (token) {
-                        try {
-                          await api.post('/fcm-tokens/', { token, device_type: 'web' });
-                          toast.success('Push notifications enabled!');
-                        } catch { /* silent */ }
-                      }
-                    }}
-                    className="px-3 py-1.5 rounded-xl bg-violet-600 text-white text-[10px] font-black uppercase tracking-widest hover:bg-violet-700 transition-all"
-                  >
-                    Enable
-                  </button>
-                  <button
-                    onClick={() => {
-                      setShowPushPrompt(false);
-                      localStorage.setItem(PUSH_DISMISSED_KEY, '1');
-                    }}
-                    className="p-1.5 rounded-xl text-violet-400 hover:bg-violet-100 transition-all"
-                    aria-label="Dismiss"
-                  >
-                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
 
-          <PullToRefresh
-            onRefresh={() => window.location.reload()}
-            className="p-3 lg:p-4 scroll-smooth pb-20 lg:pb-4"
-          >
-            <div className="mx-auto w-full max-w-[1600px]">
-              <Outlet />
-            </div>
-          </PullToRefresh>
+          <div className="mx-auto w-full max-w-[1600px] p-3 lg:p-4 scroll-smooth pb-20 lg:pb-4">
+            <Outlet />
+          </div>
         </main>
       </div>
 

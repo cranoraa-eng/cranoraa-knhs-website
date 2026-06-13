@@ -17,24 +17,6 @@ import ForcePasswordChange from './pages/ForcePasswordChange';
 import Dashboard from './pages/Dashboard';
 import Maintenance from './pages/Maintenance';
 
-// Detect if running as installed PWA (standalone mode).
-// Called once at module level — safe because display-mode doesn't change at runtime.
-const isPWA = () =>
-  window.matchMedia('(display-mode: standalone)').matches ||
-  window.navigator.standalone === true;
-
-// On first PWA launch (cold start), redirect / to /login.
-// Once the user navigates inside the app, allow / to render normally
-// so "Visit Website" / "Back to Website" buttons work.
-const isFirstLaunch = () => {
-  if (!isPWA()) return false;
-  // If we already set the flag this session, not a cold start
-  if (sessionStorage.getItem('pwa_launched')) return false;
-  sessionStorage.setItem('pwa_launched', '1');
-  return true;
-};
-
-const redirectToLogin = isFirstLaunch();
 
 // ── Public website pages ──────────────────────────────────────────────────────
 const Home = lazy(() => import('./pages/HomeDepEd'));
@@ -129,50 +111,26 @@ function App() {
               <Route path="/force-password-change" element={<ForcePasswordChange />} />
 
               {/* Public Website Routes */}
-              {redirectToLogin ? (
-                // Cold PWA launch: redirect / to /login
-                <>
-                  <Route path="/" element={<Navigate to="/login" replace />} />
-                  <Route path="/about" element={<Navigate to="/login" replace />} />
-                  <Route path="/mission" element={<Navigate to="/login" replace />} />
-                  <Route path="/vision" element={<Navigate to="/login" replace />} />
-                  <Route path="/faculty" element={<Navigate to="/login" replace />} />
-                  <Route path="/programs" element={<Navigate to="/login" replace />} />
-                  <Route path="/k12-programs" element={<Navigate to="/login" replace />} />
-                  <Route path="/senior-high" element={<Navigate to="/login" replace />} />
-                  <Route path="/news-events" element={<Navigate to="/login" replace />} />
-                  <Route path="/learning-materials" element={<Navigate to="/login" replace />} />
-                  <Route path="/portals" element={<Navigate to="/login" replace />} />
-                  <Route path="/contact" element={<Navigate to="/login" replace />} />
-                  <Route path="/enroll" element={<Navigate to="/login" replace />} />
-                  <Route path="/announcement" element={<Navigate to="/login" replace />} />
-                  <Route path="/calendar" element={<Navigate to="/login" replace />} />
-                  <Route path="/privacy" element={<Navigate to="/login" replace />} />
-                  <Route path="/terms" element={<Navigate to="/login" replace />} />
-                  <Route path="/track-enrollment" element={<Navigate to="/login" replace />} />
-                </>
-              ) : (
-                <Route path="/" element={<PublicLayout />}>
-                  <Route index element={<Home />} />
-                  <Route path="about" element={<About />} />
-                  <Route path="mission" element={<Mission />} />
-                  <Route path="vision" element={<Vision />} />
-                  <Route path="faculty" element={<Faculty />} />
-                  <Route path="programs" element={<Programs />} />
-                  <Route path="k12-programs" element={<K12Programs />} />
-                  <Route path="senior-high" element={<SeniorHigh />} />
-                  <Route path="news-events" element={<NewsEvents />} />
-                  <Route path="learning-materials" element={<LearningMaterials />} />
-                  <Route path="portals" element={<Portals />} />
-                  <Route path="contact" element={<Contact />} />
-                  <Route path="enroll" element={<Enrollment />} />
-                  <Route path="announcement" element={<AnnouncementDetails />} />
-                  <Route path="calendar" element={<Calendar />} />
-                  <Route path="privacy" element={<PrivacyPolicy />} />
-                  <Route path="terms" element={<TermsOfService />} />
-                  <Route path="track-enrollment" element={<EnrollmentTracking />} />
-                </Route>
-              )}
+              <Route path="/" element={<PublicLayout />}>
+                <Route index element={<Home />} />
+                <Route path="about" element={<About />} />
+                <Route path="mission" element={<Mission />} />
+                <Route path="vision" element={<Vision />} />
+                <Route path="faculty" element={<Faculty />} />
+                <Route path="programs" element={<Programs />} />
+                <Route path="k12-programs" element={<K12Programs />} />
+                <Route path="senior-high" element={<SeniorHigh />} />
+                <Route path="news-events" element={<NewsEvents />} />
+                <Route path="learning-materials" element={<LearningMaterials />} />
+                <Route path="portals" element={<Portals />} />
+                <Route path="contact" element={<Contact />} />
+                <Route path="enroll" element={<Enrollment />} />
+                <Route path="announcement" element={<AnnouncementDetails />} />
+                <Route path="calendar" element={<Calendar />} />
+                <Route path="privacy" element={<PrivacyPolicy />} />
+                <Route path="terms" element={<TermsOfService />} />
+                <Route path="track-enrollment" element={<EnrollmentTracking />} />
+              </Route>
 
               {/* Protected Portal Routes */}
               <Route
