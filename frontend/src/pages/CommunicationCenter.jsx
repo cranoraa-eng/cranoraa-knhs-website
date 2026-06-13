@@ -302,7 +302,18 @@ function DetailsPanel({ ticket, onBack }) {
   );
 }
 
-function NewConversationModal({ open, onClose, onSubmit }) {
+const DEPT_CATEGORY_MAP = {
+  registrar: 'enrollment',
+  advisory: 'attendance',
+  faculty: 'academic',
+  admin: 'other',
+  guidance: 'guidance',
+  it: 'it_support',
+  library: 'other',
+  finance: 'finance',
+};
+
+function NewConversationModal({ open, onClose }) {
   const [departments, setDepartments] = useState([]);
   const [deptLoading, setDeptLoading] = useState(true);
   const [selectedDept, setSelectedDept] = useState('');
@@ -310,7 +321,6 @@ function NewConversationModal({ open, onClose, onSubmit }) {
   const [selectedStaff, setSelectedStaff] = useState('');
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
-  const [attachment, setAttachment] = useState(null);
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
@@ -345,18 +355,15 @@ function NewConversationModal({ open, onClose, onSubmit }) {
     }
     setSubmitting(true);
     try {
-      const payload = {
+      const category = DEPT_CATEGORY_MAP[selectedDept] || 'other';
+      const ticket = await api.post('/tickets/', {
         subject: subject.trim(),
-        message: message.trim(),
-        department_id: selectedDept || undefined,
+        category,
         assigned_to: selectedStaff || undefined,
-      };
-      const formData = new FormData();
-      Object.entries(payload).forEach(([k, v]) => { if (v) formData.append(k, v); });
-      if (attachment) formData.append('attachment', attachment);
-
-      await api.post('/tickets/create/', formData, {
-        headers: attachment ? { 'Content-Type': 'multipart/form-data' } : {},
+      });
+      const ticketId = ticket.data.id;
+      await api.post(`/tickets/${ticketId}/send-message/`, {
+        content: message.trim(),
       });
       toast.success('Conversation created successfully');
       onClose(true);
@@ -373,7 +380,6 @@ function NewConversationModal({ open, onClose, onSubmit }) {
       setSelectedStaff('');
       setSubject('');
       setMessage('');
-      setAttachment(null);
     }
   }, [open]);
 
@@ -432,20 +438,11 @@ function NewConversationModal({ open, onClose, onSubmit }) {
                   placeholder="Describe your concern in detail..."
                   className="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-lg text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-colors resize-none" />
               </div>
-              <div>
-                <label className="block text-xs font-semibold text-slate-600 mb-1.5">Attachment <span className="text-slate-400 font-normal">(optional)</span></label>
-                <label className="flex items-center gap-2 px-3 py-2.5 border border-dashed border-slate-300 rounded-lg cursor-pointer hover:border-violet-400 hover:bg-violet-50/30 transition-colors">
-                  <PaperclipIcon size={16} className="text-slate-400" />
-                  <span className="text-sm text-slate-500 flex-1">{attachment ? attachment.name : 'Attach a file'}</span>
-                  {attachment && (
-                    <button onClick={(e) => { e.preventDefault(); setAttachment(null); }} className="text-red-400 hover:text-red-600">
-                      <XIcon size={14} />
-                    </button>
-                  )}
-                  <input type="file" className="hidden" onChange={e => setAttachment(e.target.files?.[0] || null)}
-                    accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.gif,.txt" />
-                </label>
-                <p className="text-[10px] text-slate-400 mt-1">Supported: PDF, DOC, XLS, images, TXT (max 25 MB)</p>
+              <div className="bg-slate-50 rounded-lg px-3 py-2">
+                <p className="text-[10px] text-slate-400 flex items-center gap-1">
+                  <PaperclipIcon size={12} />
+                  Attachments can be added once the conversation is created
+                </p>
               </div>
             </>
           )}
@@ -481,10 +478,8 @@ export default function CommunicationCenter() {
   const [showNewModal, setShowNewModal] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
   const [text, setText] = useState('');
-  const [attachmentFile, setAttachmentFile] = useState(null);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
-  const fileInputRef = useRef(null);
 
   const debouncedSearch = useRef(null);
   const [effectiveSearch, setEffectiveSearch] = useState('');
@@ -563,20 +558,10 @@ export default function CommunicationCenter() {
   const handleSend = async () => {
     if (!selectedId) return;
     const content = text.trim();
-    if (!content && !attachmentFile) return;
+    if (!content) return;
     try {
       setSending(true);
-      if (attachmentFile) {
-        const formData = new FormData();
-        formData.append('content', content);
-        formData.append('file', attachmentFile);
-        await api.post(`/tickets/${selectedId}/send-message/`, formData, {
-          headers: { 'Content-Type': 'multipart/form-data' },
-        });
-        setAttachmentFile(null);
-      } else {
-        await api.post(`/tickets/${selectedId}/send-message/`, { content });
-      }
+      await api.post(`/tickets/${selectedId}/send-message/`, { content });
       setText('');
       fetchMessages(selectedId);
       fetchTickets();
@@ -740,33 +725,16 @@ export default function CommunicationCenter() {
               <div ref={messagesEndRef} />
             </div>
 
-            {/* Attachment preview */}
-            {attachmentFile && (
-              <div className="flex items-center gap-3 px-5 py-2.5 bg-white border-t border-slate-200">
-                <FileIcon size={18} className="text-violet-500" />
-                <span className="text-xs font-medium text-slate-700 flex-1 truncate">{attachmentFile.name}</span>
-                <span className="text-[10px] text-slate-400">{formatFileSize(attachmentFile.size)}</span>
-                <button onClick={() => setAttachmentFile(null)} className="text-slate-400 hover:text-red-500 transition-colors">
-                  <XIcon size={14} />
-                </button>
-              </div>
-            )}
-
             {/* Input */}
             <div className="bg-white border-t border-slate-200 px-4 py-3">
               <div className="flex items-end gap-2">
-                <button onClick={() => fileInputRef.current?.click()} className="p-2 text-slate-400 hover:text-violet-600 hover:bg-violet-50 rounded-lg transition-colors flex-shrink-0" title="Attach file">
-                  <PaperclipIcon size={18} />
-                </button>
-                <input ref={fileInputRef} type="file" className="hidden" accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.gif,.txt"
-                  onChange={e => setAttachmentFile(e.target.files?.[0] || null)} />
                 <div className="flex-1 relative">
                   <textarea ref={inputRef} value={text} onChange={e => setText(e.target.value)}
                     onKeyDown={handleKeyDown} placeholder="Type your message..." rows={1}
                     aria-label="Type your message"
                     className="w-full px-4 py-2.5 bg-slate-100 rounded-lg text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:bg-white resize-none transition-colors" />
                 </div>
-                <button onClick={handleSend} disabled={(!text.trim() && !attachmentFile) || sending}
+                <button onClick={handleSend} disabled={!text.trim() || sending}
                   aria-label="Send message"
                   className="p-2.5 rounded-lg transition-all flex-shrink-0 disabled:opacity-40 disabled:cursor-not-allowed bg-violet-600 text-white hover:bg-violet-700 shadow-sm">
                   {sending ? (
