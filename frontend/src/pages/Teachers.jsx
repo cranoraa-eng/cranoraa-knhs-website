@@ -735,54 +735,6 @@ const Teachers = () => {
                               <span className="text-xs font-bold">Delete</span>
                             </button>
                 </div>
-
-                {editingRolesId === teacher.id && (
-                  <div className="mt-2 pt-2 border-t border-slate-200">
-                    <div className="flex items-center justify-between mb-2">
-                      <p className="text-[9px] font-bold text-slate-500 uppercase tracking-wide">Manage Roles</p>
-                      <button onClick={() => setEditingRolesId(null)} className="text-[9px] text-slate-400 hover:text-slate-600">Cancel</button>
-                    </div>
-                    <div className="mb-2">
-                      <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wide block mb-1">Primary Role</label>
-                      <select
-                        value={roleForm.staff_title}
-                        onChange={(e) => setRoleForm({ ...roleForm, staff_title: e.target.value })}
-                        className="w-full text-[10px] font-bold px-2 py-1.5 border border-slate-200 rounded bg-white focus:ring-1 focus:ring-violet-500"
-                      >
-                        {STAFF_TITLES.map(t => (
-                          <option key={t.value} value={t.value}>{t.label}</option>
-                        ))}
-                      </select>
-                    </div>
-                    <div className="mb-2">
-                      <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wide block mb-1">Additional Roles</label>
-                      <div className="flex flex-wrap gap-1">
-                        {STAFF_TITLES.filter(t => t.value !== roleForm.staff_title).map(t => {
-                          const isActive = roleForm.additional_roles.includes(t.value);
-                          return (
-                            <button
-                              key={t.value}
-                              onClick={() => toggleAdditionalRole(t.value)}
-                              className={`text-[9px] font-bold px-2 py-0.5 rounded border transition-colors ${
-                                isActive
-                                  ? 'bg-violet-100 text-violet-700 border-violet-300'
-                                  : 'bg-white text-slate-400 border-slate-200 hover:border-slate-300'
-                              }`}
-                            >
-                              {t.label}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => handleSaveRoles(teacher.id)}
-                      className="w-full text-[10px] font-bold py-1.5 bg-violet-600 text-white rounded hover:bg-violet-700 transition-colors"
-                    >
-                      Save Roles
-                    </button>
-                  </div>
-                )}
               </div>
                       </>
                     )}
@@ -923,6 +875,82 @@ const Teachers = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Manage Roles Modal */}
+      {editingRolesId && (
+        <div className="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center p-4 animate-in fade-in duration-300">
+          <div className="bg-white w-full max-w-md border border-gray-300 shadow-2xl rounded-sm flex flex-col max-h-[80vh]" onClick={e => e.stopPropagation()}>
+            <div className="bg-[#5e2a84] flex items-center justify-between px-5 py-3 flex-shrink-0 border-b-2 border-violet-900">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-7 h-7 rounded-full bg-white/20 border border-white/30 flex items-center justify-center flex-shrink-0">
+                  <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                </div>
+                <div>
+                  <h2 className="text-sm font-black text-white uppercase tracking-widest leading-none">Manage Roles</h2>
+                  <p className="text-violet-200 text-[10px] mt-0.5 font-medium uppercase tracking-wide">
+                    {teachers.find(t => t.id === editingRolesId)?.first_name} {teachers.find(t => t.id === editingRolesId)?.last_name}
+                  </p>
+                </div>
+              </div>
+              <button type="button" onClick={() => setEditingRolesId(null)}
+                className="ml-4 w-7 h-7 flex items-center justify-center rounded text-white/60 hover:bg-white/20 hover:text-white transition-all">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+              </button>
+            </div>
+            <div className="px-6 py-5 overflow-y-auto flex-1 space-y-5">
+              <div>
+                <label className="block text-xs font-black text-gray-700 uppercase tracking-wider mb-2">Primary Role</label>
+                <select
+                  value={roleForm.staff_title}
+                  onChange={(e) => setRoleForm({ ...roleForm, staff_title: e.target.value })}
+                  className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500"
+                >
+                  {STAFF_TITLES.map(t => (
+                    <option key={t.value} value={t.value}>{t.label}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-black text-gray-700 uppercase tracking-wider mb-2">Additional Roles</label>
+                <p className="text-[10px] text-slate-400 mb-2">Click to toggle. Staff with multiple roles appear in multiple departments.</p>
+                <div className="flex flex-wrap gap-2">
+                  {STAFF_TITLES.filter(t => t.value !== roleForm.staff_title).map(t => {
+                    const isActive = roleForm.additional_roles.includes(t.value);
+                    return (
+                      <button
+                        key={t.value}
+                        onClick={() => toggleAdditionalRole(t.value)}
+                        className={`text-xs font-bold px-3 py-1.5 rounded border transition-colors ${
+                          isActive
+                            ? 'bg-violet-100 text-violet-700 border-violet-300'
+                            : 'bg-white text-slate-400 border-slate-200 hover:border-slate-300'
+                        }`}
+                      >
+                        {t.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+            <div className="px-6 py-4 border-t border-gray-200 bg-gray-50 flex items-center justify-end gap-3 flex-shrink-0">
+              <button type="button" onClick={() => setEditingRolesId(null)}
+                className="px-6 py-2.5 bg-white text-gray-700 text-xs font-black uppercase tracking-widest border border-gray-300 hover:bg-gray-100 rounded-sm">
+                Cancel
+              </button>
+              <button
+                onClick={() => handleSaveRoles(editingRolesId)}
+                className="px-6 py-2.5 bg-[#5e2a84] text-white text-xs font-black uppercase tracking-widest hover:bg-violet-700 rounded-sm">
+                Save Roles
+              </button>
+            </div>
           </div>
         </div>
       )}
