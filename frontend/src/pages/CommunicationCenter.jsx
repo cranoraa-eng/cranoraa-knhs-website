@@ -271,8 +271,8 @@ function MessageThread({ ticket, messages, onSend, sending, onDelete }) {
       </div>
 
       {/* Input */}
-      <div className="bg-white border-t border-slate-200 px-4 py-2.5">
-        <div className="flex items-end gap-2">
+      <div className="bg-white border-t border-slate-200 px-3 py-1.5">
+        <div className="flex items-end gap-1.5">
           <div className="flex-1 relative">
             <textarea
               ref={inputRef}
@@ -282,20 +282,20 @@ function MessageThread({ ticket, messages, onSend, sending, onDelete }) {
               placeholder="Type a message..."
               aria-label="Type your message"
               rows={1}
-              className="w-full px-3 py-2 bg-slate-100 rounded-xl text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white resize-none transition-colors"
+              className="w-full px-2.5 py-1.5 bg-slate-100 rounded-xl text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white resize-none transition-colors"
             />
           </div>
           <button
             onClick={handleSend}
             disabled={!text.trim() || sending}
             aria-label="Send message"
-            className={`p-2 rounded-xl transition-all ${
+            className={`p-1.5 rounded-xl transition-all ${
               text.trim() && !sending
                 ? 'bg-blue-600 text-white hover:bg-blue-700'
                 : 'bg-slate-100 text-slate-400'
             }`}
           >
-            {sending ? <Icons.Loader size={16} /> : <Icons.Send size={16} />}
+            {sending ? <Icons.Loader size={15} /> : <Icons.Send size={15} />}
           </button>
         </div>
       </div>
