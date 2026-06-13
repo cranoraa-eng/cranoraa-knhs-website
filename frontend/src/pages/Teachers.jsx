@@ -419,7 +419,7 @@ const Teachers = () => {
 
       <div className="p-1.5 md:p-6 space-y-2 md:space-y-6">
       {/* Action buttons */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 md:gap-6 animate-fade-in-up">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 md:gap-4 mb-3 md:mb-4">
         <div className="flex-1"></div>
         <div className="flex flex-wrap items-center justify-center gap-2">
           <button
@@ -432,20 +432,20 @@ const Teachers = () => {
               });
               setShowAddModal(true);
             }}
-            className="flex items-center justify-center gap-1.5 bg-violet-600 hover:bg-violet-700 text-white font-black py-1.5 md:py-2.5 px-3 md:px-6 rounded-lg md:rounded-xl transition-all shadow-md active:scale-95 text-[8px] md:text-xs uppercase tracking-widest border border-violet-700"
+            className="flex items-center gap-1.5 bg-violet-600 hover:bg-violet-700 text-white font-bold py-2 px-4 rounded text-sm transition-colors"
           >
-            <svg className="w-3.5 h-3.5 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
             Add Teacher
           </button>
 
           <button 
             onClick={() => setShowImportModal(true)}
-            className="bg-indigo-600 text-white px-3 py-1.5 md:px-5 md:py-2.5 rounded-xl md:rounded-2xl border border-indigo-700 shadow-lg hover:bg-indigo-700 flex items-center gap-2 transition-all active:scale-95"
+            className="bg-white border border-slate-200 text-slate-700 font-bold py-2 px-4 rounded text-sm hover:bg-slate-50 flex items-center gap-1.5 transition-colors"
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
-            <span className="text-[10px] md:text-sm font-bold uppercase tracking-wider">Import Excel</span>
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
+            Import
           </button>
 
           <div className="flex items-center gap-1">
@@ -471,84 +471,84 @@ const Teachers = () => {
                 }
 
                 ws['!cols'] = [
-                  { wch: 10 }, // Title
-                  { wch: 20 }, // First Name
-                  { wch: 20 }, // Last Name
-                  { wch: 30 }, // Email
-                  { wch: 10 }, // Sex
+                  { wch: 10 },
+                  { wch: 20 },
+                  { wch: 20 },
+                  { wch: 30 },
+                  { wch: 10 },
                 ];
 
                 const wb = XLSX.utils.book_new();
                 XLSX.utils.book_append_sheet(wb, ws, "Teacher Template");
                 XLSX.writeFile(wb, "KNHS_Teacher_Import_Template.xlsx");
-                toast.success('Professional template downloaded');
+                toast.success('Template downloaded');
               }}
-              className="bg-emerald-600 text-white px-3 py-1.5 md:px-5 md:py-2.5 rounded-xl md:rounded-2xl border border-emerald-700 shadow-lg hover:bg-emerald-700 flex items-center gap-2 transition-all active:scale-95"
+              className="bg-white border border-slate-200 text-slate-700 font-bold py-2 px-4 rounded text-sm hover:bg-slate-50 flex items-center gap-1.5 transition-colors"
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-              <span className="text-[10px] md:text-sm font-bold uppercase tracking-wider">Download Template</span>
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+              Template
             </button>
             
             <div className="relative group/info">
-              <button className="w-6 h-6 md:w-10 md:h-10 flex items-center justify-center rounded-xl md:rounded-2xl bg-white text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all border border-slate-200 shadow-sm active:scale-90">
-                <span className="font-black text-xs md:text-lg">!</span>
+              <button className="w-8 h-8 flex items-center justify-center rounded bg-white border border-slate-200 text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition-colors text-sm font-bold">
+                ?
               </button>
               
-              <div className="absolute top-full right-0 mt-2 w-64 md:w-80 p-4 md:p-6 bg-slate-900/95 backdrop-blur-md text-white rounded-2xl md:rounded-3xl shadow-2xl opacity-0 invisible group-hover/info:opacity-100 group-hover/info:visible transition-all z-[110] border border-white/10 scale-95 group-hover/info:scale-100 origin-top-right">
-                <h4 className="text-[10px] md:text-xs font-black uppercase tracking-[0.2em] text-indigo-400 mb-3 md:mb-4 border-b border-white/10 pb-2">Import Instructions</h4>
-                <ul className="space-y-2 md:space-y-3">
-                  <li className="flex gap-2 md:gap-3">
-                    <span className="text-indigo-400 font-black text-[10px] md:text-xs mt-0.5">01</span>
-                    <p className="text-[9px] md:text-[11px] font-bold leading-relaxed text-slate-300">Email is <span className="text-white">required</span> and serves as the username.</p>
+              <div className="absolute top-full right-0 mt-2 w-64 p-4 bg-slate-900 text-white rounded shadow-xl opacity-0 invisible group-hover/info:opacity-100 group-hover/info:visible transition-all z-[110]">
+                <h4 className="text-xs font-bold uppercase tracking-wide text-indigo-400 mb-3 border-b border-white/10 pb-2">Import Instructions</h4>
+                <ul className="space-y-2">
+                  <li className="flex gap-2">
+                    <span className="text-indigo-400 font-bold text-xs">1.</span>
+                    <p className="text-xs leading-relaxed text-slate-300">Email is <span className="text-white">required</span> and serves as the username.</p>
                   </li>
-                  <li className="flex gap-2 md:gap-3">
-                    <span className="text-indigo-400 font-black text-[10px] md:text-xs mt-0.5">02</span>
-                    <p className="text-[9px] md:text-[11px] font-bold leading-relaxed text-slate-300">Valid Titles: <span className="text-white">Mr., Ms., Mrs., Dr., Prof.</span></p>
+                  <li className="flex gap-2">
+                    <span className="text-indigo-400 font-bold text-xs">2.</span>
+                    <p className="text-xs leading-relaxed text-slate-300">Valid Titles: <span className="text-white">Mr., Ms., Mrs., Dr., Prof.</span></p>
                   </li>
-                  <li className="flex gap-2 md:gap-3">
-                    <span className="text-indigo-400 font-black text-[10px] md:text-xs mt-0.5">03</span>
-                    <p className="text-[9px] md:text-[11px] font-bold leading-relaxed text-slate-300">Sex: <span className="text-white">Male</span> or <span className="text-white">Female</span></p>
+                  <li className="flex gap-2">
+                    <span className="text-indigo-400 font-bold text-xs">3.</span>
+                    <p className="text-xs leading-relaxed text-slate-300">Sex: <span className="text-white">Male</span> or <span className="text-white">Female</span></p>
                   </li>
-                  <li className="flex gap-2 md:gap-3">
-                    <span className="text-indigo-400 font-black text-[10px] md:text-xs mt-0.5">04</span>
-                    <p className="text-[9px] md:text-[11px] font-bold leading-relaxed text-slate-300">Do <span className="text-rose-400">NOT</span> change the header names in the first row.</p>
+                  <li className="flex gap-2">
+                    <span className="text-indigo-400 font-bold text-xs">4.</span>
+                    <p className="text-xs leading-relaxed text-slate-300">Do <span className="text-rose-400">NOT</span> change the header names.</p>
                   </li>
                 </ul>
               </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-1 bg-white p-1 rounded-lg md:rounded-xl border border-slate-200 shadow-sm">
+          <div className="flex items-center gap-1 bg-white p-1 rounded border border-slate-200">
             <button 
               onClick={handleExportExcel}
-              className="p-1 md:p-2 text-emerald-600 hover:bg-emerald-50 rounded md:rounded-lg transition-all"
+              className="p-2 text-emerald-600 hover:bg-emerald-50 rounded transition-colors"
               title="Export Excel"
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
             </button>
             <button 
               onClick={handleExportPDF}
-              className="p-1 md:p-2 text-rose-600 hover:bg-rose-50 rounded md:rounded-lg transition-all"
+              className="p-2 text-rose-600 hover:bg-rose-50 rounded transition-colors"
               title="Export PDF"
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
             </button>
           </div>
         </div>
       </div>
 
       {/* Search Bar */}
-      <div className="bg-white p-1.5 md:p-4 rounded-xl md:rounded-2xl border border-slate-100 shadow-sm animate-fade-in-up [animation-delay:100ms]">
-        <div className="relative group max-w-xl mx-auto">
-          <svg className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 md:w-5 md:h-5 text-slate-400 group-focus-within:text-violet-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div className="bg-white p-3 border border-slate-200 rounded mb-3 md:mb-4">
+        <div className="relative max-w-xl">
+          <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
           <input 
             type="text" 
-            placeholder="Search name or email..."
+            placeholder="Search by name or email..."
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
-            className="w-full pl-9 md:pl-12 pr-3 md:pr-4 py-1.5 md:py-3 bg-slate-50 border border-slate-200 rounded-lg md:rounded-xl focus:outline-none focus:ring-1 focus:ring-violet-500 focus:bg-white text-[10px] md:text-sm font-bold transition-all shadow-inner uppercase tracking-wider"
+            className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded focus:outline-none focus:ring-1 focus:ring-violet-500 focus:bg-white text-sm"
           />
         </div>
       </div>
@@ -566,47 +566,31 @@ const Teachers = () => {
             message="Try a different search."
           />
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-3">
             {filteredTeachers.map((teacher) => (
-              <div key={teacher.id} className="bg-white border border-slate-200 rounded-lg md:rounded-2xl p-3 md:p-6 hover:shadow-xl transition-all duration-300 group relative border-t-2 md:border-t-4 border-t-violet-500 overflow-visible min-w-0">
-                <div className="flex items-start justify-between mb-3 md:mb-6">
-                  <div className="flex items-center gap-2 md:gap-4">
-                    <div className="relative flex-shrink-0">
-                      <div className="w-10 h-10 md:w-16 md:h-16 bg-gradient-to-br from-violet-500 to-indigo-600 rounded-lg md:rounded-2xl flex items-center justify-center text-white font-black text-sm md:text-2xl shadow-lg">
-                        {teacher.first_name?.charAt(0).toUpperCase()}{teacher.last_name?.charAt(0).toUpperCase()}
-                      </div>
-                      <div className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 md:w-5 md:h-5 rounded-full border-2 md:border-4 border-white shadow-sm flex items-center justify-center ${teacher.is_online ? 'bg-green-500' : 'bg-slate-300'}`}>
-                        {teacher.is_online && <span className="absolute w-full h-full rounded-full bg-green-500 animate-ping opacity-20"></span>}
-                      </div>
+              <div key={teacher.id} className="bg-white border border-slate-200 rounded p-3 md:p-4 hover:shadow-md transition-all group relative overflow-visible min-w-0">
+                <div className="flex items-start justify-between mb-2 md:mb-3">
+                  <div className="min-w-0">
+                    <h3 className="text-xs md:text-sm font-bold text-slate-800 leading-tight truncate">
+                      {teacher.profile?.title} {teacher.first_name} {teacher.last_name}
+                    </h3>
+                    <div className="flex items-center gap-1.5 mt-0.5">
+                      <span className={`text-[9px] font-bold uppercase tracking-wide ${
+                        teacher.account_status === 'active' ? 'text-emerald-600' : 
+                        teacher.account_status === 'suspended' ? 'text-rose-600' : 
+                        'text-slate-400'
+                      }`}>
+                        {teacher.account_status}
+                      </span>
                     </div>
-                    <div className="min-w-0">
-                      <h3 className="text-[11px] md:text-xl font-black text-slate-800 leading-tight uppercase truncate">
-                        {teacher.profile?.title} {teacher.first_name} {teacher.last_name}
-                      </h3>
-                      <div className="flex items-center gap-1.5 mt-0.5">
-                        <p className="text-[7px] md:text-[10px] font-black text-violet-500 uppercase tracking-widest">Faculty</p>
-                        <span className="text-[7px] text-slate-300">•</span>
-                        <span className={`text-[7px] md:text-[10px] font-black uppercase tracking-widest ${
-                          teacher.account_status === 'active' ? 'text-emerald-500' : 
-                          teacher.account_status === 'suspended' ? 'text-rose-500' : 
-                          'text-slate-400'
-                        }`}>
-                          {teacher.account_status}
-                        </span>
-                        <span className="text-[7px] text-slate-300">•</span>
-                        <span className={`text-[7px] md:text-[10px] font-black uppercase tracking-widest ${teacher.is_online ? 'text-green-500' : 'text-slate-400'}`}>
-                          {teacher.is_online ? 'Online' : 'Offline'}
+                    {teacher.must_change_password && teacher.temp_password_storage && (
+                      <div className="mt-1 flex items-center gap-1">
+                        <span className="text-[8px] font-bold text-amber-600 uppercase">Temp:</span>
+                        <span className="text-[9px] font-mono font-bold text-amber-600 bg-amber-50 px-1.5 py-0.5 border border-amber-200 select-all cursor-help" title="Visible until teacher changes password">
+                          {teacher.temp_password_storage}
                         </span>
                       </div>
-                      {teacher.must_change_password && teacher.temp_password_storage && (
-                        <div className="mt-1 flex items-center gap-1">
-                          <span className="text-[7px] font-black text-amber-500 uppercase tracking-widest">Temp Pass:</span>
-                          <span className="text-[9px] font-mono font-bold text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-100 select-all cursor-help" title="Visible until teacher changes password">
-                            {teacher.temp_password_storage}
-                          </span>
-                        </div>
-                      )}
-                    </div>
+                    )}
                   </div>
 
                   <div className="relative">
@@ -615,30 +599,24 @@ const Teachers = () => {
                         e.stopPropagation();
                         setActiveMenu(activeMenu === teacher.id ? null : teacher.id);
                       }}
-                      className="p-1.5 md:p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all active:scale-90"
+                      className="p-1 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded transition-all"
                     >
-                      <svg className="w-5 h-5 md:w-6 md:h-6" fill="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
                       </svg>
                     </button>
 
                     {activeMenu === teacher.id && (
                       <>
-                        <div className="fixed inset-0 z-[100]" onClick={() => setActiveMenu(null)}></div>
-                        <div className="absolute right-0 mt-2 w-48 md:w-56 bg-slate-900/95 backdrop-blur-md border border-white/10 rounded-2xl shadow-2xl z-[110] overflow-hidden py-2 animate-in zoom-in-95 origin-top-right">
-                          <div className="px-4 py-2 border-b border-white/5 mb-1">
-                            <p className="text-[8px] font-black text-indigo-400 uppercase tracking-[0.2em]">Account Actions</p>
-                          </div>
-                          
+                        <div className="fixed inset-0 z-[100]" onClick={() => setActiveMenu(null)} />
+                        <div className="absolute right-0 mt-1 w-44 bg-white border border-slate-200 rounded shadow-lg z-[110] py-1">
                           {user?.id !== teacher.id && (
                             <button 
                               onClick={() => { setActiveMenu(null); handleStartChat(teacher.id); }}
-                              className="w-full flex items-center gap-3 px-4 py-2.5 text-white hover:bg-white/10 transition-colors text-left group"
+                              className="w-full flex items-center gap-2 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 text-left"
                             >
-                              <div className="w-8 h-8 rounded-lg bg-violet-500/20 flex items-center justify-center text-blue-400 group-hover:scale-110 transition-transform">
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" /></svg>
-                              </div>
-                              <span className="text-[10px] md:text-xs font-bold uppercase tracking-widest">Send Message</span>
+                              <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" /></svg>
+                              Message
                             </button>
                           )}
 
@@ -654,44 +632,38 @@ const Teachers = () => {
                               });
                               setShowEditModal(true);
                             }}
-                            className="w-full flex items-center gap-3 px-4 py-2.5 text-white hover:bg-white/10 transition-colors text-left group"
+                            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 text-left"
                           >
-                            <div className="w-8 h-8 rounded-lg bg-violet-500/20 flex items-center justify-center text-blue-400 group-hover:scale-110 transition-transform">
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
-                            </div>
-                            <span className="text-[10px] md:text-xs font-bold uppercase tracking-widest">Edit Details</span>
+                            <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                            Edit
                           </button>
 
                           <button 
                             onClick={() => { setActiveMenu(null); handleResetPassword(teacher.id); }}
-                            className="w-full flex items-center gap-3 px-4 py-2.5 text-white hover:bg-white/10 transition-colors text-left group"
+                            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 text-left"
                           >
-                            <div className="w-8 h-8 rounded-lg bg-amber-500/20 flex items-center justify-center text-amber-400 group-hover:scale-110 transition-transform">
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" /></svg>
-                            </div>
-                            <span className="text-[10px] md:text-xs font-bold uppercase tracking-widest">Reset Password</span>
+                            <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" /></svg>
+                            Reset Password
                           </button>
 
-                          <div className="px-4 py-2 mt-1 border-t border-white/5">
-                            <p className="text-[8px] font-black text-rose-400 uppercase tracking-[0.2em] mb-2">Status & Risk</p>
-                            <div className="flex flex-col gap-2">
-                              <select 
-                                value={teacher.account_status} 
-                                onChange={(e) => { setActiveMenu(null); handleToggleStatus(teacher, e.target.value); }}
-                                className={`w-full text-[9px] font-black px-2 py-1.5 rounded-lg border-0 bg-white/5 text-white focus:ring-1 focus:ring-violet-500 cursor-pointer uppercase tracking-widest`}
-                              >
-                                <option value="active" className="bg-slate-900">Active</option>
-                                <option value="inactive" className="bg-slate-900">Inactive</option>
-                                <option value="suspended" className="bg-slate-900 text-rose-400">Suspended</option>
-                              </select>
-                              <button 
-                                onClick={() => { setActiveMenu(null); handleDelete(teacher.id); }}
-                                className="w-full flex items-center gap-3 px-2 py-1.5 text-rose-400 hover:bg-rose-500/20 rounded-lg transition-colors text-left group"
-                              >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                                <span className="text-[9px] font-black uppercase tracking-widest">Delete User</span>
-                              </button>
-                            </div>
+                          <div className="border-t border-slate-100 mt-1 pt-1 px-3 py-2">
+                            <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wide mb-1 block">Status</label>
+                            <select 
+                              value={teacher.account_status} 
+                              onChange={(e) => { setActiveMenu(null); handleToggleStatus(teacher, e.target.value); }}
+                              className="w-full text-xs font-bold px-2 py-1.5 border border-slate-200 rounded bg-white focus:ring-1 focus:ring-violet-500 cursor-pointer uppercase tracking-wide"
+                            >
+                              <option value="active">Active</option>
+                              <option value="inactive">Inactive</option>
+                              <option value="suspended">Suspended</option>
+                            </select>
+                            <button 
+                              onClick={() => { setActiveMenu(null); handleDelete(teacher.id); }}
+                              className="w-full flex items-center gap-2 px-2 py-1.5 mt-1 text-red-600 hover:bg-red-50 rounded transition-colors text-left"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                              <span className="text-xs font-bold">Delete</span>
+                            </button>
                           </div>
                         </div>
                       </>
@@ -699,49 +671,40 @@ const Teachers = () => {
                   </div>
                 </div>
 
-                <div className="space-y-1.5 md:space-y-3 mb-3 md:mb-6">
+                <div className="space-y-1 mb-2 md:mb-3">
                   <div className="flex items-center text-slate-600 min-w-0">
-                    <div className="w-5 h-5 md:w-8 md:h-8 rounded md:rounded-lg bg-slate-50 flex items-center justify-center mr-2 md:mr-3 flex-shrink-0">
-                      <svg className="w-2.5 h-2.5 md:w-4 md:h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
-                    </div>
-                    <span className="text-[9px] md:text-sm font-bold truncate tracking-tight">{teacher.email}</span>
+                    <svg className="w-3 h-3 mr-2 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                    <span className="text-[10px] md:text-xs font-medium truncate">{teacher.email}</span>
                   </div>
 
                   {teacher.profile?.phone_number && (
                     <div className="flex items-center text-slate-600 min-w-0">
-                      <div className="w-5 h-5 md:w-8 md:h-8 rounded md:rounded-lg bg-slate-50 flex items-center justify-center mr-2 md:mr-3 flex-shrink-0">
-                        <svg className="w-2.5 h-2.5 md:w-4 md:h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1.01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
-                      </div>
-                      <span className="text-[9px] md:text-sm font-bold tracking-tight">{teacher.profile.phone_number}</span>
+                      <svg className="w-3 h-3 mr-2 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1.01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
+                      <span className="text-[10px] md:text-xs font-medium">{teacher.profile.phone_number}</span>
                     </div>
                   )}
 
                   <div className="flex items-center text-slate-600 min-w-0">
-                    <div className="w-5 h-5 md:w-8 md:h-8 rounded md:rounded-lg bg-slate-50 flex items-center justify-center mr-2 md:mr-3 flex-shrink-0">
-                      <svg className="w-2.5 h-2.5 md:w-4 md:h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
-                    </div>
-                    <span className="text-[9px] md:text-sm font-black uppercase tracking-widest text-slate-400">{teacher.profile?.sex || 'N/A'}</span>
+                    <svg className="w-3 h-3 mr-2 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                    <span className="text-[10px] md:text-xs font-medium uppercase text-slate-500">{teacher.profile?.sex || 'N/A'}</span>
                   </div>
                 </div>
 
-                <div className="mt-2 md:mt-4 pt-2 md:pt-5 border-t border-slate-100">
-                  <div className="flex items-center justify-between mb-1.5 md:mb-3">
-                    <p className="text-[7px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest">Classes</p>
-                    <span className="text-[7px] md:text-[10px] font-black text-violet-600 bg-violet-50 px-1.5 py-0.5 rounded-full uppercase tracking-widest">{getTeacherClassrooms(teacher.id).length} Active</span>
+                <div className="pt-2 border-t border-slate-100">
+                  <div className="flex items-center justify-between mb-1">
+                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wide">Classes</p>
+                    <span className="text-[9px] font-bold text-violet-600 bg-violet-50 px-1.5 py-0.5 rounded uppercase">{getTeacherClassrooms(teacher.id).length}</span>
                   </div>
                   {getTeacherClassrooms(teacher.id).length > 0 ? (
-                    <div className="flex flex-wrap gap-1 md:gap-1.5">
+                    <div className="flex flex-wrap gap-1">
                       {getTeacherClassrooms(teacher.id).map(cls => (
-                        <span key={cls.id} className="px-1.5 py-0.5 md:px-2.5 md:py-1 bg-slate-50 text-slate-600 text-[7px] md:text-[10px] font-black rounded md:rounded-lg border border-slate-100 uppercase tracking-tighter">
+                        <span key={cls.id} className="px-1.5 py-0.5 bg-slate-50 text-slate-600 text-[9px] font-medium border border-slate-100 rounded">
                           {cls.name}
                         </span>
                       ))}
                     </div>
                   ) : (
-                    <div className="flex items-center gap-1.5 text-slate-300 italic text-[8px] md:text-[11px] font-bold py-1 uppercase tracking-widest">
-                      <svg className="w-2.5 h-2.5 md:w-3.5 md:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.268 16c-.77 1.333.192 3 1.732 3z" /></svg>
-                      No assignments
-                    </div>
+                    <p className="text-[9px] text-slate-300 italic">No assignments</p>
                   )}
                 </div>
               </div>
