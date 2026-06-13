@@ -225,10 +225,6 @@ const Layout = () => {
     const path = location.pathname;
     const tab = new URLSearchParams(location.search).get('tab');
     const allTabs = {
-      '/communication-center': [
-        { id: 'bulletins', label: 'Bulletins', roles: ['admin', 'staff', 'student', 'parent'] },
-        { id: 'inbox', label: 'Inbox', roles: ['admin', 'staff', 'student'] }
-      ],
       '/academics-hub': [
         { id: 'subjects', label: 'Subjects', roles: ['admin'] },
         { id: 'schedules', label: 'Schedules', roles: ['admin'] },
