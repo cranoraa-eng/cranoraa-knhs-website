@@ -362,7 +362,7 @@ function NewConversationModal({ open, onClose }) {
       toast.success('Support request created successfully');
       onClose(true);
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Failed to create conversation');
+      toast.error(err.response?.data?.detail || err.response?.data?.error || err.message || 'Failed to create support request');
     } finally {
       setSubmitting(false);
     }
