@@ -6456,14 +6456,8 @@ class TicketViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         ticket = serializer.save(created_by=self.request.user)
         
-        # Add creator as participant
-        TicketParticipant.objects.create(
-            ticket=ticket,
-            user=self.request.user,
-            role='collaborator'
-        )
-        
         # Auto-assign to staff based on category
+        # (creator is already added as participant by TicketCreateSerializer)
         category_to_staff_title = {
             'enrollment': 'registrar',
             'attendance': 'advisory',

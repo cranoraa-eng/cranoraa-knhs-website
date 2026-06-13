@@ -1124,25 +1124,27 @@ class TicketCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Ticket
-        fields = ['subject', 'category', 'priority', 'assigned_to', 'department', 'participant_ids']
+        fields = ['id', 'subject', 'category', 'priority', 'assigned_to', 'department', 'participant_ids', 'status', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'status', 'created_at', 'updated_at']
 
     def create(self, validated_data):
         participant_ids = validated_data.pop('participant_ids', [])
         ticket = Ticket.objects.create(**validated_data)
 
         # Add creator as participant
-        TicketParticipant.objects.create(
+        TicketParticipant.objects.get_or_create(
             ticket=ticket,
             user=validated_data['created_by'],
-            role='collaborator'
+            defaults={'role': 'collaborator'}
         )
 
-        # Add assigned_to as participant if specified
-        if validated_data.get('assigned_to'):
-            TicketParticipant.objects.create(
+        # Add assigned_to as participant if specified (skip if same as creator)
+        assigned = validated_data.get('assigned_to')
+        if assigned and assigned != validated_data.get('created_by'):
+            TicketParticipant.objects.get_or_create(
                 ticket=ticket,
-                user=validated_data['assigned_to'],
-                role='collaborator'
+                user=assigned,
+                defaults={'role': 'collaborator'}
             )
 
         # Add other participants

@@ -349,17 +349,17 @@ function NewConversationModal({ open, onClose }) {
         setSubmitting(false);
         return;
       }
-      const ticket = await api.post('/tickets/open-conversation/', {
-        user_id: selectedStaff,
-      });
-      const ticketId = ticket.data.id;
-      await api.patch(`/tickets/${ticketId}/`, {
+      const res = await api.post('/tickets/', {
         subject: subject.trim(),
+        category: 'other',
+        priority: 'normal',
+        assigned_to: parseInt(selectedStaff),
+        department: selectedDept,
       });
-      await api.post(`/tickets/${ticketId}/send-message/`, {
+      await api.post(`/tickets/${res.data.id}/send-message/`, {
         content: message.trim(),
       });
-      toast.success('Conversation created successfully');
+      toast.success('Support request created successfully');
       onClose(true);
     } catch (err) {
       toast.error(err.response?.data?.error || 'Failed to create conversation');
