@@ -484,6 +484,9 @@ export default function CommunicationCenter() {
   const debouncedSearch = useRef(null);
   const [effectiveSearch, setEffectiveSearch] = useState('');
 
+  const statusParam = activeFilter === 'closed' ? 'resolved' : activeFilter;
+  const hasServerStatus = activeFilter !== 'all' && activeFilter !== 'unread';
+
   useEffect(() => {
     if (debouncedSearch.current) clearTimeout(debouncedSearch.current);
     debouncedSearch.current = setTimeout(() => setEffectiveSearch(searchQuery), 300);
@@ -495,6 +498,7 @@ export default function CommunicationCenter() {
       setLoading(true);
       const params = new URLSearchParams();
       if (effectiveSearch) params.append('search', effectiveSearch);
+      if (hasServerStatus) params.append('status', statusParam);
       const response = await api.get(`/tickets/?${params.toString()}`);
       setTickets(response.data.results || response.data);
     } catch (err) {
@@ -502,7 +506,7 @@ export default function CommunicationCenter() {
     } finally {
       setLoading(false);
     }
-  }, [effectiveSearch]);
+  }, [effectiveSearch, hasServerStatus, statusParam]);
 
   const fetchMessages = useCallback(async (ticketId) => {
     try {
@@ -543,16 +547,10 @@ export default function CommunicationCenter() {
   }, [selectedTicket?.id]);
 
   const filteredTickets = useMemo(() => {
-    let list = [...tickets];
-    switch (activeFilter) {
-      case 'unread': list = list.filter(t => Number(t.unread_count) > 0); break;
-      case 'open': list = list.filter(t => t.status === 'open'); break;
-      case 'pending': list = list.filter(t => t.status === 'pending'); break;
-      case 'replied': list = list.filter(t => t.status === 'replied'); break;
-      case 'closed': list = list.filter(t => t.status === 'closed' || t.status === 'resolved'); break;
-      default: break;
+    if (activeFilter === 'unread') {
+      return tickets.filter(t => Number(t.unread_count) > 0);
     }
-    return list.sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
+    return tickets;
   }, [tickets, activeFilter]);
 
   const handleSend = async () => {
@@ -608,15 +606,6 @@ export default function CommunicationCenter() {
 
   const unreadCount = tickets.filter(t => Number(t.unread_count) > 0).length;
 
-  const FILTERS = [
-    { id: 'all', label: 'All' },
-    { id: 'unread', label: 'Unread', count: unreadCount },
-    { id: 'open', label: 'Open' },
-    { id: 'pending', label: 'Awaiting' },
-    { id: 'replied', label: 'In Progress' },
-    { id: 'closed', label: 'Closed' },
-  ];
-
   return (
     <div className="h-[calc(100vh-57px)] flex bg-slate-100">
       {/* Left Panel — Ticket List */}
@@ -642,22 +631,24 @@ export default function CommunicationCenter() {
           </div>
         </div>
 
-        {/* Filters */}
-        <div className="px-5 py-2.5 border-b border-slate-100 overflow-x-auto">
-          <div className="flex gap-1.5">
-            {FILTERS.map(f => (
+        {/* Filter Segmented Control */}
+        <div className="px-4 py-3 border-b border-slate-100">
+          <div className="flex bg-slate-100 rounded-lg p-0.5 gap-0">
+            {[
+              { id: 'all', label: 'All' },
+              { id: 'unread', label: `Unread${unreadCount > 0 ? ` (${unreadCount})` : ''}` },
+              { id: 'open', label: 'Open' },
+              { id: 'pending', label: 'Await' },
+              { id: 'replied', label: 'Active' },
+              { id: 'closed', label: 'Closed' },
+            ].map(f => (
               <button key={f.id} onClick={() => setActiveFilter(f.id)}
-                className={`px-2.5 py-1.5 rounded-md text-[10px] font-bold uppercase tracking-wider whitespace-nowrap transition-colors ${
+                className={`flex-1 px-1 py-1.5 text-[10px] font-bold rounded-md whitespace-nowrap transition-all ${
                   activeFilter === f.id
-                    ? 'bg-violet-600 text-white shadow-sm'
-                    : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100'
+                    ? 'bg-white text-violet-700 shadow-sm'
+                    : 'text-slate-500 hover:text-slate-700'
                 }`}>
                 {f.label}
-                {f.count > 0 && (
-                  <span className={`ml-1 px-1 py-0.5 rounded text-[8px] ${activeFilter === f.id ? 'bg-white/20' : 'bg-violet-100 text-violet-600'}`}>
-                    {f.count}
-                  </span>
-                )}
               </button>
             ))}
           </div>
