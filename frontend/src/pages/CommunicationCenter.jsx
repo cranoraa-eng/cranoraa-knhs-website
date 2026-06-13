@@ -229,10 +229,7 @@ function MessageCard({ msg, isOwn, onDownload }) {
   );
 }
 
-function DetailsPanel({ ticket, messages, onRefresh, onBack }) {
-  const [updatingStatus, setUpdatingStatus] = useState(false);
-  const [updatingPriority, setUpdatingPriority] = useState(false);
-
+function DetailsPanel({ ticket, messages, onBack }) {
   if (!ticket) return null;
 
   const participants = [];
@@ -248,34 +245,6 @@ function DetailsPanel({ ticket, messages, onRefresh, onBack }) {
     }
   });
 
-  const isActive = !['resolved', 'closed'].includes(ticket.status);
-
-  const handleStatusChange = async (newStatus) => {
-    if (newStatus === ticket.status || updatingStatus) return;
-    setUpdatingStatus(true);
-    try {
-      await api.post(`/tickets/${ticket.id}/update-status/`, { status: newStatus });
-      onRefresh?.();
-    } catch {
-      toast.error('Failed to update status');
-    } finally {
-      setUpdatingStatus(false);
-    }
-  };
-
-  const handlePriorityChange = async (newPriority) => {
-    if (newPriority === ticket.priority || updatingPriority) return;
-    setUpdatingPriority(true);
-    try {
-      await api.post(`/tickets/${ticket.id}/update-priority/`, { priority: newPriority });
-      onRefresh?.();
-    } catch {
-      toast.error('Failed to update priority');
-    } finally {
-      setUpdatingPriority(false);
-    }
-  };
-
   return (
     <div className="w-80 bg-white border-l border-slate-200 flex flex-col h-full overflow-hidden">
       {/* Header */}
@@ -288,55 +257,14 @@ function DetailsPanel({ ticket, messages, onRefresh, onBack }) {
         </div>
         <h4 className="text-sm font-semibold text-slate-900 leading-snug">{ticket.subject || 'No Subject'}</h4>
         <div className="flex items-center gap-2 mt-2">
+          <StatusBadge status={ticket.status} />
+          <PriorityBadge priority={ticket.priority} />
           <code className="text-[10px] font-mono text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded">#{ticket.ticket_id || ticket.id}</code>
         </div>
       </div>
 
       <div className="flex-1 overflow-y-auto">
         <div className="p-4 space-y-3">
-          {/* Status Card */}
-          <div className="border border-slate-200 rounded-xl overflow-hidden">
-            <div className="px-3 py-2 bg-slate-50 border-b border-slate-100">
-              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Status</p>
-            </div>
-            <div className="p-3 flex flex-wrap gap-1.5">
-              {['open', 'pending', 'replied', 'resolved', 'closed'].map(s => {
-                const active = ticket.status === s;
-                return (
-                  <button key={s} onClick={() => handleStatusChange(s)} disabled={updatingStatus}
-                    className={`px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-all ${
-                      active
-                        ? s === 'open' ? 'bg-blue-100 text-blue-700 border-blue-300'
-                        : s === 'pending' ? 'bg-amber-100 text-amber-700 border-amber-300'
-                        : s === 'replied' ? 'bg-emerald-100 text-emerald-700 border-emerald-300'
-                        : s === 'resolved' ? 'bg-violet-100 text-violet-700 border-violet-300'
-                        : 'bg-slate-200 text-slate-600 border-slate-300'
-                        : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50'
-                    }`}>
-                    {STATUS_CONFIG[s]?.label || s}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Priority Card */}
-          <div className="border border-slate-200 rounded-xl overflow-hidden">
-            <div className="px-3 py-2 bg-slate-50 border-b border-slate-100">
-              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Priority</p>
-            </div>
-            <div className="p-3 flex gap-1.5">
-              {PRIORITY_OPTIONS.map(p => (
-                <button key={p.value} onClick={() => handlePriorityChange(p.value)} disabled={updatingPriority}
-                  className={`flex-1 py-1.5 rounded-lg text-[10px] font-bold border transition-all ${
-                    ticket.priority === p.value ? p.activeColor : p.color
-                  }`}>
-                  {p.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
           {/* Info Card */}
           <div className="border border-slate-200 rounded-xl overflow-hidden">
             <div className="px-3 py-2 bg-slate-50 border-b border-slate-100">
@@ -390,35 +318,6 @@ function DetailsPanel({ ticket, messages, onRefresh, onBack }) {
                     </div>
                   </div>
                 ))}
-              </div>
-            </div>
-          )}
-
-          {/* Actions Card */}
-          {isActive && (
-            <div className="border border-slate-200 rounded-xl overflow-hidden">
-              <div className="px-3 py-2 bg-slate-50 border-b border-slate-100">
-                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Actions</p>
-              </div>
-              <div className="p-3 space-y-2">
-                {ticket.status !== 'resolved' && (
-                  <button onClick={() => handleStatusChange('resolved')} disabled={updatingStatus}
-                    className="w-full py-2 rounded-lg text-xs font-bold bg-violet-600 text-white hover:bg-violet-700 transition-colors">
-                    Mark as Resolved
-                  </button>
-                )}
-                {ticket.status !== 'closed' && (
-                  <button onClick={() => handleStatusChange('closed')} disabled={updatingStatus}
-                    className="w-full py-2 rounded-lg text-xs font-bold border border-slate-300 text-slate-600 hover:bg-slate-50 transition-colors">
-                    Close Ticket
-                  </button>
-                )}
-                {['resolved', 'closed'].includes(ticket.status) && (
-                  <button onClick={() => handleStatusChange('open')} disabled={updatingStatus}
-                    className="w-full py-2 rounded-lg text-xs font-bold border border-blue-300 text-blue-600 hover:bg-blue-50 transition-colors">
-                    Reopen Ticket
-                  </button>
-                )}
               </div>
             </div>
           )}
@@ -959,7 +858,7 @@ export default function CommunicationCenter() {
 
       {/* Right Panel — Details (desktop: always visible when selected, mobile: toggle) */}
       <div className={`${showDetails ? 'flex' : 'hidden'} lg:flex`}>
-        <DetailsPanel ticket={selectedTicket} messages={messages} onRefresh={fetchTickets} onBack={() => setShowDetails(false)} />
+        <DetailsPanel ticket={selectedTicket} messages={messages} onBack={() => setShowDetails(false)} />
       </div>
 
       {/* New Conversation Modal */}
