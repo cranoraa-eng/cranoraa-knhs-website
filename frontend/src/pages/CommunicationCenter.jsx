@@ -917,7 +917,7 @@ export default function CommunicationCenter() {
       
       if (searchQuery) params.append('search', searchQuery);
 
-      const response = await api.get(`/accounts/tickets/?${params.toString()}`);
+      const response = await api.get(`/tickets/?${params.toString()}`);
       let results = response.data.results || response.data;
       
       // If department has multiple categories, filter client-side
@@ -939,7 +939,7 @@ export default function CommunicationCenter() {
 
   const fetchStats = useCallback(async () => {
     try {
-      const response = await api.get('/accounts/tickets/stats/');
+      const response = await api.get('/tickets/stats/');
       setStats(response.data);
     } catch (err) {
       console.error('Failed to fetch stats:', err);
@@ -954,7 +954,7 @@ export default function CommunicationCenter() {
         if (dept.categories.length === 1) {
           params.append('category', dept.categories[0]);
         }
-        const response = await api.get(`/accounts/tickets/?${params.toString()}`);
+        const response = await api.get(`/tickets/?${params.toString()}`);
         const results = response.data.results || response.data;
         if (dept.categories.length > 1) {
           counts[dept.id] = results.filter(t => dept.categories.includes(t.category)).length;
@@ -971,7 +971,7 @@ export default function CommunicationCenter() {
   const fetchMessages = useCallback(async (ticketId) => {
     try {
       setMessagesLoading(true);
-      const response = await api.get(`/accounts/tickets/${ticketId}/messages/`);
+      const response = await api.get(`/tickets/${ticketId}/messages/`);
       setMessages(response.data);
     } catch (err) {
       console.error('Failed to fetch messages:', err);
@@ -1002,7 +1002,7 @@ export default function CommunicationCenter() {
     if (!selectedId || !content) return;
     try {
       setSending(true);
-      const response = await api.post(`/accounts/tickets/${selectedId}/send-message/`, { content });
+      const response = await api.post(`/tickets/${selectedId}/send-message/`, { content });
       setMessages(prev => [...prev, response.data]);
       fetchConversations();
       fetchStats();
@@ -1017,7 +1017,7 @@ export default function CommunicationCenter() {
   const handleStatusChange = async (newStatus) => {
     if (!selectedId) return;
     try {
-      await api.post(`/accounts/tickets/${selectedId}/update-status/`, { status: newStatus });
+      await api.post(`/tickets/${selectedId}/update-status/`, { status: newStatus });
       setSelectedConversation(prev => prev ? { ...prev, status: newStatus } : null);
       fetchConversations();
       fetchStats();
@@ -1029,7 +1029,7 @@ export default function CommunicationCenter() {
   const handlePriorityChange = async (newPriority) => {
     if (!selectedId) return;
     try {
-      await api.post(`/accounts/tickets/${selectedId}/update-priority/`, { priority: newPriority });
+      await api.post(`/tickets/${selectedId}/update-priority/`, { priority: newPriority });
       setSelectedConversation(prev => prev ? { ...prev, priority: newPriority } : null);
       fetchConversations();
     } catch (err) {
@@ -1040,7 +1040,7 @@ export default function CommunicationCenter() {
   const handleArchive = async () => {
     if (!selectedId) return;
     try {
-      await api.post(`/accounts/tickets/${selectedId}/archive/`);
+      await api.post(`/tickets/${selectedId}/archive/`);
       setSelectedId(null);
       fetchConversations();
       fetchStats();
@@ -1051,7 +1051,7 @@ export default function CommunicationCenter() {
 
   const handleCreateTicket = async ({ subject, category, priority, content }) => {
     try {
-      const response = await api.post('/accounts/tickets/', { subject, category, priority, content });
+      const response = await api.post('/tickets/', { subject, category, priority, content });
       setShowNewTicket(false);
       fetchConversations();
       fetchStats();
@@ -1066,7 +1066,7 @@ export default function CommunicationCenter() {
   const handleAddParticipant = async ({ user_id, role }) => {
     if (!selectedId) return;
     try {
-      await api.post(`/accounts/tickets/${selectedId}/add-participant/`, { user_id, role });
+      await api.post(`/tickets/${selectedId}/add-participant/`, { user_id, role });
       setShowAddParticipant(false);
       // Refresh messages to get updated participants
       fetchMessages(selectedId);

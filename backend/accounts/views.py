@@ -38,17 +38,18 @@ from .utils import (
 
 def _set_refresh_cookie(response, refresh_token: str):
     """
-    Store the JWT refresh token in an httpOnly, Secure, SameSite=Lax cookie.
+    Store the JWT refresh token in an httpOnly, Secure, SameSite cookie.
     httpOnly prevents JavaScript from reading it, which eliminates XSS token theft.
     The access token (short-lived, 15 min) stays in memory on the frontend.
     """
     from django.conf import settings as _settings
+    is_prod = not _settings.DEBUG
     response.set_cookie(
         key='refresh_token',
         value=refresh_token,
         httponly=True,
-        secure=not _settings.DEBUG,   # HTTPS-only in production
-        samesite='Lax',               # Protects against CSRF while allowing normal navigation
+        secure=is_prod,          # HTTPS-only in production
+        samesite='None' if is_prod else 'Lax',  # None for cross-origin (Vercel→Render), Lax for local dev
         max_age=7 * 24 * 60 * 60,     # 7 days — matches SIMPLE_JWT REFRESH_TOKEN_LIFETIME
         path='/api/token/',           # Scoped: only sent to the refresh endpoint
     )
@@ -56,10 +57,12 @@ def _set_refresh_cookie(response, refresh_token: str):
 
 def _clear_refresh_cookie(response):
     """Delete the refresh token cookie on logout."""
+    from django.conf import settings as _settings
+    is_prod = not _settings.DEBUG
     response.delete_cookie(
         key='refresh_token',
         path='/api/token/',
-        samesite='Lax',
+        samesite='None' if is_prod else 'Lax',
     )
 
 @api_view(['POST'])
