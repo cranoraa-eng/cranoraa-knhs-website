@@ -103,7 +103,7 @@ function StatusDot({ status }) {
 
 function ConversationList({ tickets, selectedId, onSelect, loading, searchQuery, onSearchChange }) {
   return (
-    <div className="w-80 bg-white border-r border-slate-200 flex flex-col h-full">
+    <div className="w-80 min-w-0 bg-white border-r border-slate-200 flex flex-col h-full">
       {/* Header */}
       <div className="px-4 py-4 border-b border-slate-100">
         <h1 className="text-lg font-bold text-slate-900 mb-3">Messages</h1>
@@ -218,7 +218,7 @@ function MessageThread({ ticket, messages, onSend, sending, onDelete }) {
   }
 
   return (
-    <div className="flex-1 flex flex-col bg-slate-50 h-full">
+    <div className="flex-1 flex flex-col min-w-0 bg-slate-50 h-full">
       {/* Conversation Header */}
       <div className="flex items-center justify-between px-4 py-2 bg-white border-b border-slate-200">
         <div className="flex items-center gap-2 min-w-0">
@@ -249,7 +249,7 @@ function MessageThread({ ticket, messages, onSend, sending, onDelete }) {
           return (
             <div key={msg.id} className={`flex gap-2 ${isOwn ? 'flex-row-reverse' : ''}`} role="group" aria-label={`Message from ${msg.sender_name}`}>
               <Avatar name={msg.sender_name} size="sm" />
-              <div className={`max-w-[70%] ${isOwn ? 'items-end' : ''}`}>
+              <div className={`max-w-[70%] min-w-0 ${isOwn ? 'items-end' : ''}`}>
                 <div className={`flex items-center gap-1.5 mb-0.5 ${isOwn ? 'flex-row-reverse' : ''}`}>
                   <span className="text-[11px] font-medium text-slate-700">{msg.sender_name}</span>
                   <span className="text-[9px] text-slate-400">{formatTime(msg.created_at)}</span>
@@ -344,7 +344,7 @@ function DepartmentDirectory({ onStaffClick, openingId }) {
   })).filter(dept => dept.members.length > 0), [departments, dirSearch]);
 
   return (
-    <div className="w-72 bg-white border-l border-slate-200 flex flex-col h-full">
+    <div className="w-72 min-w-0 bg-white border-l border-slate-200 flex flex-col h-full">
       {/* Header */}
       <div className="px-5 py-4 border-b border-slate-100">
         <h2 className="text-sm font-bold text-slate-900 mb-3">Staff Directory</h2>
