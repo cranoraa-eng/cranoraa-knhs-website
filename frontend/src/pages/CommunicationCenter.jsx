@@ -229,10 +229,56 @@ function MessageCard({ msg, isOwn, onDownload }) {
   );
 }
 
-function DetailsPanel({ ticket, onBack }) {
+function DetailsPanel({ ticket, messages, onRefresh, onBack }) {
+  const [updatingStatus, setUpdatingStatus] = useState(false);
+  const [updatingPriority, setUpdatingPriority] = useState(false);
+
   if (!ticket) return null;
+
+  const participants = [];
+  if (ticket.created_by_name) {
+    participants.push({ name: ticket.created_by_name, role: 'Creator' });
+  }
+  if (ticket.assigned_name || ticket.assigned_to_name) {
+    participants.push({ name: ticket.assigned_name || ticket.assigned_to_name, role: 'Assignee' });
+  }
+  (messages || []).forEach(m => {
+    if (m.sender_name && !participants.find(p => p.name === m.sender_name)) {
+      participants.push({ name: m.sender_name, role: 'Participant' });
+    }
+  });
+
+  const isActive = !['resolved', 'closed'].includes(ticket.status);
+
+  const handleStatusChange = async (newStatus) => {
+    if (newStatus === ticket.status || updatingStatus) return;
+    setUpdatingStatus(true);
+    try {
+      await api.post(`/tickets/${ticket.id}/update-status/`, { status: newStatus });
+      onRefresh?.();
+    } catch {
+      toast.error('Failed to update status');
+    } finally {
+      setUpdatingStatus(false);
+    }
+  };
+
+  const handlePriorityChange = async (newPriority) => {
+    if (newPriority === ticket.priority || updatingPriority) return;
+    setUpdatingPriority(true);
+    try {
+      await api.post(`/tickets/${ticket.id}/update-priority/`, { priority: newPriority });
+      onRefresh?.();
+    } catch {
+      toast.error('Failed to update priority');
+    } finally {
+      setUpdatingPriority(false);
+    }
+  };
+
   return (
     <div className="w-80 bg-white border-l border-slate-200 flex flex-col h-full overflow-hidden">
+      {/* Header */}
       <div className="px-5 py-4 border-b border-slate-100">
         <div className="flex items-center justify-between mb-1">
           <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Details</h3>
@@ -241,61 +287,141 @@ function DetailsPanel({ ticket, onBack }) {
           </button>
         </div>
         <h4 className="text-sm font-semibold text-slate-900 leading-snug">{ticket.subject || 'No Subject'}</h4>
+        <div className="flex items-center gap-2 mt-2">
+          <code className="text-[10px] font-mono text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded">#{ticket.ticket_id || ticket.id}</code>
+        </div>
       </div>
+
       <div className="flex-1 overflow-y-auto">
-        <div className="divide-y divide-slate-50">
-          <div className="px-5 py-3.5">
-            <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Status</p>
-            <StatusBadge status={ticket.status} />
-          </div>
-          <div className="px-5 py-3.5">
-            <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Priority</p>
-            <PriorityBadge priority={ticket.priority} />
-          </div>
-          <div className="px-5 py-3.5">
-            <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Department</p>
-            <p className="text-sm font-medium text-slate-800">{ticket.department_name || '—'}</p>
-          </div>
-          <div className="px-5 py-3.5">
-            <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Assigned To</p>
-            <div className="flex items-center gap-2">
-              <Avatar name={ticket.assigned_name || ticket.staff_name} size="sm" />
-              <span className="text-sm font-medium text-slate-800">{ticket.assigned_name || ticket.staff_name || 'Unassigned'}</span>
+        <div className="p-4 space-y-3">
+          {/* Status Card */}
+          <div className="border border-slate-200 rounded-xl overflow-hidden">
+            <div className="px-3 py-2 bg-slate-50 border-b border-slate-100">
+              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Status</p>
+            </div>
+            <div className="p-3 flex flex-wrap gap-1.5">
+              {['open', 'pending', 'replied', 'resolved', 'closed'].map(s => {
+                const active = ticket.status === s;
+                return (
+                  <button key={s} onClick={() => handleStatusChange(s)} disabled={updatingStatus}
+                    className={`px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-all ${
+                      active
+                        ? s === 'open' ? 'bg-blue-100 text-blue-700 border-blue-300'
+                        : s === 'pending' ? 'bg-amber-100 text-amber-700 border-amber-300'
+                        : s === 'replied' ? 'bg-emerald-100 text-emerald-700 border-emerald-300'
+                        : s === 'resolved' ? 'bg-violet-100 text-violet-700 border-violet-300'
+                        : 'bg-slate-200 text-slate-600 border-slate-300'
+                        : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50'
+                    }`}>
+                    {STATUS_CONFIG[s]?.label || s}
+                  </button>
+                );
+              })}
             </div>
           </div>
-          {ticket.category && (
-            <div className="px-5 py-3.5">
-              <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Category</p>
-              <span className="text-sm font-medium text-slate-800 capitalize">{ticket.category.replace(/_/g, ' ')}</span>
+
+          {/* Priority Card */}
+          <div className="border border-slate-200 rounded-xl overflow-hidden">
+            <div className="px-3 py-2 bg-slate-50 border-b border-slate-100">
+              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Priority</p>
             </div>
-          )}
-          <div className="px-5 py-3.5">
-            <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Created</p>
-            <div className="flex items-center gap-1.5 text-sm text-slate-700">
-              <CalendarIcon size={14} className="text-slate-400" />
-              {formatDate(ticket.created_at)}
-            </div>
-          </div>
-          <div className="px-5 py-3.5">
-            <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Last Updated</p>
-            <div className="flex items-center gap-1.5 text-sm text-slate-700">
-              <ClockIcon size={14} className="text-slate-400" />
-              {formatDate(ticket.updated_at)}
+            <div className="p-3 flex gap-1.5">
+              {PRIORITY_OPTIONS.map(p => (
+                <button key={p.value} onClick={() => handlePriorityChange(p.value)} disabled={updatingPriority}
+                  className={`flex-1 py-1.5 rounded-lg text-[10px] font-bold border transition-all ${
+                    ticket.priority === p.value ? p.activeColor : p.color
+                  }`}>
+                  {p.label}
+                </button>
+              ))}
             </div>
           </div>
-          {ticket.sender_name && (
-            <div className="px-5 py-3.5">
-              <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Reported By</p>
-              <div className="flex items-center gap-2">
-                <Avatar name={ticket.sender_name} size="sm" />
-                <span className="text-sm font-medium text-slate-800">{ticket.sender_name}</span>
+
+          {/* Info Card */}
+          <div className="border border-slate-200 rounded-xl overflow-hidden">
+            <div className="px-3 py-2 bg-slate-50 border-b border-slate-100">
+              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Information</p>
+            </div>
+            <div className="divide-y divide-slate-100">
+              <div className="px-3 py-2.5 flex items-center justify-between">
+                <span className="text-[10px] text-slate-400 font-medium">Department</span>
+                {(() => {
+                  const deptName = ticket.department_name || ticket.department;
+                  if (!deptName) return <span className="text-xs text-slate-400">—</span>;
+                  const meta = DEPT_META[deptName.toLowerCase()];
+                  if (meta) return <DeptBadge dept={deptName} />;
+                  return <span className="text-xs font-medium text-slate-700 capitalize">{deptName.replace(/_/g, ' ')}</span>;
+                })()}
+              </div>
+              {ticket.category && (
+                <div className="px-3 py-2.5 flex items-center justify-between">
+                  <span className="text-[10px] text-slate-400 font-medium">Category</span>
+                  <span className="text-xs font-medium text-slate-700 capitalize">{ticket.category.replace(/_/g, ' ')}</span>
+                </div>
+              )}
+              <div className="px-3 py-2.5 flex items-center justify-between">
+                <span className="text-[10px] text-slate-400 font-medium">Messages</span>
+                <span className="text-xs font-medium text-slate-700">{ticket.message_count || messages?.length || 0}</span>
+              </div>
+              <div className="px-3 py-2.5 flex items-center justify-between">
+                <span className="text-[10px] text-slate-400 font-medium">Created</span>
+                <span className="text-xs text-slate-600">{formatDate(ticket.created_at, true)}</span>
+              </div>
+              <div className="px-3 py-2.5 flex items-center justify-between">
+                <span className="text-[10px] text-slate-400 font-medium">Updated</span>
+                <span className="text-xs text-slate-600">{formatDate(ticket.updated_at, true)}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Participants Card */}
+          {participants.length > 0 && (
+            <div className="border border-slate-200 rounded-xl overflow-hidden">
+              <div className="px-3 py-2 bg-slate-50 border-b border-slate-100">
+                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Participants</p>
+              </div>
+              <div className="p-3 space-y-2">
+                {participants.map((p, i) => (
+                  <div key={i} className="flex items-center gap-2.5">
+                    <Avatar name={p.name} size="sm" />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-medium text-slate-800 truncate">{p.name}</p>
+                      <p className="text-[10px] text-slate-400">{p.role}</p>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           )}
-          <div className="px-5 py-3.5">
-            <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Ticket ID</p>
-            <code className="text-xs font-mono text-slate-500 bg-slate-100 px-2 py-1 rounded">#{ticket.ticket_number || ticket.id}</code>
-          </div>
+
+          {/* Actions Card */}
+          {isActive && (
+            <div className="border border-slate-200 rounded-xl overflow-hidden">
+              <div className="px-3 py-2 bg-slate-50 border-b border-slate-100">
+                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Actions</p>
+              </div>
+              <div className="p-3 space-y-2">
+                {ticket.status !== 'resolved' && (
+                  <button onClick={() => handleStatusChange('resolved')} disabled={updatingStatus}
+                    className="w-full py-2 rounded-lg text-xs font-bold bg-violet-600 text-white hover:bg-violet-700 transition-colors">
+                    Mark as Resolved
+                  </button>
+                )}
+                {ticket.status !== 'closed' && (
+                  <button onClick={() => handleStatusChange('closed')} disabled={updatingStatus}
+                    className="w-full py-2 rounded-lg text-xs font-bold border border-slate-300 text-slate-600 hover:bg-slate-50 transition-colors">
+                    Close Ticket
+                  </button>
+                )}
+                {['resolved', 'closed'].includes(ticket.status) && (
+                  <button onClick={() => handleStatusChange('open')} disabled={updatingStatus}
+                    className="w-full py-2 rounded-lg text-xs font-bold border border-blue-300 text-blue-600 hover:bg-blue-50 transition-colors">
+                    Reopen Ticket
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -833,7 +959,7 @@ export default function CommunicationCenter() {
 
       {/* Right Panel — Details (desktop: always visible when selected, mobile: toggle) */}
       <div className={`${showDetails ? 'flex' : 'hidden'} lg:flex`}>
-        <DetailsPanel ticket={selectedTicket} onBack={() => setShowDetails(false)} />
+        <DetailsPanel ticket={selectedTicket} messages={messages} onRefresh={fetchTickets} onBack={() => setShowDetails(false)} />
       </div>
 
       {/* New Conversation Modal */}
