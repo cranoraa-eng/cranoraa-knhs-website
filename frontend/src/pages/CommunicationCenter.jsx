@@ -302,6 +302,23 @@ function DetailsPanel({ ticket, onBack }) {
   );
 }
 
+const DEPT_TO_CATEGORY = {
+  registrar: 'enrollment',
+  advisory: 'attendance',
+  faculty: 'academic',
+  admin: 'other',
+  guidance: 'guidance',
+  it: 'it_support',
+  library: 'other',
+  finance: 'finance',
+};
+
+const PRIORITY_OPTIONS = [
+  { value: 'normal', label: 'Normal', color: 'border-slate-300 text-slate-600', activeColor: 'bg-slate-700 text-white border-slate-700' },
+  { value: 'high', label: 'High', color: 'border-amber-300 text-amber-600', activeColor: 'bg-amber-500 text-white border-amber-500' },
+  { value: 'urgent', label: 'Urgent', color: 'border-red-300 text-red-600', activeColor: 'bg-red-500 text-white border-red-500' },
+];
+
 function NewConversationModal({ open, onClose }) {
   const [departments, setDepartments] = useState([]);
   const [deptLoading, setDeptLoading] = useState(true);
@@ -310,6 +327,7 @@ function NewConversationModal({ open, onClose }) {
   const [selectedStaff, setSelectedStaff] = useState('');
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
+  const [priority, setPriority] = useState('normal');
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
@@ -351,18 +369,18 @@ function NewConversationModal({ open, onClose }) {
       }
       const res = await api.post('/tickets/', {
         subject: subject.trim(),
-        category: 'other',
-        priority: 'normal',
+        category: DEPT_TO_CATEGORY[selectedDept] || 'other',
+        priority,
         assigned_to: parseInt(selectedStaff),
         department: selectedDept,
       });
       await api.post(`/tickets/${res.data.id}/send-message/`, {
         content: message.trim(),
       });
-      toast.success('Support request created successfully');
+      toast.success('Support request submitted');
       onClose(true);
     } catch (err) {
-      toast.error(err.response?.data?.detail || err.response?.data?.error || err.message || 'Failed to create support request');
+      toast.error(err.response?.data?.detail || err.response?.data?.error || err.message || 'Failed to submit request');
     } finally {
       setSubmitting(false);
     }
@@ -374,86 +392,151 @@ function NewConversationModal({ open, onClose }) {
       setSelectedStaff('');
       setSubject('');
       setMessage('');
+      setPriority('normal');
     }
   }, [open]);
 
   if (!open) return null;
 
+  const canSubmit = subject.trim() && message.trim() && selectedStaff && !submitting;
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => onClose(false)} />
-      <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-hidden animate-[fadeIn_0.2s_ease-out]">
+      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden animate-[fadeIn_0.2s_ease-out]">
+        {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200">
           <div>
             <h2 className="text-base font-bold text-slate-900">New Support Request</h2>
-            <p className="text-xs text-slate-500 mt-0.5">Submit a request for assistance</p>
+            <p className="text-xs text-slate-500 mt-0.5">Choose a department and describe your concern</p>
           </div>
           <button onClick={() => onClose(false)} className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">
             <XIcon size={18} />
           </button>
         </div>
-        <div className="px-6 py-4 overflow-y-auto max-h-[calc(90vh-130px)] space-y-4">
+
+        {/* Body */}
+        <div className="px-6 py-5 overflow-y-auto max-h-[calc(90vh-130px)] space-y-5">
           {deptLoading ? (
-            <div className="flex items-center justify-center py-8">
+            <div className="flex items-center justify-center py-12">
               <div className="w-5 h-5 border-2 border-slate-200 border-t-violet-600 rounded-full animate-spin" />
             </div>
           ) : (
             <>
+              {/* Step 1: Department */}
               <div>
-                <label className="block text-xs font-semibold text-slate-600 mb-1.5">Department</label>
-                <select value={selectedDept} onChange={e => setSelectedDept(e.target.value)}
-                  className="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-lg text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-colors">
-                  <option value="">Select a department</option>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                  1. Department
+                </label>
+                <div className="grid grid-cols-3 gap-2">
                   {departments.map(d => (
-                    <option key={d.id} value={d.id}>{d.name}</option>
+                    <button key={d.id} onClick={() => setSelectedDept(d.id)}
+                      className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 transition-all text-center ${
+                        selectedDept === d.id
+                          ? 'border-violet-500 bg-violet-50 shadow-sm'
+                          : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50'
+                      }`}>
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                        selectedDept === d.id ? 'bg-violet-600 text-white' : 'bg-slate-100 text-slate-500'
+                      }`}>
+                        {getDeptIcon(d.id, 16)}
+                      </div>
+                      <span className={`text-[11px] font-semibold leading-tight ${
+                        selectedDept === d.id ? 'text-violet-700' : 'text-slate-600'
+                      }`}>{d.name}</span>
+                      <span className="text-[9px] text-slate-400">{d.members?.length || 0} staff</span>
+                    </button>
                   ))}
-                </select>
+                </div>
               </div>
+
+              {/* Step 2: Staff Member */}
+              {selectedDept && (
+                <div className="animate-[fadeIn_0.15s_ease-out]">
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                    2. Assign To
+                  </label>
+                  <div className="grid grid-cols-2 gap-2 max-h-[200px] overflow-y-auto pr-1">
+                    {staffList.map(m => (
+                      <button key={m.id} onClick={() => setSelectedStaff(String(m.id))}
+                        className={`flex items-center gap-3 p-3 rounded-xl border-2 transition-all text-left ${
+                          selectedStaff === String(m.id)
+                            ? 'border-violet-500 bg-violet-50 shadow-sm'
+                            : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50'
+                        }`}>
+                        <div className="relative flex-shrink-0">
+                          <Avatar name={m.name} size="sm" />
+                          <span className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white ${
+                            m.is_online ? 'bg-emerald-400' : 'bg-slate-300'
+                          }`} />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className={`text-xs font-semibold truncate ${
+                            selectedStaff === String(m.id) ? 'text-violet-700' : 'text-slate-800'
+                          }`}>{m.name}</p>
+                          <p className="text-[10px] text-slate-400 truncate">{m.title || m.staff_title || 'Staff'}</p>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Step 3: Priority */}
               <div>
-                <label className="block text-xs font-semibold text-slate-600 mb-1.5">Staff Member</label>
-                <select value={selectedStaff} onChange={e => setSelectedStaff(e.target.value)}
-                  className="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-lg text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-colors"
-                  disabled={!selectedDept}>
-                  <option value="">Select staff member</option>
-                  {staffList.map(m => (
-                    <option key={m.id} value={m.id}>{m.name}</option>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                  3. Priority
+                </label>
+                <div className="flex gap-2">
+                  {PRIORITY_OPTIONS.map(p => (
+                    <button key={p.value} onClick={() => setPriority(p.value)}
+                      className={`flex-1 py-2 px-3 rounded-xl border-2 text-xs font-bold transition-all ${
+                        priority === p.value ? p.activeColor : p.color
+                      }`}>
+                      {p.label}
+                    </button>
                   ))}
-                </select>
+                </div>
               </div>
+
+              {/* Step 4: Details */}
               <div>
-                <label className="block text-xs font-semibold text-slate-600 mb-1.5">Subject <span className="text-red-400">*</span></label>
-                <input type="text" value={subject} onChange={e => setSubject(e.target.value)}
-                  placeholder="Brief title of your request"
-                  className="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-lg text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-colors" />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-slate-600 mb-1.5">Message <span className="text-red-400">*</span></label>
-                <textarea value={message} onChange={e => setMessage(e.target.value)} rows={4}
-                  placeholder="Describe your concern in detail..."
-                  className="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-lg text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-colors resize-none" />
-              </div>
-              <div className="bg-slate-50 rounded-lg px-3 py-2">
-                <p className="text-[10px] text-slate-400 flex items-center gap-1">
-                  <PaperclipIcon size={12} />
-                  Attachments can be added once the conversation is created
-                </p>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                  4. Details
+                </label>
+                <div className="space-y-3">
+                  <input type="text" value={subject} onChange={e => setSubject(e.target.value)}
+                    placeholder="Subject — brief title for your request"
+                    className="w-full px-4 py-3 bg-white border border-slate-300 rounded-xl text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-colors" />
+                  <textarea value={message} onChange={e => setMessage(e.target.value)} rows={4}
+                    placeholder="Describe your concern in detail..."
+                    className="w-full px-4 py-3 bg-white border border-slate-300 rounded-xl text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-colors resize-none" />
+                </div>
               </div>
             </>
           )}
         </div>
-        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-200 bg-slate-50">
-          <button onClick={() => onClose(false)}
-            className="px-4 py-2 text-sm font-semibold text-slate-600 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors">
-            Cancel
-          </button>
-          <button onClick={handleSubmit} disabled={submitting || !subject.trim() || !message.trim()}
-            className="px-5 py-2 text-sm font-bold text-white bg-violet-600 rounded-lg hover:bg-violet-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
-            {submitting ? (
-              <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Submitting...</>
-            ) : (
-              <><SendIcon size={14} /> Submit Request</>
-            )}
-          </button>
+
+        {/* Footer */}
+        <div className="flex items-center justify-between px-6 py-4 border-t border-slate-200 bg-slate-50">
+          <div className="text-[10px] text-slate-400">
+            {selectedDept && <span>Dept: <b>{departments.find(d => d.id === selectedDept)?.name}</b></span>}
+            {selectedStaff && <span className="ml-2">| To: <b>{staffList.find(m => String(m.id) === selectedStaff)?.name}</b></span>}
+          </div>
+          <div className="flex items-center gap-3">
+            <button onClick={() => onClose(false)}
+              className="px-4 py-2 text-sm font-semibold text-slate-600 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors">
+              Cancel
+            </button>
+            <button onClick={handleSubmit} disabled={!canSubmit}
+              className="px-5 py-2 text-sm font-bold text-white bg-violet-600 rounded-lg hover:bg-violet-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+              {submitting ? (
+                <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Submitting...</>
+              ) : (
+                <><SendIcon size={14} /> Submit Request</>
+              )}
+            </button>
+          </div>
         </div>
       </div>
     </div>
