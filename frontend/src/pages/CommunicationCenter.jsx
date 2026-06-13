@@ -422,9 +422,9 @@ function NewConversationModal({ open, onClose }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => onClose(false)} />
-      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden animate-[fadeIn_0.2s_ease-out]">
+      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden animate-[fadeIn_0.2s_ease-out] mx-4">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200">
+        <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-slate-200">
           <div>
             <h2 className="text-base font-bold text-slate-900">New Support Request</h2>
             <p className="text-xs text-slate-500 mt-0.5">Choose a department and describe your concern</p>
@@ -435,7 +435,7 @@ function NewConversationModal({ open, onClose }) {
         </div>
 
         {/* Body */}
-        <div className="px-6 py-5 overflow-y-auto max-h-[calc(90vh-130px)] space-y-5">
+        <div className="px-4 sm:px-6 py-5 overflow-y-auto max-h-[calc(90vh-130px)] space-y-5">
           {deptLoading ? (
             <div className="flex items-center justify-center py-12">
               <div className="w-5 h-5 border-2 border-slate-200 border-t-violet-600 rounded-full animate-spin" />
@@ -447,7 +447,7 @@ function NewConversationModal({ open, onClose }) {
                 <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
                   1. Department
                 </label>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                   {departments.map(d => (
                     <button key={d.id} onClick={() => setSelectedDept(d.id)}
                       className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 transition-all text-center ${
@@ -475,7 +475,7 @@ function NewConversationModal({ open, onClose }) {
                   <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
                     2. Assign To
                   </label>
-                  <div className="grid grid-cols-2 gap-2 max-h-[200px] overflow-y-auto pr-1">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[200px] overflow-y-auto pr-1">
                     {staffList.map(m => (
                       <button key={m.id} onClick={() => setSelectedStaff(String(m.id))}
                         className={`flex items-center gap-3 p-3 rounded-xl border-2 transition-all text-left ${
@@ -537,7 +537,7 @@ function NewConversationModal({ open, onClose }) {
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between px-6 py-4 border-t border-slate-200 bg-slate-50">
+        <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-t border-slate-200 bg-slate-50">
           <div className="text-[10px] text-slate-400">
             {selectedDept && <span>Dept: <b>{departments.find(d => d.id === selectedDept)?.name}</b></span>}
             {selectedStaff && <span className="ml-2">| To: <b>{staffList.find(m => String(m.id) === selectedStaff)?.name}</b></span>}
@@ -574,6 +574,7 @@ export default function CommunicationCenter() {
   const [showNewModal, setShowNewModal] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
   const [text, setText] = useState('');
+  const [mobileView, setMobileView] = useState('list');
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
 
@@ -641,6 +642,15 @@ export default function CommunicationCenter() {
     if (selectedTicket?.id) inputRef.current?.focus();
   }, [selectedTicket?.id]);
 
+  const handleSelectTicket = (id) => {
+    setSelectedId(id);
+    setMobileView('thread');
+  };
+
+  const handleBackToList = () => {
+    setMobileView('list');
+  };
+
   const filteredTickets = useMemo(() => {
     if (activeFilter === 'unread') {
       return tickets.filter(t => Number(t.unread_count) > 0);
@@ -698,18 +708,24 @@ export default function CommunicationCenter() {
     setShowNewModal(false);
     if (created) {
       fetchTickets();
-      if (ticketId) setSelectedId(ticketId);
+      if (ticketId) {
+        setSelectedId(ticketId);
+        setMobileView('thread');
+      }
     }
   };
 
   const unreadCount = tickets.filter(t => Number(t.unread_count) > 0).length;
 
   return (
-    <div className="h-[calc(100vh-100px)] flex bg-slate-100">
+    <div className="h-[calc(100vh-100px)] flex bg-slate-100 overflow-hidden">
       {/* Left Panel — Ticket List */}
-      <div className="w-[340px] min-w-0 bg-white border-r border-slate-200 flex flex-col h-full">
+      <div className={`
+        w-full lg:w-[340px] min-w-0 bg-white lg:border-r border-slate-200 flex flex-col h-full
+        ${mobileView === 'list' ? 'flex' : 'hidden lg:flex'}
+      `}>
         {/* Header */}
-        <div className="px-5 py-4 border-b border-slate-100">
+        <div className="px-4 sm:px-5 py-4 border-b border-slate-100">
           <div className="flex items-center justify-between mb-3">
             <div>
               <h1 className="text-sm font-extrabold text-slate-900 uppercase tracking-tight">Support Center</h1>
@@ -718,7 +734,8 @@ export default function CommunicationCenter() {
             <button onClick={() => setShowNewModal(true)}
               className="flex items-center gap-1.5 px-3 py-2 bg-violet-600 text-white text-xs font-bold rounded-lg hover:bg-violet-700 transition-colors shadow-sm">
               <PlusIcon size={14} />
-              New
+              <span className="hidden sm:inline">New</span>
+              <span className="sm:hidden">+</span>
             </button>
           </div>
           <div className="relative">
@@ -730,8 +747,8 @@ export default function CommunicationCenter() {
         </div>
 
         {/* Filter Segmented Control */}
-        <div className="px-4 py-3 border-b border-slate-100">
-          <div className="flex bg-slate-100 rounded-lg p-0.5 gap-0">
+        <div className="px-3 sm:px-4 py-3 border-b border-slate-100">
+          <div className="flex bg-slate-100 rounded-lg p-0.5 gap-0 overflow-x-auto">
             {[
               { id: 'all', label: 'All' },
               { id: 'unread', label: `Unread${unreadCount > 0 ? ` (${unreadCount})` : ''}` },
@@ -741,7 +758,7 @@ export default function CommunicationCenter() {
               { id: 'closed', label: 'Closed' },
             ].map(f => (
               <button key={f.id} onClick={() => setActiveFilter(f.id)}
-                className={`flex-1 px-1 py-1.5 text-[10px] font-bold rounded-md whitespace-nowrap transition-all ${
+                className={`flex-1 min-w-0 px-1.5 sm:px-1 py-1.5 text-[10px] font-bold rounded-md whitespace-nowrap transition-all ${
                   activeFilter === f.id
                     ? 'bg-white text-violet-700 shadow-sm'
                     : 'text-slate-500 hover:text-slate-700'
@@ -767,7 +784,7 @@ export default function CommunicationCenter() {
           ) : (
             <div className="divide-y divide-slate-50">
               {filteredTickets.map(ticket => (
-                <TicketCard key={ticket.id} ticket={ticket} selected={selectedId === ticket.id} onSelect={setSelectedId} />
+                <TicketCard key={ticket.id} ticket={ticket} selected={selectedId === ticket.id} onSelect={handleSelectTicket} />
               ))}
             </div>
           )}
@@ -775,18 +792,28 @@ export default function CommunicationCenter() {
       </div>
 
       {/* Center Panel — Message Thread */}
-      <div className="flex-1 flex flex-col min-w-0 bg-slate-50 h-full">
+      <div className={`
+        flex-1 flex flex-col min-w-0 bg-slate-50 h-full
+        ${mobileView === 'thread' ? 'flex' : 'hidden lg:flex'}
+      `}>
         {selectedTicket ? (
           <>
             {/* Thread Header */}
-            <div className="flex items-center justify-between px-5 py-3 bg-white border-b border-slate-200 min-h-[57px]">
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="flex items-center gap-2">
+            <div className="flex items-center justify-between px-3 sm:px-5 py-3 bg-white border-b border-slate-200 min-h-[57px]">
+              <div className="flex items-center gap-2 min-w-0 flex-1">
+                {/* Mobile back button */}
+                <button onClick={handleBackToList}
+                  className="p-1.5 -ml-1 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors lg:hidden flex-shrink-0"
+                  aria-label="Back to list">
+                  <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                </button>
+                <div className="flex items-center gap-2 min-w-0">
                   <span className="text-sm font-semibold text-slate-900 truncate">{selectedTicket.subject || 'No Subject'}</span>
-                  <StatusBadge status={selectedTicket.status} />
+                  <span className="hidden sm:inline"><StatusBadge status={selectedTicket.status} /></span>
                 </div>
               </div>
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1 flex-shrink-0">
+                <span className="sm:hidden"><StatusBadge status={selectedTicket.status} /></span>
                 <button onClick={() => setShowDetails(v => !v)}
                   className={`p-2 rounded-lg transition-colors text-xs font-medium ${
                     showDetails ? 'bg-violet-100 text-violet-700' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100'
@@ -800,7 +827,7 @@ export default function CommunicationCenter() {
             </div>
 
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto px-5 py-4">
+            <div className="flex-1 overflow-y-auto px-3 sm:px-5 py-4">
               {messages.length === 0 && (
                 <div className="flex flex-col items-center justify-center h-full text-slate-400">
                   <svg width={32} height={32} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="mb-2 text-slate-300"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
@@ -815,7 +842,7 @@ export default function CommunicationCenter() {
             </div>
 
             {/* Input */}
-            <div className="bg-white border-t border-slate-200 px-4 py-3">
+            <div className="bg-white border-t border-slate-200 px-3 sm:px-4 py-3">
               <div className="flex items-end gap-2">
                 <div className="flex-1 relative">
                   <textarea ref={inputRef} value={text} onChange={e => setText(e.target.value)}

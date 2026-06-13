@@ -326,20 +326,20 @@ const exportToPDF = async (ref, filename, title, subtitle, meta = {}) => {
 // ── Interpretation Helpers ────────────────────────────────────────────────────
 
 const InterpretationPanel = ({ items }) => (
-  <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 mt-4 space-y-2">
-    <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3 flex items-center gap-2">
+  <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 sm:p-4 mt-3 sm:mt-4 space-y-2">
+    <p className="text-[8px] sm:text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2 sm:mb-3 flex items-center gap-2">
       <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
       </svg>
       Interpretation
     </p>
-    <div className="space-y-2">
+    <div className="space-y-1.5 sm:space-y-2">
       {items.map((item, i) => (
-        <div key={i} className={`flex items-start gap-2.5 p-2.5 rounded-lg border ${item.type === 'good' ? 'bg-emerald-50 border-emerald-100' : item.type === 'warn' ? 'bg-amber-50 border-amber-100' : item.type === 'bad' ? 'bg-rose-50 border-rose-100' : 'bg-white border-slate-100'}`}>
+        <div key={i} className={`flex items-start gap-2 p-2 sm:p-2.5 rounded-lg border ${item.type === 'good' ? 'bg-emerald-50 border-emerald-100' : item.type === 'warn' ? 'bg-amber-50 border-amber-100' : item.type === 'bad' ? 'bg-rose-50 border-rose-100' : 'bg-white border-slate-100'}`}>
           <span className="text-sm flex-shrink-0 mt-0.5">
             {item.type === 'good' ? '✅' : item.type === 'warn' ? '⚠️' : item.type === 'bad' ? '🔴' : 'ℹ️'}
           </span>
-          <p className="text-[10px] font-bold text-slate-700 leading-relaxed">{item.text}</p>
+          <p className="text-[9px] sm:text-[10px] font-bold text-slate-700 leading-relaxed">{item.text}</p>
         </div>
       ))}
     </div>
@@ -449,16 +449,17 @@ const ExportButton = ({ onClick, loading }) => (
   <button
     onClick={onClick}
     disabled={loading}
-    className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-xl text-[10px] font-black text-slate-600 uppercase tracking-widest hover:bg-slate-50 hover:border-violet-300 hover:text-violet-700 active:scale-95 transition-all shadow-sm disabled:opacity-50"
+    className="inline-flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 bg-white border border-slate-200 rounded-xl text-[9px] sm:text-[10px] font-black text-slate-600 uppercase tracking-widest hover:bg-slate-50 hover:border-violet-300 hover:text-violet-700 active:scale-95 transition-all shadow-sm disabled:opacity-50"
   >
     {loading ? (
-      <div className="w-3.5 h-3.5 border-2 border-slate-300 border-t-violet-600 rounded-full animate-spin" />
+      <div className="w-3 h-3.5 sm:w-3.5 sm:h-3.5 border-2 border-slate-300 border-t-violet-600 rounded-full animate-spin" />
     ) : (
-      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg className="w-3 h-3.5 sm:w-3.5 sm:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
       </svg>
     )}
-    Export PDF
+    <span className="hidden sm:inline">Export PDF</span>
+    <span className="sm:hidden">Export</span>
   </button>
 );
 
@@ -477,10 +478,10 @@ const renderHorizontalBarLabel = ({ x, y, width, height, value }) => (
 );
 
 const EmptyState = ({ message, submessage }) => (
-  <div className="bg-white border border-slate-200 rounded-2xl p-24 text-center shadow-sm w-full">
-    <svg className="w-16 h-16 mx-auto mb-6 text-slate-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
-    <p className="text-[12px] font-black text-slate-400 uppercase tracking-[0.3em]">{message}</p>
-    {submessage && <p className="text-[10px] font-bold text-slate-400 mt-2 uppercase tracking-widest opacity-60">{submessage}</p>}
+  <div className="bg-white border border-slate-200 rounded-2xl p-8 sm:p-12 md:p-24 text-center shadow-sm w-full">
+    <svg className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-4 sm:mb-6 text-slate-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+    <p className="text-[10px] sm:text-[12px] font-black text-slate-400 uppercase tracking-[0.3em]">{message}</p>
+    {submessage && <p className="text-[9px] sm:text-[10px] font-bold text-slate-400 mt-2 uppercase tracking-widest opacity-60">{submessage}</p>}
   </div>
 );
 
@@ -491,17 +492,17 @@ const StatChip = ({ label, value, color }) => {
     indigo: 'bg-indigo-500/10 text-indigo-500 border-indigo-500/20',
   };
   return (
-    <div className={`px-3 py-1.5 rounded-lg border ${colors[color]} flex flex-col items-center min-w-[80px]`}>
-      <span className="text-[8px] font-black uppercase tracking-widest leading-none mb-1 opacity-70">{label}</span>
-      <span className="text-sm font-black leading-none">{value}</span>
+    <div className={`px-3 py-1.5 rounded-lg border ${colors[color]} flex flex-col items-center min-w-[72px] sm:min-w-[80px]`}>
+      <span className="text-[7px] sm:text-[8px] font-black uppercase tracking-widest leading-none mb-1 opacity-70">{label}</span>
+      <span className="text-xs sm:text-sm font-black leading-none">{value}</span>
     </div>
   );
 };
 
 const MiniCard = ({ title, value, icon, alert }) => (
-  <div className={`bg-white border ${alert ? 'border-rose-200 bg-rose-50/30' : 'border-slate-200'} rounded-xl p-3 sm:p-5 shadow-sm flex items-center gap-3 sm:gap-5 min-h-[90px]`}>
-    <div className={`p-2 sm:p-3 rounded-lg ${alert ? 'bg-rose-100 text-rose-600' : 'bg-slate-100 text-slate-600'} flex items-center justify-center`}><svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d={icon} /></svg></div>
-    <div className="flex flex-col justify-center"><h4 className="text-[8px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1 sm:mb-2">{title}</h4><p className={`text-xl sm:text-2xl font-black tracking-tight leading-none ${alert ? 'text-rose-600' : 'text-slate-900'}`}>{value || 0}</p></div>
+  <div className={`bg-white border ${alert ? 'border-rose-200 bg-rose-50/30' : 'border-slate-200'} rounded-xl p-3 sm:p-5 shadow-sm flex items-center gap-3 sm:gap-5 min-h-[80px] sm:min-h-[90px]`}>
+    <div className={`p-2 sm:p-3 rounded-lg ${alert ? 'bg-rose-100 text-rose-600' : 'bg-slate-100 text-slate-600'} flex items-center justify-center flex-shrink-0`}><svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d={icon} /></svg></div>
+    <div className="flex flex-col justify-center min-w-0"><h4 className="text-[7px] sm:text-[8px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1 sm:mb-2 truncate">{title}</h4><p className={`text-lg sm:text-xl md:text-2xl font-black tracking-tight leading-none ${alert ? 'text-rose-600' : 'text-slate-900'}`}>{value || 0}</p></div>
   </div>
 );
 
@@ -554,7 +555,7 @@ const AttendanceTooltip = (props) => {
 };
 
 const AttendanceTrendsSection = ({ data }) => (
-  <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm h-[400px] w-full flex flex-col">
+  <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm h-[300px] sm:h-[350px] md:h-[400px] w-full flex flex-col min-h-0">
     <div className="flex items-center justify-between mb-6">
       <div>
         <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Presence Trends</h3>
@@ -604,7 +605,7 @@ const AttendanceStatusPieSection = ({ data }) => {
   const hasData = data && data.some(d => d.value > 0);
   
   return (
-    <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm h-[400px] w-full flex flex-col">
+    <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm h-[300px] sm:h-[350px] md:h-[400px] w-full flex flex-col min-h-0">
       <div className="mb-6">
         <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Presence Distribution</h3>
         <p className="text-sm font-black text-slate-900 uppercase tracking-tight">Overall Status Summary</p>
@@ -652,7 +653,7 @@ const AttendanceStatusPieSection = ({ data }) => {
 };
 
 const AttendanceByLevelBarSection = ({ data }) => (
-  <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm h-[400px] w-full flex flex-col">
+  <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm h-[300px] sm:h-[350px] md:h-[400px] w-full flex flex-col min-h-0">
     <div className="mb-6">
       <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Level Engagement</h3>
       <p className="text-sm font-black text-slate-900 uppercase tracking-tight">Attendance Rate by Grade Level</p>
@@ -678,7 +679,7 @@ const AttendanceByLevelBarSection = ({ data }) => (
 );
 
 const AttendanceRankingsSection = ({ rankings, period }) => (
-  <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm overflow-hidden flex flex-col h-[400px] w-full">
+  <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm overflow-hidden flex flex-col h-[300px] sm:h-[350px] md:h-[400px] w-full min-h-0">
     <div className="mb-6">
       <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Rankings — {period}</h3>
       <p className="text-sm font-black text-slate-900 uppercase tracking-tight">Section Performance Index</p>
@@ -718,7 +719,7 @@ const AttendanceRankingsSection = ({ rankings, period }) => (
 );
 
 const SubjectPerformanceSection = ({ data }) => (
-  <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm min-h-[350px] w-full">
+  <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm min-h-[280px] sm:min-h-[320px] md:min-h-[350px] w-full">
     <div className="flex items-center justify-between mb-6">
       <div>
         <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Academic Benchmarking</h3>
@@ -728,7 +729,7 @@ const SubjectPerformanceSection = ({ data }) => (
         <div className="w-1.5 h-1.5 rounded-full bg-indigo-500" /><div className="w-1.5 h-1.5 rounded-full bg-indigo-300" /><div className="w-1.5 h-1.5 rounded-full bg-indigo-100" />
       </div>
     </div>
-    <div className="h-72">
+    <div className="h-[200px] sm:h-[240px] md:h-72">
       {!data || data.length === 0 ? (
         <div className="h-full flex items-center justify-center text-[10px] font-black text-slate-300 uppercase tracking-widest italic">No subject metrics tracked</div>
       ) : (
@@ -756,12 +757,12 @@ const SubjectPerformanceSection = ({ data }) => (
 );
 
 const TrafficIntelligenceSection = ({ data }) => (
-  <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm min-h-[350px] w-full">
+  <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm min-h-[280px] sm:min-h-[320px] md:min-h-[350px] w-full">
     <div className="mb-6">
       <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Traffic Intelligence</h3>
       <p className="text-sm font-black text-slate-900 uppercase tracking-tight">24H Active Engagement</p>
     </div>
-    <div className="h-72">
+    <div className="h-[200px] sm:h-[240px] md:h-72">
       {!data || data.length === 0 ? (
         <div className="h-full flex items-center justify-center text-[10px] font-black text-slate-300 uppercase tracking-widest italic">No traffic logs detected</div>
       ) : (
@@ -788,12 +789,12 @@ const GradeDistributionPieSection = ({ data, total, label }) => {
   const totalSum = data.reduce((sum, d) => sum + d.value, 0);
   
   return (
-    <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm min-h-[350px] w-full">
+    <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm min-h-[280px] sm:min-h-[320px] md:min-h-[350px] w-full">
       <div className="mb-6">
         <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Achievement Spread</h3>
         <p className="text-sm font-black text-slate-900 uppercase tracking-tight">Performance Tier Distribution</p>
       </div>
-      <div className="h-64 flex items-center gap-4">
+      <div className="h-[180px] sm:h-[200px] md:h-64 flex items-center gap-4">
         {/* Left Side: Chart */}
         <div className="w-1/2 h-full relative">
           <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
@@ -836,7 +837,7 @@ const GradeDistributionPieSection = ({ data, total, label }) => {
 };
 
 const GradeDistributionBarSection = ({ data, filterLevel }) => (
-  <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm min-h-[350px] w-full">
+  <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm min-h-[280px] sm:min-h-[320px] md:min-h-[350px] w-full">
     <div className="flex items-center justify-between mb-6">
       <div>
         <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Cross-Group Comparison</h3>
@@ -844,7 +845,7 @@ const GradeDistributionBarSection = ({ data, filterLevel }) => (
       </div>
       <div className="flex gap-1"><div className="w-1.5 h-1.5 rounded-full bg-indigo-500" /><div className="w-1.5 h-1.5 rounded-full bg-indigo-300" /></div>
     </div>
-    <div className="h-72">
+    <div className="h-[200px] sm:h-[240px] md:h-72">
       <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
         <BarChart data={data} margin={{ bottom: 30 }}>
           <CartesianGrid strokeDasharray="2 2" vertical={false} stroke="#f1f5f9" />
@@ -861,17 +862,17 @@ const GradeDistributionBarSection = ({ data, filterLevel }) => (
 );
 
 const GradeRankingSection = ({ data, filterSubject, meta, timeframe }) => (
-  <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm min-h-[350px] w-full">
-    <div className="flex items-center justify-between mb-8">
+  <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm min-h-[280px] sm:min-h-[320px] md:min-h-[350px] w-full">
+    <div className="flex items-center justify-between mb-6 sm:mb-8">
       <div>
         <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Competitive Ranking — {timeframe === 'all' ? 'Annual' : timeframe === 'today' ? 'Today' : 'Weekly'}</h3>
         <p className="text-sm font-black text-slate-900 uppercase tracking-tight">
           {filterSubject === 'all' ? 'Top 10 Performing Subjects' : `Top 10 Classrooms — ${meta.subjects.find(s => String(s.id) === String(filterSubject))?.name || ''}`}
         </p>
       </div>
-      <div className="px-2 py-1 bg-slate-900 rounded text-[8px] font-black text-white uppercase tracking-[0.2em]">Efficiency Leaderboard</div>
+      <div className="px-2 py-1 bg-slate-900 rounded text-[7px] sm:text-[8px] font-black text-white uppercase tracking-[0.2em]">Efficiency Leaderboard</div>
     </div>
-    <div className="h-96">
+    <div className="h-[240px] sm:h-[280px] md:h-[320px] lg:h-96">
       <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
         <BarChart data={data} layout="vertical" margin={{ left: 40, right: 60 }}>
           <CartesianGrid strokeDasharray="2 2" horizontal={true} vertical={false} stroke="#f1f5f9" />
@@ -888,9 +889,9 @@ const GradeRankingSection = ({ data, filterSubject, meta, timeframe }) => (
 );
 
 const FilterSelect = ({ label, value, onChange, options }) => (
-  <div className="relative min-w-[140px] FilterSelect">
-    <label className="absolute -top-2 left-2 px-1 bg-slate-900 text-[8px] font-black text-slate-500 uppercase tracking-widest z-10">{label}</label>
-    <select value={value} onChange={onChange} className="w-full h-[38px] px-3 bg-slate-800 border border-slate-700 rounded-lg text-[10px] font-black text-white uppercase tracking-tight focus:border-indigo-500 outline-none transition-all appearance-none pr-8 cursor-pointer">
+  <div className="relative min-w-[120px] sm:min-w-[140px] FilterSelect">
+    <label className="absolute -top-2 left-2 px-1 bg-slate-900 text-[7px] sm:text-[8px] font-black text-slate-500 uppercase tracking-widest z-10">{label}</label>
+    <select value={value} onChange={onChange} className="w-full h-[36px] sm:h-[38px] px-3 bg-slate-800 border border-slate-700 rounded-lg text-[9px] sm:text-[10px] font-black text-white uppercase tracking-tight focus:border-indigo-500 outline-none transition-all appearance-none pr-8 cursor-pointer">
       {options.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
     </select>
     <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500"><svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 9l-7 7-7-7" /></svg></div>
@@ -907,9 +908,9 @@ const SubjectFilterSelect = ({ value, onChange, filterLevel, gradeData }) => {
   }, {});
 
   return (
-    <div className="relative min-w-[140px] FilterSelect">
-      <label className="absolute -top-2 left-2 px-1 bg-slate-900 text-[8px] font-black text-slate-500 uppercase tracking-widest z-10">Subject Focus</label>
-      <select value={value} onChange={onChange} className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-[10px] font-black text-white uppercase tracking-tight focus:border-indigo-500 outline-none transition-all appearance-none pr-8 cursor-pointer disabled:opacity-50" disabled={filterLevel === 'all'}>
+    <div className="relative min-w-[120px] sm:min-w-[140px] FilterSelect">
+      <label className="absolute -top-2 left-2 px-1 bg-slate-900 text-[7px] sm:text-[8px] font-black text-slate-500 uppercase tracking-widest z-10">Subject Focus</label>
+      <select value={value} onChange={onChange} className="w-full h-[36px] sm:h-[38px] px-3 bg-slate-800 border border-slate-700 rounded-lg text-[9px] sm:text-[10px] font-black text-white uppercase tracking-tight focus:border-indigo-500 outline-none transition-all appearance-none pr-8 cursor-pointer disabled:opacity-50" disabled={filterLevel === 'all'}>
         <option value="all">{filterLevel === 'all' ? 'Select Level First' : 'Cumulative (All Subjects)'}</option>
         {filterLevel !== 'all' && Object.keys(subjectsByLevel).filter(level => level === filterLevel).map(level => (
           <optgroup key={level} label={level}>{subjectsByLevel[level].map(s => <option key={s.id} value={s.id}>{s.name}</option>)}</optgroup>
@@ -921,9 +922,9 @@ const SubjectFilterSelect = ({ value, onChange, filterLevel, gradeData }) => {
 };
 
 const YearSelector = ({ academicYear, onYearChange }) => (
-  <div className="relative min-w-[140px] YearSelector">
-    <label className="absolute -top-2 left-2 px-1 bg-slate-900 text-[8px] font-black text-slate-500 uppercase tracking-widest z-10">Academic Year</label>
-    <div className="flex items-center bg-slate-800 border border-slate-700 rounded-lg overflow-hidden h-[38px] group/selector">
+  <div className="relative min-w-[120px] sm:min-w-[140px] YearSelector">
+    <label className="absolute -top-2 left-2 px-1 bg-slate-900 text-[7px] sm:text-[8px] font-black text-slate-500 uppercase tracking-widest z-10">Academic Year</label>
+    <div className="flex items-center bg-slate-800 border border-slate-700 rounded-lg overflow-hidden h-[36px] sm:h-[38px] group/selector">
       <button 
         type="button"
         onClick={() => onYearChange('prev')} 
@@ -931,7 +932,7 @@ const YearSelector = ({ academicYear, onYearChange }) => (
       >
         <svg className="w-3 h-3 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M15 19l-7-7 7-7" /></svg>
       </button>
-      <div className="flex-1 px-3 text-[10px] font-black text-white uppercase tracking-widest text-center select-none tabular-nums">
+      <div className="flex-1 px-3 text-[9px] sm:text-[10px] font-black text-white uppercase tracking-widest text-center select-none tabular-nums">
         {academicYear}
       </div>
       <button 
@@ -1111,36 +1112,37 @@ const Analytics = () => {
   );
 
   return (
-    <div className="page-bottom-safe max-w-[1800px] mx-auto min-h-0 bg-slate-50 px-4 py-4 md:px-6 md:py-6 space-y-5 md:space-y-6 animate-fade-in">
+    <div className="page-bottom-safe max-w-[1800px] mx-auto min-h-0 bg-slate-50 px-3 py-3 sm:px-4 sm:py-4 md:px-6 md:py-6 lg:px-8 space-y-4 sm:space-y-5 md:space-y-6 animate-fade-in">
       {/* ══════════════════════════════════════════════════════════════ */}
       {/* OFFICIAL HEADER */}
       {/* ══════════════════════════════════════════════════════════════ */}
       
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4">
         <div>
-          <div className="flex items-center gap-2 text-xs font-bold text-violet-700 uppercase tracking-wide mb-2">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+          <div className="flex items-center gap-1.5 sm:gap-2 text-[9px] sm:text-xs font-bold text-violet-700 uppercase tracking-wide mb-1.5 sm:mb-2">
+            <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h-2a2 2 0 01-2-2z" />
             </svg>
-            <span>Data Intelligence & Reporting</span>
+            <span className="hidden sm:inline">Data Intelligence & Reporting</span>
+            <span className="sm:hidden">Analytics</span>
           </div>
-          <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight">
             Analytics Dashboard
           </h1>
-          <p className="text-xs text-slate-600 mt-1 font-semibold">
+          <p className="text-[9px] sm:text-xs text-slate-600 mt-1 font-semibold max-w-[90%] sm:max-w-none">
             Comprehensive academic performance and system metrics for SY {academicYear}
           </p>
         </div>
       </div>
 
       {/* Tab Navigation + Export */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap gap-2 bg-white p-1 rounded-md border border-slate-200 shadow-sm">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div className="flex flex-wrap gap-1.5 bg-white p-1 rounded-md border border-slate-200 shadow-sm w-full sm:w-auto">
           {tabs.map(tab => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-md text-[10px] font-black uppercase tracking-widest transition-all ${
+              className={`flex items-center gap-1.5 px-3 py-2 sm:px-4 sm:py-2.5 rounded-md text-[9px] sm:text-[10px] font-black uppercase tracking-widest transition-all ${
                 activeTab === tab.id
                   ? 'bg-violet-600 text-white shadow-sm'
                   : 'text-slate-600 hover:bg-slate-50'
@@ -1166,11 +1168,11 @@ const Analytics = () => {
         <div className="space-y-4 animate-fade-in" ref={systemRef} data-pdf-content="system">
           {!data && loading ? <Spinner /> : (
             <>
-              <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 bg-slate-900 p-8 rounded-2xl border border-slate-800 shadow-2xl">
+              <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 bg-slate-900 p-4 sm:p-6 md:p-8 rounded-2xl border border-slate-800 shadow-2xl">
                 <div>
-                  <h1 className="text-xl md:text-3xl font-black text-slate-50 tracking-tighter uppercase leading-none">System Intelligence</h1>
-                  <p className="text-slate-300 text-[10px] font-bold uppercase tracking-[0.2em] mt-3 flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
+                  <h1 className="text-lg sm:text-xl md:text-3xl font-black text-slate-50 tracking-tighter uppercase leading-none">System Intelligence</h1>
+                  <p className="text-slate-300 text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.2em] mt-2 sm:mt-3 flex items-center gap-2">
+                    <span className="w-2 h-2.5 sm:w-2.5 sm:h-2.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
                     Live Portal Performance Metrics
                   </p>
                 </div>
@@ -1184,7 +1186,7 @@ const Analytics = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
                 <MiniCard title="Total Students" value={data?.dashboard?.total_students} icon="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
                 <MiniCard title="Total Faculty" value={data?.dashboard?.total_teachers} icon="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
                 <MiniCard title="Active Classes" value={data?.dashboard?.total_classes} icon="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
@@ -1194,17 +1196,17 @@ const Analytics = () => {
               {!data ? (
                 <EmptyState message="Failed to load systems engine" submessage="Check server connection and permissions" />
               ) : (
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-                  <div className="lg:col-span-12">
+                <div className="grid grid-cols-1 md:grid-cols-6 lg:grid-cols-12 gap-3 sm:gap-4">
+                  <div className="md:col-span-6 lg:col-span-12">
                     <AttendanceTrendsSection data={data?.attendance?.['daily_trends']} />
                   </div>
-                  <div className="lg:col-span-7">
+                  <div className="md:col-span-6 lg:col-span-7">
                     <SubjectPerformanceSection data={data?.grades?.['subject_stats']} />
                   </div>
-                  <div className="lg:col-span-5">
+                  <div className="md:col-span-6 lg:col-span-5">
                     <TrafficIntelligenceSection data={data?.dashboard?.charts?.active_users_trends} />
                   </div>
-                  <div className="lg:col-span-12">
+                  <div className="md:col-span-6 lg:col-span-12">
                     <InterpretationPanel items={interpretSystemData(data)} />
                   </div>
                 </div>
@@ -1218,15 +1220,15 @@ const Analytics = () => {
         <div className="space-y-4 animate-fade-in" ref={gradesRef} data-pdf-content="grades">
           {gradeLoading && !gradeData ? <Spinner /> : (
             <>
-              <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4 bg-slate-900 py-8 px-6 rounded-2xl border border-slate-800 shadow-2xl">
+               <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4 bg-slate-900 p-4 sm:p-6 md:p-8 rounded-2xl border border-slate-800 shadow-2xl">
                 <div className="flex-1">
-                  <h1 className="text-xl md:text-3xl font-black text-slate-50 tracking-tighter uppercase leading-none">Academic Intelligence</h1>
-                  <p className="text-slate-200 text-[10px] font-bold uppercase tracking-[0.2em] mt-3 flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-indigo-500 animate-pulse shadow-[0_0_10px_rgba(99,102,241,0.5)]" />
+                  <h1 className="text-lg sm:text-xl md:text-3xl font-black text-slate-50 tracking-tighter uppercase leading-none">Academic Intelligence</h1>
+                  <p className="text-slate-200 text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.2em] mt-2 sm:mt-3 flex items-center gap-2">
+                    <span className="w-2 h-2.5 sm:w-2.5 sm:h-2.5 rounded-full bg-indigo-500 animate-pulse shadow-[0_0_10px_rgba(99,102,241,0.5)]" />
                     Performance Distribution Matrix — {academicYear}
                   </p>
                   
-                  <div className="flex flex-wrap gap-3 mt-8">
+                  <div className="flex flex-wrap gap-2 sm:gap-3 mt-4 sm:mt-6 lg:mt-8">
                     <FilterSelect 
                       label="Grade Level" 
                       value={filterLevel} 
@@ -1284,18 +1286,18 @@ const Analytics = () => {
               {!gradeData || gradeData.total_students === 0 ? (
                 <EmptyState message="No Data Mapped" submessage="Adjust filters to synthesize academic performance data" />
               ) : (
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-                  <div className="lg:col-span-4">
+                <div className="grid grid-cols-1 md:grid-cols-6 lg:grid-cols-12 gap-3 sm:gap-4">
+                  <div className="md:col-span-3 lg:col-span-4">
                     <GradeDistributionPieSection
                       data={gradeData.category_counts}
                       total={distributionMode === 'student' ? gradeData.total_students : gradeData.total_entries}
                       label={distributionMode === 'student' ? 'Students' : 'Entries'}
                     />
                   </div>
-                  <div className="lg:col-span-8">
+                  <div className="md:col-span-3 lg:col-span-8">
                     <GradeDistributionBarSection data={gradeData.by_level} filterLevel={filterLevel} />
                   </div>
-                  <div className="lg:col-span-12">
+                  <div className="md:col-span-6 lg:col-span-12">
                     <GradeRankingSection data={gradeData.by_group} filterSubject={filterSubject} meta={gradeData.meta} timeframe={gradeTimeframe} />
                   </div>
                   <div className="lg:col-span-12">
@@ -1312,15 +1314,15 @@ const Analytics = () => {
         <div className="space-y-4 animate-fade-in" ref={attendanceRef} data-pdf-content="attendance">
           {attendanceLoading && !attendanceAnalytics ? <Spinner /> : (
             <>
-              <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 bg-slate-900 p-8 rounded-2xl border border-slate-800 shadow-2xl">
+               <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 bg-slate-900 p-4 sm:p-6 md:p-8 rounded-2xl border border-slate-800 shadow-2xl">
                 <div>
-                  <h1 className="text-xl md:text-3xl font-black text-slate-50 tracking-tighter uppercase leading-none">Attendance Dynamics</h1>
-                  <p className="text-slate-300 text-[10px] font-bold uppercase tracking-[0.2em] mt-3 flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-violet-500 animate-pulse shadow-[0_0_10px_rgba(59,130,246,0.5)]" />
+                  <h1 className="text-lg sm:text-xl md:text-3xl font-black text-slate-50 tracking-tighter uppercase leading-none">Attendance Dynamics</h1>
+                  <p className="text-slate-300 text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.2em] mt-2 sm:mt-3 flex items-center gap-2">
+                    <span className="w-2 h-2.5 sm:w-2.5 sm:h-2.5 rounded-full bg-violet-500 animate-pulse shadow-[0_0_10px_rgba(59,130,246,0.5)]" />
                     Student Presence & Engagement Analytics — {academicYear}
                   </p>
                 </div>
-                <div className="flex flex-wrap gap-3">
+                <div className="flex flex-wrap gap-2 sm:gap-3">
                   <FilterSelect 
                     label="Analysis Period" 
                     value={attendanceTimeframe} 
@@ -1341,20 +1343,20 @@ const Analytics = () => {
                   submessage={attendanceTimeframe === 'all' ? "Start encoding attendance in the Attendance module to see live analytics" : `No records found for the "${attendanceTimeframe.toUpperCase()}" period. Try switching to "All-Time Aggregate"`} 
                 />
               ) : (
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-                  <div className="lg:col-span-8">
+                <div className="grid grid-cols-1 md:grid-cols-6 lg:grid-cols-12 gap-3 sm:gap-4">
+                  <div className="md:col-span-6 lg:col-span-8">
                     <AttendanceTrendsSection data={attendanceAnalytics['daily_trends']} />
                   </div>
-                  <div className="lg:col-span-4">
+                  <div className="md:col-span-6 lg:col-span-4">
                     <AttendanceStatusPieSection data={attendanceAnalytics.pie_data} />
                   </div>
-                  <div className="lg:col-span-4">
+                  <div className="md:col-span-6 lg:col-span-4">
                     <AttendanceRankingsSection rankings={attendanceAnalytics.section_rankings} period={attendanceAnalytics.period} />
                   </div>
-                  <div className="lg:col-span-8">
+                  <div className="md:col-span-6 lg:col-span-8">
                     <AttendanceByLevelBarSection data={attendanceAnalytics.grade_trends} />
                   </div>
-                  <div className="lg:col-span-12">
+                  <div className="md:col-span-6 lg:col-span-12">
                     <InterpretationPanel items={interpretAttendanceData(attendanceAnalytics)} />
                   </div>
                 </div>

@@ -234,18 +234,18 @@ const StudentGradeView = () => {
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, ease: 'easeOut' }}
-      className="page-bottom-safe max-w-[1400px] mx-auto bg-slate-50 px-4 py-4 md:px-6 md:py-6 space-y-5 md:space-y-6"
-    >
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: 'easeOut' }}
+        className="page-bottom-safe max-w-[1400px] mx-auto bg-slate-50 px-4 py-4 sm:px-5 sm:py-5 md:px-6 md:py-6 lg:px-8 lg:py-8 space-y-4 sm:space-y-5 md:space-y-6"
+      >
       {/* ══════════════════════════════════════════════════════════════ */}
       {/* PAGE HEADER WITH SCHOOL IDENTITY */}
       {/* ══════════════════════════════════════════════════════════════ */}
       
       <Card className="border-b-4 border-b-violet-600">
-        <CardBody className="p-4 md:p-6">
+        <CardBody className="p-4 sm:p-5 md:p-6">
           <div className="text-center">
             {/* School Seal */}
             <div className="flex justify-center mb-3">
@@ -255,13 +255,13 @@ const StudentGradeView = () => {
             </div>
 
             {/* School Name */}
-            <h1 className="text-xl md:text-2xl font-extrabold text-slate-900 uppercase tracking-tight">
+            <h1 className="text-lg sm:text-xl md:text-2xl font-extrabold text-slate-900 uppercase tracking-tight">
               Kiwalan National High School
             </h1>
-            <p className="text-xs md:text-sm font-bold text-violet-700 uppercase tracking-wider mt-1">
+            <p className="text-xs sm:text-sm md:text-sm font-bold text-violet-700 uppercase tracking-wider mt-1">
               Official Student Report Card
             </p>
-            <p className="text-xs font-semibold text-slate-600 mt-1">
+            <p className="text-xs sm:text-xs md:text-xs font-semibold text-slate-600 mt-1">
               Excellence in Education, Service to Community
             </p>
           </div>
@@ -274,20 +274,20 @@ const StudentGradeView = () => {
 
       <Card>
         <CardHeader divider>
-          <div className="flex items-center gap-2 text-xs font-bold text-violet-700 uppercase tracking-wide">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="flex items-center gap-2 text-xs sm:text-sm font-bold text-violet-700 uppercase tracking-wide">
+            <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
             </svg>
             <span>Student Information</span>
           </div>
         </CardHeader>
-        <CardBody>
+        <CardBody className="p-3 sm:p-4 md:p-5">
           {loading ? (
             <div className="flex items-center justify-center py-8">
               <LoadingSpinner />
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
               <div>
                 <label className="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-1">
                   Student Name
@@ -322,8 +322,8 @@ const StudentGradeView = () => {
       {/* ══════════════════════════════════════════════════════════════ */}
 
       <Card>
-        <CardBody className="p-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+        <CardBody className="p-3 sm:p-4 md:p-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
             {/* Quarter Filter */}
             <div>
               <label className="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-2">
@@ -343,7 +343,7 @@ const StudentGradeView = () => {
             </div>
 
             {/* Subject Filter */}
-            <div className="md:col-span-2">
+            <div className="sm:col-span-2 md:col-span-2">
               <label className="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-2">
                 Subject
               </label>
@@ -388,8 +388,8 @@ const StudentGradeView = () => {
             </div>
           </div>
 
-          {/* Action Buttons */}
-          <div className="flex items-center justify-end gap-2 mt-4 pt-4 border-t border-slate-200">
+           {/* Action Buttons */}
+           <div className="flex flex-col sm:flex-row items-center justify-end gap-2 mt-4 pt-4 border-t border-slate-200 sm:items-center">
             {isViewingOther && (
               <Button
                 variant="secondary"
@@ -423,8 +423,8 @@ const StudentGradeView = () => {
 
       {overallAvg && !loading && (
         <Card className="border-l-4 border-l-violet-600 bg-gradient-to-r from-violet-50 to-white">
-          <CardBody className="p-6">
-            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+          <CardBody className="p-4 sm:p-5 md:p-6">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 sm:gap-6">
               <div>
                 <p className="text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-1">
                   General Average
@@ -483,10 +483,10 @@ const StudentGradeView = () => {
       {/* ══════════════════════════════════════════════════════════════ */}
 
       {!loading && subjectEntries.length > 0 && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
           <Card className="border-l-4 border-l-violet-500">
-            <CardBody className="p-4 text-center">
-              <div className="text-2xl md:text-3xl font-extrabold text-violet-600">
+            <CardBody className="p-3 sm:p-4 text-center">
+              <div className="text-xl sm:text-2xl md:text-3xl font-extrabold text-violet-600">
                 {subjectEntries.length}
               </div>
               <div className="text-xs font-bold text-slate-600 uppercase tracking-wide mt-1">
@@ -496,8 +496,8 @@ const StudentGradeView = () => {
           </Card>
 
           <Card className="border-l-4 border-l-emerald-500">
-            <CardBody className="p-4 text-center">
-              <div className="text-2xl md:text-3xl font-extrabold text-emerald-600">
+            <CardBody className="p-3 sm:p-4 text-center">
+              <div className="text-xl sm:text-2xl md:text-3xl font-extrabold text-emerald-600">
                 {allScores.filter(s => s >= 90).length}
               </div>
               <div className="text-xs font-bold text-slate-600 uppercase tracking-wide mt-1">
@@ -507,8 +507,8 @@ const StudentGradeView = () => {
           </Card>
 
           <Card className="border-l-4 border-l-amber-500">
-            <CardBody className="p-4 text-center">
-              <div className="text-2xl md:text-3xl font-extrabold text-amber-600">
+            <CardBody className="p-3 sm:p-4 text-center">
+              <div className="text-xl sm:text-2xl md:text-3xl font-extrabold text-amber-600">
                 {allScores.filter(s => s >= 75).length}
               </div>
               <div className="text-xs font-bold text-slate-600 uppercase tracking-wide mt-1">
@@ -518,8 +518,8 @@ const StudentGradeView = () => {
           </Card>
 
           <Card className="border-l-4 border-l-red-500">
-            <CardBody className="p-4 text-center">
-              <div className="text-2xl md:text-3xl font-extrabold text-red-600">
+            <CardBody className="p-3 sm:p-4 text-center">
+              <div className="text-xl sm:text-2xl md:text-3xl font-extrabold text-red-600">
                 {allScores.filter(s => s < 75).length}
               </div>
               <div className="text-xs font-bold text-slate-600 uppercase tracking-wide mt-1">
@@ -536,18 +536,18 @@ const StudentGradeView = () => {
 
       <Card>
         <CardHeader divider>
-          <CardTitle subtitle={`Detailed grade breakdown for ${subjectEntries.length} subject${subjectEntries.length === 1 ? '' : 's'}`}>
+          <CardTitle subtitle={`Detailed grade breakdown for ${subjectEntries.length} subject${subjectEntries.length === 1 ? '' : 's'}`} className="text-lg sm:text-xl">
             Grade Report
           </CardTitle>
         </CardHeader>
-        <CardBody className="p-0">
+        <CardBody className="p-0 sm:p-1">
           {loading ? (
             <div className="flex items-center justify-center py-12">
               <LoadingSpinner />
             </div>
-          ) : subjectEntries.length === 0 ? (
-            <div className="p-8">
-              <EmptyState
+            ) : subjectEntries.length === 0 ? (
+              <div className="p-6 sm:p-8">
+                <EmptyState
                 title="No Grades Available"
                 description={filterQuarter || filterSubject ? "Try adjusting your filters" : "Grades will appear here once they are entered by your teachers"}
                 icon={
@@ -562,25 +562,25 @@ const StudentGradeView = () => {
               <table className="w-full">
                 <thead className="bg-slate-50 border-b-2 border-slate-200 sticky top-0">
                   <tr>
-                    <th className="px-4 py-3 text-left text-xs font-extrabold text-slate-700 uppercase tracking-wider min-w-[200px]">
+                    <th className="px-3 py-2.5 sm:px-4 sm:py-3 text-left text-xs font-extrabold text-slate-700 uppercase tracking-wider min-w-[180px] sm:min-w-[200px]">
                       Subject
                     </th>
-                    <th className="px-4 py-3 text-center text-xs font-extrabold text-slate-700 uppercase tracking-wider w-24">
+                    <th className="px-2 py-2.5 sm:px-4 sm:py-3 text-center text-xs font-extrabold text-slate-700 uppercase tracking-wider w-20 sm:w-24">
                       Q1
                     </th>
-                    <th className="px-4 py-3 text-center text-xs font-extrabold text-slate-700 uppercase tracking-wider w-24">
+                    <th className="px-2 py-2.5 sm:px-4 sm:py-3 text-center text-xs font-extrabold text-slate-700 uppercase tracking-wider w-20 sm:w-24">
                       Q2
                     </th>
-                    <th className="px-4 py-3 text-center text-xs font-extrabold text-slate-700 uppercase tracking-wider w-24">
+                    <th className="px-2 py-2.5 sm:px-4 sm:py-3 text-center text-xs font-extrabold text-slate-700 uppercase tracking-wider w-20 sm:w-24">
                       Q3
                     </th>
-                    <th className="px-4 py-3 text-center text-xs font-extrabold text-slate-700 uppercase tracking-wider w-24">
+                    <th className="px-2 py-2.5 sm:px-4 sm:py-3 text-center text-xs font-extrabold text-slate-700 uppercase tracking-wider w-20 sm:w-24">
                       Q4
                     </th>
-                    <th className="px-4 py-3 text-center text-xs font-extrabold text-slate-700 uppercase tracking-wider w-24 bg-violet-50">
+                    <th className="px-2 py-2.5 sm:px-4 sm:py-3 text-center text-xs font-extrabold text-slate-700 uppercase tracking-wider w-20 sm:w-24 bg-violet-50">
                       Final
                     </th>
-                    <th className="px-4 py-3 text-center text-xs font-extrabold text-slate-700 uppercase tracking-wider w-40">
+                    <th className="px-2 py-2.5 sm:px-4 sm:py-3 text-center text-xs font-extrabold text-slate-700 uppercase tracking-wider w-32 sm:w-40">
                       Performance
                     </th>
                   </tr>
@@ -603,34 +603,34 @@ const StudentGradeView = () => {
 
                     return (
                       <tr key={entry.subject_name} className="hover:bg-slate-50 transition-colors">
-                        <td className="px-4 py-3">
-                          <div>
-                            <p className="text-sm font-bold text-slate-900">
-                              {entry.subject_name}
-                            </p>
-                            {entry.subject_code && (
-                              <Badge variant="slate" size="sm" className="mt-1">
-                                {entry.subject_code}
-                              </Badge>
-                            )}
-                          </div>
-                        </td>
-                        <td className="px-4 py-3 text-center">
-                          <ScoreBadge score={q1Score} size="sm" />
-                        </td>
-                        <td className="px-4 py-3 text-center">
-                          <ScoreBadge score={q2Score} size="sm" />
-                        </td>
-                        <td className="px-4 py-3 text-center">
-                          <ScoreBadge score={q3Score} size="sm" />
-                        </td>
-                        <td className="px-4 py-3 text-center">
-                          <ScoreBadge score={q4Score} size="sm" />
-                        </td>
-                        <td className="px-4 py-3 text-center bg-violet-50">
-                          <ScoreBadge score={finalAvg} size="md" />
-                        </td>
-                        <td className="px-4 py-3 text-center">
+                    <td className="px-3 py-2.5 sm:px-4 sm:py-3">
+                      <div>
+                        <p className="text-sm font-bold text-slate-900">
+                          {entry.subject_name}
+                        </p>
+                        {entry.subject_code && (
+                          <Badge variant="slate" size="sm" className="mt-1">
+                            {entry.subject_code}
+                          </Badge>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-2 py-2.5 sm:px-4 sm:py-3 text-center">
+                      <ScoreBadge score={q1Score} size="sm" />
+                    </td>
+                    <td className="px-2 py-2.5 sm:px-4 sm:py-3 text-center">
+                      <ScoreBadge score={q2Score} size="sm" />
+                    </td>
+                    <td className="px-2 py-2.5 sm:px-4 sm:py-3 text-center">
+                      <ScoreBadge score={q3Score} size="sm" />
+                    </td>
+                    <td className="px-2 py-2.5 sm:px-4 sm:py-3 text-center">
+                      <ScoreBadge score={q4Score} size="sm" />
+                    </td>
+                    <td className="px-2 py-2.5 sm:px-4 sm:py-3 text-center bg-violet-50">
+                      <ScoreBadge score={finalAvg} size="md" />
+                    </td>
+                    <td className="px-2 py-2.5 sm:px-4 sm:py-3 text-center">
                           {performance ? (
                             <Badge variant={performance.color} size="sm">
                               {performance.shortLabel}
@@ -655,7 +655,7 @@ const StudentGradeView = () => {
 
       {!loading && subjectEntries.length > 0 && (
         <Card className="bg-slate-50 border-slate-300">
-          <CardBody className="p-4 text-center">
+          <CardBody className="p-3 sm:p-4 text-center">
             <p className="text-xs font-semibold text-slate-600">
               This is an official digital report card from Kiwalan National High School.
             </p>

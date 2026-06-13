@@ -472,7 +472,7 @@ const Teachers = () => {
 
       <div className="p-1.5 md:p-6 space-y-2 md:space-y-6">
       {/* Action buttons */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 md:gap-4 mb-3 md:mb-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 md:gap-4 mb-3 md:mb-4 overflow-x-auto">
         <div className="flex-1"></div>
         <div className="flex flex-wrap items-center justify-center gap-2">
           <button
@@ -819,7 +819,7 @@ const Teachers = () => {
               </button>
             </div>
             <form onSubmit={handleAddTeacher} className="flex flex-col flex-1 overflow-hidden">
-              <div className="px-6 py-5 overflow-y-auto flex-1 space-y-4">
+              <div className="px-4 sm:px-6 py-5 overflow-y-auto flex-1 space-y-4">
                 <div>
                   <label className="block text-xs font-black text-gray-700 uppercase tracking-wider mb-1.5">
                     Staff Role <span className="text-red-600">*</span>
@@ -829,7 +829,7 @@ const Teachers = () => {
                     {STAFF_TITLES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
                   </select>
                 </div>
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div>
                     <label className="block text-xs font-black text-gray-700 uppercase tracking-wider mb-1.5">
                       Title <span className="text-red-600">*</span>
@@ -876,13 +876,13 @@ const Teachers = () => {
                   </div>
                 </div>
               </div>
-              <div className="px-6 py-4 border-t border-gray-200 bg-gray-50 flex items-center justify-end gap-3 flex-shrink-0">
+              <div className="px-4 sm:px-6 py-4 border-t border-gray-200 bg-gray-50 flex items-center justify-end gap-3 flex-shrink-0">
                 <button type="button" onClick={() => setShowAddModal(false)}
-                  className="px-6 py-2.5 bg-white text-gray-700 text-xs font-black uppercase tracking-widest border border-gray-300 hover:bg-gray-100 rounded-sm">
+                  className="px-4 sm:px-6 py-2.5 bg-white text-gray-700 text-xs font-black uppercase tracking-widest border border-gray-300 hover:bg-gray-100 rounded-sm">
                   Cancel
                 </button>
                 <button type="submit" disabled={isSubmitting}
-                  className="px-6 py-2.5 bg-[#5e2a84] text-white text-xs font-black uppercase tracking-widest hover:bg-violet-700 rounded-sm">
+                  className="px-4 sm:px-6 py-2.5 bg-[#5e2a84] text-white text-xs font-black uppercase tracking-widest hover:bg-violet-700 rounded-sm">
                   {isSubmitting ? 'Creating...' : 'Create Account'}
                 </button>
               </div>
@@ -916,7 +916,7 @@ const Teachers = () => {
                 </svg>
               </button>
             </div>
-            <div className="px-6 py-5 overflow-y-auto flex-1 space-y-5">
+            <div className="px-4 sm:px-6 py-5 overflow-y-auto flex-1 space-y-5">
               <div>
                 <label className="block text-xs font-black text-gray-700 uppercase tracking-wider mb-2">Primary Role</label>
                 <select
@@ -952,14 +952,14 @@ const Teachers = () => {
                 </div>
               </div>
             </div>
-            <div className="px-6 py-4 border-t border-gray-200 bg-gray-50 flex items-center justify-end gap-3 flex-shrink-0">
+            <div className="px-4 sm:px-6 py-4 border-t border-gray-200 bg-gray-50 flex items-center justify-end gap-3 flex-shrink-0">
               <button type="button" onClick={() => setEditingRolesId(null)}
-                className="px-6 py-2.5 bg-white text-gray-700 text-xs font-black uppercase tracking-widest border border-gray-300 hover:bg-gray-100 rounded-sm">
+                className="px-4 sm:px-6 py-2.5 bg-white text-gray-700 text-xs font-black uppercase tracking-widest border border-gray-300 hover:bg-gray-100 rounded-sm">
                 Cancel
               </button>
               <button
                 onClick={() => handleSaveRoles(editingRolesId)}
-                className="px-6 py-2.5 bg-[#5e2a84] text-white text-xs font-black uppercase tracking-widest hover:bg-violet-700 rounded-sm">
+                className="px-4 sm:px-6 py-2.5 bg-[#5e2a84] text-white text-xs font-black uppercase tracking-widest hover:bg-violet-700 rounded-sm">
                 Save Roles
               </button>
             </div>
@@ -991,8 +991,8 @@ const Teachers = () => {
               </button>
             </div>
             <form onSubmit={handleEditTeacher} className="flex flex-col flex-1 overflow-hidden">
-              <div className="px-6 py-5 overflow-y-auto flex-1 space-y-4">
-                <div className="grid grid-cols-3 gap-4">
+              <div className="px-4 sm:px-6 py-5 overflow-y-auto flex-1 space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div>
                     <label className="block text-xs font-black text-gray-700 uppercase tracking-wider mb-1.5">
                       Title <span className="text-red-600">*</span>
@@ -1039,13 +1039,13 @@ const Teachers = () => {
                   </div>
                 </div>
               </div>
-              <div className="px-6 py-4 border-t border-gray-200 bg-gray-50 flex items-center justify-end gap-3 flex-shrink-0">
+              <div className="px-4 sm:px-6 py-4 border-t border-gray-200 bg-gray-50 flex items-center justify-end gap-3 flex-shrink-0">
                 <button type="button" onClick={() => setShowEditModal(false)}
-                  className="px-6 py-2.5 bg-white text-gray-700 text-xs font-black uppercase tracking-widest border border-gray-300 hover:bg-gray-100 rounded-sm">
+                  className="px-4 sm:px-6 py-2.5 bg-white text-gray-700 text-xs font-black uppercase tracking-widest border border-gray-300 hover:bg-gray-100 rounded-sm">
                   Cancel
                 </button>
                 <button type="submit"
-                  className="px-6 py-2.5 bg-[#5e2a84] text-white text-xs font-black uppercase tracking-widest hover:bg-violet-700 rounded-sm">
+                  className="px-4 sm:px-6 py-2.5 bg-[#5e2a84] text-white text-xs font-black uppercase tracking-widest hover:bg-violet-700 rounded-sm">
                   Save Changes
                 </button>
               </div>
@@ -1077,8 +1077,8 @@ const Teachers = () => {
                 </svg>
               </button>
             </div>
-            <div className="px-6 py-5 overflow-y-auto flex-1 space-y-5">
-              <div className="border-2 border-dashed border-gray-300 rounded p-10 text-center hover:border-violet-400 transition-all group relative">
+            <div className="px-4 sm:px-6 py-5 overflow-y-auto flex-1 space-y-5">
+              <div className="border-2 border-dashed border-gray-300 rounded p-6 sm:p-10 text-center hover:border-violet-400 transition-all group relative">
                 <input
                   type="file"
                   accept=".csv, .xlsx, .xls"
@@ -1111,9 +1111,9 @@ const Teachers = () => {
                 </div>
               </div>
             </div>
-            <div className="px-6 py-4 border-t border-gray-200 bg-gray-50 flex items-center justify-end gap-3 flex-shrink-0">
+            <div className="px-4 sm:px-6 py-4 border-t border-gray-200 bg-gray-50 flex items-center justify-end gap-3 flex-shrink-0">
               <button type="button" onClick={() => setShowImportModal(false)}
-                className="px-6 py-2.5 bg-white text-gray-700 text-xs font-black uppercase tracking-widest border border-gray-300 hover:bg-gray-100 rounded-sm">
+                className="px-4 sm:px-6 py-2.5 bg-white text-gray-700 text-xs font-black uppercase tracking-widest border border-gray-300 hover:bg-gray-100 rounded-sm">
                 Cancel
               </button>
             </div>

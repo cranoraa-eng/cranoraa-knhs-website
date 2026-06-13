@@ -198,7 +198,7 @@ const GradeManagement = () => {
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: 'easeOut' }}
-      className="page-bottom-safe max-w-[1800px] mx-auto bg-slate-50 px-4 py-4 md:px-6 md:py-6 space-y-5 md:space-y-6"
+      className="page-bottom-safe max-w-[1800px] mx-auto bg-slate-50 px-3 sm:px-4 py-4 sm:py-5 md:px-6 md:py-6 space-y-4 sm:space-y-5 md:space-y-6"
     >
       {/* ══════════════════════════════════════════════════════════════ */}
       {/* PAGE HEADER */}

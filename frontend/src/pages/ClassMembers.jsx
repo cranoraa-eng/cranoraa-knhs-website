@@ -60,7 +60,7 @@ const ClassMembers = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
+      <div className="flex items-center justify-center h-48 sm:h-64">
         <LoadingSpinner />
       </div>
     );
@@ -68,7 +68,7 @@ const ClassMembers = () => {
 
   if (enrollments.length === 0) {
     return (
-      <div className="overflow-y-auto h-[calc(100vh-4rem)] p-6">
+      <div className="overflow-y-auto min-h-[calc(100vh-4rem)] p-4 sm:p-6">
         <h1 className="text-3xl font-bold text-slate-800 mb-6">My Classroom</h1>
         <div className="bg-white border border-slate-200 rounded-xl shadow-sm p-16 text-center">
           <div className="w-16 h-16 bg-violet-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -86,21 +86,21 @@ const ClassMembers = () => {
   const classroom = selectedClassroom;
 
   return (
-    <div className="p-4 md:p-8 space-y-6">
+    <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-slate-800">My Classroom</h1>
-        <p className="text-slate-500 mt-1">Your class information, subjects, and classmates</p>
+      <div className="mb-4 sm:mb-6">
+        <h1 className="text-2xl sm:text-3xl font-bold text-slate-800">My Classroom</h1>
+        <p className="text-sm text-slate-500 mt-1">Your class information, subjects, and classmates</p>
       </div>
 
       {/* Classroom selector if enrolled in multiple */}
       {enrollments.length > 1 && (
-        <div className="mb-5">
+        <div className="mb-4 sm:mb-5">
           <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Select Classroom</label>
           <select
             value={selectedClassroom?.classroom}
             onChange={e => setSelectedClassroom(enrollments.find(en => String(en.classroom) === e.target.value))}
-            className="px-4 py-2.5 border border-slate-200 rounded-xl bg-white text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-400 transition-all"
+            className="w-full sm:w-auto px-4 py-2.5 border border-slate-200 rounded-xl bg-white text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-400 transition-all"
           >
             {enrollments.map(en => (
               <option key={en.classroom} value={en.classroom} className="text-slate-800">{en.classroom_name || `Classroom ${en.classroom}`}</option>
@@ -110,14 +110,14 @@ const ClassMembers = () => {
       )}
 
       {/* Classroom info banner */}
-      <div className="bg-gradient-to-r from-[#2D1B4D] to-[#4B2D7F] rounded-2xl p-6 text-white shadow-lg mb-6">
-        <div className="flex items-center gap-4">
-          <div className="w-14 h-14 rounded-xl bg-white/20 flex items-center justify-center text-2xl font-bold flex-shrink-0">
+      <div className="bg-gradient-to-r from-[#2D1B4D] to-[#4B2D7F] rounded-2xl p-4 sm:p-6 text-white shadow-lg mb-4 sm:mb-6">
+        <div className="flex items-center gap-3 sm:gap-4">
+          <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-white/20 flex items-center justify-center text-xl sm:text-2xl font-bold flex-shrink-0">
             {classroom?.classroom_name?.match(/\d+/)?.[0] || '?'}
           </div>
-          <div>
-            <h2 className="text-xl font-bold" style={{ color: '#ffffff' }}>{classroom?.classroom_name || `Classroom ${classroom?.classroom}`}</h2>
-            <div className="flex flex-wrap gap-4 mt-2 text-violet-200 text-sm">
+          <div className="min-w-0">
+            <h2 className="text-lg sm:text-xl font-bold truncate" style={{ color: '#ffffff' }}>{classroom?.classroom_name || `Classroom ${classroom?.classroom}`}</h2>
+            <div className="flex flex-wrap gap-3 sm:gap-4 mt-2 text-violet-200 text-xs sm:text-sm">
               <span className="flex items-center gap-1.5">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -141,34 +141,34 @@ const ClassMembers = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
         {/* Subjects */}
         <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
-          <div className="px-5 py-4 border-b border-slate-100 bg-gradient-to-r from-violet-50 to-indigo-50">
+          <div className="px-4 sm:px-5 py-3 sm:py-4 border-b border-slate-100 bg-gradient-to-r from-violet-50 to-indigo-50">
             <h3 className="font-semibold text-slate-800">Subjects & Teachers</h3>
             <p className="text-xs text-slate-400 mt-0.5">{subjects.length} subject{subjects.length !== 1 ? 's' : ''} this year</p>
           </div>
           {subjects.length === 0 ? (
-            <div className="text-center py-10 text-slate-400 text-sm">No subjects assigned yet.</div>
+            <div className="text-center py-8 sm:py-10 text-slate-400 text-sm">No subjects assigned yet.</div>
           ) : (
             <div className="divide-y divide-slate-100">
               {subjects.map((s, i) => (
-                <div key={s.id} className="flex items-center gap-3 px-5 py-3.5 hover:bg-violet-50 transition-colors">
-                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-indigo-500 flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
+                <div key={s.id} className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 px-4 sm:px-5 py-3 hover:bg-violet-50 transition-colors">
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br from-violet-500 to-indigo-500 flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
                     {i + 1}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="font-semibold text-slate-800 text-sm">{s.subject_name}</div>
                     <div className="text-xs text-slate-400">{s.subject_code}</div>
                   </div>
-                  <div className="flex-1">
+                  <div className="flex-1 min-w-0 sm:flex-none w-full sm:w-auto">
                     <div className="text-xs font-medium text-slate-600">{s.teacher_name}</div>
                     <div className="text-xs text-slate-400">Teacher</div>
                   </div>
                   {s.teacher && user?.id !== s.teacher && (
                     <button 
                       onClick={() => handleStartChat(s.teacher)}
-                      className="p-1.5 text-violet-600 hover:bg-violet-100 rounded-lg transition-all active:scale-95"
+                      className="p-1.5 text-violet-600 hover:bg-violet-100 rounded-lg transition-all active:scale-95 self-end sm:self-center"
                       title="Send Message"
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" /></svg>
@@ -182,14 +182,14 @@ const ClassMembers = () => {
 
         {/* Classmates */}
         <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
-          <div className="px-5 py-4 border-b border-slate-100 bg-gradient-to-r from-violet-50 to-indigo-50">
+          <div className="px-4 sm:px-5 py-3 sm:py-4 border-b border-slate-100 bg-gradient-to-r from-violet-50 to-indigo-50">
             <h3 className="font-semibold text-slate-800">Classmates</h3>
             <p className="text-xs text-slate-400 mt-0.5">{classmates.length} student{classmates.length !== 1 ? 's' : ''} enrolled</p>
           </div>
           {classmates.length === 0 ? (
-            <div className="text-center py-10 text-slate-400 text-sm">No classmates found.</div>
+            <div className="text-center py-8 sm:py-10 text-slate-400 text-sm">No classmates found.</div>
           ) : (
-            <div className="divide-y divide-slate-100 max-h-[420px] overflow-y-auto">
+            <div className="divide-y divide-slate-100 max-h-[420px] sm:max-h-[500px] overflow-y-auto">
               {classmates.sort((a, b) => {
                 const sexOrder = { 'female': 1, 'male': 2, 'other': 3 };
                 const sexA = sexOrder[a.student_sex?.toLowerCase()] || 4;
@@ -200,28 +200,30 @@ const ClassMembers = () => {
                 const name = formatName(m.student_name || `Student ${m.student}`);
                 const initials = name.split(', ').reverse().join(' ').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
                 return (
-                  <div key={m.id} className="flex items-center gap-3 px-5 py-3 hover:bg-violet-50 transition-colors">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-xs flex-shrink-0 shadow-sm ${
+                  <div key={m.id} className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 px-4 sm:px-5 py-3 hover:bg-violet-50 transition-colors">
+                    <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-white font-bold text-xs flex-shrink-0 shadow-sm ${
                       m.student_sex?.toLowerCase() === 'female' 
                         ? 'bg-rose-400' 
                         : 'bg-violet-400'
                     }`}>
                       {initials}
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="font-bold text-slate-800 text-xs md:text-sm uppercase tracking-tight">{name}</div>
+                    <div className="flex-1 min-w-0 w-full">
+                      <div className="font-bold text-slate-800 text-xs sm:text-sm uppercase tracking-tight">{name}</div>
                       <div className="text-[10px] text-slate-400 font-medium">{m.student_email}</div>
                     </div>
-                    {user?.id !== m.student && (
-                      <button 
-                        onClick={() => handleStartChat(m.student)}
-                        className="p-1.5 text-violet-600 hover:bg-violet-100 rounded-lg transition-all active:scale-95"
-                        title="Send Message"
-                      >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" /></svg>
-                      </button>
-                    )}
-                    <span className="text-xs text-slate-400 ml-2">#{i + 1}</span>
+                    <div className="flex items-center gap-2 w-full sm:w-auto">
+                      {user?.id !== m.student && (
+                        <button 
+                          onClick={() => handleStartChat(m.student)}
+                          className="p-1.5 text-violet-600 hover:bg-violet-100 rounded-lg transition-all active:scale-95"
+                          title="Send Message"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" /></svg>
+                        </button>
+                      )}
+                      <span className="text-xs text-slate-400 ml-auto">#{i + 1}</span>
+                    </div>
                   </div>
                 );
               })}

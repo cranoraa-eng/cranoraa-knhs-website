@@ -586,7 +586,7 @@ const StudentManagement = () => {
   }
 
   const ProfileField = ({ label, value }) => (
-    <div className="py-1 md:py-2 border-b border-slate-100 last:border-0">
+    <div className="py-1 sm:py-2 border-b border-slate-100 last:border-0">
       <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">{label}</p>
       <p className="text-xs font-bold text-slate-700 truncate">{value || '—'}</p>
     </div>
@@ -613,7 +613,7 @@ const StudentManagement = () => {
           {student.last_name}, {student.first_name}
         </p>
       </td>
-      <td className="hidden md:table-cell px-4 py-3">
+      <td className="hidden sm:table-cell px-4 py-3">
         <span className="text-[10px] font-bold text-slate-500 uppercase">{student.profile?.sex || '—'}</span>
       </td>
       <td className="hidden md:table-cell px-4 py-3">
@@ -621,14 +621,14 @@ const StudentManagement = () => {
           {(/^\d+$/.test(student.profile?.grade_level) ? `Grade ${student.profile.grade_level}` : student.profile?.grade_level) || '—'}
         </span>
       </td>
-      <td className="hidden md:table-cell px-4 py-3">
+      <td className="hidden lg:table-cell px-4 py-3">
         <span className={`text-[10px] font-bold px-2 py-0.5 border ${
           student.profile?.classroom_name 
             ? 'text-slate-700 bg-slate-50 border-slate-200' 
             : 'text-amber-600 bg-amber-50 border-amber-200'
         }`}>{student.profile?.classroom_name || 'No Section'}</span>
       </td>
-      <td className="hidden md:table-cell px-4 py-3">
+      <td className="hidden lg:table-cell px-4 py-3">
         <p className="text-[10px] font-medium text-slate-500 truncate max-w-[150px] lowercase">{student.email || '—'}</p>
       </td>
       <td className="hidden md:table-cell px-4 py-3">
@@ -706,39 +706,39 @@ const StudentManagement = () => {
   return (
     <div className="page-bottom-safe bg-slate-50">
       {/* Official Header */}
-      <div className="bg-white border-b-2 border-slate-200 px-4 md:px-6 py-3 md:py-4 mb-4">
+      <div className="bg-white border-b-2 border-slate-200 px-3 sm:px-4 md:px-6 py-2.5 sm:py-3 md:py-4 mb-4">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 md:h-11 md:w-11 bg-[#5e2a84] flex items-center justify-center shrink-0">
-            <svg className="w-5 h-5 md:w-6 md:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="h-9 w-9 sm:h-10 sm:w-10 md:h-11 md:w-11 bg-[#5e2a84] flex items-center justify-center shrink-0">
+              <svg className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
             </svg>
           </div>
           <div>
-            <h1 className="text-base md:text-lg font-black text-slate-900 uppercase tracking-wide">
+            <h1 className="text-sm sm:text-base md:text-lg font-black text-slate-900 uppercase tracking-wide">
               {user?.role === 'staff' ? 'Advisory Class' : 'Student Records'}
             </h1>
-            <p className="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-widest mt-0.5">
+            <p className="text-[9px] sm:text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-widest mt-0.5">
               {user?.role === 'staff' ? 'Manage Advisory Students' : 'Student Management System'}
             </p>
           </div>
         </div>
       </div>
 
-      <div className="px-4 md:px-6 space-y-3 md:space-y-4">
+      <div className="px-3 sm:px-4 md:px-6 space-y-3 md:space-y-4">
       {/* Action buttons */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 md:gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 md:gap-4">
         <div className="flex-1"></div>
         <div className="flex flex-wrap items-center justify-center gap-1.5">
           <button 
             onClick={() => setShowAddModal(true)}
-            className="bg-[#5e2a84] text-white px-3 py-1.5 md:px-4 md:py-2 border border-violet-800 hover:bg-violet-700 flex items-center gap-1.5 transition-colors text-xs font-bold uppercase tracking-wide"
+            className="bg-[#5e2a84] text-white px-2.5 py-1.5 sm:px-3 sm:py-1.5 md:px-4 md:py-2 border border-violet-800 hover:bg-violet-700 flex items-center gap-1.5 transition-colors text-xs font-bold uppercase tracking-wide"
           >
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" /></svg>
             Add Student
           </button>
           <button 
             onClick={() => setShowImportModal(true)}
-            className="bg-white border border-slate-200 text-slate-700 px-3 py-1.5 md:px-4 md:py-2 hover:bg-slate-50 flex items-center gap-1.5 transition-colors text-xs font-bold uppercase tracking-wide"
+            className="bg-white border border-slate-200 text-slate-700 px-2.5 py-1.5 sm:px-3 sm:py-1.5 md:px-4 md:py-2 hover:bg-slate-50 flex items-center gap-1.5 transition-colors text-xs font-bold uppercase tracking-wide"
           >
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
             Import
@@ -773,7 +773,7 @@ const StudentManagement = () => {
                 XLSX.writeFile(wb, "KNHS_Student_Import_Template.xlsx");
                 toast.success('Template downloaded');
               }}
-              className="bg-white border border-slate-200 text-slate-700 px-3 py-1.5 md:px-4 md:py-2 hover:bg-slate-50 flex items-center gap-1.5 transition-colors text-xs font-bold uppercase tracking-wide"
+              className="bg-white border border-slate-200 text-slate-700 px-2.5 py-1.5 sm:px-3 sm:py-1.5 md:px-4 md:py-2 hover:bg-slate-50 flex items-center gap-1.5 transition-colors text-xs font-bold uppercase tracking-wide"
             >
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
               Template
@@ -823,7 +823,7 @@ const StudentManagement = () => {
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
             </button>
           </div>
-          <div className="bg-white px-3 py-1.5 md:px-4 md:py-2 border border-slate-200 flex items-center gap-2">
+          <div className="bg-white px-2.5 py-1.5 sm:px-3 md:px-4 md:py-2 border border-slate-200 flex items-center gap-2">
             <div>
               <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
                 {user?.role === 'staff' ? 'Advisory Students' : 'Total Students'}
@@ -835,8 +835,8 @@ const StudentManagement = () => {
       </div>
 
       {/* Search Bar */}
-      <div className="bg-white p-2.5 md:p-3 border border-slate-200">
-        <div className="flex flex-col md:flex-row gap-2 items-center">
+      <div className="bg-white p-2 sm:p-2.5 md:p-3 border border-slate-200">
+        <div className="flex flex-col sm:flex-row gap-2 items-center">
           <div className="relative flex-1 w-full">
             <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -886,9 +886,9 @@ const StudentManagement = () => {
       </div>
 
       {/* Organized List */}
-      <div className="space-y-4 md:space-y-6 pb-6 md:pb-10">
+      <div className="space-y-3 sm:space-y-4 md:space-y-6 pb-4 sm:pb-6 md:pb-10">
         {organizedData.length === 0 ? (
-          <div className="bg-white border border-slate-200 p-10 md:p-16 text-center">
+          <div className="bg-white border border-slate-200 p-6 sm:p-10 md:p-16 text-center">
             <div className="w-12 h-12 bg-slate-100 flex items-center justify-center mx-auto mb-3">
               <svg className="w-6 h-6 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
@@ -899,7 +899,7 @@ const StudentManagement = () => {
           </div>
         ) : (
           organizedData.map((gradeGroup) => (
-            <div key={gradeGroup.grade} className="space-y-2 md:space-y-4">
+            <div key={gradeGroup.grade} className="space-y-1.5 sm:space-y-2 md:space-y-4">
               {user?.role === 'admin' && (
                 <div className="flex items-center gap-2 px-1">
                   <h2 className="text-xs font-black text-slate-800 uppercase tracking-wide">{gradeGroup.grade}</h2>
@@ -907,10 +907,10 @@ const StudentManagement = () => {
                 </div>
               )}
 
-              <div className="grid grid-cols-1 gap-2 md:gap-4">
+              <div className="grid grid-cols-1 gap-2 sm:gap-3 md:gap-4">
                 {gradeGroup.classrooms.map((cls) => (
                   <div key={cls.name} className="bg-white border border-slate-200">
-                    <div className="px-3 py-2 md:px-4 md:py-2.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+                    <div className="px-2.5 py-2 sm:px-3 md:px-4 md:py-2.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <div className="w-6 h-6 bg-[#5e2a84] flex items-center justify-center">
                           <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -924,11 +924,11 @@ const StudentManagement = () => {
                       </span>
                     </div>
 
-                    <div className="w-full">
+                    <div className="w-full overflow-x-auto">
                       <table className="w-full text-left min-w-[320px]">
                         <thead>
                           <tr className="text-[9px] font-bold text-white uppercase tracking-widest bg-[#5e2a84]">
-                            <th className="px-3 py-2 md:px-4 md:py-2.5 w-10">
+                            <th className="px-2.5 py-2 sm:px-3 md:px-4 md:py-2.5 w-10">
                               <div className="flex items-center gap-2">
                                 <input 
                                   type="checkbox" 
@@ -940,10 +940,10 @@ const StudentManagement = () => {
                               </div>
                             </th>
                             <th className="px-3 py-2 md:px-4 md:py-2.5">Student</th>
-                            <th className="hidden md:table-cell px-4 py-2.5">Sex</th>
+                            <th className="hidden sm:table-cell px-4 py-2.5">Sex</th>
                             <th className="hidden md:table-cell px-4 py-2.5">Grade</th>
-                            <th className="hidden md:table-cell px-4 py-2.5">Section</th>
-                            <th className="hidden md:table-cell px-4 py-2.5">Email</th>
+                            <th className="hidden lg:table-cell px-4 py-2.5">Section</th>
+                            <th className="hidden lg:table-cell px-4 py-2.5">Email</th>
                             <th className="hidden md:table-cell px-4 py-2.5">LRN</th>
                             <th className="px-3 py-2 md:px-4 md:py-2.5 text-center">Status</th>
                             <th className="px-3 py-2 md:px-4 md:py-2.5 text-center w-10"></th>
@@ -992,9 +992,9 @@ const StudentManagement = () => {
 
       {/* Profile Modal */}
       {showProfileModal && selectedStudent && (
-        <div className="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center p-2 sm:p-3 md:p-4">
           <div className="bg-white border border-gray-300 shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
-            <div className="bg-[#5e2a84] flex items-center justify-between px-5 py-3 border-b-2 border-violet-900">
+            <div className="bg-[#5e2a84] flex items-center justify-between px-3 sm:px-4 md:px-5 py-2.5 sm:py-3 border-b-2 border-violet-900">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 bg-white/20 border border-white/30 flex items-center justify-center">
                   <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1013,7 +1013,7 @@ const StudentManagement = () => {
                 </svg>
               </button>
             </div>
-            <div className="p-5 space-y-1">
+            <div className="p-3 sm:p-4 md:p-5 space-y-1">
               <ProfileField label="Full Name" value={`${selectedStudent.profile?.title || ''} ${selectedStudent.first_name} ${selectedStudent.last_name}`} />
               <ProfileField label="Student ID / LRN" value={selectedStudent.profile?.registration_number || selectedStudent.username} />
               <ProfileField label="Sex" value={selectedStudent.profile?.sex} />
@@ -1025,7 +1025,7 @@ const StudentManagement = () => {
                 <ProfileField label="Temp Password" value={selectedStudent.temp_password_storage} />
               )}
             </div>
-            <div className="px-5 py-3 border-t border-gray-200 bg-gray-50 flex justify-end">
+            <div className="px-3 sm:px-4 md:px-5 py-2.5 sm:py-3 border-t border-gray-200 bg-gray-50 flex justify-end">
               <button type="button" onClick={() => { setShowProfileModal(false); setSelectedStudent(null); }}
                 className="px-5 py-2 bg-white text-gray-700 text-xs font-bold uppercase tracking-wide border border-gray-300 hover:bg-gray-100">
                 Close
@@ -1037,9 +1037,9 @@ const StudentManagement = () => {
 
       {/* Add Student Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center p-2 sm:p-3 md:p-4">
           <div className="bg-white border border-gray-300 shadow-2xl w-full max-w-md flex flex-col max-h-[92vh]" onClick={e => e.stopPropagation()}>
-            <div className="bg-[#5e2a84] flex items-center justify-between px-5 py-3 border-b-2 border-violet-900">
+            <div className="bg-[#5e2a84] flex items-center justify-between px-3 sm:px-4 md:px-5 py-2.5 sm:py-3 border-b-2 border-violet-900">
               <div className="flex items-center gap-3">
                 <div className="w-7 h-7 bg-white/20 border border-white/30 flex items-center justify-center">
                   <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1059,7 +1059,7 @@ const StudentManagement = () => {
               </button>
             </div>
             <form onSubmit={handleAddStudent} className="flex flex-col flex-1 overflow-hidden">
-              <div className="px-5 py-4 overflow-y-auto flex-1 space-y-3">
+              <div className="px-3 sm:px-4 md:px-5 py-3 sm:py-4 overflow-y-auto flex-1 space-y-3">
                 <div>
                   <label className="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1">Student ID (LRN) *</label>
                   <input required value={newStudent.username} onChange={e => setNewStudent({...newStudent, username: e.target.value})}
@@ -1103,7 +1103,7 @@ const StudentManagement = () => {
                   </div>
                 </div>
               </div>
-              <div className="px-5 py-3 border-t border-gray-200 bg-gray-50 flex items-center justify-end gap-3">
+              <div className="px-3 sm:px-4 md:px-5 py-2.5 sm:py-3 border-t border-gray-200 bg-gray-50 flex items-center justify-end gap-3">
                 <button type="button" onClick={() => setShowAddModal(false)}
                   className="px-5 py-2 bg-white text-gray-700 text-xs font-bold uppercase tracking-wider border border-gray-300 hover:bg-gray-100">
                   Cancel
@@ -1120,9 +1120,9 @@ const StudentManagement = () => {
 
       {/* Import Modal */}
       {showImportModal && (
-        <div className="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center p-2 sm:p-3 md:p-4">
           <div className="bg-white border border-gray-300 shadow-2xl w-full max-w-md flex flex-col" onClick={e => e.stopPropagation()}>
-            <div className="bg-[#5e2a84] flex items-center justify-between px-5 py-3 border-b-2 border-violet-900">
+            <div className="bg-[#5e2a84] flex items-center justify-between px-3 sm:px-4 md:px-5 py-2.5 sm:py-3 border-b-2 border-violet-900">
               <div className="flex items-center gap-3">
                 <div className="w-7 h-7 bg-white/20 border border-white/30 flex items-center justify-center">
                   <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1141,9 +1141,9 @@ const StudentManagement = () => {
                 </svg>
               </button>
             </div>
-            <div className="p-5">
+            <div className="p-3 sm:p-4 md:p-5">
               <div 
-                className={`border-2 border-dashed p-8 text-center transition-colors ${
+                className={`border-2 border-dashed p-6 sm:p-8 text-center transition-colors ${
                   isDragging ? 'border-violet-500 bg-violet-50' : 'border-slate-300 hover:border-slate-400'
                 }`}
                 onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}

@@ -92,6 +92,10 @@ export default function ScheduleManagement() {
   const [editSlotForm, setEditSlotForm] = useState({ start_time:'', end_time:'', label:'', day:'' });
   const [showTutorial, setShowTutorial] = useState(() => !localStorage.getItem('schedTutorialDone'));
   const [tutorialStep, setTutorialStep] = useState(0);
+  const [mobileSelectedDay, setMobileSelectedDay] = useState(() => {
+    const jsDay = new Date().getDay();
+    return (jsDay >= 1 && jsDay <= 5) ? DAYS[jsDay - 1] : 'monday';
+  });
 
   const fireStackedAlert = useCallback((options) => Swal.fire({
     heightAuto: false,
@@ -729,50 +733,59 @@ export default function ScheduleManagement() {
             </div>
           </div>
 
-          {/* Mobile: day cards */}
-          <div className="md:hidden p-3 space-y-4">
-            {(filterDay ? [filterDay] : DAYS).map(d => (
-              <div key={d}>
-                <p className="text-[10px] font-bold text-violet-700 uppercase tracking-wide mb-2">{DAY_FULL[d]}</p>
-                <div className="space-y-2">
-                  {uniquePeriods.map(period => {
-                    const entries = getCellSchedules(d, period);
-                    const ready = hasSlotForCell(d, period);
-                    const cellKey = `${d}-${period.start_time}-${period.end_time}`;
-                    const isAdding = addingCell === cellKey;
-                    if (entries.length === 0) {
-                      return (
-                        <button key={cellKey} type="button" onClick={() => openCreateAtCell(d, period)} disabled={isAdding}
-                          className={`w-full py-3 px-3 rounded-lg border text-left transition-all ${ready ? 'border-dashed border-slate-200 hover:border-violet-300 hover:bg-violet-50/50' : 'border-dashed border-amber-200 bg-amber-50/30 hover:border-amber-400'}`}>
-                          <p className="text-xs font-bold text-slate-700">{period.start_display} – {period.end_display}</p>
-                          <p className="text-[10px] mt-0.5 font-semibold text-violet-600">{isAdding ? 'Adding...' : ready ? 'Tap to assign' : 'Tap to enable & assign'}</p>
-                        </button>
-                      );
-                    }
-                    return entries.map(s => (
-                      <div key={s.id} className="flex gap-2 items-stretch">
-                        <div className="text-[10px] font-bold text-slate-500 w-14 shrink-0 pt-2 leading-tight">{period.start_display}</div>
-                        <div className="flex-1 min-w-0">
-                          <div className={`p-2.5 rounded-lg border ${subjectColorMap[s.subject] || COLORS[0]} relative group shadow-sm`}>
-                            <p className="text-[10px] font-bold uppercase tracking-tight leading-none">{s.subject_code}</p>
-                            <p className="text-[11px] font-bold leading-tight line-clamp-1">{s.subject_name}</p>
-                            {s.teacher_name && <p className="text-[9px] opacity-60 truncate">{s.teacher_name}</p>}
-                            <div className="absolute top-1 right-1 flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                              <button type="button" onClick={() => openEdit(s)} className="w-6 h-6 rounded-md bg-white/90 flex items-center justify-center hover:bg-white shadow-sm" title="Edit">
-                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
-                              </button>
-                              <button type="button" onClick={() => handleDelete(s.id, `${s.subject_name} — ${s.classroom_name}`)} className="w-6 h-6 rounded-md bg-rose-500 flex items-center justify-center hover:bg-rose-600 shadow-sm" title="Delete">
-                                <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" /></svg>
-                              </button>
-                            </div>
-                          </div>
+          {/* Mobile: day selector tabs + single day schedule */}
+          <div className="md:hidden">
+            <div className="overflow-x-auto border-b border-slate-100 px-3 pt-3 pb-0">
+              <div className="flex gap-1.5 min-w-max">
+                {DAYS.map(d => (
+                  <button key={d} type="button" onClick={() => setMobileSelectedDay(d)}
+                    className={`px-4 py-2 rounded-t-lg text-xs font-bold uppercase tracking-wide transition-all whitespace-nowrap ${
+                      mobileSelectedDay === d
+                        ? 'bg-violet-600 text-white shadow-sm'
+                        : 'bg-slate-100 text-slate-500 hover:bg-slate-200 active:bg-slate-300'
+                    }`}>
+                    {DAY_SHORT[d]}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="p-3 space-y-2">
+              {uniquePeriods.map(period => {
+                const entries = getCellSchedules(mobileSelectedDay, period);
+                const ready = hasSlotForCell(mobileSelectedDay, period);
+                const cellKey = `${mobileSelectedDay}-${period.start_time}-${period.end_time}`;
+                const isAdding = addingCell === cellKey;
+                if (entries.length === 0) {
+                  return (
+                    <button key={cellKey} type="button" onClick={() => openCreateAtCell(mobileSelectedDay, period)} disabled={isAdding}
+                      className={`w-full py-3 px-3 rounded-lg border text-left transition-all ${ready ? 'border-dashed border-slate-200 hover:border-violet-300 hover:bg-violet-50/50 active:bg-violet-50' : 'border-dashed border-amber-200 bg-amber-50/30 hover:border-amber-400 active:bg-amber-50'}`}>
+                      <p className="text-xs font-bold text-slate-700">{period.start_display} – {period.end_display}</p>
+                      <p className="text-[10px] mt-0.5 font-semibold text-violet-600">{isAdding ? 'Adding...' : ready ? 'Tap to assign' : 'Tap to enable & assign'}</p>
+                    </button>
+                  );
+                }
+                return entries.map(s => (
+                  <div key={s.id} className="flex gap-2 items-stretch">
+                    <div className="text-[10px] font-bold text-slate-500 w-14 shrink-0 pt-2 leading-tight">{period.start_display}</div>
+                    <div className="flex-1 min-w-0">
+                      <div className={`p-2.5 rounded-lg border ${subjectColorMap[s.subject] || COLORS[0]} relative shadow-sm`}>
+                        <p className="text-[10px] font-bold uppercase tracking-tight leading-none">{s.subject_code}</p>
+                        <p className="text-[11px] font-bold leading-tight line-clamp-1">{s.subject_name}</p>
+                        {s.teacher_name && <p className="text-[9px] opacity-60 truncate">{s.teacher_name}</p>}
+                        <div className="absolute top-1 right-1 flex gap-0.5">
+                          <button type="button" onClick={() => openEdit(s)} className="w-6 h-6 rounded-md bg-white/90 flex items-center justify-center hover:bg-white shadow-sm" title="Edit">
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                          </button>
+                          <button type="button" onClick={() => handleDelete(s.id, `${s.subject_name} — ${s.classroom_name}`)} className="w-6 h-6 rounded-md bg-rose-500 flex items-center justify-center hover:bg-rose-600 shadow-sm" title="Delete">
+                            <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" /></svg>
+                          </button>
                         </div>
                       </div>
-                    ));
-                  })}
-                </div>
-              </div>
-            ))}
+                    </div>
+                  </div>
+                ));
+              })}
+            </div>
           </div>
 
           {/* Desktop grid */}

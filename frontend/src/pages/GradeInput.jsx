@@ -312,8 +312,8 @@ const GradeInput = () => {
       {/* PAGE HEADER */}
       {/* ══════════════════════════════════════════════════════════════ */}
       
-      <div className="flex-shrink-0 px-4 py-4 md:px-6 md:py-5 bg-white border-b border-slate-200 shadow-sm">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex-shrink-0 px-4 sm:px-5 md:px-6 py-4 sm:py-5 bg-white border-b border-slate-200 shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
           {/* Title Section */}
           <div>
             <div className="flex items-center gap-2 text-xs font-bold text-violet-700 uppercase tracking-wide mb-2">
@@ -361,8 +361,8 @@ const GradeInput = () => {
       {/* CONTROLS PANEL */}
       {/* ══════════════════════════════════════════════════════════════ */}
 
-      <div className="flex-shrink-0 px-4 py-3 md:px-6 md:py-4 bg-white border-b border-slate-200">
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-3 md:gap-4">
+      <div className="flex-shrink-0 px-4 sm:px-5 md:px-6 py-3 sm:py-4 bg-white border-b border-slate-200">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3 sm:gap-4">
           {/* Classroom */}
           <div className="md:col-span-1">
             <label className="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-2">
@@ -454,7 +454,7 @@ const GradeInput = () => {
 
         {/* Context Breadcrumb */}
         {selClassroom && selSubject && (
-          <div className="mt-3 flex items-center gap-2 text-xs font-semibold text-slate-600">
+          <div className="mt-3 flex flex-wrap items-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-semibold text-slate-600">
             <svg className="w-4 h-4 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
@@ -476,8 +476,8 @@ const GradeInput = () => {
       {/* ══════════════════════════════════════════════════════════════ */}
 
       {selClassroom && selSubject && students.length > 0 && scores.length > 0 && (
-        <div className="flex-shrink-0 px-4 py-3 md:px-6 bg-violet-50 border-b border-violet-100">
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+        <div className="flex-shrink-0 px-4 sm:px-5 md:px-6 py-3 sm:py-4 bg-violet-50 border-b border-violet-100">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4">
             <div className="text-center">
               <div className="text-xl md:text-2xl font-extrabold text-violet-600">
                 {filled.length}/{students.length}
@@ -556,7 +556,7 @@ const GradeInput = () => {
             />
           </div>
         ) : (
-          <div className="p-4 md:p-6">
+          <div className="p-4 sm:p-5 md:p-6">
             <Card>
               <CardHeader divider>
                 <CardTitle subtitle={`Enter final grades for ${students.length} students`}>
@@ -703,7 +703,7 @@ const GradeInput = () => {
             </Card>
 
             {/* Keyboard Navigation Hint */}
-            <div className="mt-4 p-3 bg-violet-50 border border-violet-200 rounded-md">
+            <div className="mt-4 sm:mt-5 p-3 sm:p-4 bg-violet-50 border border-violet-200 rounded-md">
               <p className="text-xs font-semibold text-violet-700 uppercase tracking-wide">
                 <svg className="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
