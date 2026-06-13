@@ -220,46 +220,46 @@ function MessageThread({ ticket, messages, onSend, sending, onDelete }) {
   return (
     <div className="flex-1 flex flex-col bg-slate-50 h-full">
       {/* Conversation Header */}
-      <div className="flex items-center justify-between px-5 py-3 bg-white border-b border-slate-200">
-        <div className="flex items-center gap-3 min-w-0">
+      <div className="flex items-center justify-between px-4 py-2 bg-white border-b border-slate-200">
+        <div className="flex items-center gap-2 min-w-0">
           <Avatar name={ticket.sender_name} size="sm" />
           <div className="min-w-0">
-            <p className="text-sm font-semibold text-slate-900 truncate">{ticket.sender_name}</p>
-            <p className="text-[11px] text-slate-500 truncate">{ticket.subject}</p>
+            <p className="text-sm font-medium text-slate-900 truncate leading-tight">{ticket.sender_name}</p>
+            <p className="text-[10px] text-slate-500 truncate">{ticket.subject}</p>
           </div>
         </div>
         <button
           onClick={onDelete}
           aria-label="Delete conversation"
-          className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+          className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
         >
-          <Icons.Trash size={16} />
+          <Icons.Trash size={14} />
         </button>
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+      <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
         {messages.length === 0 && (
-          <div className="text-center text-slate-400 text-sm py-8">
+          <div className="text-center text-slate-400 text-sm py-6">
             <p>No messages yet. Start the conversation!</p>
           </div>
         )}
         {messages.map((msg) => {
           const isOwn = msg.is_own;
           return (
-            <div key={msg.id} className={`flex gap-3 ${isOwn ? 'flex-row-reverse' : ''}`} role="group" aria-label={`Message from ${msg.sender_name}`}>
+            <div key={msg.id} className={`flex gap-2 ${isOwn ? 'flex-row-reverse' : ''}`} role="group" aria-label={`Message from ${msg.sender_name}`}>
               <Avatar name={msg.sender_name} size="sm" />
               <div className={`max-w-[70%] ${isOwn ? 'items-end' : ''}`}>
-                <div className={`flex items-center gap-2 mb-1 ${isOwn ? 'flex-row-reverse' : ''}`}>
-                  <span className="text-xs font-medium text-slate-700">{msg.sender_name}</span>
-                  <span className="text-[10px] text-slate-400">{formatTime(msg.created_at)}</span>
+                <div className={`flex items-center gap-1.5 mb-0.5 ${isOwn ? 'flex-row-reverse' : ''}`}>
+                  <span className="text-[11px] font-medium text-slate-700">{msg.sender_name}</span>
+                  <span className="text-[9px] text-slate-400">{formatTime(msg.created_at)}</span>
                 </div>
-                <div className={`px-4 py-2.5 rounded-2xl ${
+                <div className={`px-3 py-2 rounded-2xl text-sm ${
                   isOwn
                     ? 'bg-blue-600 text-white rounded-tr-md'
                     : 'bg-white border border-slate-200 rounded-tl-md'
                 }`}>
-                  <p className={`text-sm leading-relaxed whitespace-pre-wrap ${isOwn ? '' : 'text-slate-700'}`}>
+                  <p className={`leading-snug whitespace-pre-wrap ${isOwn ? '' : 'text-slate-700'}`}>
                     {msg.content}
                   </p>
                 </div>
