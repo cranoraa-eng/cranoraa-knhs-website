@@ -1340,7 +1340,8 @@ class UserViewSet(viewsets.ModelViewSet):
                     email=email,
                     first_name=first_name,
                     last_name=last_name,
-                    role='teacher',
+                    role='staff',
+                    staff_title='teacher',
                     is_approved=True,
                     is_verified=False,
                     must_change_password=True,
@@ -1762,7 +1763,7 @@ class AnnouncementViewSet(viewsets.ModelViewSet):
         elif announcement.target_audience == 'students':
             users = users.filter(role='student')
         elif announcement.target_audience == 'teachers':
-            users = users.filter(role='teacher')
+            users = users.filter(role='staff')
         
         notifications_to_create = []
         
@@ -2453,7 +2454,7 @@ def admin_dashboard_stats(request):
 
         # Core counts - Global Population (Independent of year for overview cards)
         total_students = User.objects.filter(role='student', is_approved=True).count()
-        total_teachers = User.objects.filter(role='teacher', is_approved=True).count()
+        total_teachers = User.objects.filter(role='staff', staff_title='teacher', is_approved=True).count()
         total_subjects = Subject.objects.count()
         
         # Classes are always year-specific or unassigned
