@@ -247,9 +247,9 @@ function MessageThread({ ticket, messages, onSend, sending, onDelete }) {
         {messages.map((msg) => {
           const isOwn = msg.is_own;
           return (
-            <div key={msg.id} className={`flex gap-2 ${isOwn ? 'flex-row-reverse' : ''}`} role="group" aria-label={`Message from ${msg.sender_name}`}>
+            <div key={msg.id} className={`flex gap-2 ${isOwn ? 'flex-row-reverse ml-auto' : ''}`} role="group" aria-label={`Message from ${msg.sender_name}`}>
               <Avatar name={msg.sender_name} size="sm" />
-              <div className={`max-w-[70%] min-w-0 ${isOwn ? 'items-end' : ''}`}>
+              <div className={`max-w-[70%] min-w-0`}>
                 <div className={`flex items-center gap-1.5 mb-0.5 ${isOwn ? 'flex-row-reverse' : ''}`}>
                   <span className="text-[11px] font-medium text-slate-700">{msg.sender_name}</span>
                   <span className="text-[9px] text-slate-400">{formatTime(msg.created_at)}</span>
