@@ -6560,10 +6560,16 @@ class TicketViewSet(viewsets.ModelViewSet):
             content=content
         )
 
-        # Update ticket status to replied if it was open
-        if ticket.status == 'open':
-            ticket.status = 'replied'
-            ticket.save(update_fields=['status', 'updated_at'])
+        # Update ticket status based on who responded
+        is_staff_response = ticket.assigned_to and request.user == ticket.assigned_to
+        if is_staff_response:
+            if ticket.status in ['open', 'pending']:
+                ticket.status = 'replied'
+                ticket.save(update_fields=['status', 'updated_at'])
+        else:
+            if ticket.status in ['open', 'replied']:
+                ticket.status = 'pending'
+                ticket.save(update_fields=['status', 'updated_at'])
 
         # Mark other participants' messages as read
         ticket.messages.filter(is_read=False).exclude(sender=request.user).update(is_read=True)
