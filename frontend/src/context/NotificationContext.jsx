@@ -68,29 +68,38 @@ export const NotificationProvider = ({ children }) => {
     // Guard: don't open a second connection
     if (socketRef.current && socketRef.current.readyState <= WebSocket.OPEN) return;
 
-    const ws = new WebSocket(`${WS_ROOT}/ws/notifications/?token=${token}`);
+    // SECURITY: Connect without token in URL — send it as first message instead.
+    // This prevents the access token from appearing in server/proxy logs.
+    const ws = new WebSocket(`${WS_ROOT}/ws/notifications/`);
     socketRef.current = ws;
 
     ws.onopen = () => {
-      setRealtimeConnected(true);
-      stopPolling();
-      // Reset backoff on successful connection
-      reconnectAttemptsRef.current = 0;
-      if (reconnectTimerRef.current) {
-        clearTimeout(reconnectTimerRef.current);
-        reconnectTimerRef.current = null;
-      }
-      // If we were offline, force a fresh poll to catch missed notifications
-      if (wasOfflineRef.current) {
-        wasOfflineRef.current = false;
-        lastFetchedRef.current = 0;
-        poll();
-      }
+      // Send auth token as the first message (not in URL)
+      ws.send(JSON.stringify({ type: 'auth', token }));
     };
 
     ws.onmessage = (e) => {
       try {
         const data = JSON.parse(e.data);
+
+        // Handle auth confirmation — mark connection as active after successful auth
+        if (data.type === 'auth_success') {
+          if (data.user_id) {
+            setRealtimeConnected(true);
+            stopPolling();
+            reconnectAttemptsRef.current = 0;
+            if (reconnectTimerRef.current) {
+              clearTimeout(reconnectTimerRef.current);
+              reconnectTimerRef.current = null;
+            }
+            if (wasOfflineRef.current) {
+              wasOfflineRef.current = false;
+              lastFetchedRef.current = 0;
+              poll();
+            }
+          }
+          return;
+        }
 
         if (data.type === 'unread_count') {
           setUnreadCount(data.count);

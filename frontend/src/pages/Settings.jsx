@@ -570,6 +570,8 @@ const BackupManagementTab = () => {
       a.href = url;
       a.download = filename;
       a.click();
+      // Revoke the blob URL to prevent memory leak
+      setTimeout(() => window.URL.revokeObjectURL(url), 100);
     } catch { toast.error('Failed to download backup'); }
   };
 

@@ -569,21 +569,31 @@ export default function CommunicationCenter() {
     // Guard: don't open a second connection
     if (wsRef.current && wsRef.current.readyState <= WebSocket.OPEN) return;
 
-    const ws = new WebSocket(`${WS_ROOT}/ws/ticket/${ticketId}/?token=${token}`);
+    // SECURITY: Send token as first message instead of URL query parameter
+    const ws = new WebSocket(`${WS_ROOT}/ws/ticket/${ticketId}/`);
     wsRef.current = ws;
 
     ws.onopen = () => {
-      setWsConnected(true);
-      reconnectAttemptsRef.current = 0;
-      if (reconnectTimerRef.current) {
-        clearTimeout(reconnectTimerRef.current);
-        reconnectTimerRef.current = null;
-      }
+      // Authenticate via first message (token not in URL logs)
+      ws.send(JSON.stringify({ type: 'auth', token }));
     };
 
     ws.onmessage = (e) => {
       try {
         const data = JSON.parse(e.data);
+
+        // Handle auth confirmation
+        if (data.type === 'auth_success') {
+          if (data.user_id) {
+            setWsConnected(true);
+            reconnectAttemptsRef.current = 0;
+            if (reconnectTimerRef.current) {
+              clearTimeout(reconnectTimerRef.current);
+              reconnectTimerRef.current = null;
+            }
+          }
+          return;
+        }
 
         if (data.type === 'message') {
           setMessages(prev => {

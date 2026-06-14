@@ -75,6 +75,21 @@ const Profile = () => {
   const handleProfilePicUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
+    
+    // Validate file type (only images)
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error('Only JPEG, PNG, GIF, and WebP images are allowed');
+      return;
+    }
+    
+    // Validate file size (max 5MB)
+    const maxSize = 5 * 1024 * 1024;
+    if (file.size > maxSize) {
+      toast.error('Image must be less than 5MB');
+      return;
+    }
+    
     const formData = new FormData();
     formData.append('profile_picture', file);
     setUploading(true);

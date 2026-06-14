@@ -28,10 +28,13 @@ logger = logging.getLogger(__name__)
 
 
 from django.conf import settings
-import string
+
+from django.db import transaction
 
 from .utils import (
     check_user_moderation,
+    log_audit_action,
+    generate_temp_password,
 )
 
 # ─── Cookie helpers ───────────────────────────────────────────────────────────
@@ -135,7 +138,6 @@ def login_view(request):
         refresh = RefreshToken.for_user(user)
 
         # Log successful login
-        from portal.views import log_audit_action
         log_audit_action(
             user=user,
             action='login',
@@ -335,16 +337,7 @@ def admin_create_user_view(request):
         return Response({'error': 'Student LRN must be exactly 12 digits'}, status=status.HTTP_400_BAD_REQUEST)
     
     if not password:
-        # Generate a random temporary password that meets complexity requirements
-        while True:
-            password = ''.join(secrets.choice(string.ascii_letters + string.digits + '!@#$%^&*') for i in range(12))
-            from django.contrib.auth.password_validation import validate_password
-            from django.core.exceptions import ValidationError as DjangoValidationError
-            try:
-                validate_password(password)
-                break
-            except DjangoValidationError:
-                continue
+        password = generate_temp_password()
 
     if User.objects.filter(username=username).exists():
         return Response({'error': 'User with this ID/Username already exists'}, status=status.HTTP_400_BAD_REQUEST)
@@ -353,85 +346,85 @@ def admin_create_user_view(request):
         return Response({'error': 'User with this email already exists'}, status=status.HTTP_400_BAD_REQUEST)
 
     try:
-        # Use direct model instantiation (not create_user) so that email=None
-        # is stored as NULL in PostgreSQL. create_user calls normalize_email()
-        # which can coerce None to '' in some Django versions, causing a unique
-        # constraint violation when multiple users have no email.
-        user = User(
-            username=username,
-            email=email,  # None → stored as NULL (no unique collision)
-            first_name=first_name,
-            last_name=last_name,
-        )
-        user.set_password(password)
-        user.role = role
-        user.staff_title = request.data.get('staff_title') if role == 'staff' else None
-        user.is_verified = True if email else False
-        user.is_approved = True  # Admin/Teacher-created accounts are auto-approved
-        user.must_change_password = True  # Force password change on first login
-        user.account_status = 'active'
-        user.save()
-        
-        # Create profile
-        from .models import Profile
-        profile, created = Profile.objects.get_or_create(user=user)
-        
-        # Map profile fields
-        profile.lrn = profile_data.get('lrn', username if role == 'student' else None)
-        profile.title = profile_data.get('title')
-        profile.sex = profile_data.get('sex')
-        
-        # Auto-fill grade level for teachers if missing
-        assigned_grade = profile_data.get('grade_level')
-        if not assigned_grade and advisory_classroom:
-            assigned_grade = advisory_classroom.grade_level
-            
-        profile.grade_level = assigned_grade
-        profile.employee_id = profile_data.get('employee_id')
-        profile.phone_number = profile_data.get('phone_number')
-        profile.address = profile_data.get('address')
-        
-        if profile_data.get('date_of_birth'):
-            from datetime import datetime
-            try:
-                profile.date_of_birth = datetime.strptime(profile_data.get('date_of_birth'), '%Y-%m-%d').date()
-            except ValueError:
-                pass
-        
-        profile.save()
-
-        # Link to EnrollmentApplication if it exists (for students)
-        if role == 'student':
-            try:
-                EnrollmentApplication.objects.filter(
-                    lrn=username,
-                    status__in=['pending', 'under_review', 'approved']
-                ).update(
-                    enrolled_student=user,
-                    status='enrolled',
-                    temp_password_display=password
-                )
-            except Exception as e:
-                logger.error(f"Failed to link manual user creation to enrollment app: {e}")
-
-        # Auto-enroll student if created by teacher
-        if advisory_classroom:
-            StudentClassEnrollment.objects.get_or_create(
-                student=user,
-                classroom=advisory_classroom
+        with transaction.atomic():
+            # Use direct model instantiation (not create_user) so that email=None
+            # is stored as NULL in PostgreSQL. create_user calls normalize_email()
+            # which can coerce None to '' in some Django versions, causing a unique
+            # constraint violation when multiple users have no email.
+            user = User(
+                username=username,
+                email=email,  # None → stored as NULL (no unique collision)
+                first_name=first_name,
+                last_name=last_name,
             )
+            user.set_password(password)
+            user.role = role
+            user.staff_title = request.data.get('staff_title') if role == 'staff' else None
+            user.is_verified = True if email else False
+            user.is_approved = True  # Admin/Teacher-created accounts are auto-approved
+            user.must_change_password = True  # Force password change on first login
+            user.account_status = 'active'
+            user.save()
+            
+            # Create profile
+            from .models import Profile
+            profile, created = Profile.objects.get_or_create(user=user)
+            
+            # Map profile fields
+            profile.lrn = profile_data.get('lrn', username if role == 'student' else None)
+            profile.title = profile_data.get('title')
+            profile.sex = profile_data.get('sex')
+            
+            # Auto-fill grade level for teachers if missing
+            assigned_grade = profile_data.get('grade_level')
+            if not assigned_grade and advisory_classroom:
+                assigned_grade = advisory_classroom.grade_level
+                
+            profile.grade_level = assigned_grade
+            profile.employee_id = profile_data.get('employee_id')
+            profile.phone_number = profile_data.get('phone_number')
+            profile.address = profile_data.get('address')
+            
+            if profile_data.get('date_of_birth'):
+                from datetime import datetime
+                try:
+                    profile.date_of_birth = datetime.strptime(profile_data.get('date_of_birth'), '%Y-%m-%d').date()
+                except ValueError:
+                    pass
+            
+            profile.save()
 
-        # Log creation
-        from portal.views import log_audit_action
-        log_audit_action(
-            user=request.user,
-            action='create',
-            model_name='User',
-            object_id=user.id,
-            object_repr=str(user),
-            description=f'{request.user.role.capitalize()} created {role} account: {username}',
-            request=request
-        )
+            # Link to EnrollmentApplication if it exists (for students)
+            if role == 'student':
+                try:
+                    EnrollmentApplication.objects.filter(
+                        lrn=username,
+                        status__in=['pending', 'under_review', 'approved']
+                    ).update(
+                        enrolled_student=user,
+                        status='enrolled',
+                        temp_password_display=password
+                    )
+                except Exception as e:
+                    logger.error(f"Failed to link manual user creation to enrollment app: {e}")
+
+            # Auto-enroll student if created by teacher
+            if advisory_classroom:
+                StudentClassEnrollment.objects.get_or_create(
+                    student=user,
+                    classroom=advisory_classroom
+                )
+
+            # Log creation
+            log_audit_action(
+                user=request.user,
+                action='create',
+                model_name='User',
+                object_id=user.id,
+                object_repr=str(user),
+                description=f'{request.user.role.capitalize()} created {role} account: {username}',
+                request=request
+            )
 
         return Response({
             'message': f'Account for {username} created successfully!',
@@ -503,7 +496,7 @@ def teacher_dashboard_stats(request):
         student_ids = StudentClassEnrollment.objects.filter(
             classroom__in=classrooms
         ).values_list('student_id', flat=True).distinct()
-        total_students = len(student_ids)
+        total_students = student_ids.count()
         
         # Get total grade entries by this teacher
         total_grades = Grade.objects.filter(teacher=user).count()
@@ -520,10 +513,12 @@ def teacher_dashboard_stats(request):
         else:
             attendance_rate = 0
 
-        # Pending grades (placeholder logic: students in classrooms who have subjects handled by this teacher but no grades yet)
-        # For simplicity, we'll just count students who don't have a final grade for the latest subject assignment
+        # Pending grades — bulk query instead of N+1 loop
+        from django.db.models import Subquery, OuterRef, IntegerField
+        from django.db.models.functions import Coalesce
+        teacher_classroom_subjects = ClassroomSubject.objects.filter(teacher=user).select_related('classroom', 'subject')
         pending_grades = 0
-        for cs in ClassroomSubject.objects.filter(teacher=user):
+        for cs in teacher_classroom_subjects:
             students_in_class = StudentClassEnrollment.objects.filter(classroom=cs.classroom).count()
             grades_in_subject = Grade.objects.filter(subject=cs.subject, classroom=cs.classroom).values('student').distinct().count()
             pending_grades += max(0, students_in_class - grades_in_subject)
@@ -542,7 +537,7 @@ def teacher_dashboard_stats(request):
         latest_messages = []
         msg_objs = ChatMessage.objects.filter(
             room__participants=user
-        ).exclude(sender=user).select_related('sender', 'sender__profile').order_by('-timestamp')
+        ).exclude(sender=user).select_related('sender', 'sender__profile').order_by('-timestamp')[:50]
         
         seen_senders = set()
         for m in msg_objs:
@@ -609,7 +604,7 @@ def student_dashboard_stats(request):
         latest_messages = []
         msg_objs = ChatMessage.objects.filter(
             room__participants=user
-        ).exclude(sender=user).select_related('sender', 'sender__profile').order_by('-timestamp')
+        ).exclude(sender=user).select_related('sender', 'sender__profile').order_by('-timestamp')[:50]
         
         seen_senders = set()
         for m in msg_objs:
@@ -679,7 +674,6 @@ class ClassroomViewSet(viewsets.ModelViewSet):
             return Classroom.objects.none()
     
     def perform_create(self, serializer):
-        from portal.views import log_audit_action
         # If admin is creating, teacher might be specified in validated_data
         # If teacher is creating, they should be assigned as the teacher (adviser)
         if 'teacher' not in serializer.validated_data and self.request.user.role == 'staff':
@@ -702,7 +696,6 @@ class ClassroomViewSet(viewsets.ModelViewSet):
         )
 
     def perform_update(self, serializer):
-        from portal.views import log_audit_action
         old_teacher = serializer.instance.teacher
         classroom = serializer.save()
         new_teacher = classroom.teacher
@@ -725,7 +718,6 @@ class ClassroomViewSet(viewsets.ModelViewSet):
         )
 
     def perform_destroy(self, instance):
-        from portal.views import log_audit_action
         teacher = instance.teacher
         log_audit_action(
             user=self.request.user,
@@ -873,7 +865,6 @@ class StudentClassEnrollmentViewSet(viewsets.ModelViewSet):
 
         enrollment = serializer.save(student=student, classroom=classroom)
 
-        from portal.views import log_audit_action
         log_audit_action(
             user=self.request.user,
             action='create',
@@ -892,7 +883,6 @@ class StudentClassEnrollmentViewSet(viewsets.ModelViewSet):
         enrollment = serializer.save()
         
         # Log grade update
-        from portal.views import log_audit_action
         log_audit_action(
             user=self.request.user,
             action='update',
@@ -980,7 +970,7 @@ class UserViewSet(viewsets.ModelViewSet):
                     try:
                         linked_student_ids = profile.linked_students.values_list('id', flat=True)
                         return queryset.filter(Q(id__in=linked_student_ids) | Q(id=user.id))
-                    except:
+                    except Exception:
                         pass
                 return queryset.filter(id=user.id)
             
@@ -1017,7 +1007,6 @@ class UserViewSet(viewsets.ModelViewSet):
                 from rest_framework.exceptions import PermissionDenied
                 raise PermissionDenied("You can only delete students from your advisory classroom.")
 
-        from portal.views import log_audit_action
         log_audit_action(
             user=self.request.user,
             action='delete',
@@ -1091,7 +1080,6 @@ class UserViewSet(viewsets.ModelViewSet):
         if count == 0:
             return Response({'error': 'No valid users found to delete'}, status=404)
             
-        from portal.views import log_audit_action
         log_audit_action(
             user=self.request.user,
             action='delete',
@@ -1195,17 +1183,7 @@ class UserViewSet(viewsets.ModelViewSet):
         new_password = request.data.get('password')
         
         if not new_password:
-            # Generate random password that meets complexity requirements
-            import string as _string
-            while True:
-                new_password = ''.join(secrets.choice(_string.ascii_letters + _string.digits + '!@#$%^&*') for i in range(12))
-                from django.contrib.auth.password_validation import validate_password
-                from django.core.exceptions import ValidationError as DjangoValidationError
-                try:
-                    validate_password(new_password, user=user)
-                    break
-                except DjangoValidationError:
-                    continue
+            new_password = generate_temp_password()
         
         user.set_password(new_password)
         user.must_change_password = True  # Force them to change it on next login
@@ -1314,63 +1292,55 @@ class UserViewSet(viewsets.ModelViewSet):
                     errors.append(f"Student ID {student_id} already exists")
                     continue
                 
-                # Generate temporary password that meets complexity requirements
-                while True:
-                    temp_password = ''.join(secrets.choice(string.ascii_letters + string.digits + '!@#$%^&*') for i in range(12))
-                    from django.contrib.auth.password_validation import validate_password
-                    from django.core.exceptions import ValidationError as DjangoValidationError
+                temp_password = generate_temp_password()
+
+                with transaction.atomic():
+                    # Create user with raw create to ensure email=None stays NULL in PostgreSQL
+                    user = User(
+                        username=student_id,
+                        email=email,
+                        first_name=first_name,
+                        last_name=last_name,
+                        role='student',
+                        is_approved=True,
+                        is_verified=True if email else False,
+                        must_change_password=True,
+                        account_status='active'
+                    )
+                    user.set_password(temp_password)
+                    user.save()
+                    
+                    # Create profile
+                    from .models import Profile
+                    Profile.objects.update_or_create(
+                        user=user,
+                        defaults={
+                            'lrn': student_id,
+                            'grade_level': grade_level,
+                            'sex': sex
+                        }
+                    )
+
+                    # Link to EnrollmentApplication if it exists
                     try:
-                        validate_password(temp_password)
-                        break
-                    except DjangoValidationError:
-                        continue
+                        EnrollmentApplication.objects.filter(
+                            lrn=student_id,
+                            status__in=['pending', 'under_review', 'approved']
+                        ).update(
+                            enrolled_student=user,
+                            status='enrolled',
+                            temp_password_display=temp_password
+                        )
+                    except Exception as e:
+                        logger.error(f"Failed to link imported user to enrollment app: {e}")
 
-                # Create user with raw create to ensure email=None stays NULL in PostgreSQL
-                user = User(
-                    username=student_id,
-                    email=email,
-                    first_name=first_name,
-                    last_name=last_name,
-                    role='student',
-                    is_approved=True,
-                    is_verified=True if email else False,
-                    must_change_password=True,
-                    account_status='active'
-                )
-                user.set_password(temp_password)
-                user.save()
-                
-                # Create profile
-                from .models import Profile
-                Profile.objects.update_or_create(
-                    user=user,
-                    defaults={
-                        'lrn': student_id,
-                        'grade_level': grade_level,
-                        'sex': sex
-                    }
-                )
-
-                # Link to EnrollmentApplication if it exists
-                try:
-                    EnrollmentApplication.objects.filter(
-                        lrn=student_id,
-                        status__in=['pending', 'under_review', 'approved']
-                    ).update(
-                        enrolled_student=user,
-                        status='enrolled',
-                        temp_password_display=temp_password
-                    )
-                except Exception as e:
-                    logger.error(f"Failed to link imported user to enrollment app: {e}")
-
-                # Auto-enroll student if imported by teacher
-                if advisory_classroom:
-                    from .models import StudentClassEnrollment
-                    StudentClassEnrollment.objects.get_or_create(
-                        student=user,
-                        classroom=advisory_classroom
-                    )
+                    # Auto-enroll student if imported by teacher
+                    if advisory_classroom:
+                        from .models import StudentClassEnrollment
+                        StudentClassEnrollment.objects.get_or_create(
+                            student=user,
+                            classroom=advisory_classroom
+                        )
 
                 created_count += 1
                 created_users.append({
@@ -1409,8 +1379,6 @@ class UserViewSet(viewsets.ModelViewSet):
             
         import csv
         import io
-        import secrets
-        import string
         
         try:
             decoded_file = file.read().decode('utf-8')
@@ -1450,42 +1418,35 @@ class UserViewSet(viewsets.ModelViewSet):
                 else:
                     sex = None
                 
-                # Generate temporary password that meets complexity requirements
-                while True:
-                    temp_password = ''.join(secrets.choice(string.ascii_letters + string.digits + '!@#$%^&*') for i in range(12))
-                    from django.contrib.auth.password_validation import validate_password
-                    from django.core.exceptions import ValidationError as DjangoValidationError
-                    try:
-                        validate_password(temp_password)
-                        break
-                    except DjangoValidationError:
-                        continue
+                temp_password = generate_temp_password()
 
-                # Create user
-                user = User(
-                    username=email,
-                    email=email,
-                    first_name=first_name,
-                    last_name=last_name,
-                    role='staff',
-                    staff_title='teacher',
-                    is_approved=True,
-                    is_verified=False,
-                    must_change_password=True,
-                    account_status='active'
-                )
-                user.set_password(temp_password)
-                user.save()
-                
-                # Create profile
-                from .models import Profile
-                Profile.objects.update_or_create(
-                    user=user,
-                    defaults={
-                        'title': title,
-                        'sex': sex
-                    }
-                )
+                with transaction.atomic():
+                    # Create user
+                    user = User(
+                        username=email,
+                        email=email,
+                        first_name=first_name,
+                        last_name=last_name,
+                        role='staff',
+                        staff_title='teacher',
+                        is_approved=True,
+                        is_verified=False,
+                        must_change_password=True,
+                        account_status='active'
+                    )
+                    user.set_password(temp_password)
+                    user.save()
+                    
+                    # Create profile
+                    from .models import Profile
+                    Profile.objects.update_or_create(
+                        user=user,
+                        defaults={
+                            'title': title,
+                            'sex': sex
+                        }
+                    )
+
                 created_count += 1
                 created_users.append({
                     'username': email,
@@ -1556,7 +1517,6 @@ class UserViewSet(viewsets.ModelViewSet):
         user.save()
         
         status_str = 'activated' if user.is_active else 'deactivated'
-        from portal.views import log_audit_action
         log_audit_action(
             user=request.user,
             action='update',
@@ -1586,8 +1546,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
             # Log the action
             try:
-                from portal.views import log_audit_action
-                log_audit_action(
+        log_audit_action(
                     user=request.user,
                     action='approve',
                     model_name='User',
@@ -1620,8 +1579,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
             # Log the action before deleting
             try:
-                from portal.views import log_audit_action
-                log_audit_action(
+        log_audit_action(
                     user=request.user,
                     action='reject',
                     model_name='User',
@@ -1751,7 +1709,6 @@ class AnnouncementViewSet(viewsets.ModelViewSet):
                     logger.error(f"Error uploading attachment {f.name}: {str(e)}")
 
             # Log announcement creation
-            from portal.views import log_audit_action
             log_audit_action(
                 user=self.request.user,
                 action='create',
@@ -1812,7 +1769,6 @@ class AnnouncementViewSet(viewsets.ModelViewSet):
         queryset.delete()
         
         # Log bulk deletion
-        from portal.views import log_audit_action
         log_audit_action(
             user=request.user,
             action='delete',
@@ -1836,7 +1792,6 @@ class AnnouncementViewSet(viewsets.ModelViewSet):
         queryset.delete()
         
         # Log action
-        from portal.views import log_audit_action
         log_audit_action(
             user=request.user,
             action='delete',
@@ -1867,7 +1822,6 @@ class AnnouncementViewSet(viewsets.ModelViewSet):
                 )
             else:
                 logger.error(f"Failed to upload attachment {f.name}: {err}")
-        from portal.views import log_audit_action
         log_audit_action(
             user=self.request.user,
             action='update',
@@ -1924,7 +1878,6 @@ class AnnouncementViewSet(viewsets.ModelViewSet):
             link='/announcements',
             title__icontains=instance.title[:30]
         ).delete()
-        from portal.views import log_audit_action
         log_audit_action(
             user=self.request.user,
             action='delete',
@@ -2206,7 +2159,6 @@ class AttendanceViewSet(viewsets.ModelViewSet):
             from rest_framework.exceptions import PermissionDenied
             raise PermissionDenied("Only teachers and admins can mark attendance")
         attendance = serializer.save(marked_by=self.request.user)
-        from portal.views import log_audit_action
         log_audit_action(
             user=self.request.user,
             action='create',
@@ -2279,7 +2231,6 @@ class LearningMaterialViewSet(viewsets.ModelViewSet):
             file_size_bytes=file_size_bytes,
         )
 
-        from portal.views import log_audit_action
         log_audit_action(
             user=self.request.user,
             action='create',
@@ -2351,7 +2302,6 @@ class ClassroomSubjectViewSet(viewsets.ModelViewSet):
             from rest_framework.exceptions import PermissionDenied
             raise PermissionDenied("Only admins and teachers can assign subjects to classrooms")
         instance = serializer.save()
-        from portal.views import log_audit_action
         log_audit_action(user, 'create', 'ClassroomSubject',
                          object_id=instance.id,
                          object_repr=str(instance),
@@ -2367,7 +2317,6 @@ class ClassroomSubjectViewSet(viewsets.ModelViewSet):
             from rest_framework.exceptions import PermissionDenied
             raise PermissionDenied("You can only edit assignments for subjects assigned to you")
         instance = serializer.save()
-        from portal.views import log_audit_action
         log_audit_action(user, 'update', 'ClassroomSubject',
                          object_id=instance.id,
                          object_repr=str(instance),
@@ -2382,7 +2331,6 @@ class ClassroomSubjectViewSet(viewsets.ModelViewSet):
         if user.role == 'staff' and instance.teacher != user:
             from rest_framework.exceptions import PermissionDenied
             raise PermissionDenied("You can only remove assignments for subjects assigned to you")
-        from portal.views import log_audit_action
         log_audit_action(user, 'delete', 'ClassroomSubject',
                          object_id=instance.id,
                          object_repr=str(instance),
@@ -2690,7 +2638,7 @@ def admin_dashboard_stats(request):
         if AuditLog:
             try:
                 recent_activity = AuditLog.objects.order_by('-timestamp')[:5]
-            except:
+            except Exception:
                 pass
         
         # Optimized Active Users Over Time (Last 24 Hours)
@@ -4095,7 +4043,6 @@ def maintenance_mode_view(request):
     
     # Log the action
     if request.user.is_authenticated:
-        from portal.views import log_audit_action
         log_audit_action(
             user=request.user,
             action='maintenance_mode_toggle',
@@ -4261,8 +4208,7 @@ class GradeViewSet(viewsets.ModelViewSet):
                 serializer.save()
                 
                 # Log the update
-                from portal.views import log_audit_action
-                log_audit_action(
+        log_audit_action(
                     user=self.request.user,
                     action='grade_update',
                     model_name='Grade',
@@ -4347,7 +4293,6 @@ class GradeViewSet(viewsets.ModelViewSet):
         grade = serializer.instance
 
         # Log the action
-        from portal.views import log_audit_action
         log_audit_action(
             user=user,
             action='grade_create',
@@ -4384,7 +4329,6 @@ class GradeViewSet(viewsets.ModelViewSet):
         grade.refresh_from_db()
 
         # Log the action
-        from portal.views import log_audit_action
         log_audit_action(
             user=user,
             action='grade_update',
@@ -4414,7 +4358,6 @@ class GradeViewSet(viewsets.ModelViewSet):
             raise serializers.ValidationError("Only admins can delete grades")
         
         # Log the action
-        from portal.views import log_audit_action
         log_audit_action(
             user=user,
             action='grade_delete',
@@ -4700,7 +4643,6 @@ class GradeReportViewSet(viewsets.ModelViewSet):
         report.calculate_averages()
         
         # Log the action
-        from portal.views import log_audit_action
         log_audit_action(
             user=user,
             action='grade_report_create',
@@ -5903,7 +5845,6 @@ class ScheduleViewSet(viewsets.ModelViewSet):
             from rest_framework.exceptions import PermissionDenied
             raise PermissionDenied("Only admins can create schedules.")
         schedule = serializer.save()
-        from portal.views import log_audit_action
         log_audit_action(
             user=self.request.user,
             action='create',
@@ -5932,7 +5873,6 @@ class ScheduleViewSet(viewsets.ModelViewSet):
             from rest_framework.exceptions import PermissionDenied
             raise PermissionDenied("Only admins can update schedules.")
         schedule = serializer.save()
-        from portal.views import log_audit_action
         log_audit_action(
             user=self.request.user,
             action='update',
@@ -5947,7 +5887,6 @@ class ScheduleViewSet(viewsets.ModelViewSet):
         if self.request.user.role != 'admin':
             from rest_framework.exceptions import PermissionDenied
             raise PermissionDenied("Only admins can delete schedules.")
-        from portal.views import log_audit_action
         log_audit_action(
             user=self.request.user,
             action='delete',
@@ -6584,7 +6523,6 @@ class TicketViewSet(viewsets.ModelViewSet):
                 link='/communication-center'
             )
         
-        from portal.views import log_audit_action
         log_audit_action(
             user=self.request.user,
             action='create',
@@ -6775,7 +6713,6 @@ class TicketViewSet(viewsets.ModelViewSet):
             return Response({'error': 'Only the creator or admin can delete this ticket'}, status=403)
 
         from django.utils import timezone as _tz
-        from portal.views import log_audit_action
 
         # Soft delete: set archived + log the action
         # deleted_at column will be used once migration 0087 is applied

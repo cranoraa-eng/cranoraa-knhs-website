@@ -8,15 +8,68 @@ any remaining call sites fail gracefully rather than crashing at import time.
 Active utilities:
   - upload_to_supabase   — profile picture uploads
   - check_user_moderation — mute/suspend checks for chat
+  - log_audit_action      — audit trail logging (moved from portal.views)
+  - generate_temp_password — secure random password with validation
 """
 import os
 import secrets
+import string
 import logging
 
 from django.conf import settings
 from django.utils import timezone
 
 logger = logging.getLogger(__name__)
+
+
+# ─── Audit logging ────────────────────────────────────────────────────────────
+
+def log_audit_action(user, action, model_name='', object_id=None, object_repr='',
+                     description='', request=None, action_type=None):
+    """
+    Log an audit action. Moved here from portal.views to avoid circular imports.
+    Import this from accounts.utils instead of portal.views.
+    """
+    from portal.models import AuditLog
+
+    ip_address = None
+    user_agent = ''
+    if request:
+        ip_address = request.META.get('REMOTE_ADDR') or request.META.get('HTTP_X_FORWARDED_FOR', '').split(',')[0].strip() or None
+        user_agent = request.META.get('HTTP_USER_AGENT', '')[:500]
+
+    AuditLog.objects.create(
+        user=user,
+        action=action,
+        action_type=action_type,
+        model_name=model_name,
+        object_id=object_id,
+        object_repr=str(object_repr)[:255],
+        description=description,
+        ip_address=ip_address,
+        user_agent=user_agent,
+    )
+
+
+# ─── Password generation ─────────────────────────────────────────────────────
+
+def generate_temp_password(length=12, max_attempts=50):
+    """
+    Generate a random temporary password that meets Django's password validators.
+    Raises RuntimeError if a valid password cannot be generated within max_attempts.
+    """
+    from django.contrib.auth.password_validation import validate_password
+    from django.core.exceptions import ValidationError as DjangoValidationError
+
+    chars = string.ascii_letters + string.digits + '!@#$%^&*'
+    for _ in range(max_attempts):
+        password = ''.join(secrets.choice(chars) for _ in range(length))
+        try:
+            validate_password(password)
+            return password
+        except DjangoValidationError:
+            continue
+    raise RuntimeError(f"Could not generate a valid password after {max_attempts} attempts")
 
 
 # ─── Email stubs (email sending removed) ─────────────────────────────────────
