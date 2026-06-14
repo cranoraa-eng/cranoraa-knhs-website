@@ -19,7 +19,7 @@ from .serializers import (UserSerializer, ClassroomSerializer, StudentClassEnrol
     full_name)
 from .models import User, Profile, Classroom, StudentClassEnrollment, Announcement, AnnouncementAttachment, AnnouncementComment, Attendance, LearningMaterial, Subject, ClassroomSubject, ScratchCard, Fee, Notification, EnrollmentApplication, EnrollmentDocument, EnrollmentStatusHistory, WebsiteContent, Grade, GradeReport, ChatRoom, ChatMessage, MessageReaction, Friendship, SystemSetting, Assignment, Submission, ReportedMessage, Room, TimeSlot, Schedule, FCMToken, OnboardingState
 from .permissions import IsAdmin, IsAdminOrStaff, IsAdminOrReadOnly
-from .throttles import AuthRateThrottle, CheckResultRateThrottle, EnrollmentRateThrottle, CsvImportRateThrottle
+from .throttles import AuthRateThrottle, CheckResultRateThrottle, EnrollmentRateThrottle, CsvImportRateThrottle, AdminWriteRateThrottle, PublicReadRateThrottle, DashboardRateThrottle, LogoutRateThrottle
 # Moved portal imports inside functions to avoid circular dependencies
 import logging
 import secrets
@@ -237,6 +237,7 @@ def change_password_view(request):
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
+@throttle_classes([LogoutRateThrottle])
 def logout_view(request):
     """
     Blacklist the refresh token and clear the httpOnly cookie.
@@ -297,7 +298,8 @@ def cookie_token_refresh_view(request):
 
 
 @api_view(['POST'])
-@permission_classes([IsAdminOrStaff])
+@permission_classes([IsAdminUser])
+@throttle_classes([AdminWriteRateThrottle])
 def admin_create_user_view(request):
     username = request.data.get('username') # For students, this will be their Student ID
     email = request.data.get('email')
@@ -2537,6 +2539,7 @@ def maintenance_status_view(request):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
+@throttle_classes([DashboardRateThrottle])
 def admin_dashboard_stats(request):
     try:
         if request.user.role not in ['admin', 'staff']:
@@ -2546,6 +2549,13 @@ def admin_dashboard_stats(request):
         from django.utils import timezone
         import datetime
         from datetime import timedelta
+        from django.core.cache import cache
+        
+        # Cache key includes role and academic year
+        cache_key = f'dashboard_stats_{request.user.role}_{request.user.id}_{request.query_params.get("academic_year", "all")}'
+        cached = cache.get(cache_key)
+        if cached:
+            return Response(cached)
         
         # Use local Manila time for accurate daily stats
         now = timezone.localtime(timezone.now())
@@ -2599,23 +2609,43 @@ def admin_dashboard_stats(request):
         
         active_users = User.objects.filter(last_activity__gte=five_mins_ago).count()
 
-        # Attendance Trends (Last 30 Days) - Filtered for charts
-        last_30_days_list = [today - datetime.timedelta(days=i) for i in range(29, -1, -1)]
+        # Attendance Trends (Last 30 Days) - Single query with annotation
+        last_30_days = today - datetime.timedelta(days=30)
+        from django.db.models.functions import TruncDate
+        daily_trends = (
+            att_qs
+            .filter(date__gte=last_30_days, date__lte=today)
+            .exclude(date__weekDay__in=[1, 7])  # Skip weekends (Sunday=1, Saturday=7)
+            .annotate(day=TruncDate('date'))
+            .values('day')
+            .annotate(
+                total=Count('id'),
+                present=Count('id', filter=Q(status='present')),
+                late=Count('id', filter=Q(status='late')),
+            )
+            .order_by('day')
+        )
         attendance_trends = []
-        for day in last_30_days_list:
-            # Skip weekends in trends calculation
-            if day.weekday() in [5, 6]: continue
-            
-            day_records = att_qs.filter(date=day)
-            day_total = day_records.count()
-            day_present = day_records.filter(status='present').count()
-            day_late    = day_records.filter(status='late').count()
-            attendance_trends.append({
-                'date': day.strftime('%Y-%m-%d'),
-                'present': day_present,
-                'late': day_late,
-                'rate': round(((day_present + day_late) / day_total * 100), 1) if day_total > 0 else 0
-            })
+        trend_map = {}
+        for row in daily_trends:
+            total = row['total']
+            present_late = row['present'] + row['late']
+            trend_map[row['day'].strftime('%Y-%m-%d')] = {
+                'present': row['present'],
+                'late': row['late'],
+                'rate': round((present_late / total * 100), 1) if total > 0 else 0
+            }
+        # Fill in missing days (weekends)
+        for i in range(30, -1, -1):
+            day = today - datetime.timedelta(days=i)
+            if day.weekday() in [5, 6]:
+                continue
+            day_str = day.strftime('%Y-%m-%d')
+            if day_str in trend_map:
+                trend_map[day_str]['date'] = day_str
+                attendance_trends.append(trend_map[day_str])
+            else:
+                attendance_trends.append({'date': day_str, 'present': 0, 'late': 0, 'rate': 0})
 
         # Grades - only count final grades
         grades = Grade.objects.filter(transmuted_score__isnull=False, grade_type='final_grade')
@@ -2638,25 +2668,22 @@ def admin_dashboard_stats(request):
         below_75 = grades.filter(transmuted_score__lt=75).count()
 
         # --- GENERAL AVERAGE DISTRIBUTION (Student-wise, via DB aggregation) ---
-        from django.db.models import Count, Case, When, IntegerField as IF2
         student_averages = grades.values('student').annotate(avg=Avg('transmuted_score'))
         total_students_graded = student_averages.count()
 
-        ga_outstanding = 0
-        ga_very_satisfactory = 0
-        ga_satisfactory = 0
-        ga_fairly_satisfactory = 0
-        ga_below_75 = 0
-
-        for sa in student_averages:
-            score = sa['avg']
-            if score is None:
-                continue
-            if score >= 90: ga_outstanding += 1
-            elif score >= 85: ga_very_satisfactory += 1
-            elif score >= 80: ga_satisfactory += 1
-            elif score >= 75: ga_fairly_satisfactory += 1
-            else: ga_below_75 += 1
+        # Use DB-level bucketing instead of Python loop
+        ga_buckets = student_averages.aggregate(
+            outstanding=Count('student', filter=Q(avg__gte=90)),
+            very_satisfactory=Count('student', filter=Q(avg__gte=85, avg__lt=90)),
+            satisfactory=Count('student', filter=Q(avg__gte=80, avg__lt=85)),
+            fairly_satisfactory=Count('student', filter=Q(avg__gte=75, avg__lt=80)),
+            below_75=Count('student', filter=Q(avg__lt=75)),
+        )
+        ga_outstanding = ga_buckets['outstanding']
+        ga_very_satisfactory = ga_buckets['very_satisfactory']
+        ga_satisfactory = ga_buckets['satisfactory']
+        ga_fairly_satisfactory = ga_buckets['fairly_satisfactory']
+        ga_below_75 = ga_buckets['below_75']
 
         # Recent Activity
         recent_activity = []
@@ -2849,9 +2876,10 @@ def admin_dashboard_stats(request):
             'system_settings': SystemSettingSerializer(SystemSetting.get_settings()).data if SystemSetting else None,
             'recent_grades_count': Grade.objects.filter(submitted_at__date__gte=this_week_start).count(),
             'total_announcements': Announcement.objects.filter(status='live').count(),
-            'recent_announcements': announcements_data,
-            'latest_messages': latest_messages,
         }
+        
+        # Cache for 2 minutes
+        cache.set(cache_key, res_data, timeout=120)
         
         return Response(res_data)
     except Exception as e:
@@ -3917,6 +3945,7 @@ class WebsiteContentViewSet(viewsets.ModelViewSet):
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
+@throttle_classes([PublicReadRateThrottle])
 def public_announcements_view(request):
     """Public endpoint to fetch all public announcements for the school website"""
     queryset = Announcement.objects.filter(is_public=True, status='live').order_by('-is_pinned', '-created_at')
@@ -3926,6 +3955,7 @@ def public_announcements_view(request):
 
 @api_view(['GET'])
 @permission_classes([IsAdminUser])
+@throttle_classes([DashboardRateThrottle])
 def system_metrics_view(request):
     """Returns system metrics for the System Command Center"""
     from django.db import connection
@@ -4055,6 +4085,7 @@ def maintenance_feed_view(request):
 
 @api_view(['POST'])
 @permission_classes([IsAdminUser])
+@throttle_classes([AdminWriteRateThrottle])
 def maintenance_mode_view(request):
     """Toggle maintenance mode"""
     enabled = request.data.get('enabled', False)
@@ -4097,6 +4128,7 @@ def _get_time_ago(timestamp):
 
 @api_view(['POST'])
 @permission_classes([IsAdminUser])
+@throttle_classes([AdminWriteRateThrottle])
 def force_sync_view(request):
     """Force sync between portal and website"""
     try:
@@ -4118,6 +4150,7 @@ def force_sync_view(request):
 
 @api_view(['POST'])
 @permission_classes([IsAdminUser])
+@throttle_classes([AdminWriteRateThrottle])
 def run_backup_view(request):
     """Run system backup"""
     try:
@@ -4136,6 +4169,7 @@ def run_backup_view(request):
 
 @api_view(['POST'])
 @permission_classes([IsAdminUser])
+@throttle_classes([AdminWriteRateThrottle])
 def clear_cache_view(request):
     """Clear system cache"""
     try:

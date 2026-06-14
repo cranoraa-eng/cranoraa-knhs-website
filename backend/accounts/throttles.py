@@ -61,3 +61,31 @@ class CsvImportRateThrottle(UserRateThrottle):
     5 imports per hour per user.
     """
     scope = 'csv_import'
+
+
+class AdminWriteRateThrottle(UserRateThrottle):
+    """
+    30 writes/min for admin actions (create user, toggle maintenance, etc.).
+    """
+    scope = 'admin_write'
+
+
+class PublicReadRateThrottle(AnonRateThrottle):
+    """
+    60 reads/min for public endpoints (announcements, login page).
+    """
+    scope = 'public_read'
+
+
+class DashboardRateThrottle(UserRateThrottle):
+    """
+    20 reads/min for heavy dashboard/stats endpoints.
+    """
+    scope = 'dashboard'
+
+
+class LogoutRateThrottle(UserRateThrottle):
+    """
+    10/min per user for logout. Prevents token blacklist abuse.
+    """
+    scope = 'logout'

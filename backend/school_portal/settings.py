@@ -219,6 +219,10 @@ REST_FRAMEWORK = {
         'check_result': '10/hour',    # scratch-card grade lookup
         'enrollment': '20/hour',      # public enrollment form submissions
         'csv_import': '5/hour',       # CSV import per user
+        'admin_write': '30/minute',   # admin create user, toggle maintenance, etc.
+        'public_read': '60/minute',   # public endpoints (announcements, login)
+        'dashboard': '20/minute',     # heavy dashboard/stats endpoints
+        'logout': '10/minute',        # logout (prevent token blacklist abuse)
     },
 }
 
