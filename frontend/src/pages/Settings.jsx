@@ -226,7 +226,6 @@ const EmailServiceNotice = ({ health }) => {
 const GradingSettingsTab = () => {
   const [settings, setSettings] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     api.get('/system/settings/')
@@ -235,64 +234,96 @@ const GradingSettingsTab = () => {
       .finally(() => setLoading(false));
   }, []);
 
-  const save = async (e) => {
-    e.preventDefault();
-    setSaving(true);
-    try {
-      await api.patch('/system/settings/', {
-        academic_level: settings.academic_level,
-        current_quarter: settings.current_quarter,
-      });
-      toast.success('Grading settings saved');
-    } catch { toast.error('Failed to save'); }
-    finally { setSaving(false); }
-  };
-
   if (loading || !settings) return <div className="flex justify-center py-16"><LoadingSpinner /></div>;
 
   const isJHS = settings.academic_level === 'jhs';
+  const currentQuarterNum = parseInt(settings.current_quarter) || 1;
 
   return (
-    <form onSubmit={save} className="space-y-6">
-      <SectionCard title="Grading Configuration" subtitle="Configure grading periods and academic level" icon="chart">
+    <div className="space-y-6">
+      <SectionCard title="Grading Configuration" subtitle="Current grading period structure (set in Academic Context)" icon="chart">
         <div className="space-y-5">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Field label="Academic Level">
-              <select value={settings.academic_level} onChange={e => setSettings(p => ({...p, academic_level: e.target.value, current_quarter: '1'}))}
-                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-100 focus:border-violet-500 transition-all">
-                <option value="jhs">Junior High School (Grades 7-10)</option>
-                <option value="shs">Senior High School (Grades 11-12)</option>
-              </select>
-            </Field>
-            <Field label={isJHS ? 'Current Quarter' : 'Current Semester'}>
-              <select value={settings.current_quarter} onChange={e => setSettings(p => ({...p, current_quarter: e.target.value}))}
-                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-100 focus:border-violet-500 transition-all">
-                {isJHS ? (
-                  <>
-                    <option value="1">1st Quarter</option>
-                    <option value="2">2nd Quarter</option>
-                    <option value="3">3rd Quarter</option>
-                    <option value="4">4th Quarter</option>
-                  </>
-                ) : (
-                  <>
-                    <option value="1">1st Semester</option>
-                    <option value="2">2nd Semester</option>
-                    <option value="3">3rd Semester (Summer)</option>
-                  </>
-                )}
-              </select>
-            </Field>
+            <div className="bg-slate-50 border border-slate-200 rounded-lg p-4">
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Academic Level</p>
+              <p className="text-sm font-bold text-slate-800">{isJHS ? 'Junior High School (Grades 7-10)' : 'Senior High School (Grades 11-12)'}</p>
+            </div>
+            <div className="bg-slate-50 border border-slate-200 rounded-lg p-4">
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{isJHS ? 'Current Quarter' : 'Current Semester'}</p>
+              <p className="text-sm font-bold text-slate-800">{isJHS ? `${currentQuarterNum}${currentQuarterNum === 1 ? 'st' : currentQuarterNum === 2 ? 'nd' : currentQuarterNum === 3 ? 'rd' : 'th'} Quarter` : `${currentQuarterNum}${currentQuarterNum === 1 ? 'st' : currentQuarterNum === 2 ? 'nd' : 'rd'} Semester`}</p>
+            </div>
+          </div>
+
+          <div className="bg-slate-50 border border-slate-200 rounded-lg p-4">
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Grading Period Structure</p>
+            <div className="flex flex-wrap gap-2">
+              {(isJHS
+                ? ['1st Quarter', '2nd Quarter', '3rd Quarter', '4th Quarter']
+                : ['1st Semester', '2nd Semester', '3rd Semester (Summer)']
+              ).map((label, i) => (
+                <div key={i} className={`flex items-center gap-2 px-3 py-2 rounded-lg border ${
+                  (i + 1) === currentQuarterNum
+                    ? 'bg-violet-100 border-violet-300 text-violet-800'
+                    : 'bg-white border-slate-200 text-slate-600'
+                }`}>
+                  <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                    (i + 1) === currentQuarterNum
+                      ? 'bg-violet-600 text-white'
+                      : 'bg-slate-200 text-slate-600'
+                  }`}>{i + 1}</span>
+                  <span className="text-xs font-bold">{label}</span>
+                </div>
+              ))}
+            </div>
+            <p className="text-[11px] text-slate-500 font-medium mt-3">
+              {isJHS
+                ? 'Junior High School uses a quarter-based grading system with 4 grading periods per academic year.'
+                : 'Senior High School uses a semester-based grading system with 3 grading periods per academic year.'}
+            </p>
           </div>
         </div>
       </SectionCard>
 
-      <div className="flex justify-end">
-        <Button type="submit" disabled={saving} loading={saving} variant="primary">
-          Save Grading Settings
-        </Button>
+      <SectionCard title="Grading Weights" subtitle="Default weights applied to all classroom-subjects" icon="chart">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="bg-slate-50 border border-slate-200 rounded-lg p-4 text-center">
+            <p className="text-2xl font-extrabold text-violet-600">{settings.default_ww_weight || 30}%</p>
+            <p className="text-xs font-bold text-slate-600 mt-1">Written Work</p>
+          </div>
+          <div className="bg-slate-50 border border-slate-200 rounded-lg p-4 text-center">
+            <p className="text-2xl font-extrabold text-violet-600">{settings.default_pt_weight || 50}%</p>
+            <p className="text-xs font-bold text-slate-600 mt-1">Performance Task</p>
+          </div>
+          <div className="bg-slate-50 border border-slate-200 rounded-lg p-4 text-center">
+            <p className="text-2xl font-extrabold text-violet-600">{settings.default_qa_weight || 20}%</p>
+            <p className="text-xs font-bold text-slate-600 mt-1">Quarterly Assessment</p>
+          </div>
+        </div>
+      </SectionCard>
+
+      <SectionCard title="Passing Standard" subtitle="Minimum grade to pass" icon="shield">
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+          {[
+            { label: 'Outstanding', range: '90-100', color: 'emerald' },
+            { label: 'Very Satisfactory', range: '85-89', color: 'blue' },
+            { label: 'Satisfactory', range: '80-84', color: 'amber' },
+            { label: 'Fairly Satisfactory', range: `${settings.passing_grade || 75}-79`, color: 'orange' },
+            { label: 'Did Not Meet', range: `Below ${settings.passing_grade || 75}`, color: 'red' },
+          ].map(item => (
+            <div key={item.label} className={`bg-${item.color}-50 border border-${item.color}-200 rounded-lg p-2 text-center`}>
+              <p className="text-xs font-extrabold text-slate-900">{item.range}</p>
+              <p className="text-[10px] font-bold text-slate-600 mt-0.5">{item.label}</p>
+            </div>
+          ))}
+        </div>
+      </SectionCard>
+
+      <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+        <p className="text-xs font-bold text-amber-800">
+          To change the academic level or current grading period, go to <span className="underline">Settings &gt; Academic Context</span>.
+        </p>
       </div>
-    </form>
+    </div>
   );
 };
 
