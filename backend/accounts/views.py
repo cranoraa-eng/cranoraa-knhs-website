@@ -6402,7 +6402,7 @@ class TicketViewSet(viewsets.ModelViewSet):
             ticket=OuterRef('pk')
         ).order_by('-created_at')
 
-        qs = Ticket.objects.filter(is_archived=False, deleted_at__isnull=True).select_related(
+        qs = Ticket.objects.filter(is_archived=False).select_related(
             'created_by', 'assigned_to'
         ).annotate(
             message_count=Count('messages'),
@@ -6478,7 +6478,6 @@ class TicketViewSet(viewsets.ModelViewSet):
                 created_by=request.user,
                 assigned_to_id=assigned_to,
                 is_archived=False,
-                deleted_at__isnull=True,
             ).exclude(status__in=['resolved', 'closed']).order_by('-updated_at').first()
             if existing:
                 return Response(
@@ -6751,10 +6750,10 @@ class TicketViewSet(viewsets.ModelViewSet):
         from django.utils import timezone as _tz
         from portal.views import log_audit_action
 
-        # Soft delete: set deleted_at timestamp (filtered out by get_queryset)
-        ticket.deleted_at = _tz.now()
+        # Soft delete: set archived + log the action
+        # deleted_at column will be used once migration 0087 is applied
         ticket.is_archived = True
-        ticket.save(update_fields=['deleted_at', 'is_archived', 'updated_at'])
+        ticket.save(update_fields=['is_archived', 'updated_at'])
 
         log_audit_action(
             user=request.user,
@@ -6883,7 +6882,7 @@ class TicketViewSet(viewsets.ModelViewSet):
 
         # Look for existing non-archived ticket between these two users
         existing = Ticket.objects.filter(
-            is_archived=False, deleted_at__isnull=True
+            is_archived=False
         ).filter(
             Q(created_by=user, assigned_to=target_user) |
             Q(created_by=target_user, assigned_to=user)
@@ -6920,7 +6919,7 @@ class TicketViewSet(viewsets.ModelViewSet):
     def stats(self, request):
         """Get ticket statistics."""
         user = request.user
-        base_qs = Ticket.objects.filter(deleted_at__isnull=True)
+        base_qs = Ticket.objects.all()
 
         # Role-based filtering
         if user.role in ('student', 'parent'):
