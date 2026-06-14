@@ -266,7 +266,7 @@ const Layout = () => {
   const isCommunicationTabActive = (tab) => hubTabs?.isActive?.(tab) || false;
 
   const NAV_STRUCTURE = {
-    teacher: [
+    staff: [
       {
         header: 'Workspaces',
         items: [
