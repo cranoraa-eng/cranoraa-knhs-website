@@ -6,6 +6,100 @@ import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
 import { Button, LoadingSpinner } from '../components/ui';
 
+// Simple SVG icon map
+const ICONS = {
+  building: (
+    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+    </svg>
+  ),
+  calendar: (
+    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+    </svg>
+  ),
+  clipboard: (
+    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+    </svg>
+  ),
+  user: (
+    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+    </svg>
+  ),
+  users: (
+    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+    </svg>
+  ),
+  lock: (
+    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+    </svg>
+  ),
+  globe: (
+    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+    </svg>
+  ),
+  message: (
+    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+    </svg>
+  ),
+  cog: (
+    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+    </svg>
+  ),
+  wrench: (
+    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+    </svg>
+  ),
+  palette: (
+    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+    </svg>
+  ),
+  school: (
+    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 14l9-5-9-5-9 5 9 5zm0 7l-9-5 9-5 9 5-9 5z" />
+    </svg>
+  ),
+  shield: (
+    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+    </svg>
+  ),
+  chart: (
+    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+    </svg>
+  ),
+  database: (
+    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" />
+    </svg>
+  ),
+  mail: (
+    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+    </svg>
+  ),
+  clock: (
+    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+  ),
+};
+
+const Icon = ({ name, className = '' }) => (
+  <span className={className} aria-hidden="true">{ICONS[name] || null}</span>
+);
+
 const Toggle = ({ checked, onChange, disabled, color = 'blue' }) => {
   const colors = {
     blue:    'peer-checked:bg-violet-600',
@@ -47,7 +141,9 @@ const Input = ({ className = '', ...props }) => (
 const SectionCard = ({ title, subtitle, icon, children, danger, className = '' }) => (
   <div className={`bg-white border rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow ${danger ? 'border-rose-200' : 'border-slate-200'} ${className}`}>
     <div className={`px-5 py-4 border-b flex items-center gap-3 ${danger ? 'bg-rose-50 border-rose-100' : 'bg-slate-50 border-slate-100'}`}>
-      <span className="text-lg" aria-hidden="true">{icon}</span>
+      <div className={`flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center ${danger ? 'bg-rose-100 text-rose-600' : 'bg-violet-100 text-violet-600'}`}>
+        <Icon name={icon} />
+      </div>
       <div>
         <h3 className={`text-sm font-extrabold tracking-tight ${danger ? 'text-rose-900' : 'text-slate-900'}`}>{title}</h3>
         {subtitle && <p className={`text-[10px] font-bold uppercase tracking-wider mt-0.5 ${danger ? 'text-rose-600' : 'text-slate-500'}`}>{subtitle}</p>}
@@ -125,19 +221,488 @@ const EmailServiceNotice = ({ health }) => {
   );
 };
 
-// ── Placeholder for future tabs ─────────────────────────────────────────────
+// ── Grading Settings Tab ─────────────────────────────────────────────────
 
-const PlaceholderTab = ({ title, description }) => (
-  <SectionCard title={title} subtitle={description} icon="settings">
-    <div className="flex flex-col items-center justify-center py-10 text-slate-400">
-      <svg className="w-12 h-12 mb-4 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-      </svg>
-      <p className="text-sm font-bold">Coming Soon</p>
-      <p className="text-xs mt-1">This section is under development.</p>
+const GradingSettingsTab = () => {
+  const [settings, setSettings] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    api.get('/system/settings/')
+      .then(r => setSettings(r.data))
+      .catch(() => toast.error('Failed to load grading settings'))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const save = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      await api.patch('/system/settings/', {
+        academic_level: settings.academic_level,
+        current_quarter: settings.current_quarter,
+      });
+      toast.success('Grading settings saved');
+    } catch { toast.error('Failed to save'); }
+    finally { setSaving(false); }
+  };
+
+  if (loading || !settings) return <div className="flex justify-center py-16"><LoadingSpinner /></div>;
+
+  const isJHS = settings.academic_level === 'jhs';
+
+  return (
+    <form onSubmit={save} className="space-y-6">
+      <SectionCard title="Grading Configuration" subtitle="Configure grading periods and academic level" icon="chart">
+        <div className="space-y-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Field label="Academic Level">
+              <select value={settings.academic_level} onChange={e => setSettings(p => ({...p, academic_level: e.target.value, current_quarter: '1'}))}
+                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-100 focus:border-violet-500 transition-all">
+                <option value="jhs">Junior High School (Grades 7-10)</option>
+                <option value="shs">Senior High School (Grades 11-12)</option>
+              </select>
+            </Field>
+            <Field label={isJHS ? 'Current Quarter' : 'Current Semester'}>
+              <select value={settings.current_quarter} onChange={e => setSettings(p => ({...p, current_quarter: e.target.value}))}
+                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-100 focus:border-violet-500 transition-all">
+                {isJHS ? (
+                  <>
+                    <option value="1">1st Quarter</option>
+                    <option value="2">2nd Quarter</option>
+                    <option value="3">3rd Quarter</option>
+                    <option value="4">4th Quarter</option>
+                  </>
+                ) : (
+                  <>
+                    <option value="1">1st Semester</option>
+                    <option value="2">2nd Semester</option>
+                    <option value="3">3rd Semester (Summer)</option>
+                  </>
+                )}
+              </select>
+            </Field>
+          </div>
+
+          {/* Grading Weights Info */}
+          <div className="bg-slate-50 border border-slate-200 rounded-lg p-4">
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">DepEd Grading Weights</p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="bg-white border border-slate-200 rounded-lg p-3 text-center">
+                <p className="text-2xl font-extrabold text-violet-600">30%</p>
+                <p className="text-xs font-bold text-slate-600 mt-1">Written Work</p>
+              </div>
+              <div className="bg-white border border-slate-200 rounded-lg p-3 text-center">
+                <p className="text-2xl font-extrabold text-violet-600">50%</p>
+                <p className="text-xs font-bold text-slate-600 mt-1">Performance Task</p>
+              </div>
+              <div className="bg-white border border-slate-200 rounded-lg p-3 text-center">
+                <p className="text-2xl font-extrabold text-violet-600">20%</p>
+                <p className="text-xs font-bold text-slate-600 mt-1">Quarterly Assessment</p>
+              </div>
+            </div>
+            <p className="text-[11px] text-slate-500 font-medium mt-3">
+              These weights follow DepEd standards and are applied when computing final grades.
+            </p>
+          </div>
+
+          {/* Passing Grade Info */}
+          <div className="bg-slate-50 border border-slate-200 rounded-lg p-4">
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Passing Standards</p>
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+              {[
+                { label: 'Outstanding', range: '90-100', color: 'emerald' },
+                { label: 'Very Satisfactory', range: '85-89', color: 'blue' },
+                { label: 'Satisfactory', range: '80-84', color: 'amber' },
+                { label: 'Fairly Satisfactory', range: '75-79', color: 'orange' },
+                { label: 'Did Not Meet', range: 'Below 75', color: 'red' },
+              ].map(item => (
+                <div key={item.label} className={`bg-${item.color}-50 border border-${item.color}-200 rounded-lg p-2 text-center`}>
+                  <p className="text-xs font-extrabold text-slate-900">{item.range}</p>
+                  <p className="text-[10px] font-bold text-slate-600 mt-0.5">{item.label}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </SectionCard>
+
+      <div className="flex justify-end">
+        <Button type="submit" disabled={saving} loading={saving} variant="primary">
+          Save Grading Settings
+        </Button>
+      </div>
+    </form>
+  );
+};
+
+// ── Roles & Permissions Tab ──────────────────────────────────────────────
+
+const RolesPermissionsTab = () => {
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState('');
+
+  useEffect(() => {
+    api.get('/users/')
+      .then(r => {
+        const data = r.data.results || r.data;
+        setUsers(data);
+      })
+      .catch(() => toast.error('Failed to load users'))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const roleConfig = {
+    admin: { label: 'Administrator', color: 'bg-rose-100 text-rose-700', desc: 'Full system access' },
+    staff: { label: 'Staff', color: 'bg-blue-100 text-blue-700', desc: 'Teacher / Registrar / Guidance' },
+    student: { label: 'Student', color: 'bg-emerald-100 text-emerald-700', desc: 'Student portal access' },
+    parent: { label: 'Parent', color: 'bg-amber-100 text-amber-700', desc: 'Parent portal access' },
+  };
+
+  const filtered = users.filter(u => {
+    const q = filter.toLowerCase();
+    return !q || u.role === q || u.username?.toLowerCase().includes(q) || u.first_name?.toLowerCase().includes(q);
+  });
+
+  const roleCounts = users.reduce((acc, u) => {
+    acc[u.role] = (acc[u.role] || 0) + 1;
+    return acc;
+  }, {});
+
+  if (loading) return <div className="flex justify-center py-16"><LoadingSpinner /></div>;
+
+  return (
+    <div className="space-y-6">
+      <SectionCard title="Role Overview" subtitle="User distribution by role" icon="shield">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {Object.entries(roleConfig).map(([key, config]) => (
+            <div key={key} className={`${config.color} rounded-lg p-3 text-center`}>
+              <p className="text-2xl font-extrabold">{roleCounts[key] || 0}</p>
+              <p className="text-xs font-bold mt-1">{config.label}</p>
+            </div>
+          ))}
+        </div>
+      </SectionCard>
+
+      <SectionCard title="Role Permissions" subtitle="What each role can access" icon="shield">
+        <div className="overflow-x-auto">
+          <table className="w-full text-xs">
+            <thead>
+              <tr className="border-b border-slate-200">
+                <th className="text-left py-2 px-3 font-extrabold text-slate-700">Feature</th>
+                <th className="text-center py-2 px-3 font-extrabold text-rose-700">Admin</th>
+                <th className="text-center py-2 px-3 font-extrabold text-blue-700">Staff</th>
+                <th className="text-center py-2 px-3 font-extrabold text-emerald-700">Student</th>
+                <th className="text-center py-2 px-3 font-extrabold text-amber-700">Parent</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {[
+                { feature: 'View Dashboard', admin: true, staff: true, student: true, parent: true },
+                { feature: 'Enter Grades', admin: true, staff: true, student: false, parent: false },
+                { feature: 'Manage Users', admin: true, staff: false, student: false, parent: false },
+                { feature: 'System Settings', admin: true, staff: false, student: false, parent: false },
+                { feature: 'Chat / Messaging', admin: true, staff: true, student: true, parent: false },
+                { feature: 'View Reports', admin: true, staff: true, student: true, parent: true },
+                { feature: 'Manage Enrollment', admin: true, staff: true, student: false, parent: false },
+                { feature: 'Database Backup', admin: true, staff: false, student: false, parent: false },
+                { feature: 'Audit Logs', admin: true, staff: false, student: false, parent: false },
+              ].map(row => (
+                <tr key={row.feature} className="hover:bg-slate-50">
+                  <td className="py-2 px-3 font-bold text-slate-700">{row.feature}</td>
+                  {['admin', 'staff', 'student', 'parent'].map(role => (
+                    <td key={role} className="py-2 px-3 text-center">
+                      {row[role] ? (
+                        <svg className="w-4 h-4 text-emerald-500 mx-auto" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                      ) : (
+                        <svg className="w-4 h-4 text-slate-300 mx-auto" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      )}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </SectionCard>
+
+      <SectionCard title="User List" subtitle="All registered users and their roles" icon="users">
+        <div className="mb-4">
+          <select value={filter} onChange={e => setFilter(e.target.value)}
+            className="w-full px-3 py-2.5 border border-slate-300 rounded-md bg-white text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-violet-100 focus:border-violet-500 transition-all">
+            <option value="">All Roles</option>
+            <option value="admin">Administrators</option>
+            <option value="staff">Staff</option>
+            <option value="student">Students</option>
+            <option value="parent">Parents</option>
+          </select>
+        </div>
+        <div className="max-h-80 overflow-y-auto divide-y divide-slate-100">
+          {filtered.slice(0, 50).map(u => (
+            <div key={u.id} className="flex items-center justify-between py-2.5 px-1">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-xs font-bold text-slate-600">
+                  {u.first_name?.[0]}{u.last_name?.[0]}
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-slate-900">{u.first_name} {u.last_name}</p>
+                  <p className="text-[11px] text-slate-500">@{u.username}</p>
+                </div>
+              </div>
+              <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${roleConfig[u.role]?.color || 'bg-slate-100 text-slate-600'}`}>
+                {u.role}
+              </span>
+            </div>
+          ))}
+        </div>
+      </SectionCard>
     </div>
-  </SectionCard>
-);
+  );
+};
+
+// ── Communication Settings Tab ───────────────────────────────────────────
+
+const CommunicationSettingsTab = () => {
+  const [settings, setSettings] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    api.get('/system/settings/')
+      .then(r => setSettings(r.data))
+      .catch(() => toast.error('Failed to load settings'))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const save = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      await api.patch('/system/settings/', {
+        allow_student_chat: settings.allow_student_chat,
+        allow_teacher_chat: settings.allow_teacher_chat,
+      });
+      toast.success('Communication settings saved');
+    } catch { toast.error('Failed to save'); }
+    finally { setSaving(false); }
+  };
+
+  if (loading || !settings) return <div className="flex justify-center py-16"><LoadingSpinner /></div>;
+
+  return (
+    <form onSubmit={save} className="space-y-6">
+      <SectionCard title="Messaging Permissions" subtitle="Control who can use the chat system" icon="message">
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-bold text-slate-800">Student Messaging</p>
+              <p className="text-xs text-slate-500 font-medium mt-0.5">Allow students to send messages to teachers and classmates</p>
+            </div>
+            <Toggle checked={settings.allow_student_chat} onChange={e => setSettings(p => ({...p, allow_student_chat: e.target.checked}))} />
+          </div>
+          <div className="h-px bg-slate-100" />
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-bold text-slate-800">Teacher Messaging</p>
+              <p className="text-xs text-slate-500 font-medium mt-0.5">Allow teachers to send messages to students and other staff</p>
+            </div>
+            <Toggle checked={settings.allow_teacher_chat} onChange={e => setSettings(p => ({...p, allow_teacher_chat: e.target.checked}))} />
+          </div>
+        </div>
+      </SectionCard>
+
+      <SectionCard title="Email Service" subtitle="Email delivery configuration" icon="mail">
+        <div className="space-y-3">
+          {settings.email_service_health ? (
+            <>
+              <div className={`flex items-center gap-2 px-3 py-2 rounded-lg ${settings.email_service_health.status === 'ok' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}`}>
+                <span className={`w-2 h-2 rounded-full ${settings.email_service_health.status === 'ok' ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+                <span className="text-xs font-bold">{settings.email_service_health.summary}</span>
+              </div>
+              <div className="text-xs text-slate-600 space-y-1">
+                <p>Sender: <span className="font-bold">{settings.email_service_health.sender_email || 'Not configured'}</span></p>
+                <p>API Keys: <span className="font-bold">{settings.email_service_health.checks?.api_credentials ? 'Present' : 'Missing'}</span></p>
+              </div>
+            </>
+          ) : (
+            <p className="text-xs text-slate-500">Email service status not available.</p>
+          )}
+        </div>
+      </SectionCard>
+
+      <div className="flex justify-end">
+        <Button type="submit" disabled={saving} loading={saving} variant="primary">
+          Save Communication Settings
+        </Button>
+      </div>
+    </form>
+  );
+};
+
+// ── Backup Management Tab ────────────────────────────────────────────────
+
+const BackupManagementTab = () => {
+  const [backups, setBackups] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [creating, setCreating] = useState(false);
+
+  const fetchBackups = async () => {
+    try {
+      const r = await api.get('/admin/backups/');
+      setBackups(r.data.results || r.data);
+    } catch { toast.error('Failed to load backups'); }
+    finally { setLoading(false); }
+  };
+
+  useEffect(() => { fetchBackups(); }, []);
+
+  const createBackup = async () => {
+    setCreating(true);
+    try {
+      await api.post('/admin/run-backup/');
+      toast.success('Backup created successfully');
+      fetchBackups();
+    } catch { toast.error('Failed to create backup'); }
+    finally { setCreating(false); }
+  };
+
+  const downloadBackup = async (filename) => {
+    try {
+      const r = await api.get(`/admin/backups/${filename}/download/`, { responseType: 'blob' });
+      const url = window.URL.createObjectURL(new Blob([r.data]));
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.click();
+    } catch { toast.error('Failed to download backup'); }
+  };
+
+  if (loading) return <div className="flex justify-center py-16"><LoadingSpinner /></div>;
+
+  return (
+    <div className="space-y-6">
+      <SectionCard title="Database Backups" subtitle="Create and manage database backups" icon="database">
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <p className="text-xs text-slate-500">{backups.length} backup(s) on record</p>
+            <Button onClick={createBackup} disabled={creating} loading={creating} variant="primary" size="sm">
+              Create Backup
+            </Button>
+          </div>
+          {backups.length === 0 ? (
+            <div className="text-center py-8 text-slate-400">
+              <p className="text-sm font-bold">No backups yet</p>
+              <p className="text-xs mt-1">Create your first backup to secure your data.</p>
+            </div>
+          ) : (
+            <div className="divide-y divide-slate-100 max-h-80 overflow-y-auto">
+              {backups.map(b => (
+                <div key={b.id} className="flex items-center justify-between py-3">
+                  <div>
+                    <p className="text-sm font-bold text-slate-900">{b.filename}</p>
+                    <p className="text-[11px] text-slate-500">{b.size} &middot; {new Date(b.created_at).toLocaleString()}</p>
+                  </div>
+                  <button onClick={() => downloadBackup(b.filename)}
+                    className="text-xs font-bold text-violet-600 hover:text-violet-800 transition-colors">
+                    Download
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </SectionCard>
+    </div>
+  );
+};
+
+// ── Audit Logs Tab ───────────────────────────────────────────────────────
+
+const AuditLogsTab = () => {
+  const [logs, setLogs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState('');
+
+  useEffect(() => {
+    api.get('/admin/audit-logs/')
+      .then(r => setLogs(r.data.results || r.data))
+      .catch(() => toast.error('Failed to load audit logs'))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const typeColors = {
+    create: 'bg-emerald-100 text-emerald-700',
+    update: 'bg-blue-100 text-blue-700',
+    delete: 'bg-rose-100 text-rose-700',
+    login: 'bg-violet-100 text-violet-700',
+    logout: 'bg-slate-100 text-slate-600',
+    approve: 'bg-emerald-100 text-emerald-700',
+    reject: 'bg-amber-100 text-amber-700',
+    export: 'bg-cyan-100 text-cyan-700',
+    import: 'bg-cyan-100 text-cyan-700',
+    grade_create: 'bg-violet-100 text-violet-700',
+    grade_update: 'bg-violet-100 text-violet-700',
+    grade_delete: 'bg-rose-100 text-rose-700',
+    attendance_mark: 'bg-blue-100 text-blue-700',
+    mute: 'bg-amber-100 text-amber-700',
+    suspend: 'bg-rose-100 text-rose-700',
+  };
+
+  const filtered = logs.filter(l => {
+    const q = filter.toLowerCase();
+    return !q || l.action_type === q || l.description?.toLowerCase().includes(q);
+  });
+
+  if (loading) return <div className="flex justify-center py-16"><LoadingSpinner /></div>;
+
+  return (
+    <div className="space-y-6">
+      <SectionCard title="System Audit Logs" subtitle="Track all system activity and changes" icon="clock">
+        <div className="space-y-4">
+          <select value={filter} onChange={e => setFilter(e.target.value)}
+            className="w-full px-3 py-2.5 border border-slate-300 rounded-md bg-white text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-violet-100 focus:border-violet-500 transition-all">
+            <option value="">All Actions</option>
+            <option value="create">Create</option>
+            <option value="update">Update</option>
+            <option value="delete">Delete</option>
+            <option value="login">Login</option>
+            <option value="logout">Logout</option>
+            <option value="grade_create">Grade Create</option>
+            <option value="grade_update">Grade Update</option>
+            <option value="attendance_mark">Attendance Mark</option>
+          </select>
+          <div className="max-h-96 overflow-y-auto divide-y divide-slate-100">
+            {filtered.length === 0 ? (
+              <p className="text-center text-sm text-slate-400 py-8">No audit logs found.</p>
+            ) : (
+              filtered.slice(0, 100).map(log => (
+                <div key={log.id} className="py-2.5 px-1 hover:bg-slate-50 transition-colors">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="text-sm font-bold text-slate-900 truncate">{log.description}</p>
+                      <p className="text-[11px] text-slate-500 mt-0.5">
+                        {log.user?.username || 'System'} &middot; {new Date(log.timestamp).toLocaleString()}
+                      </p>
+                    </div>
+                    <span className={`flex-shrink-0 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${typeColors[log.action_type] || 'bg-slate-100 text-slate-600'}`}>
+                      {log.action_type || log.action}
+                    </span>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      </SectionCard>
+    </div>
+  );
+};
 
 // ── School Info Tab ─────────────────────────────────────────────────────────
 
@@ -646,26 +1211,6 @@ const PortalSettingsTab = () => {
         </div>
       </SectionCard>
 
-      <SectionCard title="Messaging Permissions" subtitle="Control who can use the chat system" icon="message">
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-bold text-slate-800">Student Messaging</p>
-              <p className="text-xs text-slate-500 font-medium mt-0.5">Allow students to send messages to teachers and classmates</p>
-            </div>
-            <Toggle checked={settings.allow_student_chat} onChange={e => setSettings(p => ({...p, allow_student_chat: e.target.checked}))} />
-          </div>
-          <div className="h-px bg-slate-100" />
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-bold text-slate-800">Teacher Messaging</p>
-              <p className="text-xs text-slate-500 font-medium mt-0.5">Allow teachers to send messages to students and other staff</p>
-            </div>
-            <Toggle checked={settings.allow_teacher_chat} onChange={e => setSettings(p => ({...p, allow_teacher_chat: e.target.checked}))} />
-          </div>
-        </div>
-      </SectionCard>
-
       <SectionCard title="Maintenance Mode" subtitle="Temporarily disable portal access for non-admins" icon="wrench" danger>
         <div className="space-y-4">
           <div className="flex items-center justify-between">
@@ -1094,17 +1639,17 @@ const Settings = () => {
       case 'portal':      return <PortalSettingsTab />;
       case 'profile':     return <ProfileTab />;
       case 'security':    return <SecurityTab />;
-      case 'grading':     return <PlaceholderTab title="Grading Settings" description="Configure grading scales and academic policies" />;
-      case 'roles':       return <PlaceholderTab title="Roles & Permissions" description="Manage user roles and access permissions" />;
-      case 'comm':        return <PlaceholderTab title="Communication Settings" description="Configure email and notification channels" />;
-      case 'backup':      return <PlaceholderTab title="Backup Management" description="Schedule and manage database backups" />;
-      case 'audit':       return <PlaceholderTab title="Audit Logs" description="View system activity and change history" />;
+      case 'grading':     return <GradingSettingsTab />;
+      case 'roles':       return <RolesPermissionsTab />;
+      case 'comm':        return <CommunicationSettingsTab />;
+      case 'backup':      return <BackupManagementTab />;
+      case 'audit':       return <AuditLogsTab />;
       case 'maintenance': return <PortalSettingsTab />;
-      default:            return <PlaceholderTab title="Settings" description="This section is under development" />;
+      default:            return <SchoolInfoTab />;
     }
   };
 
-  const isPlaceholder = !EXISTING_TABS.includes(activeTab) && activeTab !== 'maintenance';
+  const isPlaceholder = false;
 
   return (
     <div className="page-bottom-safe max-w-[1800px] mx-auto min-h-0 bg-slate-50 px-3 py-4 md:px-6 md:py-6 animate-fade-in">
@@ -1185,13 +1730,16 @@ const Settings = () => {
               <div className="space-y-5">
                 {filteredNav.map(section => (
                   <div key={section.label}>
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-3 mb-1.5">{section.label}</p>
+                    <div className="flex items-center gap-2 px-3 mb-1.5">
+                      <Icon name={section.icon} className="text-slate-400" />
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{section.label}</p>
+                    </div>
                     <div className="space-y-0.5">
                       {section.items.map(item => {
                         const active = activeTab === item.id;
                         return (
                           <button key={item.id} onClick={() => { setActiveTab(item.id); setMobileNavOpen(false); }}
-                            className={`w-full text-left px-3 py-2.5 rounded-lg text-sm font-bold transition-all ${
+                            className={`w-full text-left px-3 py-2.5 rounded-lg text-sm font-bold transition-all flex items-center gap-2 ${
                               active
                                 ? 'bg-violet-600 text-white shadow-sm'
                                 : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
