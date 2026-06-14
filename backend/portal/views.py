@@ -3,7 +3,7 @@ from rest_framework.decorators import api_view, permission_classes, action
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from rest_framework.response import Response
 from django.contrib.auth import get_user_model
-from accounts.models import User, ClassroomSubject, StudentClassEnrollment, Grade
+from accounts.models import User, ClassroomSubject, StudentClassEnrollment, Grade, SystemSetting
 from .models import Announcement, SchoolClass, Department, AcademicYear, Semester, AuditLog, DatabaseBackup
 from .serializers import (
     AnnouncementSerializer,
@@ -158,7 +158,19 @@ class AcademicYearViewSet(viewsets.ModelViewSet):
         year = self.get_object()
         year.is_active = True
         year.save()
+        # Sync SystemSetting.academic_year so all pages see the active year
+        sys_settings = SystemSetting.get_settings()
+        sys_settings.academic_year = year.name
+        sys_settings.save(update_fields=['academic_year'])
         return Response({'status': f'Academic Year {year.name} activated'})
+
+    @action(detail=False, methods=['get'])
+    def active(self, request):
+        year = AcademicYear.objects.filter(is_active=True).first()
+        if not year:
+            return Response({'error': 'No active academic year'}, status=404)
+        serializer = self.get_serializer(year)
+        return Response(serializer.data)
 
 
 from rest_framework.pagination import PageNumberPagination

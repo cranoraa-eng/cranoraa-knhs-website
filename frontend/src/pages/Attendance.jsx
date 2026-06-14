@@ -73,8 +73,8 @@ const Attendance = () => {
     api.get('/system/settings/')
       .then(r => setAcademicYear(r.data.academic_year || ''))
       .catch(() => {
-        api.get('/admin/academic-years/')
-          .then(r => { const a = r.data.find(y => y.is_active); if (a) setAcademicYear(a.name); })
+        api.get('/admin/academic-years/active/')
+          .then(r => { if (r.data?.name) setAcademicYear(r.data.name); })
           .catch(() => {});
       });
   }, []);

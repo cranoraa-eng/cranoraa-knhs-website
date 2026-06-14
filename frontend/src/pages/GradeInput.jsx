@@ -46,8 +46,8 @@ const GradeInput = () => {
   const [selClassroom, setSelClassroom] = useState(location.state?.classroomId || '');
   const [selSubject, setSelSubject] = useState(location.state?.subjectId || '');
   const [selQuarter, setSelQuarter] = useState(1);
-  const [academicYear, setAcademicYear] = useState(localStorage.getItem('knhs_academic_year') || '2025-2026');
-  
+  const [academicYear, setAcademicYear] = useState(() => localStorage.getItem('knhs_academic_year') || '2025-2026');
+
   const [cells, setCells] = useState({});
   const [existingGrades, setExistingGrades] = useState({});
   const [active, setActive] = useState(null);
@@ -55,6 +55,22 @@ const GradeInput = () => {
   const [submitting, setSubmitting] = useState(false);
 
   const inputRefs = useRef({});
+  const initYearRef = useRef(false);
+
+  // Fetch active year from API on mount (one-time seed)
+  useEffect(() => {
+    if (initYearRef.current) return;
+    api.get('/admin/academic-years/active/')
+      .then(r => {
+        const year = r.data.name;
+        if (!localStorage.getItem('knhs_academic_year')) {
+          localStorage.setItem('knhs_academic_year', year);
+          setAcademicYear(year);
+        }
+      })
+      .catch(() => {})
+      .finally(() => { initYearRef.current = true; });
+  }, []);
 
   // Academic year navigation
   const handleYearChange = (dir) => {

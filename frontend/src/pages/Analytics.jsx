@@ -1015,12 +1015,28 @@ const Analytics = () => {
   // Grade specific filters
   const [gradeData, setGradeData] = useState(null);
   const [gradeLoading, setGradeLoading] = useState(false);
-  const [academicYear, setAcademicYear] = useState(localStorage.getItem('knhs_academic_year') || getCurrentAcademicYear());
+  const [academicYear, setAcademicYear] = useState(() => localStorage.getItem('knhs_academic_year') || getCurrentAcademicYear());
   const [filterLevel, setFilterLevel] = useState('all');
   const [filterSubject, setFilterSubject] = useState('all');
   const [filterQuarter, setFilterQuarter] = useState('all');
-  const [distributionMode, setDistributionMode] = useState('student'); // 'student' or 'entry'
-  const [gradeTimeframe, setGradeTimeframe] = useState('all'); // 'all', 'today', 'weekly'
+  const [distributionMode, setDistributionMode] = useState('student');
+  const [gradeTimeframe, setGradeTimeframe] = useState('all');
+  const initYearRef = useRef(false);
+
+  // Fetch active year from API on mount (one-time seed)
+  useEffect(() => {
+    if (initYearRef.current) return;
+    api.get('/admin/academic-years/active/')
+      .then(r => {
+        const year = r.data.name;
+        if (!localStorage.getItem('knhs_academic_year')) {
+          localStorage.setItem('knhs_academic_year', year);
+          setAcademicYear(year);
+        }
+      })
+      .catch(() => {})
+      .finally(() => { initYearRef.current = true; });
+  }, []);
 
   // Attendance specific data
   const [attendanceAnalytics, setAttendanceAnalytics] = useState(null);

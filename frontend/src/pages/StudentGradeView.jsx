@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import api from '../utils/api';
@@ -60,8 +60,24 @@ const StudentGradeView = () => {
   const [viewingUser, setViewingUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [filterQuarter, setFilterQuarter] = useState('');
-  const [filterYear, setFilterYear] = useState(localStorage.getItem('knhs_academic_year') || '2025-2026');
+  const [filterYear, setFilterYear] = useState(() => localStorage.getItem('knhs_academic_year') || '2025-2026');
   const [filterSubject, setFilterSubject] = useState('');
+  const initYearRef = useRef(false);
+
+  // Fetch active year from API on mount (one-time seed)
+  useEffect(() => {
+    if (initYearRef.current) return;
+    api.get('/admin/academic-years/active/')
+      .then(r => {
+        const year = r.data.name;
+        if (!localStorage.getItem('knhs_academic_year')) {
+          localStorage.setItem('knhs_academic_year', year);
+          setFilterYear(year);
+        }
+      })
+      .catch(() => {})
+      .finally(() => { initYearRef.current = true; });
+  }, []);
 
   // Academic year navigation
   const handleYearChange = (dir) => {

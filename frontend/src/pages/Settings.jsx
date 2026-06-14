@@ -327,7 +327,8 @@ const AcademicYearsTab = () => {
 
   const handleSetActive = async (y) => {
     try {
-      await api.post(`/admin/academic-years/${y.id}/set_active/`);
+      await api.post(`/admin/academic-years/${y.id}/activate/`);
+      localStorage.setItem('knhs_academic_year', y.name);
       toast.success(`${y.name} set as active year`);
       fetchYears();
     } catch { toast.error('Failed to set active year'); }

@@ -22,7 +22,12 @@ const AdminDashboard = () => {
 
   const fetchData = async () => {
     try {
-      const academicYear = localStorage.getItem('knhs_academic_year') || getCurrentAcademicYear();
+      let academicYear = localStorage.getItem('knhs_academic_year');
+      if (!academicYear) {
+        const r = await api.get('/admin/academic-years/active/').catch(() => null);
+        academicYear = r?.data?.name || getCurrentAcademicYear();
+        if (r?.data?.name) localStorage.setItem('knhs_academic_year', r.data.name);
+      }
       const r = await api.get(`/admin/stats/?academic_year=${academicYear}`);
       setData(r.data);
     } catch (err) {
