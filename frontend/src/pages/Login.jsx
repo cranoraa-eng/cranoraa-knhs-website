@@ -26,8 +26,8 @@ const ROLES = {
       { icon: 'M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z', label: 'Messaging' },
     ],
   },
-  teacher: {
-    label: 'Teacher',
+  staff: {
+    label: 'Faculty',
     subtitle: 'Faculty Portal',
     identifierLabel: 'Teacher Email',
     identifierPlaceholder: 'teacher@knhs.edu.ph',
@@ -235,7 +235,7 @@ const Login = () => {
             </div>
             <h2 className="text-4xl font-bold text-white mb-4 leading-tight">
               {loginType === 'student' && 'Your Academic Journey Starts Here'}
-              {loginType === 'teacher' && 'Empowering Educators'}
+              {loginType === 'staff' && 'Empowering Educators'}
               {loginType === 'parent' && 'Stay Connected With Your Child'}
               {loginType === 'admin' && 'Complete System Control'}
             </h2>
