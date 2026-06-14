@@ -981,8 +981,19 @@ class UserViewSet(viewsets.ModelViewSet):
                     return advisory_students.distinct()
                 elif role == 'staff':
                     return queryset.filter(id=user.id)
+                elif role == 'admin':
+                    # Allow staff to see admins (for communication center)
+                    return queryset.filter(role='admin', is_active=True)
                 
                 return (advisory_students | queryset.filter(id=user.id)).distinct()
+
+            # Allow students to see admins (for communication center)
+            if user.role == 'student' and role == 'admin':
+                return queryset.filter(role='admin', is_active=True)
+
+            # Allow parents to see admins (for communication center)
+            if user.role == 'parent' and role == 'admin':
+                return queryset.filter(role='admin', is_active=True)
             
             # Admins can see all users
             if role:

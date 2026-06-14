@@ -319,7 +319,8 @@ function DetailsPanel({ ticket, messages, onClose }) {
 }
 
 const ROLE_GROUPS = [
-  { key: 'staff', label: 'Faculty & Staff', roles: ['staff', 'admin'] },
+  { key: 'admin', label: 'Administration', roles: ['admin'] },
+  { key: 'staff', label: 'Faculty & Staff', roles: ['staff'] },
   { key: 'student', label: 'Students', roles: ['student'] },
   { key: 'parent', label: 'Parents', roles: ['parent'] },
 ];
@@ -328,20 +329,22 @@ function PeopleDirectory({ onSelectPerson, currentUserId }) {
   const [groups, setGroups] = useState({});
   const [loading, setLoading] = useState(true);
   const [peopleSearch, setPeopleSearch] = useState('');
-  const [expandedGroups, setExpandedGroups] = useState({ staff: true, student: true, parent: true });
+  const [expandedGroups, setExpandedGroups] = useState({ admin: true, staff: true, student: true, parent: true });
 
   useEffect(() => {
     let cancelled = false;
     const fetchAll = async () => {
       setLoading(true);
       try {
-        const [staffRes, studentRes, parentRes] = await Promise.all([
+        const [adminRes, staffRes, studentRes, parentRes] = await Promise.all([
+          api.get('/users/?role=admin').catch(() => ({ data: [] })),
           api.get('/users/?role=staff').catch(() => ({ data: [] })),
           api.get('/users/?role=student').catch(() => ({ data: [] })),
           api.get('/users/?role=parent').catch(() => ({ data: [] })),
         ]);
         if (!cancelled) {
           setGroups({
+            admin: adminRes.data.results || adminRes.data || [],
             staff: staffRes.data.results || staffRes.data || [],
             student: studentRes.data.results || studentRes.data || [],
             parent: parentRes.data.results || parentRes.data || [],
