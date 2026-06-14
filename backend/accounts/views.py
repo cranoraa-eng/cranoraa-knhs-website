@@ -54,7 +54,7 @@ def _set_refresh_cookie(response, refresh_token: str):
         secure=is_prod,          # HTTPS-only in production
         samesite='None' if is_prod else 'Lax',  # None for cross-origin (Vercel→Render), Lax for local dev
         max_age=7 * 24 * 60 * 60,     # 7 days — matches SIMPLE_JWT REFRESH_TOKEN_LIFETIME
-        path='/api/token/',           # Scoped: only sent to the refresh endpoint
+        path='/api/v1/token/',        # Scoped: only sent to the refresh endpoint
     )
 
 
@@ -64,7 +64,7 @@ def _clear_refresh_cookie(response):
     is_prod = not _settings.DEBUG
     response.delete_cookie(
         key='refresh_token',
-        path='/api/token/',
+        path='/api/v1/token/',
         samesite='None' if is_prod else 'Lax',
     )
 
