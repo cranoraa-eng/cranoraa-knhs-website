@@ -15,7 +15,7 @@ from .views import (
     health_check,
     RoomViewSet, TimeSlotViewSet, ScheduleViewSet,
     parent_dashboard_view, parent_child_detail_view,
-    fcm_token_register, fcm_token_delete, test_push_notification,
+    fcm_token_register, fcm_token_delete,
     storage_analytics_view,
     onboarding_state_view,
     TicketViewSet, DepartmentContactViewSet,
@@ -52,7 +52,6 @@ router.register(r'tickets', TicketViewSet, basename='ticket')
 router.register(r'department-contacts', DepartmentContactViewSet, basename='department-contact')
 
 urlpatterns = [
-    path('health/', health_check, name='health_check'),
     path('login/', login_view, name='login'),
     path('logout/', logout_view, name='logout'),
     path('admin/create-user/', admin_create_user_view, name='admin_create_user'),
@@ -86,6 +85,5 @@ urlpatterns = [
     path('parent/child/<int:student_id>/', parent_child_detail_view, name='parent_child_detail'),
     path('fcm-tokens/', fcm_token_register, name='fcm_token_register'),
     path('fcm-tokens/delete/', fcm_token_delete, name='fcm_token_delete'),
-    path('test-push/', test_push_notification, name='test_push_notification'),
     path('', include(router.urls)),
 ]

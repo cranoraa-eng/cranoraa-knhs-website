@@ -357,17 +357,16 @@ SECURE_REFERRER_POLICY = 'strict-origin-when-cross-origin'
 # Custom CSP header injected via SecurityMiddleware extension (see portal/middleware.py)
 CSP_DEFAULT_SRC = ("'self'",)
 CSP_SCRIPT_SRC = ("'self'", "https://www.gstatic.com", "https://www.googleapis.com")
-CSP_STYLE_SRC = ("'self'", "'unsafe-inline'", "https://fonts.googleapis.com")
+CSP_STYLE_SRC = ("'self'", "https://fonts.googleapis.com") if not DEBUG else ("'self'", "'unsafe-inline'", "https://fonts.googleapis.com")
 CSP_FONT_SRC = ("'self'", "https://fonts.gstatic.com")
 CSP_IMG_SRC = ("'self'", "data:", "https://*.supabase.co", "https://*.supabase.in", "https://firebasestorage.googleapis.com", "blob:")
 _csp_connect_extra = [_frontend_url] if _frontend_url else []
+_csp_connect_localhost = ["http://localhost:5173", "http://127.0.0.1:5173"] if DEBUG else []
 CSP_CONNECT_SRC = tuple(
     ["'self'",
      "https://fcm.googleapis.com",
      "https://firebaseinstallations.googleapis.com",
-     "https://*.supabase.co",
-     "http://localhost:5173",
-     "http://127.0.0.1:5173"] + _csp_connect_extra
+     "https://*.supabase.co"] + _csp_connect_localhost + _csp_connect_extra
 )
 CSP_WORKER_SRC = ("'self'", "blob:")
 CSP_FRAME_ANCESTORS = ("'none'",)

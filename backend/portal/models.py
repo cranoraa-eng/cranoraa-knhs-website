@@ -1,4 +1,4 @@
-from django.db import models, transaction
+from django.db import models
 from accounts.models import User
 
 
@@ -71,11 +71,8 @@ class AcademicYear(models.Model):
     
     def save(self, *args, **kwargs):
         if self.is_active:
-            with transaction.atomic():
-                AcademicYear.objects.filter(is_active=True).update(is_active=False)
-                super().save(*args, **kwargs)
-        else:
-            super().save(*args, **kwargs)
+            AcademicYear.objects.filter(is_active=True).update(is_active=False)
+        super().save(*args, **kwargs)
 
 class Semester(models.Model):
     SEMESTER_CHOICES = [
@@ -100,11 +97,8 @@ class Semester(models.Model):
     
     def save(self, *args, **kwargs):
         if self.is_active:
-            with transaction.atomic():
-                Semester.objects.filter(is_active=True).update(is_active=False)
-                super().save(*args, **kwargs)
-        else:
-            super().save(*args, **kwargs)
+            Semester.objects.filter(is_active=True).update(is_active=False)
+        super().save(*args, **kwargs)
 
 
 class AuditLog(models.Model):

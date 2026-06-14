@@ -30,8 +30,6 @@ logger = logging.getLogger(__name__)
 from django.conf import settings
 
 from django.db import transaction
-from django.views.decorators.csrf import csrf_protect
-from django.utils.decorators import method_decorator
 
 from .utils import (
     check_user_moderation,
@@ -53,10 +51,10 @@ def _set_refresh_cookie(response, refresh_token: str):
         key='refresh_token',
         value=refresh_token,
         httponly=True,
-        secure=is_prod,
-        samesite='Lax',  # Lax for all environments — prevents CSRF while allowing top-level navigations
-        max_age=7 * 24 * 60 * 60,
-        path='/api/token/',
+        secure=is_prod,          # HTTPS-only in production
+        samesite='None' if is_prod else 'Lax',  # None for cross-origin (Vercel→Render), Lax for local dev
+        max_age=7 * 24 * 60 * 60,     # 7 days — matches SIMPLE_JWT REFRESH_TOKEN_LIFETIME
+        path='/api/token/',           # Scoped: only sent to the refresh endpoint
     )
 
 
@@ -67,7 +65,7 @@ def _clear_refresh_cookie(response):
     response.delete_cookie(
         key='refresh_token',
         path='/api/token/',
-        samesite='Lax',
+        samesite='None' if is_prod else 'Lax',
     )
 
 @api_view(['POST'])
@@ -260,7 +258,6 @@ def logout_view(request):
     return response
 
 
-@csrf_protect
 @api_view(['POST'])
 @permission_classes([AllowAny])
 @throttle_classes([AuthRateThrottle])
@@ -303,7 +300,7 @@ def cookie_token_refresh_view(request):
 
 
 @api_view(['POST'])
-@permission_classes([IsAdminUser])
+@permission_classes([IsAdmin])
 @throttle_classes([AdminWriteRateThrottle])
 def admin_create_user_view(request):
     username = request.data.get('username') # For students, this will be their Student ID
@@ -432,31 +429,13 @@ def admin_create_user_view(request):
         return Response({
             'message': f'Account for {username} created successfully!',
             'username': username,
+            'temporary_password': password,
             'role': role
         }, status=status.HTTP_201_CREATED)
 
     except Exception as e:
         logger.error(f"User creation error: {str(e)}", exc_info=True)
         return Response({'error': 'Failed to create user account. Please check the provided data.'}, status=status.HTTP_400_BAD_REQUEST)
-
-
-@api_view(['GET'])
-@permission_classes([AllowAny])
-def health_check(request):
-    """Health check endpoint for load balancers and uptime monitoring."""
-    from django.db import connection
-    try:
-        with connection.cursor() as cursor:
-            cursor.execute("SELECT 1")
-        db_ok = True
-    except Exception:
-        db_ok = False
-
-    status_ok = db_ok
-    return Response({
-        'status': 'healthy' if status_ok else 'degraded',
-        'database': 'ok' if db_ok else 'error',
-    }, status=status.HTTP_200_OK if status_ok else status.HTTP_503_SERVICE_UNAVAILABLE)
 
 
 @api_view(['GET'])
@@ -687,7 +666,7 @@ class ClassroomViewSet(viewsets.ModelViewSet):
             # Students see classrooms they are enrolled in
             if user.role == 'student':
                 enrolled_classrooms = StudentClassEnrollment.objects.filter(student=user).values_list('classroom_id', flat=True)
-                return qs.filter(id__in=enrolled_classrooms)
+                return Classroom.objects.filter(id__in=enrolled_classrooms)
 
             return Classroom.objects.none()
         except Exception as e:
@@ -1221,7 +1200,8 @@ class UserViewSet(viewsets.ModelViewSet):
             logger.error(f"Failed to update temp_password_display on enrollment app: {e}")
         
         return Response({
-            'message': 'Password reset successfully. The user must change their password on next login.',
+            'message': 'Password reset successfully',
+            'temporary_password': new_password
         })
 
     @action(detail=False, methods=['post'], parser_classes=[parsers.MultiPartParser], throttle_classes=[CsvImportRateThrottle])
@@ -1365,6 +1345,7 @@ class UserViewSet(viewsets.ModelViewSet):
                 created_count += 1
                 created_users.append({
                     'username': student_id,
+                    'password': temp_password,
                     'name': f"{first_name} {last_name}".strip()
                 })
             except Exception as e:
@@ -1469,6 +1450,7 @@ class UserViewSet(viewsets.ModelViewSet):
                 created_count += 1
                 created_users.append({
                     'username': email,
+                    'password': temp_password,
                     'name': f"{title} {first_name} {last_name}".strip()
                 })
             except Exception as e:
@@ -1652,7 +1634,11 @@ class AnnouncementViewSet(viewsets.ModelViewSet):
         from django.utils import timezone
         category = self.request.query_params.get('category')
         status_filter = self.request.query_params.get('status')
-        queryset = Announcement.objects.all()
+        queryset = Announcement.objects.select_related(
+            'author', 'author__profile'
+        ).prefetch_related(
+            'read_by', 'attachments', 'comments'
+        ).all()
 
         user = self.request.user
 
@@ -3525,6 +3511,7 @@ class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
             'remarks': app.remarks,
             'lrn': app.lrn or '',
             'enrolled_student_email': app.enrolled_student.email if app.enrolled_student else None,
+            'temp_password_display': app.temp_password_display if app.status == 'enrolled' and app.enrolled_student and app.enrolled_student.must_change_password else None,
             'documents': [{'id': d.id, 'document_type_display': d.get_document_type_display(),
                            'verification_status': d.verification_status,
                            'verification_status_display': d.get_verification_status_display()} for d in app.documents.all()],
@@ -3696,7 +3683,7 @@ class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
             self._safe_notify_user(student_user, 'Enrollment Complete',
                 f'Welcome! Enrollment complete. Username: {username}', '/dashboard')
             return Response({'status': 'Enrollment completed', 'student_id': student_user.id,
-                'username': username,
+                'username': username, 'temp_password': temp_password,
                 'assigned_classroom': classroom_id, 'classroom_name': classroom_name})
         except Exception as e:
             import traceback
@@ -4224,7 +4211,7 @@ class GradeViewSet(viewsets.ModelViewSet):
                 serializer.is_valid(raise_exception=True)
                 serializer.save()
                 
-                # Log the update
+# Log the update
                 log_audit_action(
                     user=self.request.user,
                     action='grade_update',
