@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../utils/api';
@@ -52,7 +52,7 @@ const ScoreBadge = ({ score, size = 'md' }) => {
 const GradeManagement = () => {
   const navigate = useNavigate();
   const user = getUser();
-  const { periodValues, periodShortLabels, periodLabel, periodOptions, isSHS } = useSystemSettings();
+  const { settings, periodValues, periodShortLabels, periodLabel, periodOptions, isSHS } = useSystemSettings();
 
   // State
   const [grades, setGrades] = useState([]);
@@ -60,32 +60,20 @@ const GradeManagement = () => {
   const [loading, setLoading] = useState(true);
   
   const [filterQuarter, setFilterQuarter] = useState('');
-  const [filterYear, setFilterYear] = useState(() => localStorage.getItem('knhs_academic_year') || '2025-2026');
+  const [filterYear, setFilterYear] = useState(settings?.academic_year || '2025-2026');
   const [search, setSearch] = useState('');
   const [selectedClass, setSelectedClass] = useState(null);
-  const initYearRef = useRef(false);
 
-  // Fetch active year from API on mount (one-time seed)
+  // Sync academic year with admin settings when settings load
   useEffect(() => {
-    if (initYearRef.current) return;
-    api.get('/admin/academic-years/active/')
-      .then(r => {
-        const year = r.data.name;
-        if (!localStorage.getItem('knhs_academic_year')) {
-          localStorage.setItem('knhs_academic_year', year);
-          setFilterYear(year);
-        }
-      })
-      .catch(() => {})
-      .finally(() => { initYearRef.current = true; });
-  }, []);
+    if (settings?.academic_year) setFilterYear(settings.academic_year);
+  }, [settings?.academic_year]);
 
   // Academic year navigation
   const handleYearChange = (dir) => {
     const [start, end] = filterYear.split('-').map(Number);
     const newYear = dir === 'next' ? `${start + 1}-${end + 1}` : `${start - 1}-${end - 1}`;
     setFilterYear(newYear);
-    localStorage.setItem('knhs_academic_year', newYear);
   };
 
   // Load data

@@ -37,7 +37,7 @@ const getPerformanceLevel = (score) => {
 const GradeInput = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { periodValues, periodShortLabels, periodLabel, isSHS, currentQuarter } = useSystemSettings();
+  const { settings, periodValues, periodShortLabels, periodLabel, isSHS, currentQuarter } = useSystemSettings();
 
   // State
   const [classrooms, setClassrooms] = useState([]);
@@ -45,8 +45,12 @@ const GradeInput = () => {
   const [students, setStudents] = useState([]);
   const [selClassroom, setSelClassroom] = useState(location.state?.classroomId || '');
   const [selSubject, setSelSubject] = useState(location.state?.subjectId || '');
-  const [selQuarter, setSelQuarter] = useState(Number(currentQuarter) || 1);
-  const [academicYear, setAcademicYear] = useState(() => localStorage.getItem('knhs_academic_year') || '2025-2026');
+  const [selQuarter, setSelQuarter] = useState(() => {
+    const q = Number(currentQuarter) || 1;
+    const maxPeriods = isSHS ? 3 : 4;
+    return q > maxPeriods ? maxPeriods : q;
+  });
+  const [academicYear, setAcademicYear] = useState(settings?.academic_year || '2025-2026');
 
   const [cells, setCells] = useState({});
   const [existingGrades, setExistingGrades] = useState({});
@@ -55,29 +59,17 @@ const GradeInput = () => {
   const [submitting, setSubmitting] = useState(false);
 
   const inputRefs = useRef({});
-  const initYearRef = useRef(false);
 
-  // Fetch active year from API on mount (one-time seed)
+  // Sync academic year with admin settings when settings load
   useEffect(() => {
-    if (initYearRef.current) return;
-    api.get('/admin/academic-years/active/')
-      .then(r => {
-        const year = r.data.name;
-        if (!localStorage.getItem('knhs_academic_year')) {
-          localStorage.setItem('knhs_academic_year', year);
-          setAcademicYear(year);
-        }
-      })
-      .catch(() => {})
-      .finally(() => { initYearRef.current = true; });
-  }, []);
+    if (settings?.academic_year) setAcademicYear(settings.academic_year);
+  }, [settings?.academic_year]);
 
   // Academic year navigation
   const handleYearChange = (dir) => {
     const [start, end] = academicYear.split('-').map(Number);
     const newYear = dir === 'next' ? `${start + 1}-${end + 1}` : `${start - 1}-${end - 1}`;
     setAcademicYear(newYear);
-    localStorage.setItem('knhs_academic_year', newYear);
   };
 
   // Format student name: LAST, FIRST
