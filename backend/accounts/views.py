@@ -2648,7 +2648,7 @@ def admin_dashboard_stats(request):
                 attendance_trends.append({'date': day_str, 'present': 0, 'late': 0, 'rate': 0})
 
         # Grades - only count final grades
-        grades = Grade.objects.filter(transmuted_score__isnull=False, grade_type='final_grade')
+        grades = Grade.objects.filter(raw_score__isnull=False, grade_type='final_grade')
         if academic_year_name:
             # Strict year filter — Grade.academic_year field OR classroom year, no isnull fallback
             grades = grades.filter(
@@ -2657,18 +2657,18 @@ def admin_dashboard_stats(request):
             )
         
         total_grades = grades.count()
-        avg_grade = grades.aggregate(avg=Avg('transmuted_score'))['avg']
+        avg_grade = grades.aggregate(avg=Avg('raw_score'))['avg']
         average_grade = round(float(avg_grade), 2) if avg_grade else None
 
         # --- ALL SUBJECTS DISTRIBUTION ---
-        outstanding = grades.filter(transmuted_score__gte=90).count()
-        very_satisfactory = grades.filter(transmuted_score__gte=85, transmuted_score__lt=90).count()
-        satisfactory = grades.filter(transmuted_score__gte=80, transmuted_score__lt=85).count()
-        fairly_satisfactory = grades.filter(transmuted_score__gte=75, transmuted_score__lt=80).count()
-        below_75 = grades.filter(transmuted_score__lt=75).count()
+        outstanding = grades.filter(raw_score__gte=90).count()
+        very_satisfactory = grades.filter(raw_score__gte=85, raw_score__lt=90).count()
+        satisfactory = grades.filter(raw_score__gte=80, raw_score__lt=85).count()
+        fairly_satisfactory = grades.filter(raw_score__gte=75, raw_score__lt=80).count()
+        below_75 = grades.filter(raw_score__lt=75).count()
 
         # --- GENERAL AVERAGE DISTRIBUTION (Student-wise, via DB aggregation) ---
-        student_averages = grades.values('student').annotate(avg=Avg('transmuted_score'))
+        student_averages = grades.values('student').annotate(avg=Avg('raw_score'))
         total_students_graded = student_averages.count()
 
         # Use DB-level bucketing instead of Python loop
@@ -2724,7 +2724,7 @@ def admin_dashboard_stats(request):
         try:
             # Use the already year-filtered 'grades' queryset
             subject_stats = grades.values('subject__name').annotate(
-                avg_grade=Avg('transmuted_score')
+                avg_grade=Avg('raw_score')
             ).order_by('-avg_grade')[:10]
             
             for s in subject_stats:
@@ -2925,7 +2925,7 @@ def grade_distribution_stats(request):
     # 1. Base filtering
     base_grades = Grade.objects.filter(
         grade_type='final_grade',
-        transmuted_score__isnull=False
+        raw_score__isnull=False
     ).filter(
         # Strict year filter — no isnull fallback to prevent year bleed-through
         Q(academic_year=academic_year) |
@@ -2972,10 +2972,10 @@ def grade_distribution_stats(request):
         })
 
     # 2. Summary Stats
-    student_averages = base_grades.values('student').annotate(avg=Avg('transmuted_score'))
+    student_averages = base_grades.values('student').annotate(avg=Avg('raw_score'))
     total_students = student_averages.count()
     total_entries = base_grades.count()
-    overall_avg = base_grades.aggregate(avg=Avg('transmuted_score'))['avg']
+    overall_avg = base_grades.aggregate(avg=Avg('raw_score'))['avg']
     
     categories = {
         'Outstanding (90-100)': 0,
@@ -3000,11 +3000,11 @@ def grade_distribution_stats(request):
         # Calculate distribution based on every individual grade entry using DB aggregation
         from django.db.models import Count, Case, When, IntegerField as IF
         agg = base_grades.aggregate(
-            outstanding=Count(Case(When(transmuted_score__gte=90, then=1), output_field=IF())),
-            very_sat=Count(Case(When(transmuted_score__gte=85, transmuted_score__lt=90, then=1), output_field=IF())),
-            sat=Count(Case(When(transmuted_score__gte=80, transmuted_score__lt=85, then=1), output_field=IF())),
-            fairly_sat=Count(Case(When(transmuted_score__gte=75, transmuted_score__lt=80, then=1), output_field=IF())),
-            dnm=Count(Case(When(transmuted_score__lt=75, then=1), output_field=IF())),
+            outstanding=Count(Case(When(raw_score__gte=90, then=1), output_field=IF())),
+            very_sat=Count(Case(When(raw_score__gte=85, raw_score__lt=90, then=1), output_field=IF())),
+            sat=Count(Case(When(raw_score__gte=80, raw_score__lt=85, then=1), output_field=IF())),
+            fairly_sat=Count(Case(When(raw_score__gte=75, raw_score__lt=80, then=1), output_field=IF())),
+            dnm=Count(Case(When(raw_score__lt=75, then=1), output_field=IF())),
         )
         categories['Outstanding (90-100)'] = agg['outstanding']
         categories['Very Satisfactory (85-89)'] = agg['very_sat']
@@ -3023,7 +3023,7 @@ def grade_distribution_stats(request):
             level_classrooms = Classroom.objects.filter(name__icontains=level_label)
             level_grades = base_grades.filter(classroom__in=level_classrooms)
             if level_grades.exists():
-                avg = level_grades.aggregate(a=Avg('transmuted_score'))['a']
+                avg = level_grades.aggregate(a=Avg('raw_score'))['a']
                 by_level.append({
                     'label': level_label,
                     'average': round(float(avg), 2) if avg else 0,
@@ -3035,7 +3035,7 @@ def grade_distribution_stats(request):
         for c in level_classrooms:
             c_grades = base_grades.filter(classroom=c)
             if c_grades.exists():
-                avg = c_grades.aggregate(a=Avg('transmuted_score'))['a']
+                avg = c_grades.aggregate(a=Avg('raw_score'))['a']
                 by_level.append({
                     'label': c.name,
                     'average': round(float(avg), 2) if avg else 0,
@@ -3047,7 +3047,7 @@ def grade_distribution_stats(request):
     if subject_id == 'all':
         # Show Top 10 Performing Subjects
         subject_stats = base_grades.values('subject__name', 'subject__code').annotate(
-            avg=Avg('transmuted_score'),
+            avg=Avg('raw_score'),
             count=Count('id')
         ).order_by('-avg')[:10]
         
@@ -3061,7 +3061,7 @@ def grade_distribution_stats(request):
     else:
         # If a subject is selected, show Top 10 Performing Classrooms for that subject
         classroom_stats = base_grades.values('classroom__name').annotate(
-            avg=Avg('transmuted_score'),
+            avg=Avg('raw_score'),
             count=Count('id')
         ).order_by('-avg')[:10]
         
@@ -3135,8 +3135,7 @@ def check_result(request):
                 'q2': enrollment.q2,
                 'q3': enrollment.q3,
                 'q4': enrollment.q4,
-                'transmuted_quarters': enrollment.get_transmuted_quarters(),
-                'transmuted_average': enrollment.calculate_transmuted_average(),
+                'general_average': enrollment.calculate_general_average(),
                 'descriptive_equivalent': enrollment.get_descriptive_equivalent(),
             })
 
@@ -4290,26 +4289,26 @@ class GradeViewSet(viewsets.ModelViewSet):
         subject_id = request.query_params.get('subject')
         quarter = request.query_params.get('quarter')
         
-        queryset = Grade.objects.filter(grade_type='final_grade', transmuted_score__isnull=False)
+        queryset = Grade.objects.filter(grade_type='final_grade', raw_score__isnull=False)
         if classroom_id: queryset = queryset.filter(classroom_id=classroom_id)
         if subject_id: queryset = queryset.filter(subject_id=subject_id)
         if quarter: queryset = queryset.filter(quarter=quarter)
         
         # Subject Averages
         subject_stats = queryset.values('subject__name', 'subject__code').annotate(
-            avg_grade=Avg('transmuted_score'),
+            avg_grade=Avg('raw_score'),
             count=Count('id'),
-            highest=Max('transmuted_score'),
-            lowest=Min('transmuted_score')
+            highest=Max('raw_score'),
+            lowest=Min('raw_score')
         ).order_by('-avg_grade')
         
         # Distribution
         distribution = {
-            'outstanding': queryset.filter(transmuted_score__gte=90).count(),
-            'very_satisfactory': queryset.filter(transmuted_score__gte=85, transmuted_score__lt=90).count(),
-            'satisfactory': queryset.filter(transmuted_score__gte=80, transmuted_score__lt=85).count(),
-            'fairly_satisfactory': queryset.filter(transmuted_score__gte=75, transmuted_score__lt=80).count(),
-            'failed': queryset.filter(transmuted_score__lt=75).count(),
+            'outstanding': queryset.filter(raw_score__gte=90).count(),
+            'very_satisfactory': queryset.filter(raw_score__gte=85, raw_score__lt=90).count(),
+            'satisfactory': queryset.filter(raw_score__gte=80, raw_score__lt=85).count(),
+            'fairly_satisfactory': queryset.filter(raw_score__gte=75, raw_score__lt=80).count(),
+            'failed': queryset.filter(raw_score__lt=75).count(),
         }
         
         # Missing Grade Detection
@@ -4360,13 +4359,13 @@ class GradeViewSet(viewsets.ModelViewSet):
         )
 
         # Notify the student — only for final grades to avoid spamming on every component
-        if grade.grade_type == 'final_grade' and grade.transmuted_score is not None:
+        if grade.grade_type == 'final_grade' and grade.raw_score is not None:
             teacher_name = user.get_full_name() or user.username
             Notification.objects.create(
                 recipient=grade.student,
                 notification_type='grade',
                 title='Grade Posted',
-                message=f'{teacher_name} posted your {grade.subject.name} grade for Q{grade.quarter}: {grade.transmuted_score}.',
+                message=f'{teacher_name} posted your {grade.subject.name} grade for Q{grade.quarter}: {grade.raw_score}.',
                 link='/grades',
             )
 
@@ -4397,13 +4396,13 @@ class GradeViewSet(viewsets.ModelViewSet):
         )
 
         # Notify the student on final grade updates
-        if grade.grade_type == 'final_grade' and grade.transmuted_score is not None:
+        if grade.grade_type == 'final_grade' and grade.raw_score is not None:
             teacher_name = user.get_full_name() or user.username
             Notification.objects.create(
                 recipient=grade.student,
                 notification_type='grade',
                 title='Grade Updated',
-                message=f'{teacher_name} updated your {grade.subject.name} grade for Q{grade.quarter}: {grade.transmuted_score}.',
+                message=f'{teacher_name} updated your {grade.subject.name} grade for Q{grade.quarter}: {grade.raw_score}.',
                 link='/grades',
             )
     
@@ -4497,15 +4496,15 @@ class GradeViewSet(viewsets.ModelViewSet):
         total_weight = 0
 
         for grade in component_grades:
-            if grade.transmuted_score:
+            if grade.raw_score:
                 if grade.grade_type == 'written_work':
-                    total_score += float(grade.transmuted_score) * ww_w
+                    total_score += float(grade.raw_score) * ww_w
                     total_weight += ww_w
                 elif grade.grade_type == 'performance_task':
-                    total_score += float(grade.transmuted_score) * pt_w
+                    total_score += float(grade.raw_score) * pt_w
                     total_weight += pt_w
                 elif grade.grade_type == 'quarterly_assessment':
-                    total_score += float(grade.transmuted_score) * qa_w
+                    total_score += float(grade.raw_score) * qa_w
                     total_weight += qa_w
         
         if total_weight > 0:
@@ -6107,21 +6106,21 @@ def parent_dashboard_view(request):
 
         # Grades (final grades only)
         grades = Grade.objects.filter(
-            student=student, grade_type='final_grade', transmuted_score__isnull=False
+            student=student, grade_type='final_grade', raw_score__isnull=False
         ).select_related('subject').order_by('-quarter', 'subject__name')
         grades_data = [
             {
                 'subject_name': g.subject.name,
                 'subject_code': g.subject.code,
                 'quarter': g.quarter,
-                'score': float(g.transmuted_score),
+                'score': float(g.raw_score),
                 'remarks': g.computed_remarks,
             }
             for g in grades[:20]
         ]
         general_avg = None
         if grades.exists():
-            general_avg = round(sum(float(g.transmuted_score) for g in grades) / grades.count(), 2)
+            general_avg = round(sum(float(g.raw_score) for g in grades) / grades.count(), 2)
 
         # Classroom info
         enrollment = StudentClassEnrollment.objects.filter(student=student).select_related(
@@ -6248,7 +6247,7 @@ def parent_child_detail_view(request, student_id):
 
     # All grades
     grades = Grade.objects.filter(
-        student=student, grade_type='final_grade', transmuted_score__isnull=False
+        student=student, grade_type='final_grade', raw_score__isnull=False
     ).select_related('subject').order_by('-academic_year', '-quarter', 'subject__name')
     grades_data = [
         {
@@ -6256,7 +6255,7 @@ def parent_child_detail_view(request, student_id):
             'subject_code': g.subject.code,
             'quarter': g.quarter,
             'academic_year': g.academic_year,
-            'score': float(g.transmuted_score),
+            'score': float(g.raw_score),
             'remarks': g.computed_remarks,
         }
         for g in grades

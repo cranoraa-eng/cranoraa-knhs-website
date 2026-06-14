@@ -413,55 +413,6 @@ class StudentClassEnrollment(models.Model):
     def __str__(self):
         return f"{self.student.username} in {self.classroom.name}"
     
-    @staticmethod
-    def transmute_score(raw_score):
-        """
-        DepEd Transmutation Table (K to 12)
-        Converts raw scores to transmuted grades (60-100 scale)
-        """
-        if raw_score is None:
-            return None
-        
-        # DepEd Transmutation Table
-        transmutation_table = [
-            (100, 100), (99, 99), (98, 98), (97, 97), (96, 96),
-            (95, 95), (94, 95), (93, 94), (92, 94), (91, 93),
-            (90, 93), (89, 92), (88, 92), (87, 91), (86, 91),
-            (85, 90), (84, 90), (83, 89), (82, 89), (81, 88),
-            (80, 88), (79, 87), (78, 87), (77, 86), (76, 86),
-            (75, 85), (74, 85), (73, 84), (72, 84), (71, 83),
-            (70, 83), (69, 82), (68, 82), (67, 81), (66, 81),
-            (65, 80), (64, 80), (63, 79), (62, 79), (61, 78),
-            (60, 78), (59, 77), (58, 77), (57, 76), (56, 76),
-            (55, 75), (54, 75), (53, 74), (52, 74), (51, 73),
-            (50, 73), (49, 72), (48, 72), (47, 71), (46, 71),
-            (45, 70), (44, 70), (43, 69), (42, 69), (41, 68),
-            (40, 68), (39, 67), (38, 67), (37, 66), (36, 66),
-            (35, 65), (34, 65), (33, 64), (32, 64), (31, 63),
-            (30, 63), (29, 62), (28, 62), (27, 61), (26, 61),
-            (25, 60), (24, 60), (23, 60), (22, 60), (21, 60),
-            (20, 60), (19, 60), (18, 60), (17, 60), (16, 60),
-            (15, 60), (14, 60), (13, 60), (12, 60), (11, 60),
-            (10, 60), (9, 60), (8, 60), (7, 60), (6, 60),
-            (5, 60), (4, 60), (3, 60), (2, 60), (1, 60),
-            (0, 60)
-        ]
-        
-        raw_score = max(0, min(100, raw_score))
-        for raw, transmuted in transmutation_table:
-            if raw_score >= raw:
-                return transmuted
-        return 60
-    
-    def get_transmuted_quarters(self):
-        """Return transmuted values for all quarters"""
-        return {
-            'q1': self.transmute_score(self.q1),
-            'q2': self.transmute_score(self.q2),
-            'q3': self.transmute_score(self.q3),
-            'q4': self.transmute_score(self.q4),
-        }
-    
     def calculate_general_average(self):
         quarters = [self.q1, self.q2, self.q3, self.q4]
         valid_quarters = [q for q in quarters if q is not None]
@@ -469,16 +420,8 @@ class StudentClassEnrollment(models.Model):
             return round(sum(valid_quarters) / len(valid_quarters))
         return None
     
-    def calculate_transmuted_average(self):
-        """Calculate average of transmuted quarterly grades"""
-        transmuted = self.get_transmuted_quarters()
-        transmuted_values = [v for v in transmuted.values() if v is not None]
-        if transmuted_values:
-            return round(sum(transmuted_values) / len(transmuted_values))
-        return None
-    
     def get_descriptive_equivalent(self):
-        avg = self.calculate_transmuted_average()
+        avg = self.calculate_general_average()
         if avg is None:
             return "No Grades"
         if avg >= 90:
@@ -1246,7 +1189,6 @@ class Grade(models.Model):
     # Score information
     raw_score = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
     total_score = models.DecimalField(max_digits=5, decimal_places=2, default=100)
-    transmuted_score = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
     
     # Final grade for the subject (calculated)
     final_grade = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
@@ -1269,63 +1211,21 @@ class Grade(models.Model):
         return f"{self.student.username} - {self.subject.code} - Q{self.quarter} ({self.academic_year})"
     
     def save(self, *args, **kwargs):
-        # No transmutation — raw_score IS the final grade (0-100)
         if self.raw_score is not None:
-            self.transmuted_score = self.raw_score
             self.compute_remarks()
         super().save(*args, **kwargs)
     
-    @staticmethod
-    def transmute_score(raw_score):
-        """
-        DepEd Transmutation Table (K to 12)
-        Converts raw scores to transmuted grades (60-100 scale)
-        """
-        if raw_score is None:
-            return None
-        
-        # DepEd Transmutation Table
-        transmutation_table = [
-            (100, 100), (99, 99), (98, 98), (97, 97), (96, 96),
-            (95, 95), (94, 95), (93, 94), (92, 94), (91, 93),
-            (90, 93), (89, 92), (88, 92), (87, 91), (86, 91),
-            (85, 90), (84, 90), (83, 89), (82, 89), (81, 88),
-            (80, 88), (79, 87), (78, 87), (77, 86), (76, 86),
-            (75, 85), (74, 85), (73, 84), (72, 84), (71, 83),
-            (70, 83), (69, 82), (68, 82), (67, 81), (66, 81),
-            (65, 80), (64, 80), (63, 79), (62, 79), (61, 78),
-            (60, 78), (59, 77), (58, 77), (57, 76), (56, 76),
-            (55, 75), (54, 75), (53, 74), (52, 74), (51, 73),
-            (50, 73), (49, 72), (48, 72), (47, 71), (46, 71),
-            (45, 70), (44, 70), (43, 69), (42, 69), (41, 68),
-            (40, 68), (39, 67), (38, 67), (37, 66), (36, 66),
-            (35, 65), (34, 65), (33, 64), (32, 64), (31, 63),
-            (30, 63), (29, 62), (28, 62), (27, 61), (26, 61),
-            (25, 60), (24, 60), (23, 60), (22, 60), (21, 60),
-            (20, 60), (19, 60), (18, 60), (17, 60), (16, 60),
-            (15, 60), (14, 60), (13, 60), (12, 60), (11, 60),
-            (10, 60), (9, 60), (8, 60), (7, 60), (6, 60),
-            (5, 60), (4, 60), (3, 60), (2, 60), (1, 60),
-            (0, 60)
-        ]
-        
-        raw_score = max(0, min(100, float(raw_score)))
-        for raw, transmuted in transmutation_table:
-            if raw_score >= raw:
-                return transmuted
-        return 60
-    
     def compute_remarks(self):
-        """Compute automatic remarks based on transmuted score"""
-        if self.transmuted_score is None:
+        """Compute automatic remarks based on raw score"""
+        if self.raw_score is None:
             self.computed_remarks = "No Grade"
-        elif self.transmuted_score >= 90:
+        elif self.raw_score >= 90:
             self.computed_remarks = "Outstanding"
-        elif self.transmuted_score >= 85:
+        elif self.raw_score >= 85:
             self.computed_remarks = "Very Satisfactory"
-        elif self.transmuted_score >= 80:
+        elif self.raw_score >= 80:
             self.computed_remarks = "Satisfactory"
-        elif self.transmuted_score >= 75:
+        elif self.raw_score >= 75:
             self.computed_remarks = "Fairly Satisfactory"
         else:
             self.computed_remarks = "Did Not Meet Expectations"
@@ -1503,11 +1403,11 @@ class GradeReport(models.Model):
         )
         
         if grades.exists():
-            total = sum(g.transmuted_score for g in grades if g.transmuted_score)
+            total = sum(g.raw_score for g in grades if g.raw_score)
             count = grades.count()
             self.general_average = round(total / count, 2) if count > 0 else None
             self.total_subjects = count
-            self.passed_subjects = sum(1 for g in grades if g.transmuted_score and g.transmuted_score >= 75)
+            self.passed_subjects = sum(1 for g in grades if g.raw_score and g.raw_score >= 75)
             self.failed_subjects = count - self.passed_subjects
         else:
             self.general_average = None

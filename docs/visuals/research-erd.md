@@ -87,7 +87,6 @@ erDiagram
         string grade_type
         int quarter
         decimal raw_score
-        decimal transmuted_score
         decimal final_grade
         string academic_year
         boolean is_locked

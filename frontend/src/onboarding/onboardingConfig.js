@@ -195,7 +195,7 @@ const roleConfigs = {
         category: 'Students',
         body: 'Scores come from activities, exams, and quarter grades.',
         bullets: [
-          'Per-subject grades may show raw and transmuted scores.',
+          'Per-subject grades show your scores for each quarter.',
           'Dispute a grade with your teacher first.',
         ],
       },

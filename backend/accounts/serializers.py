@@ -210,19 +210,15 @@ class StudentClassEnrollmentSerializer(serializers.ModelSerializer):
     classroom_name = serializers.CharField(source='classroom.name', read_only=True)
     classroom_advisor = serializers.SerializerMethodField()
     general_average = serializers.SerializerMethodField()
-    transmuted_average = serializers.SerializerMethodField()
     descriptive_equivalent = serializers.SerializerMethodField()
-    transmuted_quarters = serializers.SerializerMethodField()
 
     class Meta:
         model = StudentClassEnrollment
         fields = ['id', 'student', 'student_name', 'student_email', 'student_lrn', 'student_sex', 'classroom',
                   'classroom_name', 'classroom_advisor', 'q1', 'q2', 'q3', 'q4', 'gpa',
-                  'general_average', 'transmuted_average', 'transmuted_quarters',
-                  'descriptive_equivalent', 'enrolled_at', 'updated_at']
+                  'general_average', 'descriptive_equivalent', 'enrolled_at', 'updated_at']
         read_only_fields = ['student', 'classroom', 'classroom_name', 'classroom_advisor',
-                            'general_average', 'transmuted_average',
-                            'transmuted_quarters', 'descriptive_equivalent']
+                            'general_average', 'descriptive_equivalent']
 
     def get_student_name(self, obj): return full_name(obj.student)
     def get_student_lrn(self, obj):
@@ -230,8 +226,6 @@ class StudentClassEnrollmentSerializer(serializers.ModelSerializer):
         return profile.lrn if profile else None
     def get_classroom_advisor(self, obj): return full_name(obj.classroom.teacher) if obj.classroom.teacher else 'No Advisor'
     def get_general_average(self, obj): return obj.calculate_general_average()
-    def get_transmuted_average(self, obj): return obj.calculate_transmuted_average()
-    def get_transmuted_quarters(self, obj): return obj.get_transmuted_quarters()
     def get_descriptive_equivalent(self, obj): return obj.get_descriptive_equivalent()
 
     def to_representation(self, instance):
@@ -242,7 +236,7 @@ class StudentClassEnrollmentSerializer(serializers.ModelSerializer):
         if request and request.user.role == 'student' and instance.student != request.user:
             # Hide sensitive academic data
             grade_fields = ['q1', 'q2', 'q3', 'q4', 'gpa', 'general_average', 
-                           'transmuted_average', 'transmuted_quarters', 'descriptive_equivalent']
+                           'descriptive_equivalent']
             for field in grade_fields:
                 if field in representation:
                     representation[field] = None
@@ -657,10 +651,10 @@ class GradeSerializer(serializers.ModelSerializer):
             'subject_name', 'subject_code', 'classroom', 'classroom_name',
             'teacher', 'teacher_name', 'grade_type', 'grade_type_display',
             'quarter', 'quarter_display', 'academic_year', 'raw_score', 'total_score',
-            'transmuted_score', 'final_grade', 'remarks', 'computed_remarks',
+            'final_grade', 'remarks', 'computed_remarks',
             'percentage', 'submitted_at', 'updated_at', 'is_locked'
         ]
-        read_only_fields = ['transmuted_score', 'computed_remarks', 'teacher']
+        read_only_fields = ['computed_remarks', 'teacher']
 
     def get_student_name(self, obj): return full_name(obj.student)
     def get_teacher_name(self, obj): return full_name(obj.teacher)
@@ -963,11 +957,11 @@ class ParentChildSummarySerializer(serializers.ModelSerializer):
 
     def get_general_average(self, obj):
         grades = Grade.objects.filter(
-            student=obj, grade_type='final_grade', transmuted_score__isnull=False
+            student=obj, grade_type='final_grade', raw_score__isnull=False
         )
         if not grades.exists():
             return None
-        total = sum(float(g.transmuted_score) for g in grades)
+        total = sum(float(g.raw_score) for g in grades)
         return round(total / grades.count(), 2)
 
 

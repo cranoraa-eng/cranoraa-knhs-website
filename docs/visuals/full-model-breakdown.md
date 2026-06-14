@@ -873,7 +873,6 @@ Stores subject-level grade entries for students.
 - `quarter`
 - `raw_score`
 - `total_score`
-- `transmuted_score`
 - `final_grade`
 - `remarks`
 - `computed_remarks`

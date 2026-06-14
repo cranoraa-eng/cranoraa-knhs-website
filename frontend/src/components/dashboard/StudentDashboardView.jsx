@@ -29,7 +29,7 @@ const computeStreak = (records) => {
   return { streak, hasData: true };
 };
 
-const gradeScore = (g) => parseFloat(g.transmuted_score ?? g.raw_score ?? 0);
+const gradeScore = (g) => parseFloat(g.raw_score ?? 0);
 
 const formatDue = (dateStr) => {
   if (!dateStr) return '';
@@ -477,7 +477,7 @@ const StudentDashboardView = () => {
     : `Today: ${todayRecord.status.charAt(0).toUpperCase()}${todayRecord.status.slice(1)}`;
 
   const finalGrades = Array.isArray(grades)
-    ? grades.filter((g) => g.grade_type === 'final_grade' && (g.transmuted_score != null || g.raw_score != null))
+    ? grades.filter((g) => g.grade_type === 'final_grade' && g.raw_score != null)
     : [];
   const sortedGrades = [...finalGrades].sort((a, b) => gradeScore(b) - gradeScore(a));
   const overallAvg =

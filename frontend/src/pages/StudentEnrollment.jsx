@@ -220,7 +220,7 @@ const StudentEnrollment = () => {
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {enrollments.map(e => {
-                    const remarks = getRemarksLabel(e.transmuted_average || e.gpa);
+                    const remarks = getRemarksLabel(e.general_average || e.gpa);
                     return (
                       <tr key={e.id} className="hover:bg-violet-50 transition-colors">
                         <td className="px-2 py-1 md:px-6 md:py-4">
@@ -236,7 +236,7 @@ const StudentEnrollment = () => {
                         <td className="px-1 py-1 md:px-6 md:py-4 text-center">
                           {remarks ? (
                             <span className={`inline-flex items-center justify-center min-w-[18px] md:min-w-[32px] px-1 py-0 rounded-full text-[7px] md:text-xs font-black shadow-inner ${remarks.color}`}>
-                              {e.transmuted_average || e.gpa}
+                              {e.general_average || e.gpa}
                             </span>
                           ) : (
                             <span className="text-slate-300 text-[8px] md:text-sm">—</span>
