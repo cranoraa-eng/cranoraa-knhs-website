@@ -4,15 +4,26 @@ import { getAccessToken, updateTokens, clearSession } from './auth';
 const RAW_API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 
 function normalizeApiBaseUrl(apiUrl) {
-  const value = apiUrl.replace(/\/+$/, '');
+  let value = apiUrl.replace(/\/+$/, '');
 
   try {
     const url = new URL(value);
-    const pathname = url.pathname.replace(/\/+$/, '');
-    url.pathname = pathname.endsWith('/api') ? pathname : `${pathname}/api`;
+    let pathname = url.pathname.replace(/\/+$/, '');
+
+    // Ensure it ends with /api (but not /api/api)
+    if (!pathname.endsWith('/api')) {
+      pathname = `${pathname}/api`;
+    }
+    // Ensure it ends with /v1 after /api
+    if (!pathname.endsWith('/v1')) {
+      pathname = `${pathname}/v1`;
+    }
+
+    url.pathname = pathname;
     return url.toString().replace(/\/+$/, '');
   } catch {
-    return value.endsWith('/api') ? value : `${value}/api`;
+    let result = value.endsWith('/api') ? value : `${value}/api`;
+    return result.endsWith('/v1') ? result : `${result}/v1`;
   }
 }
 
@@ -23,21 +34,21 @@ export const API_BASE_URL = normalizeApiBaseUrl(RAW_API_BASE_URL);
 function deriveWsRoot(apiUrl) {
   try {
     const url = new URL(apiUrl);
-    url.pathname = url.pathname.replace(/\/api\/?$/, '') || '/';
+    url.pathname = url.pathname.replace(/\/api\/v1\/?$/, '') || '/';
     url.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
     return url.toString().replace(/\/$/, '');
   } catch {
-    return apiUrl.replace(/\/api\/?$/, '').replace(/^http/, 'ws');
+    return apiUrl.replace(/\/api\/v1\/?$/, '').replace(/^http/, 'ws');
   }
 }
 
 function deriveMediaRoot(apiUrl) {
   try {
     const url = new URL(apiUrl);
-    url.pathname = url.pathname.replace(/\/api\/?$/, '') || '/';
+    url.pathname = url.pathname.replace(/\/api\/v1\/?$/, '') || '/';
     return url.toString().replace(/\/$/, '');
   } catch {
-    return apiUrl.replace(/\/api\/?$/, '');
+    return apiUrl.replace(/\/api\/v1\/?$/, '');
   }
 }
 
