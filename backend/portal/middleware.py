@@ -4,11 +4,11 @@ from portal.models import APIRequestLog
 
 # High-frequency endpoints that should not be logged to avoid table bloat
 _SKIP_LOG_PATHS = (
-    '/api/token/',
-    '/api/token/refresh/',
-    '/api/system/maintenance-status/',
-    '/api/notifications/polling/',  # polling fallback — called every 30s per user
-    '/api/chat/messages/',          # chat message fetches — called on every room open
+    '/api/v1/token/',
+    '/api/v1/token/refresh/',
+    '/api/v1/system/maintenance-status/',
+    '/api/v1/notifications/polling/',  # polling fallback — called every 30s per user
+    '/api/v1/chat/messages/',          # chat message fetches — called on every room open
 )
 
 
