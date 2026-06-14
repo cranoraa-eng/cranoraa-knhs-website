@@ -6,7 +6,6 @@ import Swal from 'sweetalert2';
 
 const FileIcon = (p) => <svg width={p.size||16} height={p.size||16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={p.className}><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>;
 const SearchIcon = (p) => <svg width={p.size||16} height={p.size||16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={p.className}><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>;
-const PlusIcon = (p) => <svg width={p.size||16} height={p.size||16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={p.className}><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>;
 const SendIcon = (p) => <svg width={p.size||16} height={p.size||16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={p.className}><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>;
 const XIcon = (p) => <svg width={p.size||16} height={p.size||16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={p.className}><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>;
 const ClockIcon = (p) => <svg width={p.size||16} height={p.size||16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={p.className}><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>;
@@ -222,7 +221,7 @@ function MessageCard({ msg, isOwn, onDownload }) {
   );
 }
 
-function DetailsPanel({ ticket, messages, onBack }) {
+function DetailsPanel({ ticket, messages, onClose }) {
   if (!ticket) return null;
 
   const participants = [];
@@ -239,25 +238,24 @@ function DetailsPanel({ ticket, messages, onBack }) {
   });
 
   return (
-    <div className="w-80 bg-white border-l border-slate-200 flex flex-col h-full overflow-hidden">
+    <div className="absolute inset-0 z-20 bg-white flex flex-col overflow-hidden">
       {/* Header */}
-      <div className="px-5 py-4 border-b border-slate-100">
-        <div className="flex items-center justify-between mb-1">
-          <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Details</h3>
-          <button onClick={onBack} className="text-slate-400 hover:text-slate-600 p-1 rounded hover:bg-slate-100 transition-colors lg:hidden">
-            <XIcon size={14} />
-          </button>
-        </div>
-        <h4 className="text-sm font-semibold text-slate-900 leading-snug">{ticket.subject || 'No Subject'}</h4>
-        <div className="flex items-center gap-2 mt-2">
-          <StatusBadge status={ticket.status} />
-          <PriorityBadge priority={ticket.priority} />
-          <code className="text-[10px] font-mono text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded">#{ticket.ticket_id || ticket.id}</code>
-        </div>
+      <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+        <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Details</h3>
+        <button onClick={onClose} className="text-slate-400 hover:text-slate-600 p-1 rounded hover:bg-slate-100 transition-colors">
+          <XIcon size={14} />
+        </button>
       </div>
 
       <div className="flex-1 overflow-y-auto">
         <div className="p-4 space-y-3">
+          <h4 className="text-sm font-semibold text-slate-900 leading-snug">{ticket.subject || 'No Subject'}</h4>
+          <div className="flex items-center gap-2">
+            <StatusBadge status={ticket.status} />
+            <PriorityBadge priority={ticket.priority} />
+            <code className="text-[10px] font-mono text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded">#{ticket.ticket_id || ticket.id}</code>
+          </div>
+
           {/* Info Card */}
           <div className="border border-slate-200 rounded-xl overflow-hidden">
             <div className="px-3 py-2 bg-slate-50 border-b border-slate-100">
@@ -320,243 +318,136 @@ function DetailsPanel({ ticket, messages, onBack }) {
   );
 }
 
-const DEPT_TO_CATEGORY = {
-  registrar: 'enrollment',
-  advisory: 'attendance',
-  faculty: 'academic',
-  admin: 'other',
-  guidance: 'guidance',
-  it: 'it_support',
-  library: 'other',
-  finance: 'finance',
-};
-
-const PRIORITY_OPTIONS = [
-  { value: 'normal', label: 'Normal', color: 'border-slate-300 text-slate-600', activeColor: 'bg-slate-700 text-white border-slate-700' },
-  { value: 'high', label: 'High', color: 'border-amber-300 text-amber-600', activeColor: 'bg-amber-500 text-white border-amber-500' },
-  { value: 'urgent', label: 'Urgent', color: 'border-red-300 text-red-600', activeColor: 'bg-red-500 text-white border-red-500' },
+const ROLE_GROUPS = [
+  { key: 'staff', label: 'Faculty & Staff', roles: ['staff', 'admin'] },
+  { key: 'student', label: 'Students', roles: ['student'] },
+  { key: 'parent', label: 'Parents', roles: ['parent'] },
 ];
 
-function NewConversationModal({ open, onClose }) {
-  const [departments, setDepartments] = useState([]);
-  const [deptLoading, setDeptLoading] = useState(true);
-  const [selectedDept, setSelectedDept] = useState('');
-  const [staffList, setStaffList] = useState([]);
-  const [selectedStaff, setSelectedStaff] = useState('');
-  const [subject, setSubject] = useState('');
-  const [message, setMessage] = useState('');
-  const [priority, setPriority] = useState('normal');
-  const [submitting, setSubmitting] = useState(false);
+function PeopleDirectory({ onSelectPerson, currentUserId }) {
+  const [groups, setGroups] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [peopleSearch, setPeopleSearch] = useState('');
+  const [expandedGroups, setExpandedGroups] = useState({ staff: true, student: true, parent: true });
 
   useEffect(() => {
-    if (!open) return;
     let cancelled = false;
-    const fetchDepts = async () => {
+    const fetchAll = async () => {
+      setLoading(true);
       try {
-        setDeptLoading(true);
-        const res = await api.get('/tickets/staff-by-department/');
-        if (!cancelled) setDepartments(res.data);
+        const [staffRes, studentRes, parentRes] = await Promise.all([
+          api.get('/users/?role=staff').catch(() => ({ data: [] })),
+          api.get('/users/?role=student').catch(() => ({ data: [] })),
+          api.get('/users/?role=parent').catch(() => ({ data: [] })),
+        ]);
+        if (!cancelled) {
+          setGroups({
+            staff: staffRes.data.results || staffRes.data || [],
+            student: studentRes.data.results || studentRes.data || [],
+            parent: parentRes.data.results || parentRes.data || [],
+          });
+        }
       } catch {
-        if (!cancelled) toast.error('Failed to load departments');
+        // ignore
       } finally {
-        if (!cancelled) setDeptLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
-    fetchDepts();
+    fetchAll();
     return () => { cancelled = true; };
-  }, [open]);
+  }, []);
 
-  useEffect(() => {
-    setSelectedStaff('');
-    if (!selectedDept) { setStaffList([]); return; }
-    const dept = departments.find(d => String(d.id) === String(selectedDept));
-    setStaffList(dept?.members || []);
-  }, [selectedDept, departments]);
-
-  const handleSubmit = async () => {
-    if (!subject.trim() || !message.trim()) {
-      toast.error('Subject and message are required');
-      return;
-    }
-    setSubmitting(true);
-    try {
-      if (!selectedStaff) {
-        toast.error('Please select a staff member');
-        setSubmitting(false);
-        return;
-      }
-      const res = await api.post('/tickets/', {
-        subject: subject.trim(),
-        category: DEPT_TO_CATEGORY[selectedDept] || 'other',
-        priority,
-        assigned_to: parseInt(selectedStaff),
-        department: selectedDept,
-      });
-      const ticketId = res.data.id;
-      await api.post(`/tickets/${ticketId}/send-message/`, {
-        content: message.trim(),
-      });
-      toast.success(res.status === 200 ? 'Existing conversation found — message added' : 'Support request submitted');
-      onClose(true, ticketId);
-    } catch (err) {
-      toast.error(err.response?.data?.detail || err.response?.data?.error || err.message || 'Failed to submit request');
-    } finally {
-      setSubmitting(false);
-    }
+  const toggleGroup = (key) => {
+    setExpandedGroups(prev => ({ ...prev, [key]: !prev[key] }));
   };
 
-  useEffect(() => {
-    if (!open) {
-      setSelectedDept('');
-      setSelectedStaff('');
-      setSubject('');
-      setMessage('');
-      setPriority('normal');
+  const filtered = useMemo(() => {
+    if (!peopleSearch.trim()) return groups;
+    const q = peopleSearch.toLowerCase();
+    const result = {};
+    for (const [role, list] of Object.entries(groups)) {
+      result[role] = (list || []).filter(p => {
+        const name = `${p.first_name || ''} ${p.last_name || ''}`.toLowerCase();
+        const email = (p.email || '').toLowerCase();
+        return name.includes(q) || email.includes(q);
+      });
     }
-  }, [open]);
-
-  if (!open) return null;
-
-  const canSubmit = subject.trim() && message.trim() && selectedStaff && !submitting;
+    return result;
+  }, [groups, peopleSearch]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => onClose(false)} />
-      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden animate-[fadeIn_0.2s_ease-out] mx-4">
-        {/* Header */}
-        <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-slate-200">
-          <div>
-            <h2 className="text-base font-bold text-slate-900">New Support Request</h2>
-            <p className="text-xs text-slate-500 mt-0.5">Choose a department and describe your concern</p>
-          </div>
-          <button onClick={() => onClose(false)} className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">
-            <XIcon size={18} />
-          </button>
+    <div className="w-full h-full flex flex-col bg-white">
+      {/* Header */}
+      <div className="px-4 sm:px-5 py-4 border-b border-slate-100">
+        <h2 className="text-xs font-extrabold text-slate-900 uppercase tracking-tight mb-3">Directory</h2>
+        <div className="relative">
+          <SearchIcon size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+          <input
+            type="text"
+            placeholder="Search people..."
+            value={peopleSearch}
+            onChange={e => setPeopleSearch(e.target.value)}
+            className="w-full pl-9 pr-4 py-2 bg-slate-100 rounded-lg text-xs placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:bg-white transition-colors"
+          />
         </div>
+      </div>
 
-        {/* Body */}
-        <div className="px-4 sm:px-6 py-5 overflow-y-auto max-h-[calc(90vh-130px)] space-y-5">
-          {deptLoading ? (
-            <div className="flex items-center justify-center py-12">
-              <div className="w-5 h-5 border-2 border-slate-200 border-t-violet-600 rounded-full animate-spin" />
-            </div>
-          ) : (
-            <>
-              {/* Step 1: Department */}
-              <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
-                  1. Department
-                </label>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                  {departments.map(d => (
-                    <button key={d.id} onClick={() => setSelectedDept(d.id)}
-                      className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 transition-all text-center ${
-                        selectedDept === d.id
-                          ? 'border-violet-500 bg-violet-50 shadow-sm'
-                          : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50'
-                      }`}>
-                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                        selectedDept === d.id ? 'bg-violet-600 text-white' : 'bg-slate-100 text-slate-500'
-                      }`}>
-                        {getDeptIcon(d.id, 16)}
-                      </div>
-                      <span className={`text-[11px] font-semibold leading-tight ${
-                        selectedDept === d.id ? 'text-violet-700' : 'text-slate-600'
-                      }`}>{d.name}</span>
-                      <span className="text-[9px] text-slate-400">{d.members?.length || 0} staff</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Step 2: Staff Member */}
-              {selectedDept && (
-                <div className="animate-[fadeIn_0.15s_ease-out]">
-                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
-                    2. Assign To
-                  </label>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[200px] overflow-y-auto pr-1">
-                    {staffList.map(m => (
-                      <button key={m.id} onClick={() => setSelectedStaff(String(m.id))}
-                        className={`flex items-center gap-3 p-3 rounded-xl border-2 transition-all text-left ${
-                          selectedStaff === String(m.id)
-                            ? 'border-violet-500 bg-violet-50 shadow-sm'
-                            : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50'
-                        }`}>
-                        <div className="relative flex-shrink-0">
-                          <Avatar name={m.name} size="sm" />
-                          <span className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white ${
-                            m.is_online ? 'bg-emerald-400' : 'bg-slate-300'
-                          }`} />
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <p className={`text-xs font-semibold truncate ${
-                            selectedStaff === String(m.id) ? 'text-violet-700' : 'text-slate-800'
-                          }`}>{m.name}</p>
-                          <p className="text-[10px] text-slate-400 truncate">{m.title || m.staff_title || 'Staff'}</p>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Step 3: Priority */}
-              <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
-                  3. Priority
-                </label>
-                <div className="flex gap-2">
-                  {PRIORITY_OPTIONS.map(p => (
-                    <button key={p.value} onClick={() => setPriority(p.value)}
-                      className={`flex-1 py-2 px-3 rounded-xl border-2 text-xs font-bold transition-all ${
-                        priority === p.value ? p.activeColor : p.color
-                      }`}>
-                      {p.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Step 4: Details */}
-              <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
-                  4. Details
-                </label>
-                <div className="space-y-3">
-                  <input type="text" value={subject} onChange={e => setSubject(e.target.value)}
-                    placeholder="Subject — brief title for your request"
-                    className="w-full px-4 py-3 bg-white border border-slate-300 rounded-xl text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-colors" />
-                  <textarea value={message} onChange={e => setMessage(e.target.value)} rows={4}
-                    placeholder="Describe your concern in detail..."
-                    className="w-full px-4 py-3 bg-white border border-slate-300 rounded-xl text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-colors resize-none" />
-                </div>
-              </div>
-            </>
-          )}
-        </div>
-
-        {/* Footer */}
-        <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-t border-slate-200 bg-slate-50">
-          <div className="text-[10px] text-slate-400">
-            {selectedDept && <span>Dept: <b>{departments.find(d => d.id === selectedDept)?.name}</b></span>}
-            {selectedStaff && <span className="ml-2">| To: <b>{staffList.find(m => String(m.id) === selectedStaff)?.name}</b></span>}
+      {/* People List */}
+      <div className="flex-1 overflow-y-auto">
+        {loading ? (
+          <div className="flex items-center justify-center h-24">
+            <div className="w-5 h-5 border-2 border-slate-200 border-t-violet-600 rounded-full animate-spin" />
           </div>
-          <div className="flex items-center gap-3">
-            <button onClick={() => onClose(false)}
-              className="px-4 py-2 text-sm font-semibold text-slate-600 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors">
-              Cancel
-            </button>
-            <button onClick={handleSubmit} disabled={!canSubmit}
-              className="px-5 py-2 text-sm font-bold text-white bg-violet-600 rounded-lg hover:bg-violet-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
-              {submitting ? (
-                <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Submitting...</>
-              ) : (
-                <><SendIcon size={14} /> Submit Request</>
-              )}
-            </button>
+        ) : (
+          <div className="py-2">
+            {ROLE_GROUPS.map(group => {
+              const list = filtered[group.key] || [];
+              if (list.length === 0) return null;
+              const isExpanded = expandedGroups[group.key];
+              return (
+                <div key={group.key} className="mb-1">
+                  <button
+                    onClick={() => toggleGroup(group.key)}
+                    className="w-full flex items-center justify-between px-5 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider hover:bg-slate-50 transition-colors"
+                  >
+                    <span>{group.label}</span>
+                    <span className="text-slate-300">{list.length}</span>
+                  </button>
+                  {isExpanded && (
+                    <div className="divide-y divide-slate-50">
+                      {list.map(person => (
+                        <button
+                          key={person.id}
+                          onClick={() => onSelectPerson(person)}
+                          className="w-full flex items-center gap-3 px-5 py-2.5 hover:bg-violet-50/30 transition-colors text-left"
+                        >
+                          <div className="relative flex-shrink-0">
+                            <Avatar name={`${person.first_name || ''} ${person.last_name || ''}`} size="sm" />
+                            <span className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-white ${
+                              person.is_online ? 'bg-emerald-400' : 'bg-slate-300'
+                            }`} />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-xs font-medium text-slate-800 truncate">
+                              {person.first_name} {person.last_name}
+                            </p>
+                            <p className="text-[10px] text-slate-400 truncate">
+                              {person.role === 'staff'
+                                ? (person.staff_title || 'Staff')
+                                : person.role === 'parent'
+                                  ? 'Parent'
+                                  : (person.profile?.classroom_name || 'Student')}
+                            </p>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
@@ -571,7 +462,6 @@ export default function CommunicationCenter() {
   const [sending, setSending] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState('all');
-  const [showNewModal, setShowNewModal] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
   const [text, setText] = useState('');
   const [mobileView, setMobileView] = useState('list');
@@ -861,14 +751,37 @@ export default function CommunicationCenter() {
     }
   };
 
-  const handleNewModalClose = (created, ticketId) => {
-    setShowNewModal(false);
-    if (created) {
-      fetchTickets();
-      if (ticketId) {
-        setSelectedId(ticketId);
-        setMobileView('thread');
-      }
+  const handleSelectPerson = async (person) => {
+    // Check if a ticket already exists with this person
+    const existing = tickets.find(t => {
+      const name = `${person.first_name || ''} ${person.last_name || ''}`.trim();
+      return (
+        t.created_by_name === name ||
+        t.assigned_name === name ||
+        t.assigned_to_name === name ||
+        t.staff_name === name
+      );
+    });
+    if (existing) {
+      setSelectedId(existing.id);
+      setMobileView('thread');
+      return;
+    }
+    // Create new ticket for this person
+    try {
+      const name = `${person.first_name || ''} ${person.last_name || ''}`.trim();
+      const res = await api.post('/tickets/', {
+        subject: `Conversation with ${name}`,
+        category: 'other',
+        priority: 'normal',
+        assigned_to: person.id,
+      });
+      toast.success(`Started conversation with ${name}`);
+      await fetchTickets();
+      setSelectedId(res.data.id);
+      setMobileView('thread');
+    } catch (err) {
+      toast.error(err.response?.data?.detail || err.response?.data?.error || 'Failed to start conversation');
     }
   };
 
@@ -883,17 +796,9 @@ export default function CommunicationCenter() {
       `}>
         {/* Header */}
         <div className="px-4 sm:px-5 py-4 border-b border-slate-100">
-          <div className="flex items-center justify-between mb-3">
-            <div>
-              <h1 className="text-sm font-extrabold text-slate-900 uppercase tracking-tight">Support Center</h1>
-              <p className="text-[10px] text-slate-500 mt-0.5">Manage support requests</p>
-            </div>
-            <button onClick={() => setShowNewModal(true)}
-              className="flex items-center gap-1.5 px-3 py-2 bg-violet-600 text-white text-xs font-bold rounded-lg hover:bg-violet-700 transition-colors shadow-sm">
-              <PlusIcon size={14} />
-              <span className="hidden sm:inline">New</span>
-              <span className="sm:hidden">+</span>
-            </button>
+          <div className="mb-3">
+            <h1 className="text-sm font-extrabold text-slate-900 uppercase tracking-tight">Support Center</h1>
+            <p className="text-[10px] text-slate-500 mt-0.5">Manage support requests</p>
           </div>
           <div className="relative">
             <SearchIcon size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
@@ -950,11 +855,16 @@ export default function CommunicationCenter() {
 
       {/* Center Panel — Message Thread */}
       <div className={`
-        flex-1 flex flex-col min-w-0 bg-slate-50 h-full
+        flex-1 flex flex-col min-w-0 bg-slate-50 h-full relative
         ${mobileView === 'thread' ? 'flex' : 'hidden lg:flex'}
       `}>
         {selectedTicket ? (
           <>
+            {/* Details Overlay */}
+            {showDetails && (
+              <DetailsPanel ticket={selectedTicket} messages={messages} onClose={() => setShowDetails(false)} />
+            )}
+
             {/* Thread Header */}
             <div className="flex items-center justify-between px-3 sm:px-5 py-3 bg-white border-b border-slate-200 min-h-[57px]">
               <div className="flex items-center gap-2 min-w-0 flex-1">
@@ -1030,22 +940,15 @@ export default function CommunicationCenter() {
           <div className="flex-1 flex flex-col items-center justify-center bg-slate-50">
             <svg width={56} height={56} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="text-slate-300 mb-4"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
             <h3 className="text-base font-bold text-slate-400 mb-1">Select a Request</h3>
-            <p className="text-sm text-slate-300">Choose a conversation from the list or create a new one</p>
-            <button onClick={() => setShowNewModal(true)}
-              className="mt-4 px-5 py-2 bg-violet-600 text-white text-sm font-bold rounded-lg hover:bg-violet-700 transition-colors shadow-sm flex items-center gap-2">
-              <PlusIcon size={14} /> New Support Request
-            </button>
+            <p className="text-sm text-slate-300 text-center max-w-[240px]">Choose a conversation from the list or select someone from the directory</p>
           </div>
         )}
       </div>
 
-      {/* Right Panel — Details (desktop: always visible when selected, mobile: toggle) */}
-      <div className={`${showDetails ? 'flex' : 'hidden'} lg:flex`}>
-        <DetailsPanel ticket={selectedTicket} messages={messages} onBack={() => setShowDetails(false)} />
+      {/* Right Panel — People Directory */}
+      <div className="hidden lg:flex w-[300px] min-w-0 border-l border-slate-200 h-full">
+        <PeopleDirectory onSelectPerson={handleSelectPerson} currentUserId={user?.id} />
       </div>
-
-      {/* New Conversation Modal */}
-      <NewConversationModal open={showNewModal} onClose={handleNewModalClose} />
     </div>
   );
 }
