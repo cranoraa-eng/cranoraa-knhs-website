@@ -884,7 +884,7 @@ class StudentClassEnrollmentViewSet(viewsets.ModelViewSet):
     
     def perform_update(self, serializer):
         # Only teachers and admins can update grades
-        if self.request.user.role not in ['teacher', 'admin']:
+        if self.request.user.role not in ['staff', 'admin']:
             from rest_framework.exceptions import PermissionDenied
             raise PermissionDenied("Only teachers and admins can update grades")
         enrollment = serializer.save()
@@ -952,7 +952,7 @@ class UserViewSet(viewsets.ModelViewSet):
             
             # Management views (filtering by role) should only show approved accounts.
             # Email verification (is_verified) is now optional per school requirements.
-            if role in ['student', 'teacher']:
+            if role in ['student', 'staff']:
                 queryset = queryset.filter(is_approved=True)
             
             # Allow all authenticated users to see admins (for communication center directory)
@@ -1107,7 +1107,7 @@ class UserViewSet(viewsets.ModelViewSet):
     def update_status(self, request, pk=None):
         """Update user account status (admin and advisory teachers)"""
         user_role = request.user.role
-        if user_role not in ['admin', 'teacher']:
+        if user_role not in ['admin', 'staff']:
             return Response({'error': 'Unauthorized'}, status=403)
             
         user = self.get_object()
@@ -1175,7 +1175,7 @@ class UserViewSet(viewsets.ModelViewSet):
     def reset_password(self, request, pk=None):
         """Manually reset a user's password (admin and advisory teachers)"""
         user_role = request.user.role
-        if user_role not in ['admin', 'teacher']:
+        if user_role not in ['admin', 'staff']:
             return Response({'error': 'Unauthorized'}, status=403)
             
         user = self.get_object()
@@ -1228,7 +1228,7 @@ class UserViewSet(viewsets.ModelViewSet):
     def import_csv(self, request):
         """Import students from CSV (admin and teachers)"""
         user_role = request.user.role
-        if user_role not in ['admin', 'teacher']:
+        if user_role not in ['admin', 'staff']:
             return Response({'error': 'Unauthorized'}, status=403)
             
         advisory_classroom = None
@@ -1648,7 +1648,7 @@ class UserViewSet(viewsets.ModelViewSet):
         if request.user.role == 'admin':
             users = User.objects.all().select_related('profile')
         else:
-            users = User.objects.filter(role__in=['teacher', 'student']).select_related('profile')
+            users = User.objects.filter(role__in=['staff', 'student']).select_related('profile')
         
         if query:
             users = users.filter(
@@ -1977,7 +1977,7 @@ class AnnouncementViewSet(viewsets.ModelViewSet):
             return Response({'error': 'Attachment not found'}, status=status.HTTP_404_NOT_FOUND)
 
     def _can_comment_on(self, user, announcement):
-        if user.role not in ('student', 'teacher', 'admin'):
+        if user.role not in ('student', 'staff', 'admin'):
             return False
         if user.role == 'student':
             return announcement.status == 'live'
@@ -2070,7 +2070,7 @@ class AttendanceViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'])
     def summary(self, request):
         """Advanced attendance analytics (Admin/Teacher only)"""
-        if request.user.role not in ['admin', 'teacher']:
+        if request.user.role not in ['admin', 'staff']:
             return Response({'error': 'Unauthorized'}, status=403)
             
         from django.db.models import Count, Case, When, IntegerField
@@ -2162,7 +2162,7 @@ class AttendanceViewSet(viewsets.ModelViewSet):
 
         # Section Rankings (Overall Attendance Rate)
         rankings = []
-        if request.user.role in ['admin', 'teacher']:
+        if request.user.role in ['admin', 'staff']:
             # Get all classrooms for the academic year
             classrooms = Classroom.objects.all()
             if academic_year_name:
@@ -2200,7 +2200,7 @@ class AttendanceViewSet(viewsets.ModelViewSet):
     
     def perform_create(self, serializer):
         # Teachers and admins can mark attendance
-        if self.request.user.role not in ['teacher', 'admin']:
+        if self.request.user.role not in ['staff', 'admin']:
             from rest_framework.exceptions import PermissionDenied
             raise PermissionDenied("Only teachers and admins can mark attendance")
         attendance = serializer.save(marked_by=self.request.user)
@@ -2250,7 +2250,7 @@ class LearningMaterialViewSet(viewsets.ModelViewSet):
         return queryset.order_by('-created_at')
     
     def perform_create(self, serializer):
-        if self.request.user.role not in ['teacher', 'admin']:
+        if self.request.user.role not in ['staff', 'admin']:
             from rest_framework.exceptions import PermissionDenied
             raise PermissionDenied("Only teachers and admins can upload materials")
 
@@ -2345,7 +2345,7 @@ class ClassroomSubjectViewSet(viewsets.ModelViewSet):
     
     def perform_create(self, serializer):
         user = self.request.user
-        if user.role not in ['admin', 'teacher']:
+        if user.role not in ['admin', 'staff']:
             from rest_framework.exceptions import PermissionDenied
             raise PermissionDenied("Only admins and teachers can assign subjects to classrooms")
         instance = serializer.save()
@@ -2358,7 +2358,7 @@ class ClassroomSubjectViewSet(viewsets.ModelViewSet):
 
     def perform_update(self, serializer):
         user = self.request.user
-        if user.role not in ['admin', 'teacher']:
+        if user.role not in ['admin', 'staff']:
             from rest_framework.exceptions import PermissionDenied
             raise PermissionDenied("Only admins and teachers can update subject assignments")
         if user.role == 'staff' and serializer.instance.teacher != user:
@@ -2374,7 +2374,7 @@ class ClassroomSubjectViewSet(viewsets.ModelViewSet):
 
     def perform_destroy(self, instance):
         user = self.request.user
-        if user.role not in ['admin', 'teacher']:
+        if user.role not in ['admin', 'staff']:
             from rest_framework.exceptions import PermissionDenied
             raise PermissionDenied("Only admins and teachers can remove subject assignments")
         if user.role == 'staff' and instance.teacher != user:
@@ -2539,7 +2539,7 @@ def maintenance_status_view(request):
 @permission_classes([IsAuthenticated])
 def admin_dashboard_stats(request):
     try:
-        if request.user.role not in ['admin', 'teacher']:
+        if request.user.role not in ['admin', 'staff']:
             return Response({'error': 'Unauthorized access'}, status=403)
 
         from django.db.models import Count, Avg, Q
@@ -3140,7 +3140,7 @@ def student_profile(request):
     student_id = request.query_params.get('student_id')
     
     if student_id:
-        if request.user.role not in ['teacher', 'admin']:
+        if request.user.role not in ['staff', 'admin']:
             return Response({'error': 'Unauthorized'}, status=403)
         try:
             target_user = User.objects.get(id=student_id)
@@ -4247,7 +4247,7 @@ class GradeViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'])
     def summary(self, request):
         """Advanced grade analytics and monitoring"""
-        if request.user.role not in ['admin', 'teacher']:
+        if request.user.role not in ['admin', 'staff']:
             return Response({'error': 'Unauthorized'}, status=403)
             
         from django.db.models import Avg, Count, Max, Min
@@ -4407,7 +4407,7 @@ class GradeViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'])
     def by_classroom(self, request):
         """Get grades by classroom (for teachers)"""
-        if request.user.role not in ['admin', 'teacher']:
+        if request.user.role not in ['admin', 'staff']:
             return Response({'error': 'Unauthorized'}, status=status.HTTP_403_FORBIDDEN)
         
         classroom_id = request.query_params.get('classroom_id')
@@ -4426,7 +4426,7 @@ class GradeViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['post'])
     def calculate_final(self, request):
         """Calculate final grade for a student in a subject"""
-        if request.user.role not in ['admin', 'teacher']:
+        if request.user.role not in ['admin', 'staff']:
             return Response({'error': 'Unauthorized'}, status=status.HTTP_403_FORBIDDEN)
         
         student_id = request.data.get('student_id')
@@ -4523,7 +4523,7 @@ class AssignmentViewSet(viewsets.ModelViewSet):
         return queryset
 
     def perform_create(self, serializer):
-        if self.request.user.role not in ['admin', 'teacher']:
+        if self.request.user.role not in ['admin', 'staff']:
             from rest_framework.exceptions import PermissionDenied
             raise PermissionDenied("Only teachers and admins can create assignments")
 
@@ -4552,7 +4552,7 @@ class AssignmentViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'])
     def analytics(self, request):
         """Assignment and submission analytics"""
-        if request.user.role not in ['admin', 'teacher']:
+        if request.user.role not in ['admin', 'staff']:
             return Response({'error': 'Unauthorized'}, status=403)
             
         classroom_id = request.query_params.get('classroom')
@@ -4658,7 +4658,7 @@ class GradeReportViewSet(viewsets.ModelViewSet):
     
     def perform_create(self, serializer):
         user = self.request.user
-        if user.role not in ['admin', 'teacher']:
+        if user.role not in ['admin', 'staff']:
             raise serializers.ValidationError("Only admins and teachers can create reports")
         
         report = serializer.save(generated_by=user)
@@ -4681,7 +4681,7 @@ class GradeReportViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['post'])
     def generate_for_classroom(self, request):
         """Generate grade reports for all students in a classroom"""
-        if request.user.role not in ['admin', 'teacher']:
+        if request.user.role not in ['admin', 'staff']:
             return Response({'error': 'Unauthorized'}, status=status.HTTP_403_FORBIDDEN)
         
         classroom_id = request.data.get('classroom_id')
