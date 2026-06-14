@@ -11,17 +11,17 @@ from .views import (
 app_name = 'portal'
 
 router = DefaultRouter()
-router.register(r'public-announcements', AnnouncementViewSet, basename='public-announcement')
-router.register(r'admin/classes', SchoolClassViewSet, basename='class')
-router.register(r'admin/departments', DepartmentViewSet, basename='department')
-router.register(r'admin/academic-years', AcademicYearViewSet, basename='academic-year')
-router.register(r'admin/semesters', SemesterViewSet, basename='semester')
-router.register(r'admin/audit-logs', AuditLogViewSet, basename='audit-log')
-router.register(r'admin/storage', StorageViewSet, basename='storage')
-router.register(r'admin/backups', DatabaseBackupViewSet, basename='backup')
+router.register(r'v1/public-announcements', AnnouncementViewSet, basename='public-announcement')
+router.register(r'v1/admin/classes', SchoolClassViewSet, basename='class')
+router.register(r'v1/admin/departments', DepartmentViewSet, basename='department')
+router.register(r'v1/admin/academic-years', AcademicYearViewSet, basename='academic-year')
+router.register(r'v1/admin/semesters', SemesterViewSet, basename='semester')
+router.register(r'v1/admin/audit-logs', AuditLogViewSet, basename='audit-log')
+router.register(r'v1/admin/storage', StorageViewSet, basename='storage')
+router.register(r'v1/admin/backups', DatabaseBackupViewSet, basename='backup')
 
 urlpatterns = [
     path('', include(router.urls)),
-    path('admin/pending-fees/', pending_fees, name='pending-fees'),
-    path('admin/teacher-progress/', teacher_progress, name='teacher-progress'),
+    path('v1/admin/pending-fees/', pending_fees, name='pending-fees'),
+    path('v1/admin/teacher-progress/', teacher_progress, name='teacher-progress'),
 ]
