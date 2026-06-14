@@ -16,6 +16,7 @@ import Login from './pages/Login';
 import ForcePasswordChange from './pages/ForcePasswordChange';
 import Dashboard from './pages/Dashboard';
 import Maintenance from './pages/Maintenance';
+import NotFound from './pages/NotFound';
 
 
 // ── Public website pages ──────────────────────────────────────────────────────
@@ -131,6 +132,7 @@ function App() {
                 <Route path="privacy" element={<PrivacyPolicy />} />
                 <Route path="terms" element={<TermsOfService />} />
                 <Route path="track-enrollment" element={<EnrollmentTracking />} />
+                <Route path="*" element={<NotFound />} />
               </Route>
 
               {/* Protected Portal Routes */}
@@ -181,6 +183,7 @@ function App() {
                 <Route path="schedule" element={<Navigate to="/academics-hub?tab=schedule" replace />} />
                 <Route path="parent-dashboard" element={<ParentDashboard />} />
                 <Route path="parent-management" element={<Navigate to="/people-directory?tab=parents" replace />} />
+                <Route path="*" element={<NotFound />} />
               </Route>
             </Routes>
             </ErrorBoundary>

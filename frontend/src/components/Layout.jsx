@@ -395,7 +395,7 @@ const Layout = () => {
         )}
 
         {/* ── Sidebar ── */}
-        <aside data-tour="portal-sidebar" className={`fixed inset-y-0 left-0 z-50 flex h-screen w-64 transform flex-col overflow-hidden border-r border-slate-200 bg-white shadow-xl transition-all duration-300 ease-in-out lg:static lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        <aside aria-label="Portal sidebar" data-tour="portal-sidebar" className={`fixed inset-y-0 left-0 z-50 flex h-screen w-64 transform flex-col overflow-hidden border-r border-slate-200 bg-white shadow-xl transition-all duration-300 ease-in-out lg:static lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
 
           {/* School Header */}
           <div className="flex items-center gap-3 px-4 py-4 border-b-4 border-violet-600 bg-white">
@@ -480,7 +480,7 @@ const Layout = () => {
         </aside>
 
         {/* ── Main Content ── */}
-        <main data-tour="portal-main" className="flex-1 flex flex-col min-h-0 overflow-y-auto bg-[#F8FAFC]">
+        <main aria-label="Portal content" data-tour="portal-main" className="flex-1 flex flex-col min-h-0 overflow-y-auto bg-[#F8FAFC]">
           {/* Top bar */}
           <header data-tour="portal-header" className="sticky top-0 z-30 flex items-center justify-between border-b-2 border-slate-200 bg-white px-4 py-2 shadow-sm lg:px-6">
             <div className="flex items-center gap-4 lg:gap-6">

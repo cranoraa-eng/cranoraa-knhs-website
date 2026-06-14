@@ -31,10 +31,23 @@ class RateLimiter:
 
     def __init__(self):
         self._requests = defaultdict(list)
+        self._last_cleanup = time.monotonic()
+        self._CLEANUP_INTERVAL = 300  # every 5 minutes
+
+    def _cleanup_stale_keys(self):
+        """Periodically remove keys with no recent activity to prevent memory leak."""
+        now = time.monotonic()
+        if now - self._last_cleanup < self._CLEANUP_INTERVAL:
+            return
+        self._last_cleanup = now
+        stale_keys = [k for k, v in self._requests.items() if not v or (now - v[-1] > 600)]
+        for k in stale_keys:
+            del self._requests[k]
 
     def is_rate_limited(self, key: str, limit: int, window: int) -> bool:
         """Check if a key has exceeded the rate limit. Returns True if limited."""
         now = time.monotonic()
+        self._cleanup_stale_keys()
         # Remove expired entries
         self._requests[key] = [
             t for t in self._requests[key] if now - t < window
@@ -122,7 +135,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
         For the personal channel approach we still need N sends, but we debounce
         them so they don't fire on every reconnect within PRESENCE_DEBOUNCE_SECONDS.
         """
-        import time
         now = time.monotonic()
 
         # Debounce: skip if we already broadcast presence recently
@@ -176,7 +188,14 @@ class ChatConsumer(AsyncWebsocketConsumer):
         }))
 
     async def receive(self, text_data):
-        data = json.loads(text_data)
+        try:
+            data = json.loads(text_data)
+        except (json.JSONDecodeError, TypeError):
+            await self.send(text_data=json.dumps({
+                'type': 'error',
+                'message': 'Invalid message format.'
+            }))
+            return
         msg_type = data.get('type', 'message')
 
         if self.room_id == '0' and msg_type in {'typing', 'read', 'reaction', 'message'}:
@@ -188,7 +207,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         # ── Typing indicator ──────────────────────────────────────────────
         if msg_type == 'typing':
-            import time
             now = time.monotonic()
             # Server-side throttle: ignore typing signals faster than 3s
             # Client already throttles, but this prevents any bypass.
@@ -703,12 +721,18 @@ class TicketConsumer(AsyncWebsocketConsumer):
                 await self.channel_layer.group_discard(f'user_{self.user.id}', self.channel_name)
 
     async def receive(self, text_data):
-        import time as _time
-        data = json.loads(text_data)
+        try:
+            data = json.loads(text_data)
+        except (json.JSONDecodeError, TypeError):
+            await self.send(text_data=json.dumps({
+                'type': 'error',
+                'message': 'Invalid message format.'
+            }))
+            return
         msg_type = data.get('type', 'message')
 
         if msg_type == 'typing':
-            now = _time.monotonic()
+            now = time.monotonic()
             if (now - self._last_typing_sent) < TYPING_THROTTLE_SECONDS:
                 return
             self._last_typing_sent = now

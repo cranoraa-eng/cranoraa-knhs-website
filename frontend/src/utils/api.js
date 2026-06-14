@@ -63,6 +63,17 @@ api.interceptors.request.use((config) => {
 
 // On 401, ask the backend to rotate the refresh token (cookie → cookie) and
 // return a new access token. If that also fails, clear the session.
+let isRefreshing = false;
+let failedQueue = [];
+
+const processQueue = (error, token = null) => {
+  failedQueue.forEach(prom => {
+    if (error) prom.reject(error);
+    else prom.resolve(token);
+  });
+  failedQueue = [];
+};
+
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
@@ -79,6 +90,17 @@ api.interceptors.response.use(
     if (error.response?.status === 401 && !original._retry) {
       original._retry = true;
 
+      if (isRefreshing) {
+        return new Promise((resolve, reject) => {
+          failedQueue.push({ resolve, reject });
+        }).then(token => {
+          original.headers.Authorization = `Bearer ${token}`;
+          return api(original);
+        }).catch(err => Promise.reject(err));
+      }
+
+      isRefreshing = true;
+
       try {
         // POST with no body — the backend reads the refresh token from the httpOnly cookie.
         // withCredentials ensures the cookie is sent cross-origin in production.
@@ -91,10 +113,14 @@ api.interceptors.response.use(
         // Store the short-lived access token in memory (not localStorage)
         updateTokens(data.access);
         original.headers.Authorization = `Bearer ${data.access}`;
+        processQueue(null, data.access);
         return api(original);
       } catch {
+        processQueue(error);
         clearSession();
         return Promise.reject(error);
+      } finally {
+        isRefreshing = false;
       }
     }
 
