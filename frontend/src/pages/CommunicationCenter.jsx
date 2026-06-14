@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import api from '../utils/api';
+import api, { WS_ROOT } from '../utils/api';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
@@ -581,6 +581,15 @@ export default function CommunicationCenter() {
   const debouncedSearch = useRef(null);
   const [effectiveSearch, setEffectiveSearch] = useState('');
 
+  // ── WebSocket state ─────────────────────────────────────────────────────
+  const wsRef = useRef(null);
+  const reconnectTimerRef = useRef(null);
+  const reconnectAttemptsRef = useRef(0);
+  const typingThrottleRef = useRef(0);
+  const [typingUsers, setTypingUsers] = useState([]);
+  const typingTimeoutRef = useRef({});
+  const [wsConnected, setWsConnected] = useState(false);
+
   const statusParam = activeFilter === 'closed' ? 'resolved' : activeFilter;
   const hasServerStatus = activeFilter !== 'all' && activeFilter !== 'unread';
 
@@ -658,26 +667,174 @@ export default function CommunicationCenter() {
     return tickets;
   }, [tickets, activeFilter]);
 
+  // ── WebSocket connect/disconnect per selected ticket ────────────────────
+  const connectWs = useCallback((ticketId) => {
+    if (!ticketId) return;
+    const token = localStorage.getItem('access_token');
+    if (!token) return;
+
+    // Guard: don't open a second connection
+    if (wsRef.current && wsRef.current.readyState <= WebSocket.OPEN) return;
+
+    const ws = new WebSocket(`${WS_ROOT}/ws/ticket/${ticketId}/?token=${token}`);
+    wsRef.current = ws;
+
+    ws.onopen = () => {
+      setWsConnected(true);
+      reconnectAttemptsRef.current = 0;
+      if (reconnectTimerRef.current) {
+        clearTimeout(reconnectTimerRef.current);
+        reconnectTimerRef.current = null;
+      }
+    };
+
+    ws.onmessage = (e) => {
+      try {
+        const data = JSON.parse(e.data);
+
+        if (data.type === 'message') {
+          setMessages(prev => {
+            if (prev.some(m => m.id === data.id)) return prev;
+            return [...prev, data];
+          });
+          // Refresh ticket list to update last_message and unread
+          fetchTickets();
+
+        } else if (data.type === 'typing') {
+          const uid = data.sender_id;
+          if (data.is_typing) {
+            setTypingUsers(prev => {
+              if (prev.includes(uid)) return prev;
+              return [...prev, uid];
+            });
+            // Auto-clear after 4s
+            if (typingTimeoutRef.current[uid]) clearTimeout(typingTimeoutRef.current[uid]);
+            typingTimeoutRef.current[uid] = setTimeout(() => {
+              setTypingUsers(prev => prev.filter(id => id !== uid));
+            }, 4000);
+          } else {
+            setTypingUsers(prev => prev.filter(id => id !== uid));
+            if (typingTimeoutRef.current[uid]) clearTimeout(typingTimeoutRef.current[uid]);
+          }
+
+        } else if (data.type === 'status_update') {
+          setTickets(prev => prev.map(t =>
+            t.id === data.ticket_id ? { ...t, status: data.status } : t
+          ));
+
+        } else if (data.type === 'new_message_notify') {
+          // Another ticket got a message — refresh list
+          fetchTickets();
+
+        } else if (data.type === 'error') {
+          toast.error(data.message);
+        }
+      } catch {
+        // ignore parse errors
+      }
+    };
+
+    ws.onclose = (e) => {
+      setWsConnected(false);
+      wsRef.current = null;
+      // Reconnect on abnormal close (not manual close code 1000)
+      if (e.code !== 1000 && e.code !== 1001) {
+        const attempts = reconnectAttemptsRef.current;
+        const delay = Math.min(3000 * Math.pow(2, attempts), 30000);
+        reconnectAttemptsRef.current = attempts + 1;
+        reconnectTimerRef.current = setTimeout(() => connectWs(ticketId), delay);
+      }
+    };
+
+    ws.onerror = () => {
+      setWsConnected(false);
+    };
+  }, [fetchTickets]);
+
+  const disconnectWs = useCallback(() => {
+    if (reconnectTimerRef.current) {
+      clearTimeout(reconnectTimerRef.current);
+      reconnectTimerRef.current = null;
+    }
+    if (wsRef.current) {
+      wsRef.current.close(1000, 'Ticket deselected');
+      wsRef.current = null;
+    }
+    setWsConnected(false);
+    setTypingUsers([]);
+  }, []);
+
+  // Connect WS when selected ticket changes
+  useEffect(() => {
+    if (selectedId) {
+      connectWs(selectedId);
+    } else {
+      disconnectWs();
+    }
+    return () => disconnectWs();
+  }, [selectedId, connectWs, disconnectWs]);
+
+  // Cleanup typing timeouts on unmount
+  useEffect(() => {
+    return () => {
+      Object.values(typingTimeoutRef.current).forEach(clearTimeout);
+    };
+  }, []);
+
   const handleSend = async () => {
     if (!selectedId) return;
     const content = text.trim();
     if (!content) return;
+    setText('');
+    setTypingUsers(prev => prev.filter(id => id !== user?.id));
+
+    // Try WebSocket first
+    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+      wsRef.current.send(JSON.stringify({
+        type: 'message',
+        content,
+      }));
+      return;
+    }
+
+    // Fallback to REST API
     try {
       setSending(true);
       await api.post(`/tickets/${selectedId}/send-message/`, { content });
-      setText('');
       fetchMessages(selectedId);
       fetchTickets();
-    } catch (err) {
+    } catch {
       toast.error('Failed to send message');
     } finally {
       setSending(false);
     }
   };
 
+  // ── Typing indicator ───────────────────────────────────────────────────
+  const handleTextChange = (e) => {
+    setText(e.target.value);
+    // Send typing indicator (throttled to every 3s)
+    const now = Date.now();
+    if (now - typingThrottleRef.current > 3000 && wsRef.current?.readyState === WebSocket.OPEN) {
+      typingThrottleRef.current = now;
+      wsRef.current.send(JSON.stringify({ type: 'typing', is_typing: true }));
+    }
+  };
+
+  // Send typing stopped when user clears input
+  useEffect(() => {
+    if (!text.trim() && wsRef.current?.readyState === WebSocket.OPEN) {
+      wsRef.current.send(JSON.stringify({ type: 'typing', is_typing: false }));
+    }
+  }, [text]);
+
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
+      // Send typing stopped before sending message
+      if (wsRef.current?.readyState === WebSocket.OPEN) {
+        wsRef.current.send(JSON.stringify({ type: 'typing', is_typing: false }));
+      }
       handleSend();
     }
   };
@@ -843,9 +1000,16 @@ export default function CommunicationCenter() {
 
             {/* Input */}
             <div className="bg-white border-t border-slate-200 px-3 sm:px-4 py-3">
+              {typingUsers.length > 0 && (
+                <div className="px-1 pb-2">
+                  <p className="text-[11px] text-slate-400 italic">
+                    Someone is typing...
+                  </p>
+                </div>
+              )}
               <div className="flex items-end gap-2">
                 <div className="flex-1 relative">
-                  <textarea ref={inputRef} value={text} onChange={e => setText(e.target.value)}
+                  <textarea ref={inputRef} value={text} onChange={handleTextChange}
                     onKeyDown={handleKeyDown} placeholder="Type your message..." rows={1}
                     aria-label="Type your message"
                     className="w-full px-4 py-2.5 bg-slate-100 rounded-lg text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:bg-white resize-none transition-colors" />
