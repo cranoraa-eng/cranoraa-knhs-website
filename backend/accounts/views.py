@@ -955,6 +955,18 @@ class UserViewSet(viewsets.ModelViewSet):
             if role in ['student', 'teacher']:
                 queryset = queryset.filter(is_approved=True)
             
+            # Allow all authenticated users to see admins (for communication center directory)
+            if role == 'admin':
+                return queryset.filter(role='admin', is_active=True)
+
+            # Allow all authenticated users to see staff (for communication center directory)
+            if role == 'staff':
+                return queryset.filter(role='staff', is_active=True)
+
+            # Allow all authenticated users to see parents (for communication center directory)
+            if role == 'parent':
+                return queryset.filter(role='parent', is_active=True)
+            
             # RBAC: Students can only see their own data
             if user.role == 'student':
                 return queryset.filter(id=user.id)
@@ -979,21 +991,8 @@ class UserViewSet(viewsets.ModelViewSet):
                 
                 if role == 'student':
                     return advisory_students.distinct()
-                elif role == 'staff':
-                    return queryset.filter(id=user.id)
-                elif role == 'admin':
-                    # Allow staff to see admins (for communication center)
-                    return queryset.filter(role='admin', is_active=True)
                 
                 return (advisory_students | queryset.filter(id=user.id)).distinct()
-
-            # Allow students to see admins (for communication center)
-            if user.role == 'student' and role == 'admin':
-                return queryset.filter(role='admin', is_active=True)
-
-            # Allow parents to see admins (for communication center)
-            if user.role == 'parent' and role == 'admin':
-                return queryset.filter(role='admin', is_active=True)
             
             # Admins can see all users
             if role:
