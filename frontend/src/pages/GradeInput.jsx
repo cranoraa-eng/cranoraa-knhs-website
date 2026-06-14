@@ -5,6 +5,7 @@ import api from '../utils/api';
 import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
 import { playSound } from '../utils/sounds';
+import { useSystemSettings } from '../hooks/useSystemSettings';
 import { 
   Card, CardHeader, CardBody, CardTitle, Button, Badge, 
   LoadingSpinner, EmptyState 
@@ -33,11 +34,10 @@ const getPerformanceLevel = (score) => {
   return PERFORMANCE_LEVELS.didNotMeet;
 };
 
-const QUARTERS = [1, 2, 3, 4];
-
 const GradeInput = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { periodValues, periodShortLabels, periodLabel, isSHS, currentQuarter } = useSystemSettings();
 
   // State
   const [classrooms, setClassrooms] = useState([]);
@@ -45,7 +45,7 @@ const GradeInput = () => {
   const [students, setStudents] = useState([]);
   const [selClassroom, setSelClassroom] = useState(location.state?.classroomId || '');
   const [selSubject, setSelSubject] = useState(location.state?.subjectId || '');
-  const [selQuarter, setSelQuarter] = useState(1);
+  const [selQuarter, setSelQuarter] = useState(Number(currentQuarter) || 1);
   const [academicYear, setAcademicYear] = useState(() => localStorage.getItem('knhs_academic_year') || '2025-2026');
 
   const [cells, setCells] = useState({});
@@ -229,7 +229,7 @@ const GradeInput = () => {
     });
 
     let confirmTitle = 'Submit Final Grades?';
-    let confirmHtml = `Submit final grades for <strong>${toSubmit.length}</strong> student(s) for Quarter ${selQuarter}?`;
+    let confirmHtml = `Submit final grades for <strong>${toSubmit.length}</strong> student(s) for ${periodLabel} ${selQuarter}?`;
     let confirmIcon = 'question';
 
     if (overwriting.length > 0) {
@@ -237,7 +237,7 @@ const GradeInput = () => {
       confirmIcon = 'warning';
       confirmHtml = `
         <div class="text-left space-y-2">
-          <p class="font-bold text-amber-600 mb-2">You are about to overwrite grades for ${overwriting.length} student${overwriting.length === 1 ? '' : 's'} in Quarter ${selQuarter}:</p>
+          <p class="font-bold text-amber-600 mb-2">You are about to overwrite grades for ${overwriting.length} student${overwriting.length === 1 ? '' : 's'} in ${periodLabel} ${selQuarter}:</p>
           <div class="max-h-32 overflow-y-auto border border-amber-200 rounded-lg p-3 bg-amber-50 text-xs">
             ${overwriting.map(s => {
               const ex = existingGrades[s.student];
@@ -417,13 +417,13 @@ const GradeInput = () => {
             </select>
           </div>
 
-          {/* Quarter */}
+          {/* Grading Period */}
           <div>
             <label className="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-2">
-              Quarter
+              {periodLabel}
             </label>
             <div className="flex rounded-lg border border-slate-300 overflow-hidden shadow-sm">
-              {QUARTERS.map(q => (
+              {periodValues.map(q => (
                 <button
                   key={q}
                   onClick={() => setSelQuarter(q)}
@@ -433,7 +433,7 @@ const GradeInput = () => {
                       : 'bg-white text-slate-600 hover:bg-slate-50'
                   }`}
                 >
-                  Q{q}
+                  {periodShortLabels[q - 1]}
                 </button>
               ))}
             </div>
@@ -482,7 +482,7 @@ const GradeInput = () => {
               {subjects.find(s => String(s.subject) === String(selSubject))?.subject_name}
             </span>
             <span className="text-slate-400">/</span>
-            <Badge variant="blue" size="sm">Quarter {selQuarter}</Badge>
+            <Badge variant="blue" size="sm">{periodLabel} {selQuarter}</Badge>
           </div>
         )}
       </div>

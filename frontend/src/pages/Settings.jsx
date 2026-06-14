@@ -128,7 +128,7 @@ const EmailServiceNotice = ({ health }) => {
 // ── Placeholder for future tabs ─────────────────────────────────────────────
 
 const PlaceholderTab = ({ title, description }) => (
-  <SectionCard title={title} subtitle={description} icon="🛠">
+  <SectionCard title={title} subtitle={description} icon="settings">
     <div className="flex flex-col items-center justify-center py-10 text-slate-400">
       <svg className="w-12 h-12 mb-4 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -196,7 +196,7 @@ const SchoolInfoTab = () => {
 
   return (
     <form onSubmit={save} className="space-y-6">
-      <SectionCard title="School Identity" subtitle="Displayed across the portal and public website" icon="🏫">
+      <SectionCard title="School Identity" subtitle="Displayed across the portal and public website" icon="building">
         <div className="flex items-start gap-6 mb-6">
           <div className="flex-shrink-0">
             <div className="w-20 h-20 rounded-lg border-2 border-dashed border-slate-200 bg-slate-50 flex items-center justify-center overflow-hidden">
@@ -231,7 +231,7 @@ const SchoolInfoTab = () => {
         </Field>
       </SectionCard>
 
-      <SectionCard title="Brand Colors" subtitle="Used in portal UI accents" icon="🎨">
+      <SectionCard title="Brand Colors" subtitle="Used in portal UI accents" icon="palette">
         <div className="grid grid-cols-2 gap-4">
           <Field label="Primary Color">
             <div className="flex items-center gap-3">
@@ -553,41 +553,90 @@ const PortalSettingsTab = () => {
     <form onSubmit={save} className="space-y-6">
       <EmailServiceNotice health={settings.email_service_health} />
 
-      <SectionCard title="Academic Context" subtitle="Controls global defaults for grading and analytics" icon="🎓">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Field label="Academic Level" hint="Determines grading period structure">
-            <select value={settings.academic_level} onChange={e => setSettings(p => ({...p, academic_level: e.target.value, current_quarter: '1'}))}
-              className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-100 focus:border-violet-500 transition-all">
-              <option value="jhs">Junior High School (Grades 7-10) - 4 Quarters</option>
-              <option value="shs">Senior High School (Grades 11-12) - 3 Semesters</option>
-            </select>
-          </Field>
-          <Field label={settings.academic_level === 'shs' ? 'Current Semester' : 'Current Quarter'} hint="Used as default when entering grades">
-            <select value={settings.current_quarter} onChange={e => setSettings(p => ({...p, current_quarter: e.target.value}))}
-              className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-100 focus:border-violet-500 transition-all">
+      <SectionCard title="Academic Context" subtitle="Controls global defaults for grading and analytics" icon="school">
+        <div className="space-y-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Field label="Academic Level" hint="Determines grading period structure">
+              <select value={settings.academic_level} onChange={e => setSettings(p => ({...p, academic_level: e.target.value, current_quarter: '1'}))}
+                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-100 focus:border-violet-500 transition-all">
+                <option value="jhs">Junior High School (Grades 7-10)</option>
+                <option value="shs">Senior High School (Grades 11-12)</option>
+              </select>
+            </Field>
+            <Field label={settings.academic_level === 'shs' ? 'Current Semester' : 'Current Quarter'} hint="Used as default when entering grades">
+              <select value={settings.current_quarter} onChange={e => setSettings(p => ({...p, current_quarter: e.target.value}))}
+                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-100 focus:border-violet-500 transition-all">
+                {settings.academic_level === 'shs' ? (
+                  <>
+                    <option value="1">1st Semester</option>
+                    <option value="2">2nd Semester</option>
+                    <option value="3">3rd Semester (Summer)</option>
+                  </>
+                ) : (
+                  <>
+                    <option value="1">1st Quarter</option>
+                    <option value="2">2nd Quarter</option>
+                    <option value="3">3rd Quarter</option>
+                    <option value="4">4th Quarter</option>
+                  </>
+                )}
+              </select>
+            </Field>
+            <Field label="Default Academic Year" hint="Used in analytics when no year is selected">
+              <Input value={settings.academic_year} onChange={e => setSettings(p => ({...p, academic_year: e.target.value}))} placeholder="2026-2027" />
+            </Field>
+          </div>
+
+          {/* Grading Period Preview */}
+          <div className="bg-slate-50 border border-slate-200 rounded-lg p-4">
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Grading Period Structure</p>
+            <div className="flex flex-wrap gap-2">
               {settings.academic_level === 'shs' ? (
                 <>
-                  <option value="1">1st Semester</option>
-                  <option value="2">2nd Semester</option>
-                  <option value="3">3rd Semester (Summer)</option>
+                  {['1st Semester', '2nd Semester', '3rd Semester (Summer)'].map((label, i) => (
+                    <div key={i} className={`flex items-center gap-2 px-3 py-2 rounded-lg border ${
+                      String(i + 1) === settings.current_quarter 
+                        ? 'bg-violet-100 border-violet-300 text-violet-800' 
+                        : 'bg-white border-slate-200 text-slate-600'
+                    }`}>
+                      <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                        String(i + 1) === settings.current_quarter 
+                          ? 'bg-violet-600 text-white' 
+                          : 'bg-slate-200 text-slate-600'
+                      }`}>{i + 1}</span>
+                      <span className="text-xs font-bold">{label}</span>
+                    </div>
+                  ))}
                 </>
               ) : (
                 <>
-                  <option value="1">1st Quarter</option>
-                  <option value="2">2nd Quarter</option>
-                  <option value="3">3rd Quarter</option>
-                  <option value="4">4th Quarter</option>
+                  {['1st Quarter', '2nd Quarter', '3rd Quarter', '4th Quarter'].map((label, i) => (
+                    <div key={i} className={`flex items-center gap-2 px-3 py-2 rounded-lg border ${
+                      String(i + 1) === settings.current_quarter 
+                        ? 'bg-violet-100 border-violet-300 text-violet-800' 
+                        : 'bg-white border-slate-200 text-slate-600'
+                    }`}>
+                      <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                        String(i + 1) === settings.current_quarter 
+                          ? 'bg-violet-600 text-white' 
+                          : 'bg-slate-200 text-slate-600'
+                      }`}>{i + 1}</span>
+                      <span className="text-xs font-bold">{label}</span>
+                    </div>
+                  ))}
                 </>
               )}
-            </select>
-          </Field>
-          <Field label="Default Academic Year" hint="Used in analytics when no year is selected">
-            <Input value={settings.academic_year} onChange={e => setSettings(p => ({...p, academic_year: e.target.value}))} placeholder="2026-2027" />
-          </Field>
+            </div>
+            <p className="text-[11px] text-slate-500 font-medium mt-3">
+              {settings.academic_level === 'shs' 
+                ? 'Senior High School uses a semester-based grading system with 3 grading periods per academic year.'
+                : 'Junior High School uses a quarter-based grading system with 4 grading periods per academic year.'}
+            </p>
+          </div>
         </div>
       </SectionCard>
 
-      <SectionCard title="Enrollment" subtitle="Control online enrollment availability" icon="📋">
+      <SectionCard title="Enrollment" subtitle="Control online enrollment availability" icon="clipboard">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm font-bold text-slate-800">Online Enrollment Open</p>
@@ -597,7 +646,7 @@ const PortalSettingsTab = () => {
         </div>
       </SectionCard>
 
-      <SectionCard title="Messaging Permissions" subtitle="Control who can use the chat system" icon="💬">
+      <SectionCard title="Messaging Permissions" subtitle="Control who can use the chat system" icon="message">
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
@@ -617,7 +666,7 @@ const PortalSettingsTab = () => {
         </div>
       </SectionCard>
 
-      <SectionCard title="Maintenance Mode" subtitle="Temporarily disable portal access for non-admins" icon="🔧" danger>
+      <SectionCard title="Maintenance Mode" subtitle="Temporarily disable portal access for non-admins" icon="wrench" danger>
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
@@ -706,7 +755,7 @@ const ProfileTab = () => {
 
   return (
     <form onSubmit={save} className="space-y-6">
-      <SectionCard title="Profile Information" subtitle="Your personal details visible to the school" icon="👤">
+      <SectionCard title="Profile Information" subtitle="Your personal details visible to the school" icon="user">
         <div className="flex items-center gap-5 mb-6">
           <div className="relative">
             <div className="w-20 h-20 rounded-lg bg-gradient-to-br from-violet-500 to-violet-600 flex items-center justify-center text-white text-2xl font-black overflow-hidden shadow-lg">
@@ -805,7 +854,7 @@ const SecurityTab = () => {
 
   return (
     <form onSubmit={save} className="space-y-6">
-      <SectionCard title="Change Password" subtitle="Keep your account secure with a strong password" icon="🔒">
+      <SectionCard title="Change Password" subtitle="Keep your account secure with a strong password" icon="lock">
         <div className="p-4 bg-amber-50 border border-amber-100 rounded-lg mb-5 flex gap-3">
           <svg className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
           <p className="text-xs font-bold text-amber-800">Use at least 8 characters with a mix of uppercase, numbers, and symbols for a strong password.</p>
@@ -955,7 +1004,7 @@ const SystemStatusPanel = () => {
 const NAV_SECTIONS = [
   {
     label: 'School',
-    icon: '🏫',
+    icon: 'building',
     items: [
       { id: 'school',   label: 'School Information' },
       { id: 'academic', label: 'Academic Years' },
@@ -964,7 +1013,7 @@ const NAV_SECTIONS = [
   },
   {
     label: 'Users & Security',
-    icon: '👥',
+    icon: 'users',
     items: [
       { id: 'roles',    label: 'Roles & Permissions' },
       { id: 'security', label: 'Security' },
@@ -973,7 +1022,7 @@ const NAV_SECTIONS = [
   },
   {
     label: 'Portal',
-    icon: '🌐',
+    icon: 'globe',
     items: [
       { id: 'portal',   label: 'Portal Settings' },
       { id: 'comm',     label: 'Communication Settings' },
@@ -981,7 +1030,7 @@ const NAV_SECTIONS = [
   },
   {
     label: 'System',
-    icon: '⚙️',
+    icon: 'cog',
     items: [
       { id: 'backup',   label: 'Backup Management' },
       { id: 'audit',    label: 'Audit Logs' },
@@ -1008,7 +1057,7 @@ const Settings = () => {
     if (!isAdmin) {
       return [{
         label: 'Account',
-        icon: '👤',
+        icon: 'user',
         items: [
           { id: 'profile', label: 'My Profile' },
           { id: 'security', label: 'Security' },

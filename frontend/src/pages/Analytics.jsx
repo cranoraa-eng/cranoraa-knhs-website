@@ -3,6 +3,7 @@ import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
 import api from '../utils/api';
 import { getCurrentAcademicYear } from '../utils/dateHelpers';
+import { useSystemSettings } from '../hooks/useSystemSettings';
 import { 
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, 
   PieChart, Pie, Cell, BarChart, Bar
@@ -370,7 +371,7 @@ const interpretSystemData = (data) => {
   return items;
 };
 
-const interpretGradeData = (gradeData, filterLevel, filterSubject, filterQuarter) => {
+const interpretGradeData = (gradeData, filterLevel, filterSubject, filterQuarter, periodLabel = 'Quarter') => {
   if (!gradeData || gradeData.total_students === 0) return [];
   const items = [];
   const avg = gradeData.overall_average || 0;
@@ -382,7 +383,7 @@ const interpretGradeData = (gradeData, filterLevel, filterSubject, filterQuarter
   const dnmPct = Math.round((dnm / total) * 100);
 
   const scope = filterLevel !== 'all' ? filterLevel : 'all grade levels';
-  const qLabel = filterQuarter !== 'all' ? `Q${filterQuarter}` : 'all quarters';
+  const qLabel = filterQuarter !== 'all' ? `${periodLabel} ${filterQuarter}` : `all ${periodLabel.toLowerCase()}s`;
 
   if (avg >= 90) items.push({ type: 'good', text: `Outstanding average of ${avg}% across ${scope} for ${qLabel}. Students are performing excellently.` });
   else if (avg >= 85) items.push({ type: 'good', text: `Very Satisfactory average of ${avg}% for ${scope}. Performance is above expectations.` });
@@ -952,6 +953,7 @@ const Analytics = () => {
   const [activeTab, setActiveTab] = useState('system');
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const { periodShortLabels, periodLabel, periodOptions, isSHS } = useSystemSettings();
 
   // PDF export refs — one per tab
   const systemRef = useRef(null);
@@ -964,7 +966,7 @@ const Analytics = () => {
     try {
       const titles = {
         system:     ['System Overview',        `Academic Year ${academicYear}`],
-        grades:     ['Academic Performance',   `${academicYear} · ${filterLevel !== 'all' ? filterLevel : 'All Levels'} · ${filterQuarter !== 'all' ? 'Q' + filterQuarter : 'All Quarters'}`],
+        grades:     ['Academic Performance',   `${academicYear} · ${filterLevel !== 'all' ? filterLevel : 'All Levels'} · ${filterQuarter !== 'all' ? periodLabel + ' ' + filterQuarter : 'All ' + periodLabel + 's'}`],
         attendance: ['Attendance Dynamics',    `${academicYear} · ${attendanceTimeframe === 'all' ? 'All-Time' : attendanceTimeframe === 'today' ? 'Today' : 'Past 7 Days'}`],
       };
       const [title, subtitle] = titles[tab] || ['Analytics Report', academicYear];
@@ -994,7 +996,7 @@ const Analytics = () => {
       // Build interpretations per tab
       const interpMap = {
         system:     interpretSystemData(data),
-        grades:     interpretGradeData(gradeData, filterLevel, filterSubject, filterQuarter),
+        grades:     interpretGradeData(gradeData, filterLevel, filterSubject, filterQuarter, periodLabel),
         attendance: interpretAttendanceData(attendanceAnalytics),
       };
 
@@ -1267,15 +1269,12 @@ const Analytics = () => {
                       ]}
                     />
                     <FilterSelect 
-                      label="Quarter Focus" 
+                      label={`${periodLabel} Focus`} 
                       value={filterQuarter} 
                       onChange={e => setFilterQuarter(e.target.value)}
                       options={[
                         { value: 'all', label: 'Annual Aggregate' },
-                        { value: '1', label: 'Q1 — 1st Quarter' },
-                        { value: '2', label: 'Q2 — 2nd Quarter' },
-                        { value: '3', label: 'Q3 — 3rd Quarter' },
-                        { value: '4', label: 'Q4 — 4th Quarter' }
+                        ...periodOptions.map(opt => ({ value: opt.value, label: opt.label }))
                       ]}
                     />
                     <FilterSelect 
@@ -1317,7 +1316,7 @@ const Analytics = () => {
                     <GradeRankingSection data={gradeData.by_group} filterSubject={filterSubject} meta={gradeData.meta} timeframe={gradeTimeframe} />
                   </div>
                   <div className="lg:col-span-12">
-                    <InterpretationPanel items={interpretGradeData(gradeData, filterLevel, filterSubject, filterQuarter)} />
+                    <InterpretationPanel items={interpretGradeData(gradeData, filterLevel, filterSubject, filterQuarter, periodLabel)} />
                   </div>
                 </div>
               )}

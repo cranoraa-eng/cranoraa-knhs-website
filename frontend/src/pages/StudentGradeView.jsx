@@ -3,6 +3,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import api from '../utils/api';
 import { useAuth } from '../context/AuthContext';
+import { useSystemSettings } from '../hooks/useSystemSettings';
 import { jsPDF } from 'jspdf';
 import toast from 'react-hot-toast';
 import {
@@ -54,6 +55,7 @@ const StudentGradeView = () => {
   const [searchParams] = useSearchParams();
   const studentIdParam = searchParams.get('student_id');
   const isViewingOther = !!studentIdParam;
+  const { periodValues, periodShortLabels, periodLabel, periodOptions, isSHS } = useSystemSettings();
 
   // State
   const [grades, setGrades] = useState([]);
@@ -178,7 +180,7 @@ const StudentGradeView = () => {
     doc.text(`Academic Year: ${filterYear}`, 20, 52);
     
     if (filterQuarter) {
-      doc.text(`Quarter: ${filterQuarter}`, 20, 59);
+      doc.text(`${periodLabel}: ${filterQuarter}`, 20, 59);
     }
     
     // Table headers
@@ -186,10 +188,12 @@ const StudentGradeView = () => {
     doc.setFontSize(9);
     doc.setFont('helvetica', 'bold');
     doc.text('Subject', 20, yPos);
-    doc.text('Q1', 120, yPos, { align: 'center' });
-    doc.text('Q2', 140, yPos, { align: 'center' });
-    doc.text('Q3', 160, yPos, { align: 'center' });
-    doc.text('Q4', 180, yPos, { align: 'center' });
+    const headerX = [120, 140, 160, 180];
+    periodShortLabels.forEach((label, idx) => {
+      if (idx < headerX.length) {
+        doc.text(label, headerX[idx], yPos, { align: 'center' });
+      }
+    });
     doc.text('Final', 200, yPos, { align: 'right' });
     
     doc.line(20, yPos + 2, 200, yPos + 2);
@@ -203,21 +207,19 @@ const StudentGradeView = () => {
         yPos = 20;
       }
       
-      const q1 = entry.quarters[1]?.raw_score || '—';
-      const q2 = entry.quarters[2]?.raw_score || '—';
-      const q3 = entry.quarters[3]?.raw_score || '—';
-      const q4 = entry.quarters[4]?.raw_score || '—';
+      const periodScores = periodValues.map(q => entry.quarters[q]?.raw_score || '—');
       
-      const scores = [q1, q2, q3, q4]
+      const scores = periodScores
         .map(s => parseFloat(s))
         .filter(s => !isNaN(s));
       const avg = scores.length ? (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(0) : '—';
       
       doc.text(entry.subject_name, 20, yPos);
-      doc.text(String(q1), 120, yPos, { align: 'center' });
-      doc.text(String(q2), 140, yPos, { align: 'center' });
-      doc.text(String(q3), 160, yPos, { align: 'center' });
-      doc.text(String(q4), 180, yPos, { align: 'center' });
+      periodScores.forEach((score, idx) => {
+        if (idx < headerX.length) {
+          doc.text(String(score), headerX[idx], yPos, { align: 'center' });
+        }
+      });
       doc.text(String(avg), 200, yPos, { align: 'right' });
       
       yPos += 7;
@@ -340,21 +342,20 @@ const StudentGradeView = () => {
       <Card>
         <CardBody className="p-3 sm:p-4 md:p-5">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
-            {/* Quarter Filter */}
+            {/* Grading Period Filter */}
             <div>
               <label className="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-2">
-                Quarter
+                {periodLabel}
               </label>
               <select
                 value={filterQuarter}
                 onChange={e => setFilterQuarter(e.target.value)}
                 className="w-full px-3 py-2.5 border border-slate-300 rounded-md bg-white text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-violet-100 focus:border-violet-500 transition-all"
               >
-                <option value="">All Quarters</option>
-                <option value="1">Quarter 1</option>
-                <option value="2">Quarter 2</option>
-                <option value="3">Quarter 3</option>
-                <option value="4">Quarter 4</option>
+                <option value="">All {periodLabel}s</option>
+                {periodOptions.map(opt => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
               </select>
             </div>
 
@@ -581,18 +582,11 @@ const StudentGradeView = () => {
                     <th className="px-3 py-2.5 sm:px-4 sm:py-3 text-left text-xs font-extrabold text-slate-700 uppercase tracking-wider min-w-[180px] sm:min-w-[200px]">
                       Subject
                     </th>
-                    <th className="px-2 py-2.5 sm:px-4 sm:py-3 text-center text-xs font-extrabold text-slate-700 uppercase tracking-wider w-20 sm:w-24">
-                      Q1
-                    </th>
-                    <th className="px-2 py-2.5 sm:px-4 sm:py-3 text-center text-xs font-extrabold text-slate-700 uppercase tracking-wider w-20 sm:w-24">
-                      Q2
-                    </th>
-                    <th className="px-2 py-2.5 sm:px-4 sm:py-3 text-center text-xs font-extrabold text-slate-700 uppercase tracking-wider w-20 sm:w-24">
-                      Q3
-                    </th>
-                    <th className="px-2 py-2.5 sm:px-4 sm:py-3 text-center text-xs font-extrabold text-slate-700 uppercase tracking-wider w-20 sm:w-24">
-                      Q4
-                    </th>
+                    {periodShortLabels.map(label => (
+                      <th key={label} className="px-2 py-2.5 sm:px-4 sm:py-3 text-center text-xs font-extrabold text-slate-700 uppercase tracking-wider w-20 sm:w-24">
+                        {label}
+                      </th>
+                    ))}
                     <th className="px-2 py-2.5 sm:px-4 sm:py-3 text-center text-xs font-extrabold text-slate-700 uppercase tracking-wider w-20 sm:w-24 bg-violet-50">
                       Final
                     </th>
@@ -603,13 +597,11 @@ const StudentGradeView = () => {
                 </thead>
                 <tbody className="bg-white divide-y divide-slate-100">
                   {subjectEntries.map((entry, idx) => {
-                    const q1Score = entry.quarters[1]?.raw_score;
-                    const q2Score = entry.quarters[2]?.raw_score;
-                    const q3Score = entry.quarters[3]?.raw_score;
-                    const q4Score = entry.quarters[4]?.raw_score;
+                    // Get scores for all grading periods
+                    const periodScores = periodValues.map(q => entry.quarters[q]?.raw_score);
 
-                    // Calculate final grade (average of all quarters)
-                    const scores = [q1Score, q2Score, q3Score, q4Score]
+                    // Calculate final grade (average of all periods)
+                    const scores = periodScores
                       .map(s => parseFloat(s))
                       .filter(s => !isNaN(s));
                     const finalAvg = scores.length 
@@ -631,18 +623,11 @@ const StudentGradeView = () => {
                         )}
                       </div>
                     </td>
-                    <td className="px-2 py-2.5 sm:px-4 sm:py-3 text-center">
-                      <ScoreBadge score={q1Score} size="sm" />
-                    </td>
-                    <td className="px-2 py-2.5 sm:px-4 sm:py-3 text-center">
-                      <ScoreBadge score={q2Score} size="sm" />
-                    </td>
-                    <td className="px-2 py-2.5 sm:px-4 sm:py-3 text-center">
-                      <ScoreBadge score={q3Score} size="sm" />
-                    </td>
-                    <td className="px-2 py-2.5 sm:px-4 sm:py-3 text-center">
-                      <ScoreBadge score={q4Score} size="sm" />
-                    </td>
+                    {periodScores.map((score, idx) => (
+                      <td key={idx} className="px-2 py-2.5 sm:px-4 sm:py-3 text-center">
+                        <ScoreBadge score={score} size="sm" />
+                      </td>
+                    ))}
                     <td className="px-2 py-2.5 sm:px-4 sm:py-3 text-center bg-violet-50">
                       <ScoreBadge score={finalAvg} size="md" />
                     </td>

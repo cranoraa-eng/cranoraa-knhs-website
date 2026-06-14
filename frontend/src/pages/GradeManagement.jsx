@@ -5,6 +5,7 @@ import api from '../utils/api';
 import { getUser } from '../utils/auth';
 import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
+import { useSystemSettings } from '../hooks/useSystemSettings';
 import {
   Card, CardHeader, CardBody, CardTitle, Button, Badge,
   LoadingSpinner, EmptyState, Modal, ModalHeader, ModalBody, ModalFooter,
@@ -51,6 +52,7 @@ const ScoreBadge = ({ score, size = 'md' }) => {
 const GradeManagement = () => {
   const navigate = useNavigate();
   const user = getUser();
+  const { periodValues, periodShortLabels, periodLabel, periodOptions, isSHS } = useSystemSettings();
 
   // State
   const [grades, setGrades] = useState([]);
@@ -284,18 +286,17 @@ const GradeManagement = () => {
               />
             </div>
 
-            {/* Quarter Filter */}
+            {/* Grading Period Filter */}
             <div>
               <select
                 value={filterQuarter}
                 onChange={e => setFilterQuarter(e.target.value)}
                 className="w-full px-3 py-2.5 border border-slate-300 rounded-md bg-white text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-violet-100 focus:border-violet-500 transition-all"
               >
-                <option value="">All Quarters</option>
-                <option value="1">Quarter 1</option>
-                <option value="2">Quarter 2</option>
-                <option value="3">Quarter 3</option>
-                <option value="4">Quarter 4</option>
+                <option value="">All {periodLabel}s</option>
+                {periodOptions.map(opt => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
               </select>
             </div>
 
@@ -649,18 +650,11 @@ const SubjectGradeTable = ({ subject, user, formatName, calculateFinal, handleLo
               <th className="px-4 py-3 text-left text-xs font-extrabold text-slate-700 uppercase tracking-wider min-w-[180px]">
                 Student Name
               </th>
-              <th className="px-4 py-3 text-center text-xs font-extrabold text-slate-700 uppercase tracking-wider">
-                Q1
-              </th>
-              <th className="px-4 py-3 text-center text-xs font-extrabold text-slate-700 uppercase tracking-wider">
-                Q2
-              </th>
-              <th className="px-4 py-3 text-center text-xs font-extrabold text-slate-700 uppercase tracking-wider">
-                Q3
-              </th>
-              <th className="px-4 py-3 text-center text-xs font-extrabold text-slate-700 uppercase tracking-wider">
-                Q4
-              </th>
+              {periodShortLabels.map(label => (
+                <th key={label} className="px-4 py-3 text-center text-xs font-extrabold text-slate-700 uppercase tracking-wider">
+                  {label}
+                </th>
+              ))}
               <th className="px-4 py-3 text-center text-xs font-extrabold text-slate-700 uppercase tracking-wider bg-violet-50">
                 Final
               </th>
@@ -711,8 +705,8 @@ const SubjectGradeTable = ({ subject, user, formatName, calculateFinal, handleLo
                     </div>
                   </td>
                   
-                  {/* Quarter Grades */}
-                  {[1, 2, 3, 4].map(quarter => {
+                  {/* Grading Period Grades */}
+                  {periodValues.map(quarter => {
                     const grade = student.quarters[quarter];
                     return (
                       <td key={quarter} className="px-4 py-3 text-center">
