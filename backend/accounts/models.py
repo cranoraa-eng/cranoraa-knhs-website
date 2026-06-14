@@ -240,6 +240,10 @@ class ChatMessage(models.Model):
 
     class Meta:
         ordering = ['timestamp']
+        indexes = [
+            models.Index(fields=['room', '-timestamp']),
+            models.Index(fields=['sender', '-timestamp']),
+        ]
 
     def __str__(self):
         return f"{self.sender.username}: {self.content[:20]}..."
@@ -672,6 +676,20 @@ class Fee(models.Model):
     
     class Meta:
         ordering = ['-due_date', '-created_at']
+        indexes = [
+            models.Index(fields=['student', 'status']),
+            models.Index(fields=['status', 'due_date']),
+        ]
+        constraints = [
+            models.CheckConstraint(
+                check=models.Q(amount__gte=0),
+                name='fee_amount_non_negative',
+            ),
+            models.CheckConstraint(
+                check=models.Q(amount_paid__gte=0),
+                name='fee_amount_paid_non_negative',
+            ),
+        ]
     
     def __str__(self):
         return f"{self.student.username} - {self.get_fee_type_display()} - {self.amount}"
@@ -1213,6 +1231,21 @@ class Grade(models.Model):
     class Meta:
         unique_together = ['student', 'subject', 'grade_type', 'quarter', 'academic_year']
         ordering = ['-academic_year', '-quarter', 'subject__name', 'grade_type']
+        indexes = [
+            models.Index(fields=['student', 'academic_year', 'quarter']),
+            models.Index(fields=['subject', 'academic_year', 'quarter']),
+            models.Index(fields=['teacher', 'academic_year']),
+        ]
+        constraints = [
+            models.CheckConstraint(
+                check=models.Q(raw_score__gte=0) | models.Q(raw_score__isnull=True),
+                name='grade_raw_score_non_negative',
+            ),
+            models.CheckConstraint(
+                check=models.Q(total_score__gt=0),
+                name='grade_total_score_positive',
+            ),
+        ]
     
     def __str__(self):
         return f"{self.student.username} - {self.subject.code} - Q{self.quarter} ({self.academic_year})"
@@ -1481,9 +1514,10 @@ class Ticket(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.ticket_id:
-            last = Ticket.objects.order_by('-id').first()
-            num = (last.id + 1) if last else 1
-            self.ticket_id = f"TKT-{str(num).zfill(4)}"
+            # Use database-level atomicity to prevent race conditions
+            import uuid
+            short_id = uuid.uuid4().hex[:8].upper()
+            self.ticket_id = f"TKT-{short_id}"
         super().save(*args, **kwargs)
 
 

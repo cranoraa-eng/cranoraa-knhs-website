@@ -4,10 +4,8 @@ services:
     env: python
     buildCommand: ./build.sh
     startCommand: daphne -b 0.0.0.0 -p $PORT school_portal.asgi:application
-    healthCheckPath: /
+    healthCheckPath: /api/health/
     envVars:
-      - key: SECRET_KEY
-        generateValue: true
       - key: DEBUG
         value: False
       - key: ALLOWED_HOSTS
@@ -21,7 +19,7 @@ services:
       - key: DJANGO_SECRET_KEY
         generateValue: true
       - key: PYTHON_VERSION
-        value: 3.11.0
+        value: 3.11
       - key: DJANGO_SETTINGS_MODULE
         value: school_portal.settings
       - key: SUPABASE_URL

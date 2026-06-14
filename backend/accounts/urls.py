@@ -12,6 +12,7 @@ from .views import (
     student_calendar_view, notifications_polling_view, system_metrics_view,
     maintenance_feed_view, maintenance_mode_view, force_sync_view, run_backup_view, clear_cache_view,
     system_settings_view, maintenance_status_view,
+    health_check,
     RoomViewSet, TimeSlotViewSet, ScheduleViewSet,
     parent_dashboard_view, parent_child_detail_view,
     fcm_token_register, fcm_token_delete, test_push_notification,
@@ -51,6 +52,7 @@ router.register(r'tickets', TicketViewSet, basename='ticket')
 router.register(r'department-contacts', DepartmentContactViewSet, basename='department-contact')
 
 urlpatterns = [
+    path('health/', health_check, name='health_check'),
     path('login/', login_view, name='login'),
     path('logout/', logout_view, name='logout'),
     path('admin/create-user/', admin_create_user_view, name='admin_create_user'),

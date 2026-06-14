@@ -272,6 +272,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
         if not message:
             return
 
+        # Enforce maximum message length to prevent memory abuse
+        MAX_MESSAGE_LENGTH = 5000
+        if len(message) > MAX_MESSAGE_LENGTH:
+            message = message[:MAX_MESSAGE_LENGTH]
+
         parent_id = data.get('parent_id')
         saved_msg = await self.save_message(self.room_id, self.user.id, message, parent_id)
         if not saved_msg:
@@ -766,6 +771,11 @@ class TicketConsumer(AsyncWebsocketConsumer):
         content = data.get('content', '').strip()
         if not content:
             return
+
+        # Enforce maximum message length to prevent memory abuse
+        MAX_TICKET_MESSAGE_LENGTH = 10000
+        if len(content) > MAX_TICKET_MESSAGE_LENGTH:
+            content = content[:MAX_TICKET_MESSAGE_LENGTH]
 
         saved_msg = await self.save_ticket_message(self.ticket_id, self.user.id, content)
         if not saved_msg:
