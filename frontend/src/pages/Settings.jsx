@@ -242,6 +242,10 @@ const GradingSettingsTab = () => {
       await api.patch('/system/settings/', {
         academic_level: settings.academic_level,
         current_quarter: settings.current_quarter,
+        default_ww_weight: settings.default_ww_weight,
+        default_pt_weight: settings.default_pt_weight,
+        default_qa_weight: settings.default_qa_weight,
+        passing_grade: settings.passing_grade,
       });
       toast.success('Grading settings saved');
     } catch { toast.error('Failed to save'); }
@@ -251,6 +255,8 @@ const GradingSettingsTab = () => {
   if (loading || !settings) return <div className="flex justify-center py-16"><LoadingSpinner /></div>;
 
   const isJHS = settings.academic_level === 'jhs';
+  const totalWeight = Number(settings.default_ww_weight) + Number(settings.default_pt_weight) + Number(settings.default_qa_weight);
+  const weightValid = Math.abs(totalWeight - 100) < 0.01;
 
   return (
     <form onSubmit={save} className="space-y-6">
@@ -284,43 +290,61 @@ const GradingSettingsTab = () => {
               </select>
             </Field>
           </div>
+        </div>
+      </SectionCard>
 
-          {/* Grading Weights Info */}
-          <div className="bg-slate-50 border border-slate-200 rounded-lg p-4">
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">DepEd Grading Weights</p>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div className="bg-white border border-slate-200 rounded-lg p-3 text-center">
-                <p className="text-2xl font-extrabold text-violet-600">30%</p>
-                <p className="text-xs font-bold text-slate-600 mt-1">Written Work</p>
-              </div>
-              <div className="bg-white border border-slate-200 rounded-lg p-3 text-center">
-                <p className="text-2xl font-extrabold text-violet-600">50%</p>
-                <p className="text-xs font-bold text-slate-600 mt-1">Performance Task</p>
-              </div>
-              <div className="bg-white border border-slate-200 rounded-lg p-3 text-center">
-                <p className="text-2xl font-extrabold text-violet-600">20%</p>
-                <p className="text-xs font-bold text-slate-600 mt-1">Quarterly Assessment</p>
-              </div>
-            </div>
-            <p className="text-[11px] text-slate-500 font-medium mt-3">
-              These weights follow DepEd standards and are applied when computing final grades.
-            </p>
+      <SectionCard title="Default Grading Weights" subtitle="Applied to new classroom-subjects; can be overridden per subject" icon="chart">
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <Field label="Written Work (%)">
+              <input type="number" min="0" max="100" step="0.01"
+                value={settings.default_ww_weight}
+                onChange={e => setSettings(p => ({...p, default_ww_weight: e.target.value}))}
+                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-100 focus:border-violet-500 transition-all" />
+            </Field>
+            <Field label="Performance Task (%)">
+              <input type="number" min="0" max="100" step="0.01"
+                value={settings.default_pt_weight}
+                onChange={e => setSettings(p => ({...p, default_pt_weight: e.target.value}))}
+                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-100 focus:border-violet-500 transition-all" />
+            </Field>
+            <Field label="Quarterly Assessment (%)">
+              <input type="number" min="0" max="100" step="0.01"
+                value={settings.default_qa_weight}
+                onChange={e => setSettings(p => ({...p, default_qa_weight: e.target.value}))}
+                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-100 focus:border-violet-500 transition-all" />
+            </Field>
           </div>
+          <div className={`flex items-center gap-2 px-3 py-2 rounded-lg ${weightValid ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}`}>
+            <span className={`w-2 h-2 rounded-full ${weightValid ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+            <span className="text-xs font-bold">Total: {totalWeight.toFixed(2)}% {weightValid ? '(valid)' : '(should equal 100%)'}</span>
+          </div>
+        </div>
+      </SectionCard>
 
-          {/* Passing Grade Info */}
+      <SectionCard title="Passing Standard" subtitle="Minimum grade to pass a subject" icon="shield">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <Field label="Passing Grade (%)">
+            <input type="number" min="0" max="100" step="0.01"
+              value={settings.passing_grade}
+              onChange={e => setSettings(p => ({...p, passing_grade: e.target.value}))}
+              className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-100 focus:border-violet-500 transition-all" />
+          </Field>
           <div className="bg-slate-50 border border-slate-200 rounded-lg p-4">
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Passing Standards</p>
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Grading Scale</p>
+            <div className="space-y-1.5">
               {[
-                { label: 'Outstanding', range: '90-100', color: 'emerald' },
-                { label: 'Very Satisfactory', range: '85-89', color: 'blue' },
-                { label: 'Satisfactory', range: '80-84', color: 'amber' },
-                { label: 'Fairly Satisfactory', range: '75-79', color: 'orange' },
-                { label: 'Did Not Meet', range: 'Below 75', color: 'red' },
+                { label: 'Outstanding', min: 90, color: 'emerald' },
+                { label: 'Very Satisfactory', min: 85, color: 'blue' },
+                { label: 'Satisfactory', min: 80, color: 'amber' },
+                { label: 'Fairly Satisfactory', min: settings.passing_grade, color: 'orange' },
+                { label: 'Did Not Meet', min: null, max: Number(settings.passing_grade) - 0.01, color: 'red' },
               ].map(item => (
-                <div key={item.label} className={`bg-${item.color}-50 border border-${item.color}-200 rounded-lg p-2 text-center`}>
-                  <p className="text-xs font-extrabold text-slate-900">{item.range}</p>
-                  <p className="text-[10px] font-bold text-slate-600 mt-0.5">{item.label}</p>
+                <div key={item.label} className="flex items-center justify-between text-xs">
+                  <span className="font-bold text-slate-700">{item.label}</span>
+                  <span className="text-slate-500">
+                    {item.min !== null ? `${item.min}-${item.max || 100}` : `Below ${settings.passing_grade}`}
+                  </span>
                 </div>
               ))}
             </div>

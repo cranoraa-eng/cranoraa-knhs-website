@@ -380,6 +380,12 @@ class SystemSetting(models.Model):
     current_quarter = models.CharField(max_length=1, default='1', choices=[('1', '1st'), ('2', '2nd'), ('3', '3rd'), ('4', '4th')])
     academic_year = models.CharField(max_length=9, default='2025-2026')
     
+    # Default Grading Weights (applied to new classroom-subjects)
+    default_ww_weight = models.DecimalField(max_digits=5, decimal_places=2, default=30.00, help_text="Default Written Work weight (%)")
+    default_pt_weight = models.DecimalField(max_digits=5, decimal_places=2, default=50.00, help_text="Default Performance Task weight (%)")
+    default_qa_weight = models.DecimalField(max_digits=5, decimal_places=2, default=20.00, help_text="Default Quarterly Assessment weight (%)")
+    passing_grade = models.DecimalField(max_digits=5, decimal_places=2, default=75.00, help_text="Minimum passing grade (%)")
+    
     # Realtime & Communication
     allow_student_chat = models.BooleanField(default=True)
     allow_teacher_chat = models.BooleanField(default=True)

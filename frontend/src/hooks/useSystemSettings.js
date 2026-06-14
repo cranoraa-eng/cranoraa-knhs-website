@@ -60,5 +60,11 @@ export function useSystemSettings() {
     periodShortLabels,
     periodValues,
     currentQuarter: settings?.current_quarter || '1',
+    defaultWeights: {
+      ww: Number(settings?.default_ww_weight) || 30,
+      pt: Number(settings?.default_pt_weight) || 50,
+      qa: Number(settings?.default_qa_weight) || 20,
+    },
+    passingGrade: Number(settings?.passing_grade) || 75,
   };
 }

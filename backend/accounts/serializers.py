@@ -821,6 +821,7 @@ class SystemSettingSerializer(serializers.ModelSerializer):
         fields = ['site_name', 'school_address', 'school_phone', 'school_email', 'school_logo', 
                   'primary_color', 'secondary_color', 'maintenance_mode', 'maintenance_message', 
                   'enrollment_open', 'academic_level', 'current_quarter', 'academic_year', 
+                  'default_ww_weight', 'default_pt_weight', 'default_qa_weight', 'passing_grade',
                   'allow_student_chat', 'allow_teacher_chat', 'updated_at']
 
 
