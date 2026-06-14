@@ -2567,7 +2567,7 @@ def admin_dashboard_stats(request):
         daily_trends = (
             att_qs
             .filter(date__gte=last_30_days, date__lte=today)
-            .exclude(date__weekDay__in=[1, 7])  # Skip weekends (Sunday=1, Saturday=7)
+            .exclude(date__week_day__in=[1, 7])  # Skip weekends (Sunday=1, Saturday=7)
             .annotate(day=TruncDate('date'))
             .values('day')
             .annotate(
@@ -2838,7 +2838,11 @@ def admin_dashboard_stats(request):
         import traceback
         logger.error(f"Admin stats error: {str(e)}")
         logger.error(traceback.format_exc())
-        return Response({'error': 'Failed to load admin statistics.'}, status=500)
+        return Response({
+            'error': 'Failed to load admin statistics.',
+            'detail': str(e),
+            'type': type(e).__name__,
+        }, status=500)
 
 
 @api_view(['GET'])
