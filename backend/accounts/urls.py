@@ -12,7 +12,6 @@ from .views import (
     student_calendar_view, notifications_polling_view, system_metrics_view,
     maintenance_feed_view, maintenance_mode_view, force_sync_view, run_backup_view, clear_cache_view,
     system_settings_view, maintenance_status_view,
-    health_check,
     RoomViewSet, TimeSlotViewSet, ScheduleViewSet,
     parent_dashboard_view, parent_child_detail_view,
     fcm_token_register, fcm_token_delete,
@@ -24,66 +23,66 @@ from .views import (
 app_name = 'accounts'
 
 router = DefaultRouter()
-router.register(r'classrooms', ClassroomViewSet, basename='classroom')
-router.register(r'enrollments', StudentClassEnrollmentViewSet, basename='enrollment')
-router.register(r'users', UserViewSet, basename='user')
-router.register(r'announcements', AnnouncementViewSet, basename='announcement')
-router.register(r'attendance', AttendanceViewSet, basename='attendance')
-router.register(r'materials', LearningMaterialViewSet, basename='material')
-router.register(r'subjects', SubjectViewSet, basename='subject')
-router.register(r'classroom-subjects', ClassroomSubjectViewSet, basename='classroom-subject')
-router.register(r'scratch-cards', ScratchCardViewSet, basename='scratch-card')
-router.register(r'fees', FeeViewSet, basename='fee')
-router.register(r'notifications', NotificationViewSet, basename='notification')
-router.register(r'enrollment-applications', EnrollmentApplicationViewSet, basename='enrollment-application')
-router.register(r'assignments', AssignmentViewSet, basename='assignment')
-router.register(r'submissions', SubmissionViewSet, basename='submission')
-router.register(r'website-content', WebsiteContentViewSet, basename='website-content')
-router.register(r'grades', GradeViewSet, basename='grade')
-router.register(r'grade-reports', GradeReportViewSet, basename='grade-report')
-router.register(r'chat/rooms', ChatRoomViewSet, basename='chat-room')
-router.register(r'chat/messages', ChatMessageViewSet, basename='chat-message')
-router.register(r'chat/reports', ReportedMessageViewSet, basename='chat-report')
-router.register(r'friendships', FriendshipViewSet, basename='friendship')
-router.register(r'rooms', RoomViewSet, basename='room')
-router.register(r'time-slots', TimeSlotViewSet, basename='time-slot')
-router.register(r'schedules', ScheduleViewSet, basename='schedule')
-router.register(r'tickets', TicketViewSet, basename='ticket')
-router.register(r'department-contacts', DepartmentContactViewSet, basename='department-contact')
+router.register(r'v1/classrooms', ClassroomViewSet, basename='classroom')
+router.register(r'v1/enrollments', StudentClassEnrollmentViewSet, basename='enrollment')
+router.register(r'v1/users', UserViewSet, basename='user')
+router.register(r'v1/announcements', AnnouncementViewSet, basename='announcement')
+router.register(r'v1/attendance', AttendanceViewSet, basename='attendance')
+router.register(r'v1/materials', LearningMaterialViewSet, basename='material')
+router.register(r'v1/subjects', SubjectViewSet, basename='subject')
+router.register(r'v1/classroom-subjects', ClassroomSubjectViewSet, basename='classroom-subject')
+router.register(r'v1/scratch-cards', ScratchCardViewSet, basename='scratch-card')
+router.register(r'v1/fees', FeeViewSet, basename='fee')
+router.register(r'v1/notifications', NotificationViewSet, basename='notification')
+router.register(r'v1/enrollment-applications', EnrollmentApplicationViewSet, basename='enrollment-application')
+router.register(r'v1/assignments', AssignmentViewSet, basename='assignment')
+router.register(r'v1/submissions', SubmissionViewSet, basename='submission')
+router.register(r'v1/website-content', WebsiteContentViewSet, basename='website-content')
+router.register(r'v1/grades', GradeViewSet, basename='grade')
+router.register(r'v1/grade-reports', GradeReportViewSet, basename='grade-report')
+router.register(r'v1/chat/rooms', ChatRoomViewSet, basename='chat-room')
+router.register(r'v1/chat/messages', ChatMessageViewSet, basename='chat-message')
+router.register(r'v1/chat/reports', ReportedMessageViewSet, basename='chat-report')
+router.register(r'v1/friendships', FriendshipViewSet, basename='friendship')
+router.register(r'v1/rooms', RoomViewSet, basename='room')
+router.register(r'v1/time-slots', TimeSlotViewSet, basename='time-slot')
+router.register(r'v1/schedules', ScheduleViewSet, basename='schedule')
+router.register(r'v1/tickets', TicketViewSet, basename='ticket')
+router.register(r'v1/department-contacts', DepartmentContactViewSet, basename='department-contact')
 
 urlpatterns = [
-    path('login/', login_view, name='login'),
-    path('logout/', logout_view, name='logout'),
-    path('admin/create-user/', admin_create_user_view, name='admin_create_user'),
-    path('force-password-change/', force_password_change_view, name='force_password_change'),
-    path('auth/change-password/', change_password_view, name='change_password'),
-    path('profile/', user_profile, name='profile'),
-    path('student/profile/', student_profile, name='student_profile'),
-    path('onboarding/state/', onboarding_state_view, name='onboarding_state'),
-    path('student/calendar/', student_calendar_view, name='student_calendar'),
-    path('notifications/polling/', notifications_polling_view, name='notifications_polling'),
-    path('teacher/stats/', teacher_dashboard_stats, name='teacher_stats'),
-    path('student/dashboard/stats/', student_dashboard_stats, name='student_dashboard_stats'),
-    path('admin/stats/', admin_dashboard_stats, name='admin_stats'),
-    path('attendance/summary/', AttendanceViewSet.as_view({'get': 'summary'}), name='attendance_summary'),
-    path('grades/summary/', GradeViewSet.as_view({'get': 'summary'}), name='grade_summary'),
-    path('admin/grade-distribution/', grade_distribution_stats, name='grade_distribution_stats'),
-    path('admin/storage-analytics/', storage_analytics_view, name='storage_analytics'),
-    path('check-result/', check_result, name='check_result'),
-    path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('token/refresh/', cookie_token_refresh_view, name='token_refresh'),  # httpOnly cookie-based refresh
-    path('announcements/public/', public_announcements_view, name='public_announcements'),
-    path('admin/system-metrics/', system_metrics_view, name='system_metrics'),
-    path('admin/maintenance-feed/', maintenance_feed_view, name='maintenance_feed'),
-    path('admin/maintenance-mode/', maintenance_mode_view, name='maintenance_mode'),
-    path('admin/force-sync/', force_sync_view, name='force_sync'),
-    path('admin/run-backup/', run_backup_view, name='run_backup'),
-    path('admin/clear-cache/', clear_cache_view, name='clear_cache'),
-    path('system/settings/', system_settings_view, name='system_settings'),
-    path('system/maintenance-status/', maintenance_status_view, name='maintenance_status'),
-    path('parent/dashboard/', parent_dashboard_view, name='parent_dashboard'),
-    path('parent/child/<int:student_id>/', parent_child_detail_view, name='parent_child_detail'),
-    path('fcm-tokens/', fcm_token_register, name='fcm_token_register'),
-    path('fcm-tokens/delete/', fcm_token_delete, name='fcm_token_delete'),
-    path('', include(router.urls)),
+    path('api/v1/login/', login_view, name='login'),
+    path('api/v1/logout/', logout_view, name='logout'),
+    path('api/v1/admin/create-user/', admin_create_user_view, name='admin_create_user'),
+    path('api/v1/force-password-change/', force_password_change_view, name='force_password_change'),
+    path('api/v1/auth/change-password/', change_password_view, name='change_password'),
+    path('api/v1/profile/', user_profile, name='profile'),
+    path('api/v1/student/profile/', student_profile, name='student_profile'),
+    path('api/v1/onboarding/state/', onboarding_state_view, name='onboarding_state'),
+    path('api/v1/student/calendar/', student_calendar_view, name='student_calendar'),
+    path('api/v1/notifications/polling/', notifications_polling_view, name='notifications_polling'),
+    path('api/v1/teacher/stats/', teacher_dashboard_stats, name='teacher_stats'),
+    path('api/v1/student/dashboard/stats/', student_dashboard_stats, name='student_dashboard_stats'),
+    path('api/v1/admin/stats/', admin_dashboard_stats, name='admin_stats'),
+    path('api/v1/attendance/summary/', AttendanceViewSet.as_view({'get': 'summary'}), name='attendance_summary'),
+    path('api/v1/grades/summary/', GradeViewSet.as_view({'get': 'summary'}), name='grade_summary'),
+    path('api/v1/admin/grade-distribution/', grade_distribution_stats, name='grade_distribution_stats'),
+    path('api/v1/admin/storage-analytics/', storage_analytics_view, name='storage_analytics'),
+    path('api/v1/check-result/', check_result, name='check_result'),
+    path('api/v1/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/v1/token/refresh/', cookie_token_refresh_view, name='token_refresh'),  # httpOnly cookie-based refresh
+    path('api/v1/announcements/public/', public_announcements_view, name='public_announcements'),
+    path('api/v1/admin/system-metrics/', system_metrics_view, name='system_metrics'),
+    path('api/v1/admin/maintenance-feed/', maintenance_feed_view, name='maintenance_feed'),
+    path('api/v1/admin/maintenance-mode/', maintenance_mode_view, name='maintenance_mode'),
+    path('api/v1/admin/force-sync/', force_sync_view, name='force_sync'),
+    path('api/v1/admin/run-backup/', run_backup_view, name='run_backup'),
+    path('api/v1/admin/clear-cache/', clear_cache_view, name='clear_cache'),
+    path('api/v1/system/settings/', system_settings_view, name='system_settings'),
+    path('api/v1/system/maintenance-status/', maintenance_status_view, name='maintenance_status'),
+    path('api/v1/parent/dashboard/', parent_dashboard_view, name='parent_dashboard'),
+    path('api/v1/parent/child/<int:student_id>/', parent_child_detail_view, name='parent_child_detail'),
+    path('api/v1/fcm-tokens/', fcm_token_register, name='fcm_token_register'),
+    path('api/v1/fcm-tokens/delete/', fcm_token_delete, name='fcm_token_delete'),
+    path('api/v1/', include(router.urls)),
 ]
