@@ -52,6 +52,7 @@ const GradingSuite = lazy(() => import('./pages/GradingSuite'));
 const PeopleDirectory = lazy(() => import('./pages/PeopleDirectory'));
 const SystemAdminHub = lazy(() => import('./pages/SystemAdminHub'));
 const CommunicationCenter = lazy(() => import('./pages/CommunicationCenter'));
+const Announcements = lazy(() => import('./pages/Announcements'));
 const ParentDashboard = lazy(() => import('./pages/ParentDashboard'));
 
 // Fallback while lazy pages load
@@ -147,7 +148,7 @@ function App() {
                 <Route path="people-directory" element={<PeopleDirectory />} />
                 <Route path="system-admin" element={<SystemAdminHub />} />
                 <Route path="communication-center" element={<CommunicationCenter />} />
-                <Route path="announcements" element={<Navigate to="/communication-center?tab=bulletins" replace />} />
+                <Route path="announcements" element={<Announcements />} />
                 <Route path="grades" element={<Navigate to="/grading-suite?tab=grade-management" replace />} />
                 <Route path="attendance" element={<Attendance />} />
                 <Route path="materials" element={<Navigate to="/academics-hub?tab=materials" replace />} />
