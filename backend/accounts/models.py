@@ -428,6 +428,7 @@ class StudentClassEnrollment(models.Model):
     
     def get_descriptive_equivalent(self):
         avg = self.calculate_general_average()
+        passing = float(SystemSetting.get_settings().passing_grade)
         if avg is None:
             return "No Grades"
         if avg >= 90:
@@ -436,7 +437,7 @@ class StudentClassEnrollment(models.Model):
             return "Very Satisfactory"
         if avg >= 80:
             return "Satisfactory"
-        if avg >= 75:
+        if avg >= passing:
             return "Fairly Satisfactory"
         return "Did Not Meet Expectations"
 
@@ -1223,6 +1224,7 @@ class Grade(models.Model):
     
     def compute_remarks(self):
         """Compute automatic remarks based on raw score"""
+        passing = float(SystemSetting.get_settings().passing_grade)
         if self.raw_score is None:
             self.computed_remarks = "No Grade"
         elif self.raw_score >= 90:
@@ -1231,7 +1233,7 @@ class Grade(models.Model):
             self.computed_remarks = "Very Satisfactory"
         elif self.raw_score >= 80:
             self.computed_remarks = "Satisfactory"
-        elif self.raw_score >= 75:
+        elif self.raw_score >= passing:
             self.computed_remarks = "Fairly Satisfactory"
         else:
             self.computed_remarks = "Did Not Meet Expectations"
@@ -1413,7 +1415,7 @@ class GradeReport(models.Model):
             count = grades.count()
             self.general_average = round(total / count, 2) if count > 0 else None
             self.total_subjects = count
-            self.passed_subjects = sum(1 for g in grades if g.raw_score and g.raw_score >= 75)
+            self.passed_subjects = sum(1 for g in grades if g.raw_score and g.raw_score >= float(SystemSetting.get_settings().passing_grade))
             self.failed_subjects = count - self.passed_subjects
         else:
             self.general_average = None
