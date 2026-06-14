@@ -555,13 +555,30 @@ const PortalSettingsTab = () => {
 
       <SectionCard title="Academic Context" subtitle="Controls global defaults for grading and analytics" icon="🎓">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Field label="Current Quarter" hint="Used as default when entering grades">
+          <Field label="Academic Level" hint="Determines grading period structure">
+            <select value={settings.academic_level} onChange={e => setSettings(p => ({...p, academic_level: e.target.value, current_quarter: '1'}))}
+              className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-100 focus:border-violet-500 transition-all">
+              <option value="jhs">Junior High School (Grades 7-10) - 4 Quarters</option>
+              <option value="shs">Senior High School (Grades 11-12) - 3 Semesters</option>
+            </select>
+          </Field>
+          <Field label={settings.academic_level === 'shs' ? 'Current Semester' : 'Current Quarter'} hint="Used as default when entering grades">
             <select value={settings.current_quarter} onChange={e => setSettings(p => ({...p, current_quarter: e.target.value}))}
               className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-100 focus:border-violet-500 transition-all">
-              <option value="1">1st Quarter</option>
-              <option value="2">2nd Quarter</option>
-              <option value="3">3rd Quarter</option>
-              <option value="4">4th Quarter</option>
+              {settings.academic_level === 'shs' ? (
+                <>
+                  <option value="1">1st Semester</option>
+                  <option value="2">2nd Semester</option>
+                  <option value="3">3rd Semester (Summer)</option>
+                </>
+              ) : (
+                <>
+                  <option value="1">1st Quarter</option>
+                  <option value="2">2nd Quarter</option>
+                  <option value="3">3rd Quarter</option>
+                  <option value="4">4th Quarter</option>
+                </>
+              )}
             </select>
           </Field>
           <Field label="Default Academic Year" hint="Used in analytics when no year is selected">

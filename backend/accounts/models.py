@@ -372,6 +372,11 @@ class SystemSetting(models.Model):
     enrollment_open = models.BooleanField(default=True)
     
     # Academic Context
+    ACADEMIC_LEVEL_CHOICES = [
+        ('jhs', 'Junior High School (Grades 7-10)'),
+        ('shs', 'Senior High School (Grades 11-12)'),
+    ]
+    academic_level = models.CharField(max_length=3, choices=ACADEMIC_LEVEL_CHOICES, default='jhs')
     current_quarter = models.CharField(max_length=1, default='1', choices=[('1', '1st'), ('2', '2nd'), ('3', '3rd'), ('4', '4th')])
     academic_year = models.CharField(max_length=9, default='2025-2026')
     
