@@ -95,6 +95,17 @@ const Layout = () => {
     window.scrollTo(0, 0);
   }, [location.pathname]);
 
+  // C6: Set --vh CSS variable for accurate mobile viewport height
+  useEffect(() => {
+    const setVH = () => {
+      const vh = window.innerHeight * 0.01;
+      document.documentElement.style.setProperty('--vh', `${vh}px`);
+    };
+    setVH();
+    window.addEventListener('resize', setVH);
+    return () => window.removeEventListener('resize', setVH);
+  }, []);
+
   // Close notification dropdown on outside click
   useEffect(() => {
     if (!showNotifications) return;

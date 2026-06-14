@@ -988,6 +988,18 @@ class TicketAttachmentSerializer(serializers.ModelSerializer):
     def get_uploaded_by_name(self, obj):
         return full_name(obj.uploaded_by)
 
+    def validate_file_size_bytes(self, value):
+        max_size = TicketAttachment.MAX_FILE_SIZE_BYTES
+        if value > max_size:
+            max_mb = max_size // (1024 * 1024)
+            raise serializers.ValidationError(f'File size exceeds {max_mb} MB limit.')
+        return value
+
+    def validate_content_type(self, value):
+        if value and value not in TicketAttachment.ALLOWED_CONTENT_TYPES:
+            raise serializers.ValidationError(f'File type "{value}" is not allowed.')
+        return value
+
 
 class TicketMessageSerializer(serializers.ModelSerializer):
     sender_name = serializers.SerializerMethodField()
@@ -1032,14 +1044,15 @@ class TicketParticipantSerializer(serializers.ModelSerializer):
 
 
 class TicketListSerializer(serializers.ModelSerializer):
-    """Lightweight serializer for ticket list view."""
+    """Lightweight serializer for ticket list view — uses queryset annotations."""
     created_by_name = serializers.SerializerMethodField()
     created_by_role = serializers.CharField(source='created_by.role', read_only=True)
     assigned_to_name = serializers.SerializerMethodField()
-    unread_count = serializers.SerializerMethodField()
-    message_count = serializers.SerializerMethodField()
+    # C3: Use annotations from queryset instead of per-object queries
+    unread_count = serializers.IntegerField(read_only=True, default=0)
+    message_count = serializers.IntegerField(read_only=True, default=0)
     last_message = serializers.SerializerMethodField()
-    last_message_time = serializers.SerializerMethodField()
+    last_message_time = serializers.DateTimeField(read_only=True, source='last_message_time', default=None)
 
     class Meta:
         model = Ticket
@@ -1057,29 +1070,12 @@ class TicketListSerializer(serializers.ModelSerializer):
     def get_assigned_to_name(self, obj):
         return full_name(obj.assigned_to) if obj.assigned_to else None
 
-    def get_unread_count(self, obj):
-        request = self.context.get('request')
-        if request and request.user.is_authenticated:
-            return TicketMessage.objects.filter(
-                ticket=obj, is_read=False
-            ).exclude(sender=request.user).count()
-        return 0
-
-    def get_message_count(self, obj):
-        return obj.messages.count()
-
     def get_last_message(self, obj):
-        last_msg = obj.messages.order_by('-created_at').first()
-        if last_msg:
-            content = last_msg.content
-            if len(content) > 120:
-                content = content[:120] + '...'
-            return content
-        return ''
-
-    def get_last_message_time(self, obj):
-        last_msg = obj.messages.order_by('-created_at').first()
-        return last_msg.created_at if last_msg else obj.updated_at
+        # Use annotated last_message_content if available (from queryset)
+        content = getattr(obj, 'last_message_content', None)
+        if content and len(content) > 120:
+            return content[:120] + '...'
+        return content or ''
 
 
 class TicketDetailSerializer(serializers.ModelSerializer):

@@ -7,7 +7,7 @@ from django.contrib.auth import authenticate
 from django.utils import timezone
 from datetime import timedelta
 import datetime
-from django.db.models import Q, Avg, Count
+from django.db.models import Q, Avg, Count, Subquery, OuterRef
 from .serializers import (UserSerializer, ClassroomSerializer, StudentClassEnrollmentSerializer,
     AnnouncementSerializer, AnnouncementCommentSerializer, AttendanceSerializer, LearningMaterialSerializer,
     SubjectSerializer, ClassroomSubjectSerializer, ScratchCardSerializer, FeeSerializer,
@@ -6397,9 +6397,26 @@ class TicketViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        qs = Ticket.objects.filter(is_archived=False).select_related(
+
+        last_msg_subquery = TicketMessage.objects.filter(
+            ticket=OuterRef('pk')
+        ).order_by('-created_at')
+
+        qs = Ticket.objects.filter(is_archived=False, deleted_at__isnull=True).select_related(
             'created_by', 'assigned_to'
-        ).prefetch_related('messages', 'participants', 'attachments')
+        ).annotate(
+            message_count=Count('messages'),
+            unread_count=Count(
+                'messages',
+                filter=Q(messages__is_read=False) & ~Q(messages__sender=user),
+            ),
+            last_message_content=Subquery(
+                last_msg_subquery.values('content')[:1]
+            ),
+            last_message_time=Subquery(
+                last_msg_subquery.values('created_at')[:1]
+            ),
+        )
 
         # Filter by status
         status_filter = self.request.query_params.get('status')
@@ -6444,6 +6461,16 @@ class TicketViewSet(viewsets.ModelViewSet):
             return TicketCreateSerializer
         return TicketDetailSerializer
 
+    def _can_send_message(self, user, ticket):
+        """Check if user is allowed to send messages on this ticket."""
+        if user.role == 'admin':
+            return True
+        if ticket.created_by_id == user.id:
+            return True
+        if ticket.assigned_to_id and ticket.assigned_to_id == user.id:
+            return True
+        return TicketParticipant.objects.filter(ticket=ticket, user=user).exists()
+
     def create(self, request, *args, **kwargs):
         assigned_to = request.data.get('assigned_to')
         if assigned_to:
@@ -6451,6 +6478,7 @@ class TicketViewSet(viewsets.ModelViewSet):
                 created_by=request.user,
                 assigned_to_id=assigned_to,
                 is_archived=False,
+                deleted_at__isnull=True,
             ).exclude(status__in=['resolved', 'closed']).order_by('-updated_at').first()
             if existing:
                 return Response(
@@ -6545,6 +6573,21 @@ class TicketViewSet(viewsets.ModelViewSet):
     def send_message(self, request, pk=None):
         """Add a message to a ticket."""
         ticket = self.get_object()
+
+        # C2: Authorization — only participants, assigned staff, or admins can send
+        if not self._can_send_message(request.user, ticket):
+            return Response(
+                {'error': 'You do not have permission to send messages on this ticket.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        # C2: Block messaging on resolved/closed tickets (admins exempt)
+        if ticket.status in ('resolved', 'closed') and request.user.role != 'admin':
+            return Response(
+                {'error': f'This ticket is {ticket.status}. Only admins can reply to closed tickets.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
         content = request.data.get('content', '').strip()
 
         if not content:
@@ -6700,11 +6743,29 @@ class TicketViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['delete'], url_path='delete')
     def delete_ticket(self, request, pk=None):
-        """Delete a ticket (only by creator or admin)."""
+        """Soft delete a ticket (only by creator or admin). Logs to AuditLog."""
         ticket = self.get_object()
         if ticket.created_by != request.user and request.user.role != 'admin':
             return Response({'error': 'Only the creator or admin can delete this ticket'}, status=403)
-        ticket.delete()
+
+        from django.utils import timezone as _tz
+        from portal.views import log_audit_action
+
+        # Soft delete: set deleted_at timestamp (filtered out by get_queryset)
+        ticket.deleted_at = _tz.now()
+        ticket.is_archived = True
+        ticket.save(update_fields=['deleted_at', 'is_archived', 'updated_at'])
+
+        log_audit_action(
+            user=request.user,
+            action='delete',
+            model_name='Ticket',
+            object_id=ticket.id,
+            object_repr=ticket.ticket_id,
+            description=f'Deleted ticket: {ticket.subject} ({ticket.ticket_id})',
+            request=request,
+        )
+
         return Response({'status': 'deleted'})
 
     @action(detail=True, methods=['get'], url_path='messages')
@@ -6822,7 +6883,7 @@ class TicketViewSet(viewsets.ModelViewSet):
 
         # Look for existing non-archived ticket between these two users
         existing = Ticket.objects.filter(
-            is_archived=False
+            is_archived=False, deleted_at__isnull=True
         ).filter(
             Q(created_by=user, assigned_to=target_user) |
             Q(created_by=target_user, assigned_to=user)
@@ -6859,7 +6920,7 @@ class TicketViewSet(viewsets.ModelViewSet):
     def stats(self, request):
         """Get ticket statistics."""
         user = request.user
-        base_qs = Ticket.objects.all()
+        base_qs = Ticket.objects.filter(deleted_at__isnull=True)
 
         # Role-based filtering
         if user.role in ('student', 'parent'):

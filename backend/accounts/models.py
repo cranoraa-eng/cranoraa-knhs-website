@@ -1551,11 +1551,17 @@ class Ticket(models.Model):
     assigned_to = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='tickets_assigned')
     department = models.CharField(max_length=50, blank=True, default='')
     is_archived = models.BooleanField(default=False)
+    first_response_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    deleted_at = models.DateTimeField(null=True, blank=True, db_index=True)
 
     class Meta:
         ordering = ['-updated_at']
+        indexes = [
+            models.Index(fields=['status', 'category', 'assigned_to']),
+            models.Index(fields=['created_by', 'status']),
+        ]
 
     def __str__(self):
         return f"{self.ticket_id}: {self.subject}"
@@ -1600,6 +1606,18 @@ class TicketMessage(models.Model):
 
 
 class TicketAttachment(models.Model):
+    MAX_FILE_SIZE_BYTES = 25 * 1024 * 1024  # 25 MB
+    ALLOWED_CONTENT_TYPES = [
+        'image/jpeg', 'image/png', 'image/gif', 'image/webp',
+        'application/pdf',
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'application/vnd.ms-excel',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'text/plain', 'text/csv',
+        'application/zip',
+    ]
+
     ticket = models.ForeignKey(Ticket, on_delete=models.CASCADE, related_name='attachments')
     file_name = models.CharField(max_length=255)
     file_url = models.URLField(max_length=500)
@@ -1613,6 +1631,14 @@ class TicketAttachment(models.Model):
 
     def __str__(self):
         return f"{self.file_name} on {self.ticket.ticket_id}"
+
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        if self.file_size_bytes > self.MAX_FILE_SIZE_BYTES:
+            max_mb = self.MAX_FILE_SIZE_BYTES // (1024 * 1024)
+            raise ValidationError(f'File size exceeds maximum allowed size of {max_mb} MB.')
+        if self.content_type and self.content_type not in self.ALLOWED_CONTENT_TYPES:
+            raise ValidationError(f'File type "{self.content_type}" is not allowed.')
 
 
 class DepartmentContact(models.Model):
