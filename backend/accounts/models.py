@@ -4,13 +4,29 @@ from django.utils import timezone
 
 
 class User(AbstractUser):
+    """
+    Custom user model that extends Django's AbstractUser
+
+    Uses a custom user model instead of the default auth.User model
+    to better support the multi-role system required by the school portal
+
+    Features:
+    - Multiple roles: admin, staff, student, parent
+    - Role-specific permissions and access controls
+    - Extended profile information for students, teachers, and parents
+    - School-specific enrollment and classroom management
+
+    Note: This model inherits from AbstractUser and explicitly sets related_name
+    to avoid conflicts with Django's built-in User model when multiple apps
+    define custom user models that inherit from AbstractUser.
+    """
     ROLE_CHOICES = [
         ('admin', 'Admin'),
         ('staff', 'Staff'),
         ('student', 'Student'),
         ('parent', 'Parent'),
     ]
-    
+
     STAFF_TITLE_CHOICES = [
         ('teacher', 'Teacher'),
         ('registrar', 'Registrar'),
@@ -22,14 +38,14 @@ class User(AbstractUser):
         ('cashier', 'Cashier'),
         ('other', 'Other'),
     ]
-    
+
     STATUS_CHOICES = [
         ('active', 'Active'),
         ('inactive', 'Inactive'),
         ('suspended', 'Suspended'),
         ('pending_reset', 'Pending Password Reset'),
     ]
-    
+
     email = models.EmailField(unique=True, null=True, blank=True)
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='student', db_index=True)
     staff_title = models.CharField(max_length=20, choices=STAFF_TITLE_CHOICES, null=True, blank=True, db_index=True)
@@ -37,14 +53,31 @@ class User(AbstractUser):
     is_verified = models.BooleanField(default=False)
     is_approved = models.BooleanField(default=False)
     last_activity = models.DateTimeField(null=True, blank=True)
-    
-    # School System Fields
+
     must_change_password = models.BooleanField(default=False)
     account_status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active', db_index=True)
-    
+
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = ['role']
-    
+
+    # Explicitly set related_name to avoid clashes with auth.User
+    # This is necessary when inheriting from AbstractUser in custom user models
+    groups = models.ManyToManyField(
+        'auth.Group',
+        related_name='accounts_user_groups',
+        blank=True,
+        help_text='The groups this user belongs to. A user will get all permissions granted to each of their groups.',
+        verbose_name='groups',
+    )
+
+    user_permissions = models.ManyToManyField(
+        'auth.Permission',
+        related_name='accounts_user_permissions',
+        blank=True,
+        help_text='Specific permissions for this user.',
+        verbose_name='user permissions',
+    )
+
     def __str__(self):
         return f"{self.username} ({self.role})"
 
