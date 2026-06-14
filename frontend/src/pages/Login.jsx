@@ -96,7 +96,10 @@ const Login = () => {
   const identifierRef = useRef(null);
 
   const [loginType, setLoginType] = useState(() => {
-    try { return localStorage.getItem(LAST_ROLE_KEY) || 'student'; }
+    try {
+      const saved = localStorage.getItem(LAST_ROLE_KEY);
+      return saved && ROLES[saved] ? saved : 'student';
+    }
     catch { return 'student'; }
   });
   const [identifier, setIdentifier] = useState('');
