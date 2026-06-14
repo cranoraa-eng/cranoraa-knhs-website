@@ -1044,13 +1044,12 @@ class TicketParticipantSerializer(serializers.ModelSerializer):
 
 
 class TicketListSerializer(serializers.ModelSerializer):
-    """Lightweight serializer for ticket list view — uses queryset annotations."""
+    """Lightweight serializer for ticket list view."""
     created_by_name = serializers.SerializerMethodField()
     created_by_role = serializers.CharField(source='created_by.role', read_only=True)
     assigned_to_name = serializers.SerializerMethodField()
-    # C3: Use annotations from queryset instead of per-object queries
-    unread_count = serializers.IntegerField(read_only=True, default=0)
-    message_count = serializers.IntegerField(read_only=True, default=0)
+    unread_count = serializers.SerializerMethodField()
+    message_count = serializers.SerializerMethodField()
     last_message = serializers.SerializerMethodField()
     last_message_time = serializers.SerializerMethodField()
 
@@ -1070,15 +1069,24 @@ class TicketListSerializer(serializers.ModelSerializer):
     def get_assigned_to_name(self, obj):
         return full_name(obj.assigned_to) if obj.assigned_to else None
 
+    def get_unread_count(self, obj):
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            return obj.messages.filter(is_read=False).exclude(sender=request.user).count()
+        return 0
+
+    def get_message_count(self, obj):
+        msgs = getattr(obj, '_prefetched_messages_cache', None)
+        if msgs is not None:
+            return len(msgs) if isinstance(msgs, list) else msgs.count()
+        return obj.messages.count()
+
     def get_last_message(self, obj):
-        # Use prefetched messages (avoids extra query per ticket)
-        msgs = getattr(obj, '_prefetched_messages', None)
-        if msgs is None:
-            msgs = obj.messages.all() if hasattr(obj, 'messages') else []
-        try:
+        msgs = getattr(obj, '_prefetched_messages_cache', None)
+        if msgs is not None:
             last_msg = msgs[-1] if msgs else None
-        except (IndexError, TypeError):
-            last_msg = None
+        else:
+            last_msg = obj.messages.order_by('-created_at').first()
         if last_msg:
             content = last_msg.content
             if len(content) > 120:
@@ -1087,13 +1095,11 @@ class TicketListSerializer(serializers.ModelSerializer):
         return ''
 
     def get_last_message_time(self, obj):
-        msgs = getattr(obj, '_prefetched_messages', None)
-        if msgs is None:
-            msgs = obj.messages.all() if hasattr(obj, 'messages') else []
-        try:
+        msgs = getattr(obj, '_prefetched_messages_cache', None)
+        if msgs is not None:
             last_msg = msgs[-1] if msgs else None
-        except (IndexError, TypeError):
-            last_msg = None
+        else:
+            last_msg = obj.messages.order_by('-created_at').first()
         return last_msg.created_at if last_msg else obj.updated_at
 
 

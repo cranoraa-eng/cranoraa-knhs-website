@@ -6400,13 +6400,7 @@ class TicketViewSet(viewsets.ModelViewSet):
 
         qs = Ticket.objects.filter(is_archived=False).select_related(
             'created_by', 'assigned_to'
-        ).prefetch_related('messages').annotate(
-            message_count=Count('messages'),
-            unread_count=Count(
-                'messages',
-                filter=Q(messages__is_read=False) & ~Q(messages__sender=user),
-            ),
-        )
+        ).prefetch_related('messages', 'participants')
 
         # Filter by status
         status_filter = self.request.query_params.get('status')
