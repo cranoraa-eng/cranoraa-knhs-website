@@ -7,7 +7,7 @@ from django.contrib.auth import authenticate
 from django.utils import timezone
 from datetime import timedelta
 import datetime
-from django.db.models import Q, Avg, Count, Subquery, OuterRef
+from django.db.models import Q, Avg, Count
 from .serializers import (UserSerializer, ClassroomSerializer, StudentClassEnrollmentSerializer,
     AnnouncementSerializer, AnnouncementCommentSerializer, AttendanceSerializer, LearningMaterialSerializer,
     SubjectSerializer, ClassroomSubjectSerializer, ScratchCardSerializer, FeeSerializer,
@@ -6398,23 +6398,13 @@ class TicketViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         user = self.request.user
 
-        last_msg_subquery = TicketMessage.objects.filter(
-            ticket=OuterRef('pk')
-        ).order_by('-created_at')
-
         qs = Ticket.objects.filter(is_archived=False).select_related(
             'created_by', 'assigned_to'
-        ).annotate(
+        ).prefetch_related('messages').annotate(
             message_count=Count('messages'),
             unread_count=Count(
                 'messages',
                 filter=Q(messages__is_read=False) & ~Q(messages__sender=user),
-            ),
-            last_message_content=Subquery(
-                last_msg_subquery.values('content')[:1]
-            ),
-            last_message_time=Subquery(
-                last_msg_subquery.values('created_at')[:1]
             ),
         )
 

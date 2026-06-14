@@ -1052,7 +1052,7 @@ class TicketListSerializer(serializers.ModelSerializer):
     unread_count = serializers.IntegerField(read_only=True, default=0)
     message_count = serializers.IntegerField(read_only=True, default=0)
     last_message = serializers.SerializerMethodField()
-    last_message_time = serializers.DateTimeField(read_only=True, source='last_message_time', default=None)
+    last_message_time = serializers.SerializerMethodField()
 
     class Meta:
         model = Ticket
@@ -1071,11 +1071,30 @@ class TicketListSerializer(serializers.ModelSerializer):
         return full_name(obj.assigned_to) if obj.assigned_to else None
 
     def get_last_message(self, obj):
-        # Use annotated last_message_content if available (from queryset)
-        content = getattr(obj, 'last_message_content', None)
-        if content and len(content) > 120:
-            return content[:120] + '...'
-        return content or ''
+        # Use prefetched messages (avoids extra query per ticket)
+        msgs = getattr(obj, '_prefetched_messages', None)
+        if msgs is None:
+            msgs = obj.messages.all() if hasattr(obj, 'messages') else []
+        try:
+            last_msg = msgs[-1] if msgs else None
+        except (IndexError, TypeError):
+            last_msg = None
+        if last_msg:
+            content = last_msg.content
+            if len(content) > 120:
+                return content[:120] + '...'
+            return content
+        return ''
+
+    def get_last_message_time(self, obj):
+        msgs = getattr(obj, '_prefetched_messages', None)
+        if msgs is None:
+            msgs = obj.messages.all() if hasattr(obj, 'messages') else []
+        try:
+            last_msg = msgs[-1] if msgs else None
+        except (IndexError, TypeError):
+            last_msg = None
+        return last_msg.created_at if last_msg else obj.updated_at
 
 
 class TicketDetailSerializer(serializers.ModelSerializer):
