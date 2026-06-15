@@ -2017,7 +2017,7 @@ class Department(models.Model):
     name = models.CharField(max_length=100, unique=True)
     code = models.CharField(max_length=20, unique=True)
     description = models.TextField(blank=True)
-    head = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='headed_departments')
+    head = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='accounts_headed_departments')
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
