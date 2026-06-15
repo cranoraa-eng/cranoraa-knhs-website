@@ -217,7 +217,7 @@ class AuditLogViewSet(viewsets.ModelViewSet):
         if self.request.user.role != 'admin':
             return AuditLog.objects.none()
         
-        queryset = AuditLog.objects.all()
+        queryset = AuditLog.objects.select_related('user').all()
         user_id = self.request.query_params.get('user')
         action = self.request.query_params.get('action')
         model_name = self.request.query_params.get('model_name')
@@ -509,12 +509,29 @@ def teacher_progress(request):
         'teacher', 'teacher__profile', 'subject', 'classroom'
     ).all()
     
+    # Batch-fetch enrollment counts to avoid N+1
+    all_classroom_ids = list(teacher_subjects.values_list('classroom_id', flat=True).distinct())
+    enrollment_counts = dict(
+        StudentClassEnrollment.objects.filter(classroom_id__in=all_classroom_ids)
+        .values('classroom_id')
+        .annotate(cnt=Count('id'))
+        .values_list('classroom_id', 'cnt')
+    )
+    # Batch-fetch graded student counts
+    grade_counts = dict(
+        Grade.objects.filter(
+            subject_id__in=teacher_subjects.values_list('subject_id', flat=True),
+            classroom_id__in=all_classroom_ids,
+        )
+        .values('subject_id', 'classroom_id')
+        .annotate(cnt=Count('student', distinct=True))
+        .values_list('subject_id', 'classroom_id', 'cnt')
+    )
+    
     progress = []
     for ts in teacher_subjects:
-        total_students = StudentClassEnrollment.objects.filter(classroom=ts.classroom).count()
-        graded_students = Grade.objects.filter(
-            subject=ts.subject, classroom=ts.classroom
-        ).values('student').distinct().count()
+        total_students = enrollment_counts.get(ts.classroom_id, 0)
+        graded_students = grade_counts.get((ts.subject_id, ts.classroom_id), 0)
         
         pct = round(graded_students / total_students * 100) if total_students > 0 else 0
         teacher_name = full_name(ts.teacher) if ts.teacher else 'Unassigned'

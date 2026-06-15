@@ -537,14 +537,30 @@ def teacher_dashboard_stats(request):
         else:
             attendance_rate = 0
 
-        # Pending grades — bulk query instead of N+1 loop
+        # Pending grades — batch query to avoid N+1
         from django.db.models import Subquery, OuterRef, IntegerField
         from django.db.models.functions import Coalesce
         teacher_classroom_subjects = ClassroomSubject.objects.filter(teacher=user).select_related('classroom', 'subject')
+        classroom_ids = list(teacher_classroom_subjects.values_list('classroom_id', flat=True).distinct())
+        enrollment_counts = dict(
+            StudentClassEnrollment.objects.filter(classroom_id__in=classroom_ids)
+            .values('classroom_id')
+            .annotate(cnt=Count('id'))
+            .values_list('classroom_id', 'cnt')
+        )
+        grade_counts = dict(
+            Grade.objects.filter(
+                subject_id__in=teacher_classroom_subjects.values_list('subject_id', flat=True),
+                classroom_id__in=classroom_ids,
+            )
+            .values('subject_id', 'classroom_id')
+            .annotate(cnt=Count('student', distinct=True))
+            .values_list('subject_id', 'classroom_id', 'cnt')
+        )
         pending_grades = 0
         for cs in teacher_classroom_subjects:
-            students_in_class = StudentClassEnrollment.objects.filter(classroom=cs.classroom).count()
-            grades_in_subject = Grade.objects.filter(subject=cs.subject, classroom=cs.classroom).values('student').distinct().count()
+            students_in_class = enrollment_counts.get(cs.classroom_id, 0)
+            grades_in_subject = grade_counts.get((cs.subject_id, cs.classroom_id), 0)
             pending_grades += max(0, students_in_class - grades_in_subject)
 
         # Recent activities
@@ -798,7 +814,7 @@ class ClassroomViewSet(viewsets.ModelViewSet):
         classroom = self.get_object()
         
         if request.method == 'GET':
-            enrollments = classroom.enrollments.all()
+            enrollments = classroom.enrollments.select_related('student', 'student__profile').all()
             search = request.query_params.get('search', '')
             if search:
                 enrollments = enrollments.filter(student__username__icontains=search)
@@ -1048,7 +1064,7 @@ class UserViewSet(viewsets.ModelViewSet):
         if request.user.role != 'admin':
             return Response({'error': 'Unauthorized'}, status=403)
         
-        queryset = User.objects.filter(is_approved=False).order_by('-date_joined')
+        queryset = User.objects.filter(is_approved=False).select_related('profile').order_by('-date_joined')
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
@@ -2197,8 +2213,14 @@ class AttendanceViewSet(viewsets.ModelViewSet):
         ).select_related('classroom', 'subject', 'room', 'time_slot').order_by('time_slot__start_time')
 
         data = []
+        schedule_classroom_ids = [sch.classroom_id for sch in schedules]
+        enrollment_counts = dict(
+            StudentClassEnrollment.objects.filter(classroom_id__in=schedule_classroom_ids)
+            .values('classroom_id')
+            .annotate(cnt=Count('id'))
+            .values_list('classroom_id', 'cnt')
+        )
         for sch in schedules:
-            student_count = StudentClassEnrollment.objects.filter(classroom=sch.classroom).count()
             data.append({
                 'id': sch.id,
                 'classroom': sch.classroom.id,
@@ -2209,7 +2231,7 @@ class AttendanceViewSet(viewsets.ModelViewSet):
                 'room': sch.room.name if sch.room else None,
                 'start_time': sch.time_slot.start_time.strftime('%I:%M %p'),
                 'end_time': sch.time_slot.end_time.strftime('%I:%M %p'),
-                'student_count': student_count,
+                'student_count': enrollment_counts.get(sch.classroom_id, 0),
             })
 
         return Response(data)
@@ -2529,7 +2551,7 @@ class LearningMaterialViewSet(viewsets.ModelViewSet):
         
         # RBAC: Students can see materials for their enrolled classrooms + general materials
         if user.role == 'student':
-            student_enrollments = StudentClassEnrollment.objects.filter(student=user)
+            student_enrollments = StudentClassEnrollment.objects.filter(student=user).select_related('classroom')
             student_classrooms = [e.classroom for e in student_enrollments]
             queryset = queryset.filter(Q(classroom__in=student_classrooms) | Q(classroom__isnull=True))
         # Teachers see materials for their classrooms + general materials
@@ -2760,9 +2782,10 @@ class FeeViewSet(viewsets.ModelViewSet):
         # Teachers can only see fees for their classrooms
         elif user.role == 'staff':
             teacher_classrooms = Classroom.objects.filter(teacher=user)
-            student_enrollments = StudentClassEnrollment.objects.filter(classroom__in=teacher_classrooms)
-            students = [e.student for e in student_enrollments]
-            queryset = queryset.filter(student__in=students)
+            student_classroom_ids = StudentClassEnrollment.objects.filter(
+                classroom__in=teacher_classrooms
+            ).values_list('student_id', flat=True).distinct()
+            queryset = queryset.filter(student_id__in=student_classroom_ids)
         
         if student_id:
             queryset = queryset.filter(student_id=student_id)
@@ -2985,7 +3008,7 @@ def admin_dashboard_stats(request):
         recent_activity = []
         if AuditLog:
             try:
-                recent_activity = AuditLog.objects.order_by('-timestamp')[:5]
+                recent_activity = AuditLog.objects.select_related('user').order_by('-timestamp')[:5]
             except Exception:
                 pass
         
@@ -3317,29 +3340,54 @@ def grade_distribution_stats(request):
     # 3. Dynamic Comparison Chart (By Level or By Classroom)
     by_level = []
     if grade_level == 'all':
-        # Show comparison across all grade levels
+        # Batch-fetch all grade levels in one query to avoid N+1 loop
+        level_classrooms = Classroom.objects.filter(
+            name__regex=r'Grade [7-12]'
+        ).values('id', 'name')
+        level_classroom_map = {}
+        for lc in level_classrooms:
+            import re
+            match = re.search(r'Grade (\d+)', lc['name'])
+            if match:
+                level_num = int(match.group(1))
+                level_classroom_map.setdefault(level_num, []).append(lc['id'])
+
+        level_ids = [ids for ids in level_classroom_map.values()]
+        flat_ids = [cid for sublist in level_ids for cid in sublist]
+        level_grades_agg = base_grades.filter(classroom_id__in=flat_ids).values(
+            'classroom_id'
+        ).annotate(avg=Avg('raw_score'), count=Count('id'))
+
+        # Build classroom_id -> avg/count lookup
+        grade_lookup = {r['classroom_id']: r for r in level_grades_agg}
+
         for level_num in range(7, 13):
-            level_label = f"Grade {level_num}"
-            level_classrooms = Classroom.objects.filter(name__icontains=level_label)
-            level_grades = base_grades.filter(classroom__in=level_classrooms)
-            if level_grades.exists():
-                avg = level_grades.aggregate(a=Avg('raw_score'))['a']
+            cids = level_classroom_map.get(level_num, [])
+            if not cids:
+                continue
+            avgs = [grade_lookup[cid]['avg'] for cid in cids if cid in grade_lookup and grade_lookup[cid]['avg'] is not None]
+            counts = [grade_lookup[cid]['count'] for cid in cids if cid in grade_lookup]
+            if avgs:
                 by_level.append({
-                    'label': level_label,
-                    'average': round(float(avg), 2) if avg else 0,
-                    'count': level_grades.count()
+                    'label': f"Grade {level_num}",
+                    'average': round(float(sum(avgs) / len(avgs)), 2),
+                    'count': sum(counts),
                 })
     else:
         # If a level is selected, show comparison across classrooms in that level
         level_classrooms = Classroom.objects.filter(name__icontains=grade_level)
+        level_class_ids = list(level_classrooms.values_list('id', flat=True))
+        classroom_grades_agg = base_grades.filter(classroom_id__in=level_class_ids).values(
+            'classroom_id', 'classroom__name'
+        ).annotate(avg=Avg('raw_score'), count=Count('id'))
+        grade_lookup = {r['classroom_id']: r for r in classroom_grades_agg}
         for c in level_classrooms:
-            c_grades = base_grades.filter(classroom=c)
-            if c_grades.exists():
-                avg = c_grades.aggregate(a=Avg('raw_score'))['a']
+            r = grade_lookup.get(c.id)
+            if r:
                 by_level.append({
-                    'label': c.name,
-                    'average': round(float(avg), 2) if avg else 0,
-                    'count': c_grades.count()
+                    'label': r['classroom__name'],
+                    'average': round(float(r['avg']), 2) if r['avg'] else 0,
+                    'count': r['count']
                 })
 
     # 4. Top Performing Group (By Subject or By Classroom for a Subject)
@@ -3426,7 +3474,7 @@ def check_result(request):
         card.save()
 
         # Get student's grades
-        enrollments = StudentClassEnrollment.objects.filter(student=student)
+        enrollments = StudentClassEnrollment.objects.filter(student=student).select_related('classroom')
         grades_data = []
         for enrollment in enrollments:
             grades_data.append({
@@ -4925,7 +4973,7 @@ class AssignmentViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        queryset = Assignment.objects.annotate(submission_count=Count('submissions'))
+        queryset = Assignment.objects.select_related('classroom', 'subject', 'teacher').annotate(submission_count=Count('submissions'))
 
         if user.role == 'student':
             enrolled_classrooms = StudentClassEnrollment.objects.filter(student=user).values_list('classroom_id', flat=True)
@@ -5087,7 +5135,7 @@ class AssignmentViewSet(viewsets.ModelViewSet):
             return Response({'error': 'Unauthorized'}, status=403)
 
         classroom_id = request.query_params.get('classroom')
-        queryset = Assignment.objects.all()
+        queryset = Assignment.objects.select_related('classroom', 'subject').all()
         if classroom_id:
             queryset = queryset.filter(classroom_id=classroom_id)
 
@@ -5095,10 +5143,25 @@ class AssignmentViewSet(viewsets.ModelViewSet):
         total_submissions = Submission.objects.filter(assignment__in=queryset).count()
         late_submissions = Submission.objects.filter(assignment__in=queryset, is_late=True).count()
 
+        # Batch-fetch enrollment counts to avoid N+1
+        assignment_classroom_ids = list(queryset.values_list('classroom_id', flat=True).distinct())
+        enrollment_counts = dict(
+            StudentClassEnrollment.objects.filter(classroom_id__in=assignment_classroom_ids)
+            .values('classroom_id')
+            .annotate(cnt=Count('id'))
+            .values_list('classroom_id', 'cnt')
+        )
+        submission_counts = dict(
+            Submission.objects.filter(assignment__in=queryset)
+            .values('assignment_id')
+            .annotate(cnt=Count('id'))
+            .values_list('assignment_id', 'cnt')
+        )
+
         assignment_rates = []
         for assignment in queryset:
-            enrolled_count = StudentClassEnrollment.objects.filter(classroom=assignment.classroom).count()
-            sub_count = assignment.submissions.count()
+            enrolled_count = enrollment_counts.get(assignment.classroom_id, 0)
+            sub_count = submission_counts.get(assignment.id, 0)
             rate = round(sub_count / enrolled_count * 100, 1) if enrolled_count > 0 else 0
             assignment_rates.append({
                 'id': assignment.id,
@@ -5328,10 +5391,11 @@ class GradeReportViewSet(viewsets.ModelViewSet):
         except Classroom.DoesNotExist:
             return Response({'error': 'Classroom not found'}, status=status.HTTP_404_NOT_FOUND)
         
-        enrollments = StudentClassEnrollment.objects.filter(classroom=classroom)
+        enrollments = StudentClassEnrollment.objects.filter(classroom=classroom).select_related('student')
         
         reports_created = []
         reports_updated = []
+        # Batch-fetch existing grade data to avoid N+1 in calculate_averages
         for enrollment in enrollments:
             report, created = GradeReport.objects.get_or_create(
                 student=enrollment.student,
@@ -5346,16 +5410,19 @@ class GradeReportViewSet(viewsets.ModelViewSet):
             else:
                 reports_updated.append(report.id)
         
-        # Compute class ranks for all reports in this classroom/quarter
+        # Compute class ranks using bulk_update instead of per-row save
         all_reports = GradeReport.objects.filter(
             classroom=classroom, quarter=quarter, school_year=school_year,
             general_average__isnull=False
         ).order_by('-general_average')
+        reports_to_update = []
         rank = 1
         for r in all_reports:
             r.class_rank = rank
-            r.save(update_fields=['class_rank'])
+            reports_to_update.append(r)
             rank += 1
+        if reports_to_update:
+            GradeReport.objects.bulk_update(reports_to_update, ['class_rank'])
         
         return Response({
             'message': f'Generated {len(reports_created)} new reports, updated {len(reports_updated)} existing reports, ranks computed',
@@ -5378,17 +5445,20 @@ class GradeReportViewSet(viewsets.ModelViewSet):
         enrolled = StudentClassEnrollment.objects.filter(classroom_id=classroom_id).select_related('student')
         classroom_subjects = ClassroomSubject.objects.filter(classroom_id=classroom_id).select_related('subject', 'teacher')
         
+        # Pre-fetch all existing final grades in one query to avoid N x M loop
+        existing_grades = set(
+            Grade.objects.filter(
+                classroom_id=classroom_id,
+                quarter=quarter,
+                grade_type='final_grade',
+                academic_year=academic_year,
+            ).values_list('student_id', 'subject_id')
+        )
+        
         missing = []
         for enrollment in enrolled:
             for cs in classroom_subjects:
-                has_grade = Grade.objects.filter(
-                    student=enrollment.student,
-                    subject=cs.subject,
-                    quarter=quarter,
-                    grade_type='final_grade',
-                    academic_year=academic_year,
-                ).exists()
-                if not has_grade:
+                if (enrollment.student_id, cs.subject_id) not in existing_grades:
                     missing.append({
                         'student': full_name(enrollment.student),
                         'subject': cs.subject.name,
@@ -5869,7 +5939,7 @@ def _broadcast_new_chat_message(message, serialized_data, sender):
     preview_text = preview[:80] + ('…' if len(preview) > 80 else '')
     offline_participants = room.participants.exclude(id=sender.id).filter(
         last_activity__lt=five_mins_ago
-    )
+    ).only('id', 'last_activity')
     for participant in offline_participants:
         Notification.objects.create(
             recipient=participant,
@@ -6120,7 +6190,9 @@ class ReportedMessageViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        queryset = ReportedMessage.objects.all()
+        queryset = ReportedMessage.objects.select_related(
+            'message', 'message__sender', 'reporter', 'reported_user'
+        )
         if self.request.user.role != 'admin':
             queryset = queryset.filter(reporter=self.request.user)
             
@@ -6516,7 +6588,7 @@ class FriendshipViewSet(viewsets.ModelViewSet):
         friendships = Friendship.objects.filter(
             (Q(from_user=user) | Q(to_user=user)),
             status='accepted'
-        )
+        ).select_related('from_user', 'to_user')
         friends = []
         for f in friendships:
             friend = f.to_user if f.from_user == user else f.from_user
@@ -7197,7 +7269,7 @@ def parent_child_detail_view(request, student_id):
     if enrollment:
         assignments = Assignment.objects.filter(
             classroom=enrollment.classroom
-        ).order_by('-due_date')[:10]
+        ).select_related('subject').order_by('-due_date')[:10]
         assignments_data = [
             {
                 'id': a.id,

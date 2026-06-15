@@ -184,9 +184,9 @@ class Profile(models.Model):
         super().save(*args, **kwargs)
     
     def generate_registration_number(self):
-        import random
+        import secrets
         year = str(self.user.date_joined.year if self.user.date_joined else 2026)
-        random_num = ''.join([str(random.randint(0, 9)) for _ in range(6)])
+        random_num = f"{secrets.randbelow(10**6):06d}"
         return f"KNHS{year}{random_num}"
 
 
@@ -427,6 +427,14 @@ class ClassroomSubject(models.Model):
     class Meta:
         unique_together = ['classroom', 'subject']
         ordering = ['classroom__name', 'subject__name']
+
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        total = self.ww_weight + self.pt_weight + self.qa_weight
+        if total != Decimal('100.00'):
+            raise ValidationError(
+                f'Grade weights must sum to 100%. Current total: {total}%'
+            )
 
 
 class SystemSetting(models.Model):
@@ -763,9 +771,8 @@ class ScratchCard(models.Model):
         super().save(*args, **kwargs)
     
     def generate_serial(self):
-        import random
-        import string
-        return ''.join(random.choices(string.digits, k=12))
+        import secrets
+        return f"{secrets.randbelow(10**12):012d}"
 
 
 class Fee(models.Model):
@@ -1838,25 +1845,26 @@ class GradeReport(models.Model):
         return Decimal('5.00')
     
     def compute_class_rank(self):
-        """Compute class rank based on general_average among same classroom/quarter."""
+        """Compute class rank using a single SQL query with window function."""
+        from django.db.models import Window, F, IntegerField
+        from django.db.models.functions import Rank
         if self.general_average is None:
             self.class_rank = None
             self.save(update_fields=['class_rank'])
             return
-        classmates = GradeReport.objects.filter(
+        ranked = GradeReport.objects.filter(
             classroom=self.classroom,
             quarter=self.quarter,
             school_year=self.school_year,
             general_average__isnull=False,
-        ).order_by('-general_average')
-        rank = 1
-        for i, report in enumerate(classmates):
-            if report.id == self.id:
-                self.class_rank = rank
-                self.save(update_fields=['class_rank'])
-                return
-            rank += 1
-        self.class_rank = rank
+        ).annotate(
+            rank=Window(
+                expression=Rank(),
+                order_by=F('general_average').desc(),
+            )
+        ).filter(pk=self.pk).values_list('rank', flat=True)
+        rank_val = list(ranked)
+        self.class_rank = int(rank_val[0]) if rank_val else None
         self.save(update_fields=['class_rank'])
 
 
@@ -1915,9 +1923,11 @@ class Ticket(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.ticket_id:
-            last = Ticket.objects.order_by('-id').first()
-            num = (last.id + 1) if last else 1
-            self.ticket_id = f"TKT-{str(num).zfill(4)}"
+            from django.db import transaction
+            with transaction.atomic():
+                last = Ticket.objects.select_for_update().order_by('-id').first()
+                num = (last.id + 1) if last else 1
+                self.ticket_id = f"TKT-{str(num).zfill(4)}"
         super().save(*args, **kwargs)
 
 
