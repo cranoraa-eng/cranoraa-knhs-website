@@ -8,6 +8,17 @@ import { useAuth } from '../context/AuthContext';
 import { getNotifConfig, formatNotifTime, TYPE_CONFIG } from '../utils/notificationConfig';
 import { LoadingSpinner, EmptyState } from '../components/ui';
 
+// ── Notification type labels ─────────────────────────────────────────────────
+const TYPE_LABELS = {
+  announcement: 'Announcements',
+  grade: 'Grade Updates',
+  attendance: 'Attendance',
+  fee: 'Fee Reminders',
+  message: 'Messages',
+  friend_request: 'Friend Requests',
+  system: 'System Alerts',
+};
+
 // ── Type config (local badge/dot colours, extends shared config) ──────────────
 const TYPE_BADGE = {
   announcement: { label: 'Announcement', dot: 'bg-violet-500' },
@@ -52,6 +63,12 @@ const Notifications = () => {
   const [selectedIds, setSelectedIds]     = useState([]);
   const [processing, setProcessing]       = useState(false);
 
+  // Notification preferences
+  const [showPrefs, setShowPrefs]         = useState(false);
+  const [prefs, setPrefs]                 = useState(null);
+  const [prefsLoading, setPrefsLoading]   = useState(false);
+  const [prefsSaving, setPrefsSaving]     = useState(false);
+
   const PAGE_SIZE = 20;
 
   useEffect(() => { fetchNotifications(); }, [page, typeFilter, statusFilter]);
@@ -63,6 +80,36 @@ const Notifications = () => {
     }, 400);
     return () => clearTimeout(t);
   }, [search]);
+
+  const fetchPreferences = async () => {
+    setPrefsLoading(true);
+    try {
+      const r = await api.get('/notification-preferences/');
+      setPrefs(r.data);
+    } catch {
+      toast.error('Failed to load notification preferences');
+    } finally {
+      setPrefsLoading(false);
+    }
+  };
+
+  const savePreferences = async (updated) => {
+    setPrefsSaving(true);
+    try {
+      const r = await api.put('/notification-preferences/', updated);
+      setPrefs(r.data);
+      toast.success('Preferences saved');
+    } catch {
+      toast.error('Failed to save preferences');
+    } finally {
+      setPrefsSaving(false);
+    }
+  };
+
+  const togglePref = (key) => {
+    if (!prefs) return;
+    savePreferences({ ...prefs, [key]: !prefs[key] });
+  };
 
   const fetchNotifications = async () => {
     setLoading(true);
@@ -230,8 +277,89 @@ const Notifications = () => {
             </svg>
             Mark all read
           </button>
+          <button
+            onClick={() => {
+              const next = !showPrefs;
+              setShowPrefs(next);
+              if (next && !prefs) fetchPreferences();
+            }}
+            title="Notification Preferences"
+            className={`inline-flex items-center justify-center w-11 h-11 rounded-xl border transition-all shadow-sm ${showPrefs ? 'bg-violet-50 border-violet-300 text-violet-600' : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50 hover:border-slate-300'}`}
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+          </button>
         </div>
       </div>
+
+      {/* ── Notification Preferences Panel ── */}
+      {showPrefs && (
+        <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-5 space-y-4 animate-fade-in">
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-black text-slate-900 uppercase tracking-wider">Notification Preferences</h2>
+            {prefsSaving && <span className="text-xs text-violet-500 font-medium">Saving...</span>}
+          </div>
+
+          {prefsLoading ? (
+            <div className="flex items-center justify-center py-8"><LoadingSpinner /></div>
+          ) : prefs ? (
+            <>
+              {/* Delivery channels */}
+              <div className="space-y-3">
+                <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Delivery Channels</p>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  {[
+                    { key: 'push_enabled', label: 'Push Notifications', desc: 'Browser push via FCM' },
+                    { key: 'in_app_enabled', label: 'In-App Bell', desc: 'Show in notification dropdown' },
+                  ].map(({ key, label, desc }) => (
+                    <button
+                      key={key}
+                      onClick={() => togglePref(key)}
+                      disabled={prefsSaving}
+                      className={`flex-1 flex items-center gap-3 p-3 rounded-xl border transition-all text-left ${prefs[key] ? 'bg-violet-50 border-violet-200' : 'bg-slate-50 border-slate-200 opacity-60'}`}
+                    >
+                      <div className={`w-10 h-6 rounded-full flex items-center transition-all ${prefs[key] ? 'bg-violet-500 justify-end' : 'bg-slate-300 justify-start'}`}>
+                        <div className="w-5 h-5 bg-white rounded-full shadow-sm mx-0.5" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-slate-800">{label}</p>
+                        <p className="text-xs text-slate-500">{desc}</p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Per-type toggles */}
+              <div className="space-y-3">
+                <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Notification Types</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {Object.entries(TYPE_LABELS).map(([key, label]) => (
+                    <button
+                      key={key}
+                      onClick={() => togglePref(key)}
+                      disabled={prefsSaving}
+                      className={`flex items-center justify-between p-3 rounded-xl border transition-all ${prefs[key] ? 'bg-white border-violet-200' : 'bg-slate-50 border-slate-200 opacity-60'}`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <div className={`w-2 h-2 rounded-full ${key === 'announcement' ? 'bg-violet-500' : key === 'grade' ? 'bg-emerald-500' : key === 'attendance' ? 'bg-amber-500' : key === 'fee' ? 'bg-red-500' : key === 'message' ? 'bg-blue-500' : key === 'friend_request' ? 'bg-pink-500' : 'bg-indigo-500'}`} />
+                        <span className="text-sm font-medium text-slate-700">{label}</span>
+                      </div>
+                      <div className={`w-9 h-5 rounded-full flex items-center transition-all ${prefs[key] ? 'bg-violet-500 justify-end' : 'bg-slate-300 justify-start'}`}>
+                        <div className="w-4 h-4 bg-white rounded-full shadow-sm mx-0.5" />
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </>
+          ) : (
+            <p className="text-sm text-slate-400 text-center py-4">Failed to load preferences</p>
+          )}
+        </div>
+      )}
 
       {/* ── Filters ── */}
       <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-4">

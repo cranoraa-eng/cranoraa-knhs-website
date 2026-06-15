@@ -4,11 +4,15 @@ from django.utils import timezone
 from .models import (Profile, Classroom, StudentClassEnrollment, Announcement,
     AnnouncementAttachment, AnnouncementComment, Attendance, LearningMaterial,
     Subject, ClassroomSubject, ScratchCard, Fee,
-    Notification, EnrollmentApplication, EnrollmentDocument, EnrollmentStatusHistory,
+    Notification, NotificationPreference, EnrollmentApplication, EnrollmentDocument, EnrollmentStatusHistory,
     WebsiteContent, Grade, GradeReport,
     ChatRoom, ChatMessage, MessageReaction, Friendship, SystemSetting,
     Assignment, Submission, ReportedMessage,
-    Room, TimeSlot, Schedule, OnboardingState)
+    Room, TimeSlot, Schedule, OnboardingState,
+    Transcript, TranscriptLineItem, TransferCertificate, CharacterCertificate,
+    AchievementRecord, RecordRequest, AbsenceExcuse, EnrollmentWaitlist,
+    ParentTeacherMeeting, BehavioralRecord, SchoolEvent, UserBlock, EmergencyMessage,
+    Department, StaffPerformance)
 
 User = get_user_model()
 
@@ -354,8 +358,11 @@ class AttendanceSerializer(serializers.ModelSerializer):
                   'classroom_name', 'date', 'status', 'remarks', 'marked_by',
                   'marked_by_name', 'schedule', 'schedule_id', 'subject', 'subject_id',
                   'subject_name', 'subject_code', 'time_slot', 'time_slot_id',
-                  'time_slot_detail', 'created_at', 'updated_at']
-        read_only_fields = ['marked_by', 'subject', 'time_slot']
+                  'time_slot_detail',
+                  'arrival_time', 'departure_time', 'minutes_late',
+                  'has_excuse', 'excuse_verified',
+                  'created_at', 'updated_at']
+        read_only_fields = ['marked_by', 'subject', 'time_slot', 'minutes_late']
 
     def get_student_name(self, obj): return full_name(obj.student)
     def get_marked_by_name(self, obj): return full_name(obj.marked_by) if obj.marked_by else ''
@@ -590,25 +597,35 @@ class AssignmentSerializer(serializers.ModelSerializer):
     subject_name = serializers.ReadOnlyField(source='subject.name')
     classroom_name = serializers.ReadOnlyField(source='classroom.name')
     submission_count = serializers.IntegerField(read_only=True)
+    is_visible_to_students = serializers.BooleanField(read_only=True)
 
     class Meta:
         model = Assignment
         fields = ['id', 'title', 'description', 'classroom', 'classroom_name', 'subject', 'subject_name',
-                  'teacher', 'teacher_name', 'file', 'original_filename', 'file_size_bytes',
-                  'due_date', 'points', 'submission_count', 'created_at']
+                  'teacher', 'teacher_name', 'assignment_type', 'points', 'percentage_weight',
+                  'file', 'original_filename', 'file_size_bytes',
+                  'due_date', 'is_published', 'publish_at',
+                  'allow_late_submissions', 'max_late_submissions', 'grade_component',
+                  'is_template', 'template_name',
+                  'submission_count', 'is_visible_to_students', 'created_at', 'updated_at']
         read_only_fields = ['file', 'original_filename', 'file_size_bytes']
 
 
 class SubmissionSerializer(serializers.ModelSerializer):
     student_name = serializers.ReadOnlyField(source='student.get_full_name')
     assignment_title = serializers.ReadOnlyField(source='assignment.title')
+    graded_by_name = serializers.SerializerMethodField()
 
     class Meta:
         model = Submission
         fields = ['id', 'assignment', 'assignment_title', 'student', 'student_name',
                   'file', 'original_filename', 'file_size_bytes',
-                  'submitted_at', 'grade', 'feedback', 'is_late']
+                  'submitted_at', 'grade', 'feedback', 'is_late',
+                  'graded_at', 'graded_by', 'graded_by_name']
         read_only_fields = ['file', 'original_filename', 'file_size_bytes']
+
+    def get_graded_by_name(self, obj):
+        return full_name(obj.graded_by) if obj.graded_by else None
 
 
 class ReportedMessageSerializer(serializers.ModelSerializer):
@@ -675,6 +692,7 @@ class GradeReportSerializer(serializers.ModelSerializer):
     classroom_name = serializers.CharField(source='classroom.name', read_only=True)
     quarter_display = serializers.CharField(source='get_quarter_display', read_only=True)
     generated_by_name = serializers.SerializerMethodField()
+    approved_by_name = serializers.SerializerMethodField()
 
     class Meta:
         model = GradeReport
@@ -682,15 +700,18 @@ class GradeReportSerializer(serializers.ModelSerializer):
             'id', 'student', 'student_name', 'student_email', 'classroom',
             'classroom_name', 'quarter', 'quarter_display', 'school_year',
             'general_average', 'total_subjects', 'passed_subjects',
-            'failed_subjects', 'overall_remarks', 'class_rank', 'generated_at',
-            'generated_by', 'generated_by_name', 'is_final'
+            'failed_subjects', 'overall_remarks', 'class_rank', 'gpa',
+            'status', 'approved_by', 'approved_by_name', 'approved_at',
+            'generated_at', 'generated_by', 'generated_by_name', 'is_final'
         ]
         read_only_fields = ['general_average', 'total_subjects',
-                            'passed_subjects', 'failed_subjects']
+                            'passed_subjects', 'failed_subjects', 'class_rank', 'gpa']
 
     def get_student_name(self, obj): return full_name(obj.student)
     def get_generated_by_name(self, obj):
         return full_name(obj.generated_by) if obj.generated_by else ''
+    def get_approved_by_name(self, obj):
+        return full_name(obj.approved_by) if obj.approved_by else ''
 
 
 class MessageReactionSerializer(serializers.ModelSerializer):
@@ -916,6 +937,18 @@ class ScheduleSerializer(serializers.ModelSerializer):
 
 # ─── Parent Dashboard Serializers ────────────────────────────────────────────
 
+class NotificationPreferenceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = NotificationPreference
+        fields = [
+            'id', 'announcement', 'grade', 'attendance', 'fee',
+            'message', 'friend_request', 'system',
+            'push_enabled', 'in_app_enabled',
+            'updated_at',
+        ]
+        read_only_fields = ['id', 'updated_at']
+
+
 class ParentChildSummarySerializer(serializers.ModelSerializer):
     """Lightweight summary of a linked student for the parent dashboard."""
     full_name = serializers.SerializerMethodField()
@@ -972,6 +1005,128 @@ class ParentChildSummarySerializer(serializers.ModelSerializer):
             return None
         total = sum(float(g.raw_score) for g in grades)
         return round(total / grades.count(), 2)
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# ACADEMIC RECORDS Serializers
+# ═══════════════════════════════════════════════════════════════════════════════
+
+class TranscriptLineItemSerializer(serializers.ModelSerializer):
+    subject_name = serializers.CharField(source='subject.name', read_only=True)
+    subject_code = serializers.CharField(source='subject.code', read_only=True)
+
+    class Meta:
+        model = TranscriptLineItem
+        fields = ['id', 'subject', 'subject_name', 'subject_code', 'q1', 'q2', 'q3', 'q4', 'final_average', 'remarks']
+
+
+class TranscriptSerializer(serializers.ModelSerializer):
+    student_name = serializers.SerializerMethodField()
+    student_email = serializers.CharField(source='student.email', read_only=True)
+    generated_by_name = serializers.SerializerMethodField()
+    items = TranscriptLineItemSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Transcript
+        fields = ['id', 'student', 'student_name', 'student_email', 'school_year',
+                  'general_average', 'total_subjects', 'passed_subjects', 'failed_subjects',
+                  'status', 'remarks', 'generated_by', 'generated_by_name', 'pdf_url',
+                  'items', 'generated_at', 'updated_at']
+        read_only_fields = ['general_average', 'total_subjects', 'passed_subjects', 'failed_subjects', 'pdf_url']
+
+    def get_student_name(self, obj):
+        return full_name(obj.student)
+
+    def get_generated_by_name(self, obj):
+        return full_name(obj.generated_by) if obj.generated_by else ''
+
+
+class TransferCertificateSerializer(serializers.ModelSerializer):
+    student_name = serializers.SerializerMethodField()
+    issued_by_name = serializers.SerializerMethodField()
+    status_display = serializers.CharField(source='get_status_display', read_only=True)
+
+    class Meta:
+        model = TransferCertificate
+        fields = ['id', 'student', 'student_name', 'reference_number',
+                  'school_year_from', 'school_year_to', 'destination_school',
+                  'last_grade_completed', 'last_school_attended', 'general_average',
+                  'date_of_birth', 'place_of_birth', 'nationality',
+                  'status', 'status_display', 'reason', 'remarks',
+                  'issued_by', 'issued_by_name', 'issued_at', 'pdf_url',
+                  'requested_at', 'updated_at']
+        read_only_fields = ['reference_number', 'pdf_url', 'issued_at']
+
+    def get_student_name(self, obj):
+        return full_name(obj.student)
+
+    def get_issued_by_name(self, obj):
+        return full_name(obj.issued_by) if obj.issued_by else ''
+
+
+class CharacterCertificateSerializer(serializers.ModelSerializer):
+    student_name = serializers.SerializerMethodField()
+    issued_by_name = serializers.SerializerMethodField()
+    status_display = serializers.CharField(source='get_status_display', read_only=True)
+
+    class Meta:
+        model = CharacterCertificate
+        fields = ['id', 'student', 'student_name', 'reference_number',
+                  'purpose', 'school_year', 'status', 'status_display',
+                  'character_rating', 'remarks',
+                  'issued_by', 'issued_by_name', 'issued_at', 'pdf_url',
+                  'requested_at', 'updated_at']
+        read_only_fields = ['reference_number', 'pdf_url', 'issued_at']
+
+    def get_student_name(self, obj):
+        return full_name(obj.student)
+
+    def get_issued_by_name(self, obj):
+        return full_name(obj.issued_by) if obj.issued_by else ''
+
+
+class AchievementRecordSerializer(serializers.ModelSerializer):
+    student_name = serializers.SerializerMethodField()
+    verified_by_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = AchievementRecord
+        fields = ['id', 'student', 'student_name', 'title', 'description', 'category',
+                  'date_achieved', 'awarded_by', 'school_year', 'grade_level',
+                  'evidence_url', 'is_verified', 'verified_by', 'verified_by_name',
+                  'created_at', 'updated_at']
+        read_only_fields = ['is_verified', 'verified_by']
+
+    def get_student_name(self, obj):
+        return full_name(obj.student)
+
+    def get_verified_by_name(self, obj):
+        return full_name(obj.verified_by) if obj.verified_by else ''
+
+
+class RecordRequestSerializer(serializers.ModelSerializer):
+    requestor_name = serializers.SerializerMethodField()
+    student_name = serializers.SerializerMethodField()
+    handled_by_name = serializers.SerializerMethodField()
+    record_type_display = serializers.CharField(source='get_record_type_display', read_only=True)
+    status_display = serializers.CharField(source='get_status_display', read_only=True)
+
+    class Meta:
+        model = RecordRequest
+        fields = ['id', 'requestor', 'requestor_name', 'record_type', 'record_type_display',
+                  'student', 'student_name', 'purpose', 'status', 'status_display',
+                  'notes', 'admin_notes', 'handled_by', 'handled_by_name', 'copies',
+                  'reference_record_id', 'created_at', 'updated_at']
+        read_only_fields = ['requestor', 'reference_record_id']
+
+    def get_requestor_name(self, obj):
+        return full_name(obj.requestor)
+
+    def get_student_name(self, obj):
+        return full_name(obj.student) if obj.student else None
+
+    def get_handled_by_name(self, obj):
+        return full_name(obj.handled_by) if obj.handled_by else None
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -1198,3 +1353,146 @@ class DepartmentContactSerializer(serializers.ModelSerializer):
 
     def get_contact_person_name(self, obj):
         return full_name(obj.contact_person) if obj.contact_person else None
+
+
+class AbsenceExcuseSerializer(serializers.ModelSerializer):
+    student_name = serializers.SerializerMethodField()
+    attendance_date = serializers.DateField(source='attendance.date', read_only=True)
+    attendance_status = serializers.CharField(source='attendance.status', read_only=True)
+    reviewed_by_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = AbsenceExcuse
+        fields = ['id', 'student', 'student_name', 'attendance', 'attendance_date',
+                  'attendance_status', 'reason', 'document_url', 'status',
+                  'reviewed_by', 'reviewed_by_name', 'reviewed_at', 'reviewer_notes',
+                  'created_at', 'updated_at']
+        read_only_fields = ['student', 'status', 'reviewed_by', 'reviewed_at']
+
+    def get_student_name(self, obj): return full_name(obj.student)
+    def get_reviewed_by_name(self, obj): return full_name(obj.reviewed_by) if obj.reviewed_by else None
+
+
+class EnrollmentWaitlistSerializer(serializers.ModelSerializer):
+    student_name = serializers.SerializerMethodField()
+    classroom_name = serializers.CharField(source='classroom.name', read_only=True)
+
+    class Meta:
+        model = EnrollmentWaitlist
+        fields = ['id', 'classroom', 'classroom_name', 'student', 'student_name',
+                  'application', 'position', 'status', 'offered_at',
+                  'response_deadline', 'notes', 'created_at', 'updated_at']
+        read_only_fields = ['position', 'status', 'offered_at']
+
+    def get_student_name(self, obj): return full_name(obj.student)
+
+
+class ParentTeacherMeetingSerializer(serializers.ModelSerializer):
+    teacher_name = serializers.SerializerMethodField()
+    parent_name = serializers.SerializerMethodField()
+    student_name = serializers.SerializerMethodField()
+    classroom_name = serializers.CharField(source='classroom.name', read_only=True)
+
+    class Meta:
+        model = ParentTeacherMeeting
+        fields = ['id', 'teacher', 'teacher_name', 'parent', 'parent_name',
+                  'student', 'student_name', 'classroom', 'classroom_name',
+                  'scheduled_date', 'scheduled_time', 'duration_minutes',
+                  'purpose', 'status', 'notes', 'created_at', 'updated_at']
+        read_only_fields = ['status']
+
+    def get_teacher_name(self, obj): return full_name(obj.teacher)
+    def get_parent_name(self, obj): return full_name(obj.parent)
+    def get_student_name(self, obj): return full_name(obj.student)
+
+
+class BehavioralRecordSerializer(serializers.ModelSerializer):
+    student_name = serializers.SerializerMethodField()
+    recorded_by_name = serializers.SerializerMethodField()
+    classroom_name = serializers.CharField(source='classroom.name', read_only=True)
+    incident_display = serializers.CharField(source='get_incident_type_display', read_only=True)
+    severity_display = serializers.CharField(source='get_severity_display', read_only=True)
+    action_display = serializers.CharField(source='get_action_taken_display', read_only=True)
+
+    class Meta:
+        model = BehavioralRecord
+        fields = ['id', 'student', 'student_name', 'classroom', 'classroom_name',
+                  'recorded_by', 'recorded_by_name',
+                  'incident_type', 'incident_display', 'severity', 'severity_display',
+                  'action_taken', 'action_display', 'description', 'incident_date',
+                  'parent_notified', 'parent_notified_at',
+                  'created_at', 'updated_at']
+        read_only_fields = ['recorded_by', 'parent_notified', 'parent_notified_at']
+
+    def get_student_name(self, obj): return full_name(obj.student)
+    def get_recorded_by_name(self, obj): return full_name(obj.recorded_by)
+
+
+class SchoolEventSerializer(serializers.ModelSerializer):
+    created_by_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = SchoolEvent
+        fields = ['id', 'title', 'description', 'category', 'target_audience',
+                  'start_date', 'start_time', 'end_date', 'end_time', 'is_all_day',
+                  'location', 'created_by', 'created_by_name',
+                  'created_at', 'updated_at']
+        read_only_fields = ['created_by']
+
+    def get_created_by_name(self, obj): return full_name(obj.created_by) if obj.created_by else ''
+
+
+class UserBlockSerializer(serializers.ModelSerializer):
+    blocked_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = UserBlock
+        fields = ['id', 'blocked', 'blocked_name', 'created_at']
+        read_only_fields = ['blocker', 'created_at']
+
+    def get_blocked_name(self, obj): return full_name(obj.blocked)
+
+
+class EmergencyMessageSerializer(serializers.ModelSerializer):
+    sent_by_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = EmergencyMessage
+        fields = ['id', 'title', 'message', 'priority', 'target_audience',
+                  'sent_by', 'sent_by_name', 'is_active', 'sent_at', 'expires_at']
+        read_only_fields = ['sent_by', 'is_active']
+
+    def get_sent_by_name(self, obj): return full_name(obj.sent_by) if obj.sent_by else ''
+
+
+class DepartmentSerializer(serializers.ModelSerializer):
+    head_name = serializers.SerializerMethodField()
+    member_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Department
+        fields = ['id', 'name', 'code', 'description', 'head', 'head_name',
+                  'member_count', 'is_active', 'created_at', 'updated_at']
+        read_only_fields = ['created_at']
+
+    def get_head_name(self, obj): return full_name(obj.head) if obj.head else None
+    def get_member_count(self, obj):
+        return 0
+
+
+class StaffPerformanceSerializer(serializers.ModelSerializer):
+    staff_name = serializers.SerializerMethodField()
+    evaluated_by_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = StaffPerformance
+        fields = ['id', 'staff', 'staff_name', 'academic_year',
+                  'evaluated_by', 'evaluated_by_name',
+                  'teaching_quality', 'student_engagement', 'classroom_management',
+                  'lesson_planning', 'professional_development',
+                  'average_student_grade', 'attendance_rate', 'students_passed_pct',
+                  'comments', 'overall_rating', 'created_at', 'updated_at']
+        read_only_fields = ['overall_rating']
+
+    def get_staff_name(self, obj): return full_name(obj.staff)
+    def get_evaluated_by_name(self, obj): return full_name(obj.evaluated_by) if obj.evaluated_by else ''

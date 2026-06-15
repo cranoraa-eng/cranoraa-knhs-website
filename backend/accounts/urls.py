@@ -17,7 +17,17 @@ from .views import (
     fcm_token_register, fcm_token_delete,
     storage_analytics_view,
     onboarding_state_view,
+    notification_preferences_view,
     TicketViewSet, DepartmentContactViewSet,
+    TranscriptViewSet, TransferCertificateViewSet, CharacterCertificateViewSet,
+    AchievementRecordViewSet, RecordRequestViewSet,
+    AbsenceExcuseViewSet, EnrollmentWaitlistViewSet,
+    ParentTeacherMeetingViewSet, BehavioralRecordViewSet, SchoolEventViewSet,
+    parent_report_card_pdf, parent_year_over_year,
+    UserBlockViewSet, EmergencyMessageViewSet,
+    DepartmentViewSet, StaffPerformanceViewSet,
+    admin_attendance_analytics, admin_grade_analytics,
+    data_retention_view, run_backup_view_enhanced,
 )
 
 app_name = 'accounts'
@@ -49,6 +59,20 @@ router.register(r'v1/time-slots', TimeSlotViewSet, basename='time-slot')
 router.register(r'v1/schedules', ScheduleViewSet, basename='schedule')
 router.register(r'v1/tickets', TicketViewSet, basename='ticket')
 router.register(r'v1/department-contacts', DepartmentContactViewSet, basename='department-contact')
+router.register(r'v1/transcripts', TranscriptViewSet, basename='transcript')
+router.register(r'v1/transfer-certificates', TransferCertificateViewSet, basename='transfer-certificate')
+router.register(r'v1/character-certificates', CharacterCertificateViewSet, basename='character-certificate')
+router.register(r'v1/achievement-records', AchievementRecordViewSet, basename='achievement-record')
+router.register(r'v1/record-requests', RecordRequestViewSet, basename='record-request')
+router.register(r'v1/absence-excuses', AbsenceExcuseViewSet, basename='absence-excuse')
+router.register(r'v1/enrollment-waitlist', EnrollmentWaitlistViewSet, basename='enrollment-waitlist')
+router.register(r'v1/ptm-meetings', ParentTeacherMeetingViewSet, basename='ptm-meeting')
+router.register(r'v1/behavioral-records', BehavioralRecordViewSet, basename='behavioral-record')
+router.register(r'v1/school-events', SchoolEventViewSet, basename='school-event')
+router.register(r'v1/user-blocks', UserBlockViewSet, basename='user-block')
+router.register(r'v1/emergency-messages', EmergencyMessageViewSet, basename='emergency-message')
+router.register(r'v1/departments', DepartmentViewSet, basename='department')
+router.register(r'v1/staff-performance', StaffPerformanceViewSet, basename='staff-performance')
 
 # NOTE: school_portal/urls.py mounts these under 'api/', so paths here should NOT include 'api/'.
 # Final URL = api/ + path below  e.g. api/v1/login/
@@ -84,7 +108,14 @@ urlpatterns = [
     path('v1/system/maintenance-status/', maintenance_status_view, name='maintenance_status'),
     path('v1/parent/dashboard/', parent_dashboard_view, name='parent_dashboard'),
     path('v1/parent/child/<int:student_id>/', parent_child_detail_view, name='parent_child_detail'),
+    path('v1/parent/child/<int:student_id>/report-card-pdf/', parent_report_card_pdf, name='parent_report_card_pdf'),
+    path('v1/parent/child/<int:student_id>/year-over-year/', parent_year_over_year, name='parent_year_over_year'),
+    path('v1/admin/attendance-analytics/', admin_attendance_analytics, name='admin_attendance_analytics'),
+    path('v1/admin/grade-analytics/', admin_grade_analytics, name='admin_grade_analytics'),
+    path('v1/admin/data-retention/', data_retention_view, name='data_retention'),
+    path('v1/admin/run-backup-enhanced/', run_backup_view_enhanced, name='run_backup_enhanced'),
     path('v1/fcm-tokens/', fcm_token_register, name='fcm_token_register'),
     path('v1/fcm-tokens/delete/', fcm_token_delete, name='fcm_token_delete'),
+    path('v1/notification-preferences/', notification_preferences_view, name='notification_preferences'),
     path('', include(router.urls)),
 ]

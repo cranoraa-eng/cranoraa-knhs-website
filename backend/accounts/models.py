@@ -1,6 +1,7 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils import timezone
+from decimal import Decimal
 
 
 class User(AbstractUser):
@@ -346,6 +347,50 @@ class Friendship(models.Model):
         return f"{self.from_user.username} -> {self.to_user.username} ({self.status})"
 
 
+class UserBlock(models.Model):
+    """Block a user — prevents them from messaging or seeing each other's chat status."""
+    blocker = models.ForeignKey(User, on_delete=models.CASCADE, related_name='blocking')
+    blocked = models.ForeignKey(User, on_delete=models.CASCADE, related_name='blocked_by')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('blocker', 'blocked')
+
+    def __str__(self):
+        return f"{self.blocker.username} blocked {self.blocked.username}"
+
+
+class EmergencyMessage(models.Model):
+    """School-wide or targeted emergency broadcast."""
+    PRIORITY_CHOICES = [
+        ('info', 'Informational'),
+        ('warning', 'Warning'),
+        ('critical', 'Critical'),
+    ]
+    AUDIENCE_CHOICES = [
+        ('all', 'All'),
+        ('students', 'Students'),
+        ('parents', 'Parents'),
+        ('teachers', 'Teachers'),
+        ('staff', 'Staff'),
+    ]
+
+    title = models.CharField(max_length=200)
+    message = models.TextField()
+    priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES, default='warning')
+    target_audience = models.CharField(max_length=20, choices=AUDIENCE_CHOICES, default='all')
+    sent_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='emergency_messages_sent')
+    is_active = models.BooleanField(default=True)
+    sent_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ['-sent_at']
+
+    def __str__(self):
+        return f"[{self.priority.upper()}] {self.title}"
+
+
 class Subject(models.Model):
     name = models.CharField(max_length=100)
     code = models.CharField(max_length=20, unique=True)
@@ -600,6 +645,16 @@ class Attendance(models.Model):
         help_text="Denormalized from schedule for quick queries.")
     time_slot = models.ForeignKey('TimeSlot', on_delete=models.SET_NULL, null=True, blank=True, related_name='attendances',
         help_text="Denormalized from schedule for quick queries.")
+
+    # Late arrival / early departure tracking
+    arrival_time = models.TimeField(null=True, blank=True, help_text="Actual arrival time (for late tracking)")
+    departure_time = models.TimeField(null=True, blank=True, help_text="Actual departure time (for early departure)")
+    minutes_late = models.PositiveIntegerField(default=0, help_text="Minutes late (auto-calculated if arrival_time set)")
+
+    # Absence excuse tracking
+    has_excuse = models.BooleanField(default=False)
+    excuse_verified = models.BooleanField(default=False, help_text="Set to True once admin/teacher verifies the excuse")
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
@@ -621,6 +676,42 @@ class Attendance(models.Model):
     def __str__(self):
         scope = f" [{self.subject.code}]" if self.subject else ""
         return f"{self.student.username} - {self.date} - {self.status}{scope}"
+
+    def save(self, *args, **kwargs):
+        # Auto-calculate minutes_late if arrival_time and time_slot are set
+        if self.arrival_time and self.time_slot and self.status == 'late':
+            slot_start = self.time_slot.start_time
+            delta_minutes = (self.arrival_time.hour * 60 + self.arrival_time.minute) - (slot_start.hour * 60 + slot_start.minute)
+            self.minutes_late = max(0, delta_minutes)
+        # Set has_excuse if status is excused
+        if self.status == 'excused':
+            self.has_excuse = True
+        super().save(*args, **kwargs)
+
+
+class AbsenceExcuse(models.Model):
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+    ]
+    
+    student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='absence_excuses')
+    attendance = models.ForeignKey(Attendance, on_delete=models.CASCADE, related_name='excuses')
+    reason = models.TextField()
+    document_url = models.URLField(max_length=1000, null=True, blank=True, help_text="Supabase Storage URL for supporting document")
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    reviewed_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='reviewed_excuses')
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    reviewer_notes = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Excuse for {self.student.username} on {self.attendance.date} - {self.status}"
 
 
 class LearningMaterial(models.Model):
@@ -768,7 +859,17 @@ def send_announcement_email(sender, instance, created, **kwargs):
 
 @receiver(post_save, sender=Notification)
 def broadcast_notification(sender, instance, created, **kwargs):
-    if created:
+    if not created:
+        return
+
+    # Check user notification preferences
+    prefs = getattr(instance.recipient, 'notification_preferences', None)
+    notif_type = instance.notification_type
+    if prefs and not prefs.is_type_enabled(notif_type):
+        return  # User has disabled this notification type
+
+    # In-app WebSocket broadcast
+    if not prefs or prefs.in_app_enabled:
         try:
             channel_layer = get_channel_layer()
             if channel_layer is None:
@@ -796,10 +897,10 @@ def broadcast_notification(sender, instance, created, **kwargs):
                 }
             )
         except Exception as e:
-            import logging
             logging.getLogger(__name__).error(f"Failed to broadcast notification {instance.id}: {e}")
 
-        # FCM Web Push — fire and forget, never block the signal
+    # FCM Web Push — fire and forget, never block the signal
+    if not prefs or prefs.push_enabled:
         try:
             from .fcm import send_push_notification
             send_push_notification(
@@ -813,8 +914,39 @@ def broadcast_notification(sender, instance, created, **kwargs):
                 }
             )
         except Exception as e:
-            import logging
             logging.getLogger(__name__).warning(f"FCM push failed for notification {instance.id}: {e}")
+
+
+class NotificationPreference(models.Model):
+    """Per-user notification preferences — controls which notification types are delivered."""
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='notification_preferences')
+
+    # Toggle per notification type
+    announcement = models.BooleanField(default=True)
+    grade = models.BooleanField(default=True)
+    attendance = models.BooleanField(default=True)
+    fee = models.BooleanField(default=True)
+    message = models.BooleanField(default=True)
+    friend_request = models.BooleanField(default=True)
+    system = models.BooleanField(default=True)
+
+    # Delivery channel toggles
+    push_enabled = models.BooleanField(default=True, help_text="Enable browser push notifications (FCM)")
+    in_app_enabled = models.BooleanField(default=True, help_text="Show in-app notification bell")
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Notification Preference'
+        verbose_name_plural = 'Notification Preferences'
+
+    def __str__(self):
+        return f"Notification prefs for {self.user.username}"
+
+    def is_type_enabled(self, notification_type: str) -> bool:
+        """Return True if the user has this notification type enabled."""
+        return getattr(self, notification_type, True)
 
 
 class FCMToken(models.Model):
@@ -1068,6 +1200,33 @@ class EnrollmentStatusHistory(models.Model):
         return f"{self.application.enrollment_number}: {self.from_status or 'new'} → {self.to_status}"
 
 
+class EnrollmentWaitlist(models.Model):
+    """Waitlist for when a classroom is full."""
+    classroom = models.ForeignKey('Classroom', on_delete=models.CASCADE, related_name='waitlist')
+    student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='enrollment_waitlists')
+    application = models.ForeignKey(EnrollmentApplication, on_delete=models.CASCADE, related_name='waitlist_entries', null=True, blank=True)
+    position = models.PositiveIntegerField(default=0)
+    status = models.CharField(max_length=20, choices=[
+        ('waiting', 'Waiting'),
+        ('offered', 'Offered'),
+        ('accepted', 'Accepted'),
+        ('declined', 'Declined'),
+        ('expired', 'Expired'),
+    ], default='waiting')
+    offered_at = models.DateTimeField(null=True, blank=True)
+    response_deadline = models.DateTimeField(null=True, blank=True)
+    notes = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['position']
+        unique_together = ['classroom', 'student']
+
+    def __str__(self):
+        return f"Waitlist #{self.position}: {self.student.username} → {self.classroom.name}"
+
+
 class ParentLink(models.Model):
     """Links a parent account to a student through enrollment application."""
     parent = models.ForeignKey(User, on_delete=models.CASCADE, related_name='parent_links')
@@ -1084,6 +1243,143 @@ class ParentLink(models.Model):
     
     def __str__(self):
         return f"{self.parent.username} → {self.student.username}"
+
+
+class ParentTeacherMeeting(models.Model):
+    STATUS_CHOICES = [
+        ('scheduled', 'Scheduled'),
+        ('completed', 'Completed'),
+        ('cancelled', 'Cancelled'),
+        ('rescheduled', 'Rescheduled'),
+    ]
+    PURPOSE_CHOICES = [
+        ('academic', 'Academic Performance'),
+        ('behavioral', 'Behavioral Concern'),
+        ('general', 'General Conference'),
+        ('progress', 'Progress Review'),
+    ]
+    
+    teacher = models.ForeignKey(User, on_delete=models.CASCADE, related_name='ptm_as_teacher')
+    parent = models.ForeignKey(User, on_delete=models.CASCADE, related_name='ptm_as_parent')
+    student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='ptm_meetings')
+    classroom = models.ForeignKey('Classroom', on_delete=models.SET_NULL, null=True, blank=True, related_name='ptm_meetings')
+    
+    scheduled_date = models.DateField()
+    scheduled_time = models.TimeField()
+    duration_minutes = models.PositiveIntegerField(default=30)
+    
+    purpose = models.CharField(max_length=20, choices=PURPOSE_CHOICES, default='general')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='scheduled')
+    notes = models.TextField(blank=True, help_text="Meeting notes / minutes")
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-scheduled_date', '-scheduled_time']
+
+    def __str__(self):
+        t = self.teacher.get_full_name() or self.teacher.username
+        p = self.parent.get_full_name() or self.parent.username
+        s = self.student.get_full_name() or self.student.username
+        return f"PTM: {t} ↔ {p} for {s} on {self.scheduled_date}"
+
+
+class BehavioralRecord(models.Model):
+    INCIDENT_CHOICES = [
+        ('tardiness', 'Tardiness'),
+        ('absence', 'Unexcused Absence'),
+        ('uniform', 'Uniform Violation'),
+        ('disrespect', 'Disrespect'),
+        ('fighting', 'Fighting'),
+        ('cheating', 'Academic Dishonesty'),
+        ('bullying', 'Bullying'),
+        ('vandalism', 'Vandalism'),
+        ('disruption', 'Class Disruption'),
+        ('other', 'Other'),
+    ]
+    SEVERITY_CHOICES = [
+        ('minor', 'Minor'),
+        ('moderate', 'Moderate'),
+        ('major', 'Major'),
+        ('critical', 'Critical'),
+    ]
+    ACTION_CHOICES = [
+        ('verbal_warning', 'Verbal Warning'),
+        ('written_warning', 'Written Warning'),
+        ('counseling', 'Counseling Session'),
+        ('detention', 'Detention'),
+        ('suspension', 'Suspension'),
+        ('parent_meeting', 'Parent Conference'),
+        ('other', 'Other'),
+    ]
+    
+    student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='behavioral_records')
+    classroom = models.ForeignKey('Classroom', on_delete=models.SET_NULL, null=True, blank=True, related_name='behavioral_records')
+    recorded_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='behavioral_records_created')
+    
+    incident_type = models.CharField(max_length=20, choices=INCIDENT_CHOICES)
+    severity = models.CharField(max_length=20, choices=SEVERITY_CHOICES, default='minor')
+    action_taken = models.CharField(max_length=20, choices=ACTION_CHOICES, default='verbal_warning')
+    
+    description = models.TextField(help_text="Detailed description of the incident")
+    incident_date = models.DateField()
+    
+    parent_notified = models.BooleanField(default=False)
+    parent_notified_at = models.DateTimeField(null=True, blank=True)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-incident_date']
+
+    def __str__(self):
+        s = self.student.get_full_name() or self.student.username
+        return f"{s} - {self.get_incident_type_display()} ({self.severity}) on {self.incident_date}"
+
+
+class SchoolEvent(models.Model):
+    CATEGORY_CHOICES = [
+        ('academic', 'Academic'),
+        ('sports', 'Sports'),
+        ('cultural', 'Cultural'),
+        ('holiday', 'Holiday'),
+        ('meeting', 'Meeting'),
+        ('exam', 'Examination'),
+        ('enrollment', 'Enrollment'),
+        ('other', 'Other'),
+    ]
+    AUDIENCE_CHOICES = [
+        ('all', 'All'),
+        ('students', 'Students'),
+        ('parents', 'Parents'),
+        ('teachers', 'Teachers'),
+        ('staff', 'Staff'),
+    ]
+    
+    title = models.CharField(max_length=200)
+    description = models.TextField(blank=True)
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default='academic')
+    target_audience = models.CharField(max_length=20, choices=AUDIENCE_CHOICES, default='all')
+    
+    start_date = models.DateField()
+    start_time = models.TimeField(null=True, blank=True)
+    end_date = models.DateField(null=True, blank=True)
+    end_time = models.TimeField(null=True, blank=True)
+    is_all_day = models.BooleanField(default=False)
+    
+    location = models.CharField(max_length=200, blank=True)
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='created_events')
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['start_date', 'start_time']
+
+    def __str__(self):
+        return f"{self.title} ({self.start_date})"
 
 
 class WebsiteContent(models.Model):
@@ -1154,24 +1450,70 @@ class WebsiteContent(models.Model):
 
 
 class Assignment(models.Model):
+    ASSIGNMENT_TYPE_CHOICES = [
+        ('homework', 'Homework'),
+        ('quiz', 'Quiz'),
+        ('exam', 'Exam'),
+        ('project', 'Project'),
+        ('performance_task', 'Performance Task'),
+        ('laboratory', 'Laboratory'),
+        ('activity', 'Activity'),
+        ('other', 'Other'),
+    ]
+
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True, null=True)
     classroom = models.ForeignKey(Classroom, on_delete=models.CASCADE, related_name='assignments')
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name='assignments')
     teacher = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_assignments')
+
+    # Type and grading
+    assignment_type = models.CharField(max_length=20, choices=ASSIGNMENT_TYPE_CHOICES, default='homework')
+    points = models.IntegerField(default=100)
+    percentage_weight = models.DecimalField(max_digits=5, decimal_places=2, default=0,
+        help_text="Weight of this assignment in the grade component (0 = use all equally)")
+
+    # File attachment
     file = models.URLField(max_length=1000, null=True, blank=True, help_text="Supabase Storage URL")
     original_filename = models.CharField(max_length=255, blank=True)
     file_size_bytes = models.PositiveIntegerField(null=True, blank=True)
+
+    # Scheduling
     due_date = models.DateTimeField()
-    points = models.IntegerField(default=100)
+    is_published = models.BooleanField(default=True, help_text="Draft assignments are hidden from students")
+    publish_at = models.DateTimeField(null=True, blank=True, help_text="Schedule future publication")
+
+    # Late submission policy
+    allow_late_submissions = models.BooleanField(default=True)
+    max_late_submissions = models.IntegerField(default=0, help_text="0 = unlimited, N = max N late submissions allowed per student")
+
+    # Grade component linkage — which Grade.grade_type this assignment contributes to
+    grade_component = models.CharField(max_length=30, blank=True, default='',
+        choices=[('', 'Not linked'), ('written_work', 'Written Work'), ('performance_task', 'Performance Task'), ('quarterly_assessment', 'Quarterly Assessment')],
+        help_text="Link this assignment to a grade component for auto-grade propagation")
+
+    # Template support
+    is_template = models.BooleanField(default=False, help_text="Template assignments are reusable")
+    template_name = models.CharField(max_length=200, blank=True)
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    
+
     class Meta:
         ordering = ['-due_date']
-    
+
     def __str__(self):
         return f"{self.title} - {self.classroom.name}"
+
+    @property
+    def is_visible_to_students(self):
+        """Check if this assignment should be visible to students."""
+        from django.utils import timezone as tz
+        if not self.is_published:
+            return False
+        if self.publish_at and self.publish_at > tz.now():
+            return False
+        return True
 
 class Submission(models.Model):
     assignment = models.ForeignKey(Assignment, on_delete=models.CASCADE, related_name='submissions')
@@ -1183,14 +1525,16 @@ class Submission(models.Model):
     grade = models.IntegerField(null=True, blank=True)
     feedback = models.TextField(blank=True, null=True)
     is_late = models.BooleanField(default=False)
-    
+    graded_at = models.DateTimeField(null=True, blank=True)
+    graded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='graded_submissions')
+
     class Meta:
         unique_together = ['assignment', 'student']
         ordering = ['-submitted_at']
-    
+
     def __str__(self):
         return f"{self.student.username} - {self.assignment.title}"
-    
+
     def save(self, *args, **kwargs):
         if not self.pk:
             if timezone.now() > self.assignment.due_date:
@@ -1422,6 +1766,19 @@ class GradeReport(models.Model):
     overall_remarks = models.TextField(blank=True, null=True)
     class_rank = models.IntegerField(null=True, blank=True)
     
+    # GPA (General Point Average) — DepEd: 1.0 = 98-100, 5.0 = Below 75
+    gpa = models.DecimalField(max_digits=3, decimal_places=2, null=True, blank=True)
+    
+    # Approval workflow
+    STATUS_CHOICES = [
+        ('draft', 'Draft'),
+        ('submitted', 'Submitted for Review'),
+        ('approved', 'Approved'),
+    ]
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft')
+    approved_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='approved_grade_reports')
+    approved_at = models.DateTimeField(null=True, blank=True)
+    
     # Report metadata
     generated_at = models.DateTimeField(auto_now_add=True)
     generated_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='generated_reports')
@@ -1435,7 +1792,7 @@ class GradeReport(models.Model):
         return f"{self.student.username} - Q{self.quarter} - {self.school_year}"
     
     def calculate_averages(self):
-        """Calculate general average and statistics"""
+        """Calculate general average, class rank, GPA, and statistics"""
         grades = Grade.objects.filter(
             student=self.student,
             classroom=self.classroom,
@@ -1444,19 +1801,63 @@ class GradeReport(models.Model):
         )
         
         if grades.exists():
-            total = sum(g.raw_score for g in grades if g.raw_score)
-            count = grades.count()
-            self.general_average = round(total / count, 2) if count > 0 else None
-            self.total_subjects = count
-            self.passed_subjects = sum(1 for g in grades if g.raw_score and g.raw_score >= float(SystemSetting.get_settings().passing_grade))
-            self.failed_subjects = count - self.passed_subjects
+            scores = [float(g.raw_score) for g in grades if g.raw_score is not None]
+            self.total_subjects = grades.count()
+            if scores:
+                self.general_average = round(sum(scores) / len(scores), 2)
+                self.passed_subjects = sum(1 for s in scores if s >= float(SystemSetting.get_settings().passing_grade))
+                self.failed_subjects = len(scores) - self.passed_subjects
+                self.gpa = self._compute_gpa(self.general_average)
+            else:
+                self.general_average = None
+                self.gpa = None
         else:
             self.general_average = None
             self.total_subjects = 0
             self.passed_subjects = 0
             self.failed_subjects = 0
+            self.gpa = None
         
         self.save()
+    
+    @staticmethod
+    def _compute_gpa(average):
+        """Compute GPA using DepEd standard: 1.0=98-100, 1.25=95-97, 1.5=92-94, 1.75=89-91, 2.0=86-88, 2.25=83-85, 2.5=80-82, 2.75=77-79, 3.0=75-76, 5.0=Below 75"""
+        if average is None:
+            return None
+        avg = float(average)
+        if avg >= 98: return Decimal('1.00')
+        if avg >= 95: return Decimal('1.25')
+        if avg >= 92: return Decimal('1.50')
+        if avg >= 89: return Decimal('1.75')
+        if avg >= 86: return Decimal('2.00')
+        if avg >= 83: return Decimal('2.25')
+        if avg >= 80: return Decimal('2.50')
+        if avg >= 77: return Decimal('2.75')
+        if avg >= 75: return Decimal('3.00')
+        return Decimal('5.00')
+    
+    def compute_class_rank(self):
+        """Compute class rank based on general_average among same classroom/quarter."""
+        if self.general_average is None:
+            self.class_rank = None
+            self.save(update_fields=['class_rank'])
+            return
+        classmates = GradeReport.objects.filter(
+            classroom=self.classroom,
+            quarter=self.quarter,
+            school_year=self.school_year,
+            general_average__isnull=False,
+        ).order_by('-general_average')
+        rank = 1
+        for i, report in enumerate(classmates):
+            if report.id == self.id:
+                self.class_rank = rank
+                self.save(update_fields=['class_rank'])
+                return
+            rank += 1
+        self.class_rank = rank
+        self.save(update_fields=['class_rank'])
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -1609,3 +2010,356 @@ class DepartmentContact(models.Model):
 
     def __str__(self):
         return f"Department: {self.get_department_display()}"
+
+
+class Department(models.Model):
+    """Full department model for managing academic/non-academic units."""
+    name = models.CharField(max_length=100, unique=True)
+    code = models.CharField(max_length=20, unique=True)
+    description = models.TextField(blank=True)
+    head = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='headed_departments')
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['name']
+
+    def __str__(self):
+        return f"{self.name} ({self.code})"
+
+
+class StaffPerformance(models.Model):
+    """Track staff/teacher performance metrics per academic year."""
+    RATING_CHOICES = [
+        (1, 'Needs Improvement'),
+        (2, 'Below Expectations'),
+        (3, 'Meets Expectations'),
+        (4, 'Exceeds Expectations'),
+        (5, 'Outstanding'),
+    ]
+
+    staff = models.ForeignKey(User, on_delete=models.CASCADE, related_name='performance_records')
+    academic_year = models.CharField(max_length=20)
+    evaluated_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='evaluations_given')
+
+    # Metrics (1-5 scale)
+    teaching_quality = models.PositiveSmallIntegerField(choices=RATING_CHOICES, default=3)
+    student_engagement = models.PositiveSmallIntegerField(choices=RATING_CHOICES, default=3)
+    classroom_management = models.PositiveSmallIntegerField(choices=RATING_CHOICES, default=3)
+    lesson_planning = models.PositiveSmallIntegerField(choices=RATING_CHOICES, default=3)
+    professional_development = models.PositiveSmallIntegerField(choices=RATING_CHOICES, default=3)
+
+    # Quantitative metrics
+    average_student_grade = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    attendance_rate = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True,
+        help_text="Teacher attendance rate (%)")
+    students_passed_pct = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True,
+        help_text="% of students who passed")
+
+    comments = models.TextField(blank=True)
+    overall_rating = models.DecimalField(max_digits=3, decimal_places=2, null=True, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ['staff', 'academic_year']
+        ordering = ['-academic_year']
+
+    def __str__(self):
+        return f"Performance: {self.staff.username} ({self.academic_year})"
+
+    def compute_overall_rating(self):
+        scores = [
+            self.teaching_quality, self.student_engagement,
+            self.classroom_management, self.lesson_planning,
+            self.professional_development,
+        ]
+        self.overall_rating = round(sum(scores) / len(scores), 2)
+        self.save(update_fields=['overall_rating'])
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# ACADEMIC RECORDS — Transcripts, Certificates, Achievements
+# ═══════════════════════════════════════════════════════════════════════════════
+
+class Transcript(models.Model):
+    """
+    Official academic transcript for a student.
+    Aggregates grades across all quarters and subjects for a school year.
+    """
+    TRANSCRIPT_STATUS = [
+        ('draft', 'Draft'),
+        ('final', 'Final'),
+        ('archived', 'Archived'),
+    ]
+
+    student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='transcripts')
+    school_year = models.CharField(max_length=20)
+    general_average = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    total_subjects = models.IntegerField(default=0)
+    passed_subjects = models.IntegerField(default=0)
+    failed_subjects = models.IntegerField(default=0)
+    status = models.CharField(max_length=10, choices=TRANSCRIPT_STATUS, default='draft')
+    remarks = models.TextField(blank=True, null=True)
+    generated_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='generated_transcripts')
+    pdf_url = models.URLField(max_length=1000, blank=True, null=True)
+    generated_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ['student', 'school_year']
+        ordering = ['-school_year', 'student__username']
+
+    def __str__(self):
+        return f"Transcript: {self.student.username} - {self.school_year}"
+
+    def generate_from_grades(self):
+        """Pull all final grades for this student/school_year and compute summary."""
+        grades = Grade.objects.filter(
+            student=self.student,
+            academic_year=self.school_year,
+            grade_type='final_grade',
+            raw_score__isnull=False,
+        )
+        if not grades.exists():
+            return
+
+        passing = float(SystemSetting.get_settings().passing_grade)
+        scores = [float(g.raw_score) for g in grades]
+        self.general_average = round(sum(scores) / len(scores), 2)
+        self.total_subjects = len(scores)
+        self.passed_subjects = sum(1 for s in scores if s >= passing)
+        self.failed_subjects = self.total_subjects - self.passed_subjects
+
+        if self.general_average >= 90:
+            self.remarks = "With High Honors"
+        elif self.general_average >= 85:
+            self.remarks = "With Honors"
+        elif self.general_average >= passing:
+            self.remarks = "Promoted"
+        else:
+            self.remarks = "For Review"
+
+        self.save()
+
+
+class TranscriptLineItem(models.Model):
+    """Individual subject line on a transcript."""
+    transcript = models.ForeignKey(Transcript, on_delete=models.CASCADE, related_name='items')
+    subject = models.ForeignKey(Subject, on_delete=models.CASCADE)
+    q1 = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    q2 = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    q3 = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    q4 = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    final_average = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    remarks = models.CharField(max_length=50, blank=True)
+
+    class Meta:
+        unique_together = ['transcript', 'subject']
+        ordering = ['subject__name']
+
+    def __str__(self):
+        return f"{self.subject.code} - Avg: {self.final_average}"
+
+    def compute_final(self):
+        scores = [float(s) for s in [self.q1, self.q2, self.q3, self.q4] if s is not None]
+        if scores:
+            self.final_average = round(sum(scores) / len(scores), 2)
+            passing = float(SystemSetting.get_settings().passing_grade)
+            if self.final_average >= 90:
+                self.remarks = "Outstanding"
+            elif self.final_average >= 85:
+                self.remarks = "Very Satisfactory"
+            elif self.final_average >= 80:
+                self.remarks = "Satisfactory"
+            elif self.final_average >= passing:
+                self.remarks = "Fairly Satisfactory"
+            else:
+                self.remarks = "Did Not Meet Expectations"
+        else:
+            self.final_average = None
+            self.remarks = "No Grade"
+        self.save()
+
+
+class TransferCertificate(models.Model):
+    """
+    Official Transfer Certificate (Form 137-T).
+    Generated when a student transfers to another school.
+    """
+    TC_STATUS = [
+        ('requested', 'Requested'),
+        ('processing', 'Processing'),
+        ('ready', 'Ready for Pickup'),
+        ('released', 'Released'),
+        ('cancelled', 'Cancelled'),
+    ]
+
+    student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='transfer_certificates')
+    reference_number = models.CharField(max_length=30, unique=True)
+    school_year_from = models.CharField(max_length=20, help_text="School year student is transferring from")
+    school_year_to = models.CharField(max_length=20, blank=True, help_text="School year student is transferring to")
+    destination_school = models.CharField(max_length=200, blank=True, help_text="School the student is transferring to")
+    last_grade_completed = models.CharField(max_length=20, blank=True)
+    last_school_attended = models.CharField(max_length=200, blank=True, default='Kiwalan National High School')
+    general_average = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    date_of_birth = models.DateField(null=True, blank=True)
+    place_of_birth = models.CharField(max_length=200, blank=True)
+    nationality = models.CharField(max_length=100, blank=True, default='Filipino')
+    status = models.CharField(max_length=15, choices=TC_STATUS, default='requested')
+    reason = models.TextField(blank=True, help_text="Reason for transfer")
+    remarks = models.TextField(blank=True)
+    issued_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='issued_tcs')
+    issued_at = models.DateTimeField(null=True, blank=True)
+    pdf_url = models.URLField(max_length=1000, blank=True, null=True)
+    requested_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-requested_at']
+
+    def __str__(self):
+        return f"TC {self.reference_number} - {self.student.username}"
+
+    def save(self, *args, **kwargs):
+        if not self.reference_number:
+            import random, string
+            year = timezone.now().year
+            seq = ''.join(random.choices(string.digits, k=6))
+            self.reference_number = f"TC-{year}-{seq}"
+        if not self.last_grade_completed:
+            enrollment = StudentClassEnrollment.objects.filter(
+                student=self.student
+            ).select_related('classroom').order_by('-enrolled_at').first()
+            if enrollment:
+                self.last_grade_completed = enrollment.classroom.grade_level or ''
+        if not self.general_average:
+            grades = Grade.objects.filter(
+                student=self.student,
+                grade_type='final_grade',
+                raw_score__isnull=False,
+            ).order_by('-academic_year')[:1]
+            if grades:
+                self.general_average = grades.first().raw_score
+        super().save(*args, **kwargs)
+
+
+class CharacterCertificate(models.Model):
+    """
+    Certificate of Good Moral Character.
+    """
+    CC_STATUS = [
+        ('requested', 'Requested'),
+        ('approved', 'Approved'),
+        ('ready', 'Ready for Pickup'),
+        ('released', 'Released'),
+        ('cancelled', 'Cancelled'),
+    ]
+
+    student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='character_certificates')
+    reference_number = models.CharField(max_length=30, unique=True)
+    purpose = models.CharField(max_length=200, blank=True, help_text="Purpose of the certificate")
+    school_year = models.CharField(max_length=20, blank=True)
+    status = models.CharField(max_length=15, choices=CC_STATUS, default='requested')
+    character_rating = models.CharField(max_length=50, default='Excellent',
+        choices=[('Excellent', 'Excellent'), ('Very Good', 'Very Good'), ('Good', 'Good'), ('Fair', 'Fair'), ('Poor', 'Poor')])
+    remarks = models.TextField(blank=True)
+    issued_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='issued_ccs')
+    issued_at = models.DateTimeField(null=True, blank=True)
+    pdf_url = models.URLField(max_length=1000, blank=True, null=True)
+    requested_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-requested_at']
+
+    def __str__(self):
+        return f"CC {self.reference_number} - {self.student.username}"
+
+    def save(self, *args, **kwargs):
+        if not self.reference_number:
+            import random, string
+            year = timezone.now().year
+            seq = ''.join(random.choices(string.digits, k=6))
+            self.reference_number = f"CC-{year}-{seq}"
+        super().save(*args, **kwargs)
+
+
+class AchievementRecord(models.Model):
+    """
+    Student achievement and recognition records.
+    Tracks awards, honors, competitions, and extracurricular accomplishments.
+    """
+    CATEGORY_CHOICES = [
+        ('academic', 'Academic'),
+        ('sports', 'Sports'),
+        ('arts', 'Arts & Culture'),
+        ('leadership', 'Leadership'),
+        ('community', 'Community Service'),
+        ('competition', 'Competition'),
+        ('other', 'Other'),
+    ]
+
+    student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='achievement_records')
+    title = models.CharField(max_length=200)
+    description = models.TextField(blank=True)
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default='academic')
+    date_achieved = models.DateField()
+    awarded_by = models.CharField(max_length=200, blank=True, help_text="Organization or person who gave the award")
+    school_year = models.CharField(max_length=20, blank=True)
+    grade_level = models.CharField(max_length=20, blank=True)
+    evidence_url = models.URLField(max_length=1000, blank=True, null=True, help_text="URL to supporting document")
+    is_verified = models.BooleanField(default=False)
+    verified_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='verified_achievements')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-date_achieved']
+
+    def __str__(self):
+        return f"{self.student.username} - {self.title} ({self.date_achieved})"
+
+
+class RecordRequest(models.Model):
+    """
+    Unified record request workflow.
+    Students/parents request records (transcripts, certificates, etc.)
+    and staff/admins approve/reject/process them.
+    """
+    RECORD_TYPE_CHOICES = [
+        ('transcript', 'Official Transcript'),
+        ('transfer_certificate', 'Transfer Certificate'),
+        ('character_certificate', 'Character Certificate'),
+        ('enrollment_verification', 'Enrollment Verification'),
+        ('other', 'Other'),
+    ]
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('processing', 'Processing'),
+        ('ready', 'Ready for Pickup'),
+        ('released', 'Released'),
+        ('rejected', 'Rejected'),
+        ('cancelled', 'Cancelled'),
+    ]
+
+    requestor = models.ForeignKey(User, on_delete=models.CASCADE, related_name='record_requests')
+    record_type = models.CharField(max_length=30, choices=RECORD_TYPE_CHOICES)
+    student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='requests_for_student', null=True, blank=True, help_text="Student the record is for (if requestor is parent)")
+    purpose = models.CharField(max_length=300, blank=True)
+    status = models.CharField(max_length=15, choices=STATUS_CHOICES, default='pending')
+    notes = models.TextField(blank=True, help_text="Requestor notes")
+    admin_notes = models.TextField(blank=True, help_text="Staff/admin internal notes")
+    handled_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='handled_requests')
+    copies = models.PositiveIntegerField(default=1)
+    reference_record_id = models.IntegerField(null=True, blank=True, help_text="ID of the generated record (Transcript, TC, CC)")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Request #{self.id} - {self.get_record_type_display()} for {self.student or self.requestor}"

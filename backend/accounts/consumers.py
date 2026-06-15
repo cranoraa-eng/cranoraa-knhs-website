@@ -27,15 +27,25 @@ MESSAGE_RATE_WINDOW = 60  # per 60 seconds
 
 
 class RateLimiter:
-    """Simple in-memory rate limiter for WebSocket messages."""
+    """Rate limiter for WebSocket messages. Uses Redis when available, falls back to in-memory."""
 
     def __init__(self):
         self._requests = defaultdict(list)
         self._last_cleanup = time.monotonic()
-        self._CLEANUP_INTERVAL = 300  # every 5 minutes
+        self._CLEANUP_INTERVAL = 300
+        # Try to get a Redis connection for cross-process rate limiting
+        self._redis = None
+        try:
+            from django.core.cache import cache
+            if hasattr(cache, '_cache') and hasattr(cache._cache, 'get_client'):
+                self._redis = cache._cache.get_client()
+            elif hasattr(cache, 'get'):
+                # Django cache backend — use incr/expire pattern
+                self._cache = cache
+        except Exception:
+            pass
 
     def _cleanup_stale_keys(self):
-        """Periodically remove keys with no recent activity to prevent memory leak."""
         now = time.monotonic()
         if now - self._last_cleanup < self._CLEANUP_INTERVAL:
             return
@@ -46,12 +56,24 @@ class RateLimiter:
 
     def is_rate_limited(self, key: str, limit: int, window: int) -> bool:
         """Check if a key has exceeded the rate limit. Returns True if limited."""
+        cache_key = f'ws_ratelimit:{key}'
+        # Try Redis-backed via Django cache
+        if hasattr(self, '_cache'):
+            try:
+                count = self._cache.get(cache_key)
+                if count is not None and int(count) >= limit:
+                    return True
+                if count is None:
+                    self._cache.set(cache_key, 1, timeout=window)
+                else:
+                    self._cache.set(cache_key, int(count) + 1, timeout=window)
+                return False
+            except Exception:
+                pass
+        # Fallback to in-memory
         now = time.monotonic()
         self._cleanup_stale_keys()
-        # Remove expired entries
-        self._requests[key] = [
-            t for t in self._requests[key] if now - t < window
-        ]
+        self._requests[key] = [t for t in self._requests[key] if now - t < window]
         if len(self._requests[key]) >= limit:
             return True
         self._requests[key].append(now)
