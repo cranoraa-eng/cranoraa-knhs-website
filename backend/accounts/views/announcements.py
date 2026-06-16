@@ -18,7 +18,7 @@ from ..serializers import (
     AnnouncementCommentSerializer,
 )
 from ..serializers import full_name
-from ..permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated
 from ..throttles import PublicReadRateThrottle
 from ..storage import upload_file, StorageValidationError
 from ..utils import log_audit_action

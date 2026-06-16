@@ -6,7 +6,7 @@ from rest_framework.decorators import throttle_classes
 
 from ..models import WebsiteContent
 from ..serializers import WebsiteContentSerializer
-from ..permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated
 from ..storage import upload_file
 
 
