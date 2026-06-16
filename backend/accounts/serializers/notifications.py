@@ -1,0 +1,28 @@
+from rest_framework import serializers
+
+from ..models import Notification, NotificationPreference
+from ._base import full_name
+
+
+class NotificationSerializer(serializers.ModelSerializer):
+    recipient_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Notification
+        fields = ['id', 'recipient', 'recipient_name', 'notification_type',
+                  'title', 'message', 'is_read', 'link', 'created_at']
+        read_only_fields = ['recipient', 'created_at']
+
+    def get_recipient_name(self, obj): return full_name(obj.recipient)
+
+
+class NotificationPreferenceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = NotificationPreference
+        fields = [
+            'id', 'announcement', 'grade', 'attendance', 'fee',
+            'message', 'friend_request', 'system',
+            'push_enabled', 'in_app_enabled',
+            'updated_at',
+        ]
+        read_only_fields = ['id', 'updated_at']

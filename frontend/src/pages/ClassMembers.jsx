@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../utils/api';
-import { getUser } from '../utils/auth';
+import { useCurrentUser } from '../hooks/useCurrentUser';
 import toast from 'react-hot-toast';
 import { LoadingSpinner, EmptyState } from '../components/ui';
 
 const ClassMembers = () => {
-  const user = getUser();
+  const { user } = useCurrentUser();
   const navigate = useNavigate();
   const [enrollments, setEnrollments] = useState([]);   // student's own enrollments
   const [subjects, setSubjects]       = useState([]);   // classroom-subjects

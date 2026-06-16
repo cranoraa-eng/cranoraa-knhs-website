@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useLocation, Link } from 'react-router-dom';
 import api, { MEDIA_ROOT } from '../utils/api';
-import { getUser } from '../utils/auth';
+import { useCurrentUser } from '../hooks/useCurrentUser';
 import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
 import CalendarEventModal from '../components/calendar/CalendarEventModal';
@@ -53,7 +53,7 @@ const formatDate = (dateStr) => {
 
 const Calendar = ({ mode = 'public' }) => {
   const location = useLocation();
-  const user = getUser();
+  const { user } = useCurrentUser();
   const canManage = user?.role === 'admin' || user?.role === 'staff';
 
   const [events, setEvents] = useState([]);

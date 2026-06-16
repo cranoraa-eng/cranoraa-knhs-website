@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import api, { WS_ROOT } from '../utils/api';
 import { useAuth } from '../context/AuthContext';
+import { getAccessToken } from '../utils/auth';
 import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
 
@@ -563,7 +564,7 @@ export default function CommunicationCenter() {
   // ── WebSocket connect/disconnect per selected ticket ────────────────────
   const connectWs = useCallback((ticketId) => {
     if (!ticketId) return;
-    const token = localStorage.getItem('access_token');
+    const token = getAccessToken();
     if (!token) return;
 
     // Guard: don't open a second connection

@@ -2,7 +2,8 @@ import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../utils/api';
-import { getUser } from '../utils/auth';
+import { useCurrentUser } from '../hooks/useCurrentUser';
+import { useParallelFetch } from '../hooks/useFetch';
 import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
 import { useSystemSettings } from '../hooks/useSystemSettings';
@@ -34,18 +35,25 @@ const ScoreBadge = ({ score, size = 'md' }) => {
 
 const GradeManagement = () => {
   const navigate = useNavigate();
-  const user = getUser();
+  const { user } = useCurrentUser();
   const { settings, periodValues, periodShortLabels, periodLabel, periodOptions, isSHS } = useSystemSettings();
 
   // State
-  const [grades, setGrades] = useState([]);
-  const [classrooms, setClassrooms] = useState([]);
-  const [loading, setLoading] = useState(true);
-  
-  const [filterQuarter, setFilterQuarter] = useState('');
   const [filterYear, setFilterYear] = useState(settings?.academic_year || '2025-2026');
+  const [filterQuarter, setFilterQuarter] = useState('');
   const [search, setSearch] = useState('');
   const [selectedClass, setSelectedClass] = useState(null);
+
+  const { data, loading, refetch } = useParallelFetch({
+    grades: `/grades/?academic_year=${filterYear}`,
+    classrooms: `/classrooms/?academic_year=${filterYear}`,
+  }, { deps: [filterYear] });
+
+  const grades = useMemo(() => {
+    const all = data.grades || [];
+    return all.filter(g => g.grade_type === 'final_grade');
+  }, [data.grades]);
+  const classrooms = data.classrooms || [];
 
   // Sync academic year with admin settings when settings load
   useEffect(() => {
@@ -58,20 +66,6 @@ const GradeManagement = () => {
     const newYear = dir === 'next' ? `${start + 1}-${end + 1}` : `${start - 1}-${end - 1}`;
     setFilterYear(newYear);
   };
-
-  // Load data
-  useEffect(() => {
-    Promise.all([
-      api.get(`/grades/?academic_year=${filterYear}`),
-      api.get(`/classrooms/?academic_year=${filterYear}`)
-    ])
-      .then(([gRes, cRes]) => {
-        setGrades(gRes.data.filter(g => g.grade_type === 'final_grade'));
-        setClassrooms(cRes.data);
-      })
-      .catch(() => toast.error('Failed to load data'))
-      .finally(() => setLoading(false));
-  }, [filterYear]);
 
   const refresh = async () => {
     try {

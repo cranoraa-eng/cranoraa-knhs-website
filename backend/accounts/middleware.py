@@ -1,76 +1,125 @@
-from django.contrib.auth.models import AnonymousUser
-from channels.db import database_sync_to_async
-from channels.middleware import BaseMiddleware
-from rest_framework_simplejwt.tokens import AccessToken
-from django.contrib.auth import get_user_model
-from urllib.parse import parse_qs
-import json
+import time
+from django.utils.deprecation import MiddlewareMixin
 
-User = get_user_model()
+# High-frequency endpoints that should not be logged to avoid table bloat
+_SKIP_LOG_PATHS = (
+    '/api/v1/token/',
+    '/api/v1/token/refresh/',
+    '/api/v1/system/maintenance-status/',
+    '/api/v1/notifications/polling/',
+    '/api/v1/chat/messages/',
+)
 
-@database_sync_to_async
-def get_user(token_key):
-    if not token_key or token_key == 'null' or token_key == 'undefined':
-        return AnonymousUser()
-    try:
-        access_token = AccessToken(token_key)
-        user_id = access_token['user_id']
-        return User.objects.get(id=user_id)
-    except Exception:
-        return AnonymousUser()
 
-class JWTAuthMiddleware(BaseMiddleware):
+class APIRequestLoggingMiddleware(MiddlewareMixin):
+    """Middleware to log API requests for analytics"""
+
+    def process_request(self, request):
+        request.start_time = time.time()
+        return None
+
+    def process_response(self, request, response):
+        if not request.path.startswith('/api/'):
+            return response
+
+        if request.path.startswith(_SKIP_LOG_PATHS):
+            return response
+
+        if hasattr(request, 'start_time'):
+            response_time = (time.time() - request.start_time) * 1000
+        else:
+            response_time = 0
+
+        ip_address = self.get_client_ip(request)
+        user = request.user if request.user.is_authenticated else None
+
+        if user:
+            from django.utils import timezone
+            try:
+                from .models import User as UserModel
+                UserModel.objects.filter(id=user.id).update(last_activity=timezone.now())
+            except Exception:
+                pass
+
+        if not (request.method == 'GET' and 200 <= response.status_code < 300):
+            try:
+                from .models import APIRequestLog
+                APIRequestLog.objects.create(
+                    endpoint=request.path[:255],
+                    method=request.method,
+                    status_code=response.status_code,
+                    response_time_ms=round(response_time, 2),
+                    ip_address=ip_address,
+                    user=user
+                )
+            except Exception:
+                pass
+
+        return response
+
+    def get_client_ip(self, request):
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            ip = x_forwarded_for.split(',')[0]
+        else:
+            ip = request.META.get('REMOTE_ADDR')
+        return ip
+
+
+class ContentSecurityPolicyMiddleware(MiddlewareMixin):
     """
-    WebSocket JWT authentication middleware.
-    
-    Supports two methods for passing the access token:
-    1. Query string: ws://host/ws/notifications/?token=<access_token>
-       (kept for backward compatibility, but less secure — token appears in server logs)
-    2. First message: Send {"type": "auth", "token": "<access_token"} as the first message.
-       (preferred — token never appears in URLs)
-    
-    The middleware first checks the query string. If no token is found there,
-    it sets the user to AnonymousUser and waits for the first message to contain
-    the auth token.
+    Injects a Content-Security-Policy header on every response.
+    Policy values are read from Django settings (CSP_* keys).
+    Falls back to a strict default if settings are not configured.
     """
-    async def __call__(self, scope, receive, send):
-        query_string = scope.get('query_string', b'').decode()
-        token = None
 
-        if query_string:
-            params = parse_qs(query_string)
-            token_list = params.get('token')
-            if token_list:
-                token = token_list[0]
+    def process_response(self, request, response):
+        from django.conf import settings
 
-        if token:
-            scope['user'] = await get_user(token)
-            return await super().__call__(scope, receive, send)
+        directives = {
+            'default-src': getattr(settings, 'CSP_DEFAULT_SRC', ("'self'",)),
+            'script-src':  getattr(settings, 'CSP_SCRIPT_SRC',  ("'self'",)),
+            'style-src':   getattr(settings, 'CSP_STYLE_SRC',   ("'self'", "'unsafe-inline'")),
+            'font-src':    getattr(settings, 'CSP_FONT_SRC',    ("'self'",)),
+            'img-src':     getattr(settings, 'CSP_IMG_SRC',     ("'self'", "data:", "https:", "blob:")),
+            'connect-src': getattr(settings, 'CSP_CONNECT_SRC', ("'self'",)),
+            'worker-src':  getattr(settings, 'CSP_WORKER_SRC',  ("'self'", "blob:")),
+            'frame-ancestors': getattr(settings, 'CSP_FRAME_ANCESTORS', ("'none'",)),
+        }
 
-        # No token in query string — check first message for auth token
-        # We wrap receive to intercept the first message
-        async def wrapped_receive():
-            nonlocal token
-            message = await receive()
-            
-            if not token and message.get('type') == 'websocket.receive':
-                try:
-                    data = json.loads(message.get('text', '{}'))
-                    if data.get('type') == 'auth' and data.get('token'):
-                        token = data['token']
-                        scope['user'] = await get_user(token)
-                        # Send confirmation back to client
-                        await send({
-                            'type': 'websocket.send',
-                            'text': json.dumps({'type': 'auth_success', 'user_id': scope['user'].id if scope['user'].is_authenticated else None})
-                        })
-                except (json.JSONDecodeError, KeyError):
-                    pass
-            
-            return message
+        policy_parts = []
+        for directive, sources in directives.items():
+            policy_parts.append(f"{directive} {' '.join(sources)}")
 
-        # If no token from first message either, set anonymous
-        if not token:
-            scope['user'] = AnonymousUser()
+        response['Content-Security-Policy'] = '; '.join(policy_parts)
+        return response
 
-        return await super().__call__(scope, wrapped_receive, send)
+
+class RequestSizeLimitMiddleware(MiddlewareMixin):
+    """
+    Rejects requests whose Content-Length exceeds MAX_UPLOAD_SIZE before
+    the body is read into memory. This is a defence-in-depth layer on top
+    of Django's DATA_UPLOAD_MAX_MEMORY_SIZE setting.
+
+    Default limit: 10 MB (covers multipart file uploads for enrollment docs).
+    Override with settings.MAX_REQUEST_BODY_SIZE (bytes).
+    """
+
+    def process_request(self, request):
+        from django.conf import settings
+        from django.http import JsonResponse
+
+        max_size = getattr(settings, 'MAX_REQUEST_BODY_SIZE', 10 * 1024 * 1024)  # 10 MB
+        content_length = request.META.get('CONTENT_LENGTH')
+
+        if content_length:
+            try:
+                if int(content_length) > max_size:
+                    return JsonResponse(
+                        {'error': f'Request body too large. Maximum allowed size is {max_size // (1024*1024)} MB.'},
+                        status=413
+                    )
+            except (ValueError, TypeError):
+                pass
+
+        return None

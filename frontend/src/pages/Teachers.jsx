@@ -1,7 +1,8 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../utils/api';
-import { getUser } from '../utils/auth';
+import { useCurrentUser } from '../hooks/useCurrentUser';
+import { useParallelFetch } from '../hooks/useFetch';
 import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
 import { jsPDF } from 'jspdf';
@@ -10,11 +11,14 @@ import { useScrollLock } from '../hooks/useScrollLock';
 import { LoadingSpinner, EmptyState, Button } from '../components/ui';
 
 const Teachers = () => {
-  const user = getUser();
+  const { user } = useCurrentUser();
   const navigate = useNavigate();
-  const [teachers, setTeachers] = useState([]);
-  const [classrooms, setClassrooms] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { data, loading, refetch } = useParallelFetch({
+    teachers: '/users/?role=staff',
+    classrooms: '/classrooms/',
+  });
+  const teachers = useMemo(() => Array.isArray(data.teachers) ? data.teachers : [], [data.teachers]);
+  const classrooms = useMemo(() => Array.isArray(data.classrooms) ? data.classrooms : [], [data.classrooms]);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
@@ -34,32 +38,6 @@ const Teachers = () => {
   });
 
   useScrollLock(showAddModal || showEditModal || showImportModal);
-
-  useEffect(() => {
-    fetchTeachers();
-    fetchClassrooms();
-  }, []);
-
-  const fetchTeachers = async () => {
-    try {
-      const response = await api.get('/users/?role=staff');
-      setTeachers(Array.isArray(response.data) ? response.data : []);
-      setLoading(false);
-    } catch (err) {
-      console.error('Failed to fetch teachers:', err);
-      toast.error('Failed to load teachers');
-      setTeachers([]);
-      setLoading(false);
-    }
-  };
-
-  const fetchClassrooms = async () => {
-    try {
-      const response = await api.get('/classrooms/');
-      setClassrooms(Array.isArray(response.data) ? response.data : []);
-    } catch (err) {
-      console.error('Failed to fetch classrooms:', err);
-      setClassrooms([]);
     }
   };
 

@@ -1,7 +1,8 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../utils/api';
-import { getUser } from '../utils/auth';
+import { useCurrentUser } from '../hooks/useCurrentUser';
+import { useParallelFetch } from '../hooks/useFetch';
 import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
 import { jsPDF } from 'jspdf';
@@ -10,12 +11,15 @@ import { useScrollLock } from '../hooks/useScrollLock';
 import { LoadingSpinner } from '../components/ui';
 
 const StudentManagement = () => {
-  const user = getUser();
+  const { user } = useCurrentUser();
   const navigate = useNavigate();
-  const [students, setStudents] = useState([]);
-  const [classrooms, setClassrooms] = useState([]);
+  const { data, loading, refetch } = useParallelFetch({
+    students: '/users/?role=student',
+    classrooms: '/classrooms/',
+  });
+  const students = useMemo(() => Array.isArray(data.students) ? data.students : [], [data.students]);
+  const classrooms = useMemo(() => Array.isArray(data.classrooms) ? data.classrooms : [], [data.classrooms]);
   const [advisoryClass, setAdvisoryClass] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [gradeFilter, setGradeFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
@@ -42,33 +46,11 @@ const StudentManagement = () => {
   const GRADE_ORDER = ['Grade 7', 'Grade 8', 'Grade 9', 'Grade 10', 'Grade 11', 'Grade 12'];
 
   useEffect(() => {
-    fetchData();
-  }, []);
-
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-      const [studentsRes, classesRes] = await Promise.all([
-        api.get('/users/?role=student'),
-        api.get('/classrooms/'),
-      ]);
-      
-      setStudents(Array.isArray(studentsRes.data) ? studentsRes.data : []);
-      setClassrooms(Array.isArray(classesRes.data) ? classesRes.data : []);
-      
-      if (user?.role === 'staff' && Array.isArray(classesRes.data)) {
-        const advisory = classesRes.data.find(c => String(c.teacher) === String(user.id));
-        if (advisory) setAdvisoryClass(advisory);
-      }
-      
-      setLoading(false);
-    } catch (err) {
-      console.error('Failed to fetch data:', err);
-      toast.error('Failed to load students');
-      setStudents([]);
-      setLoading(false);
+    if (user?.role === 'staff' && classrooms.length > 0) {
+      const advisory = classrooms.find(c => String(c.teacher) === String(user.id));
+      if (advisory) setAdvisoryClass(advisory);
     }
-  };
+  }, [user, classrooms]);
 
   const handleAddStudent = async (e) => {
     e.preventDefault();

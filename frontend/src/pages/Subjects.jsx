@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import api from '../utils/api';
 import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
+import { useFetch } from '../hooks/useFetch';
 import {
   Card, CardHeader, CardBody, CardTitle, Button, Badge,
   LoadingSpinner, EmptyState, Modal, ModalHeader, ModalBody, ModalFooter,
@@ -23,28 +24,13 @@ const GRADE_LEVELS = [
 const EMPTY_FORM = { name: '', code: '', description: '', grade_level: '' };
 
 const Subjects = () => {
-  const [subjects, setSubjects] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { data: subjects, loading, refetch: fetchSubjects, setData: setSubjects } = useFetch('/subjects/');
   const [saving, setSaving] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(EMPTY_FORM);
   const [search, setSearch] = useState('');
   const [filterLevel, setFilterLevel] = useState('');
-
-  useEffect(() => { fetchSubjects(); }, []);
-
-  const fetchSubjects = async () => {
-    setLoading(true);
-    try {
-      const res = await api.get('/subjects/');
-      setSubjects(res.data);
-    } catch {
-      toast.error('Failed to load subjects');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const openCreate = () => {
     setEditing(null);

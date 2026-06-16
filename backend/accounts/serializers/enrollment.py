@@ -1,0 +1,115 @@
+from rest_framework import serializers
+
+from ..models import (
+    EnrollmentApplication, EnrollmentDocument, EnrollmentStatusHistory,
+    EnrollmentWaitlist,
+)
+from ._base import full_name
+
+
+class EnrollmentDocumentSerializer(serializers.ModelSerializer):
+    document_type_display = serializers.CharField(source='get_document_type_display', read_only=True)
+    verification_status_display = serializers.CharField(source='get_verification_status_display', read_only=True)
+
+    class Meta:
+        model = EnrollmentDocument
+        fields = [
+            'id', 'application', 'document_type', 'document_type_display',
+            'file_url', 'file_name', 'verification_status', 'verification_status_display',
+            'admin_notes', 'uploaded_at', 'updated_at',
+        ]
+        read_only_fields = ['application', 'uploaded_at', 'updated_at']
+
+
+class EnrollmentStatusHistorySerializer(serializers.ModelSerializer):
+    changed_by_name = serializers.SerializerMethodField()
+    from_status_display = serializers.SerializerMethodField()
+    to_status_display = serializers.SerializerMethodField()
+
+    class Meta:
+        model = EnrollmentStatusHistory
+        fields = [
+            'id', 'application', 'from_status', 'from_status_display',
+            'to_status', 'to_status_display', 'changed_by', 'changed_by_name',
+            'notes', 'created_at',
+        ]
+        read_only_fields = ['application', 'changed_by', 'created_at']
+
+    def get_changed_by_name(self, obj):
+        if not obj.changed_by:
+            return None
+        return obj.changed_by.get_full_name() or obj.changed_by.username
+
+    def get_from_status_display(self, obj):
+        return obj.get_from_status_display() if obj.from_status else None
+
+    def get_to_status_display(self, obj):
+        return obj.get_to_status_display()
+
+
+class EnrollmentApplicationSerializer(serializers.ModelSerializer):
+    documents = EnrollmentDocumentSerializer(many=True, read_only=True)
+    status_history = EnrollmentStatusHistorySerializer(many=True, read_only=True)
+    full_name = serializers.SerializerMethodField()
+    age = serializers.SerializerMethodField()
+    assigned_classroom_name = serializers.CharField(source='assigned_classroom.name', read_only=True)
+    reviewed_by_name = serializers.SerializerMethodField()
+    linked_parent_email = serializers.SerializerMethodField()
+
+    class Meta:
+        model = EnrollmentApplication
+        fields = [
+            'id', 'enrollment_number', 'enrollment_type', 'school_year',
+            'first_name', 'last_name', 'middle_name', 'full_name', 'sex', 'date_of_birth', 'age',
+            'place_of_birth', 'nationality', 'religion', 'street_address', 'barangay',
+            'city_municipality', 'province', 'zip_code',
+            'father_name', 'father_occupation', 'father_contact', 'father_email',
+            'mother_name', 'mother_occupation', 'mother_contact', 'mother_email',
+            'guardian_name', 'guardian_relationship', 'guardian_contact', 'guardian_email',
+            'grade_level', 'strand', 'previous_school', 'previous_school_address',
+            'lrn', 'lrn_request_reason', 'is_als',
+            'birth_certificate', 'report_card', 'form_138', 'certificate_of_completion',
+            'good_moral_certificate', 'id_picture', 'last_school_attended_cert',
+            'email', 'phone_number', 'emergency_contact_name',
+            'emergency_contact_relationship', 'emergency_contact_phone',
+            'enrolled_student', 'assigned_classroom', 'assigned_classroom_name',
+            'linked_parent', 'linked_parent_email',
+            'status', 'remarks', 'reviewed_by', 'reviewed_by_name', 'reviewed_at',
+            'temp_password_display',
+            'submitted_at', 'updated_at', 'documents', 'status_history',
+        ]
+        read_only_fields = [
+            'enrollment_number', 'status', 'submitted_at', 'updated_at',
+            'enrolled_student', 'assigned_classroom', 'linked_parent',
+            'reviewed_by', 'reviewed_at', 'documents', 'status_history',
+        ]
+
+    def get_full_name(self, obj):
+        return obj.full_name
+
+    def get_age(self, obj):
+        return obj.age
+
+    def get_reviewed_by_name(self, obj):
+        if obj.reviewed_by:
+            return obj.reviewed_by.get_full_name() or obj.reviewed_by.username
+        return None
+
+    def get_linked_parent_email(self, obj):
+        if obj.linked_parent:
+            return obj.linked_parent.email
+        return None
+
+
+class EnrollmentWaitlistSerializer(serializers.ModelSerializer):
+    student_name = serializers.SerializerMethodField()
+    classroom_name = serializers.CharField(source='classroom.name', read_only=True)
+
+    class Meta:
+        model = EnrollmentWaitlist
+        fields = ['id', 'classroom', 'classroom_name', 'student', 'student_name',
+                  'application', 'position', 'status', 'offered_at',
+                  'response_deadline', 'notes', 'created_at', 'updated_at']
+        read_only_fields = ['position', 'status', 'offered_at']
+
+    def get_student_name(self, obj): return full_name(obj.student)

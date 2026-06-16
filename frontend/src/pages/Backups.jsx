@@ -1,23 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import api from '../utils/api';
 import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
+import { useFetch } from '../hooks/useFetch';
 import { LoadingSpinner, Button } from '../components/ui';
 
 const Backups = () => {
-  const [backups, setBackups] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { data: backups, loading, refetch: fetchBackups, setData: setBackups } = useFetch('/admin/backups/');
   const [creating, setCreating] = useState(false);
-
-  useEffect(() => { fetchBackups(); }, []);
-
-  const fetchBackups = async () => {
-    try {
-      const r = await api.get('/admin/backups/');
-      setBackups(r.data);
-    } catch { /* silently fail */ }
-    finally { setLoading(false); }
-  };
 
   const handleCreateBackup = async () => {
     const result = await Swal.fire({

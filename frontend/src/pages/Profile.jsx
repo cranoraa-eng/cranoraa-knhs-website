@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Navigate, useSearchParams } from 'react-router-dom';
-import { getUser } from '../utils/auth';
+import { useCurrentUser } from '../hooks/useCurrentUser';
 import { useAuth } from '../context/AuthContext';
 import api from '../utils/api';
 import toast from 'react-hot-toast';
@@ -15,7 +15,7 @@ const Field = ({ label, value }) => (
 );
 
 const Profile = () => {
-  const user = getUser();
+  const { user } = useCurrentUser();
   const { refreshUser } = useAuth();
   const [searchParams] = useSearchParams();
   const studentId = searchParams.get('student_id');

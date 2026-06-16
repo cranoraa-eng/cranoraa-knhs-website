@@ -1,21 +1,10 @@
-import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import api from '../utils/api';
 import Swal from 'sweetalert2';
+import { useWebsiteContent } from '../hooks/useWebsiteContent';
 import { LoadingSpinner } from '../components/ui';
 
 const Programs = () => {
-  const [content, setContent] = useState({});
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    api.get('/website-content/public/').then(r => {
-      const map = {};
-      const data = Array.isArray(r.data) ? r.data : (r.data?.results ?? []);
-      data.forEach(item => { map[item.section] = item; });
-      setContent(map);
-    }).catch(() => {}).finally(() => setLoading(false));
-  }, []);
+  const { content, loading } = useWebsiteContent();
 
   const handleViewDetails = (program) => {
     const detailKey = `programs_${program.key}_details`;

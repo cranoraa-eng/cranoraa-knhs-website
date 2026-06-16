@@ -1,19 +1,8 @@
-import { useState, useEffect } from 'react';
-import api from '../utils/api';
+import { useWebsiteContent } from '../hooks/useWebsiteContent';
 import { LoadingSpinner } from '../components/ui';
 
 const Contact = () => {
-  const [content, setContent] = useState({});
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    api.get('/website-content/public/').then(r => {
-      const map = {};
-      const data = Array.isArray(r.data) ? r.data : (r.data?.results ?? []);
-      data.forEach(item => { map[item.section] = item; });
-      setContent(map);
-    }).catch(() => {}).finally(() => setLoading(false));
-  }, []);
+  const { content, loading } = useWebsiteContent();
 
   if (loading) {
     return (

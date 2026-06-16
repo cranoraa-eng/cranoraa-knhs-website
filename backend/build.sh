@@ -16,7 +16,7 @@ python manage.py collectstatic --no-input
 python manage.py migrate
 
 # Only seed if WebsiteContent table is empty (idempotent)
-if python manage.py shell -c "from portal.models import WebsiteContent; exit(0 if WebsiteContent.objects.exists() else 1)" 2>/dev/null; then
+if python manage.py shell -c "from accounts.models import WebsiteContent; exit(0 if WebsiteContent.objects.exists() else 1)" 2>/dev/null; then
     echo "WebsiteContent already seeded, skipping."
 else
     echo "Seeding website content..."

@@ -69,9 +69,9 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'axes.middleware.AxesMiddleware',
-    'portal.middleware.RequestSizeLimitMiddleware',
-    'portal.middleware.APIRequestLoggingMiddleware',
-    'portal.middleware.ContentSecurityPolicyMiddleware',
+    'accounts.middleware.RequestSizeLimitMiddleware',
+    'accounts.middleware.APIRequestLoggingMiddleware',
+    'accounts.middleware.ContentSecurityPolicyMiddleware',
 ]
 
 ROOT_URLCONF = 'school_portal.urls'

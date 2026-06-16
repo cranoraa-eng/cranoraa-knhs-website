@@ -2,36 +2,21 @@ import { useState, useEffect } from 'react';
 import api from '../utils/api';
 import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
+import { useFetch } from '../hooks/useFetch';
 import { LoadingSpinner, EmptyState } from '../components/ui';
 
 const Moderation = () => {
-  const [reports, setReports] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('pending');
+  const { data, loading, refetch, setData: setReports } = useFetch('/chat/reports/', {
+    params: { status: filter === 'all' ? undefined : filter },
+    deps: [filter],
+    transform: (d) => Array.isArray(d?.results) ? d.results : (Array.isArray(d) ? d : []),
+  });
+  const reports = data || [];
   const [selectedIds, setSelectedIds] = useState([]);
   const [processing, setProcessing] = useState(false);
 
-  useEffect(() => {
-    fetchReports();
-    setSelectedIds([]);
-  }, [filter]);
-
-  const fetchReports = async () => {
-    setLoading(true);
-    try {
-      const response = await api.get('/chat/reports/', {
-        params: { status: filter === 'all' ? undefined : filter }
-      });
-      const data = response.data;
-      const reportList = Array.isArray(data.results) ? data.results : (Array.isArray(data) ? data : []);
-      setReports(reportList);
-    } catch (error) {
-      toast.error('Failed to load reports');
-      setReports([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+  useEffect(() => { setSelectedIds([]); }, [filter]);
 
   const handleAction = async (reportId, actionType, label) => {
     const isDestructive = actionType === 'delete-message' || actionType === 'suspend-user' || actionType === 'delete';

@@ -1,6 +1,7 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import api from '../utils/api';
+import { useParallelFetch } from '../hooks/useFetch';
 import { Card, CardHeader, CardBody, CardTitle, Button, LoadingSpinner, Badge } from '../components/ui';
 import toast from 'react-hot-toast';
 
@@ -10,32 +11,30 @@ import toast from 'react-hot-toast';
  */
 
 const SystemHealth = () => {
-  const [stats, setStats] = useState(null);       // from /admin/stats/
-  const [metrics, setMetrics] = useState(null);   // from /admin/system-metrics/
-  const [feed, setFeed] = useState([]);           // from /admin/maintenance-feed/
-  const [loading, setLoading] = useState(true);
+  const { data, loading, refetch } = useParallelFetch({
+    stats: '/admin/stats/',
+    metrics: '/admin/system-metrics/',
+    feed: '/admin/maintenance-feed/',
+  });
   const [refreshing, setRefreshing] = useState(false);
   const [lastRefresh, setLastRefresh] = useState(new Date());
   const [apiLatency, setApiLatency] = useState(null);
 
+  const stats = data.stats || null;
+  const metrics = data.metrics || null;
+  const feed = data.feed || [];
+
   const fetchAll = async () => {
+    setRefreshing(true);
     try {
       const t0 = Date.now();
-      const [statsRes, metricsRes, feedRes] = await Promise.all([
-        api.get('/admin/stats/'),
-        api.get('/admin/system-metrics/'),
-        api.get('/admin/maintenance-feed/'),
-      ]);
+      await refetch();
       setApiLatency(Date.now() - t0);
-      setStats(statsRes.data);
-      setMetrics(metricsRes.data);
-      setFeed(feedRes.data || []);
       setLastRefresh(new Date());
     } catch (err) {
       console.error('System health fetch error:', err);
       toast.error('Failed to load system health data');
     } finally {
-      setLoading(false);
       setRefreshing(false);
     }
   };

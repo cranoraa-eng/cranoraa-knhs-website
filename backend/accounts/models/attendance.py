@@ -1,0 +1,89 @@
+from django.db import models
+
+from .user import User
+from .academic import Classroom, Subject
+
+
+class Attendance(models.Model):
+    STATUS_CHOICES = [
+        ('present', 'Present'),
+        ('absent', 'Absent'),
+        ('late', 'Late'),
+        ('excused', 'Excused'),
+    ]
+
+    student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='attendances')
+    classroom = models.ForeignKey(Classroom, on_delete=models.CASCADE, related_name='attendances')
+    date = models.DateField()
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='present')
+    remarks = models.TextField(blank=True, null=True)
+    marked_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='marked_attendances')
+    schedule = models.ForeignKey('Schedule', on_delete=models.SET_NULL, null=True, blank=True, related_name='attendances',
+        help_text="Links attendance to a specific schedule period. Null = class-level (adviser) attendance.")
+    subject = models.ForeignKey(Subject, on_delete=models.SET_NULL, null=True, blank=True, related_name='attendances',
+        help_text="Denormalized from schedule for quick queries.")
+    time_slot = models.ForeignKey('TimeSlot', on_delete=models.SET_NULL, null=True, blank=True, related_name='attendances',
+        help_text="Denormalized from schedule for quick queries.")
+
+    arrival_time = models.TimeField(null=True, blank=True, help_text="Actual arrival time (for late tracking)")
+    departure_time = models.TimeField(null=True, blank=True, help_text="Actual departure time (for early departure)")
+    minutes_late = models.PositiveIntegerField(default=0, help_text="Minutes late (auto-calculated if arrival_time set)")
+
+    has_excuse = models.BooleanField(default=False)
+    excuse_verified = models.BooleanField(default=False, help_text="Set to True once admin/teacher verifies the excuse")
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['student', 'classroom', 'date'],
+                condition=models.Q(schedule__isnull=True),
+                name='unique_class_level_attendance'
+            ),
+            models.UniqueConstraint(
+                fields=['student', 'schedule', 'date'],
+                condition=models.Q(schedule__isnull=False),
+                name='unique_schedule_attendance'
+            ),
+        ]
+        ordering = ['-date', 'student__username']
+
+    def __str__(self):
+        scope = f" [{self.subject.code}]" if self.subject else ""
+        return f"{self.student.username} - {self.date} - {self.status}{scope}"
+
+    def save(self, *args, **kwargs):
+        if self.arrival_time and self.time_slot and self.status == 'late':
+            slot_start = self.time_slot.start_time
+            delta_minutes = (self.arrival_time.hour * 60 + self.arrival_time.minute) - (slot_start.hour * 60 + slot_start.minute)
+            self.minutes_late = max(0, delta_minutes)
+        if self.status == 'excused':
+            self.has_excuse = True
+        super().save(*args, **kwargs)
+
+
+class AbsenceExcuse(models.Model):
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+    ]
+
+    student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='absence_excuses')
+    attendance = models.ForeignKey(Attendance, on_delete=models.CASCADE, related_name='excuses')
+    reason = models.TextField()
+    document_url = models.URLField(max_length=1000, null=True, blank=True, help_text="Supabase Storage URL for supporting document")
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    reviewed_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='reviewed_excuses')
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    reviewer_notes = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Excuse for {self.student.username} on {self.attendance.date} - {self.status}"

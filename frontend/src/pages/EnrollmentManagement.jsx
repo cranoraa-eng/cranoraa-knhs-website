@@ -1,6 +1,7 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import api from '../utils/api';
 import Swal from 'sweetalert2';
+import { useParallelFetch } from '../hooks/useFetch';
 import { LoadingSpinner, Button } from '../components/ui';
 
 const STATUS_CONFIG = {
@@ -16,9 +17,14 @@ const GRADE_LEVELS = ['','7','8','9','10','11','12'];
 const ENROLLMENT_TYPES = ['','new','returning','transferee','sh_applicant','parent_assisted'];
 
 const EnrollmentManagement = () => {
-  const [applications, setApplications] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [analytics, setAnalytics] = useState(null);
+  const { data, loading, refetch } = useParallelFetch({
+    applications: '/enrollment-applications/',
+    analytics: '/enrollment-applications/analytics/',
+    classrooms: '/classrooms/',
+  });
+  const applications = data.applications?.results || data.applications || [];
+  const analytics = data.analytics || null;
+  const classrooms = data.classrooms?.results || data.classrooms || [];
   const [selected, setSelected] = useState(null);
   const [selectedIds, setSelectedIds] = useState([]);
   const [filter, setFilter] = useState('all');
@@ -32,24 +38,6 @@ const EnrollmentManagement = () => {
   const [enrollClassroom, setEnrollClassroom] = useState('');
   const [enrollParentEmail, setEnrollParentEmail] = useState('');
   const [enrolling, setEnrolling] = useState(false);
-  const [classrooms, setClassrooms] = useState([]);
-
-  const fetchAll = useCallback(async () => {
-    setLoading(true);
-    try {
-      const [appRes, analyticsRes, clsRes] = await Promise.all([
-        api.get('/enrollment-applications/'),
-        api.get('/enrollment-applications/analytics/'),
-        api.get('/classrooms/'),
-      ]);
-      setApplications(appRes.data.results || appRes.data);
-      setAnalytics(analyticsRes.data);
-      setClassrooms(clsRes.data.results || clsRes.data);
-    } catch { Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to load data.' }); }
-    finally { setLoading(false); }
-  }, []);
-
-  useEffect(() => { fetchAll(); }, [fetchAll]);
 
   const handleAction = async (id, action, opts = {}) => {
     try {

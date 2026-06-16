@@ -1,19 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import api from '../utils/api';
+import { useFetch } from '../hooks/useFetch';
 import { LoadingSpinner } from '../components/ui';
 
 const NewsEvents = () => {
-  const [announcements, setAnnouncements] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { data: announcements, loading } = useFetch('/announcements/public/');
   const [filter, setFilter] = useState('all');
-
-  useEffect(() => {
-    api.get('/announcements/public/')
-      .then(r => setAnnouncements(r.data))
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, []);
 
   const filteredAnnouncements = filter === 'all' 
     ? announcements 

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import api, { MEDIA_ROOT } from '../utils/api';
-import { getUser } from '../utils/auth';
+import { useCurrentUser } from '../hooks/useCurrentUser';
 import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
 import { useScrollLock } from '../hooks/useScrollLock';
@@ -112,7 +112,7 @@ const EMPTY_FORM = {
 };
 
 const Announcements = () => {
-  const user = getUser();
+  const { user } = useCurrentUser();
   const canManage = user?.role === 'admin' || user?.role === 'staff';
   const canComment = ['student', 'staff', 'admin'].includes(user?.role);
 

@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
 import api, { WS_ROOT } from '../utils/api';
-import { getStoredUser } from '../utils/auth';
+import { getStoredUser, getAccessToken } from '../utils/auth';
 import toast from 'react-hot-toast';
 import { playSound } from '../utils/sounds';
 
@@ -62,7 +62,7 @@ export const NotificationProvider = ({ children }) => {
   // ── WebSocket connection ─────────────────────────────────────────────────
   const connect = useCallback(() => {
     if (!userIdRef.current) return;
-    const token = localStorage.getItem('access_token');
+    const token = getAccessToken();
     if (!token) return;
 
     // Guard: don't open a second connection

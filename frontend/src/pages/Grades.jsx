@@ -2,11 +2,11 @@
 // The actual grade view is in StudentGradeView (students) and GradeManagement (teachers/admins).
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getUser } from '../utils/auth';
+import { useCurrentUser } from '../hooks/useCurrentUser';
 
 const Grades = () => {
   const navigate = useNavigate();
-  const user = getUser();
+  const { user } = useCurrentUser();
 
   useEffect(() => {
     if (user?.role === 'student') {

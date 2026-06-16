@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import api from '../utils/api';
-import { getUser } from '../utils/auth';
+import { useCurrentUser } from '../hooks/useCurrentUser';
 import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
 import { LoadingSpinner, Button, EmptyState } from '../components/ui';
@@ -37,7 +37,7 @@ const Materials = () => {
   const [quarterFilter, setQuarterFilter] = useState('all');
   const [newMaterial, setNewMaterial] = useState(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
-  const user = getUser();
+  const { user } = useCurrentUser();
   const canManage = user?.role === 'admin' || user?.role === 'staff';
 
   const sortedClassrooms = useMemo(() => {

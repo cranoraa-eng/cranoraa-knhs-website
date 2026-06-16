@@ -1,16 +1,20 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import api from '../utils/api';
 import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
+import { useParallelFetch } from '../hooks/useFetch';
 import { useScrollLock } from '../hooks/useScrollLock';
 import { LoadingSpinner, EmptyState, Button } from '../components/ui';
 
 const emptyForm = { first_name: '', last_name: '', email: '', password: '' };
 
 export default function ParentManagement() {
-  const [parents, setParents] = useState([]);
-  const [students, setStudents] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { data, loading, refetch } = useParallelFetch({
+    parents: '/users/?role=parent',
+    students: '/users/?role=student',
+  });
+  const parents = Array.isArray(data.parents) ? data.parents : [];
+  const students = Array.isArray(data.students) ? data.students : [];
   const [search, setSearch] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
   const [showLinkModal, setShowLinkModal] = useState(false);
@@ -23,21 +27,6 @@ export default function ParentManagement() {
   const [openMenuId, setOpenMenuId] = useState(null);
 
   useScrollLock(showAddModal || showLinkModal);
-
-  const fetchAll = async () => {
-    setLoading(true);
-    try {
-      const [pRes, sRes] = await Promise.all([
-        api.get('/users/?role=parent'),
-        api.get('/users/?role=student'),
-      ]);
-      setParents(Array.isArray(pRes.data) ? pRes.data : []);
-      setStudents(Array.isArray(sRes.data) ? sRes.data : []);
-    } catch { toast.error('Failed to load data'); }
-    finally { setLoading(false); }
-  };
-
-  useEffect(() => { fetchAll(); }, []);
 
   const handleCreate = async (e) => {
     e.preventDefault();
