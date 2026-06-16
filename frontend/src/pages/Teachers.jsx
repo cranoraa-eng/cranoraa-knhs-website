@@ -38,8 +38,6 @@ const Teachers = () => {
   });
 
   useScrollLock(showAddModal || showEditModal || showImportModal);
-    }
-  };
 
   const STAFF_TITLES = [
     { value: 'teacher', label: 'Teacher' },

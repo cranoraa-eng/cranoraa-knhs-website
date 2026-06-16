@@ -2,7 +2,7 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
-from rest_framework.throttling import throttle_classes
+from rest_framework.decorators import throttle_classes
 
 from ..models import WebsiteContent
 from ..serializers import WebsiteContentSerializer
