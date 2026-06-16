@@ -6,6 +6,7 @@ from .user import (
 from .academic import (
     ClassroomSerializer, StudentClassEnrollmentSerializer,
     SubjectSerializer, ClassroomSubjectSerializer,
+    SystemSettingSerializer,
 )
 from .announcements import (
     AnnouncementAttachmentSerializer, AnnouncementCommentSerializer,
@@ -50,6 +51,7 @@ __all__ = [
     'OnboardingStateSerializer', 'SimplifiedStudentSerializer',
     'ClassroomSerializer', 'StudentClassEnrollmentSerializer',
     'SubjectSerializer', 'ClassroomSubjectSerializer',
+    'SystemSettingSerializer',
     'AnnouncementAttachmentSerializer', 'AnnouncementCommentSerializer',
     'AnnouncementSerializer',
     'TimeSlotSerializer', 'AttendanceSerializer', 'AbsenceExcuseSerializer',

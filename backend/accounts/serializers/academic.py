@@ -5,6 +5,12 @@ from ._base import full_name
 from .user import SimplifiedStudentSerializer
 
 
+class SystemSettingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SystemSetting
+        fields = '__all__'
+
+
 class ClassroomSerializer(serializers.ModelSerializer):
     teacher_name = serializers.SerializerMethodField()
     student_count = serializers.SerializerMethodField()

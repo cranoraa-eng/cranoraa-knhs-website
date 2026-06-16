@@ -48,7 +48,7 @@ const Teachers = lazy(() => import('../pages/Teachers'));
 const StudentManagement = lazy(() => import('../pages/StudentManagement'));
 const AuditLogs = lazy(() => import('../pages/AuditLogs'));
 const Backups = lazy(() => import('../pages/Backups'));
-const WebsiteContent = lazy(() => import('../pages/WebsiteContent'));
+const WebsiteContent = lazy(() => import('../pages/WebsiteContentManagement'));
 const EnrollmentManagement = lazy(() => import('../pages/EnrollmentManagement'));
 const GradeInput = lazy(() => import('../pages/GradeInput'));
 const StudentGradeView = lazy(() => import('../pages/StudentGradeView'));
