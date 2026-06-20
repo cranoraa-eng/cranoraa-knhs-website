@@ -6,7 +6,8 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from django.db.models import Q
+from django.db.models import Q, Count
+from django.utils import timezone as _tz
 
 from ..models import Ticket, TicketParticipant, TicketMessage, DepartmentContact
 from ..serializers import (
@@ -25,7 +26,7 @@ class TicketViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         user = self.request.user
 
-        qs = Ticket.objects.filter(is_archived=False).select_related(
+        qs = Ticket.objects.filter(is_archived=False, deleted_at__isnull=True).select_related(
             'created_by', 'assigned_to'
         ).prefetch_related('messages', 'participants')
 
@@ -208,6 +209,11 @@ class TicketViewSet(viewsets.ModelViewSet):
             content=content
         )
 
+        # Track first response time (SLA)
+        if not ticket.first_response_at and request.user != ticket.created_by:
+            ticket.first_response_at = _tz.now()
+            ticket.save(update_fields=['first_response_at', 'updated_at'])
+
         # Update ticket status based on who responded
         is_staff_response = ticket.assigned_to and request.user == ticket.assigned_to
         if is_staff_response:
@@ -263,12 +269,18 @@ class TicketViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post'], url_path='update-status')
     def update_status(self, request, pk=None):
-        """Update ticket status."""
+        """Update ticket status. Only staff/admin can change status."""
         ticket = self.get_object()
         new_status = request.data.get('status')
 
         if new_status not in ['open', 'pending', 'replied', 'resolved', 'closed']:
             return Response({'error': 'Invalid status'}, status=400)
+
+        if request.user.role not in ('staff', 'admin'):
+            return Response(
+                {'error': 'Only staff can change ticket status.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
 
         ticket.status = new_status
         ticket.save(update_fields=['status', 'updated_at'])
@@ -277,12 +289,18 @@ class TicketViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post'], url_path='update-priority')
     def update_priority(self, request, pk=None):
-        """Update ticket priority."""
+        """Update ticket priority. Only staff/admin can change priority."""
         ticket = self.get_object()
         new_priority = request.data.get('priority')
 
         if new_priority not in ['normal', 'high', 'urgent']:
             return Response({'error': 'Invalid priority'}, status=400)
+
+        if request.user.role not in ('staff', 'admin'):
+            return Response(
+                {'error': 'Only staff can change ticket priority.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
 
         ticket.priority = new_priority
         ticket.save(update_fields=['priority', 'updated_at'])
@@ -357,12 +375,9 @@ class TicketViewSet(viewsets.ModelViewSet):
         if ticket.created_by != request.user and request.user.role != 'admin':
             return Response({'error': 'Only the creator or admin can delete this ticket'}, status=403)
 
-        from django.utils import timezone as _tz
-
-        # Soft delete: set archived + log the action
-        # deleted_at column will be used once migration 0087 is applied
         ticket.is_archived = True
-        ticket.save(update_fields=['is_archived', 'updated_at'])
+        ticket.deleted_at = _tz.now()
+        ticket.save(update_fields=['is_archived', 'deleted_at', 'updated_at'])
 
         log_audit_action(
             user=request.user,
@@ -528,20 +543,20 @@ class TicketViewSet(viewsets.ModelViewSet):
     def stats(self, request):
         """Get ticket statistics."""
         user = request.user
-        base_qs = Ticket.objects.all()
+        base_qs = Ticket.objects.filter(is_archived=False, deleted_at__isnull=True)
 
         # Role-based filtering
         if user.role in ('student', 'parent'):
             base_qs = base_qs.filter(created_by=user)
 
-        stats = {
-            'total': base_qs.count(),
-            'open': base_qs.filter(status='open').count(),
-            'pending': base_qs.filter(status='pending').count(),
-            'replied': base_qs.filter(status='replied').count(),
-            'resolved': base_qs.filter(status='resolved').count(),
-            'closed': base_qs.filter(status='closed').count(),
-        }
+        stats = base_qs.aggregate(
+            total=Count('id'),
+            open=Count('id', filter=Q(status='open')),
+            pending=Count('id', filter=Q(status='pending')),
+            replied=Count('id', filter=Q(status='replied')),
+            resolved=Count('id', filter=Q(status='resolved')),
+            closed=Count('id', filter=Q(status='closed')),
+        )
         return Response(stats)
 
 

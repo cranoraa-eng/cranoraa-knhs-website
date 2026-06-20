@@ -54,11 +54,15 @@ class Ticket(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.ticket_id:
-            from django.db import transaction
+            from django.db import transaction, connection
             with transaction.atomic():
-                last = Ticket.objects.select_for_update().order_by('-id').first()
-                num = (last.id + 1) if last else 1
-                self.ticket_id = f"TKT-{str(num).zfill(4)}"
+                cursor = connection.cursor()
+                cursor.execute(
+                    "SELECT COALESCE(MAX(CAST(SUBSTRING(ticket_id FROM 5) AS INTEGER)), 0) + 1 "
+                    "FROM accounts_ticket"
+                )
+                next_num = cursor.fetchone()[0]
+                self.ticket_id = f"TKT-{str(next_num).zfill(4)}"
         super().save(*args, **kwargs)
 
 

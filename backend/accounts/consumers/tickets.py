@@ -248,23 +248,35 @@ class TicketConsumer(AsyncWebsocketConsumer):
         import datetime
         five_mins_ago = _tz.now() - datetime.timedelta(minutes=5)
 
+        # Batch-fetch users to avoid N+1 queries
+        active_user_ids = set()
+        users_to_notify = []
         for uid in participant_ids:
             if uid == sender_id or uid in notified:
                 continue
-            try:
-                u = User.objects.get(id=uid)
-                if u.last_activity and u.last_activity > five_mins_ago:
-                    continue
-            except User.DoesNotExist:
-                continue
-            Notification.objects.create(
+            active_user_ids.add(uid)
+
+        if active_user_ids:
+            recent_users = User.objects.filter(
+                id__in=active_user_ids,
+                last_activity__gt=five_mins_ago,
+            ).values_list('id', flat=True)
+            skip_users = set(recent_users)
+
+            for uid in active_user_ids:
+                if uid not in skip_users:
+                    users_to_notify.append(uid)
+
+        Notification.objects.bulk_create([
+            Notification(
                 recipient_id=uid,
                 notification_type='message',
                 title=f'New message on {ticket.ticket_id}',
                 message=f'{sender_name}: {preview}',
                 link='/communication-center',
             )
-            notified.add(uid)
+            for uid in users_to_notify
+        ])
 
         return msg
 

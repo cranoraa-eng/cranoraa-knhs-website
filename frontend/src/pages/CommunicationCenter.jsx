@@ -13,6 +13,9 @@ const ClockIcon = (p) => <svg width={p.size||16} height={p.size||16} viewBox="0 
 const UserIcon = (p) => <svg width={p.size||16} height={p.size||16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={p.className}><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>;
 const BuildingIcon = (p) => <svg width={p.size||16} height={p.size||16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={p.className}><rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><line x1="9" y1="6" x2="9" y2="6.01"/><line x1="15" y1="6" x2="15" y2="6.01"/><line x1="9" y1="10" x2="9" y2="10.01"/><line x1="15" y1="10" x2="15" y2="10.01"/><line x1="9" y1="14" x2="9" y2="14.01"/><line x1="15" y1="14" x2="15" y2="14.01"/><line x1="9" y1="18" x2="15" y2="18"/></svg>;
 const DownloadIcon = (p) => <svg width={p.size||16} height={p.size||16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={p.className}><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>;
+const PaperclipIcon = (p) => <svg width={p.size||16} height={p.size||16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={p.className}><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>;
+const PlusIcon = (p) => <svg width={p.size||16} height={p.size||16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={p.className}><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>;
+const ChevronDownIcon = (p) => <svg width={p.size||16} height={p.size||16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={p.className}><polyline points="6 9 12 15 18 9"/></svg>;
 
 const DEPT_META = {
   faculty:    { label: 'Faculty',    color: 'bg-blue-500',  icon: 'graduation' },
@@ -222,7 +225,7 @@ function MessageCard({ msg, isOwn, onDownload }) {
   );
 }
 
-function DetailsPanel({ ticket, messages, onClose }) {
+function DetailsPanel({ ticket, messages, onClose, onStatusChange, onPriorityChange, userRole }) {
   if (!ticket) return null;
 
   const participants = [];
@@ -237,6 +240,10 @@ function DetailsPanel({ ticket, messages, onClose }) {
       participants.push({ name: m.sender_name, role: 'Participant' });
     }
   });
+
+  const canManage = userRole === 'staff' || userRole === 'admin';
+  const statusOptions = ['open', 'pending', 'replied', 'resolved', 'closed'];
+  const priorityOptions = ['normal', 'high', 'urgent'];
 
   return (
     <div className="absolute inset-0 z-20 bg-white flex flex-col overflow-hidden">
@@ -263,6 +270,44 @@ function DetailsPanel({ ticket, messages, onClose }) {
               <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Information</p>
             </div>
             <div className="divide-y divide-slate-100">
+              <div className="px-3 py-2.5 flex items-center justify-between">
+                <span className="text-[10px] text-slate-400 font-medium">Status</span>
+                {canManage ? (
+                  <div className="relative">
+                    <select
+                      value={ticket.status}
+                      onChange={(e) => onStatusChange(ticket.id, e.target.value)}
+                      className="appearance-none bg-transparent text-xs font-medium text-slate-700 pr-5 cursor-pointer focus:outline-none"
+                    >
+                      {statusOptions.map(s => (
+                        <option key={s} value={s}>{STATUS_CONFIG[s]?.label || s}</option>
+                      ))}
+                    </select>
+                    <ChevronDownIcon size={12} className="absolute right-0 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                  </div>
+                ) : (
+                  <StatusBadge status={ticket.status} />
+                )}
+              </div>
+              <div className="px-3 py-2.5 flex items-center justify-between">
+                <span className="text-[10px] text-slate-400 font-medium">Priority</span>
+                {canManage ? (
+                  <div className="relative">
+                    <select
+                      value={ticket.priority}
+                      onChange={(e) => onPriorityChange(ticket.id, e.target.value)}
+                      className="appearance-none bg-transparent text-xs font-medium text-slate-700 pr-5 cursor-pointer focus:outline-none"
+                    >
+                      {priorityOptions.map(p => (
+                        <option key={p} value={p}>{PRIORITY_CONFIG[p]?.label || p}</option>
+                      ))}
+                    </select>
+                    <ChevronDownIcon size={12} className="absolute right-0 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                  </div>
+                ) : (
+                  <PriorityBadge priority={ticket.priority} />
+                )}
+              </div>
               <div className="px-3 py-2.5 flex items-center justify-between">
                 <span className="text-[10px] text-slate-400 font-medium">Department</span>
                 {(() => {
@@ -471,6 +516,8 @@ export default function CommunicationCenter() {
   const [mobileView, setMobileView] = useState('list');
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
+  const fileInputRef = useRef(null);
+  const textareaRef = useRef(null);
 
   const debouncedSearch = useRef(null);
   const [effectiveSearch, setEffectiveSearch] = useState('');
@@ -482,7 +529,13 @@ export default function CommunicationCenter() {
   const typingThrottleRef = useRef(0);
   const [typingUsers, setTypingUsers] = useState([]);
   const typingTimeoutRef = useRef({});
+  const typingNamesRef = useRef({});
   const [wsConnected, setWsConnected] = useState(false);
+
+  // ── New ticket modal ────────────────────────────────────────────────────
+  const [showNewTicket, setShowNewTicket] = useState(false);
+  const [newTicket, setNewTicket] = useState({ subject: '', category: 'other', priority: 'normal', message: '' });
+  const [creatingTicket, setCreatingTicket] = useState(false);
 
   const statusParam = activeFilter === 'closed' ? 'resolved' : activeFilter;
   const hasServerStatus = activeFilter !== 'all' && activeFilter !== 'unread';
@@ -530,6 +583,8 @@ export default function CommunicationCenter() {
     } else {
       setMessages([]);
     }
+    setText('');
+    if (textareaRef.current) textareaRef.current.style.height = 'auto';
   }, [selectedId, fetchMessages]);
 
   useEffect(() => {
@@ -607,6 +662,7 @@ export default function CommunicationCenter() {
         } else if (data.type === 'typing') {
           const uid = data.sender_id;
           if (data.is_typing) {
+            typingNamesRef.current[uid] = data.sender_name || 'Someone';
             setTypingUsers(prev => {
               if (prev.includes(uid)) return prev;
               return [...prev, uid];
@@ -615,9 +671,11 @@ export default function CommunicationCenter() {
             if (typingTimeoutRef.current[uid]) clearTimeout(typingTimeoutRef.current[uid]);
             typingTimeoutRef.current[uid] = setTimeout(() => {
               setTypingUsers(prev => prev.filter(id => id !== uid));
+              delete typingNamesRef.current[uid];
             }, 4000);
           } else {
             setTypingUsers(prev => prev.filter(id => id !== uid));
+            delete typingNamesRef.current[uid];
             if (typingTimeoutRef.current[uid]) clearTimeout(typingTimeoutRef.current[uid]);
           }
 
@@ -682,6 +740,7 @@ export default function CommunicationCenter() {
   useEffect(() => {
     return () => {
       Object.values(typingTimeoutRef.current).forEach(clearTimeout);
+      typingNamesRef.current = {};
     };
   }, []);
 
@@ -690,6 +749,7 @@ export default function CommunicationCenter() {
     const content = text.trim();
     if (!content) return;
     setText('');
+    if (textareaRef.current) textareaRef.current.style.height = 'auto';
     setTypingUsers(prev => prev.filter(id => id !== user?.id));
 
     // Try WebSocket first
@@ -716,7 +776,7 @@ export default function CommunicationCenter() {
 
   // ── Typing indicator ───────────────────────────────────────────────────
   const handleTextChange = (e) => {
-    setText(e.target.value);
+    handleTextareaInput(e);
     // Send typing indicator (throttled to every 3s)
     const now = Date.now();
     if (now - typingThrottleRef.current > 3000 && wsRef.current?.readyState === WebSocket.OPEN) {
@@ -766,37 +826,98 @@ export default function CommunicationCenter() {
   };
 
   const handleSelectPerson = async (person) => {
-    // Check if a ticket already exists with this person
-    const existing = tickets.find(t => {
-      const name = `${person.first_name || ''} ${person.last_name || ''}`.trim();
-      return (
-        t.created_by_name === name ||
-        t.assigned_name === name ||
-        t.assigned_to_name === name ||
-        t.staff_name === name
-      );
-    });
-    if (existing) {
-      setSelectedId(existing.id);
-      setMobileView('thread');
-      return;
-    }
-    // Create new ticket for this person
     try {
-      const name = `${person.first_name || ''} ${person.last_name || ''}`.trim();
-      const res = await api.post('/tickets/', {
-        subject: `Conversation with ${name}`,
-        category: 'other',
-        priority: 'normal',
-        assigned_to: person.id,
-      });
-      toast.success(`Started conversation with ${name}`);
-      await fetchTickets();
-      setSelectedId(res.data.id);
+      const res = await api.post('/tickets/open-conversation/', { user_id: person.id });
+      const ticket = res.data;
+      const alreadyExists = tickets.find(t => t.id === ticket.id);
+      if (!alreadyExists) {
+        setTickets(prev => [ticket, ...prev]);
+      }
+      setSelectedId(ticket.id);
       setMobileView('thread');
     } catch (err) {
       toast.error(err.response?.data?.detail || err.response?.data?.error || 'Failed to start conversation');
     }
+  };
+
+  const handleStatusChange = async (ticketId, newStatus) => {
+    try {
+      await api.post(`/tickets/${ticketId}/update-status/`, { status: newStatus });
+      setTickets(prev => prev.map(t => t.id === ticketId ? { ...t, status: newStatus } : t));
+      toast.success('Status updated');
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed to update status');
+    }
+  };
+
+  const handlePriorityChange = async (ticketId, newPriority) => {
+    try {
+      await api.post(`/tickets/${ticketId}/update-priority/`, { priority: newPriority });
+      setTickets(prev => prev.map(t => t.id === ticketId ? { ...t, priority: newPriority } : t));
+      toast.success('Priority updated');
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed to update priority');
+    }
+  };
+
+  const handleFileUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file || !selectedId) return;
+    if (file.size > 25 * 1024 * 1024) {
+      toast.error('File size exceeds 25 MB limit');
+      return;
+    }
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('content', file.name);
+    try {
+      setSending(true);
+      await api.post(`/tickets/${selectedId}/send-message/`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      fetchMessages(selectedId);
+      fetchTickets();
+    } catch {
+      toast.error('Failed to upload file');
+    } finally {
+      setSending(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const handleCreateTicket = async () => {
+    if (!newTicket.subject.trim()) {
+      toast.error('Subject is required');
+      return;
+    }
+    setCreatingTicket(true);
+    try {
+      const res = await api.post('/tickets/', {
+        subject: newTicket.subject.trim(),
+        category: newTicket.category,
+        priority: newTicket.priority,
+      });
+      if (newTicket.message.trim()) {
+        await api.post(`/tickets/${res.data.id}/send-message/`, { content: newTicket.message.trim() });
+      }
+      toast.success('Ticket created');
+      setShowNewTicket(false);
+      setNewTicket({ subject: '', category: 'other', priority: 'normal', message: '' });
+      await fetchTickets();
+      setSelectedId(res.data.id);
+      setMobileView('thread');
+    } catch (err) {
+      toast.error(err.response?.data?.detail || err.response?.data?.error || 'Failed to create ticket');
+    } finally {
+      setCreatingTicket(false);
+    }
+  };
+
+  const handleTextareaInput = (e) => {
+    setText(e.target.value);
+    const el = e.target;
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 120) + 'px';
   };
 
   const unreadCount = tickets.filter(t => Number(t.unread_count) > 0).length;
@@ -810,9 +931,16 @@ export default function CommunicationCenter() {
       `}>
         {/* Header */}
         <div className="px-4 sm:px-5 py-4 border-b border-slate-100">
-          <div className="mb-3">
-            <h1 className="text-sm font-extrabold text-slate-900 uppercase tracking-tight">Support Center</h1>
-            <p className="text-[10px] text-slate-500 mt-0.5">Manage support requests</p>
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <h1 className="text-sm font-extrabold text-slate-900 uppercase tracking-tight">Support Center</h1>
+              <p className="text-[10px] text-slate-500 mt-0.5">Manage support requests</p>
+            </div>
+            <button onClick={() => setShowNewTicket(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-violet-600 text-white text-[11px] font-bold rounded-lg hover:bg-violet-700 transition-colors shadow-sm">
+              <PlusIcon size={12} />
+              New
+            </button>
           </div>
           <div className="relative">
             <SearchIcon size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
@@ -876,7 +1004,8 @@ export default function CommunicationCenter() {
           <>
             {/* Details Overlay */}
             {showDetails && (
-              <DetailsPanel ticket={selectedTicket} messages={messages} onClose={() => setShowDetails(false)} />
+              <DetailsPanel ticket={selectedTicket} messages={messages} onClose={() => setShowDetails(false)}
+                onStatusChange={handleStatusChange} onPriorityChange={handlePriorityChange} userRole={user?.role} />
             )}
 
             {/* Thread Header */}
@@ -927,16 +1056,25 @@ export default function CommunicationCenter() {
               {typingUsers.length > 0 && (
                 <div className="px-1 pb-2">
                   <p className="text-[11px] text-slate-400 italic">
-                    Someone is typing...
+                    {typingUsers.length === 1
+                      ? `${typingNamesRef.current[typingUsers[0]] || 'Someone'} is typing...`
+                      : `${typingUsers.length} people are typing...`}
                   </p>
                 </div>
               )}
               <div className="flex items-end gap-2">
+                <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileUpload}
+                  accept=".jpg,.jpeg,.png,.gif,.webp,.pdf,.doc,.docx,.xls,.xlsx,.txt,.csv,.zip" />
+                <button onClick={() => fileInputRef.current?.click()}
+                  className="p-2.5 text-slate-400 hover:text-violet-600 hover:bg-violet-50 rounded-lg transition-colors flex-shrink-0"
+                  title="Attach file" aria-label="Attach file">
+                  <PaperclipIcon size={16} />
+                </button>
                 <div className="flex-1 relative">
-                  <textarea ref={inputRef} value={text} onChange={handleTextChange}
+                  <textarea ref={(el) => { inputRef.current = el; textareaRef.current = el; }} value={text} onChange={handleTextChange}
                     onKeyDown={handleKeyDown} placeholder="Type your message..." rows={1}
                     aria-label="Type your message"
-                    className="w-full px-4 py-2.5 bg-slate-100 rounded-lg text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:bg-white resize-none transition-colors" />
+                    className="w-full px-4 py-2.5 bg-slate-100 rounded-lg text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:bg-white resize-none transition-colors max-h-[120px] overflow-y-auto" />
                 </div>
                 <button onClick={handleSend} disabled={!text.trim() || sending}
                   aria-label="Send message"
@@ -963,6 +1101,77 @@ export default function CommunicationCenter() {
       <div className="hidden lg:flex w-[300px] min-w-0 border-l border-slate-200 h-full">
         <PeopleDirectory onSelectPerson={handleSelectPerson} currentUserId={user?.id} />
       </div>
+
+      {/* New Ticket Modal */}
+      {showNewTicket && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={() => setShowNewTicket(false)}>
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md" onClick={e => e.stopPropagation()}>
+            <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+              <h3 className="text-sm font-bold text-slate-900">New Support Request</h3>
+              <button onClick={() => setShowNewTicket(false)} className="text-slate-400 hover:text-slate-600 p-1 rounded hover:bg-slate-100 transition-colors">
+                <XIcon size={14} />
+              </button>
+            </div>
+            <div className="px-5 py-4 space-y-3">
+              <div>
+                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Subject</label>
+                <input type="text" value={newTicket.subject} onChange={e => setNewTicket(p => ({ ...p, subject: e.target.value }))}
+                  placeholder="Brief description of your issue"
+                  className="w-full px-3 py-2 bg-slate-100 rounded-lg text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:bg-white transition-colors" />
+              </div>
+              <div className="flex gap-3">
+                <div className="flex-1">
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Category</label>
+                  <div className="relative">
+                    <select value={newTicket.category} onChange={e => setNewTicket(p => ({ ...p, category: e.target.value }))}
+                      className="w-full appearance-none px-3 py-2 bg-slate-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:bg-white transition-colors pr-8">
+                      <option value="enrollment">Enrollment</option>
+                      <option value="attendance">Attendance</option>
+                      <option value="academic">Academic</option>
+                      <option value="guidance">Guidance</option>
+                      <option value="it_support">IT Support</option>
+                      <option value="finance">Finance</option>
+                      <option value="facilities">Facilities</option>
+                      <option value="collaboration">Collaboration</option>
+                      <option value="other">Other</option>
+                    </select>
+                    <ChevronDownIcon size={14} className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                  </div>
+                </div>
+                <div className="w-28">
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Priority</label>
+                  <div className="relative">
+                    <select value={newTicket.priority} onChange={e => setNewTicket(p => ({ ...p, priority: e.target.value }))}
+                      className="w-full appearance-none px-3 py-2 bg-slate-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:bg-white transition-colors pr-8">
+                      <option value="normal">Normal</option>
+                      <option value="high">High</option>
+                      <option value="urgent">Urgent</option>
+                    </select>
+                    <ChevronDownIcon size={14} className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                  </div>
+                </div>
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Message (optional)</label>
+                <textarea value={newTicket.message} onChange={e => setNewTicket(p => ({ ...p, message: e.target.value }))}
+                  placeholder="Describe your issue in detail..." rows={3}
+                  className="w-full px-3 py-2 bg-slate-100 rounded-lg text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:bg-white transition-colors resize-none" />
+              </div>
+            </div>
+            <div className="px-5 py-3 border-t border-slate-100 flex items-center justify-end gap-2">
+              <button onClick={() => setShowNewTicket(false)}
+                className="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">
+                Cancel
+              </button>
+              <button onClick={handleCreateTicket} disabled={creatingTicket || !newTicket.subject.trim()}
+                className="px-4 py-2 text-xs font-semibold text-white bg-violet-600 hover:bg-violet-700 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2">
+                {creatingTicket ? <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <PlusIcon size={12} />}
+                Create Ticket
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
