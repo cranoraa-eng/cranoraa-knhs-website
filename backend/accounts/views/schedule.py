@@ -10,7 +10,7 @@ from ..serializers import (
     ScheduleSerializer,
     full_name,
 )
-from ..permissions import IsAdminUser
+from ..permissions import IsAdmin
 from ..utils import log_audit_action
 
 
