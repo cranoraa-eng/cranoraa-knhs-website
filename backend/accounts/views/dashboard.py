@@ -206,27 +206,43 @@ def admin_dashboard_stats(request):
 
         active_users = User.objects.filter(last_activity__gte=five_mins_ago).count()
 
-        attendance_trends = compute_attendance_trends(att_qs, today, days=30)
+        try:
+            attendance_trends = compute_attendance_trends(att_qs, today, days=30)
+        except Exception as e:
+            logger.error(f"attendance_trends error: {str(e)}", exc_info=True)
+            attendance_trends = []
 
-        grades = Grade.objects.filter(raw_score__isnull=False, grade_type='final_grade')
-        if academic_year_name:
-            grades = grades.filter(
-                Q(academic_year=academic_year_name) |
-                Q(classroom__academic_year__name=academic_year_name)
-            )
+        try:
+            grades = Grade.objects.filter(raw_score__isnull=False, grade_type='final_grade')
+            if academic_year_name:
+                grades = grades.filter(
+                    Q(academic_year=academic_year_name) |
+                    Q(classroom__academic_year__name=academic_year_name)
+                )
+        except Exception as e:
+            logger.error(f"grades filter error: {str(e)}", exc_info=True)
+            grades = Grade.objects.none()
 
         total_grades = grades.count()
         avg_grade = grades.aggregate(avg=Avg('raw_score'))['avg']
         average_grade = round(float(avg_grade), 2) if avg_grade else None
 
-        distribution = compute_grade_distribution(grades)
+        try:
+            distribution = compute_grade_distribution(grades)
+        except Exception as e:
+            logger.error(f"distribution error: {str(e)}", exc_info=True)
+            distribution = {'outstanding': 0, 'very_satisfactory': 0, 'satisfactory': 0, 'fairly_satisfactory': 0, 'below_75': 0}
         outstanding = distribution['outstanding']
         very_satisfactory = distribution['very_satisfactory']
         satisfactory = distribution['satisfactory']
         fairly_satisfactory = distribution['fairly_satisfactory']
         below_75 = distribution['below_75']
 
-        ga_result = compute_general_average_buckets(grades)
+        try:
+            ga_result = compute_general_average_buckets(grades)
+        except Exception as e:
+            logger.error(f"ga_buckets error: {str(e)}", exc_info=True)
+            ga_result = {'buckets': {'outstanding': 0, 'very_satisfactory': 0, 'satisfactory': 0, 'fairly_satisfactory': 0, 'below_75': 0}, 'total_students_graded': 0}
         ga_buckets = ga_result['buckets']
         total_students_graded = ga_result['total_students_graded']
 
@@ -237,9 +253,17 @@ def admin_dashboard_stats(request):
             except Exception:
                 pass
 
-        active_users_trends = compute_active_users_trends(AuditLog, now, hours=24) if AuditLog else []
+        try:
+            active_users_trends = compute_active_users_trends(AuditLog, now, hours=24) if AuditLog else []
+        except Exception as e:
+            logger.error(f"active_users_trends error: {str(e)}", exc_info=True)
+            active_users_trends = []
 
-        subject_perf = compute_subject_performance(grades, limit=10)
+        try:
+            subject_perf = compute_subject_performance(grades, limit=10)
+        except Exception as e:
+            logger.error(f"subject_perf error: {str(e)}", exc_info=True)
+            subject_perf = []
 
         announcements_data = []
         try:
@@ -257,7 +281,11 @@ def admin_dashboard_stats(request):
         except Exception as e:
             logger.error(f"Error fetching announcements: {str(e)}")
 
-        latest_messages = get_latest_messages(request.user)
+        try:
+            latest_messages = get_latest_messages(request.user)
+        except Exception as e:
+            logger.error(f"latest_messages error: {str(e)}", exc_info=True)
+            latest_messages = []
 
         res_data = {
             'total_students': total_students,
