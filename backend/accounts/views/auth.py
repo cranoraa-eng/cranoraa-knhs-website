@@ -74,15 +74,18 @@ def login_view(request):
 
         refresh = RefreshToken.for_user(user)
 
-        log_audit_action(
-            user=user,
-            action='login',
-            model_name='User',
-            object_id=user.id,
-            object_repr=str(user),
-            description=f'User {user.username} logged in successfully',
-            request=request
-        )
+        try:
+            log_audit_action(
+                user=user,
+                action='login',
+                model_name='User',
+                object_id=user.id,
+                object_repr=str(user),
+                description=f'User {user.username} logged in successfully',
+                request=request
+            )
+        except Exception as audit_err:
+            logger.error(f"Audit log failed on login: {audit_err}")
 
         response = Response({
             'access': str(refresh.access_token),
