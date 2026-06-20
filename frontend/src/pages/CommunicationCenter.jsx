@@ -185,6 +185,7 @@ function TicketCard({ ticket, selected, onSelect }) {
 function MessageCard({ msg, isOwn, onDownload }) {
   const isImage = msg.message_type === 'image' || msg.attachment_is_image;
   const isFile = msg.message_type === 'file' && msg.attachment_url;
+  const isPending = msg._optimistic;
 
   return (
     <div className={`flex ${isOwn ? 'justify-end' : 'justify-start'} mb-3`}>
@@ -197,7 +198,7 @@ function MessageCard({ msg, isOwn, onDownload }) {
           isOwn
             ? 'bg-violet-600 text-white border-violet-700'
             : 'bg-white text-slate-700 border-slate-200 shadow-sm'
-        }`}>
+        } ${isPending ? 'opacity-75' : ''}`}>
           {isImage && msg.attachment_url && (
             <a href={msg.attachment_url} target="_blank" rel="noopener noreferrer" className="block mb-2" onClick={e => e.stopPropagation()}>
               <img src={msg.attachment_url} alt={msg.attachment_filename || 'Image'} className="max-w-full max-h-64 rounded object-contain" loading="lazy" />
@@ -220,6 +221,16 @@ function MessageCard({ msg, isOwn, onDownload }) {
           )}
           {msg.content && <p className={`text-sm leading-relaxed whitespace-pre-wrap break-words ${msg.attachment_url ? 'mt-1' : ''}`}>{msg.content}</p>}
         </div>
+        {isPending && isOwn && (
+          <div className="flex items-center gap-1 mt-1 justify-end">
+            <div className="flex gap-0.5">
+              <span className="w-1 h-1 bg-violet-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+              <span className="w-1 h-1 bg-violet-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+              <span className="w-1 h-1 bg-violet-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+            </div>
+            <span className="text-[9px] text-slate-400 italic">Sending</span>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -1074,10 +1085,15 @@ export default function CommunicationCenter() {
             <div className="bg-white border-t border-slate-200 px-3 sm:px-4 py-3">
               {typingUsers.length > 0 && (
                 <div className="px-1 pb-2">
-                  <p className="text-[11px] text-slate-400 italic">
+                  <p className="text-[11px] text-slate-400 italic flex items-center gap-1.5">
+                    <span className="flex gap-0.5">
+                      <span className="w-1 h-1 bg-violet-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                      <span className="w-1 h-1 bg-violet-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                      <span className="w-1 h-1 bg-violet-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                    </span>
                     {typingUsers.length === 1
-                      ? `${typingNamesRef.current[typingUsers[0]] || 'Someone'} is typing...`
-                      : `${typingUsers.length} people are typing...`}
+                      ? <>{typingNamesRef.current[typingUsers[0]] || 'Someone'} is typing</>
+                      : <>{typingUsers.length} people are typing</>}
                   </p>
                 </div>
               )}
