@@ -140,6 +140,29 @@ else:
         }
     }
 
+# Cache Configuration
+# Uses Redis when REDIS_URL is available (production with local Redis).
+# Falls back to local in-memory cache for development.
+_redis_url = os.environ.get('REDIS_URL', 'redis://localhost:6379/0')
+if _redis_url:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django_redis.cache.RedisCache',
+            'LOCATION': _redis_url,
+            'OPTIONS': {
+                'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+            },
+            'KEY_PREFIX': 'knhs',
+            'TIMEOUT': 60,  # default 60-second TTL
+        }
+    }
+else:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        }
+    }
+
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [

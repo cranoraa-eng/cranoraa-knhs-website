@@ -26,6 +26,12 @@ def teacher_dashboard_stats(request):
         if user.role != 'staff' and user.role != 'admin':
             return Response({'error': 'Unauthorized'}, status=403)
 
+        from django.core.cache import cache
+        cache_key = f'teacher_dashboard:v1:{user.id}'
+        cached = cache.get(cache_key)
+        if cached:
+            return Response(cached)
+
         assigned_classrooms_ids = ClassroomSubject.objects.filter(teacher=user).values_list('classroom_id', flat=True)
         classrooms = Classroom.objects.filter(Q(teacher=user) | Q(id__in=assigned_classrooms_ids)).distinct()
         total_classes = classrooms.count()
@@ -90,7 +96,7 @@ def teacher_dashboard_stats(request):
 
         latest_messages = get_latest_messages(user)
 
-        return Response({
+        res_data = {
             'total_students': total_students,
             'total_classes': total_classes,
             'total_grades': total_grades,
@@ -98,7 +104,9 @@ def teacher_dashboard_stats(request):
             'pending_grades': pending_grades,
             'recent_activities': recent_activities,
             'latest_messages': latest_messages
-        })
+        }
+        cache.set(cache_key, res_data, timeout=60)
+        return Response(res_data)
     except Exception as e:
         logger.error(f"Teacher stats error: {str(e)}", exc_info=True)
         return Response(
@@ -115,6 +123,12 @@ def student_dashboard_stats(request):
         if user.role != 'student':
             return Response({'error': 'Unauthorized'}, status=403)
 
+        from django.core.cache import cache
+        cache_key = f'student_dashboard:v1:{user.id}'
+        cached = cache.get(cache_key)
+        if cached:
+            return Response(cached)
+
         from ..models import Notification
 
         unread_notifications = Notification.objects.filter(recipient=user, is_read=False).count()
@@ -130,11 +144,13 @@ def student_dashboard_stats(request):
 
         latest_messages = get_latest_messages(user)
 
-        return Response({
+        res_data = {
             'unread_notifications': unread_notifications,
             'recent_notifications': recent_notif_data,
             'latest_messages': latest_messages
-        })
+        }
+        cache.set(cache_key, res_data, timeout=60)
+        return Response(res_data)
     except Exception as e:
         logger.error(f"Student dashboard stats error: {str(e)}", exc_info=True)
         return Response({'error': 'Failed to load dashboard statistics.'}, status=500)
@@ -182,8 +198,15 @@ def storage_analytics_view(request):
 def admin_attendance_analytics(request):
     if request.user.role not in ['admin', 'staff']:
         return Response({'error': 'Unauthorized'}, status=403)
-    from django.db.models.functions import TruncDate
+
+    from django.core.cache import cache
     academic_year_name = request.query_params.get('academic_year')
+    cache_key = f'attendance_analytics:v1:{request.user.id}:{academic_year_name or "all"}'
+    cached = cache.get(cache_key)
+    if cached:
+        return Response(cached)
+
+    from django.db.models.functions import TruncDate
     att_qs = Attendance.objects.all()
     if academic_year_name:
         att_qs = att_qs.filter(classroom__academic_year__name=academic_year_name)
@@ -212,7 +235,9 @@ def admin_attendance_analytics(request):
             'late': row['late'],
             'rate': round((present_late / total * 100), 1) if total > 0 else 0,
         })
-    return Response({'today_rate': today_rate, 'today_total': today_total, 'daily_trends': trends})
+    res_data = {'today_rate': today_rate, 'today_total': today_total, 'daily_trends': trends}
+    cache.set(cache_key, res_data, timeout=120)
+    return Response(res_data)
 
 
 @api_view(['GET'])
@@ -220,7 +245,14 @@ def admin_attendance_analytics(request):
 def admin_grade_analytics(request):
     if request.user.role not in ['admin', 'staff']:
         return Response({'error': 'Unauthorized'}, status=403)
+
+    from django.core.cache import cache
     academic_year_name = request.query_params.get('academic_year')
+    cache_key = f'grade_analytics:v1:{request.user.id}:{academic_year_name or "all"}'
+    cached = cache.get(cache_key)
+    if cached:
+        return Response(cached)
+
     grades = Grade.objects.filter(raw_score__isnull=False, grade_type='final_grade')
     if academic_year_name:
         grades = grades.filter(
@@ -240,7 +272,9 @@ def admin_grade_analytics(request):
     subject_stats = grades.values('subject__name').annotate(
         avg_grade=Avg('raw_score')
     ).order_by('-avg_grade')[:10]
-    return Response({
+    res_data = {
         'average': average, 'total': total, 'distribution': distribution,
         'subject_stats': [{'name': s['subject__name'], 'avg_grade': round(float(s['avg_grade']), 1) if s['avg_grade'] else 0} for s in subject_stats],
-    })
+    }
+    cache.set(cache_key, res_data, timeout=120)
+    return Response(res_data)

@@ -390,6 +390,13 @@ class AnnouncementViewSet(viewsets.ModelViewSet):
 @throttle_classes([PublicReadRateThrottle])
 def public_announcements_view(request):
     """Public endpoint to fetch all public announcements for the school website"""
+    from django.core.cache import cache
+    cache_key = 'public_announcements:v1'
+    cached = cache.get(cache_key)
+    if cached:
+        return Response(cached)
+
     queryset = Announcement.objects.filter(is_public=True, status='live').order_by('-is_pinned', '-created_at')
     serializer = AnnouncementSerializer(queryset, many=True, context={'request': request})
+    cache.set(cache_key, serializer.data, timeout=30)
     return Response(serializer.data)
