@@ -141,9 +141,21 @@ else:
     }
 
 # Cache Configuration
-# Uses Redis when REDIS_URL is available (production with local Redis).
-# Falls back to local in-memory cache for development.
-_redis_url = os.environ.get('REDIS_URL', 'redis://localhost:6379/0')
+# Uses Redis when REDIS_URL is set and reachable.
+# Falls back to local in-memory cache if Redis is unavailable.
+_redis_url = os.environ.get('REDIS_URL')
+if not _redis_url:
+    # Auto-detect local Redis for development
+    import socket
+    try:
+        _s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        _s.settimeout(0.3)
+        _s.connect(('localhost', 6379))
+        _s.close()
+        _redis_url = 'redis://localhost:6379/0'
+    except (socket.error, OSError):
+        _redis_url = None
+
 if _redis_url:
     CACHES = {
         'default': {
@@ -153,7 +165,7 @@ if _redis_url:
                 'CLIENT_CLASS': 'django_redis.client.DefaultClient',
             },
             'KEY_PREFIX': 'knhs',
-            'TIMEOUT': 60,  # default 60-second TTL
+            'TIMEOUT': 60,
         }
     }
 else:

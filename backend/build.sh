@@ -2,10 +2,6 @@
 # exit on error
 set -o errexit
 
-echo "Installing Redis..."
-apt-get update -qq && apt-get install -y -qq redis-server >/dev/null 2>&1 || echo "Redis install skipped (not Debian/Ubuntu)"
-redis-server --daemonize yes --maxmemory 64mb --maxmemory-policy allkeys-lru --loglevel warning || echo "Redis start skipped"
-
 echo "Installing dependencies..."
 pip install -r requirements.txt
 
