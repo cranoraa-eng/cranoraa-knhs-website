@@ -895,6 +895,7 @@ export default function CommunicationCenter() {
           return;
         }
         if (data.type === 'forced_logout') { toast.error(data.message || 'Your account has been suspended.'); return; }
+        if (data.type === 'error') { toast.error(data.message || 'An error occurred.'); return; }
       } catch { /* ignore */ }
     };
 
@@ -910,7 +911,7 @@ export default function CommunicationCenter() {
       }
     };
     ws.onerror = () => {};
-  }, [userId, selectedRoom?.id]);
+  }, [userId]);
 
   const disconnectChatWs = useCallback(() => {
     if (chatReconnectTimerRef.current) { clearTimeout(chatReconnectTimerRef.current); chatReconnectTimerRef.current = null; }
@@ -982,15 +983,15 @@ export default function CommunicationCenter() {
   const handleChatKeyDown = useCallback((e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      const input = e.target;
-      const content = input.value.trim();
+      const content = e.target.value.trim();
       if (!content || !selectedRoom) return;
       setReplyTo(null);
       if (!sendChatWs({ type: 'message', message: content })) {
         toast.error('Connection lost. Reconnecting...');
         connectChatWs(selectedRoom.id);
+        return;
       }
-      input.value = '';
+      e.target.value = '';
     }
   }, [selectedRoom, sendChatWs, connectChatWs]);
 
@@ -1631,9 +1632,27 @@ export default function CommunicationCenter() {
                       placeholder="Type a message..."
                       onKeyDown={handleChatKeyDown}
                       onChange={handleChatTyping}
-                      className="w-full px-4 py-2.5 text-sm bg-slate-100 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent"
+                      className="w-full px-4 py-2.5 text-sm bg-slate-100 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent pr-12"
                     />
                   </div>
+                  <button
+                    onClick={() => {
+                      const input = document.querySelector('[data-chat-input]');
+                      if (!input || !input.value.trim() || !selectedRoom) return;
+                      const content = input.value.trim();
+                      setReplyTo(null);
+                      if (!sendChatWs({ type: 'message', message: content })) {
+                        toast.error('Connection lost. Reconnecting...');
+                        connectChatWs(selectedRoom.id);
+                        return;
+                      }
+                      input.value = '';
+                    }}
+                    className="p-2.5 rounded-xl bg-violet-600 text-white hover:bg-violet-700 transition-colors disabled:opacity-50"
+                    title="Send message"
+                  >
+                    <SendIcon size={18} />
+                  </button>
                 </div>
               </div>
             </>
