@@ -1,5 +1,10 @@
 import time
 from django.utils.deprecation import MiddlewareMixin
+from channels.middleware import BaseMiddleware
+from channels.db import database_sync_to_async
+from urllib.parse import parse_qs
+from jwt import decode as jwt_decode
+from django.conf import settings
 
 # High-frequency endpoints that should not be logged to avoid table bloat
 _SKIP_LOG_PATHS = (
@@ -123,3 +128,40 @@ class RequestSizeLimitMiddleware(MiddlewareMixin):
                 pass
 
         return None
+
+
+class JWTAuthMiddleware(BaseMiddleware):
+    """
+    ASGI middleware for JWT authentication on WebSocket connections.
+    Extracts JWT token from query string or Authorization header.
+    """
+
+    async def __call__(self, scope, receive, send):
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
+
+        query_string = scope.get('query_string', b'').decode()
+        params = parse_qs(query_string)
+        token = params.get('token', [None])[0]
+
+        if not token:
+            headers = dict(scope.get('headers', []))
+            auth_header = headers.get(b'authorization', b'').decode()
+            if auth_header.startswith('Bearer '):
+                token = auth_header[7:]
+
+        if token:
+            try:
+                decoded = jwt_decode(
+                    token,
+                    settings.SECRET_KEY,
+                    algorithms=['HS256']
+                )
+                user = await database_sync_to_async(User.objects.get)(id=decoded['user_id'])
+                scope['user'] = user
+            except Exception:
+                scope['user'] = None
+        else:
+            scope['user'] = None
+
+        return await super().__call__(scope, receive, send)
