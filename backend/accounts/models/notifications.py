@@ -17,7 +17,6 @@ class Notification(models.Model):
         ('attendance', 'Attendance'),
         ('fee', 'Fee Reminder'),
         ('message', 'Message'),
-        ('friend_request', 'Friend Request'),
         ('system', 'System'),
     ]
 
@@ -47,7 +46,6 @@ class NotificationPreference(models.Model):
     attendance = models.BooleanField(default=True)
     fee = models.BooleanField(default=True)
     message = models.BooleanField(default=True)
-    friend_request = models.BooleanField(default=True)
     system = models.BooleanField(default=True)
 
     push_enabled = models.BooleanField(default=True, help_text="Enable browser push notifications (FCM)")

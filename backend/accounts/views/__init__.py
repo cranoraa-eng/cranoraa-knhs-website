@@ -65,7 +65,6 @@ from .chat import (
     ChatRoomViewSet,
     ChatMessageViewSet,
     ReportedMessageViewSet,
-    FriendshipViewSet,
     UserBlockViewSet,
 )
 

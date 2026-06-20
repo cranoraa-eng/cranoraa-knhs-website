@@ -97,28 +97,6 @@ class ReportedMessage(models.Model):
         return f"Report by {self.reporter.username} on {self.reported_user.username if self.reported_user else 'deleted message'}"
 
 
-class Friendship(models.Model):
-    STATUS_CHOICES = [
-        ('pending', 'Pending'),
-        ('accepted', 'Accepted'),
-        ('rejected', 'Rejected'),
-    ]
-
-    from_user = models.ForeignKey(User, related_name='friendship_requests_sent', on_delete=models.CASCADE)
-    to_user = models.ForeignKey(User, related_name='friendship_requests_received', on_delete=models.CASCADE)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
-    is_pinned_by_from = models.BooleanField(default=False)
-    is_pinned_by_to = models.BooleanField(default=False)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        unique_together = ('from_user', 'to_user')
-
-    def __str__(self):
-        return f"{self.from_user.username} -> {self.to_user.username} ({self.status})"
-
-
 class UserBlock(models.Model):
     blocker = models.ForeignKey(User, on_delete=models.CASCADE, related_name='blocking')
     blocked = models.ForeignKey(User, on_delete=models.CASCADE, related_name='blocked_by')

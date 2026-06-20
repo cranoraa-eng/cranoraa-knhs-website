@@ -15,7 +15,6 @@ const TYPE_LABELS = {
   attendance: 'Attendance',
   fee: 'Fee Reminders',
   message: 'Messages',
-  friend_request: 'Friend Requests',
   system: 'System Alerts',
 };
 
@@ -344,7 +343,7 @@ const Notifications = () => {
                       className={`flex items-center justify-between p-3 rounded-xl border transition-all ${prefs[key] ? 'bg-white border-violet-200' : 'bg-slate-50 border-slate-200 opacity-60'}`}
                     >
                       <div className="flex items-center gap-2">
-                        <div className={`w-2 h-2 rounded-full ${key === 'announcement' ? 'bg-violet-500' : key === 'grade' ? 'bg-emerald-500' : key === 'attendance' ? 'bg-amber-500' : key === 'fee' ? 'bg-red-500' : key === 'message' ? 'bg-blue-500' : key === 'friend_request' ? 'bg-pink-500' : 'bg-indigo-500'}`} />
+                        <div className={`w-2 h-2 rounded-full ${key === 'announcement' ? 'bg-violet-500' : key === 'grade' ? 'bg-emerald-500' : key === 'attendance' ? 'bg-amber-500' : key === 'fee' ? 'bg-red-500' : key === 'message' ? 'bg-blue-500' : 'bg-indigo-500'}`} />
                         <span className="text-sm font-medium text-slate-700">{label}</span>
                       </div>
                       <div className={`w-9 h-5 rounded-full flex items-center transition-all ${prefs[key] ? 'bg-violet-500 justify-end' : 'bg-slate-300 justify-start'}`}>

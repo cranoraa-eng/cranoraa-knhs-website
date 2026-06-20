@@ -4,7 +4,7 @@ from .academic import (
 )
 from .chat import (
     ChatRoom, ChatMessage, MessageReaction, ReportedMessage,
-    Friendship, UserBlock, EmergencyMessage,
+    UserBlock, EmergencyMessage,
 )
 from .announcements import Announcement, AnnouncementAttachment, AnnouncementComment
 from .attendance import Attendance, AbsenceExcuse
@@ -36,7 +36,7 @@ __all__ = [
     'User', 'OnboardingState', 'OTP', 'Profile',
     'Classroom', 'Subject', 'ClassroomSubject', 'SystemSetting', 'StudentClassEnrollment',
     'ChatRoom', 'ChatMessage', 'MessageReaction', 'ReportedMessage',
-    'Friendship', 'UserBlock', 'EmergencyMessage',
+    'UserBlock', 'EmergencyMessage',
     'Announcement', 'AnnouncementAttachment', 'AnnouncementComment',
     'Attendance', 'AbsenceExcuse',
     'LearningMaterial',

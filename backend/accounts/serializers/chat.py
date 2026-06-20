@@ -2,7 +2,7 @@ from rest_framework import serializers
 from django.utils import timezone
 
 from ..models import (
-    ChatRoom, ChatMessage, MessageReaction, Friendship, ReportedMessage,
+    ChatRoom, ChatMessage, MessageReaction, ReportedMessage,
     UserBlock, EmergencyMessage,
 )
 from ._base import full_name
@@ -137,28 +137,6 @@ class ChatRoomSerializer(serializers.ModelSerializer):
                 is_read=False
             ).exclude(sender=request.user).count()
         return 0
-
-
-class FriendshipSerializer(serializers.ModelSerializer):
-    from .user import UserSerializer
-
-    from_user_details = UserSerializer(source='from_user', read_only=True)
-    to_user_details = UserSerializer(source='to_user', read_only=True)
-    is_pinned = serializers.SerializerMethodField()
-
-    class Meta:
-        model = Friendship
-        fields = ['id', 'from_user', 'to_user', 'from_user_details', 'to_user_details', 'status', 'is_pinned', 'created_at']
-        read_only_fields = ['from_user', 'status']
-
-    def get_is_pinned(self, obj):
-        request = self.context.get('request')
-        if request and request.user.is_authenticated:
-            if obj.from_user == request.user:
-                return obj.is_pinned_by_from
-            if obj.to_user == request.user:
-                return obj.is_pinned_by_to
-        return False
 
 
 class ReportedMessageSerializer(serializers.ModelSerializer):

@@ -51,7 +51,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         await self.channel_layer.group_add(f'user_{self.user.id}', self.channel_name)
         self._authenticated = True
-        await self.broadcast_presence(True)
         return True
 
     async def disconnect(self, close_code):
@@ -66,46 +65,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
 
             await self.channel_layer.group_discard(f'user_{self.user.id}', self.channel_name)
-            await self.broadcast_presence(False)
 
     @database_sync_to_async
     def update_last_activity(self):
         User.objects.filter(id=self.user.id).update(last_activity=timezone.now())
-
-    async def broadcast_presence(self, is_online):
-        now = time.monotonic()
-        if is_online and (now - self._last_presence_broadcast) < PRESENCE_DEBOUNCE_SECONDS:
-            return
-        self._last_presence_broadcast = now
-
-        friend_ids = await self.get_friend_ids()
-        if not friend_ids:
-            return
-
-        await asyncio.gather(*[
-            self.channel_layer.group_send(
-                f'user_{fid}',
-                {
-                    'type': 'peer_presence',
-                    'user_id': self.user.id,
-                    'is_online': is_online,
-                }
-            )
-            for fid in friend_ids
-        ])
-
-    @database_sync_to_async
-    def get_friend_ids(self):
-        from ..models import Friendship
-        from django.db.models import Q
-        friendships = Friendship.objects.filter(
-            (Q(from_user=self.user) | Q(to_user=self.user)),
-            status='accepted'
-        ).values_list('from_user_id', 'to_user_id')
-        ids = []
-        for from_id, to_id in friendships:
-            ids.append(to_id if from_id == self.user.id else from_id)
-        return ids
 
     @database_sync_to_async
     def is_room_participant(self, room_id, user_id):
@@ -392,13 +355,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
             'message': event.get('message', 'Your account has been suspended.')
         }))
         await self.close()
-
-    async def friendship_update(self, event):
-        await self.send(text_data=json.dumps({
-            'type': 'friendship_update',
-            'event': event.get('event'),
-            'friendship': event.get('friendship'),
-        }))
 
     # ── DB helpers ────────────────────────────────────────────────────────
 

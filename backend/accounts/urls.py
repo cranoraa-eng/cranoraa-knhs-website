@@ -8,7 +8,7 @@ from .views import (
     AnnouncementViewSet, AttendanceViewSet, LearningMaterialViewSet, SubjectViewSet,
     ClassroomSubjectViewSet, ScratchCardViewSet, FeeViewSet, NotificationViewSet,
     EnrollmentApplicationViewSet, AssignmentViewSet, SubmissionViewSet, WebsiteContentViewSet, GradeViewSet, GradeReportViewSet,
-    ChatRoomViewSet, ChatMessageViewSet, ReportedMessageViewSet, FriendshipViewSet, admin_dashboard_stats, grade_distribution_stats, check_result, public_announcements_view,
+    ChatRoomViewSet, ChatMessageViewSet, ReportedMessageViewSet, admin_dashboard_stats, grade_distribution_stats, check_result, public_announcements_view,
     student_calendar_view, notifications_polling_view, system_metrics_view,
     maintenance_feed_view, maintenance_mode_view, force_sync_view, run_backup_view, clear_cache_view,
     system_settings_view, maintenance_status_view,
@@ -53,7 +53,6 @@ router.register(r'v1/grade-reports', GradeReportViewSet, basename='grade-report'
 router.register(r'v1/chat/rooms', ChatRoomViewSet, basename='chat-room')
 router.register(r'v1/chat/messages', ChatMessageViewSet, basename='chat-message')
 router.register(r'v1/chat/reports', ReportedMessageViewSet, basename='chat-report')
-router.register(r'v1/friendships', FriendshipViewSet, basename='friendship')
 router.register(r'v1/rooms', RoomViewSet, basename='room')
 router.register(r'v1/time-slots', TimeSlotViewSet, basename='time-slot')
 router.register(r'v1/schedules', ScheduleViewSet, basename='schedule')

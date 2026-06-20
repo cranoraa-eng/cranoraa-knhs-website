@@ -28,7 +28,7 @@ from .assignments import AssignmentSerializer, SubmissionSerializer
 from .grades import GradeSerializer, GradeReportSerializer
 from .chat import (
     MessageReactionSerializer, ChatMessageSerializer, ChatRoomSerializer,
-    FriendshipSerializer, ReportedMessageSerializer,
+    ReportedMessageSerializer,
     UserBlockSerializer, EmergencyMessageSerializer,
 )
 from .schedule import ScheduleSerializer, RoomSerializer
@@ -65,7 +65,7 @@ __all__ = [
     'AssignmentSerializer', 'SubmissionSerializer',
     'GradeSerializer', 'GradeReportSerializer',
     'MessageReactionSerializer', 'ChatMessageSerializer', 'ChatRoomSerializer',
-    'FriendshipSerializer', 'ReportedMessageSerializer',
+    'ReportedMessageSerializer',
     'UserBlockSerializer', 'EmergencyMessageSerializer',
     'ScheduleSerializer', 'RoomSerializer',
     'TicketAttachmentSerializer', 'TicketMessageSerializer', 'TicketParticipantSerializer',

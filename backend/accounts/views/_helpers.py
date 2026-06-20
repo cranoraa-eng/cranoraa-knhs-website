@@ -75,21 +75,6 @@ def _notify_user_of_new_room(user_id, room_data):
     )
 
 
-def _notify_user_of_friendship_update(user_id, friendship_data, event_type='friendship_update'):
-    """Notify a specific user via their personal channel about a friendship update."""
-    from channels.layers import get_channel_layer
-    from asgiref.sync import async_to_sync
-    channel_layer = get_channel_layer()
-    async_to_sync(channel_layer.group_send)(
-        f'user_{user_id}',
-        {
-            'type': 'friendship_update',
-            'event': event_type,
-            'friendship': friendship_data,
-        }
-    )
-
-
 def _chat_preview_content(message):
     """Short preview for room list and push notifications."""
     content = (message.content or '').strip()

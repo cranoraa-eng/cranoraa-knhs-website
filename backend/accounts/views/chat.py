@@ -12,7 +12,6 @@ from ..models import (
     ChatRoom,
     Classroom,
     EmergencyMessage,
-    Friendship,
     Notification,
     ReportedMessage,
     StudentClassEnrollment,
@@ -24,7 +23,6 @@ from ..serializers import (
     ChatMessageSerializer,
     ChatRoomSerializer,
     EmergencyMessageSerializer,
-    FriendshipSerializer,
     ReportedMessageSerializer,
     UserBlockSerializer,
     UserSerializer,
@@ -35,7 +33,6 @@ from ..utils import check_user_moderation
 from ._helpers import (
     _broadcast_new_chat_message,
     _broadcast_room_update,
-    _notify_user_of_friendship_update,
     _notify_user_of_new_room,
 )
 
@@ -836,121 +833,6 @@ class ReportedMessageViewSet(viewsets.ModelViewSet):
         
         deleted_count, _ = ReportedMessage.objects.filter(id__in=ids).delete()
         return Response({'status': f'Successfully deleted {deleted_count} reports'})
-
-
-class FriendshipViewSet(viewsets.ModelViewSet):
-    serializer_class = FriendshipSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        try:
-            user = self.request.user
-            return Friendship.objects.filter(Q(from_user=user) | Q(to_user=user))
-        except Exception as e:
-            logger.error(f"Friendship queryset error: {str(e)}")
-            return Friendship.objects.none()
-
-    def perform_create(self, serializer):
-        try:
-            friendship = serializer.save(from_user=self.request.user, status='pending')
-            # Real-time WS event
-            serialized = FriendshipSerializer(friendship, context={'request': self.request}).data
-            _notify_user_of_friendship_update(friendship.to_user.id, serialized, 'request_received')
-            # Persistent notification so offline users see it when they log in
-            sender_name = self.request.user.get_full_name() or self.request.user.username
-            Notification.objects.create(
-                recipient=friendship.to_user,
-                notification_type='friend_request',
-                title='New Friend Request',
-                message=f'{sender_name} sent you a friend request.',
-                link='/communication-center',
-            )
-        except Exception as e:
-            logger.error(f"Friendship create error: {str(e)}")
-            raise
-
-    @action(detail=True, methods=['post'])
-    def accept(self, request, pk=None):
-        try:
-            friendship = self.get_object()
-            if friendship.to_user != request.user:
-                return Response({'error': 'Unauthorized'}, status=status.HTTP_403_FORBIDDEN)
-
-            friendship.status = 'accepted'
-            friendship.save()
-
-            serialized = FriendshipSerializer(friendship, context={'request': request}).data
-            _notify_user_of_friendship_update(friendship.from_user.id, serialized, 'request_accepted')
-            _notify_user_of_friendship_update(request.user.id, serialized, 'request_accepted')
-
-            # Notify the original requester that their request was accepted
-            accepter_name = request.user.get_full_name() or request.user.username
-            Notification.objects.create(
-                recipient=friendship.from_user,
-                notification_type='friend_request',
-                title='Friend Request Accepted',
-                message=f'{accepter_name} accepted your friend request.',
-                link='/communication-center',
-            )
-
-            return Response(serialized)
-        except Exception as e:
-            logger.error(f"Friendship accept error: {str(e)}")
-            return Response({'error': 'Failed to process friend request.'}, status=500)
-
-    @action(detail=True, methods=['post'])
-    def reject(self, request, pk=None):
-        friendship = self.get_object()
-        if friendship.to_user != request.user:
-            return Response({'error': 'Unauthorized'}, status=status.HTTP_403_FORBIDDEN)
-        
-        friendship.status = 'rejected'
-        friendship.save()
-        
-        serialized = FriendshipSerializer(friendship, context={'request': request}).data
-        # Notify the requester
-        _notify_user_of_friendship_update(friendship.from_user.id, serialized, 'request_rejected')
-        # Notify self to sync tabs
-        _notify_user_of_friendship_update(request.user.id, serialized, 'request_rejected')
-        
-        return Response(serialized)
-
-    @action(detail=True, methods=['post'])
-    def pin(self, request, pk=None):
-        friendship = self.get_object()
-        if friendship.from_user == request.user:
-            friendship.is_pinned_by_from = True
-        elif friendship.to_user == request.user:
-            friendship.is_pinned_by_to = True
-        friendship.save()
-        return Response({'status': 'pinned'})
-
-    @action(detail=True, methods=['post'])
-    def unpin(self, request, pk=None):
-        friendship = self.get_object()
-        if friendship.from_user == request.user:
-            friendship.is_pinned_by_from = False
-        elif friendship.to_user == request.user:
-            friendship.is_pinned_by_to = False
-        friendship.save()
-        return Response({'status': 'unpinned'})
-
-    @action(detail=False, methods=['get'])
-    def my_friends(self, request):
-        user = request.user
-        friendships = Friendship.objects.filter(
-            (Q(from_user=user) | Q(to_user=user)),
-            status='accepted'
-        ).select_related('from_user', 'to_user')
-        friends = []
-        for f in friendships:
-            friend = f.to_user if f.from_user == user else f.from_user
-            data = UserSerializer(friend).data
-            # Add pin status to friend data for frontend convenience
-            data['is_pinned'] = f.is_pinned_by_from if f.from_user == user else f.is_pinned_by_to
-            data['friendship_id'] = f.id
-            friends.append(data)
-        return Response(friends)
 
 
 class UserBlockViewSet(viewsets.ModelViewSet):

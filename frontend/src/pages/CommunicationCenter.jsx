@@ -608,8 +608,6 @@ export default function CommunicationCenter() {
   const [chatSearchQuery, setChatSearchQuery] = useState('');
   const [chatTypingUsers, setChatTypingUsers] = useState({});
   const [onlineUsers, setOnlineUsers] = useState(new Set());
-  const [showNewChatModal, setShowNewChatModal] = useState(false);
-  const [friends, setFriends] = useState([]);
   const [showEmojiPicker, setShowEmojiPicker] = useState(null);
   const [showRoomMenu, setShowRoomMenu] = useState(null);
   const [showPinned, setShowPinned] = useState(false);
@@ -887,8 +885,6 @@ export default function CommunicationCenter() {
         if (data.type === 'message_deleted') { setChatMessages(prev => prev.filter(m => m.id !== data.message_id)); return; }
         if (data.type === 'message_edited') { setChatMessages(prev => prev.map(m => m.id === data.message_id ? { ...m, content: data.content, is_edited: true } : m)); return; }
         if (data.type === 'message_reaction') { setChatMessages(prev => prev.map(m => m.id === data.message_id ? { ...m, reactions: data.reactions } : m)); return; }
-        if (data.type === 'peer_online') { setOnlineUsers(prev => new Set([...prev, data.user_id])); return; }
-        if (data.type === 'peer_presence') { setOnlineUsers(prev => { const next = new Set(prev); if (data.is_online) next.add(data.user_id); else next.delete(data.user_id); return next; }); return; }
         if (data.type === 'room_update') {
           if (data.event === 'group_deleted') { setChatRooms(prev => prev.filter(r => r.id !== data.room_id)); if (selectedRoom?.id === data.room_id) setSelectedRoom(null); }
           else if (data.room) { setChatRooms(prev => { const idx = prev.findIndex(r => r.id === data.room.id); if (idx >= 0) { const next = [...prev]; next[idx] = data.room; return next; } return [data.room, ...prev]; }); }
@@ -938,16 +934,12 @@ export default function CommunicationCenter() {
     try { const r = await api.get(`/chat/messages/?room_id=${roomId}`); setChatMessages(r.data.results || r.data); setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100); } catch { /* ignore */ }
   }, []);
 
-  const loadFriends = useCallback(async () => {
-    try { const r = await api.get('/friendships/my_friends/'); setFriends(r.data); } catch { /* ignore */ }
-  }, []);
-
   useEffect(() => {
     if (activeTab === 'messages') {
       setChatLoading(true);
-      Promise.all([loadChatRooms(), loadFriends()]).then(() => setChatLoading(false));
+      loadChatRooms().then(() => setChatLoading(false));
     }
-  }, [activeTab, loadChatRooms, loadFriends]);
+  }, [activeTab, loadChatRooms]);
 
   useEffect(() => {
     if (selectedRoom && activeTab === 'messages') {
@@ -1020,21 +1012,11 @@ export default function CommunicationCenter() {
 
   useEffect(() => { if (selectedRoom && activeTab === 'messages') handleChatMarkRead(); }, [chatMessages, selectedRoom, activeTab, handleChatMarkRead]);
 
-  const handleCreatePrivateChat = useCallback(async (friendId) => {
-    try {
-      const r = await api.post('/chat/rooms/get_or_create_private_chat/', { user_id: friendId });
-      await loadChatRooms();
-      setSelectedRoom(r.data);
-      setShowNewChatModal(false);
-    } catch { toast.error('Failed to create chat'); }
-  }, [loadChatRooms]);
-
   const handleCreateGroupChat = useCallback(async (name, participantIds) => {
     try {
       const r = await api.post('/chat/rooms/', { name, is_group: true, participants: participantIds });
       await loadChatRooms();
       setSelectedRoom(r.data);
-      setShowNewChatModal(false);
     } catch { toast.error('Failed to create group'); }
   }, [loadChatRooms]);
 
@@ -1385,13 +1367,6 @@ export default function CommunicationCenter() {
                   title="Pinned chats"
                 >
                   <PinIcon size={14} />
-                </button>
-                <button
-                  onClick={() => setShowNewChatModal(true)}
-                  className="p-2 rounded-lg text-slate-400 hover:bg-slate-100 transition-colors"
-                  title="New chat"
-                >
-                  <PlusIcon size={16} />
                 </button>
               </div>
             </div>
@@ -1839,45 +1814,6 @@ export default function CommunicationCenter() {
                 {creatingTicket ? <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <PlusIcon size={12} />}
                 Create Ticket
               </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* New Chat Modal */}
-      {showNewChatModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setShowNewChatModal(false)}>
-          <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200">
-              <h3 className="text-base font-bold text-slate-800">New Conversation</h3>
-              <button onClick={() => setShowNewChatModal(false)} className="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100"><XIcon size={18} /></button>
-            </div>
-            <div className="flex border-b border-slate-200">
-              <button onClick={() => {}} className="flex-1 py-2.5 text-sm font-semibold text-violet-600 border-b-2 border-violet-600">Friends</button>
-            </div>
-            <div className="max-h-80 overflow-y-auto">
-              {friends.length === 0 ? (
-                <div className="text-center py-8">
-                  <p className="text-sm text-slate-500">No friends yet</p>
-                  <p className="text-xs text-slate-400 mt-1">Add friends to start chatting</p>
-                </div>
-              ) : (
-                friends.map(friend => (
-                  <button key={friend.id} onClick={() => handleCreatePrivateChat(friend.id)} className="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-50 transition-colors">
-                    {friend.profile?.profile_picture ? (
-                      <img src={friend.profile.profile_picture} alt="" className="w-10 h-10 rounded-full object-cover" />
-                    ) : (
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm ${getAvatarColor(friend.first_name || friend.username)}`}>
-                        {getInitials(friend.first_name || friend.username)}
-                      </div>
-                    )}
-                    <div className="text-left">
-                      <p className="text-sm font-semibold text-slate-800">{friend.first_name || friend.username}</p>
-                      <p className="text-xs text-slate-500">{friend.role}</p>
-                    </div>
-                  </button>
-                ))
-              )}
             </div>
           </div>
         </div>
