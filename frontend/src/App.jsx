@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { NotificationProvider } from './context/NotificationContext';
+import { AcademicYearProvider } from './context/AcademicYearContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Layout from './components/Layout';
 import PublicLayout from './components/PublicLayout';
@@ -63,7 +64,8 @@ function App() {
 
   return (
     <AuthProvider>
-      <NotificationProvider>
+      <AcademicYearProvider>
+        <NotificationProvider>
         <BrowserRouter>
           <Suspense fallback={<PageLoader />}>
             <ErrorBoundary>
@@ -112,7 +114,8 @@ function App() {
             </ErrorBoundary>
           </Suspense>
         </BrowserRouter>
-      </NotificationProvider>
+        </NotificationProvider>
+      </AcademicYearProvider>
     </AuthProvider>
   );
 }

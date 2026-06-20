@@ -1,8 +1,17 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import api from '../utils/api';
 import { getCurrentAcademicYear } from '../utils/dateHelpers';
+import AcademicYearContext from '../context/AcademicYearContext';
 
 export function useActiveAcademicYear() {
+  const ctx = useContext(AcademicYearContext);
+
+  // If inside a provider, use shared state
+  if (ctx) {
+    return { academicYear: ctx.academicYear, loading: ctx.loading, setAcademicYear: ctx.setAcademicYear };
+  }
+
+  // Fallback for pages not yet wrapped in AcademicYearProvider
   const [academicYear, setAcademicYear] = useState(
     () => localStorage.getItem('knhs_academic_year') || getCurrentAcademicYear()
   );
@@ -17,9 +26,7 @@ export function useActiveAcademicYear() {
         localStorage.setItem('knhs_academic_year', year);
         setAcademicYear(year);
       })
-      .catch(() => {
-        if (cancelled) return;
-      })
+      .catch(() => {})
       .finally(() => {
         if (!cancelled) setLoading(false);
       });

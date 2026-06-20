@@ -10,12 +10,19 @@ import logging
 
 from ..models import (
     User, Classroom, StudentClassEnrollment, Grade, Attendance,
-    ClassroomSubject, Announcement, ChatMessage, SystemSetting, Subject,
+    ClassroomSubject, Announcement, SystemSetting, Subject,
     EnrollmentApplication
 )
 from ..serializers import UserSerializer, SystemSettingSerializer, full_name
 from ..throttles import DashboardRateThrottle
 from ..utils import log_audit_action
+from ._helpers import get_latest_messages
+from ..services.dashboard_service import (
+    compute_attendance_trends, compute_grade_distribution,
+    compute_general_average_buckets, compute_active_users_trends,
+    compute_subject_performance, build_grade_distribution_response,
+    build_general_average_response,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -90,30 +97,7 @@ def teacher_dashboard_stats(request):
                     'type': 'grade' if log.description and 'grade' in log.description.lower() else 'attendance' if log.description and 'attendance' in log.description.lower() else 'system'
                 })
 
-        latest_messages = []
-        msg_objs = ChatMessage.objects.filter(
-            room__participants=user
-        ).exclude(sender=user).select_related('sender', 'sender__profile').order_by('-timestamp')[:50]
-
-        seen_senders = set()
-        for m in msg_objs:
-            if m.sender_id not in seen_senders:
-                sender_name = ''
-                try:
-                    sender_name = m.sender.get_full_name() or m.sender.username if m.sender else 'Unknown'
-                except Exception:
-                    sender_name = 'Unknown'
-                latest_messages.append({
-                    'id': m.id,
-                    'content': m.content,
-                    'timestamp': m.timestamp.isoformat() if m.timestamp else '',
-                    'sender': sender_name,
-                    'sender_profile_picture': getattr(getattr(m.sender, 'profile', None) if m.sender else None, 'profile_picture', None),
-                    'is_read': m.is_read
-                })
-                seen_senders.add(m.sender_id)
-            if len(latest_messages) >= 5:
-                break
+        latest_messages = get_latest_messages(user)
 
         return Response({
             'total_students': total_students,
@@ -153,30 +137,7 @@ def student_dashboard_stats(request):
                 'type': n.notification_type
             })
 
-        latest_messages = []
-        msg_objs = ChatMessage.objects.filter(
-            room__participants=user
-        ).exclude(sender=user).select_related('sender', 'sender__profile').order_by('-timestamp')[:50]
-
-        seen_senders = set()
-        for m in msg_objs:
-            if m.sender_id not in seen_senders:
-                sender_name = ''
-                try:
-                    sender_name = m.sender.get_full_name() or m.sender.username if m.sender else 'Unknown'
-                except Exception:
-                    sender_name = 'Unknown'
-                latest_messages.append({
-                    'id': m.id,
-                    'content': m.content,
-                    'timestamp': m.timestamp.isoformat() if m.timestamp else '',
-                    'sender': sender_name,
-                    'sender_profile_picture': getattr(getattr(m.sender, 'profile', None) if m.sender else None, 'profile_picture', None),
-                    'is_read': m.is_read
-                })
-                seen_senders.add(m.sender_id)
-            if len(latest_messages) >= 5:
-                break
+        latest_messages = get_latest_messages(user)
 
         return Response({
             'unread_notifications': unread_notifications,
@@ -197,7 +158,6 @@ def admin_dashboard_stats(request):
             return Response({'error': 'Unauthorized access'}, status=403)
 
         from django.core.cache import cache
-        from datetime import timedelta
 
         cache_key = f'admin_dashboard:v2:{request.user.role}:{request.user.id}:{request.query_params.get("academic_year", "all")}'
         cached = cache.get(cache_key)
@@ -246,41 +206,7 @@ def admin_dashboard_stats(request):
 
         active_users = User.objects.filter(last_activity__gte=five_mins_ago).count()
 
-        last_30_days = today - datetime.timedelta(days=30)
-        from django.db.models.functions import TruncDate
-        daily_trends = (
-            att_qs
-            .filter(date__gte=last_30_days, date__lte=today)
-            .exclude(date__week_day__in=[1, 7])
-            .annotate(day=TruncDate('date'))
-            .values('day')
-            .annotate(
-                total=Count('id'),
-                present=Count('id', filter=Q(status='present')),
-                late=Count('id', filter=Q(status='late')),
-            )
-            .order_by('day')
-        )
-        attendance_trends = []
-        trend_map = {}
-        for row in daily_trends:
-            total = row['total']
-            present_late = row['present'] + row['late']
-            trend_map[row['day'].strftime('%Y-%m-%d')] = {
-                'present': row['present'],
-                'late': row['late'],
-                'rate': round((present_late / total * 100), 1) if total > 0 else 0
-            }
-        for i in range(30, -1, -1):
-            day = today - datetime.timedelta(days=i)
-            if day.weekday() in [5, 6]:
-                continue
-            day_str = day.strftime('%Y-%m-%d')
-            if day_str in trend_map:
-                trend_map[day_str]['date'] = day_str
-                attendance_trends.append(trend_map[day_str])
-            else:
-                attendance_trends.append({'date': day_str, 'present': 0, 'late': 0, 'rate': 0})
+        attendance_trends = compute_attendance_trends(att_qs, today, days=30)
 
         grades = Grade.objects.filter(raw_score__isnull=False, grade_type='final_grade')
         if academic_year_name:
@@ -293,27 +219,16 @@ def admin_dashboard_stats(request):
         avg_grade = grades.aggregate(avg=Avg('raw_score'))['avg']
         average_grade = round(float(avg_grade), 2) if avg_grade else None
 
-        outstanding = grades.filter(raw_score__gte=90).count()
-        very_satisfactory = grades.filter(raw_score__gte=85, raw_score__lt=90).count()
-        satisfactory = grades.filter(raw_score__gte=80, raw_score__lt=85).count()
-        fairly_satisfactory = grades.filter(raw_score__gte=75, raw_score__lt=80).count()
-        below_75 = grades.filter(raw_score__lt=75).count()
+        distribution = compute_grade_distribution(grades)
+        outstanding = distribution['outstanding']
+        very_satisfactory = distribution['very_satisfactory']
+        satisfactory = distribution['satisfactory']
+        fairly_satisfactory = distribution['fairly_satisfactory']
+        below_75 = distribution['below_75']
 
-        student_averages = grades.values('student').annotate(avg=Avg('raw_score'))
-        total_students_graded = student_averages.count()
-
-        ga_buckets = student_averages.aggregate(
-            outstanding=Count('student', filter=Q(avg__gte=90)),
-            very_satisfactory=Count('student', filter=Q(avg__gte=85, avg__lt=90)),
-            satisfactory=Count('student', filter=Q(avg__gte=80, avg__lt=85)),
-            fairly_satisfactory=Count('student', filter=Q(avg__gte=75, avg__lt=80)),
-            below_75=Count('student', filter=Q(avg__lt=75)),
-        )
-        ga_outstanding = ga_buckets['outstanding']
-        ga_very_satisfactory = ga_buckets['very_satisfactory']
-        ga_satisfactory = ga_buckets['satisfactory']
-        ga_fairly_satisfactory = ga_buckets['fairly_satisfactory']
-        ga_below_75 = ga_buckets['below_75']
+        ga_result = compute_general_average_buckets(grades)
+        ga_buckets = ga_result['buckets']
+        total_students_graded = ga_result['total_students_graded']
 
         recent_activity = []
         if AuditLog:
@@ -322,43 +237,9 @@ def admin_dashboard_stats(request):
             except Exception:
                 pass
 
-        active_users_trends = []
-        if AuditLog:
-            try:
-                last_24h_start = now - timedelta(hours=24)
-                recent_login_logs = list(AuditLog.objects.filter(
-                    action='login',
-                    timestamp__gte=last_24h_start
-                ).values('user', 'timestamp'))
+        active_users_trends = compute_active_users_trends(AuditLog, now, hours=24) if AuditLog else []
 
-                for i in range(23, -1, -1):
-                    hour_start = now - timedelta(hours=i+1)
-                    hour_end = now - timedelta(hours=i)
-                    users_in_hour = {
-                        log['user'] for log in recent_login_logs
-                        if log['timestamp'] and hour_start <= log['timestamp'] <= hour_end
-                    }
-                    active_users_trends.append({
-                        'time': hour_end.strftime('%H:00'),
-                        'users': len(users_in_hour)
-                    })
-            except Exception as e:
-                logger.error(f"Error calculating active users trends: {str(e)}")
-                active_users_trends = []
-
-        subject_perf = []
-        try:
-            subject_stats = grades.values('subject__name').annotate(
-                avg_grade=Avg('raw_score')
-            ).order_by('-avg_grade')[:10]
-
-            for s in subject_stats:
-                subject_perf.append({
-                    'name': s['subject__name'],
-                    'avg_grade': round(float(s['avg_grade']), 1) if s['avg_grade'] else 0
-                })
-        except Exception as e:
-            logger.error(f"Error fetching subject stats: {str(e)}")
+        subject_perf = compute_subject_performance(grades, limit=10)
 
         announcements_data = []
         try:
@@ -376,28 +257,7 @@ def admin_dashboard_stats(request):
         except Exception as e:
             logger.error(f"Error fetching announcements: {str(e)}")
 
-        latest_messages = []
-        try:
-            msg_objs = ChatMessage.objects.filter(
-                room__participants=request.user
-            ).exclude(sender=request.user).select_related('sender', 'sender__profile').order_by('-timestamp')
-
-            seen_senders = set()
-            for m in msg_objs:
-                if m.sender_id not in seen_senders:
-                    latest_messages.append({
-                        'id': m.id,
-                        'content': m.content,
-                        'timestamp': m.timestamp.isoformat(),
-                        'sender': m.sender.get_full_name() or m.sender.username,
-                        'sender_profile_picture': getattr(getattr(m.sender, 'profile', None), 'profile_picture', None),
-                        'is_read': m.is_read
-                    })
-                    seen_senders.add(m.sender_id)
-                if len(latest_messages) >= 5:
-                    break
-        except Exception as e:
-            logger.error(f"Error fetching latest messages: {str(e)}")
+        latest_messages = get_latest_messages(request.user)
 
         res_data = {
             'total_students': total_students,
@@ -461,36 +321,8 @@ def admin_dashboard_stats(request):
                 'active_users_trends': active_users_trends,
                 'subject_performance': subject_perf
             },
-            'all_subjects': {
-                'counts': [
-                    {'name': 'Outstanding', 'value': outstanding},
-                    {'name': 'Very Satisfactory', 'value': very_satisfactory},
-                    {'name': 'Satisfactory', 'value': satisfactory},
-                    {'name': 'Fairly Satisfactory', 'value': fairly_satisfactory},
-                    {'name': 'Did Not Meet', 'value': below_75},
-                ],
-                'outstanding_pct': round(outstanding / total_grades * 100) if total_grades else 0,
-                'very_satisfactory_pct': round(very_satisfactory / total_grades * 100) if total_grades else 0,
-                'satisfactory_pct': round(satisfactory / total_grades * 100) if total_grades else 0,
-                'fairly_satisfactory_pct': round(fairly_satisfactory / total_grades * 100) if total_grades else 0,
-                'below_75_pct': round(below_75 / total_grades * 100) if total_grades else 0,
-                'total_count': total_grades
-            },
-            'general_average': {
-                'counts': [
-                    {'name': 'Outstanding', 'value': ga_outstanding},
-                    {'name': 'Very Satisfactory', 'value': ga_very_satisfactory},
-                    {'name': 'Satisfactory', 'value': ga_satisfactory},
-                    {'name': 'Fairly Satisfactory', 'value': ga_fairly_satisfactory},
-                    {'name': 'Did Not Meet', 'value': ga_below_75},
-                ],
-                'outstanding_pct': round(ga_outstanding / total_students_graded * 100) if total_students_graded else 0,
-                'very_satisfactory_pct': round(ga_very_satisfactory / total_students_graded * 100) if total_students_graded else 0,
-                'satisfactory_pct': round(ga_satisfactory / total_students_graded * 100) if total_students_graded else 0,
-                'fairly_satisfactory_pct': round(ga_fairly_satisfactory / total_students_graded * 100) if total_students_graded else 0,
-                'below_75_pct': round(ga_below_75 / total_students_graded * 100) if total_students_graded else 0,
-                'total_count': total_students_graded
-            },
+            'all_subjects': build_grade_distribution_response(distribution, total_grades),
+            'general_average': build_general_average_response(ga_buckets, total_students_graded),
             'system_settings': SystemSettingSerializer(SystemSetting.get_settings()).data,
             'recent_grades_count': Grade.objects.filter(submitted_at__date__gte=this_week_start).count(),
             'total_announcements': Announcement.objects.filter(status='live').count(),

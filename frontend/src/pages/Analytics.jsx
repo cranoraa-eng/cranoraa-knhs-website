@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
 import api from '../utils/api';
-import { getCurrentAcademicYear } from '../utils/dateHelpers';
+import { useActiveAcademicYear } from '../hooks/useActiveAcademicYear';
 import { useSystemSettings } from '../hooks/useSystemSettings';
 import { 
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, 
@@ -1017,28 +1017,12 @@ const Analytics = () => {
   // Grade specific filters
   const [gradeData, setGradeData] = useState(null);
   const [gradeLoading, setGradeLoading] = useState(false);
-  const [academicYear, setAcademicYear] = useState(() => localStorage.getItem('knhs_academic_year') || getCurrentAcademicYear());
+  const { academicYear, setAcademicYear } = useActiveAcademicYear();
   const [filterLevel, setFilterLevel] = useState('all');
   const [filterSubject, setFilterSubject] = useState('all');
   const [filterQuarter, setFilterQuarter] = useState('all');
   const [distributionMode, setDistributionMode] = useState('student');
   const [gradeTimeframe, setGradeTimeframe] = useState('all');
-  const initYearRef = useRef(false);
-
-  // Fetch active year from API on mount (one-time seed)
-  useEffect(() => {
-    if (initYearRef.current) return;
-    api.get('/admin/academic-years/active/')
-      .then(r => {
-        const year = r.data.name;
-        if (!localStorage.getItem('knhs_academic_year')) {
-          localStorage.setItem('knhs_academic_year', year);
-          setAcademicYear(year);
-        }
-      })
-      .catch(() => {})
-      .finally(() => { initYearRef.current = true; });
-  }, []);
 
   // Attendance specific data
   const [attendanceAnalytics, setAttendanceAnalytics] = useState(null);
@@ -1102,7 +1086,6 @@ const Analytics = () => {
     const [start, end] = academicYear.split('-').map(Number);
     const newYear = dir === 'next' ? `${start + 1}-${end + 1}` : `${start - 1}-${end - 1}`;
     setAcademicYear(newYear);
-    localStorage.setItem('knhs_academic_year', newYear);
 
     // Reset all dependent filters so stale data from the previous year is cleared
     setFilterLevel('all');

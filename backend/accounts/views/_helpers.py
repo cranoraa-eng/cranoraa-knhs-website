@@ -161,3 +161,37 @@ def _get_time_ago(timestamp):
         return f'{diff.seconds // 3600} hours ago'
     else:
         return f'{diff.days} days ago'
+
+
+def get_latest_messages(user, limit=5):
+    """
+    Get latest unique-sender chat messages for a user.
+    Used by teacher, student, and admin dashboard views.
+    """
+    from .models import ChatMessage
+    from .serializers import full_name
+
+    msg_objs = ChatMessage.objects.filter(
+        room__participants=user
+    ).exclude(sender=user).select_related('sender', 'sender__profile').order_by('-timestamp')[:50]
+
+    latest_messages = []
+    seen_senders = set()
+    for m in msg_objs:
+        if m.sender_id not in seen_senders:
+            latest_messages.append({
+                'id': m.id,
+                'content': m.content,
+                'timestamp': m.timestamp.isoformat() if m.timestamp else '',
+                'sender': full_name(m.sender),
+                'sender_profile_picture': getattr(
+                    getattr(m.sender, 'profile', None) if m.sender else None,
+                    'profile_picture', None
+                ),
+                'is_read': m.is_read
+            })
+            seen_senders.add(m.sender_id)
+        if len(latest_messages) >= limit:
+            break
+
+    return latest_messages

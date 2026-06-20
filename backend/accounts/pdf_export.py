@@ -19,15 +19,7 @@ except ImportError:
                     "Install with: pip install xhtml2pdf")
 
 
-def full_name(user):
-    """Return 'First Last' for a user."""
-    if not user:
-        return ''
-    if user.first_name and user.last_name:
-        return f"{user.first_name} {user.last_name}"
-    if user.first_name:
-        return user.first_name
-    return user.username
+from .serializers import full_name
 
 
 SCHOOL_NAME = "Kiwalan National High School"

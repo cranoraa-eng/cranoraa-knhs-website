@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef, Fragment } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import api from '../utils/api';
+import { useActiveAcademicYear } from '../hooks/useActiveAcademicYear';
 import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
 import { playSound } from '../utils/sounds';
@@ -33,7 +34,7 @@ const GradeInput = () => {
     const maxPeriods = isSHS ? 3 : 4;
     return q > maxPeriods ? maxPeriods : q;
   });
-  const [academicYear, setAcademicYear] = useState(settings?.academic_year || '2025-2026');
+  const { academicYear, setAcademicYear } = useActiveAcademicYear();
 
   const [cells, setCells] = useState({});
   const [existingGrades, setExistingGrades] = useState({});
@@ -42,11 +43,6 @@ const GradeInput = () => {
   const [submitting, setSubmitting] = useState(false);
 
   const inputRefs = useRef({});
-
-  // Sync academic year with admin settings when settings load
-  useEffect(() => {
-    if (settings?.academic_year) setAcademicYear(settings.academic_year);
-  }, [settings?.academic_year]);
 
   // Academic year navigation
   const handleYearChange = (dir) => {

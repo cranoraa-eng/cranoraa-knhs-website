@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { motion } from 'framer-motion';
 import api from '../../utils/api';
-import { getCurrentAcademicYear } from '../../utils/dateHelpers';
+import { useActiveAcademicYear } from '../../hooks/useActiveAcademicYear';
 import { Card, CardHeader, CardBody, CardTitle, Button, LoadingSpinner, EmptyState, Badge } from '../../components/ui';
 import { SchoolHeaderBanner, StatCard, RecentAnnouncementsWidget } from './shared';
 import RoleManual from './RoleManual';
@@ -16,18 +16,13 @@ import RoleManual from './RoleManual';
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { academicYear } = useActiveAcademicYear();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
   const fetchData = async () => {
     try {
-      let academicYear = localStorage.getItem('knhs_academic_year');
-      if (!academicYear) {
-        const r = await api.get('/admin/academic-years/active/').catch(() => null);
-        academicYear = r?.data?.name || getCurrentAcademicYear();
-        if (r?.data?.name) localStorage.setItem('knhs_academic_year', r.data.name);
-      }
       const r = await api.get(`/admin/stats/?academic_year=${academicYear}`);
       setData(r.data);
     } catch (err) {
@@ -40,7 +35,7 @@ const AdminDashboard = () => {
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [academicYear]);
 
   const handleRefresh = () => {
     setRefreshing(true);
