@@ -354,7 +354,7 @@ RESEND_FROM_EMAIL = ''
 # Adjust script/style/connect sources to match your actual CDN/API domains.
 SECURE_REFERRER_POLICY = 'strict-origin-when-cross-origin'
 
-# Custom CSP header injected via SecurityMiddleware extension (see portal/middleware.py)
+# Custom CSP header injected via SecurityMiddleware extension (see accounts/middleware.py)
 CSP_DEFAULT_SRC = ("'self'",)
 CSP_SCRIPT_SRC = ("'self'", "https://www.gstatic.com", "https://www.googleapis.com")
 CSP_STYLE_SRC = ("'self'", "https://fonts.googleapis.com") if not DEBUG else ("'self'", "'unsafe-inline'", "https://fonts.googleapis.com")

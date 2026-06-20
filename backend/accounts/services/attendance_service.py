@@ -14,7 +14,7 @@ def get_attendance_chart_data(timeframe='all', classroom_id=None, academic_year_
         - daily_data: list of {date, present, late, excused, rate, total}
         - pie_data: list of {name, value}
     """
-    from .models import Attendance
+    from ..models import Attendance
 
     today = datetime.date.today()
     base_att = Attendance.objects.all()
@@ -90,7 +90,7 @@ def get_today_attendance_rate(classrooms):
     Calculate today's attendance rate for given classrooms.
     Returns percentage (0-100).
     """
-    from .models import Attendance
+    from ..models import Attendance
 
     today = datetime.date.today()
     today_att = Attendance.objects.filter(classroom__in=classrooms, date=today)
@@ -102,7 +102,7 @@ def get_monthly_attendance_rate(student):
     Calculate monthly attendance rate for a student.
     Returns percentage (0-100) or None if no records.
     """
-    from .models import Attendance
+    from ..models import Attendance
 
     today = datetime.date.today()
     month_start = today.replace(day=1)

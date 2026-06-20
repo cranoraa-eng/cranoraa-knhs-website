@@ -31,14 +31,7 @@ const ProtectedRoute = ({ children }) => {
   const routeKey = getRouteKey(location.pathname);
   const allowedRoles = ROUTE_ACCESS[routeKey];
 
-  // Handle teacher advisory route
-  const isTeacherAdvisoryRoute = user.role === Role.STAFF && (
-    location.pathname.includes('/class-members/') ||
-    location.pathname.includes('/attendance/') ||
-    location.pathname.includes('/grade-input/')
-  );
-
-  if (allowedRoles && (!allowedRoles.includes(user.role) || (user.role === Role.STAFF && !isTeacherAdvisoryRoute))) {
+  if (allowedRoles && !allowedRoles.includes(user.role)) {
     return <Navigate to={ROLE_HOME[user.role] || '/dashboard'} replace />;
   }
 
