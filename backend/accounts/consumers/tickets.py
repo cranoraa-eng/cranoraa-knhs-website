@@ -29,6 +29,11 @@ class TicketConsumer(AsyncWebsocketConsumer):
         await self.channel_layer.group_add(f'user_{self.user.id}', self.channel_name)
         await self.accept()
 
+        await self.send(text_data=json.dumps({
+            'type': 'auth_success',
+            'user_id': self.user.id,
+        }))
+
         await self.channel_layer.group_send(self.room_group_name, {
             'type': 'user_joined',
             'user_id': self.user.id,

@@ -133,22 +133,38 @@ class RequestSizeLimitMiddleware(MiddlewareMixin):
 class JWTAuthMiddleware(BaseMiddleware):
     """
     ASGI middleware for JWT authentication on WebSocket connections.
-    Extracts JWT token from query string or Authorization header.
+    Extracts JWT token from query string, Authorization header, or the first
+    WebSocket message (type: 'auth').
     """
 
     async def __call__(self, scope, receive, send):
+        import json
         from django.contrib.auth import get_user_model
         User = get_user_model()
 
+        # 1. Try query string
         query_string = scope.get('query_string', b'').decode()
         params = parse_qs(query_string)
         token = params.get('token', [None])[0]
 
+        # 2. Try Authorization header
         if not token:
             headers = dict(scope.get('headers', []))
             auth_header = headers.get(b'authorization', b'').decode()
             if auth_header.startswith('Bearer '):
                 token = auth_header[7:]
+
+        # 3. If no token yet, read the first WebSocket message for auth
+        auth_done = False
+        if not token:
+            try:
+                raw = await receive()
+                data = json.loads(raw.get('text', '{}'))
+                if data.get('type') == 'auth' and data.get('token'):
+                    token = data['token']
+            except Exception:
+                pass
+            auth_done = True
 
         if token:
             try:
