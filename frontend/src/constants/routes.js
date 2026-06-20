@@ -59,6 +59,7 @@ const ScheduleManagement = lazy(() => import('../pages/ScheduleManagement'));
 const MySchedule = lazy(() => import('../pages/MySchedule'));
 const ClassManagement = lazy(() => import('../pages/ClassManagement'));
 const ParentManagement = lazy(() => import('../pages/ParentManagement'));
+const Dashboard = lazy(() => import('../pages/Dashboard'));
 
 // ── Route definitions ────────────────────────────────────────────────────────
 
@@ -92,7 +93,7 @@ export const publicRoutes = [
  */
 export const protectedRoutes = [
   // Hub routes (primary navigation)
-  { path: 'dashboard', element: Attendance, roles: Role.ALL },
+  { path: 'dashboard', element: Dashboard, roles: Role.ALL },
   { path: 'academics-hub', element: AcademicsHub, roles: [Role.ADMIN, Role.STAFF, Role.STUDENT] },
   { path: 'enrollment-classes', element: EnrollmentClassesHub, roles: [Role.ADMIN] },
   { path: 'grading-suite', element: GradingSuite, roles: [Role.ADMIN, Role.STAFF, Role.STUDENT] },

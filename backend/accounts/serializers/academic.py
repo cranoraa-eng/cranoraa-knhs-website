@@ -15,7 +15,7 @@ class ClassroomSerializer(serializers.ModelSerializer):
     teacher_name = serializers.SerializerMethodField()
     student_count = serializers.SerializerMethodField()
     average_gpa = serializers.SerializerMethodField()
-    academic_year_name = serializers.CharField(source='academic_year.name', read_only=True)
+    academic_year_name = serializers.SerializerMethodField()
     subject_name = serializers.SerializerMethodField()
     subject_code = serializers.SerializerMethodField()
 
@@ -33,6 +33,7 @@ class ClassroomSerializer(serializers.ModelSerializer):
     def get_teacher_name(self, obj): return full_name(obj.teacher) if obj.teacher else 'No Adviser'
     def get_student_count(self, obj): return obj.enrollments.count()
     def get_average_gpa(self, obj): return obj.get_average_gpa()
+    def get_academic_year_name(self, obj): return obj.academic_year.name if obj.academic_year else None
 
     def get_subject_name(self, obj):
         request = self.context.get('request')
