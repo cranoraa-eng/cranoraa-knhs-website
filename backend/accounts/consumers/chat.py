@@ -24,30 +24,38 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         self._last_presence_broadcast = 0
         self._last_typing_sent = 0
+        self._authenticated = False
 
-        if self.user.is_authenticated:
-            await self.update_last_activity()
-
-            if self.room_id != '0':
-                if not await self.is_room_participant(self.room_id, self.user.id):
-                    await self.close(code=4403)
-                    return
-
-                await self.channel_layer.group_add(self.room_group_name, self.channel_name)
-                await self.mark_messages_delivered(self.room_id, self.user.id)
-                await self.channel_layer.group_send(self.room_group_name, {
-                    'type': 'user_online',
-                    'user_id': self.user.id,
-                })
-
-            await self.channel_layer.group_add(f'user_{self.user.id}', self.channel_name)
-            await self.accept()
-            await self.broadcast_presence(True)
+        if self.user and not self.user.is_anonymous:
+            if await self._do_auth():
+                await self.accept()
+            else:
+                await self.close(code=4403)
         else:
-            await self.close()
+            await self.accept()
+
+    async def _do_auth(self):
+        """Authenticate and join groups. Returns True on success."""
+        await self.update_last_activity()
+
+        if self.room_id != '0':
+            if not await self.is_room_participant(self.room_id, self.user.id):
+                return False
+
+            await self.channel_layer.group_add(self.room_group_name, self.channel_name)
+            await self.mark_messages_delivered(self.room_id, self.user.id)
+            await self.channel_layer.group_send(self.room_group_name, {
+                'type': 'user_online',
+                'user_id': self.user.id,
+            })
+
+        await self.channel_layer.group_add(f'user_{self.user.id}', self.channel_name)
+        self._authenticated = True
+        await self.broadcast_presence(True)
+        return True
 
     async def disconnect(self, close_code):
-        if self.user.is_authenticated:
+        if self.user and self.user.is_authenticated and self._authenticated:
             if self.room_id != '0':
                 await self.channel_layer.group_send(self.room_group_name, {
                     'type': 'typing_indicator',
@@ -119,6 +127,40 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 'message': 'Invalid message format.'
             }))
             return
+
+        # Handle first-message auth
+        if not self._authenticated:
+            if data.get('type') == 'auth' and data.get('token'):
+                from jwt import decode as jwt_decode
+                from django.conf import settings as django_settings
+                try:
+                    decoded = jwt_decode(
+                        data['token'],
+                        django_settings.SECRET_KEY,
+                        algorithms=['HS256']
+                    )
+                    self.user = await database_sync_to_async(User.objects.get)(id=decoded['user_id'])
+                    if await self._do_auth():
+                        await self.send(text_data=json.dumps({
+                            'type': 'auth_success',
+                            'user_id': self.user.id,
+                        }))
+                    else:
+                        await self.send(text_data=json.dumps({
+                            'type': 'auth_failed',
+                            'message': 'No access to this room'
+                        }))
+                        await self.close(code=4403)
+                except Exception:
+                    await self.send(text_data=json.dumps({
+                        'type': 'auth_failed',
+                        'message': 'Invalid token'
+                    }))
+                    await self.close()
+            else:
+                await self.close()
+            return
+
         msg_type = data.get('type', 'message')
 
         if self.room_id == '0' and msg_type in {'typing', 'read', 'reaction', 'message'}:
