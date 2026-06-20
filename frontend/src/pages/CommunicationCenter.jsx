@@ -684,6 +684,11 @@ export default function CommunicationCenter() {
             t.id === data.ticket_id ? { ...t, status: data.status } : t
           ));
 
+        } else if (data.type === 'assignment_update') {
+          setTickets(prev => prev.map(t =>
+            t.id === data.ticket_id ? { ...t, assigned_to_name: data.assigned_to_name } : t
+          ));
+
         } else if (data.type === 'new_message_notify') {
           // Another ticket got a message — refresh list
           fetchTickets();

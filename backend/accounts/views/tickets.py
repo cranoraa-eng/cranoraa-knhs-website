@@ -83,6 +83,41 @@ class TicketViewSet(viewsets.ModelViewSet):
             return True
         return TicketParticipant.objects.filter(ticket=ticket, user=user).exists()
 
+    def _broadcast_status_update(self, ticket_id, new_status, changed_by):
+        try:
+            from channels.layers import get_channel_layer
+            from asgiref.sync import async_to_sync
+            channel_layer = get_channel_layer()
+            async_to_sync(channel_layer.group_send)(
+                f'ticket_{ticket_id}',
+                {
+                    'type': 'ticket_status_update',
+                    'ticket_id': ticket_id,
+                    'status': new_status,
+                    'updated_by': changed_by.id,
+                    'updated_by_name': full_name(changed_by),
+                }
+            )
+        except Exception:
+            pass
+
+    def _broadcast_assignment_update(self, ticket_id, assignee, changed_by):
+        try:
+            from channels.layers import get_channel_layer
+            from asgiref.sync import async_to_sync
+            channel_layer = get_channel_layer()
+            async_to_sync(channel_layer.group_send)(
+                f'ticket_{ticket_id}',
+                {
+                    'type': 'ticket_assignment_update',
+                    'ticket_id': ticket_id,
+                    'assigned_to': assignee.id,
+                    'assigned_to_name': full_name(assignee),
+                }
+            )
+        except Exception:
+            pass
+
     def create(self, request, *args, **kwargs):
         assigned_to = request.data.get('assigned_to')
         if assigned_to:
@@ -265,6 +300,22 @@ class TicketViewSet(viewsets.ModelViewSet):
                 link='/communication-center'
             )
 
+        # Broadcast via WebSocket so connected clients see the message in real-time
+        try:
+            from channels.layers import get_channel_layer
+            from asgiref.sync import async_to_sync
+            channel_layer = get_channel_layer()
+            serialized_msg = TicketMessageSerializer(message).data
+            async_to_sync(channel_layer.group_send)(
+                f'ticket_{ticket.id}',
+                {
+                    'type': 'ticket_message',
+                    'message_data': serialized_msg,
+                }
+            )
+        except Exception:
+            pass  # Graceful fallback — message is still saved in DB
+
         return Response(TicketMessageSerializer(message).data, status=201)
 
     @action(detail=True, methods=['post'], url_path='update-status')
@@ -284,6 +335,8 @@ class TicketViewSet(viewsets.ModelViewSet):
 
         ticket.status = new_status
         ticket.save(update_fields=['status', 'updated_at'])
+
+        self._broadcast_status_update(ticket.id, new_status, request.user)
 
         return Response({'status': new_status})
 
@@ -330,6 +383,8 @@ class TicketViewSet(viewsets.ModelViewSet):
             user=assignee,
             defaults={'role': 'collaborator'}
         )
+
+        self._broadcast_assignment_update(ticket.id, assignee, request.user)
 
         return Response({'assigned_to': full_name(assignee)})
 
