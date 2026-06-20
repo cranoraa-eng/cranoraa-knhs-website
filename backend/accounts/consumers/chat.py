@@ -443,7 +443,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 notification_type='message',
                 title=f'New message from {sender_name}',
                 message=f'{room_label}: {preview}',
-                link='/messages',
+                link='/communication-center',
             )
             for participant in offline_participants
         ]

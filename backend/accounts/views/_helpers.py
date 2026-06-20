@@ -144,7 +144,7 @@ def _broadcast_new_chat_message(message, serialized_data, sender):
             notification_type='message',
             title=f'New message from {sender_name}',
             message=f'{room_label}: {preview_text}',
-            link='/messages',
+            link='/communication-center',
         )
 
 

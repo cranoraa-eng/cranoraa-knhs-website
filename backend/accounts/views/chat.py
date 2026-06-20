@@ -863,7 +863,7 @@ class FriendshipViewSet(viewsets.ModelViewSet):
                 notification_type='friend_request',
                 title='New Friend Request',
                 message=f'{sender_name} sent you a friend request.',
-                link='/messages',
+                link='/communication-center',
             )
         except Exception as e:
             logger.error(f"Friendship create error: {str(e)}")
@@ -890,7 +890,7 @@ class FriendshipViewSet(viewsets.ModelViewSet):
                 notification_type='friend_request',
                 title='Friend Request Accepted',
                 message=f'{accepter_name} accepted your friend request.',
-                link='/messages',
+                link='/communication-center',
             )
 
             return Response(serialized)

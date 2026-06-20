@@ -54,7 +54,7 @@ def notify_enrollment_approved(student, classroom_name):
     )
 
 
-def notify_new_message(recipient, sender_name, room_label, preview_text, link='/messages'):
+def notify_new_message(recipient, sender_name, room_label, preview_text, link='/communication-center'):
     """Notify user of a new chat message."""
     return notify(
         recipient=recipient,
