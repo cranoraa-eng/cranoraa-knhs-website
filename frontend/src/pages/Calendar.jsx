@@ -11,10 +11,15 @@ const CATEGORY_CONFIG = {
   academic:     { label: 'Academics',    color: 'bg-blue-50 text-blue-700 border-blue-200',       dot: 'bg-blue-500',     hex: '#3b82f6' },
   events:       { label: 'Events',       color: 'bg-amber-50 text-amber-700 border-amber-200',     dot: 'bg-amber-500',    hex: '#f59e0b' },
   examinations: { label: 'Examinations', color: 'bg-purple-50 text-purple-700 border-purple-200', dot: 'bg-purple-500',   hex: '#a855f7' },
+  exam:         { label: 'Examinations', color: 'bg-purple-50 text-purple-700 border-purple-200', dot: 'bg-purple-500',   hex: '#a855f7' },
   guidance:     { label: 'Guidance',     color: 'bg-teal-50 text-teal-700 border-teal-200',       dot: 'bg-teal-500',     hex: '#14b8a6' },
   sports:       { label: 'Sports',       color: 'bg-orange-50 text-orange-700 border-orange-200',  dot: 'bg-orange-500',   hex: '#f97316' },
+  cultural:     { label: 'Cultural',     color: 'bg-pink-50 text-pink-700 border-pink-200',       dot: 'bg-pink-500',     hex: '#ec4899' },
   emergency:    { label: 'Emergency',    color: 'bg-red-50 text-red-700 border-red-200',           dot: 'bg-red-500',      hex: '#ef4444' },
   holiday:      { label: 'Holiday',      color: 'bg-emerald-50 text-emerald-700 border-emerald-200', dot: 'bg-emerald-500', hex: '#10b981' },
+  meeting:      { label: 'Meeting',      color: 'bg-indigo-50 text-indigo-700 border-indigo-200',  dot: 'bg-indigo-500',   hex: '#6366f1' },
+  enrollment:   { label: 'Enrollment',   color: 'bg-cyan-50 text-cyan-700 border-cyan-200',       dot: 'bg-cyan-500',     hex: '#06b6d4' },
+  other:        { label: 'Other',        color: 'bg-slate-100 text-slate-600 border-slate-200',   dot: 'bg-slate-400',    hex: '#94a3b8' },
   system_update:{ label: 'System',       color: 'bg-slate-100 text-slate-600 border-slate-200',   dot: 'bg-slate-400',    hex: '#94a3b8' },
 };
 
@@ -181,7 +186,12 @@ const Calendar = ({ mode = 'public' }) => {
     });
     if (result.isConfirmed) {
       try {
-        await api.delete(`/announcements/${event.id?.replace('ann-', '') || event.id}/`);
+        const rawId = event.id?.replace('ann-', '').replace('event-', '') || event.id;
+        if (event.type === 'event') {
+          await api.delete(`/school-events/${rawId}/`);
+        } else {
+          await api.delete(`/announcements/${rawId}/`);
+        }
         toast.success('Event deleted');
         fetchEvents();
         setSelectedEvent(null);
@@ -191,10 +201,19 @@ const Calendar = ({ mode = 'public' }) => {
 
   const handleDuplicateEvent = async (event) => {
     try {
-      const r = await api.get(`/announcements/${event.id?.replace('ann-', '') || event.id}/`);
-      const data = r.data;
-      setEditingEvent(null);
-      setNewEventFromAnnouncement(data);
+      const rawId = event.id?.replace('ann-', '').replace('event-', '') || event.id;
+      let data;
+      if (event.type === 'event') {
+        const r = await api.get(`/school-events/${rawId}/`);
+        data = r.data;
+        setEditingEvent(null);
+        setNewEventFromSchoolEvent(data);
+      } else {
+        const r = await api.get(`/announcements/${rawId}/`);
+        data = r.data;
+        setEditingEvent(null);
+        setNewEventFromAnnouncement(data);
+      }
       setShowEventModal(true);
       toast.success('Event loaded — edit and save as new');
     } catch { toast.error('Failed to load event'); }
@@ -205,6 +224,20 @@ const Calendar = ({ mode = 'public' }) => {
       ...data,
       id: null,
       title: `${data.title} (Copy)`,
+      status: 'draft',
+    });
+    setShowEventModal(true);
+  };
+
+  const setNewEventFromSchoolEvent = (data) => {
+    setEditingEvent({
+      id: null,
+      title: `${data.title} (Copy)`,
+      content: data.description || '',
+      category: data.category,
+      target_audience: data.target_audience,
+      event_date: data.start_date ? `${data.start_date}T${data.start_time || '00:00'}` : null,
+      end_date: data.end_date ? `${data.end_date}T${data.end_time || '23:59'}` : null,
       status: 'draft',
     });
     setShowEventModal(true);
@@ -615,6 +648,13 @@ const Calendar = ({ mode = 'public' }) => {
                   const cat = CATEGORY_CONFIG[selectedEvent.category] || CATEGORY_CONFIG.general;
                   return <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${cat.color}`}>{cat.label}</span>;
                 })()}
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                  selectedEvent.type === 'event'
+                    ? 'bg-indigo-50 text-indigo-700 border-indigo-200'
+                    : 'bg-violet-50 text-violet-700 border-violet-200'
+                }`}>
+                  {selectedEvent.type === 'event' ? 'School Event' : 'Announcement'}
+                </span>
                 {selectedEvent.priority === 'critical' && (
                   <span className="text-[10px] font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded-full">Urgent</span>
                 )}
@@ -637,9 +677,15 @@ const Calendar = ({ mode = 'public' }) => {
               <div className="flex flex-wrap items-center gap-3 text-sm text-slate-500 mb-5">
                 <span className="flex items-center gap-1.5">
                   <svg className="w-4 h-4 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                  {formatTime(selectedEvent.date)}
-                  {selectedEvent.end_date && ` – ${formatTime(selectedEvent.end_date)}`}
+                  {selectedEvent.is_all_day ? 'All Day' : formatTime(selectedEvent.date)}
+                  {!selectedEvent.is_all_day && selectedEvent.end_date && ` – ${formatTime(selectedEvent.end_date)}`}
                 </span>
+                {selectedEvent.location && (
+                  <span className="flex items-center gap-1.5">
+                    <svg className="w-4 h-4 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                    {selectedEvent.location}
+                  </span>
+                )}
               </div>
               {selectedEvent.description && (
                 <div className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap mb-4">{selectedEvent.description}</div>
@@ -647,7 +693,7 @@ const Calendar = ({ mode = 'public' }) => {
             </div>
             <div className="px-6 py-4 border-t border-slate-100 flex items-center justify-between shrink-0">
               <div className="flex items-center gap-2">
-                {canManage && (
+                {canManage && selectedEvent.type !== 'event' && (
                   <>
                     <button onClick={() => openEditEvent(selectedEvent)}
                       className="px-3 py-1.5 rounded-lg bg-slate-100 text-slate-700 text-xs font-bold hover:bg-slate-200 transition-colors">
@@ -663,10 +709,18 @@ const Calendar = ({ mode = 'public' }) => {
                     </button>
                   </>
                 )}
+                {canManage && selectedEvent.type === 'event' && (
+                  <button onClick={() => handleDeleteEvent(selectedEvent)}
+                    className="px-3 py-1.5 rounded-lg bg-red-50 text-red-600 text-xs font-bold hover:bg-red-100 transition-colors">
+                    Delete
+                  </button>
+                )}
               </div>
-              <Link to={`/announcements`} className="px-3 py-1.5 rounded-lg bg-violet-50 text-violet-700 text-xs font-bold hover:bg-violet-100 transition-colors">
-                View in Announcements →
-              </Link>
+              {selectedEvent.type !== 'event' && (
+                <Link to={`/announcements`} className="px-3 py-1.5 rounded-lg bg-violet-50 text-violet-700 text-xs font-bold hover:bg-violet-100 transition-colors">
+                  View in Announcements →
+                </Link>
+              )}
             </div>
           </div>
         </div>

@@ -31,7 +31,7 @@ from ..serializers import (
 def student_calendar_view(request):
     """
     Returns events for the school calendar.
-    Currently includes announcements with an event_date.
+    Merges announcements (with event_date) and dedicated SchoolEvents.
     """
     year = request.query_params.get('year')
     month = request.query_params.get('month')
@@ -52,6 +52,10 @@ def student_calendar_view(request):
     last_day_num = py_calendar.monthrange(year, month)[1]
     last_day = date(year, month, last_day_num)
 
+    public_only = request.query_params.get('public_only') == 'true'
+    user = request.user if request.user and request.user.is_authenticated else None
+
+    # ── Announcements with event_date ──
     announcements = Announcement.objects.filter(
         status='live'
     ).filter(
@@ -59,14 +63,12 @@ def student_calendar_view(request):
         (Q(end_date__date__gte=first_day) | Q(end_date__isnull=True, event_date__date__gte=first_day))
     )
     
-    public_only = request.query_params.get('public_only') == 'true'
-
-    if public_only or not request.user or not request.user.is_authenticated:
+    if public_only or not user:
         announcements = announcements.filter(is_public=True)
     else:
-        if request.user.role == 'student':
+        if user.role == 'student':
             announcements = announcements.filter(target_audience__in=['all', 'students'])
-        elif request.user.role == 'staff':
+        elif user.role == 'staff':
             announcements = announcements.filter(target_audience__in=['all', 'teachers'])
     
     events = []
@@ -78,7 +80,51 @@ def student_calendar_view(request):
             'date': a.event_date.isoformat(),
             'end_date': a.end_date.isoformat() if a.end_date else None,
             'type': 'announcement',
-            'category': a.category
+            'category': a.category,
+            'location': '',
+            'start_time': None,
+            'end_time': None,
+            'is_all_day': True,
+        })
+
+    # ── Dedicated SchoolEvents ──
+    if not public_only and user:
+        school_events = SchoolEvent.objects.filter(
+            Q(start_date__lte=last_day) &
+            (Q(end_date__gte=first_day) | Q(end_date__isnull=True, start_date__gte=first_day))
+        )
+        if user.role == 'student':
+            school_events = school_events.filter(target_audience__in=['all', 'students'])
+        elif user.role == 'staff':
+            school_events = school_events.filter(target_audience__in=['all', 'teachers', 'staff'])
+        elif user.role == 'parent':
+            school_events = school_events.filter(target_audience__in=['all', 'parents'])
+    elif public_only:
+        school_events = SchoolEvent.objects.filter(
+            target_audience='all',
+            start_date__lte=last_day,
+        ).filter(Q(end_date__gte=first_day) | Q(end_date__isnull=True, start_date__gte=first_day))
+    else:
+        school_events = SchoolEvent.objects.none()
+
+    for e in school_events:
+        import datetime as _dt
+        date_str = _dt.datetime.combine(e.start_date, e.start_time or _dt.time.min).isoformat() if e.start_time else _dt.datetime.combine(e.start_date, _dt.time.min).isoformat()
+        end_str = None
+        if e.end_date:
+            end_str = _dt.datetime.combine(e.end_date, e.end_time or _dt.time.max).isoformat()
+        events.append({
+            'id': f"event-{e.id}",
+            'title': e.title,
+            'description': e.description[:100] + '...' if e.description and len(e.description) > 100 else e.description,
+            'date': date_str,
+            'end_date': end_str,
+            'type': 'event',
+            'category': e.category,
+            'location': e.location or '',
+            'start_time': e.start_time.isoformat() if e.start_time else None,
+            'end_time': e.end_time.isoformat() if e.end_time else None,
+            'is_all_day': e.is_all_day,
         })
     
     return Response(events)
