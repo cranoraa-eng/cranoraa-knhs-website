@@ -146,14 +146,14 @@ else:
 _redis_url = os.environ.get('REDIS_URL')
 if not _redis_url:
     # Auto-detect local Redis for development
-    import socket
     try:
-        _s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        import socket as _sock
+        _s = _sock.socket(_sock.AF_INET, _sock.SOCK_STREAM)
         _s.settimeout(0.3)
         _s.connect(('localhost', 6379))
         _s.close()
         _redis_url = 'redis://localhost:6379/0'
-    except (socket.error, OSError):
+    except Exception:
         _redis_url = None
 
 if _redis_url:
