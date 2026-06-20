@@ -1,10 +1,12 @@
 import { createContext, useState, useEffect, useContext, useCallback } from 'react';
 import api from '../utils/api';
 import { getCurrentAcademicYear } from '../utils/dateHelpers';
+import { useAuth } from './AuthContext';
 
 const AcademicYearContext = createContext(null);
 
 export function AcademicYearProvider({ children }) {
+  const { ready } = useAuth();
   const [academicYear, setAcademicYear] = useState(
     () => localStorage.getItem('knhs_academic_year') || getCurrentAcademicYear()
   );
@@ -12,6 +14,7 @@ export function AcademicYearProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!ready) return;
     let cancelled = false;
     const fetchActive = api.get('/admin/academic-years/active/').catch(() => null);
     const fetchAll = api.get('/admin/academic-years/').catch(() => ({ data: [] }));
@@ -30,7 +33,7 @@ export function AcademicYearProvider({ children }) {
     });
 
     return () => { cancelled = true; };
-  }, []);
+  }, [ready]);
 
   const updateAcademicYear = useCallback((year) => {
     setAcademicYear(year);
