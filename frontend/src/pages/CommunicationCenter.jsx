@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { getAccessToken } from '../utils/auth';
 import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
+import { playSound } from '../utils/sounds';
 
 const FileIcon = (p) => <svg width={p.size||16} height={p.size||16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={p.className}><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>;
 const SearchIcon = (p) => <svg width={p.size||16} height={p.size||16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={p.className}><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>;
@@ -16,6 +17,16 @@ const DownloadIcon = (p) => <svg width={p.size||16} height={p.size||16} viewBox=
 const PaperclipIcon = (p) => <svg width={p.size||16} height={p.size||16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={p.className}><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>;
 const PlusIcon = (p) => <svg width={p.size||16} height={p.size||16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={p.className}><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>;
 const ChevronDownIcon = (p) => <svg width={p.size||16} height={p.size||16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={p.className}><polyline points="6 9 12 15 18 9"/></svg>;
+const CheckIcon = (p) => <svg width={p.size||16} height={p.size||16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={p.className}><polyline points="20 6 9 17 4 12"/></svg>;
+const CheckCheckIcon = (p) => <svg width={p.size||16} height={p.size||16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={p.className}><path d="M18 7l-8 8-4-4"/><polyline points="22 7 14 17 11 14"/></svg>;
+const UsersIcon = (p) => <svg width={p.size||16} height={p.size||16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={p.className}><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>;
+const MoreIcon = (p) => <svg width={p.size||16} height={p.size||16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={p.className}><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>;
+const PinIcon = (p) => <svg width={p.size||14} height={p.size||14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={p.className}><path d="M12 17v5"/><path d="M9 11l-4 4h14l-4-4"/><path d="M15 3.5L9.5 9 15 11l-2.5 2.5"/></svg>;
+const TrashIcon = (p) => <svg width={p.size||16} height={p.size||16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={p.className}><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>;
+const ChatIcon = (p) => <svg width={p.size||16} height={p.size||16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={p.className}><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>;
+const TicketIcon = (p) => <svg width={p.size||16} height={p.size||16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={p.className}><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>;
+
+const EMOJI_LIST = ['👍', '❤️', '😂', '😮', '😢', '😡', '🎉', '🔥'];
 
 const DEPT_META = {
   faculty:    { label: 'Faculty',    color: 'bg-blue-500',  icon: 'graduation' },
@@ -136,6 +147,45 @@ function formatRelativeTime(ts) {
   const days = Math.floor(hrs / 24);
   if (days < 7) return `${days}d ago`;
   return new Date(ts).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+function formatChatTime(ts) {
+  if (!ts) return '';
+  const d = new Date(ts);
+  const now = new Date();
+  const today = now.toDateString() === d.toDateString();
+  if (today) return d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+  const yesterday = new Date(now); yesterday.setDate(now.getDate() - 1);
+  if (yesterday.toDateString() === d.toDateString()) return 'Yesterday';
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+function getRoomDisplayName(room, userId) {
+  if (room.name) return room.name;
+  if (!room.is_group && room.participants_details) {
+    const other = room.participants_details.find(p => p.id !== userId);
+    return other ? `${other.first_name || other.username}` : 'Chat';
+  }
+  if (room.participants_details) {
+    return room.participants_details.map(p => p.first_name || p.username).join(', ');
+  }
+  return 'Chat';
+}
+
+function getRoomAvatar(room, userId) {
+  if (room.is_group) return null;
+  const other = (room.participants_details || []).find(p => p.id !== userId);
+  return other?.profile?.profile_picture || null;
+}
+
+function getRoomSubtitle(room) {
+  if (room.last_action_type === 'message' && room.last_action_sender_name) {
+    const content = room.last_action_content || '';
+    return `${room.last_action_sender_name}: ${content.slice(0, 50)}${content.length > 50 ? '…' : ''}`;
+  }
+  if (room.last_action_type === 'unsend') return 'Message unsent';
+  if (room.last_action_type === 'edit') return `${room.last_action_sender_name || 'Someone'} edited a message`;
+  return '';
 }
 
 function TicketCard({ ticket, selected, onSelect }) {
@@ -515,6 +565,8 @@ function PeopleDirectory({ onSelectPerson, currentUserId }) {
 
 export default function CommunicationCenter() {
   const { user } = useAuth();
+  const userId = user?.id;
+  const [activeTab, setActiveTab] = useState('messages');
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedId, setSelectedId] = useState(null);
@@ -533,7 +585,7 @@ export default function CommunicationCenter() {
   const debouncedSearch = useRef(null);
   const [effectiveSearch, setEffectiveSearch] = useState('');
 
-  // ── WebSocket state ─────────────────────────────────────────────────────
+  // ── WebSocket state (tickets) ─────────────────────────────────────────────
   const wsRef = useRef(null);
   const reconnectTimerRef = useRef(null);
   const reconnectAttemptsRef = useRef(0);
@@ -547,6 +599,32 @@ export default function CommunicationCenter() {
   const [showNewTicket, setShowNewTicket] = useState(false);
   const [newTicket, setNewTicket] = useState({ subject: '', category: 'other', priority: 'normal', message: '' });
   const [creatingTicket, setCreatingTicket] = useState(false);
+
+  // ── Chat state (Messages tab) ───────────────────────────────────────────
+  const [chatRooms, setChatRooms] = useState([]);
+  const [selectedRoom, setSelectedRoom] = useState(null);
+  const [chatMessages, setChatMessages] = useState([]);
+  const [chatLoading, setChatLoading] = useState(true);
+  const [chatSearchQuery, setChatSearchQuery] = useState('');
+  const [chatTypingUsers, setChatTypingUsers] = useState({});
+  const [onlineUsers, setOnlineUsers] = useState(new Set());
+  const [showNewChatModal, setShowNewChatModal] = useState(false);
+  const [friends, setFriends] = useState([]);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(null);
+  const [showRoomMenu, setShowRoomMenu] = useState(null);
+  const [showPinned, setShowPinned] = useState(false);
+  const [replyTo, setReplyTo] = useState(null);
+  const [chatUploading, setChatUploading] = useState(false);
+  const chatSocketRef = useRef(null);
+  const chatReconnectTimerRef = useRef(null);
+  const chatReconnectAttemptsRef = useRef(0);
+  const chatTypingTimerRef = useRef(null);
+  const chatLastTypingSentRef = useRef(0);
+  const chatFileInputRef = useRef(null);
+  const wsConnectedRef = useRef(false);
+
+  const CHAT_BASE_DELAY = 2000;
+  const CHAT_MAX_DELAY = 30000;
 
   const statusParam = activeFilter === 'closed' ? 'resolved' : activeFilter;
   const hasServerStatus = activeFilter !== 'all' && activeFilter !== 'unread';
@@ -777,6 +855,243 @@ export default function CommunicationCenter() {
     };
   }, []);
 
+  // ── Chat: WebSocket connect/disconnect per selected room ──────────────────
+  const connectChatWs = useCallback((roomId) => {
+    if (!roomId || !userId) return;
+    const token = getAccessToken();
+    if (!token) return;
+    if (chatSocketRef.current && chatSocketRef.current.readyState <= WebSocket.OPEN) return;
+
+    const ws = new WebSocket(`${WS_ROOT}/ws/chat/${roomId}/`);
+    chatSocketRef.current = ws;
+    wsConnectedRef.current = false;
+
+    ws.onopen = () => { ws.send(JSON.stringify({ type: 'auth', token })); };
+
+    ws.onmessage = (e) => {
+      try {
+        const data = JSON.parse(e.data);
+        if (data.type === 'auth_success') { wsConnectedRef.current = true; chatReconnectAttemptsRef.current = 0; return; }
+        if (data.type === 'auth_failed') { ws.close(); return; }
+        if (data.type === 'message') {
+          setChatMessages(prev => { if (prev.some(m => m.id === data.id)) return prev; return [...prev, data]; });
+          setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 50);
+          return;
+        }
+        if (data.type === 'typing') {
+          setChatTypingUsers(prev => { const next = { ...prev }; if (data.is_typing) next[data.sender_id] = data.sender_name; else delete next[data.sender_id]; return next; });
+          return;
+        }
+        if (data.type === 'read') { setChatMessages(prev => prev.map(m => m.id <= data.message_id ? { ...m, is_read: true } : m)); return; }
+        if (data.type === 'delivered') { setChatMessages(prev => prev.map(m => m.id === data.message_id ? { ...m, is_delivered: true } : m)); return; }
+        if (data.type === 'message_deleted') { setChatMessages(prev => prev.filter(m => m.id !== data.message_id)); return; }
+        if (data.type === 'message_edited') { setChatMessages(prev => prev.map(m => m.id === data.message_id ? { ...m, content: data.content, is_edited: true } : m)); return; }
+        if (data.type === 'message_reaction') { setChatMessages(prev => prev.map(m => m.id === data.message_id ? { ...m, reactions: data.reactions } : m)); return; }
+        if (data.type === 'peer_online') { setOnlineUsers(prev => new Set([...prev, data.user_id])); return; }
+        if (data.type === 'peer_presence') { setOnlineUsers(prev => { const next = new Set(prev); if (data.is_online) next.add(data.user_id); else next.delete(data.user_id); return next; }); return; }
+        if (data.type === 'room_update') {
+          if (data.event === 'group_deleted') { setChatRooms(prev => prev.filter(r => r.id !== data.room_id)); if (selectedRoom?.id === data.room_id) setSelectedRoom(null); }
+          else if (data.room) { setChatRooms(prev => { const idx = prev.findIndex(r => r.id === data.room.id); if (idx >= 0) { const next = [...prev]; next[idx] = data.room; return next; } return [data.room, ...prev]; }); }
+          return;
+        }
+        if (data.type === 'forced_logout') { toast.error(data.message || 'Your account has been suspended.'); return; }
+      } catch { /* ignore */ }
+    };
+
+    ws.onclose = (e) => {
+      wsConnectedRef.current = false;
+      chatSocketRef.current = null;
+      if (e.code !== 1000 && e.code !== 1001 && userId) {
+        if (chatReconnectTimerRef.current) clearTimeout(chatReconnectTimerRef.current);
+        const attempts = chatReconnectAttemptsRef.current;
+        const delay = Math.min(CHAT_BASE_DELAY * Math.pow(2, attempts), CHAT_MAX_DELAY);
+        chatReconnectAttemptsRef.current = attempts + 1;
+        chatReconnectTimerRef.current = setTimeout(() => connectChatWs(roomId), delay);
+      }
+    };
+    ws.onerror = () => {};
+  }, [userId, selectedRoom?.id]);
+
+  const disconnectChatWs = useCallback(() => {
+    if (chatReconnectTimerRef.current) { clearTimeout(chatReconnectTimerRef.current); chatReconnectTimerRef.current = null; }
+    chatReconnectAttemptsRef.current = 0;
+    if (chatSocketRef.current) { chatSocketRef.current.close(1000, 'Room changed'); chatSocketRef.current = null; }
+    wsConnectedRef.current = false;
+    setChatTypingUsers({});
+  }, []);
+
+  const sendChatWs = useCallback((payload) => {
+    if (chatSocketRef.current && chatSocketRef.current.readyState === WebSocket.OPEN) {
+      chatSocketRef.current.send(JSON.stringify(payload));
+      return true;
+    }
+    return false;
+  }, []);
+
+  const loadChatRooms = useCallback(async () => {
+    try { const r = await api.get('/chat/rooms/'); setChatRooms(r.data.results || r.data); } catch { /* ignore */ }
+  }, []);
+
+  const loadChatMessages = useCallback(async (roomId) => {
+    if (!roomId) return;
+    try { const r = await api.get(`/chat/messages/?room_id=${roomId}`); setChatMessages(r.data.results || r.data); setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100); } catch { /* ignore */ }
+  }, []);
+
+  const loadFriends = useCallback(async () => {
+    try { const r = await api.get('/friendships/my_friends/'); setFriends(r.data); } catch { /* ignore */ }
+  }, []);
+
+  useEffect(() => {
+    if (activeTab === 'messages') {
+      setChatLoading(true);
+      Promise.all([loadChatRooms(), loadFriends()]).then(() => setChatLoading(false));
+    }
+  }, [activeTab, loadChatRooms, loadFriends]);
+
+  useEffect(() => {
+    if (selectedRoom && activeTab === 'messages') {
+      disconnectChatWs();
+      setChatMessages([]);
+      loadChatMessages(selectedRoom.id).then(() => connectChatWs(selectedRoom.id));
+    }
+  }, [selectedRoom?.id, activeTab, connectChatWs, disconnectChatWs, loadChatMessages]);
+
+  useEffect(() => { return () => disconnectChatWs(); }, [disconnectChatWs]);
+
+  const handleSelectRoom = useCallback((room) => {
+    setSelectedRoom(room);
+    setShowRoomMenu(null);
+    setChatSearchQuery('');
+    setReplyTo(null);
+    setMobileView('thread');
+  }, []);
+
+  const handleSendChatMessage = useCallback(() => {
+    if (!chatMessages || !selectedRoom || sending) return;
+    const content = (document.querySelector('[data-chat-input]')?.value || '').trim();
+    if (!content) return;
+    setSending(true);
+    setReplyTo(null);
+    if (!sendChatWs({ type: 'message', message: content })) {
+      toast.error('Connection lost. Reconnecting...');
+      connectChatWs(selectedRoom.id);
+    }
+    setSending(false);
+  }, [selectedRoom, sending, sendChatWs, connectChatWs]);
+
+  const handleChatKeyDown = useCallback((e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      const input = e.target;
+      const content = input.value.trim();
+      if (!content || !selectedRoom) return;
+      setReplyTo(null);
+      if (!sendChatWs({ type: 'message', message: content })) {
+        toast.error('Connection lost. Reconnecting...');
+        connectChatWs(selectedRoom.id);
+      }
+      input.value = '';
+    }
+  }, [selectedRoom, sendChatWs, connectChatWs]);
+
+  const handleChatTyping = useCallback(() => {
+    const now = Date.now();
+    if (now - chatLastTypingSentRef.current > 3000) {
+      chatLastTypingSentRef.current = now;
+      sendChatWs({ type: 'typing', is_typing: true });
+    }
+    if (chatTypingTimerRef.current) clearTimeout(chatTypingTimerRef.current);
+    chatTypingTimerRef.current = setTimeout(() => { sendChatWs({ type: 'typing', is_typing: false }); }, 3000);
+  }, [sendChatWs]);
+
+  const handleChatReaction = useCallback((messageId, emoji) => {
+    sendChatWs({ type: 'reaction', message_id: messageId, emoji });
+    setShowEmojiPicker(null);
+  }, [sendChatWs]);
+
+  const handleChatMarkRead = useCallback(() => {
+    if (!selectedRoom || !chatMessages?.length) return;
+    const lastMsg = chatMessages[chatMessages.length - 1];
+    if (lastMsg && lastMsg.sender !== userId) {
+      sendChatWs({ type: 'read', message_id: lastMsg.id });
+    }
+  }, [selectedRoom, chatMessages, userId, sendChatWs]);
+
+  useEffect(() => { if (selectedRoom && activeTab === 'messages') handleChatMarkRead(); }, [chatMessages, selectedRoom, activeTab, handleChatMarkRead]);
+
+  const handleCreatePrivateChat = useCallback(async (friendId) => {
+    try {
+      const r = await api.post('/chat/rooms/get_or_create_private_chat/', { user_id: friendId });
+      await loadChatRooms();
+      setSelectedRoom(r.data);
+      setShowNewChatModal(false);
+    } catch { toast.error('Failed to create chat'); }
+  }, [loadChatRooms]);
+
+  const handleCreateGroupChat = useCallback(async (name, participantIds) => {
+    try {
+      const r = await api.post('/chat/rooms/', { name, is_group: true, participants: participantIds });
+      await loadChatRooms();
+      setSelectedRoom(r.data);
+      setShowNewChatModal(false);
+    } catch { toast.error('Failed to create group'); }
+  }, [loadChatRooms]);
+
+  const handlePinRoom = useCallback(async (roomId) => {
+    try {
+      const room = chatRooms.find(r => r.id === roomId);
+      if (room?.is_pinned) await api.post(`/chat/rooms/${roomId}/unpin/`);
+      else await api.post(`/chat/rooms/${roomId}/pin/`);
+      await loadChatRooms();
+      setShowRoomMenu(null);
+    } catch { toast.error('Failed to update pin'); }
+  }, [chatRooms, loadChatRooms]);
+
+  const handleDeleteConversation = useCallback(async (roomId) => {
+    const result = await Swal.fire({ title: 'Delete conversation?', text: 'This will remove all messages for you.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#9F7AEA', cancelButtonColor: '#f43f5e', confirmButtonText: 'Delete' });
+    if (result.isConfirmed) {
+      try { await api.delete(`/chat/rooms/${roomId}/delete_conversation/`); await loadChatRooms(); if (selectedRoom?.id === roomId) setSelectedRoom(null); toast.success('Conversation deleted'); } catch { toast.error('Failed to delete'); }
+    }
+    setShowRoomMenu(null);
+  }, [selectedRoom, loadChatRooms]);
+
+  const handleDeleteChatMessage = useCallback(async (messageId) => {
+    const result = await Swal.fire({ title: 'Delete message?', text: 'This cannot be undone.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#9F7AEA', confirmButtonText: 'Delete' });
+    if (result.isConfirmed) { try { await api.delete(`/chat/messages/${messageId}/`); } catch { toast.error('Failed to delete message'); } }
+  }, []);
+
+  const handleEditChatMessage = useCallback(async (messageId) => {
+    const { value } = await Swal.fire({ title: 'Edit message', input: 'text', inputValue: chatMessages?.find(m => m.id === messageId)?.content || '', showCancelButton: true, confirmButtonColor: '#9F7AEA' });
+    if (value !== undefined && value.trim()) { try { await api.patch(`/chat/messages/${messageId}/edit/`, { content: value.trim() }); setChatMessages(prev => prev.map(m => m.id === messageId ? { ...m, content: value.trim(), is_edited: true } : m)); } catch { toast.error('Failed to edit'); } }
+  }, [chatMessages]);
+
+  const handleChatUpload = useCallback(async (e) => {
+    const file = e.target.files?.[0];
+    if (!file || !selectedRoom) return;
+    setChatUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('room_id', selectedRoom.id);
+      if (replyTo) formData.append('parent_id', replyTo.id);
+      const r = await api.post('/chat/messages/send_media/', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+      setChatMessages(prev => [...prev, r.data]);
+      setReplyTo(null);
+      setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 50);
+    } catch { toast.error('Upload failed'); }
+    setChatUploading(false);
+    if (chatFileInputRef.current) chatFileInputRef.current.value = '';
+  }, [selectedRoom, replyTo]);
+
+  const filteredChatRooms = useMemo(() => {
+    let list = [...chatRooms];
+    if (showPinned) list = list.filter(r => r.is_pinned);
+    if (chatSearchQuery) { const q = chatSearchQuery.toLowerCase(); list = list.filter(r => getRoomDisplayName(r, userId).toLowerCase().includes(q)); }
+    const pinned = list.filter(r => r.is_pinned);
+    const unpinned = list.filter(r => !r.is_pinned);
+    return [...pinned, ...unpinned];
+  }, [chatRooms, showPinned, chatSearchQuery, userId]);
+
   const handleSend = async () => {
     if (!selectedId) return;
     const content = text.trim();
@@ -954,75 +1269,205 @@ export default function CommunicationCenter() {
 
   return (
     <div className="h-[calc(100dvh-160px)] lg:h-[calc(100vh-100px)] min-h-0 flex bg-slate-100 overflow-hidden" style={{ height: 'calc(var(--vh, 1vh) * 100 - 160px)' }}>
-      {/* Left Panel — Ticket List */}
+      {/* Left Panel — Ticket List / Chat Rooms */}
       <div className={`
         w-full lg:w-[340px] min-w-0 bg-white lg:border-r border-slate-200 flex flex-col h-full
         ${mobileView === 'list' ? 'flex' : 'hidden lg:flex'}
       `}>
-        {/* Header */}
-        <div className="px-4 sm:px-5 py-4 border-b border-slate-100">
-          <div className="flex items-center justify-between mb-3">
-            <div>
-              <h1 className="text-sm font-extrabold text-slate-900 uppercase tracking-tight">Support Center</h1>
-              <p className="text-[10px] text-slate-500 mt-0.5">Manage support requests</p>
-            </div>
-            <button onClick={() => setShowNewTicket(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-violet-600 text-white text-[11px] font-bold rounded-lg hover:bg-violet-700 transition-colors shadow-sm">
-              <PlusIcon size={12} />
-              New
-            </button>
-          </div>
-          <div className="relative">
-            <SearchIcon size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-            <input type="text" placeholder="Search requests..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
-              aria-label="Search support requests"
-              className="w-full pl-9 pr-4 py-2 bg-slate-100 rounded-lg text-xs placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:bg-white transition-colors" />
-          </div>
+        {/* Tab Bar */}
+        <div className="flex border-b border-slate-200">
+          <button
+            onClick={() => setActiveTab('messages')}
+            className={`flex-1 flex items-center justify-center gap-1.5 py-3 text-xs font-bold transition-colors ${
+              activeTab === 'messages' ? 'text-violet-600 border-b-2 border-violet-600' : 'text-slate-400 hover:text-slate-600'
+            }`}
+          >
+            <ChatIcon size={14} />
+            Messages
+          </button>
+          <button
+            onClick={() => setActiveTab('support')}
+            className={`flex-1 flex items-center justify-center gap-1.5 py-3 text-xs font-bold transition-colors ${
+              activeTab === 'support' ? 'text-violet-600 border-b-2 border-violet-600' : 'text-slate-400 hover:text-slate-600'
+            }`}
+          >
+            <TicketIcon size={14} />
+            Support
+          </button>
         </div>
 
-        {/* Filter Segmented Control */}
-        <div className="px-3 sm:px-4 py-3 border-b border-slate-100">
-          <div className="flex bg-slate-100 rounded-lg p-0.5 gap-0 overflow-x-auto">
-            {[
-              { id: 'all', label: 'All' },
-              { id: 'unread', label: `Unread${unreadCount > 0 ? ` (${unreadCount})` : ''}` },
-              { id: 'open', label: 'Open' },
-              { id: 'pending', label: 'Await' },
-              { id: 'replied', label: 'Active' },
-              { id: 'closed', label: 'Closed' },
-            ].map(f => (
-              <button key={f.id} onClick={() => setActiveFilter(f.id)}
-                className={`flex-1 min-w-0 px-1.5 sm:px-1 py-1.5 text-[10px] font-bold rounded-md whitespace-nowrap transition-all ${
-                  activeFilter === f.id
-                    ? 'bg-white text-violet-700 shadow-sm'
-                    : 'text-slate-500 hover:text-slate-700'
-                }`}>
-                {f.label}
-              </button>
-            ))}
-          </div>
-        </div>
+        {activeTab === 'support' ? (
+          <>
+            {/* Support Header */}
+            <div className="px-4 sm:px-5 py-4 border-b border-slate-100">
+              <div className="flex items-center justify-between mb-3">
+                <div>
+                  <h1 className="text-sm font-extrabold text-slate-900 uppercase tracking-tight">Support Center</h1>
+                  <p className="text-[10px] text-slate-500 mt-0.5">Manage support requests</p>
+                </div>
+                <button onClick={() => setShowNewTicket(true)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-violet-600 text-white text-[11px] font-bold rounded-lg hover:bg-violet-700 transition-colors shadow-sm">
+                  <PlusIcon size={12} />
+                  New
+                </button>
+              </div>
+              <div className="relative">
+                <SearchIcon size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                <input type="text" placeholder="Search requests..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
+                  aria-label="Search support requests"
+                  className="w-full pl-9 pr-4 py-2 bg-slate-100 rounded-lg text-xs placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:bg-white transition-colors" />
+              </div>
+            </div>
 
-        {/* Ticket List */}
-        <div className="flex-1 overflow-y-auto">
-          {loading ? (
-            <div className="flex items-center justify-center h-24">
-              <div className="w-5 h-5 border-2 border-slate-200 border-t-violet-600 rounded-full animate-spin" />
+            {/* Filter Segmented Control */}
+            <div className="px-3 sm:px-4 py-3 border-b border-slate-100">
+              <div className="flex bg-slate-100 rounded-lg p-0.5 gap-0 overflow-x-auto">
+                {[
+                  { id: 'all', label: 'All' },
+                  { id: 'unread', label: `Unread${unreadCount > 0 ? ` (${unreadCount})` : ''}` },
+                  { id: 'open', label: 'Open' },
+                  { id: 'pending', label: 'Await' },
+                  { id: 'replied', label: 'Active' },
+                  { id: 'closed', label: 'Closed' },
+                ].map(f => (
+                  <button key={f.id} onClick={() => setActiveFilter(f.id)}
+                    className={`flex-1 min-w-0 px-1.5 sm:px-1 py-1.5 text-[10px] font-bold rounded-md whitespace-nowrap transition-all ${
+                      activeFilter === f.id
+                        ? 'bg-white text-violet-700 shadow-sm'
+                        : 'text-slate-500 hover:text-slate-700'
+                    }`}>
+                    {f.label}
+                  </button>
+                ))}
+              </div>
             </div>
-          ) : filteredTickets.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-48 text-slate-400 px-6">
-              <svg width={40} height={40} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="mb-3 text-slate-300"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-              <p className="text-sm font-medium">No requests found</p>
-              <p className="text-xs mt-1 text-center">{activeFilter !== 'all' ? 'Try a different filter' : 'Click "+ New" to submit a request'}</p>
+
+            {/* Ticket List */}
+            <div className="flex-1 overflow-y-auto">
+              {loading ? (
+                <div className="flex items-center justify-center h-24">
+                  <div className="w-5 h-5 border-2 border-slate-200 border-t-violet-600 rounded-full animate-spin" />
+                </div>
+              ) : filteredTickets.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-48 text-slate-400 px-6">
+                  <svg width={40} height={40} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="mb-3 text-slate-300"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                  <p className="text-sm font-medium">No requests found</p>
+                  <p className="text-xs mt-1 text-center">{activeFilter !== 'all' ? 'Try a different filter' : 'Click "+ New" to submit a request'}</p>
+                </div>
+              ) : (
+                <div className="divide-y divide-slate-50">
+                  {filteredTickets.map(ticket => (
+                    <TicketCard key={ticket.id} ticket={ticket} selected={selectedId === ticket.id} onSelect={handleSelectTicket} />
+                  ))}
+                </div>
+              )}
             </div>
-          ) : (
-            <div className="divide-y divide-slate-50">
-              {filteredTickets.map(ticket => (
-                <TicketCard key={ticket.id} ticket={ticket} selected={selectedId === ticket.id} onSelect={handleSelectTicket} />
-              ))}
+          </>
+        ) : (
+          <>
+            {/* Messages Header */}
+            <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100">
+              <div className="relative flex-1 mr-2">
+                <SearchIcon size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Search conversations..."
+                  value={chatSearchQuery}
+                  onChange={(e) => setChatSearchQuery(e.target.value)}
+                  className="w-full pl-9 pr-3 py-2 text-xs bg-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:bg-white transition-colors"
+                />
+              </div>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => setShowPinned(!showPinned)}
+                  className={`p-2 rounded-lg transition-colors ${showPinned ? 'bg-violet-100 text-violet-600' : 'text-slate-400 hover:bg-slate-100'}`}
+                  title="Pinned chats"
+                >
+                  <PinIcon size={14} />
+                </button>
+                <button
+                  onClick={() => setShowNewChatModal(true)}
+                  className="p-2 rounded-lg text-slate-400 hover:bg-slate-100 transition-colors"
+                  title="New chat"
+                >
+                  <PlusIcon size={16} />
+                </button>
+              </div>
             </div>
-          )}
-        </div>
+
+            {/* Chat Room List */}
+            <div className="flex-1 overflow-y-auto">
+              {chatLoading ? (
+                <div className="flex items-center justify-center py-12">
+                  <div className="w-5 h-5 border-2 border-slate-200 border-t-violet-600 rounded-full animate-spin" />
+                </div>
+              ) : filteredChatRooms.length === 0 ? (
+                <div className="text-center py-12 px-4">
+                  <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <ChatIcon size={20} className="text-slate-400" />
+                  </div>
+                  <p className="text-sm font-medium text-slate-500">No conversations yet</p>
+                  <p className="text-xs text-slate-400 mt-1">Start a new chat to begin messaging</p>
+                </div>
+              ) : (
+                filteredChatRooms.map(room => {
+                  const displayName = getRoomDisplayName(room, userId);
+                  const avatar = getRoomAvatar(room, userId);
+                  const subtitle = getRoomSubtitle(room);
+                  const isActive = selectedRoom?.id === room.id;
+                  const hasUnread = room.unread_count > 0;
+
+                  return (
+                    <button
+                      key={room.id}
+                      onClick={() => handleSelectRoom(room)}
+                      className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors relative ${
+                        isActive ? 'bg-violet-50 border-r-2 border-violet-600' : 'hover:bg-slate-50 border-r-2 border-transparent'
+                      }`}
+                    >
+                      <div className="relative flex-shrink-0">
+                        {avatar ? (
+                          <img src={avatar} alt="" className="w-11 h-11 rounded-full object-cover" />
+                        ) : room.is_group ? (
+                          <div className="w-11 h-11 rounded-full bg-violet-100 flex items-center justify-center">
+                            <UsersIcon size={20} className="text-violet-600" />
+                          </div>
+                        ) : (
+                          <div className={`w-11 h-11 rounded-full flex items-center justify-center text-white font-bold text-sm ${getAvatarColor(displayName)}`}>
+                            {getInitials(displayName)}
+                          </div>
+                        )}
+                        {!room.is_group && room.participants_details?.find(p => p.id !== userId) && onlineUsers.has(room.participants_details.find(p => p.id !== userId)?.id) && (
+                          <span className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between">
+                          <span className={`text-sm truncate ${hasUnread ? 'font-bold text-slate-900' : 'font-semibold text-slate-700'}`}>
+                            {displayName}
+                          </span>
+                          <span className="text-[11px] text-slate-400 flex-shrink-0 ml-2">
+                            {formatChatTime(room.updated_at)}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between mt-0.5">
+                          <span className={`text-xs truncate ${hasUnread ? 'font-semibold text-slate-700' : 'text-slate-500'}`}>
+                            {subtitle || 'No messages yet'}
+                          </span>
+                          {hasUnread && (
+                            <span className="ml-2 flex-shrink-0 w-5 h-5 bg-violet-600 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                              {room.unread_count > 99 ? '99+' : room.unread_count}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })
+              )}
+            </div>
+          </>
+        )}
       </div>
 
       {/* Center Panel — Message Thread */}
@@ -1030,7 +1475,179 @@ export default function CommunicationCenter() {
         flex-1 flex flex-col min-w-0 bg-slate-50 h-full relative
         ${mobileView === 'thread' ? 'flex' : 'hidden lg:flex'}
       `}>
-        {selectedTicket ? (
+        {activeTab === 'messages' ? (
+          selectedRoom ? (
+            <>
+              {/* Chat Thread Header */}
+              <div className="flex items-center justify-between px-3 sm:px-5 py-3 bg-white border-b border-slate-200 min-h-[57px]">
+                <div className="flex items-center gap-2 min-w-0 flex-1">
+                  <button onClick={() => { setSelectedRoom(null); setMobileView('list'); }}
+                    className="p-1.5 -ml-1 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors lg:hidden flex-shrink-0">
+                    <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M15 18l-6-6 6-6"/></svg>
+                  </button>
+                  {getRoomAvatar(selectedRoom, userId) ? (
+                    <img src={getRoomAvatar(selectedRoom, userId)} alt="" className="w-9 h-9 rounded-full object-cover" />
+                  ) : selectedRoom.is_group ? (
+                    <div className="w-9 h-9 rounded-full bg-violet-100 flex items-center justify-center"><UsersIcon size={18} className="text-violet-600" /></div>
+                  ) : (
+                    <div className={`w-9 h-9 rounded-full flex items-center justify-center text-white font-bold text-xs ${getAvatarColor(getRoomDisplayName(selectedRoom, userId))}`}>
+                      {getInitials(getRoomDisplayName(selectedRoom, userId))}
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-sm font-bold text-slate-800 truncate">{getRoomDisplayName(selectedRoom, userId)}</h3>
+                    <p className="text-xs text-slate-500">
+                      {selectedRoom.is_group ? `${(selectedRoom.participants_details || []).length} members` :
+                        (selectedRoom.participants_details || []).find(p => p.id !== userId) && onlineUsers.has(selectedRoom.participants_details.find(p => p.id !== userId)?.id) ? 'Online' : 'Offline'}
+                    </p>
+                  </div>
+                </div>
+                <div className="relative">
+                  <button onClick={() => setShowRoomMenu(showRoomMenu === selectedRoom.id ? null : selectedRoom.id)} className="p-2 rounded-lg text-slate-400 hover:bg-slate-100 transition-colors">
+                    <MoreIcon size={18} />
+                  </button>
+                  {showRoomMenu === selectedRoom.id && (
+                    <div className="absolute right-0 top-full mt-1 w-48 bg-white border border-slate-200 rounded-xl shadow-lg z-50 py-1">
+                      <button onClick={() => handlePinRoom(selectedRoom.id)} className="w-full flex items-center gap-2 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50">
+                        <PinIcon size={14} />{selectedRoom.is_pinned ? 'Unpin chat' : 'Pin chat'}
+                      </button>
+                      <button onClick={() => handleDeleteConversation(selectedRoom.id)} className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50">
+                        <TrashIcon size={14} />Delete conversation
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Chat Messages */}
+              <div className="flex-1 overflow-y-auto px-4 py-3 space-y-1" onClick={() => setShowRoomMenu(null)}>
+                {(!chatMessages || chatMessages.length === 0) ? (
+                  <div className="flex items-center justify-center h-full"><p className="text-sm text-slate-400">No messages yet. Say hello!</p></div>
+                ) : (
+                  chatMessages.map((msg, i) => {
+                    const isOwn = msg.sender === userId;
+                    const showAvatar = !isOwn && (i === 0 || chatMessages[i - 1]?.sender !== msg.sender);
+                    const isLast = i === chatMessages.length - 1 || chatMessages[i + 1]?.sender !== msg.sender;
+                    return (
+                      <div key={msg.id} className={`flex ${isOwn ? 'justify-end' : 'justify-start'} ${!isLast ? 'mb-0.5' : 'mb-2'}`}>
+                        {!isOwn && <div className="w-8 flex-shrink-0">{showAvatar && <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-[10px] font-bold ${getAvatarColor(msg.sender_name)}`}>{getInitials(msg.sender_name)}</div>}</div>}
+                        <div className={`max-w-[70%] flex flex-col ${isOwn ? 'items-end' : 'items-start'}`}>
+                          {showAvatar && !isOwn && <span className="text-[11px] font-semibold text-slate-500 mb-0.5 ml-1">{msg.sender_name}</span>}
+                          {msg.parent_message_details && (
+                            <div className={`text-[11px] px-2.5 py-1 mb-0.5 rounded-t-lg border-l-2 ${isOwn ? 'bg-violet-50 border-violet-400 text-violet-700' : 'bg-slate-50 border-slate-300 text-slate-600'}`}>
+                              <span className="font-semibold">{msg.parent_message_details.sender_name}</span>: {msg.parent_message_details.content?.slice(0, 60)}
+                            </div>
+                          )}
+                          <div className="relative group">
+                            {msg.message_type === 'image' && msg.attachment_url ? (
+                              <a href={msg.attachment_url} target="_blank" rel="noreferrer" className="block">
+                                <img src={msg.attachment_url} alt={msg.attachment_filename} className="max-w-[280px] max-h-[200px] rounded-xl object-cover" />
+                                {msg.content && <p className="text-sm mt-1 px-1">{msg.content}</p>}
+                              </a>
+                            ) : msg.message_type === 'file' && msg.attachment_url ? (
+                              <a href={msg.attachment_url} target="_blank" rel="noreferrer" className={`flex items-center gap-2 px-3 py-2 rounded-xl border ${isOwn ? 'bg-violet-50 border-violet-200' : 'bg-white border-slate-200'}`}>
+                                <PaperclipIcon size={16} className={isOwn ? 'text-violet-500' : 'text-slate-500'} />
+                                <div className="min-w-0">
+                                  <p className="text-sm font-medium text-slate-700 truncate">{msg.attachment_filename || 'File'}</p>
+                                  <p className="text-[10px] text-slate-400">{formatFileSize(msg.file_size_bytes)}</p>
+                                </div>
+                                <DownloadIcon size={14} className="text-slate-400 flex-shrink-0" />
+                              </a>
+                            ) : (
+                              <div className={`px-3 py-2 rounded-2xl ${isOwn ? 'bg-violet-600 text-white rounded-br-md' : 'bg-white text-slate-800 border border-slate-200 shadow-sm rounded-bl-md'}`}>
+                                <p className="text-sm whitespace-pre-wrap break-words">{msg.content}</p>
+                              </div>
+                            )}
+                            <div className={`absolute ${isOwn ? 'right-0' : 'left-0'} -top-8 opacity-0 group-hover:opacity-100 transition-opacity z-10 flex items-center gap-0.5 bg-white border border-slate-200 rounded-lg shadow-lg px-1 py-0.5`}>
+                              <button onClick={() => setShowEmojiPicker(showEmojiPicker === msg.id ? null : msg.id)} className="p-1 hover:bg-slate-100 rounded text-xs" title="React">😊</button>
+                              {!isOwn && <button onClick={() => setReplyTo(msg)} className="p-1 hover:bg-slate-100 rounded text-xs" title="Reply">↩</button>}
+                              {isOwn && <>
+                                <button onClick={() => handleEditChatMessage(msg.id)} className="p-1 hover:bg-slate-100 rounded text-xs" title="Edit">✏️</button>
+                                <button onClick={() => handleDeleteChatMessage(msg.id)} className="p-1 hover:bg-red-50 rounded text-xs text-red-500" title="Delete">🗑</button>
+                              </>}
+                            </div>
+                            {showEmojiPicker === msg.id && (
+                              <div className={`absolute ${isOwn ? 'right-0' : 'left-0'} -top-12 bg-white border border-slate-200 rounded-xl shadow-lg px-2 py-1 flex items-center gap-1 z-20`}>
+                                {EMOJI_LIST.map(emoji => (<button key={emoji} onClick={() => handleChatReaction(msg.id, emoji)} className="w-8 h-8 flex items-center justify-center hover:bg-slate-100 rounded text-lg">{emoji}</button>))}
+                              </div>
+                            )}
+                          </div>
+                          {msg.reactions && Object.keys(msg.reactions).length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-0.5 ml-1">
+                              {Object.entries(msg.reactions).map(([emoji, users]) => (
+                                <button key={emoji} onClick={() => handleChatReaction(msg.id, emoji)} className="flex items-center gap-0.5 px-1.5 py-0.5 bg-white border border-slate-200 rounded-full text-xs hover:bg-slate-50">
+                                  <span>{emoji}</span><span className="text-slate-500">{users.length}</span>
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                          {isLast && (
+                            <div className={`flex items-center gap-1 mt-0.5 ${isOwn ? 'flex-row-reverse' : ''}`}>
+                              <span className="text-[10px] text-slate-400">{formatChatTime(msg.timestamp)}</span>
+                              {isOwn && (msg.is_read ? <CheckCheckIcon size={12} className="text-violet-500" /> : msg.is_delivered ? <CheckCheckIcon size={12} className="text-slate-400" /> : <CheckIcon size={12} className="text-slate-400" />)}
+                              {msg.is_edited && <span className="text-[10px] text-slate-400">(edited)</span>}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+                {Object.keys(chatTypingUsers).length > 0 && (
+                  <div className="flex items-center gap-2 px-1">
+                    <div className="flex gap-0.5">
+                      <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                      <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                      <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                    </div>
+                    <span className="text-xs text-slate-400">{Object.values(chatTypingUsers).join(', ')} {Object.keys(chatTypingUsers).length === 1 ? 'is' : 'are'} typing...</span>
+                  </div>
+                )}
+                <div ref={messagesEndRef} />
+              </div>
+
+              {/* Reply preview */}
+              {replyTo && (
+                <div className="flex items-center gap-2 px-4 py-2 bg-violet-50 border-t border-violet-200">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[11px] font-semibold text-violet-600">Replying to {replyTo.sender_name}</p>
+                    <p className="text-xs text-slate-600 truncate">{replyTo.content}</p>
+                  </div>
+                  <button onClick={() => setReplyTo(null)} className="text-violet-400 hover:text-violet-600"><XIcon size={14} /></button>
+                </div>
+              )}
+
+              {/* Chat Input */}
+              <div className="px-4 py-3 border-t border-slate-200 bg-white">
+                <div className="flex items-end gap-2">
+                  <input type="file" ref={chatFileInputRef} onChange={handleChatUpload} className="hidden" accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.zip" />
+                  <button onClick={() => chatFileInputRef.current?.click()} disabled={chatUploading} className="p-2.5 rounded-xl text-slate-400 hover:bg-slate-100 transition-colors disabled:opacity-50" title="Attach file">
+                    <PaperclipIcon size={18} />
+                  </button>
+                  <div className="flex-1 relative">
+                    <input
+                      data-chat-input
+                      type="text"
+                      placeholder="Type a message..."
+                      onKeyDown={handleChatKeyDown}
+                      onChange={handleChatTyping}
+                      className="w-full px-4 py-2.5 text-sm bg-slate-100 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent"
+                    />
+                  </div>
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className="flex-1 flex flex-col items-center justify-center bg-slate-50">
+              <div className="w-16 h-16 bg-violet-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <ChatIcon size={32} className="text-violet-500" />
+              </div>
+              <h3 className="text-lg font-bold text-slate-700">Select a conversation</h3>
+              <p className="text-sm text-slate-500 mt-1">Choose from existing chats or start a new one</p>
+            </div>
+          )
+        ) : (
+          selectedTicket ? (
           <>
             {/* Details Overlay */}
             {showDetails && (
@@ -1129,7 +1746,7 @@ export default function CommunicationCenter() {
             <h3 className="text-base font-bold text-slate-400 mb-1">Select a Request</h3>
             <p className="text-sm text-slate-300 text-center max-w-[240px]">Choose a conversation from the list or select someone from the directory</p>
           </div>
-        )}
+        ))}
       </div>
 
       {/* Right Panel — People Directory */}
@@ -1203,6 +1820,45 @@ export default function CommunicationCenter() {
                 {creatingTicket ? <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <PlusIcon size={12} />}
                 Create Ticket
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* New Chat Modal */}
+      {showNewChatModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setShowNewChatModal(false)}>
+          <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200">
+              <h3 className="text-base font-bold text-slate-800">New Conversation</h3>
+              <button onClick={() => setShowNewChatModal(false)} className="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100"><XIcon size={18} /></button>
+            </div>
+            <div className="flex border-b border-slate-200">
+              <button onClick={() => {}} className="flex-1 py-2.5 text-sm font-semibold text-violet-600 border-b-2 border-violet-600">Friends</button>
+            </div>
+            <div className="max-h-80 overflow-y-auto">
+              {friends.length === 0 ? (
+                <div className="text-center py-8">
+                  <p className="text-sm text-slate-500">No friends yet</p>
+                  <p className="text-xs text-slate-400 mt-1">Add friends to start chatting</p>
+                </div>
+              ) : (
+                friends.map(friend => (
+                  <button key={friend.id} onClick={() => handleCreatePrivateChat(friend.id)} className="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-50 transition-colors">
+                    {friend.profile?.profile_picture ? (
+                      <img src={friend.profile.profile_picture} alt="" className="w-10 h-10 rounded-full object-cover" />
+                    ) : (
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm ${getAvatarColor(friend.first_name || friend.username)}`}>
+                        {getInitials(friend.first_name || friend.username)}
+                      </div>
+                    )}
+                    <div className="text-left">
+                      <p className="text-sm font-semibold text-slate-800">{friend.first_name || friend.username}</p>
+                      <p className="text-xs text-slate-500">{friend.role}</p>
+                    </div>
+                  </button>
+                ))
+              )}
             </div>
           </div>
         </div>

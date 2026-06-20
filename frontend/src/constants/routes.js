@@ -60,7 +60,6 @@ const MySchedule = lazy(() => import('../pages/MySchedule'));
 const ClassManagement = lazy(() => import('../pages/ClassManagement'));
 const ParentManagement = lazy(() => import('../pages/ParentManagement'));
 const Dashboard = lazy(() => import('../pages/Dashboard'));
-const Messages = lazy(() => import('../pages/Messages'));
 
 // ── Route definitions ────────────────────────────────────────────────────────
 
@@ -101,7 +100,6 @@ export const protectedRoutes = [
   { path: 'people-directory', element: PeopleDirectory, roles: [Role.ADMIN, Role.STAFF] },
   { path: 'system-admin', element: SystemAdminHub, roles: [Role.ADMIN] },
   { path: 'communication-center', element: CommunicationCenter, roles: Role.ALL },
-  { path: 'messages', element: Messages, roles: Role.ALL },
   { path: 'announcements', element: Announcements, roles: Role.ALL },
   { path: 'notifications', element: Notifications, roles: Role.ALL },
   { path: 'profile', element: Profile, roles: Role.ALL },
