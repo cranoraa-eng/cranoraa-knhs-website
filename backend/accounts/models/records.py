@@ -65,7 +65,7 @@ class Transcript(models.Model):
 
 class TranscriptLineItem(models.Model):
     transcript = models.ForeignKey(Transcript, on_delete=models.CASCADE, related_name='items')
-    subject = models.ForeignKey('academic.Subject', on_delete=models.CASCADE)
+    subject = models.ForeignKey('accounts.Subject', on_delete=models.CASCADE)
     q1 = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
     q2 = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
     q3 = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)

@@ -247,7 +247,7 @@ class AuditLog(models.Model):
         ('suspend', 'User Suspend'),
     ]
 
-    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='audit_logs')
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='portal_audit_logs')
     action = models.CharField(max_length=50)
     action_type = models.CharField(max_length=20, choices=ACTION_TYPES, blank=True, null=True)
     model_name = models.CharField(max_length=100, blank=True, null=True, help_text="Name of the model affected")
@@ -296,7 +296,7 @@ class DatabaseBackup(models.Model):
     filename = models.CharField(max_length=255)
     size = models.CharField(max_length=50)  # e.g., "2.5 MB"
     created_at = models.DateTimeField(auto_now_add=True)
-    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='created_backups')
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='portal_created_backups')
 
     class Meta:
         ordering = ['-created_at']
@@ -334,7 +334,7 @@ class APIRequestLog(models.Model):
     status_code = models.IntegerField()
     response_time_ms = models.FloatField(help_text="Response time in milliseconds")
     ip_address = models.GenericIPAddressField(null=True, blank=True)
-    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='api_requests')
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='portal_api_requests')
     timestamp = models.DateTimeField(auto_now_add=True)
 
     class Meta:
