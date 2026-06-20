@@ -12,17 +12,14 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'school_portal.settings')
 django_asgi_app = get_asgi_application()
 
 from channels.routing import ProtocolTypeRouter, URLRouter
-from channels.auth import AuthMiddlewareStack
 from accounts.middleware import JWTAuthMiddleware
 import accounts.routing
 
 application = ProtocolTypeRouter({
     "http": django_asgi_app,
     "websocket": JWTAuthMiddleware(
-        AuthMiddlewareStack(
-            URLRouter(
-                accounts.routing.websocket_urlpatterns
-            )
+        URLRouter(
+            accounts.routing.websocket_urlpatterns
         )
     ),
 })

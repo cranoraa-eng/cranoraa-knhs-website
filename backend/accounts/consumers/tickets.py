@@ -5,6 +5,7 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
 from django.contrib.auth import get_user_model
 from ..models import Ticket, TicketMessage, TicketParticipant, Notification
+from ..serializers import TicketMessageSerializer, TicketListSerializer
 from .base import _rate_limiter, TYPING_THROTTLE_SECONDS, MESSAGE_RATE_LIMIT, MESSAGE_RATE_WINDOW
 
 User = get_user_model()
@@ -18,7 +19,6 @@ class TicketConsumer(AsyncWebsocketConsumer):
         self._last_typing_sent = 0
         self._authenticated = False
 
-        # If middleware already authenticated (token in query/header), join immediately
         if self.user and not self.user.is_anonymous:
             if await self.has_ticket_access(self.ticket_id, self.user.id):
                 await self._join_groups()
@@ -36,7 +36,6 @@ class TicketConsumer(AsyncWebsocketConsumer):
             else:
                 await self.close(code=4003)
         else:
-            # Accept and wait for first message with auth token
             await self.accept()
 
     async def _join_groups(self):
@@ -70,7 +69,7 @@ class TicketConsumer(AsyncWebsocketConsumer):
             }))
             return
 
-        # Handle first-message auth if middleware didn't authenticate
+        # Handle first-message auth
         if not self._authenticated:
             if data.get('type') == 'auth' and data.get('token'):
                 from jwt import decode as jwt_decode
@@ -81,49 +80,34 @@ class TicketConsumer(AsyncWebsocketConsumer):
                         django_settings.SECRET_KEY,
                         algorithms=['HS256']
                     )
-                    User = get_user_model()
                     self.user = await database_sync_to_async(User.objects.get)(id=decoded['user_id'])
                     if self.user.is_anonymous:
-                        await self.send(text_data=json.dumps({
-                            'type': 'auth_failed',
-                            'message': 'Invalid token'
-                        }))
+                        await self.send(text_data=json.dumps({'type': 'auth_failed', 'message': 'Invalid token'}))
                         await self.close()
                         return
                     if not await self.has_ticket_access(self.ticket_id, self.user.id):
-                        await self.send(text_data=json.dumps({
-                            'type': 'auth_failed',
-                            'message': 'No access to this ticket'
-                        }))
+                        await self.send(text_data=json.dumps({'type': 'auth_failed', 'message': 'No access'}))
                         await self.close(code=4003)
                         return
                     await self._join_groups()
                     self._authenticated = True
-                    await self.send(text_data=json.dumps({
-                        'type': 'auth_success',
-                        'user_id': self.user.id,
-                    }))
+                    await self.send(text_data=json.dumps({'type': 'auth_success', 'user_id': self.user.id}))
                     await self.channel_layer.group_send(self.room_group_name, {
                         'type': 'user_joined',
                         'user_id': self.user.id,
                         'user_name': self.user.first_name or self.user.username,
                     })
                 except Exception:
-                    await self.send(text_data=json.dumps({
-                        'type': 'auth_failed',
-                        'message': 'Invalid token'
-                    }))
+                    await self.send(text_data=json.dumps({'type': 'auth_failed', 'message': 'Invalid token'}))
                     await self.close()
             else:
-                await self.send(text_data=json.dumps({
-                    'type': 'error',
-                    'message': 'Not authenticated. Send auth message first.'
-                }))
+                await self.send(text_data=json.dumps({'type': 'error', 'message': 'Not authenticated'}))
                 await self.close()
             return
 
         msg_type = data.get('type', 'message')
 
+        # ── Typing indicator ──────────────────────────────────────────
         if msg_type == 'typing':
             now = time.monotonic()
             if (now - self._last_typing_sent) < TYPING_THROTTLE_SECONDS:
@@ -137,6 +121,7 @@ class TicketConsumer(AsyncWebsocketConsumer):
             })
             return
 
+        # ── Read receipt ──────────────────────────────────────────────
         if msg_type == 'read':
             message_id = data.get('message_id')
             if message_id:
@@ -148,12 +133,45 @@ class TicketConsumer(AsyncWebsocketConsumer):
                 })
             return
 
+        # ── Update status via WS ──────────────────────────────────────
+        if msg_type == 'update_status':
+            if self.user.role not in ('staff', 'admin'):
+                await self.send(text_data=json.dumps({'type': 'error', 'message': 'Only staff can change status'}))
+                return
+            new_status = data.get('status')
+            if new_status not in ('open', 'pending', 'replied', 'resolved', 'closed'):
+                await self.send(text_data=json.dumps({'type': 'error', 'message': 'Invalid status'}))
+                return
+            await self._update_ticket_status(new_status)
+            await self.channel_layer.group_send(self.room_group_name, {
+                'type': 'ticket_status_update',
+                'ticket_id': int(self.ticket_id),
+                'status': new_status,
+                'updated_by': self.user.id,
+                'updated_by_name': self.user.first_name or self.user.username,
+            })
+            await self._broadcast_ticket_list_update(int(self.ticket_id))
+            await self.send(text_data=json.dumps({'type': 'status_update', 'ticket_id': int(self.ticket_id), 'status': new_status}))
+            return
+
+        # ── Update priority via WS ────────────────────────────────────
+        if msg_type == 'update_priority':
+            if self.user.role not in ('staff', 'admin'):
+                await self.send(text_data=json.dumps({'type': 'error', 'message': 'Only staff can change priority'}))
+                return
+            new_priority = data.get('priority')
+            if new_priority not in ('normal', 'high', 'urgent'):
+                await self.send(text_data=json.dumps({'type': 'error', 'message': 'Invalid priority'}))
+                return
+            await self._update_ticket_priority(new_priority)
+            await self._broadcast_ticket_list_update(int(self.ticket_id))
+            await self.send(text_data=json.dumps({'type': 'priority_update', 'ticket_id': int(self.ticket_id), 'priority': new_priority}))
+            return
+
+        # ── Message send ──────────────────────────────────────────────
         rate_limit_key = f'ticket_msg_{self.user.id}'
         if _rate_limiter.is_rate_limited(rate_limit_key, MESSAGE_RATE_LIMIT, MESSAGE_RATE_WINDOW):
-            await self.send(text_data=json.dumps({
-                'type': 'error',
-                'message': 'You are sending messages too quickly. Please slow down.'
-            }))
+            await self.send(text_data=json.dumps({'type': 'error', 'message': 'Too many messages. Slow down.'}))
             return
 
         content = data.get('content', '').strip()
@@ -162,10 +180,7 @@ class TicketConsumer(AsyncWebsocketConsumer):
 
         saved_msg = await self.save_ticket_message(self.ticket_id, self.user.id, content)
         if not saved_msg:
-            await self.send(text_data=json.dumps({
-                'type': 'error',
-                'message': 'You do not have access to this ticket.'
-            }))
+            await self.send(text_data=json.dumps({'type': 'error', 'message': 'No access to this ticket'}))
             return
 
         serialized = await self.serialize_ticket_message(saved_msg)
@@ -175,20 +190,10 @@ class TicketConsumer(AsyncWebsocketConsumer):
             'message_data': serialized,
         })
 
-        participant_ids = await self.get_ticket_participant_ids(self.ticket_id)
-        await asyncio.gather(*[
-            self.channel_layer.group_send(f'user_{pid}', {
-                'type': 'ticket_new_message_notify',
-                'ticket_id': int(self.ticket_id),
-                'sender_id': self.user.id,
-                'sender_name': self.user.first_name or self.user.username,
-                'content': content,
-                'timestamp': saved_msg.created_at.isoformat(),
-            })
-            for pid in participant_ids if pid != self.user.id
-        ])
+        # Broadcast ticket list update to ALL participants
+        await self._broadcast_ticket_list_update(int(self.ticket_id))
 
-    # ── Group message handlers ────────────────────────────────────────────
+    # ── Group message handlers ────────────────────────────────────────
 
     async def ticket_message(self, event):
         msg_data = event['message_data']
@@ -250,6 +255,12 @@ class TicketConsumer(AsyncWebsocketConsumer):
             'assigned_to_name': event.get('assigned_to_name'),
         }))
 
+    async def ticket_list_update(self, event):
+        await self.send(text_data=json.dumps({
+            'type': 'ticket_list_update',
+            'ticket': event['ticket'],
+        }))
+
     async def forced_logout(self, event):
         await self.send(text_data=json.dumps({
             'type': 'forced_logout',
@@ -257,7 +268,71 @@ class TicketConsumer(AsyncWebsocketConsumer):
         }))
         await self.close()
 
-    # ── DB helpers ────────────────────────────────────────────────────────
+    # ── DB helpers ────────────────────────────────────────────────────
+
+    def _build_ticket_list_data(self, ticket):
+        return {
+            'id': ticket.id,
+            'ticket_id': ticket.ticket_id,
+            'subject': ticket.subject,
+            'category': ticket.category,
+            'status': ticket.status,
+            'priority': ticket.priority,
+            'updated_at': ticket.updated_at.isoformat() if ticket.updated_at else None,
+        }
+
+    async def _broadcast_ticket_list_update(self, ticket_id):
+        try:
+            ticket_data = await self.get_ticket_list_summary(ticket_id)
+            if not ticket_data:
+                return
+            participant_ids = await self.get_ticket_participant_ids(ticket_id)
+            await asyncio.gather(*[
+                self.channel_layer.group_send(f'user_{pid}', {
+                    'type': 'ticket_list_update',
+                    'ticket': ticket_data,
+                })
+                for pid in participant_ids
+            ])
+        except Exception:
+            pass
+
+    @database_sync_to_async
+    def get_ticket_list_summary(self, ticket_id):
+        try:
+            ticket = Ticket.objects.get(id=ticket_id)
+            last_msg = ticket.messages.order_by('-created_at').first()
+            return {
+                'id': ticket.id,
+                'ticket_id': ticket.ticket_id,
+                'subject': ticket.subject,
+                'category': ticket.category,
+                'status': ticket.status,
+                'priority': ticket.priority,
+                'updated_at': ticket.updated_at.isoformat() if ticket.updated_at else None,
+                'last_message': (last_msg.content[:120] + '...') if last_msg and len(last_msg.content) > 120 else (last_msg.content if last_msg else ''),
+                'last_message_time': last_msg.created_at.isoformat() if last_msg else ticket.updated_at.isoformat(),
+            }
+        except Ticket.DoesNotExist:
+            return None
+
+    @database_sync_to_async
+    def _update_ticket_status(self, new_status):
+        try:
+            ticket = Ticket.objects.get(id=self.ticket_id)
+            ticket.status = new_status
+            ticket.save(update_fields=['status', 'updated_at'])
+        except Ticket.DoesNotExist:
+            pass
+
+    @database_sync_to_async
+    def _update_ticket_priority(self, new_priority):
+        try:
+            ticket = Ticket.objects.get(id=self.ticket_id)
+            ticket.priority = new_priority
+            ticket.save(update_fields=['priority', 'updated_at'])
+        except Ticket.DoesNotExist:
+            pass
 
     @database_sync_to_async
     def has_ticket_access(self, ticket_id, user_id):
@@ -296,58 +371,10 @@ class TicketConsumer(AsyncWebsocketConsumer):
             ticket.first_response_at = _tz.now()
             ticket.save(update_fields=['first_response_at', 'updated_at'])
 
-        participant_ids = list(
-            TicketParticipant.objects.filter(ticket=ticket).values_list('user_id', flat=True)
-        )
-        if ticket.created_by_id:
-            participant_ids.append(ticket.created_by_id)
-        if ticket.assigned_to_id:
-            participant_ids.append(ticket.assigned_to_id)
-        participant_ids = list(set(participant_ids))
-
-        notified = set()
-        preview = content[:100] + ('...' if len(content) > 100 else '')
-        sender_name = sender.first_name or sender.username
-
-        from django.utils import timezone as _tz
-        import datetime
-        five_mins_ago = _tz.now() - datetime.timedelta(minutes=5)
-
-        # Batch-fetch users to avoid N+1 queries
-        active_user_ids = set()
-        users_to_notify = []
-        for uid in participant_ids:
-            if uid == sender_id or uid in notified:
-                continue
-            active_user_ids.add(uid)
-
-        if active_user_ids:
-            recent_users = User.objects.filter(
-                id__in=active_user_ids,
-                last_activity__gt=five_mins_ago,
-            ).values_list('id', flat=True)
-            skip_users = set(recent_users)
-
-            for uid in active_user_ids:
-                if uid not in skip_users:
-                    users_to_notify.append(uid)
-
-        Notification.objects.bulk_create([
-            Notification(
-                recipient_id=uid,
-                notification_type='message',
-                title=f'New message on {ticket.ticket_id}',
-                message=f'{sender_name}: {preview}',
-                link='/communication-center',
-            )
-            for uid in users_to_notify
-        ])
-
         return msg
 
     @database_sync_to_async
     def serialize_ticket_message(self, msg):
-        from ..serializers import TicketMessageSerializer
         return TicketMessageSerializer(msg).data
 
     @database_sync_to_async

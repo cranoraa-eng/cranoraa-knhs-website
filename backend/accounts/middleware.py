@@ -1,5 +1,6 @@
 import time
 from django.utils.deprecation import MiddlewareMixin
+from django.utils.functional import SimpleLazyObject
 from channels.middleware import BaseMiddleware
 from channels.db import database_sync_to_async
 from urllib.parse import parse_qs
@@ -162,8 +163,8 @@ class JWTAuthMiddleware(BaseMiddleware):
                 user = await database_sync_to_async(User.objects.get)(id=decoded['user_id'])
                 scope['user'] = user
             except Exception:
-                scope['user'] = None
+                scope['user'] = SimpleLazyObject(lambda: None)
         else:
-            scope['user'] = None
+            scope['user'] = SimpleLazyObject(lambda: None)
 
         return await super().__call__(scope, receive, send)

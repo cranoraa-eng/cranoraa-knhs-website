@@ -617,20 +617,20 @@ export default function CommunicationCenter() {
   }, [tickets, activeFilter]);
 
   // ── WebSocket connect/disconnect per selected ticket ────────────────────
+  const fetchTicketsRef = useRef(fetchTickets);
+  fetchTicketsRef.current = fetchTickets;
+
   const connectWs = useCallback((ticketId) => {
     if (!ticketId) return;
     const token = getAccessToken();
     if (!token) return;
 
-    // Guard: don't open a second connection
     if (wsRef.current && wsRef.current.readyState <= WebSocket.OPEN) return;
 
-    // SECURITY: Send token as first message instead of URL query parameter
     const ws = new WebSocket(`${WS_ROOT}/ws/ticket/${ticketId}/`);
     wsRef.current = ws;
 
     ws.onopen = () => {
-      // Authenticate via first message (token not in URL logs)
       ws.send(JSON.stringify({ type: 'auth', token }));
     };
 
@@ -638,7 +638,6 @@ export default function CommunicationCenter() {
       try {
         const data = JSON.parse(e.data);
 
-        // Handle auth confirmation
         if (data.type === 'auth_success') {
           if (data.user_id) {
             setWsConnected(true);
@@ -651,13 +650,28 @@ export default function CommunicationCenter() {
           return;
         }
 
+        if (data.type === 'auth_failed') {
+          toast.error(data.message || 'Authentication failed');
+          return;
+        }
+
         if (data.type === 'message') {
           setMessages(prev => {
+            // Check for exact ID match (dedup real messages)
             if (prev.some(m => m.id === data.id)) return prev;
-            return [...prev, data];
+            // Replace optimistic placeholder with real message
+            const withoutOptimistic = prev.filter(m => !m._optimistic || m.sender !== data.sender || m.content !== data.content);
+            return [...withoutOptimistic, data];
           });
-          // Refresh ticket list to update last_message and unread
-          fetchTickets();
+
+        } else if (data.type === 'ticket_list_update' && data.ticket) {
+          setTickets(prev => {
+            const idx = prev.findIndex(t => t.id === data.ticket.id);
+            if (idx === -1) return prev;
+            const updated = [...prev];
+            updated[idx] = { ...updated[idx], ...data.ticket };
+            return updated;
+          });
 
         } else if (data.type === 'typing') {
           const uid = data.sender_id;
@@ -667,7 +681,6 @@ export default function CommunicationCenter() {
               if (prev.includes(uid)) return prev;
               return [...prev, uid];
             });
-            // Auto-clear after 4s
             if (typingTimeoutRef.current[uid]) clearTimeout(typingTimeoutRef.current[uid]);
             typingTimeoutRef.current[uid] = setTimeout(() => {
               setTypingUsers(prev => prev.filter(id => id !== uid));
@@ -684,14 +697,19 @@ export default function CommunicationCenter() {
             t.id === data.ticket_id ? { ...t, status: data.status } : t
           ));
 
+        } else if (data.type === 'priority_update') {
+          setTickets(prev => prev.map(t =>
+            t.id === data.ticket_id ? { ...t, priority: data.priority } : t
+          ));
+
         } else if (data.type === 'assignment_update') {
           setTickets(prev => prev.map(t =>
             t.id === data.ticket_id ? { ...t, assigned_to_name: data.assigned_to_name } : t
           ));
 
         } else if (data.type === 'new_message_notify') {
-          // Another ticket got a message — refresh list
-          fetchTickets();
+          // Ticket not currently open — refresh list for that ticket
+          fetchTicketsRef.current();
 
         } else if (data.type === 'error') {
           toast.error(data.message);
@@ -704,7 +722,6 @@ export default function CommunicationCenter() {
     ws.onclose = (e) => {
       setWsConnected(false);
       wsRef.current = null;
-      // Reconnect on abnormal close (not manual close code 1000)
       if (e.code !== 1000 && e.code !== 1001) {
         const attempts = reconnectAttemptsRef.current;
         const delay = Math.min(3000 * Math.pow(2, attempts), 30000);
@@ -716,7 +733,7 @@ export default function CommunicationCenter() {
     ws.onerror = () => {
       setWsConnected(false);
     };
-  }, [fetchTickets]);
+  }, []);
 
   const disconnectWs = useCallback(() => {
     if (reconnectTimerRef.current) {
@@ -757,26 +774,27 @@ export default function CommunicationCenter() {
     if (textareaRef.current) textareaRef.current.style.height = 'auto';
     setTypingUsers(prev => prev.filter(id => id !== user?.id));
 
-    // Try WebSocket first
+    // Optimistically add the message to the UI immediately
+    const optimisticMsg = {
+      id: `temp-${Date.now()}`,
+      sender: user?.id,
+      sender_name: user ? `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.username : 'You',
+      content,
+      created_at: new Date().toISOString(),
+      is_read: false,
+      _optimistic: true,
+    };
+    setMessages(prev => [...prev, optimisticMsg]);
+
+    // Send via WebSocket
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-      wsRef.current.send(JSON.stringify({
-        type: 'message',
-        content,
-      }));
+      wsRef.current.send(JSON.stringify({ type: 'message', content }));
       return;
     }
 
-    // Fallback to REST API
-    try {
-      setSending(true);
-      await api.post(`/tickets/${selectedId}/send-message/`, { content });
-      fetchMessages(selectedId);
-      fetchTickets();
-    } catch {
-      toast.error('Failed to send message');
-    } finally {
-      setSending(false);
-    }
+    // WS not connected — try reconnecting then sending
+    toast.error('Connection lost. Reconnecting...');
+    connectWs(selectedId);
   };
 
   // ── Typing indicator ───────────────────────────────────────────────────
@@ -846,22 +864,18 @@ export default function CommunicationCenter() {
   };
 
   const handleStatusChange = async (ticketId, newStatus) => {
-    try {
-      await api.post(`/tickets/${ticketId}/update-status/`, { status: newStatus });
-      setTickets(prev => prev.map(t => t.id === ticketId ? { ...t, status: newStatus } : t));
-      toast.success('Status updated');
-    } catch (err) {
-      toast.error(err.response?.data?.error || 'Failed to update status');
+    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+      wsRef.current.send(JSON.stringify({ type: 'update_status', status: newStatus }));
+    } else {
+      toast.error('Connection lost. Cannot update status.');
     }
   };
 
   const handlePriorityChange = async (ticketId, newPriority) => {
-    try {
-      await api.post(`/tickets/${ticketId}/update-priority/`, { priority: newPriority });
-      setTickets(prev => prev.map(t => t.id === ticketId ? { ...t, priority: newPriority } : t));
-      toast.success('Priority updated');
-    } catch (err) {
-      toast.error(err.response?.data?.error || 'Failed to update priority');
+    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+      wsRef.current.send(JSON.stringify({ type: 'update_priority', priority: newPriority }));
+    } else {
+      toast.error('Connection lost. Cannot update priority.');
     }
   };
 
