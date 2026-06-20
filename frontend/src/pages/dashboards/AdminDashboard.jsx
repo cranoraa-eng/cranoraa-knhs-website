@@ -1,11 +1,10 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
 import { motion } from 'framer-motion';
 import api from '../../utils/api';
 import { useActiveAcademicYear } from '../../hooks/useActiveAcademicYear';
-import { Card, CardHeader, CardBody, CardTitle, Button, LoadingSpinner, EmptyState, Badge } from '../../components/ui';
-import { SchoolHeaderBanner, StatCard, RecentAnnouncementsWidget } from './shared';
+import { Card, CardHeader, CardBody, CardTitle, Button, LoadingSpinner } from '../../components/ui';
+import { StatCard, RecentAnnouncementsWidget } from './shared';
 import RoleManual from './RoleManual';
 
 /**
@@ -15,27 +14,32 @@ import RoleManual from './RoleManual';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
   const { academicYear } = useActiveAcademicYear();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState(null);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async ({ showInitialLoading = false } = {}) => {
+    if (showInitialLoading) setLoading(true);
+    setError(null);
     try {
-      const r = await api.get(`/admin/stats/?academic_year=${academicYear}`);
+      const r = await api.get('/admin/stats/', {
+        params: academicYear ? { academic_year: academicYear } : undefined,
+      });
       setData(r.data);
     } catch (err) {
       console.error('Failed to load admin stats:', err);
+      setError(err.response?.data?.error || 'Failed to load admin statistics.');
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-  };
+  }, [academicYear]);
 
   useEffect(() => {
-    fetchData();
-  }, [academicYear]);
+    fetchData({ showInitialLoading: true });
+  }, [fetchData]);
 
   const handleRefresh = () => {
     setRefreshing(true);
@@ -77,11 +81,12 @@ const AdminDashboard = () => {
     }
     
     // Low attendance alert (if attendance rate < 85%)
-    if (data.today_attendance_rate && data.today_attendance_rate < 85) {
+    const todayRate = data.today_rate ?? data.attendance?.today_rate ?? data.today_attendance_rate;
+    if (todayRate != null && todayRate < 85) {
       alerts.push({
         type: 'warning',
         title: 'Low Attendance',
-        message: `Today's attendance is ${data.today_attendance_rate}% (below 85% threshold)`,
+        message: `Today's attendance is ${todayRate}% (below 85% threshold)`,
         action: () => navigate('/attendance'),
         actionLabel: 'View Details'
       });
@@ -90,9 +95,27 @@ const AdminDashboard = () => {
     return alerts;
   }, [data, navigate]);
 
-  if (loading || !data) return (
+  if (loading && !data) return (
     <div className="flex items-center justify-center min-h-screen">
       <LoadingSpinner />
+    </div>
+  );
+
+  if (error && !data) return (
+    <div className="min-h-screen bg-slate-50 px-4 py-6 md:px-6">
+      <Card className="max-w-xl mx-auto border-l-4 border-l-red-500">
+        <CardHeader divider className="bg-red-50">
+          <CardTitle subtitle="The dashboard stats endpoint did not return usable data">
+            Admin Dashboard Unavailable
+          </CardTitle>
+        </CardHeader>
+        <CardBody className="space-y-4">
+          <p className="text-sm text-slate-700">{error}</p>
+          <Button onClick={() => fetchData({ showInitialLoading: true })}>
+            Retry
+          </Button>
+        </CardBody>
+      </Card>
     </div>
   );
 

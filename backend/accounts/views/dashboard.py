@@ -1,7 +1,6 @@
 """Dashboard statistics views for teachers, students, and admins."""
-from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes, throttle_classes
-from rest_framework.permissions import IsAuthenticated, IsAdminUser
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from django.db.models import Q, Avg, Count
 from django.utils import timezone
@@ -10,19 +9,11 @@ import logging
 
 from ..models import (
     User, Classroom, StudentClassEnrollment, Grade, Attendance,
-    ClassroomSubject, Announcement, SystemSetting, Subject,
-    EnrollmentApplication
+    ClassroomSubject,
 )
-from ..serializers import UserSerializer, SystemSettingSerializer, full_name
 from ..throttles import DashboardRateThrottle
-from ..utils import log_audit_action
 from ._helpers import get_latest_messages
-from ..services.dashboard_service import (
-    compute_attendance_trends, compute_grade_distribution,
-    compute_general_average_buckets, compute_active_users_trends,
-    compute_subject_performance, build_grade_distribution_response,
-    build_general_average_response,
-)
+from ..services.dashboard_service import build_admin_dashboard_stats
 
 logger = logging.getLogger(__name__)
 
@@ -159,214 +150,21 @@ def admin_dashboard_stats(request):
 
         from django.core.cache import cache
 
-        cache_key = f'admin_dashboard:v2:{request.user.role}:{request.user.id}:{request.query_params.get("academic_year", "all")}'
+        academic_year_name = request.query_params.get('academic_year')
+        cache_key = f'admin_dashboard:v3:{request.user.role}:{request.user.id}:{academic_year_name or "all"}'
         cached = cache.get(cache_key)
         if cached:
             return Response(cached)
 
-        now = timezone.localtime(timezone.now())
-        today = now.date()
-        five_mins_ago = now - datetime.timedelta(minutes=5)
-        this_week_start = today - datetime.timedelta(days=today.weekday())
-
-        academic_year_name = request.query_params.get('academic_year')
-
-        try:
-            from ..models import AuditLog
-        except ImportError:
-            AuditLog = None
-
-        att_qs = Attendance.objects.all()
-        if academic_year_name:
-            try:
-                att_qs = att_qs.filter(classroom__academic_year__name=academic_year_name)
-            except Exception as e:
-                logger.error(f"Error filtering attendance by year: {str(e)}")
-
-        today_attendance = att_qs.filter(date=today)
-        today_present = today_attendance.filter(status__in=['present', 'late']).count()
-        today_total = today_attendance.count()
-        today_rate = round((today_present / today_total * 100), 1) if today_total > 0 else 0
-
-        total_students = User.objects.filter(role='student', is_approved=True).count()
-        total_teachers = User.objects.filter(role='staff', staff_title='teacher', is_approved=True).count()
-        total_subjects = Subject.objects.count()
-
-        classes_qs = Classroom.objects.all()
-        if academic_year_name:
-            try:
-                classes_qs = classes_qs.filter(
-                    Q(academic_year__name=academic_year_name) |
-                    Q(academic_year__isnull=True)
-                )
-            except Exception as e:
-                logger.error(f"Error filtering classrooms by year: {str(e)}")
-        total_classes = classes_qs.count()
-        pending_approvals = User.objects.filter(is_approved=False).exclude(role='admin').count()
-
-        active_users = User.objects.filter(last_activity__gte=five_mins_ago).count()
-
-        try:
-            attendance_trends = compute_attendance_trends(att_qs, today, days=30)
-        except Exception as e:
-            logger.error(f"attendance_trends error: {str(e)}", exc_info=True)
-            attendance_trends = []
-
-        try:
-            grades = Grade.objects.filter(raw_score__isnull=False, grade_type='final_grade')
-            if academic_year_name:
-                grades = grades.filter(
-                    Q(academic_year=academic_year_name) |
-                    Q(classroom__academic_year__name=academic_year_name)
-                )
-        except Exception as e:
-            logger.error(f"grades filter error: {str(e)}", exc_info=True)
-            grades = Grade.objects.none()
-
-        total_grades = grades.count()
-        avg_grade = grades.aggregate(avg=Avg('raw_score'))['avg']
-        average_grade = round(float(avg_grade), 2) if avg_grade else None
-
-        try:
-            distribution = compute_grade_distribution(grades)
-        except Exception as e:
-            logger.error(f"distribution error: {str(e)}", exc_info=True)
-            distribution = {'outstanding': 0, 'very_satisfactory': 0, 'satisfactory': 0, 'fairly_satisfactory': 0, 'below_75': 0}
-        outstanding = distribution['outstanding']
-        very_satisfactory = distribution['very_satisfactory']
-        satisfactory = distribution['satisfactory']
-        fairly_satisfactory = distribution['fairly_satisfactory']
-        below_75 = distribution['below_75']
-
-        try:
-            ga_result = compute_general_average_buckets(grades)
-        except Exception as e:
-            logger.error(f"ga_buckets error: {str(e)}", exc_info=True)
-            ga_result = {'buckets': {'outstanding': 0, 'very_satisfactory': 0, 'satisfactory': 0, 'fairly_satisfactory': 0, 'below_75': 0}, 'total_students_graded': 0}
-        ga_buckets = ga_result['buckets']
-        total_students_graded = ga_result['total_students_graded']
-
-        recent_activity = []
-        if AuditLog:
-            try:
-                recent_activity = AuditLog.objects.select_related('user').order_by('-timestamp')[:5]
-            except Exception:
-                pass
-
-        try:
-            active_users_trends = compute_active_users_trends(AuditLog, now, hours=24) if AuditLog else []
-        except Exception as e:
-            logger.error(f"active_users_trends error: {str(e)}", exc_info=True)
-            active_users_trends = []
-
-        try:
-            subject_perf = compute_subject_performance(grades, limit=10)
-        except Exception as e:
-            logger.error(f"subject_perf error: {str(e)}", exc_info=True)
-            subject_perf = []
-
-        announcements_data = []
-        try:
-            recent_announcements = Announcement.objects.filter(status='live').select_related('author').order_by('-created_at')[:5]
-            for a in recent_announcements:
-                announcements_data.append({
-                    'id': a.id,
-                    'title': a.title,
-                    'content': a.content,
-                    'priority': a.priority,
-                    'is_pinned': a.is_pinned,
-                    'created_at': a.created_at,
-                    'author_name': a.author.get_full_name() or a.author.username
-                })
-        except Exception as e:
-            logger.error(f"Error fetching announcements: {str(e)}")
-
-        try:
-            latest_messages = get_latest_messages(request.user)
-        except Exception as e:
-            logger.error(f"latest_messages error: {str(e)}", exc_info=True)
-            latest_messages = []
-
-        res_data = {
-            'total_students': total_students,
-            'total_teachers': total_teachers,
-            'total_classes': total_classes,
-            'total_subjects': total_subjects,
-            'pending_approvals': pending_approvals,
-            'pending_enrollments': EnrollmentApplication.objects.filter(status='pending').count(),
-            'active_users': active_users,
-            'today_rate': today_rate,
-            'average_grade': average_grade,
-            'attendance': {
-                'today_rate': today_rate,
-                'daily_trends': attendance_trends
-            },
-            'grades': {
-                'average': average_grade,
-                'total': total_grades,
-                'subject_stats': subject_perf
-            },
-            'dashboard': {
-                'active_users': active_users,
-                'total_students': total_students,
-                'total_teachers': total_teachers,
-                'total_classes': total_classes,
-                'pending_approvals': pending_approvals,
-                'today_rate': today_rate,
-                'average_grade': average_grade,
-                'charts': {
-                    'active_users_trends': active_users_trends,
-                    'attendance_trends': attendance_trends,
-                    'grade_distribution': [
-                        {'name': 'Outstanding', 'value': outstanding},
-                        {'name': 'Very Satisfactory', 'value': very_satisfactory},
-                        {'name': 'Satisfactory', 'value': satisfactory},
-                        {'name': 'Fairly Satisfactory', 'value': fairly_satisfactory},
-                        {'name': 'Did Not Meet', 'value': below_75},
-                    ]
-                }
-            },
-            'cards': {
-                'total_students': total_students,
-                'total_teachers': total_teachers,
-                'total_classes': total_classes,
-                'total_subjects': total_subjects,
-                'active_users': active_users,
-                'attendance_rate': today_rate,
-            },
-            'widgets': {
-                'recent_announcements': announcements_data,
-                'recent_activity': [
-                    {
-                        'id': log.id,
-                        'user': (log.user.get_full_name() or log.user.username) if log.user else 'System',
-                        'timestamp': log.timestamp,
-                        'description': log.description,
-                        'action': log.action
-                    } for log in (recent_activity if 'recent_activity' in locals() else [])
-                ],
-                'latest_messages': latest_messages,
-                'active_users_trends': active_users_trends,
-                'subject_performance': subject_perf
-            },
-            'all_subjects': build_grade_distribution_response(distribution, total_grades),
-            'general_average': build_general_average_response(ga_buckets, total_students_graded),
-            'system_settings': SystemSettingSerializer(SystemSetting.get_settings()).data,
-            'recent_grades_count': Grade.objects.filter(submitted_at__date__gte=this_week_start).count(),
-            'total_announcements': Announcement.objects.filter(status='live').count(),
-        }
+        res_data = build_admin_dashboard_stats(request.user, academic_year_name)
 
         cache.set(cache_key, res_data, timeout=120)
 
         return Response(res_data)
     except Exception as e:
-        import traceback
-        logger.error(f"Admin stats error: {str(e)}")
-        logger.error(traceback.format_exc())
+        logger.error("Admin stats error: %s", str(e), exc_info=True)
         return Response({
             'error': 'Failed to load admin statistics.',
-            'detail': str(e),
-            'type': type(e).__name__,
         }, status=500)
 
 

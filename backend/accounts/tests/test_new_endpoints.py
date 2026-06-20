@@ -17,7 +17,7 @@ from accounts.models import (
     ParentTeacherMeeting, BehavioralRecord, SchoolEvent,
     UserBlock, EmergencyMessage, Department, StaffPerformance,
     Attendance, GradeReport, StudentClassEnrollment, ClassroomSubject,
-    Schedule, TimeSlot,
+    Schedule, TimeSlot, AcademicYear,
 )
 
 User = get_user_model()
@@ -388,6 +388,64 @@ class AdminEndpointsTest(TestCase):
         self.student = User.objects.create_user(
             username='student_ae', password='pass', role='student', is_approved=True
         )
+
+    def test_admin_stats_handles_empty_academic_year(self):
+        self.client.force_authenticate(user=self.admin)
+        response = self.client.get('/api/v1/admin/stats/', {'academic_year': '2026-2027'})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['today_rate'], 0)
+        self.assertEqual(response.data['attendance']['today_rate'], 0)
+        self.assertIn('all_subjects', response.data)
+        self.assertIn('general_average', response.data)
+        self.assertNotIn('detail', response.data)
+
+    def test_admin_stats_handles_academic_year_with_data(self):
+        academic_year = AcademicYear.objects.create(
+            name='2026-2027',
+            start_date=date(2026, 6, 1),
+            end_date=date(2027, 3, 31),
+        )
+        teacher = User.objects.create_user(
+            username='teacher_stats', password='pass', role='staff',
+            staff_title='teacher', is_approved=True
+        )
+        student = User.objects.create_user(
+            username='student_stats', password='pass', role='student', is_approved=True
+        )
+        classroom = Classroom.objects.create(name='10-A', academic_year=academic_year)
+        subject = Subject.objects.create(name='Mathematics', code='MATH10-STATS', grade_level='10')
+        Grade.objects.create(
+            student=student,
+            subject=subject,
+            classroom=classroom,
+            teacher=teacher,
+            grade_type='final_grade',
+            quarter=1,
+            academic_year='2026-2027',
+            raw_score=88,
+            total_score=100,
+        )
+        Attendance.objects.create(
+            student=student,
+            classroom=classroom,
+            date=date.today(),
+            status='present',
+            marked_by=teacher,
+        )
+
+        self.client.force_authenticate(user=self.admin)
+        response = self.client.get('/api/v1/admin/stats/', {'academic_year': '2026-2027'})
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['today_rate'], 100)
+        self.assertEqual(response.data['today_attendance_rate'], 100)
+        self.assertEqual(response.data['average_grade'], 88.0)
+        self.assertEqual(response.data['all_subjects']['total_count'], 1)
+
+    def test_student_cannot_access_admin_stats(self):
+        self.client.force_authenticate(user=self.student)
+        response = self.client.get('/api/v1/admin/stats/', {'academic_year': '2026-2027'})
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_attendance_analytics(self):
         self.client.force_authenticate(user=self.admin)

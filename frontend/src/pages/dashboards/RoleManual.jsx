@@ -255,7 +255,6 @@ const RoleManual = ({ role = 'student' }) => {
   const [open, setOpen] = useState(false);
   const panelRef = useRef(null);
   const manual = MANUALS[role];
-  if (!manual) return null;
 
   const openModal = useCallback(() => setOpen(true), []);
   const closeModal = useCallback(() => setOpen(false), []);
@@ -268,6 +267,8 @@ const RoleManual = ({ role = 'student' }) => {
     document.addEventListener('keydown', onKey);
     return () => { document.removeEventListener('keydown', onKey); prev?.focus?.(); };
   }, [open, closeModal]);
+
+  if (!manual) return null;
 
   return (
     <>

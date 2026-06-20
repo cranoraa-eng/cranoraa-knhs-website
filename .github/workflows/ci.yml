@@ -89,13 +89,7 @@ jobs:
       - name: Check for syntax errors
         run: |
           cd backend
-          python -m py_compile manage.py
-          python -m py_compile school_portal/settings.py
-          python -m py_compile accounts/views.py
-          python -m py_compile accounts/models.py
-          python -m py_compile accounts/serializers.py
-          python -m py_compile portal/views.py
-          python -m py_compile portal/models.py
+          python -m compileall -q manage.py school_portal accounts portal
 
   build-frontend:
     name: Build Frontend

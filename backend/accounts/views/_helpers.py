@@ -106,8 +106,8 @@ def _broadcast_new_chat_message(message, serialized_data, sender):
     """Broadcast a new chat message to room WebSocket groups and offline notifications."""
     from channels.layers import get_channel_layer
     from asgiref.sync import async_to_sync
-    from .models import Notification, ChatMessage
-    from .serializers import full_name
+    from ..models import Notification, ChatMessage
+    from ..serializers import full_name
 
     channel_layer = get_channel_layer()
     room_id = message.room_id
@@ -168,8 +168,8 @@ def get_latest_messages(user, limit=5):
     Get latest unique-sender chat messages for a user.
     Used by teacher, student, and admin dashboard views.
     """
-    from .models import ChatMessage
-    from .serializers import full_name
+    from ..models import ChatMessage
+    from ..serializers import full_name
 
     msg_objs = ChatMessage.objects.filter(
         room__participants=user
