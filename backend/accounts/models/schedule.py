@@ -76,10 +76,10 @@ class Schedule(models.Model):
         TimeSlot, on_delete=models.CASCADE, related_name='schedules'
     )
     academic_year = models.ForeignKey(
-        'AcademicYear', on_delete=models.CASCADE, related_name='schedules'
+        'portal.AcademicYear', on_delete=models.CASCADE, related_name='schedules'
     )
     semester = models.ForeignKey(
-        'Semester', on_delete=models.SET_NULL, null=True, blank=True, related_name='schedules'
+        'portal.Semester', on_delete=models.SET_NULL, null=True, blank=True, related_name='schedules'
     )
     is_active = models.BooleanField(default=True)
     notes = models.TextField(blank=True, null=True)
