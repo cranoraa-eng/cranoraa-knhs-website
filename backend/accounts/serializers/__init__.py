@@ -31,7 +31,7 @@ from .chat import (
     FriendshipSerializer, ReportedMessageSerializer,
     UserBlockSerializer, EmergencyMessageSerializer,
 )
-from .schedule import ScheduleSerializer
+from .schedule import ScheduleSerializer, RoomSerializer
 from .tickets import (
     TicketAttachmentSerializer, TicketMessageSerializer, TicketParticipantSerializer,
     TicketListSerializer, TicketDetailSerializer, TicketCreateSerializer,
@@ -67,7 +67,7 @@ __all__ = [
     'MessageReactionSerializer', 'ChatMessageSerializer', 'ChatRoomSerializer',
     'FriendshipSerializer', 'ReportedMessageSerializer',
     'UserBlockSerializer', 'EmergencyMessageSerializer',
-    'ScheduleSerializer',
+    'ScheduleSerializer', 'RoomSerializer',
     'TicketAttachmentSerializer', 'TicketMessageSerializer', 'TicketParticipantSerializer',
     'TicketListSerializer', 'TicketDetailSerializer', 'TicketCreateSerializer',
     'DepartmentContactSerializer',

@@ -1,7 +1,14 @@
 from rest_framework import serializers
 
-from ..models import Schedule
+from ..models import Room, Schedule
 from ._base import full_name
+
+
+class RoomSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Room
+        fields = ['id', 'name', 'building', 'capacity', 'room_type', 'is_active', 'created_at']
+        read_only_fields = ['created_at']
 
 
 class ScheduleSerializer(serializers.ModelSerializer):
