@@ -13,45 +13,52 @@ User = get_user_model()
 class TicketConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.user = self.scope['user']
-        if self.user.is_anonymous:
-            await self.close()
-            return
-
         self.ticket_id = self.scope['url_route']['kwargs']['ticket_id']
         self.room_group_name = f'ticket_{self.ticket_id}'
         self._last_typing_sent = 0
+        self._authenticated = False
 
-        if not await self.has_ticket_access(self.ticket_id, self.user.id):
-            await self.close(code=4003)
-            return
+        # If middleware already authenticated (token in query/header), join immediately
+        if self.user and not self.user.is_anonymous:
+            if await self.has_ticket_access(self.ticket_id, self.user.id):
+                await self._join_groups()
+                await self.accept()
+                await self.send(text_data=json.dumps({
+                    'type': 'auth_success',
+                    'user_id': self.user.id,
+                }))
+                self._authenticated = True
+                await self.channel_layer.group_send(self.room_group_name, {
+                    'type': 'user_joined',
+                    'user_id': self.user.id,
+                    'user_name': self.user.first_name or self.user.username,
+                })
+            else:
+                await self.close(code=4003)
+        else:
+            # Accept and wait for first message with auth token
+            await self.accept()
 
+    async def _join_groups(self):
         await self.channel_layer.group_add(self.room_group_name, self.channel_name)
         await self.channel_layer.group_add(f'user_{self.user.id}', self.channel_name)
-        await self.accept()
 
-        await self.send(text_data=json.dumps({
-            'type': 'auth_success',
-            'user_id': self.user.id,
-        }))
-
-        await self.channel_layer.group_send(self.room_group_name, {
-            'type': 'user_joined',
-            'user_id': self.user.id,
-            'user_name': self.user.first_name or self.user.username,
-        })
+    async def _leave_groups(self):
+        if hasattr(self, 'room_group_name'):
+            await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
+        if self.user and self.user.is_authenticated:
+            await self.channel_layer.group_discard(f'user_{self.user.id}', self.channel_name)
 
     async def disconnect(self, close_code):
-        if self.user.is_authenticated:
-            if hasattr(self, 'room_group_name'):
+        if self.user and self.user.is_authenticated:
+            if hasattr(self, 'room_group_name') and self._authenticated:
                 await self.channel_layer.group_send(self.room_group_name, {
                     'type': 'typing_indicator',
                     'sender_id': self.user.id,
                     'sender_name': self.user.first_name or self.user.username,
                     'is_typing': False,
                 })
-                await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
-            if hasattr(self, 'user'):
-                await self.channel_layer.group_discard(f'user_{self.user.id}', self.channel_name)
+            await self._leave_groups()
 
     async def receive(self, text_data):
         try:
@@ -62,6 +69,59 @@ class TicketConsumer(AsyncWebsocketConsumer):
                 'message': 'Invalid message format.'
             }))
             return
+
+        # Handle first-message auth if middleware didn't authenticate
+        if not self._authenticated:
+            if data.get('type') == 'auth' and data.get('token'):
+                from jwt import decode as jwt_decode
+                from django.conf import settings as django_settings
+                try:
+                    decoded = jwt_decode(
+                        data['token'],
+                        django_settings.SECRET_KEY,
+                        algorithms=['HS256']
+                    )
+                    User = get_user_model()
+                    self.user = await database_sync_to_async(User.objects.get)(id=decoded['user_id'])
+                    if self.user.is_anonymous:
+                        await self.send(text_data=json.dumps({
+                            'type': 'auth_failed',
+                            'message': 'Invalid token'
+                        }))
+                        await self.close()
+                        return
+                    if not await self.has_ticket_access(self.ticket_id, self.user.id):
+                        await self.send(text_data=json.dumps({
+                            'type': 'auth_failed',
+                            'message': 'No access to this ticket'
+                        }))
+                        await self.close(code=4003)
+                        return
+                    await self._join_groups()
+                    self._authenticated = True
+                    await self.send(text_data=json.dumps({
+                        'type': 'auth_success',
+                        'user_id': self.user.id,
+                    }))
+                    await self.channel_layer.group_send(self.room_group_name, {
+                        'type': 'user_joined',
+                        'user_id': self.user.id,
+                        'user_name': self.user.first_name or self.user.username,
+                    })
+                except Exception:
+                    await self.send(text_data=json.dumps({
+                        'type': 'auth_failed',
+                        'message': 'Invalid token'
+                    }))
+                    await self.close()
+            else:
+                await self.send(text_data=json.dumps({
+                    'type': 'error',
+                    'message': 'Not authenticated. Send auth message first.'
+                }))
+                await self.close()
+            return
+
         msg_type = data.get('type', 'message')
 
         if msg_type == 'typing':
