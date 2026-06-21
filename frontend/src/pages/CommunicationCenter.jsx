@@ -226,7 +226,7 @@ const ChatMessage = memo(function ChatMessage({ msg, i, chatMessages, userId, sh
   const showAvatar = !isOwn && (i === 0 || chatMessages[i - 1]?.sender !== msg.sender);
   const isLast = i === chatMessages.length - 1 || chatMessages[i + 1]?.sender !== msg.sender;
   const emojiOpen = showEmojiPicker === msg.id;
-  const isShortMessage = (msg.content || '').length < 25;
+  const isShortMessage = (msg.message_type !== 'image' && msg.message_type !== 'file') && (msg.content || '').length < 25;
 
   return (
     <div className={`flex ${isOwn ? 'justify-end' : 'justify-start'} ${!isLast ? 'mb-0.5' : 'mb-2'}`}>
