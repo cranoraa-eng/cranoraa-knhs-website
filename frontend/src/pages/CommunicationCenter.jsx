@@ -247,6 +247,7 @@ export default function CommunicationCenter() {
   const [showPinned, setShowPinned] = useState(false);
   const [replyTo, setReplyTo] = useState(null);
   const [chatUploading, setChatUploading] = useState(false);
+  const [wsConnected, setWsConnected] = useState(false);
   const chatSocketRef = useRef(null);
   const chatReconnectTimerRef = useRef(null);
   const chatReconnectAttemptsRef = useRef(0);
@@ -260,22 +261,28 @@ export default function CommunicationCenter() {
 
   // ── Chat: WebSocket connect/disconnect per selected room ──────────────────
   const connectChatWs = useCallback((roomId) => {
-    if (!roomId || !userId) return;
+    if (!roomId || !userId) { console.warn('[WS] connectChatWs skipped: roomId=', roomId, 'userId=', userId); return; }
     const token = getAccessToken();
-    if (!token) return;
-    if (chatSocketRef.current && chatSocketRef.current.readyState <= WebSocket.OPEN) return;
+    if (!token) { console.warn('[WS] connectChatWs skipped: no access token'); return; }
+    if (chatSocketRef.current && chatSocketRef.current.readyState <= WebSocket.OPEN) { console.warn('[WS] connectChatWs skipped: socket already exists readyState=', chatSocketRef.current.readyState); return; }
 
+    console.log('[WS] Connecting to room', roomId, 'token exists:', !!token);
     const ws = new WebSocket(`${WS_ROOT}/ws/chat/${roomId}/`);
     chatSocketRef.current = ws;
     wsConnectedRef.current = false;
+    setWsConnected(false);
 
-    ws.onopen = () => { ws.send(JSON.stringify({ type: 'auth', token })); };
+    ws.onopen = () => {
+      console.log('[WS] onopen — sending auth');
+      ws.send(JSON.stringify({ type: 'auth', token }));
+    };
 
     ws.onmessage = (e) => {
       try {
         const data = JSON.parse(e.data);
-        if (data.type === 'auth_success') { wsConnectedRef.current = true; chatReconnectAttemptsRef.current = 0; return; }
-        if (data.type === 'auth_failed') { ws.close(); return; }
+        console.log('[WS] onmessage:', data.type);
+        if (data.type === 'auth_success') { wsConnectedRef.current = true; setWsConnected(true); chatReconnectAttemptsRef.current = 0; return; }
+        if (data.type === 'auth_failed') { console.warn('[WS] auth_failed:', data.message); ws.close(); return; }
         if (data.type === 'message') {
           setChatMessages(prev => { if (prev.some(m => m.id === data.id)) return prev; return [...prev, data]; });
           setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 50);
@@ -296,12 +303,14 @@ export default function CommunicationCenter() {
           return;
         }
         if (data.type === 'forced_logout') { toast.error(data.message || 'Your account has been suspended.'); return; }
-        if (data.type === 'error') { toast.error(data.message || 'An error occurred.'); return; }
+        if (data.type === 'error') { console.warn('[WS] server error:', data.message); toast.error(data.message || 'An error occurred.'); return; }
       } catch { /* ignore */ }
     };
 
     ws.onclose = (e) => {
+      console.log('[WS] onclose:', e.code, e.reason);
       wsConnectedRef.current = false;
+      setWsConnected(false);
       chatSocketRef.current = null;
       if (e.code !== 1000 && e.code !== 1001 && userId) {
         if (chatReconnectTimerRef.current) clearTimeout(chatReconnectTimerRef.current);
@@ -311,7 +320,7 @@ export default function CommunicationCenter() {
         chatReconnectTimerRef.current = setTimeout(() => connectChatWs(roomId), delay);
       }
     };
-    ws.onerror = () => {};
+    ws.onerror = (e) => { console.error('[WS] onerror:', e); };
   }, [userId]);
 
   const disconnectChatWs = useCallback(() => {
@@ -319,12 +328,17 @@ export default function CommunicationCenter() {
     chatReconnectAttemptsRef.current = 0;
     if (chatSocketRef.current) { chatSocketRef.current.close(1000, 'Room changed'); chatSocketRef.current = null; }
     wsConnectedRef.current = false;
+    setWsConnected(false);
     setChatTypingUsers({});
   }, []);
 
   const sendChatWs = useCallback((payload) => {
-    if (chatSocketRef.current && chatSocketRef.current.readyState === WebSocket.OPEN) {
-      chatSocketRef.current.send(JSON.stringify(payload));
+    const socket = chatSocketRef.current;
+    const readyState = socket?.readyState;
+    const isOpen = socket && readyState === WebSocket.OPEN;
+    console.log('[WS] sendChatWs:', { type: payload.type, hasSocket: !!socket, readyState, isOpen });
+    if (isOpen) {
+      socket.send(JSON.stringify(payload));
       return true;
     }
     return false;
@@ -346,6 +360,7 @@ export default function CommunicationCenter() {
 
   useEffect(() => {
     if (selectedRoom) {
+      console.log('[WS] useEffect: selectedRoom changed to', selectedRoom.id, '— disconnecting and reconnecting');
       disconnectChatWs();
       setChatMessages([]);
       loadChatMessages(selectedRoom.id).then(() => connectChatWs(selectedRoom.id));
@@ -363,9 +378,10 @@ export default function CommunicationCenter() {
   }, []);
 
   const handleSendChatMessage = useCallback(() => {
-    if (!chatMessages || !selectedRoom || sending) return;
+    if (!chatMessages || !selectedRoom || sending) { console.log('[CHAT] handleSendChatMessage blocked:', { hasMessages: !!chatMessages, hasRoom: !!selectedRoom, sending }); return; }
     const content = (document.querySelector('[data-chat-input]')?.value || '').trim();
     if (!content) return;
+    console.log('[CHAT] handleSendChatMessage sending, wsConnected:', wsConnectedRef.current, 'readyState:', chatSocketRef.current?.readyState);
     setSending(true);
     setReplyTo(null);
     if (!sendChatWs({ type: 'message', message: content })) {
@@ -379,9 +395,11 @@ export default function CommunicationCenter() {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       const content = e.target.value.trim();
-      if (!content || !selectedRoom) return;
+      if (!content || !selectedRoom) { console.log('[CHAT] Enter blocked: content empty?', !content, 'selectedRoom?', !!selectedRoom); return; }
+      console.log('[CHAT] Sending via Enter, wsConnected:', wsConnectedRef.current, 'readyState:', chatSocketRef.current?.readyState);
       setReplyTo(null);
       if (!sendChatWs({ type: 'message', message: content })) {
+        console.warn('[CHAT] sendChatWs failed — socket not open');
         toast.error('Connection lost. Reconnecting...');
         connectChatWs(selectedRoom.id);
         return;
@@ -617,9 +635,11 @@ export default function CommunicationCenter() {
                   )}
                   <div className="flex-1 min-w-0">
                     <h3 className="text-sm font-bold text-slate-800 truncate">{getRoomDisplayName(selectedRoom, userId)}</h3>
-                    <p className="text-xs text-slate-500">
-                      {selectedRoom.is_group ? `${(selectedRoom.participants_details || []).length} members` :
-                        (selectedRoom.participants_details || []).find(p => p.id !== userId) && onlineUsers.has(selectedRoom.participants_details.find(p => p.id !== userId)?.id) ? 'Online' : 'Offline'}
+                    <p className="text-xs text-slate-500 flex items-center gap-1.5">
+                      <span className={`inline-block w-1.5 h-1.5 rounded-full flex-shrink-0 ${wsConnected ? 'bg-green-500' : 'bg-amber-400'}`} />
+                      {!wsConnected ? 'Connecting...' :
+                        selectedRoom.is_group ? `${(selectedRoom.participants_details || []).length} members` :
+                          (selectedRoom.participants_details || []).find(p => p.id !== userId) && onlineUsers.has(selectedRoom.participants_details.find(p => p.id !== userId)?.id) ? 'Online' : 'Offline'}
                     </p>
                   </div>
                 </div>
@@ -760,8 +780,10 @@ export default function CommunicationCenter() {
                       const input = document.querySelector('[data-chat-input]');
                       if (!input || !input.value.trim() || !selectedRoom) return;
                       const content = input.value.trim();
+                      console.log('[CHAT] Sending via button, wsConnected:', wsConnectedRef.current, 'readyState:', chatSocketRef.current?.readyState);
                       setReplyTo(null);
                       if (!sendChatWs({ type: 'message', message: content })) {
+                        console.warn('[CHAT] sendChatWs failed via button — socket not open');
                         toast.error('Connection lost. Reconnecting...');
                         connectChatWs(selectedRoom.id);
                         return;
