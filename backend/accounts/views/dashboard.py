@@ -18,6 +18,22 @@ from ..services.dashboard_service import build_admin_dashboard_stats
 logger = logging.getLogger(__name__)
 
 
+def _safe_cache_get(key):
+    try:
+        from django.core.cache import cache
+        return cache.get(key)
+    except Exception:
+        return None
+
+
+def _safe_cache_set(key, value, timeout=300):
+    try:
+        from django.core.cache import cache
+        cache.set(key, value, timeout=timeout)
+    except Exception:
+        pass
+
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def teacher_dashboard_stats(request):
@@ -26,9 +42,8 @@ def teacher_dashboard_stats(request):
         if user.role != 'staff' and user.role != 'admin':
             return Response({'error': 'Unauthorized'}, status=403)
 
-        from django.core.cache import cache
         cache_key = f'teacher_dashboard:v1:{user.id}'
-        cached = cache.get(cache_key)
+        cached = _safe_cache_get(cache_key)
         if cached:
             return Response(cached)
 
@@ -105,7 +120,7 @@ def teacher_dashboard_stats(request):
             'recent_activities': recent_activities,
             'latest_messages': latest_messages
         }
-        cache.set(cache_key, res_data, timeout=300)
+        _safe_cache_set(cache_key, res_data, timeout=300)
         return Response(res_data)
     except Exception as e:
         logger.error(f"Teacher stats error: {str(e)}", exc_info=True)
@@ -123,9 +138,8 @@ def student_dashboard_stats(request):
         if user.role != 'student':
             return Response({'error': 'Unauthorized'}, status=403)
 
-        from django.core.cache import cache
         cache_key = f'student_dashboard:v1:{user.id}'
-        cached = cache.get(cache_key)
+        cached = _safe_cache_get(cache_key)
         if cached:
             return Response(cached)
 
@@ -149,7 +163,7 @@ def student_dashboard_stats(request):
             'recent_notifications': recent_notif_data,
             'latest_messages': latest_messages
         }
-        cache.set(cache_key, res_data, timeout=300)
+        _safe_cache_set(cache_key, res_data, timeout=300)
         return Response(res_data)
     except Exception as e:
         logger.error(f"Student dashboard stats error: {str(e)}", exc_info=True)
@@ -164,17 +178,15 @@ def admin_dashboard_stats(request):
         if request.user.role not in ['admin', 'staff']:
             return Response({'error': 'Unauthorized access'}, status=403)
 
-        from django.core.cache import cache
-
         academic_year_name = request.query_params.get('academic_year')
         cache_key = f'admin_dashboard:v3:{request.user.role}:{request.user.id}:{academic_year_name or "all"}'
-        cached = cache.get(cache_key)
+        cached = _safe_cache_get(cache_key)
         if cached:
             return Response(cached)
 
         res_data = build_admin_dashboard_stats(request.user, academic_year_name)
 
-        cache.set(cache_key, res_data, timeout=300)
+        _safe_cache_set(cache_key, res_data, timeout=300)
 
         return Response(res_data)
     except Exception as e:
@@ -199,10 +211,9 @@ def admin_attendance_analytics(request):
     if request.user.role not in ['admin', 'staff']:
         return Response({'error': 'Unauthorized'}, status=403)
 
-    from django.core.cache import cache
     academic_year_name = request.query_params.get('academic_year')
     cache_key = f'attendance_analytics:v1:{request.user.id}:{academic_year_name or "all"}'
-    cached = cache.get(cache_key)
+    cached = _safe_cache_get(cache_key)
     if cached:
         return Response(cached)
 
@@ -236,7 +247,7 @@ def admin_attendance_analytics(request):
             'rate': round((present_late / total * 100), 1) if total > 0 else 0,
         })
     res_data = {'today_rate': today_rate, 'today_total': today_total, 'daily_trends': trends}
-    cache.set(cache_key, res_data, timeout=120)
+    _safe_cache_set(cache_key, res_data, timeout=300)
     return Response(res_data)
 
 
@@ -246,10 +257,9 @@ def admin_grade_analytics(request):
     if request.user.role not in ['admin', 'staff']:
         return Response({'error': 'Unauthorized'}, status=403)
 
-    from django.core.cache import cache
     academic_year_name = request.query_params.get('academic_year')
     cache_key = f'grade_analytics:v1:{request.user.id}:{academic_year_name or "all"}'
-    cached = cache.get(cache_key)
+    cached = _safe_cache_get(cache_key)
     if cached:
         return Response(cached)
 
@@ -276,5 +286,5 @@ def admin_grade_analytics(request):
         'average': average, 'total': total, 'distribution': distribution,
         'subject_stats': [{'name': s['subject__name'], 'avg_grade': round(float(s['avg_grade']), 1) if s['avg_grade'] else 0} for s in subject_stats],
     }
-    cache.set(cache_key, res_data, timeout=120)
+    _safe_cache_set(cache_key, res_data, timeout=300)
     return Response(res_data)
