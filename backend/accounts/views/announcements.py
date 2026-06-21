@@ -398,5 +398,5 @@ def public_announcements_view(request):
 
     queryset = Announcement.objects.filter(is_public=True, status='live').order_by('-is_pinned', '-created_at')
     serializer = AnnouncementSerializer(queryset, many=True, context={'request': request})
-    cache.set(cache_key, serializer.data, timeout=30)
+    cache.set(cache_key, serializer.data, timeout=60)
     return Response(serializer.data)

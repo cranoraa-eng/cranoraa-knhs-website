@@ -105,7 +105,7 @@ def teacher_dashboard_stats(request):
             'recent_activities': recent_activities,
             'latest_messages': latest_messages
         }
-        cache.set(cache_key, res_data, timeout=60)
+        cache.set(cache_key, res_data, timeout=300)
         return Response(res_data)
     except Exception as e:
         logger.error(f"Teacher stats error: {str(e)}", exc_info=True)
@@ -149,7 +149,7 @@ def student_dashboard_stats(request):
             'recent_notifications': recent_notif_data,
             'latest_messages': latest_messages
         }
-        cache.set(cache_key, res_data, timeout=60)
+        cache.set(cache_key, res_data, timeout=300)
         return Response(res_data)
     except Exception as e:
         logger.error(f"Student dashboard stats error: {str(e)}", exc_info=True)
@@ -174,7 +174,7 @@ def admin_dashboard_stats(request):
 
         res_data = build_admin_dashboard_stats(request.user, academic_year_name)
 
-        cache.set(cache_key, res_data, timeout=120)
+        cache.set(cache_key, res_data, timeout=300)
 
         return Response(res_data)
     except Exception as e:

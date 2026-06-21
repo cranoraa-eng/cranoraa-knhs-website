@@ -1,5 +1,4 @@
 import json
-import asyncio
 import time
 import logging
 from channels.generic.websocket import AsyncWebsocketConsumer
@@ -27,6 +26,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         self._last_presence_broadcast = 0
         self._last_typing_sent = 0
+        self._last_read_sent = 0
         self._authenticated = False
 
         if self.user and not self.user.is_anonymous:
@@ -169,11 +169,14 @@ class ChatConsumer(AsyncWebsocketConsumer):
             message_id = data.get('message_id')
             if message_id:
                 await self.mark_messages_read(self.room_id, self.user.id, message_id)
-                await self.channel_layer.group_send(self.room_group_name, {
-                    'type': 'read_receipt',
-                    'reader_id': self.user.id,
-                    'message_id': message_id,
-                })
+                now = time.monotonic()
+                if (now - self._last_read_sent) >= 10:
+                    self._last_read_sent = now
+                    await self.channel_layer.group_send(self.room_group_name, {
+                        'type': 'read_receipt',
+                        'reader_id': self.user.id,
+                        'message_id': message_id,
+                    })
             return
 
         if msg_type == 'reaction':
@@ -218,25 +221,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         serialized_msg = await self.serialize_message(saved_msg)
 
+        # Single broadcast to the room — all connected participants receive it.
         await self.channel_layer.group_send(self.room_group_name, {
             'type': 'chat_message',
             'message_data': serialized_msg
         })
-
-        participant_ids = await self.get_room_participant_ids(self.room_id)
-        notify_payload = {
-            'type': 'new_message_notify',
-            'room_id': int(self.room_id),
-            'sender_id': self.user.id,
-            'sender_name': self.user.first_name or self.user.username,
-            'content': message,
-            'timestamp': saved_msg.timestamp.isoformat(),
-        }
-        await asyncio.gather(*[
-            self.channel_layer.group_send(f'user_{pid}', notify_payload)
-            for pid in participant_ids
-            if pid != self.user.id
-        ])
 
     async def handle_reaction(self, data):
         message_id = data.get('message_id')
@@ -262,13 +251,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
             'room_id': int(self.room_id)
         }
 
+        # Single broadcast to the room — all connected participants receive it.
         await self.channel_layer.group_send(self.room_group_name, broadcast_data)
-
-        participant_ids = await self.get_room_participant_ids(self.room_id)
-        await asyncio.gather(*[
-            self.channel_layer.group_send(f'user_{pid}', broadcast_data)
-            for pid in participant_ids
-        ])
 
     # ── Handlers ──────────────────────────────────────────────────────────
 
@@ -358,16 +342,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
             'room_id': event['room_id'],
         }))
 
-    async def new_message_notify(self, event):
-        await self.send(text_data=json.dumps({
-            'type': 'new_message_notify',
-            'room_id': event['room_id'],
-            'sender_id': event['sender_id'],
-            'sender_name': event['sender_name'],
-            'content': event['content'],
-            'timestamp': event['timestamp'],
-        }))
-
     async def forced_logout(self, event):
         await self.send(text_data=json.dumps({
             'type': 'forced_logout',
@@ -412,17 +386,38 @@ class ChatConsumer(AsyncWebsocketConsumer):
         offline_participants = room.participants.exclude(id=sender_id).filter(
             last_activity__lt=five_mins_ago
         )
-        for participant in offline_participants:
-            try:
-                Notification.objects.create(
-                    recipient=participant,
-                    notification_type='message',
-                    title=f'New message from {sender_name}',
-                    message=f'{room_label}: {preview}',
-                    link='/communication-center',
+        notif_list = [
+            Notification(
+                recipient=participant,
+                notification_type='message',
+                title=f'New message from {sender_name}',
+                message=f'{room_label}: {preview}',
+                link='/communication-center',
+            )
+            for participant in offline_participants
+        ]
+        if notif_list:
+            Notification.objects.bulk_create(notif_list)
+            # Bulk signal: single group_send per recipient instead of N signal fires
+            from channels.layers import get_channel_layer
+            from asgiref.sync import async_to_sync
+            channel_layer = get_channel_layer()
+            for notif in notif_list:
+                async_to_sync(channel_layer.group_send)(
+                    f'notifications_{notif.recipient_id}',
+                    {
+                        'type': 'notification_message',
+                        'data': {
+                            'type': 'notification',
+                            'id': notif.id,
+                            'title': notif.title,
+                            'message': notif.message,
+                            'notification_type': notif.notification_type,
+                            'link': notif.link,
+                            'created_at': notif.created_at.isoformat(),
+                        }
+                    }
                 )
-            except Exception:
-                pass
 
         return msg
 

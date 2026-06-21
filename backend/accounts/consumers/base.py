@@ -14,7 +14,7 @@ User = get_user_model()
 
 # ── Redis-saving constants ────────────────────────────────────────────────────
 PRESENCE_DEBOUNCE_SECONDS = 60
-TYPING_THROTTLE_SECONDS = 3
+TYPING_THROTTLE_SECONDS = 5
 MESSAGE_RATE_LIMIT = 30
 MESSAGE_RATE_WINDOW = 60
 

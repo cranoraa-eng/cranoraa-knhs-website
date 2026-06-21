@@ -1,10 +1,9 @@
-import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo, memo } from 'react';
 import api, { WS_ROOT } from '../utils/api';
 import { useAuth } from '../context/AuthContext';
 import { getAccessToken } from '../utils/auth';
 import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
-import { playSound } from '../utils/sounds';
 
 const SearchIcon = (p) => <svg width={p.size||16} height={p.size||16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={p.className}><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>;
 const SendIcon = (p) => <svg width={p.size||16} height={p.size||16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={p.className}><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>;
@@ -130,10 +129,6 @@ function PeopleDirectory({ onSelectPerson, currentUserId }) {
     return () => { cancelled = true; };
   }, []);
 
-  const toggleGroup = (key) => {
-    setExpandedGroups(prev => ({ ...prev, [key]: !prev[key] }));
-  };
-
   const filtered = useMemo(() => {
     if (!peopleSearch.trim()) return groups;
     const q = peopleSearch.toLowerCase();
@@ -150,7 +145,6 @@ function PeopleDirectory({ onSelectPerson, currentUserId }) {
 
   return (
     <div className="w-full h-full flex flex-col bg-white">
-      {/* Header */}
       <div className="px-4 sm:px-5 py-4 border-b border-slate-100">
         <h2 className="text-xs font-extrabold text-slate-900 uppercase tracking-tight mb-3">Directory</h2>
         <div className="relative">
@@ -164,8 +158,6 @@ function PeopleDirectory({ onSelectPerson, currentUserId }) {
           />
         </div>
       </div>
-
-      {/* People List */}
       <div className="flex-1 overflow-y-auto">
         {loading ? (
           <div className="flex items-center justify-center h-24">
@@ -180,7 +172,7 @@ function PeopleDirectory({ onSelectPerson, currentUserId }) {
               return (
                 <div key={group.key} className="mb-1">
                   <button
-                    onClick={() => toggleGroup(group.key)}
+                    onClick={() => setExpandedGroups(prev => ({ ...prev, [group.key]: !prev[group.key] }))}
                     className="w-full flex items-center justify-between px-5 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider hover:bg-slate-50 transition-colors"
                   >
                     <span>{group.label}</span>
@@ -226,6 +218,77 @@ function PeopleDirectory({ onSelectPerson, currentUserId }) {
   );
 }
 
+const ChatMessage = memo(function ChatMessage({ msg, i, chatMessages, userId, showEmojiPicker, setShowEmojiPicker, onReaction, onEdit, onDelete, onReply }) {
+  const isOwn = msg.sender === userId;
+  const showAvatar = !isOwn && (i === 0 || chatMessages[i - 1]?.sender !== msg.sender);
+  const isLast = i === chatMessages.length - 1 || chatMessages[i + 1]?.sender !== msg.sender;
+  const emojiOpen = showEmojiPicker === msg.id;
+
+  return (
+    <div className={`flex ${isOwn ? 'justify-end' : 'justify-start'} ${!isLast ? 'mb-0.5' : 'mb-2'}`}>
+      {!isOwn && <div className="w-8 flex-shrink-0">{showAvatar && <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-[10px] font-bold ${getAvatarColor(msg.sender_name)}`}>{getInitials(msg.sender_name)}</div>}</div>}
+      <div className={`max-w-[70%] flex flex-col ${isOwn ? 'items-end' : 'items-start'}`}>
+        {showAvatar && !isOwn && <span className="text-[11px] font-semibold text-slate-500 mb-0.5 ml-1">{msg.sender_name}</span>}
+        {msg.parent_message_details && (
+          <div className={`text-[11px] px-2.5 py-1 mb-0.5 rounded-t-lg border-l-2 ${isOwn ? 'bg-violet-50 border-violet-400 text-violet-700' : 'bg-slate-50 border-slate-300 text-slate-600'}`}>
+            <span className="font-semibold">{msg.parent_message_details.sender_name}</span>: {msg.parent_message_details.content?.slice(0, 60)}
+          </div>
+        )}
+        <div className="relative group">
+          {msg.message_type === 'image' && msg.attachment_url ? (
+            <a href={msg.attachment_url} target="_blank" rel="noreferrer" className="block">
+              <img src={msg.attachment_url} alt={msg.attachment_filename} className="max-w-[280px] max-h-[200px] rounded-xl object-cover" />
+              {msg.content && <p className="text-sm mt-1 px-1">{msg.content}</p>}
+            </a>
+          ) : msg.message_type === 'file' && msg.attachment_url ? (
+            <a href={msg.attachment_url} target="_blank" rel="noreferrer" className={`flex items-center gap-2 px-3 py-2 rounded-xl border ${isOwn ? 'bg-violet-50 border-violet-200' : 'bg-white border-slate-200'}`}>
+              <PaperclipIcon size={16} className={isOwn ? 'text-violet-500' : 'text-slate-500'} />
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-slate-700 truncate">{msg.attachment_filename || 'File'}</p>
+                <p className="text-[10px] text-slate-400">{formatFileSize(msg.file_size_bytes)}</p>
+              </div>
+              <DownloadIcon size={14} className="text-slate-400 flex-shrink-0" />
+            </a>
+          ) : (
+            <div className={`px-3 py-2 rounded-2xl ${isOwn ? 'bg-violet-600 text-white rounded-br-md' : 'bg-white text-slate-800 border border-slate-200 shadow-sm rounded-bl-md'}`}>
+              <p className="text-sm whitespace-pre-wrap break-words">{msg.content}</p>
+            </div>
+          )}
+          <div className={`absolute ${isOwn ? 'right-0' : 'left-0'} -top-8 opacity-0 group-hover:opacity-100 transition-opacity z-10 flex items-center gap-0.5 bg-white border border-slate-200 rounded-lg shadow-lg px-1 py-0.5`}>
+            <button onClick={() => setShowEmojiPicker(emojiOpen ? null : msg.id)} className="p-1 hover:bg-slate-100 rounded text-xs" title="React">😊</button>
+            {!isOwn && <button onClick={() => onReply(msg)} className="p-1 hover:bg-slate-100 rounded text-xs" title="Reply">↩</button>}
+            {isOwn && <>
+              <button onClick={() => onEdit(msg.id)} className="p-1 hover:bg-slate-100 rounded text-xs" title="Edit">✏️</button>
+              <button onClick={() => onDelete(msg.id)} className="p-1 hover:bg-red-50 rounded text-xs text-red-500" title="Delete">🗑</button>
+            </>}
+          </div>
+          {emojiOpen && (
+            <div className={`absolute ${isOwn ? 'right-0' : 'left-0'} -top-12 bg-white border border-slate-200 rounded-xl shadow-lg px-2 py-1 flex items-center gap-1 z-20`}>
+              {EMOJI_LIST.map(emoji => (<button key={emoji} onClick={() => onReaction(msg.id, emoji)} className="w-8 h-8 flex items-center justify-center hover:bg-slate-100 rounded text-lg">{emoji}</button>))}
+            </div>
+          )}
+        </div>
+        {msg.reactions && Object.keys(msg.reactions).length > 0 && (
+          <div className="flex flex-wrap gap-1 mt-0.5 ml-1">
+            {Object.entries(msg.reactions).map(([emoji, users]) => (
+              <button key={emoji} onClick={() => onReaction(msg.id, emoji)} className="flex items-center gap-0.5 px-1.5 py-0.5 bg-white border border-slate-200 rounded-full text-xs hover:bg-slate-50">
+                <span>{emoji}</span><span className="text-slate-500">{users.length}</span>
+              </button>
+            ))}
+          </div>
+        )}
+        {isLast && (
+          <div className={`flex items-center gap-1 mt-0.5 ${isOwn ? 'flex-row-reverse' : ''}`}>
+            <span className="text-[10px] text-slate-400">{formatChatTime(msg.timestamp)}</span>
+            {isOwn && (msg.is_read ? <CheckCheckIcon size={12} className="text-violet-500" /> : msg.is_delivered ? <CheckCheckIcon size={12} className="text-slate-400" /> : <CheckIcon size={12} className="text-slate-400" />)}
+            {msg.is_edited && <span className="text-[10px] text-slate-400">(edited)</span>}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+});
+
 export default function CommunicationCenter() {
   const { user } = useAuth();
   const userId = user?.id;
@@ -234,7 +297,6 @@ export default function CommunicationCenter() {
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
 
-  // ── Chat state ───────────────────────────────────────────────────────
   const [chatRooms, setChatRooms] = useState([]);
   const [selectedRoom, setSelectedRoom] = useState(null);
   const [chatMessages, setChatMessages] = useState([]);
@@ -260,30 +322,24 @@ export default function CommunicationCenter() {
   const CHAT_BASE_DELAY = 2000;
   const CHAT_MAX_DELAY = 30000;
 
-  // ── Chat: WebSocket connect/disconnect per selected room ──────────────────
   const connectChatWs = useCallback((roomId) => {
-    if (!roomId || !userId) { console.warn('[WS] connectChatWs skipped: roomId=', roomId, 'userId=', userId); return; }
+    if (!roomId || !userId) return;
     const token = getAccessToken();
-    if (!token) { console.warn('[WS] connectChatWs skipped: no access token'); return; }
-    if (chatSocketRef.current && chatSocketRef.current.readyState <= WebSocket.OPEN) { console.warn('[WS] connectChatWs skipped: socket already exists readyState=', chatSocketRef.current.readyState); return; }
+    if (!token) return;
+    if (chatSocketRef.current && chatSocketRef.current.readyState <= WebSocket.OPEN) return;
 
-    console.log('[WS] Connecting to room', roomId, 'token exists:', !!token);
     const ws = new WebSocket(`${WS_ROOT}/ws/chat/${roomId}/`);
     chatSocketRef.current = ws;
     wsConnectedRef.current = false;
     setWsConnected(false);
 
-    ws.onopen = () => {
-      console.log('[WS] onopen — sending auth');
-      ws.send(JSON.stringify({ type: 'auth', token }));
-    };
+    ws.onopen = () => { ws.send(JSON.stringify({ type: 'auth', token })); };
 
     ws.onmessage = (e) => {
       try {
         const data = JSON.parse(e.data);
-        console.log('[WS] onmessage:', data.type);
         if (data.type === 'auth_success') { wsConnectedRef.current = true; setWsConnected(true); chatReconnectAttemptsRef.current = 0; return; }
-        if (data.type === 'auth_failed') { console.warn('[WS] auth_failed:', data.message); ws.close(); return; }
+        if (data.type === 'auth_failed') { ws.close(); return; }
         if (data.type === 'message') {
           setChatMessages(prev => { if (prev.some(m => m.id === data.id)) return prev; return [...prev, data]; });
           setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 50);
@@ -308,12 +364,11 @@ export default function CommunicationCenter() {
           return;
         }
         if (data.type === 'forced_logout') { toast.error(data.message || 'Your account has been suspended.'); return; }
-        if (data.type === 'error') { console.warn('[WS] server error:', data.message); toast.error(data.message || 'An error occurred.'); return; }
+        if (data.type === 'error') { toast.error(data.message || 'An error occurred.'); return; }
       } catch { /* ignore */ }
     };
 
     ws.onclose = (e) => {
-      console.log('[WS] onclose:', e.code, e.reason);
       wsConnectedRef.current = false;
       setWsConnected(false);
       chatSocketRef.current = null;
@@ -325,7 +380,7 @@ export default function CommunicationCenter() {
         chatReconnectTimerRef.current = setTimeout(() => connectChatWs(roomId), delay);
       }
     };
-    ws.onerror = (e) => { console.error('[WS] onerror:', e); };
+    ws.onerror = () => {};
   }, [userId]);
 
   const disconnectChatWs = useCallback(() => {
@@ -339,15 +394,23 @@ export default function CommunicationCenter() {
 
   const sendChatWs = useCallback((payload) => {
     const socket = chatSocketRef.current;
-    const readyState = socket?.readyState;
-    const isOpen = socket && readyState === WebSocket.OPEN;
-    console.log('[WS] sendChatWs:', { type: payload.type, hasSocket: !!socket, readyState, isOpen });
-    if (isOpen) {
+    if (socket && socket.readyState === WebSocket.OPEN) {
       socket.send(JSON.stringify(payload));
       return true;
     }
     return false;
   }, []);
+
+  const sendMessage = useCallback((content) => {
+    if (!content || !selectedRoom) return;
+    setReplyTo(null);
+    if (!sendChatWs({ type: 'message', message: content })) {
+      toast.error('Connection lost. Reconnecting...');
+      connectChatWs(selectedRoom.id);
+      return;
+    }
+    inputRef.current.value = '';
+  }, [selectedRoom, sendChatWs, connectChatWs]);
 
   const loadChatRooms = useCallback(async () => {
     try { const r = await api.get('/chat/rooms/'); setChatRooms(r.data.results || r.data); } catch { /* ignore */ }
@@ -365,7 +428,6 @@ export default function CommunicationCenter() {
 
   useEffect(() => {
     if (selectedRoom) {
-      console.log('[WS] useEffect: selectedRoom changed to', selectedRoom.id, '— disconnecting and reconnecting');
       disconnectChatWs();
       setChatMessages([]);
       loadChatMessages(selectedRoom.id).then(() => connectChatWs(selectedRoom.id));
@@ -382,36 +444,13 @@ export default function CommunicationCenter() {
     setMobileView('thread');
   }, []);
 
-  const handleSendChatMessage = useCallback(() => {
-    if (!chatMessages || !selectedRoom || sending) { console.log('[CHAT] handleSendChatMessage blocked:', { hasMessages: !!chatMessages, hasRoom: !!selectedRoom, sending }); return; }
-    const content = (document.querySelector('[data-chat-input]')?.value || '').trim();
-    if (!content) return;
-    console.log('[CHAT] handleSendChatMessage sending, wsConnected:', wsConnectedRef.current, 'readyState:', chatSocketRef.current?.readyState);
-    setSending(true);
-    setReplyTo(null);
-    if (!sendChatWs({ type: 'message', message: content })) {
-      toast.error('Connection lost. Reconnecting...');
-      connectChatWs(selectedRoom.id);
-    }
-    setSending(false);
-  }, [selectedRoom, sending, sendChatWs, connectChatWs]);
-
   const handleChatKeyDown = useCallback((e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      const content = e.target.value.trim();
-      if (!content || !selectedRoom) { console.log('[CHAT] Enter blocked: content empty?', !content, 'selectedRoom?', !!selectedRoom); return; }
-      console.log('[CHAT] Sending via Enter, wsConnected:', wsConnectedRef.current, 'readyState:', chatSocketRef.current?.readyState);
-      setReplyTo(null);
-      if (!sendChatWs({ type: 'message', message: content })) {
-        console.warn('[CHAT] sendChatWs failed — socket not open');
-        toast.error('Connection lost. Reconnecting...');
-        connectChatWs(selectedRoom.id);
-        return;
-      }
+      sendMessage(e.target.value.trim());
       e.target.value = '';
     }
-  }, [selectedRoom, sendChatWs, connectChatWs]);
+  }, [sendMessage]);
 
   const handleChatTyping = useCallback(() => {
     const now = Date.now();
@@ -518,101 +557,99 @@ export default function CommunicationCenter() {
         w-full lg:w-[340px] min-w-0 bg-white lg:border-r border-slate-200 flex flex-col h-full
         ${mobileView === 'list' ? 'flex' : 'hidden lg:flex'}
       `}>
-        {/* Messages Header */}
-            <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100">
-              <div className="relative flex-1 mr-2">
-                <SearchIcon size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                <input
-                  type="text"
-                  placeholder="Search conversations..."
-                  value={chatSearchQuery}
-                  onChange={(e) => setChatSearchQuery(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2 text-xs bg-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:bg-white transition-colors"
-                />
-              </div>
-              <div className="flex items-center gap-1">
-                <button
-                  onClick={() => setShowPinned(!showPinned)}
-                  className={`p-2 rounded-lg transition-colors ${showPinned ? 'bg-violet-100 text-violet-600' : 'text-slate-400 hover:bg-slate-100'}`}
-                  title="Pinned chats"
-                >
-                  <PinIcon size={14} />
-                </button>
-              </div>
-            </div>
-
-            {/* Chat Room List */}
-            <div className="flex-1 overflow-y-auto">
-              {chatLoading ? (
-                <div className="flex items-center justify-center py-12">
-                  <div className="w-5 h-5 border-2 border-slate-200 border-t-violet-600 rounded-full animate-spin" />
-                </div>
-              ) : filteredChatRooms.length === 0 ? (
-                <div className="text-center py-12 px-4">
-                  <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <ChatIcon size={20} className="text-slate-400" />
-                  </div>
-                  <p className="text-sm font-medium text-slate-500">No conversations yet</p>
-                  <p className="text-xs text-slate-400 mt-1">Start a new chat to begin messaging</p>
-                </div>
-              ) : (
-                filteredChatRooms.map(room => {
-                  const displayName = getRoomDisplayName(room, userId);
-                  const avatar = getRoomAvatar(room, userId);
-                  const subtitle = getRoomSubtitle(room);
-                  const isActive = selectedRoom?.id === room.id;
-                  const hasUnread = room.unread_count > 0;
-
-                  return (
-                    <button
-                      key={room.id}
-                      onClick={() => handleSelectRoom(room)}
-                      className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors relative ${
-                        isActive ? 'bg-violet-50 border-r-2 border-violet-600' : 'hover:bg-slate-50 border-r-2 border-transparent'
-                      }`}
-                    >
-                      <div className="relative flex-shrink-0">
-                        {avatar ? (
-                          <img src={avatar} alt="" className="w-11 h-11 rounded-full object-cover" />
-                        ) : room.is_group ? (
-                          <div className="w-11 h-11 rounded-full bg-violet-100 flex items-center justify-center">
-                            <UsersIcon size={20} className="text-violet-600" />
-                          </div>
-                        ) : (
-                          <div className={`w-11 h-11 rounded-full flex items-center justify-center text-white font-bold text-sm ${getAvatarColor(displayName)}`}>
-                            {getInitials(displayName)}
-                          </div>
-                        )}
-                        {!room.is_group && room.participants_details?.find(p => p.id !== userId) && onlineUsers.has(room.participants_details.find(p => p.id !== userId)?.id) && (
-                          <span className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full" />
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between">
-                          <span className={`text-sm truncate ${hasUnread ? 'font-bold text-slate-900' : 'font-semibold text-slate-700'}`}>
-                            {displayName}
-                          </span>
-                          <span className="text-[11px] text-slate-400 flex-shrink-0 ml-2">
-                            {formatChatTime(room.updated_at)}
-                          </span>
-                        </div>
-                        <div className="flex items-center justify-between mt-0.5">
-                          <span className={`text-xs truncate ${hasUnread ? 'font-semibold text-slate-700' : 'text-slate-500'}`}>
-                            {subtitle || 'No messages yet'}
-                          </span>
-                          {hasUnread && (
-                            <span className="ml-2 flex-shrink-0 w-5 h-5 bg-violet-600 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
-                              {room.unread_count > 99 ? '99+' : room.unread_count}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </button>
-                  );
-                })
-              )}
-            </div>
+        <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100">
+          <div className="relative flex-1 mr-2">
+            <SearchIcon size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Search conversations..."
+              value={chatSearchQuery}
+              onChange={(e) => setChatSearchQuery(e.target.value)}
+              className="w-full pl-9 pr-3 py-2 text-xs bg-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:bg-white transition-colors"
+            />
           </div>
+          <button
+            onClick={() => setShowPinned(!showPinned)}
+            className={`p-2 rounded-lg transition-colors ${showPinned ? 'bg-violet-100 text-violet-600' : 'text-slate-400 hover:bg-slate-100'}`}
+            title="Pinned chats"
+          >
+            <PinIcon size={14} />
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto">
+          {chatLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="w-5 h-5 border-2 border-slate-200 border-t-violet-600 rounded-full animate-spin" />
+            </div>
+          ) : filteredChatRooms.length === 0 ? (
+            <div className="text-center py-12 px-4">
+              <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                <ChatIcon size={20} className="text-slate-400" />
+              </div>
+              <p className="text-sm font-medium text-slate-500">No conversations yet</p>
+              <p className="text-xs text-slate-400 mt-1">Start a new chat to begin messaging</p>
+            </div>
+          ) : (
+            filteredChatRooms.map(room => {
+              const displayName = getRoomDisplayName(room, userId);
+              const avatar = getRoomAvatar(room, userId);
+              const subtitle = getRoomSubtitle(room);
+              const isActive = selectedRoom?.id === room.id;
+              const hasUnread = room.unread_count > 0;
+              const otherUser = !room.is_group && room.participants_details?.find(p => p.id !== userId);
+              const isOnline = otherUser && onlineUsers.has(otherUser.id);
+
+              return (
+                <button
+                  key={room.id}
+                  onClick={() => handleSelectRoom(room)}
+                  className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors relative ${
+                    isActive ? 'bg-violet-50 border-r-2 border-violet-600' : 'hover:bg-slate-50 border-r-2 border-transparent'
+                  }`}
+                >
+                  <div className="relative flex-shrink-0">
+                    {avatar ? (
+                      <img src={avatar} alt="" className="w-11 h-11 rounded-full object-cover" />
+                    ) : room.is_group ? (
+                      <div className="w-11 h-11 rounded-full bg-violet-100 flex items-center justify-center">
+                        <UsersIcon size={20} className="text-violet-600" />
+                      </div>
+                    ) : (
+                      <div className={`w-11 h-11 rounded-full flex items-center justify-center text-white font-bold text-sm ${getAvatarColor(displayName)}`}>
+                        {getInitials(displayName)}
+                      </div>
+                    )}
+                    {isOnline && (
+                      <span className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full" />
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between">
+                      <span className={`text-sm truncate ${hasUnread ? 'font-bold text-slate-900' : 'font-semibold text-slate-700'}`}>
+                        {displayName}
+                      </span>
+                      <span className="text-[11px] text-slate-400 flex-shrink-0 ml-2">
+                        {formatChatTime(room.updated_at)}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between mt-0.5">
+                      <span className={`text-xs truncate ${hasUnread ? 'font-semibold text-slate-700' : 'text-slate-500'}`}>
+                        {subtitle || 'No messages yet'}
+                      </span>
+                      {hasUnread && (
+                        <span className="ml-2 flex-shrink-0 w-5 h-5 bg-violet-600 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                          {room.unread_count > 99 ? '99+' : room.unread_count}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </button>
+              );
+            })
+          )}
+        </div>
+      </div>
 
       {/* Center Panel — Message Thread */}
       <div className={`
@@ -621,7 +658,6 @@ export default function CommunicationCenter() {
       `}>
         {selectedRoom ? (
             <>
-              {/* Chat Thread Header */}
               <div className="flex items-center justify-between px-3 sm:px-5 py-3 bg-white border-b border-slate-200 min-h-[57px]">
                 <div className="flex items-center gap-2 min-w-0 flex-1">
                   <button onClick={() => { setSelectedRoom(null); setMobileView('list'); }}
@@ -664,79 +700,25 @@ export default function CommunicationCenter() {
                 </div>
               </div>
 
-              {/* Chat Messages */}
               <div className="flex-1 overflow-y-auto px-4 py-3 space-y-1" onClick={() => setShowRoomMenu(null)}>
                 {(!chatMessages || chatMessages.length === 0) ? (
                   <div className="flex items-center justify-center h-full"><p className="text-sm text-slate-400">No messages yet. Say hello!</p></div>
                 ) : (
-                  chatMessages.map((msg, i) => {
-                    const isOwn = msg.sender === userId;
-                    const showAvatar = !isOwn && (i === 0 || chatMessages[i - 1]?.sender !== msg.sender);
-                    const isLast = i === chatMessages.length - 1 || chatMessages[i + 1]?.sender !== msg.sender;
-                    return (
-                      <div key={msg.id} className={`flex ${isOwn ? 'justify-end' : 'justify-start'} ${!isLast ? 'mb-0.5' : 'mb-2'}`}>
-                        {!isOwn && <div className="w-8 flex-shrink-0">{showAvatar && <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-[10px] font-bold ${getAvatarColor(msg.sender_name)}`}>{getInitials(msg.sender_name)}</div>}</div>}
-                        <div className={`max-w-[70%] flex flex-col ${isOwn ? 'items-end' : 'items-start'}`}>
-                          {showAvatar && !isOwn && <span className="text-[11px] font-semibold text-slate-500 mb-0.5 ml-1">{msg.sender_name}</span>}
-                          {msg.parent_message_details && (
-                            <div className={`text-[11px] px-2.5 py-1 mb-0.5 rounded-t-lg border-l-2 ${isOwn ? 'bg-violet-50 border-violet-400 text-violet-700' : 'bg-slate-50 border-slate-300 text-slate-600'}`}>
-                              <span className="font-semibold">{msg.parent_message_details.sender_name}</span>: {msg.parent_message_details.content?.slice(0, 60)}
-                            </div>
-                          )}
-                          <div className="relative group">
-                            {msg.message_type === 'image' && msg.attachment_url ? (
-                              <a href={msg.attachment_url} target="_blank" rel="noreferrer" className="block">
-                                <img src={msg.attachment_url} alt={msg.attachment_filename} className="max-w-[280px] max-h-[200px] rounded-xl object-cover" />
-                                {msg.content && <p className="text-sm mt-1 px-1">{msg.content}</p>}
-                              </a>
-                            ) : msg.message_type === 'file' && msg.attachment_url ? (
-                              <a href={msg.attachment_url} target="_blank" rel="noreferrer" className={`flex items-center gap-2 px-3 py-2 rounded-xl border ${isOwn ? 'bg-violet-50 border-violet-200' : 'bg-white border-slate-200'}`}>
-                                <PaperclipIcon size={16} className={isOwn ? 'text-violet-500' : 'text-slate-500'} />
-                                <div className="min-w-0">
-                                  <p className="text-sm font-medium text-slate-700 truncate">{msg.attachment_filename || 'File'}</p>
-                                  <p className="text-[10px] text-slate-400">{formatFileSize(msg.file_size_bytes)}</p>
-                                </div>
-                                <DownloadIcon size={14} className="text-slate-400 flex-shrink-0" />
-                              </a>
-                            ) : (
-                              <div className={`px-3 py-2 rounded-2xl ${isOwn ? 'bg-violet-600 text-white rounded-br-md' : 'bg-white text-slate-800 border border-slate-200 shadow-sm rounded-bl-md'}`}>
-                                <p className="text-sm whitespace-pre-wrap break-words">{msg.content}</p>
-                              </div>
-                            )}
-                            <div className={`absolute ${isOwn ? 'right-0' : 'left-0'} -top-8 opacity-0 group-hover:opacity-100 transition-opacity z-10 flex items-center gap-0.5 bg-white border border-slate-200 rounded-lg shadow-lg px-1 py-0.5`}>
-                              <button onClick={() => setShowEmojiPicker(showEmojiPicker === msg.id ? null : msg.id)} className="p-1 hover:bg-slate-100 rounded text-xs" title="React">😊</button>
-                              {!isOwn && <button onClick={() => setReplyTo(msg)} className="p-1 hover:bg-slate-100 rounded text-xs" title="Reply">↩</button>}
-                              {isOwn && <>
-                                <button onClick={() => handleEditChatMessage(msg.id)} className="p-1 hover:bg-slate-100 rounded text-xs" title="Edit">✏️</button>
-                                <button onClick={() => handleDeleteChatMessage(msg.id)} className="p-1 hover:bg-red-50 rounded text-xs text-red-500" title="Delete">🗑</button>
-                              </>}
-                            </div>
-                            {showEmojiPicker === msg.id && (
-                              <div className={`absolute ${isOwn ? 'right-0' : 'left-0'} -top-12 bg-white border border-slate-200 rounded-xl shadow-lg px-2 py-1 flex items-center gap-1 z-20`}>
-                                {EMOJI_LIST.map(emoji => (<button key={emoji} onClick={() => handleChatReaction(msg.id, emoji)} className="w-8 h-8 flex items-center justify-center hover:bg-slate-100 rounded text-lg">{emoji}</button>))}
-                              </div>
-                            )}
-                          </div>
-                          {msg.reactions && Object.keys(msg.reactions).length > 0 && (
-                            <div className="flex flex-wrap gap-1 mt-0.5 ml-1">
-                              {Object.entries(msg.reactions).map(([emoji, users]) => (
-                                <button key={emoji} onClick={() => handleChatReaction(msg.id, emoji)} className="flex items-center gap-0.5 px-1.5 py-0.5 bg-white border border-slate-200 rounded-full text-xs hover:bg-slate-50">
-                                  <span>{emoji}</span><span className="text-slate-500">{users.length}</span>
-                                </button>
-                              ))}
-                            </div>
-                          )}
-                          {isLast && (
-                            <div className={`flex items-center gap-1 mt-0.5 ${isOwn ? 'flex-row-reverse' : ''}`}>
-                              <span className="text-[10px] text-slate-400">{formatChatTime(msg.timestamp)}</span>
-                              {isOwn && (msg.is_read ? <CheckCheckIcon size={12} className="text-violet-500" /> : msg.is_delivered ? <CheckCheckIcon size={12} className="text-slate-400" /> : <CheckIcon size={12} className="text-slate-400" />)}
-                              {msg.is_edited && <span className="text-[10px] text-slate-400">(edited)</span>}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })
+                  chatMessages.map((msg, i) => (
+                    <ChatMessage
+                      key={msg.id}
+                      msg={msg}
+                      i={i}
+                      chatMessages={chatMessages}
+                      userId={userId}
+                      showEmojiPicker={showEmojiPicker}
+                      setShowEmojiPicker={setShowEmojiPicker}
+                      onReaction={handleChatReaction}
+                      onEdit={handleEditChatMessage}
+                      onDelete={handleDeleteChatMessage}
+                      onReply={setReplyTo}
+                    />
+                  ))
                 )}
                 {Object.keys(chatTypingUsers).length > 0 && (
                   <div className="flex items-center gap-2 px-1">
@@ -751,7 +733,6 @@ export default function CommunicationCenter() {
                 <div ref={messagesEndRef} />
               </div>
 
-              {/* Reply preview */}
               {replyTo && (
                 <div className="flex items-center gap-2 px-4 py-2 bg-violet-50 border-t border-violet-200">
                   <div className="flex-1 min-w-0">
@@ -762,7 +743,6 @@ export default function CommunicationCenter() {
                 </div>
               )}
 
-              {/* Chat Input */}
               <div className="px-4 py-3 border-t border-slate-200 bg-white">
                 <div className="flex items-end gap-2">
                   <input type="file" ref={chatFileInputRef} onChange={handleChatUpload} className="hidden" accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.zip" />
@@ -771,6 +751,7 @@ export default function CommunicationCenter() {
                   </button>
                   <div className="flex-1 relative">
                     <input
+                      ref={inputRef}
                       data-chat-input
                       type="text"
                       placeholder="Type a message..."
@@ -780,20 +761,7 @@ export default function CommunicationCenter() {
                     />
                   </div>
                   <button
-                    onClick={() => {
-                      const input = document.querySelector('[data-chat-input]');
-                      if (!input || !input.value.trim() || !selectedRoom) return;
-                      const content = input.value.trim();
-                      console.log('[CHAT] Sending via button, wsConnected:', wsConnectedRef.current, 'readyState:', chatSocketRef.current?.readyState);
-                      setReplyTo(null);
-                      if (!sendChatWs({ type: 'message', message: content })) {
-                        console.warn('[CHAT] sendChatWs failed via button — socket not open');
-                        toast.error('Connection lost. Reconnecting...');
-                        connectChatWs(selectedRoom.id);
-                        return;
-                      }
-                      input.value = '';
-                    }}
+                    onClick={() => { const v = inputRef.current?.value?.trim(); if (v) { sendMessage(v); inputRef.current.value = ''; } }}
                     className="p-2.5 rounded-xl bg-violet-600 text-white hover:bg-violet-700 transition-colors disabled:opacity-50"
                     title="Send message"
                   >

@@ -98,23 +98,13 @@ def _broadcast_new_chat_message(message, serialized_data, sender):
     room_id = message.room_id
     preview = _chat_preview_content(message)
 
+    # Single broadcast to the room — all connected participants receive it.
     async_to_sync(channel_layer.group_send)(f'chat_{room_id}', {
         'type': 'chat_message',
         'message_data': serialized_data,
     })
 
-    notify_payload = {
-        'type': 'new_message_notify',
-        'room_id': room_id,
-        'sender_id': sender.id,
-        'sender_name': sender.first_name or sender.username,
-        'content': preview,
-        'timestamp': message.timestamp.isoformat(),
-    }
-    for participant in message.room.participants.all():
-        if participant.id != sender.id:
-            async_to_sync(channel_layer.group_send)(f'user_{participant.id}', notify_payload)
-
+    # Batch-create offline notifications to avoid N individual signal fires.
     five_mins_ago = timezone.now() - datetime.timedelta(minutes=5)
     sender_name = full_name(sender)
     room = message.room
@@ -123,14 +113,34 @@ def _broadcast_new_chat_message(message, serialized_data, sender):
     offline_participants = room.participants.exclude(id=sender.id).filter(
         last_activity__lt=five_mins_ago
     ).only('id', 'last_activity')
-    for participant in offline_participants:
-        Notification.objects.create(
+    notif_list = [
+        Notification(
             recipient=participant,
             notification_type='message',
             title=f'New message from {sender_name}',
             message=f'{room_label}: {preview_text}',
             link='/communication-center',
         )
+        for participant in offline_participants
+    ]
+    if notif_list:
+        Notification.objects.bulk_create(notif_list)
+        for notif in notif_list:
+            async_to_sync(channel_layer.group_send)(
+                f'notifications_{notif.recipient_id}',
+                {
+                    'type': 'notification_message',
+                    'data': {
+                        'type': 'notification',
+                        'id': notif.id,
+                        'title': notif.title,
+                        'message': notif.message,
+                        'notification_type': notif.notification_type,
+                        'link': notif.link,
+                        'created_at': notif.created_at.isoformat(),
+                    }
+                }
+            )
 
 
 def _get_time_ago(timestamp):
