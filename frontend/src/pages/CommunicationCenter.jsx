@@ -426,7 +426,7 @@ export default function CommunicationCenter() {
   const handleChatMarkRead = useCallback(() => {
     if (!selectedRoom || !chatMessages?.length) return;
     const lastMsg = chatMessages[chatMessages.length - 1];
-    if (lastMsg && lastMsg.sender !== userId) {
+    if (lastMsg && lastMsg.sender !== userId && !lastMsg.is_read) {
       sendChatWs({ type: 'read', message_id: lastMsg.id });
     }
   }, [selectedRoom, chatMessages, userId, sendChatWs]);
