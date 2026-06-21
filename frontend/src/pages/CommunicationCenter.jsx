@@ -227,21 +227,21 @@ const ChatMessage = memo(function ChatMessage({ msg, i, chatMessages, userId, sh
   return (
     <div className={`flex ${isOwn ? 'justify-end' : 'justify-start'} ${!isLast ? 'mb-0.5' : 'mb-2'}`}>
       {!isOwn && <div className="w-8 flex-shrink-0">{showAvatar && <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-[10px] font-bold ${getAvatarColor(msg.sender_name)}`}>{getInitials(msg.sender_name)}</div>}</div>}
-      <div className={`max-w-[70%] flex flex-col ${isOwn ? 'items-end' : 'items-start'}`}>
+      <div className={`max-w-[70%] min-w-0 flex flex-col ${isOwn ? 'items-end' : 'items-start'}`}>
         {showAvatar && !isOwn && <span className="text-[11px] font-semibold text-slate-500 mb-0.5 ml-1">{msg.sender_name}</span>}
         {msg.parent_message_details && (
-          <div className={`text-[11px] px-2.5 py-1 mb-0.5 rounded-t-lg border-l-2 ${isOwn ? 'bg-violet-50 border-violet-400 text-violet-700' : 'bg-slate-50 border-slate-300 text-slate-600'}`}>
-            <span className="font-semibold">{msg.parent_message_details.sender_name}</span>: {msg.parent_message_details.content?.slice(0, 60)}
+          <div className={`text-[11px] px-2.5 py-1 mb-0.5 rounded-t-lg border-l-2 min-w-0 max-w-full overflow-hidden ${isOwn ? 'bg-violet-50 border-violet-400 text-violet-700' : 'bg-slate-50 border-slate-300 text-slate-600'}`}>
+            <span className="font-semibold">{msg.parent_message_details.sender_name}</span>: <span className="break-all">{msg.parent_message_details.content?.slice(0, 60)}</span>
           </div>
         )}
         <div className="relative group">
           {msg.message_type === 'image' && msg.attachment_url ? (
             <a href={msg.attachment_url} target="_blank" rel="noreferrer" className="block">
-              <img src={msg.attachment_url} alt={msg.attachment_filename} className="max-w-[280px] max-h-[200px] rounded-xl object-cover" />
+              <img src={msg.attachment_url} alt={msg.attachment_filename} className="max-w-[280px] max-h-[200px] rounded-xl object-cover block" />
               {msg.content && <p className="text-sm mt-1 px-1">{msg.content}</p>}
             </a>
           ) : msg.message_type === 'file' && msg.attachment_url ? (
-            <a href={msg.attachment_url} target="_blank" rel="noreferrer" className={`flex items-center gap-2 px-3 py-2 rounded-xl border ${isOwn ? 'bg-violet-50 border-violet-200' : 'bg-white border-slate-200'}`}>
+            <a href={msg.attachment_url} target="_blank" rel="noreferrer" className={`flex items-center gap-2 px-3 py-2 rounded-xl border min-w-0 max-w-full overflow-hidden ${isOwn ? 'bg-violet-50 border-violet-200' : 'bg-white border-slate-200'}`}>
               <PaperclipIcon size={16} className={isOwn ? 'text-violet-500' : 'text-slate-500'} />
               <div className="min-w-0">
                 <p className="text-sm font-medium text-slate-700 truncate">{msg.attachment_filename || 'File'}</p>
@@ -250,11 +250,11 @@ const ChatMessage = memo(function ChatMessage({ msg, i, chatMessages, userId, sh
               <DownloadIcon size={14} className="text-slate-400 flex-shrink-0" />
             </a>
           ) : (
-            <div className={`px-3 py-2 rounded-2xl ${isOwn ? 'bg-violet-600 text-white rounded-br-md' : 'bg-white text-slate-800 border border-slate-200 shadow-sm rounded-bl-md'}`}>
-              <p className="text-sm whitespace-pre-wrap break-words">{msg.content}</p>
+            <div className={`px-3 py-2 rounded-2xl min-w-0 max-w-full overflow-hidden ${isOwn ? 'bg-violet-600 text-white rounded-br-md' : 'bg-white text-slate-800 border border-slate-200 shadow-sm rounded-bl-md'}`}>
+              <p className="text-sm whitespace-pre-wrap break-all">{msg.content}</p>
             </div>
           )}
-          <div className={`absolute ${isOwn ? 'right-0' : 'left-0'} -top-8 opacity-0 group-hover:opacity-100 transition-opacity z-10 flex items-center gap-0.5 bg-white border border-slate-200 rounded-lg shadow-lg px-1 py-0.5`}>
+          <div className={`absolute ${isOwn ? 'right-0' : 'left-0'} -top-8 opacity-0 group-hover:opacity-100 transition-opacity z-10 flex items-center gap-0.5 bg-white border border-slate-200 rounded-lg shadow-lg px-1 py-0.5 max-w-full overflow-hidden`}>
             <button onClick={() => setShowEmojiPicker(emojiOpen ? null : msg.id)} className="p-1 hover:bg-slate-100 rounded text-xs" title="React">😊</button>
             {!isOwn && <button onClick={() => onReply(msg)} className="p-1 hover:bg-slate-100 rounded text-xs" title="Reply">↩</button>}
             {isOwn && <>
