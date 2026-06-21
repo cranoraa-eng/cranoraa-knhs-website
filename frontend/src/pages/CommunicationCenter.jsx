@@ -255,6 +255,7 @@ export default function CommunicationCenter() {
   const chatLastTypingSentRef = useRef(0);
   const chatFileInputRef = useRef(null);
   const wsConnectedRef = useRef(false);
+  const chatLastReadSentRef = useRef(0);
 
   const CHAT_BASE_DELAY = 2000;
   const CHAT_MAX_DELAY = 30000;
@@ -292,7 +293,11 @@ export default function CommunicationCenter() {
           setChatTypingUsers(prev => { const next = { ...prev }; if (data.is_typing) next[data.sender_id] = data.sender_name; else delete next[data.sender_id]; return next; });
           return;
         }
-        if (data.type === 'read') { setChatMessages(prev => prev.map(m => m.id <= data.message_id ? { ...m, is_read: true } : m)); return; }
+        if (data.type === 'read') {
+          if (data.reader_id === userId) return;
+          setChatMessages(prev => { const next = prev.map(m => m.id <= data.message_id ? { ...m, is_read: true } : m); if (next === prev) return prev; return next; });
+          return;
+        }
         if (data.type === 'delivered') { setChatMessages(prev => prev.map(m => m.id === data.message_id ? { ...m, is_delivered: true } : m)); return; }
         if (data.type === 'message_deleted') { setChatMessages(prev => prev.filter(m => m.id !== data.message_id)); return; }
         if (data.type === 'message_edited') { setChatMessages(prev => prev.map(m => m.id === data.message_id ? { ...m, content: data.content, is_edited: true } : m)); return; }
@@ -423,15 +428,14 @@ export default function CommunicationCenter() {
     setShowEmojiPicker(null);
   }, [sendChatWs]);
 
-  const handleChatMarkRead = useCallback(() => {
+  useEffect(() => {
     if (!selectedRoom || !chatMessages?.length) return;
     const lastMsg = chatMessages[chatMessages.length - 1];
-    if (lastMsg && lastMsg.sender !== userId && !lastMsg.is_read) {
+    if (lastMsg && lastMsg.sender !== userId && !lastMsg.is_read && lastMsg.id !== chatLastReadSentRef.current) {
+      chatLastReadSentRef.current = lastMsg.id;
       sendChatWs({ type: 'read', message_id: lastMsg.id });
     }
-  }, [selectedRoom, chatMessages, userId, sendChatWs]);
-
-  useEffect(() => { if (selectedRoom) handleChatMarkRead(); }, [chatMessages, selectedRoom, handleChatMarkRead]);
+  }, [chatMessages, selectedRoom, userId, sendChatWs]);
 
   const handleCreateGroupChat = useCallback(async (name, participantIds) => {
     try {
