@@ -257,7 +257,7 @@ const ChatMessage = memo(function ChatMessage({ msg, i, chatMessages, userId, sh
               <p className="text-sm whitespace-pre-wrap break-all">{msg.content}</p>
             </div>
           )}
-          <div className={`absolute ${isOwn ? 'right-0' : 'left-0'} -top-8 opacity-0 group-hover:opacity-100 transition-opacity z-10 flex items-center gap-0.5 bg-white border border-slate-200 rounded-lg shadow-lg px-1 py-0.5 max-w-full overflow-hidden`}>
+          <div className={`absolute ${isOwn ? 'right-0' : 'left-0'} -top-8 opacity-0 group-hover:opacity-100 transition-opacity z-10 flex items-center gap-0.5 bg-white border border-slate-200 rounded-lg shadow-lg px-1 py-0.5 whitespace-nowrap`}>
             <button onClick={() => setShowEmojiPicker(emojiOpen ? null : msg.id)} className="p-1.5 hover:bg-slate-100 rounded text-slate-500" title="React"><SmileIcon /></button>
             {!isOwn && <button onClick={() => onReply(msg)} className="p-1.5 hover:bg-slate-100 rounded text-slate-500" title="Reply"><ReplyIcon /></button>}
             {isOwn && <>
