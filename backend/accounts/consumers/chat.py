@@ -1,6 +1,7 @@
 import json
 import asyncio
 import time
+import logging
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
 from django.contrib.auth import get_user_model
@@ -12,6 +13,8 @@ from .base import (
     _rate_limiter, PRESENCE_DEBOUNCE_SECONDS, TYPING_THROTTLE_SECONDS,
     MESSAGE_RATE_LIMIT, MESSAGE_RATE_WINDOW,
 )
+
+logger = logging.getLogger(__name__)
 
 User = get_user_model()
 
@@ -124,6 +127,22 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 await self.close()
             return
 
+        try:
+            await self._handle_authenticated_message(data)
+        except Exception as e:
+            logger.error(
+                f'ChatConsumer error in room {self.room_id} user {getattr(self.user, "id", "?")}: {e}',
+                exc_info=True,
+            )
+            try:
+                await self.send(text_data=json.dumps({
+                    'type': 'error',
+                    'message': 'Something went wrong. Please try again.',
+                }))
+            except Exception:
+                pass
+
+    async def _handle_authenticated_message(self, data):
         msg_type = data.get('type', 'message')
 
         if self.room_id == '0' and msg_type in {'typing', 'read', 'reaction', 'message'}:
@@ -393,19 +412,17 @@ class ChatConsumer(AsyncWebsocketConsumer):
         offline_participants = room.participants.exclude(id=sender_id).filter(
             last_activity__lt=five_mins_ago
         )
-        notifications = [
-            Notification(
-                recipient=participant,
-                notification_type='message',
-                title=f'New message from {sender_name}',
-                message=f'{room_label}: {preview}',
-                link='/communication-center',
-            )
-            for participant in offline_participants
-        ]
-        if notifications:
-            for n in notifications:
-                n.save()
+        for participant in offline_participants:
+            try:
+                Notification.objects.create(
+                    recipient=participant,
+                    notification_type='message',
+                    title=f'New message from {sender_name}',
+                    message=f'{room_label}: {preview}',
+                    link='/communication-center',
+                )
+            except Exception:
+                pass
 
         return msg
 
