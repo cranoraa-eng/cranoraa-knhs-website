@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { Role, ROLE_HOME, ROUTE_ACCESS } from '../constants/roles';
 
 function getRouteKey(pathname) {
-  return pathname.replace(/^\/+/, '').replace(/\/+$/, '').split('/')[0];
+  return pathname.replace(/^\/+/, '').replace(/\/+$/, '').split('?')[0].split('/')[0];
 }
 
 const ProtectedRoute = ({ children }) => {

@@ -200,11 +200,13 @@ function PeopleDirectory({ onSelectPerson, currentUserId }) {
                               {person.first_name} {person.last_name}
                             </p>
                             <p className="text-[10px] text-slate-400 truncate">
-                              {person.role === 'staff'
-                                ? (person.staff_title || 'Staff')
-                                : person.role === 'parent'
-                                  ? 'Parent'
-                                  : (person.profile?.classroom_name || 'Student')}
+                              {person.role === 'admin'
+                                ? 'Admin'
+                                : person.role === 'staff'
+                                  ? (person.staff_title || 'Staff')
+                                  : person.role === 'parent'
+                                    ? 'Parent'
+                                    : (person.profile?.classroom_name || 'Student')}
                             </p>
                           </div>
                         </button>

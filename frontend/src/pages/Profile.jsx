@@ -32,16 +32,9 @@ const Profile = () => {
     phone_number: '', address: '', registration_number: '', grade_level: '',
   });
 
-  const isAdminWithoutStudent = user?.role === 'admin' && !studentId;
-
   useEffect(() => {
-    if (isAdminWithoutStudent) return;
     fetchProfile();
-  }, [studentId, isAdminWithoutStudent]);
-
-  if (isAdminWithoutStudent) {
-    return <Navigate to="/dashboard" replace />;
-  }
+  }, [studentId]);
 
   const fetchProfile = async () => {
     try {
