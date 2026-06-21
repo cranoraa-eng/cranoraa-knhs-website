@@ -94,15 +94,19 @@ const Subjects = () => {
   };
 
   // Unique grade levels from data for filter
-  const gradeLevels = [...new Set(subjects.map(s => s.grade_level))]
-    .sort((a, b) => (parseInt(a.replace(/\D/g, '')) || 999) - (parseInt(b.replace(/\D/g, '')) || 999));
+  const gradeLevels = subjects
+    ? [...new Set(subjects.map(s => s.grade_level))]
+        .sort((a, b) => (parseInt(a.replace(/\D/g, '')) || 999) - (parseInt(b.replace(/\D/g, '')) || 999))
+    : [];
 
-  const filtered = subjects.filter(s => {
-    const q = search.toLowerCase();
-    const matchSearch = !q || s.name.toLowerCase().includes(q) || s.code.toLowerCase().includes(q);
-    const matchLevel = !filterLevel || s.grade_level === filterLevel;
-    return matchSearch && matchLevel;
-  });
+  const filtered = subjects
+    ? subjects.filter(s => {
+        const q = search.toLowerCase();
+        const matchSearch = !q || s.name.toLowerCase().includes(q) || s.code.toLowerCase().includes(q);
+        const matchLevel = !filterLevel || s.grade_level === filterLevel;
+        return matchSearch && matchLevel;
+      })
+    : [];
 
   // Group by grade level for display
   const grouped = filtered.reduce((acc, s) => {
@@ -135,7 +139,7 @@ const Subjects = () => {
             Subjects
           </h1>
           <p className="text-xs text-slate-600 mt-1 font-semibold">
-            {subjects.length} subjects in the curriculum
+            {(subjects?.length ?? 0)} subjects in the curriculum
           </p>
         </div>
         <Button variant="primary" onClick={openCreate}>
