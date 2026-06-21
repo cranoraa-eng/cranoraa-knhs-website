@@ -226,7 +226,6 @@ const ChatMessage = memo(function ChatMessage({ msg, i, chatMessages, userId, sh
   const showAvatar = !isOwn && (i === 0 || chatMessages[i - 1]?.sender !== msg.sender);
   const isLast = i === chatMessages.length - 1 || chatMessages[i + 1]?.sender !== msg.sender;
   const emojiOpen = showEmojiPicker === msg.id;
-  const isShortMessage = (msg.message_type !== 'image' && msg.message_type !== 'file') && (msg.content || '').length < 25;
 
   return (
     <div className={`flex ${isOwn ? 'justify-end' : 'justify-start'} ${!isLast ? 'mb-0.5' : 'mb-2'}`}>
@@ -260,8 +259,8 @@ const ChatMessage = memo(function ChatMessage({ msg, i, chatMessages, userId, sh
           )}
           <div className={`absolute ${isOwn ? 'right-0' : 'left-0'} -top-8 opacity-0 group-hover:opacity-100 transition-opacity z-10 flex items-center gap-0.5 bg-white border border-slate-200 rounded-lg shadow-lg px-1 py-0.5 max-w-full overflow-hidden`}>
             <button onClick={() => setShowEmojiPicker(emojiOpen ? null : msg.id)} className="p-1.5 hover:bg-slate-100 rounded text-slate-500" title="React"><SmileIcon /></button>
-            {!isOwn && !isShortMessage && <button onClick={() => onReply(msg)} className="p-1.5 hover:bg-slate-100 rounded text-slate-500" title="Reply"><ReplyIcon /></button>}
-            {isOwn && !isShortMessage && <>
+            {!isOwn && <button onClick={() => onReply(msg)} className="p-1.5 hover:bg-slate-100 rounded text-slate-500" title="Reply"><ReplyIcon /></button>}
+            {isOwn && <>
               <button onClick={() => onEdit(msg.id)} className="p-1.5 hover:bg-slate-100 rounded text-slate-500" title="Edit"><EditIcon /></button>
               <button onClick={() => onDelete(msg.id)} className="p-1.5 hover:bg-red-50 rounded text-red-500" title="Delete"><TrashIcon size={14} /></button>
             </>}
