@@ -37,40 +37,60 @@ def _safe_cache_set(key, value, timeout=300):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def teacher_dashboard_stats(request):
+    user = request.user
+    if user.role != 'staff' and user.role != 'admin':
+        return Response({'error': 'Unauthorized'}, status=403)
+
+    cache_key = f'teacher_dashboard:v1:{user.id}'
+    cached = _safe_cache_get(cache_key)
+    if cached:
+        return Response(cached)
+
+    total_classes = 0
+    total_students = 0
+    total_grades = 0
+    attendance_rate = 0
+    pending_grades = 0
+    recent_activities = []
+    latest_messages = []
+
     try:
-        user = request.user
-        if user.role != 'staff' and user.role != 'admin':
-            return Response({'error': 'Unauthorized'}, status=403)
-
-        cache_key = f'teacher_dashboard:v1:{user.id}'
-        cached = _safe_cache_get(cache_key)
-        if cached:
-            return Response(cached)
-
         assigned_classrooms_ids = ClassroomSubject.objects.filter(teacher=user).values_list('classroom_id', flat=True)
         classrooms = Classroom.objects.filter(Q(teacher=user) | Q(id__in=assigned_classrooms_ids)).distinct()
         total_classes = classrooms.count()
+    except Exception as e:
+        logger.error(f"Teacher dashboard - classroom query failed: {e}", exc_info=True)
 
+    try:
         student_ids = StudentClassEnrollment.objects.filter(
-            classroom__in=classrooms
+            classroom__in=Classroom.objects.filter(Q(teacher=user) | Q(
+                id__in=ClassroomSubject.objects.filter(teacher=user).values_list('classroom_id', flat=True)
+            )).distinct()
         ).values_list('student_id', flat=True).distinct()
         total_students = student_ids.count()
+    except Exception as e:
+        logger.error(f"Teacher dashboard - student query failed: {e}", exc_info=True)
 
+    try:
         total_grades = Grade.objects.filter(teacher=user).count()
+    except Exception as e:
+        logger.error(f"Teacher dashboard - grade count failed: {e}", exc_info=True)
 
+    try:
         today = timezone.now().date()
-        today_attendance = Attendance.objects.filter(
-            classroom__in=classrooms,
-            date=today
+        classroom_ids = list(
+            ClassroomSubject.objects.filter(teacher=user).values_list('classroom_id', flat=True).distinct()
         )
+        today_attendance = Attendance.objects.filter(classroom_id__in=classroom_ids, date=today)
         if today_attendance.exists():
             present_count = today_attendance.filter(status__in=['present', 'late']).count()
             attendance_rate = round((present_count / today_attendance.count()) * 100)
         else:
             attendance_rate = 0
+    except Exception as e:
+        logger.error(f"Teacher dashboard - attendance query failed: {e}", exc_info=True)
 
-        from django.db.models import Subquery, OuterRef, IntegerField
-        from django.db.models.functions import Coalesce
+    try:
         teacher_classroom_subjects = ClassroomSubject.objects.filter(teacher=user).select_related('classroom', 'subject')
         classroom_ids = list(teacher_classroom_subjects.values_list('classroom_id', flat=True).distinct())
         enrollment_counts = dict(
@@ -93,41 +113,37 @@ def teacher_dashboard_stats(request):
             students_in_class = enrollment_counts.get(cs.classroom_id, 0)
             grades_in_subject = grade_counts.get((cs.subject_id, cs.classroom_id), 0)
             pending_grades += max(0, students_in_class - grades_in_subject)
-
-        try:
-            from ..models import AuditLog
-        except ImportError:
-            AuditLog = None
-
-        recent_activities = []
-        if AuditLog:
-            logs = AuditLog.objects.filter(user=user).order_by('-timestamp')[:5]
-            for log in logs:
-                recent_activities.append({
-                    'message': log.description,
-                    'time': log.timestamp.strftime('%I:%M %p, %b %d'),
-                    'type': 'grade' if log.description and 'grade' in log.description.lower() else 'attendance' if log.description and 'attendance' in log.description.lower() else 'system'
-                })
-
-        latest_messages = get_latest_messages(user)
-
-        res_data = {
-            'total_students': total_students,
-            'total_classes': total_classes,
-            'total_grades': total_grades,
-            'attendance_rate': attendance_rate,
-            'pending_grades': pending_grades,
-            'recent_activities': recent_activities,
-            'latest_messages': latest_messages
-        }
-        _safe_cache_set(cache_key, res_data, timeout=300)
-        return Response(res_data)
     except Exception as e:
-        logger.error(f"Teacher stats error: {str(e)}", exc_info=True)
-        return Response(
-            {'error': 'Failed to load dashboard statistics.'},
-            status=500
-        )
+        logger.error(f"Teacher dashboard - pending grades failed: {e}", exc_info=True)
+
+    try:
+        from ..models import AuditLog
+        logs = AuditLog.objects.filter(user=user).order_by('-timestamp')[:5]
+        for log in logs:
+            recent_activities.append({
+                'message': log.description,
+                'time': log.timestamp.strftime('%I:%M %p, %b %d'),
+                'type': 'grade' if log.description and 'grade' in log.description.lower() else 'attendance' if log.description and 'attendance' in log.description.lower() else 'system'
+            })
+    except Exception:
+        pass
+
+    try:
+        latest_messages = get_latest_messages(user)
+    except Exception as e:
+        logger.error(f"Teacher dashboard - latest messages failed: {e}", exc_info=True)
+
+    res_data = {
+        'total_students': total_students,
+        'total_classes': total_classes,
+        'total_grades': total_grades,
+        'attendance_rate': attendance_rate,
+        'pending_grades': pending_grades,
+        'recent_activities': recent_activities,
+        'latest_messages': latest_messages
+    }
+    _safe_cache_set(cache_key, res_data, timeout=300)
+    return Response(res_data)
 
 
 @api_view(['GET'])
