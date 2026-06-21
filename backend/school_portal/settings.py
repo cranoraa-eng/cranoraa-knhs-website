@@ -103,7 +103,13 @@ if os.environ.get('REDIS_URL'):
         'default': {
             'BACKEND': 'channels_redis.core.RedisChannelLayer',
             'CONFIG': {
-                "hosts": [os.environ.get('REDIS_URL')],
+                "hosts": [{
+                    "address": os.environ.get('REDIS_URL'),
+                    "socket_connect_timeout": 10,
+                    "socket_timeout": 10,
+                    "socket_keepalive": True,
+                    "retry_on_timeout": True,
+                }],
                 # OPTIMIZATION: limit channel capacity to prevent unbounded Redis memory growth.
                 # Messages beyond capacity are dropped (old ones) rather than accumulating.
                 "capacity": 100,          # max messages per channel (default: 100)

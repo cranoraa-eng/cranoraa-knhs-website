@@ -42,17 +42,18 @@ class RateLimiter:
             return
         self._last_cleanup = now
         stale_threshold = now - 600
-        self._requests = {
+        cleaned = {
             k: [t for t in v if t > stale_threshold]
             for k, v in self._requests.items()
             if any(t > stale_threshold for t in v)
         }
+        self._requests = defaultdict(list, cleaned)
 
     def is_rate_limited(self, key, max_requests, window_seconds):
         self._cleanup_stale_keys()
         now = time.monotonic()
         cutoff = now - window_seconds
-        self._requests[key] = [t for t in self._requests[key] if t > cutoff]
+        self._requests[key] = [t for t in self._requests.get(key, []) if t > cutoff]
         if len(self._requests[key]) >= max_requests:
             return True
         self._requests[key].append(now)
