@@ -17,6 +17,9 @@ const MoreIcon = (p) => <svg width={p.size||16} height={p.size||16} viewBox="0 0
 const PinIcon = (p) => <svg width={p.size||14} height={p.size||14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={p.className}><path d="M12 17v5"/><path d="M9 11l-4 4h14l-4-4"/><path d="M15 3.5L9.5 9 15 11l-2.5 2.5"/></svg>;
 const TrashIcon = (p) => <svg width={p.size||16} height={p.size||16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={p.className}><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>;
 const ChatIcon = (p) => <svg width={p.size||16} height={p.size||16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={p.className}><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>;
+const ReplyIcon = (p) => <svg width={p.size||14} height={p.size||14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={p.className}><polyline points="9 17 4 12 9 7"/><path d="M20 18v-2a4 4 0 00-4-4H4"/></svg>;
+const EditIcon = (p) => <svg width={p.size||14} height={p.size||14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={p.className}><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>;
+const SmileIcon = (p) => <svg width={p.size||14} height={p.size||14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={p.className}><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>;
 
 const EMOJI_LIST = ['👍', '❤️', '😂', '😮', '😢', '😡', '🎉', '🔥'];
 
@@ -223,6 +226,7 @@ const ChatMessage = memo(function ChatMessage({ msg, i, chatMessages, userId, sh
   const showAvatar = !isOwn && (i === 0 || chatMessages[i - 1]?.sender !== msg.sender);
   const isLast = i === chatMessages.length - 1 || chatMessages[i + 1]?.sender !== msg.sender;
   const emojiOpen = showEmojiPicker === msg.id;
+  const isShortMessage = (msg.content || '').length < 25;
 
   return (
     <div className={`flex ${isOwn ? 'justify-end' : 'justify-start'} ${!isLast ? 'mb-0.5' : 'mb-2'}`}>
@@ -255,11 +259,11 @@ const ChatMessage = memo(function ChatMessage({ msg, i, chatMessages, userId, sh
             </div>
           )}
           <div className={`absolute ${isOwn ? 'right-0' : 'left-0'} -top-8 opacity-0 group-hover:opacity-100 transition-opacity z-10 flex items-center gap-0.5 bg-white border border-slate-200 rounded-lg shadow-lg px-1 py-0.5 max-w-full overflow-hidden`}>
-            <button onClick={() => setShowEmojiPicker(emojiOpen ? null : msg.id)} className="p-1 hover:bg-slate-100 rounded text-xs" title="React">😊</button>
-            {!isOwn && <button onClick={() => onReply(msg)} className="p-1 hover:bg-slate-100 rounded text-xs" title="Reply">↩</button>}
-            {isOwn && <>
-              <button onClick={() => onEdit(msg.id)} className="p-1 hover:bg-slate-100 rounded text-xs" title="Edit">✏️</button>
-              <button onClick={() => onDelete(msg.id)} className="p-1 hover:bg-red-50 rounded text-xs text-red-500" title="Delete">🗑</button>
+            <button onClick={() => setShowEmojiPicker(emojiOpen ? null : msg.id)} className="p-1.5 hover:bg-slate-100 rounded text-slate-500" title="React"><SmileIcon /></button>
+            {!isOwn && !isShortMessage && <button onClick={() => onReply(msg)} className="p-1.5 hover:bg-slate-100 rounded text-slate-500" title="Reply"><ReplyIcon /></button>}
+            {isOwn && !isShortMessage && <>
+              <button onClick={() => onEdit(msg.id)} className="p-1.5 hover:bg-slate-100 rounded text-slate-500" title="Edit"><EditIcon /></button>
+              <button onClick={() => onDelete(msg.id)} className="p-1.5 hover:bg-red-50 rounded text-red-500" title="Delete"><TrashIcon size={14} /></button>
             </>}
           </div>
           {emojiOpen && (
