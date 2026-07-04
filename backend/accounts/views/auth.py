@@ -8,8 +8,7 @@ from django.contrib.auth import authenticate
 from django.utils import timezone
 import logging
 
-from ..serializers import UserSerializer, OnboardingStateSerializer
-from ..models import OnboardingState
+from ..serializers import UserSerializer
 from ..permissions import IsAdmin
 from ..throttles import AuthRateThrottle, LogoutRateThrottle
 from ..utils import log_audit_action
@@ -238,23 +237,4 @@ def cookie_token_refresh_view(request):
         return Response({'error': 'Token refresh failed.'}, status=status.HTTP_401_UNAUTHORIZED)
 
 
-@api_view(['GET', 'PATCH'])
-@permission_classes([IsAuthenticated])
-def onboarding_state_view(request):
-    state, created = OnboardingState.objects.get_or_create(
-        user=request.user,
-        defaults={'role': request.user.role},
-    )
 
-    if state.role != request.user.role:
-        state.role = request.user.role
-        state.save(update_fields=['role', 'updated_at'])
-
-    if request.method == 'PATCH':
-        serializer = OnboardingStateSerializer(state, data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        serializer.save(role=request.user.role)
-        return Response(serializer.data)
-
-    serializer = OnboardingStateSerializer(state)
-    return Response(serializer.data, status=status.HTTP_201_CREATED if created else status.HTTP_200_OK)

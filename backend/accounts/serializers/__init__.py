@@ -1,7 +1,7 @@
 from ._base import full_name
 from .user import (
     ProfileSerializer, UserSerializer, LoginSerializer,
-    OnboardingStateSerializer, SimplifiedStudentSerializer,
+    SimplifiedStudentSerializer,
 )
 from .academic import (
     ClassroomSerializer, StudentClassEnrollmentSerializer,
@@ -48,7 +48,7 @@ from .parent import ParentChildSummarySerializer
 __all__ = [
     'full_name',
     'ProfileSerializer', 'UserSerializer', 'LoginSerializer',
-    'OnboardingStateSerializer', 'SimplifiedStudentSerializer',
+    'SimplifiedStudentSerializer',
     'ClassroomSerializer', 'StudentClassEnrollmentSerializer',
     'SubjectSerializer', 'ClassroomSubjectSerializer',
     'SystemSettingSerializer',

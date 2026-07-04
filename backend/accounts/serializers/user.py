@@ -2,7 +2,7 @@ from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 
-from ..models import Profile, StudentClassEnrollment, Classroom, OnboardingState
+from ..models import Profile, StudentClassEnrollment, Classroom
 from ._base import full_name
 
 User = get_user_model()
@@ -77,50 +77,6 @@ class UserSerializer(serializers.ModelSerializer):
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField(write_only=True)
-
-
-class OnboardingStateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = OnboardingState
-        fields = [
-            'has_seen_welcome',
-            'completed_tutorials',
-            'skipped_tutorials',
-            'dismissed_tips',
-            'checklist_progress',
-            'last_tutorial',
-            'last_step_id',
-            'metadata',
-            'role',
-            'updated_at',
-        ]
-        read_only_fields = ['role', 'updated_at']
-
-    def validate_completed_tutorials(self, value):
-        return self._validate_string_list(value, 'completed_tutorials')
-
-    def validate_skipped_tutorials(self, value):
-        return self._validate_string_list(value, 'skipped_tutorials')
-
-    def validate_dismissed_tips(self, value):
-        return self._validate_string_list(value, 'dismissed_tips')
-
-    def validate_checklist_progress(self, value):
-        if not isinstance(value, dict):
-            raise serializers.ValidationError('Expected an object.')
-        return value
-
-    def validate_metadata(self, value):
-        if not isinstance(value, dict):
-            raise serializers.ValidationError('Expected an object.')
-        return value
-
-    def _validate_string_list(self, value, field_name):
-        if not isinstance(value, list):
-            raise serializers.ValidationError(f'{field_name} must be a list.')
-        if not all(isinstance(item, str) for item in value):
-            raise serializers.ValidationError(f'{field_name} may only contain strings.')
-        return value
 
 
 class SimplifiedStudentSerializer(serializers.ModelSerializer):

@@ -9,16 +9,12 @@ import { useNetworkStatus } from '../hooks/useNetworkStatus';
 import { getMuted, toggleMute, playSound } from '../utils/sounds';
 
 import { getNotifConfig, formatNotifTime } from '../utils/notificationConfig';
-import { OnboardingProvider } from '../onboarding/OnboardingContext';
-import OnboardingShell from '../onboarding/OnboardingShell';
-import { HelpHeaderButton } from '../onboarding/HelpCenter';
-import { getNavTourId } from '../onboarding/onboardingConfig';
 
-const NavItem = ({ to, label, isActive, icon, onClick, tourId }) => (
+
+const NavItem = ({ to, label, isActive, icon, onClick }) => (
   <Link
     to={to}
     onClick={onClick}
-    data-tour={tourId}
     aria-current={isActive(to) ? 'page' : undefined}
     className={`flex items-center px-3 py-2.5 rounded-md transition-all duration-150 mb-0.5 text-xs group ${
       isActive(to)
@@ -388,7 +384,6 @@ const Layout = () => {
   const currentNav = NAV_STRUCTURE[user?.role] || [];
 
   return (
-    <OnboardingProvider>
       <div className="h-screen overflow-hidden bg-slate-50 font-sans antialiased [overscroll-behavior:none]">
       <div className="flex h-full">
 
@@ -453,7 +448,6 @@ const Layout = () => {
                       label={item.label} 
                       isActive={isActive} 
                       icon={item.icon}
-                      tourId={getNavTourId(item.to)}
                       onClick={() => setSidebarOpen(false)}
                     />
                   ))}
@@ -565,7 +559,6 @@ const Layout = () => {
             )}
 
             <div className="flex items-center space-x-2 lg:space-x-3">
-              <HelpHeaderButton />
 
               {/* Notification bell */}
               <div className="relative" data-notif-dropdown ref={notifDropdownRef}>
@@ -703,8 +696,6 @@ const Layout = () => {
         </main>
       </div>
 
-      <OnboardingShell />
-
       {/* ── Mobile Bottom Navigation Bar ── */}
       {/* Only shown on small screens as a quick-access nav */}
       <nav
@@ -716,7 +707,6 @@ const Layout = () => {
           {/* Dashboard */}
           <Link
             to={homePath}
-            data-tour={getNavTourId(homePath)}
             className={`flex flex-col items-center gap-0.5 px-3 py-2 rounded-xl transition-all active:scale-90 min-w-[56px] ${
               isHomeActive ? 'text-violet-600' : 'text-slate-400'
             }`}
@@ -730,7 +720,6 @@ const Layout = () => {
           {/* Bulletins */}
           <Link
             to="/communication-center?tab=bulletins"
-            data-tour={getNavTourId('/communication-center')}
             className={`flex flex-col items-center gap-0.5 px-3 py-2 rounded-xl transition-all active:scale-90 min-w-[56px] ${
               isCommunicationTabActive('bulletins') ? 'text-violet-600' : 'text-slate-400'
             }`}
@@ -745,7 +734,6 @@ const Layout = () => {
           {user?.role === 'parent' ? (
             <Link
               to="/portal-calendar"
-              data-tour={getNavTourId('/portal-calendar')}
               className={`flex flex-col items-center gap-0.5 px-3 py-2 rounded-xl transition-all active:scale-90 min-w-[56px] ${
                 isActive('/portal-calendar') ? 'text-violet-600' : 'text-slate-400'
               }`}
@@ -758,7 +746,6 @@ const Layout = () => {
           ) : (
             <Link
               to="/communication-center?tab=inbox"
-              data-tour={getNavTourId('/communication-center')}
               className={`flex flex-col items-center gap-0.5 px-3 py-2 rounded-xl transition-all active:scale-90 min-w-[56px] ${
                 isCommunicationTabActive('inbox') ? 'text-violet-600' : 'text-slate-400'
               }`}
@@ -773,7 +760,6 @@ const Layout = () => {
           {/* Notifications */}
           <Link
             to="/notifications"
-            data-tour={getNavTourId('/notifications')}
             className={`relative flex flex-col items-center gap-0.5 px-3 py-2 rounded-xl transition-all active:scale-90 min-w-[56px] ${
               isActive('/notifications') ? 'text-violet-600' : 'text-slate-400'
             }`}
@@ -805,7 +791,6 @@ const Layout = () => {
         </div>
       </nav>
       </div>
-    </OnboardingProvider>
   );
 };
 

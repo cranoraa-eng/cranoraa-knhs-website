@@ -4,7 +4,6 @@ from .auth import (
     cookie_token_refresh_view,
     force_password_change_view,
     change_password_view,
-    onboarding_state_view,
     notification_preferences_view,
 )
 

@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from .models import User, Profile, WebsiteContent, Room, TimeSlot, Schedule, OnboardingState
+from .models import User, Profile, WebsiteContent, Room, TimeSlot, Schedule
 
 
 class ProfileInline(admin.StackedInline):
@@ -29,14 +29,6 @@ class UserAdmin(BaseUserAdmin):
 
 admin.site.register(User, UserAdmin)
 admin.site.register(Profile)
-
-
-@admin.register(OnboardingState)
-class OnboardingStateAdmin(admin.ModelAdmin):
-    list_display = ('user', 'role', 'has_seen_welcome', 'updated_at')
-    list_filter = ('role', 'has_seen_welcome')
-    search_fields = ('user__username', 'user__email', 'user__first_name', 'user__last_name')
-    readonly_fields = ('created_at', 'updated_at')
 
 
 @admin.register(WebsiteContent)

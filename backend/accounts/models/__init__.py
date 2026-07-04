@@ -1,4 +1,4 @@
-from .user import User, OnboardingState, OTP, Profile
+from .user import User, OTP, Profile
 from .academic import (
     Classroom, Subject, ClassroomSubject, SystemSetting, StudentClassEnrollment,
 )
@@ -33,7 +33,7 @@ from .infrastructure import (
 )
 
 __all__ = [
-    'User', 'OnboardingState', 'OTP', 'Profile',
+    'User', 'OTP', 'Profile',
     'Classroom', 'Subject', 'ClassroomSubject', 'SystemSetting', 'StudentClassEnrollment',
     'ChatRoom', 'ChatMessage', 'MessageReaction', 'ReportedMessage',
     'UserBlock', 'EmergencyMessage',

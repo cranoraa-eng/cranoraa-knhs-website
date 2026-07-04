@@ -72,27 +72,6 @@ class User(AbstractUser):
         return self.last_activity > now - datetime.timedelta(minutes=5)
 
 
-class OnboardingState(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='onboarding_state')
-    role = models.CharField(max_length=10, choices=User.ROLE_CHOICES)
-    has_seen_welcome = models.BooleanField(default=False)
-    completed_tutorials = models.JSONField(default=list, blank=True)
-    skipped_tutorials = models.JSONField(default=list, blank=True)
-    dismissed_tips = models.JSONField(default=list, blank=True)
-    checklist_progress = models.JSONField(default=dict, blank=True)
-    last_tutorial = models.CharField(max_length=100, blank=True, default='')
-    last_step_id = models.CharField(max_length=100, blank=True, default='')
-    metadata = models.JSONField(default=dict, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        ordering = ['-updated_at']
-
-    def __str__(self):
-        return f"Onboarding state for {self.user.username}"
-
-
 class OTP(models.Model):
     OTP_TYPES = [
         ('signup', 'Signup'),
