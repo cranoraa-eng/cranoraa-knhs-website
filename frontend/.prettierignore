@@ -1,0 +1,19 @@
+# Build artifacts
+dist
+build
+coverage
+
+# Dependencies
+node_modules
+
+# Generated files
+*.min.js
+*.min.css
+
+# Logs
+*.log
+
+# Package manager files
+package-lock.json
+yarn.lock
+pnpm-lock.yaml

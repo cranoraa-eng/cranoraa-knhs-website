@@ -1,0 +1,180 @@
+from django.contrib.auth.models import AbstractUser
+from django.db import models
+
+
+class User(AbstractUser):
+    ROLE_CHOICES = [
+        ('admin', 'Admin'),
+        ('staff', 'Staff'),
+        ('student', 'Student'),
+        ('parent', 'Parent'),
+    ]
+
+    STAFF_TITLE_CHOICES = [
+        ('teacher', 'Teacher'),
+        ('registrar', 'Registrar'),
+        ('advisory', 'Advisory'),
+        ('principal', 'Principal'),
+        ('guidance_counselor', 'Guidance Counselor'),
+        ('it_staff', 'IT Staff'),
+        ('librarian', 'Librarian'),
+        ('cashier', 'Cashier'),
+        ('other', 'Other'),
+    ]
+
+    STATUS_CHOICES = [
+        ('active', 'Active'),
+        ('inactive', 'Inactive'),
+        ('suspended', 'Suspended'),
+        ('pending_reset', 'Pending Password Reset'),
+    ]
+
+    email = models.EmailField(unique=True, null=True, blank=True)
+    role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='student', db_index=True)
+    staff_title = models.CharField(max_length=20, choices=STAFF_TITLE_CHOICES, null=True, blank=True, db_index=True)
+    additional_roles = models.TextField(blank=True, default='', help_text="Comma-separated additional staff titles e.g. teacher,guidance_counselor")
+    is_verified = models.BooleanField(default=False)
+    is_approved = models.BooleanField(default=False)
+    last_activity = models.DateTimeField(null=True, blank=True)
+
+    must_change_password = models.BooleanField(default=False)
+    account_status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active', db_index=True)
+
+    USERNAME_FIELD = 'username'
+    REQUIRED_FIELDS = ['role']
+
+    groups = models.ManyToManyField(
+        'auth.Group',
+        related_name='accounts_user_groups',
+        blank=True,
+        help_text='The groups this user belongs to. A user will get all permissions granted to each of their groups.',
+        verbose_name='groups',
+    )
+
+    user_permissions = models.ManyToManyField(
+        'auth.Permission',
+        related_name='accounts_user_permissions',
+        blank=True,
+        help_text='Specific permissions for this user.',
+        verbose_name='user permissions',
+    )
+
+    def __str__(self):
+        return f"{self.username} ({self.role})"
+
+    @property
+    def is_online(self):
+        if not self.last_activity:
+            return False
+        from django.utils import timezone
+        import datetime
+        now = timezone.now()
+        return self.last_activity > now - datetime.timedelta(minutes=5)
+
+
+class OTP(models.Model):
+    OTP_TYPES = [
+        ('signup', 'Signup'),
+        ('password_reset', 'Password Reset'),
+    ]
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='otps')
+    hashed_code = models.CharField(max_length=128, default='')
+    otp_type = models.CharField(max_length=20, choices=OTP_TYPES, default='signup')
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField(null=True)
+    is_used = models.BooleanField(default=False)
+
+    def is_expired(self):
+        from django.utils import timezone
+        return timezone.now() > self.expires_at
+
+    def __str__(self):
+        return f"{self.otp_type} OTP for {self.user.email or self.user.username}"
+
+
+class OnboardingStatus(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='onboarding_status')
+    completed_tours = models.JSONField(default=list, blank=True, help_text="List of completed tour IDs")
+    dismissed_tooltips = models.JSONField(default=list, blank=True, help_text="List of dismissed tooltip IDs")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-updated_at']
+        verbose_name = 'Onboarding Status'
+        verbose_name_plural = 'Onboarding Statuses'
+
+    def __str__(self):
+        return f"Onboarding status for {self.user.username}"
+
+
+class DashboardPreferences(models.Model):
+    THEME_CHOICES = [
+        ('light', 'Light'),
+        ('dark', 'Dark'),
+        ('auto', 'Auto'),
+    ]
+
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='dashboard_preferences')
+    layout = models.JSONField(default=list, blank=True, help_text="Widget positions and configuration")
+    theme = models.CharField(max_length=10, choices=THEME_CHOICES, default='light')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-updated_at']
+        verbose_name = 'Dashboard Preference'
+        verbose_name_plural = 'Dashboard Preferences'
+
+    def __str__(self):
+        return f"Dashboard preferences for {self.user.username}"
+
+
+class Profile(models.Model):
+    TITLE_CHOICES = [
+        ('Mr.', 'Mr.'),
+        ('Ms.', 'Ms.'),
+        ('Mrs.', 'Mrs.'),
+        ('Dr.', 'Dr.'),
+        ('Prof.', 'Prof.'),
+    ]
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    lrn = models.CharField(max_length=12, blank=True, null=True, db_index=True, help_text="Learner Reference Number (12 digits)")
+    title = models.CharField(max_length=10, choices=TITLE_CHOICES, blank=True, null=True, help_text="Honorific title for teachers")
+    grade_level = models.CharField(max_length=20, blank=True, null=True, help_text="For students")
+    employee_id = models.CharField(max_length=20, blank=True, null=True, help_text="For teachers")
+    phone_number = models.CharField(max_length=20, blank=True, null=True)
+    address = models.TextField(blank=True, null=True)
+    date_of_birth = models.DateField(blank=True, null=True)
+    registration_number = models.CharField(max_length=20, blank=True, null=True, unique=True, help_text="Auto-generated unique registration number for students")
+    profile_picture = models.URLField(max_length=500, blank=True, null=True, help_text="Supabase Storage URL for profile picture")
+
+    sex = models.CharField(max_length=10, choices=[('male', 'Male'), ('female', 'Female'), ('other', 'Other')], blank=True, null=True)
+    state = models.CharField(max_length=100, blank=True, null=True)
+    nationality = models.CharField(max_length=100, blank=True, null=True)
+    middle_name = models.CharField(max_length=100, blank=True, null=True)
+    father_name = models.CharField(max_length=100, blank=True, null=True)
+    mother_name = models.CharField(max_length=100, blank=True, null=True)
+    contact_information = models.TextField(blank=True, null=True, help_text="Additional contact details")
+
+    mute_until = models.DateTimeField(null=True, blank=True)
+    is_suspended = models.BooleanField(default=False)
+
+    linked_students = models.ManyToManyField(User, blank=True, related_name='parent_profiles', limit_choices_to={'role': 'student'})
+
+    def __str__(self):
+        return f"{self.user.username}'s Profile"
+
+    def save(self, *args, **kwargs):
+        if self.user.role == 'student':
+            if self.lrn:
+                self.registration_number = self.lrn
+            elif not self.registration_number:
+                self.registration_number = self.generate_registration_number()
+        super().save(*args, **kwargs)
+
+    def generate_registration_number(self):
+        import secrets
+        year = str(self.user.date_joined.year if self.user.date_joined else 2026)
+        random_num = f"{secrets.randbelow(10**6):06d}"
+        return f"KNHS{year}{random_num}"

@@ -1,0 +1,146 @@
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { 
+  BookOpen, Users, Calendar, FileText, MessageSquare, 
+  BarChart2, Settings, UserCheck, GraduationCap, ClipboardList,
+  Award, TrendingUp, Mail, Bell, Clock, Grid
+} from 'lucide-react';
+
+// Icon mapping
+const iconMap = {
+  BookOpen, Users, Calendar, FileText, MessageSquare,
+  BarChart2, Settings, UserCheck, GraduationCap, ClipboardList,
+  Award, TrendingUp, Mail, Bell, Clock, Grid
+};
+
+// Role-based quick access link configurations
+export const QUICK_ACCESS_CONFIGS = {
+  student: [
+    { label: 'My Grades', path: '/academics-hub?tab=classes', icon: 'Award', color: 'violet' },
+    { label: 'My Classes', path: '/academics-hub?tab=classes', icon: 'BookOpen', color: 'blue' },
+    { label: 'Announcements', path: '/announcements', icon: 'Bell', color: 'amber' },
+    { label: 'Schedule', path: '/academics-hub?tab=schedule', icon: 'Calendar', color: 'green' },
+    { label: 'Learning Materials', path: '/academics-hub?tab=materials', icon: 'FileText', color: 'indigo' },
+    { label: 'Communication', path: '/communication-center', icon: 'MessageSquare', color: 'rose' }
+  ],
+  teacher: [
+    { label: 'My Classes', path: '/academics-hub?tab=classes', icon: 'BookOpen', color: 'violet' },
+    { label: 'Learning Materials', path: '/academics-hub?tab=materials', icon: 'FileText', color: 'blue' },
+    { label: 'Schedule', path: '/academics-hub?tab=schedules', icon: 'Clock', color: 'green' },
+    { label: 'Announcements', path: '/announcements', icon: 'Bell', color: 'amber' },
+    { label: 'People Directory', path: '/people-directory?tab=teachers', icon: 'Users', color: 'indigo' },
+    { label: 'Communication', path: '/communication-center', icon: 'MessageSquare', color: 'rose' }
+  ],
+  parent: [
+    { label: 'Child\'s Grades', path: '/grades', icon: 'Award', color: 'violet' },
+    { label: 'Attendance', path: '/attendance', icon: 'UserCheck', color: 'green' },
+    { label: 'Announcements', path: '/announcements', icon: 'Bell', color: 'amber' },
+    { label: 'Messages', path: '/communication', icon: 'MessageSquare', color: 'blue' },
+    { label: 'Calendar', path: '/calendar', icon: 'Calendar', color: 'rose' },
+    { label: 'Learning Materials', path: '/materials', icon: 'FileText', color: 'indigo' }
+  ],
+  admin: [
+    { label: 'Dashboard Analytics', path: '/analytics', icon: 'TrendingUp', color: 'violet' },
+    { label: 'User Management', path: '/teachers', icon: 'Users', color: 'blue' },
+    { label: 'Enrollment', path: '/enrollment-management', icon: 'GraduationCap', color: 'green' },
+    { label: 'Class Management', path: '/enrollment-classes?tab=classrooms', icon: 'Grid', color: 'amber' },
+    { label: 'System Settings', path: '/settings', icon: 'Settings', color: 'indigo' },
+    { label: 'Audit Logs', path: '/audit-logs', icon: 'ClipboardList', color: 'rose' }
+  ]
+};
+
+/**
+ * QuickAccessLinks Component
+ * 
+ * Displays role-based quick access links on dashboards.
+ * Requirement 1.4: Dashboard quick-access to 6 most frequently used features
+ * 
+ * @param {Object} props
+ * @param {string} props.role - User role (student, teacher, parent, admin)
+ * @param {string} props.variant - Display variant ('grid' or 'compact')
+ * @param {string} props.className - Additional CSS classes
+ */
+const QuickAccessLinks = ({ role, variant = 'grid', className = '' }) => {
+  const links = QUICK_ACCESS_CONFIGS[role] || [];
+
+  if (links.length === 0) {
+    return null;
+  }
+
+  const gridClass = variant === 'compact' 
+    ? 'grid grid-cols-2 sm:grid-cols-3 gap-3'
+    : 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4';
+
+  return (
+    <div className={`quick-access-links ${className}`}>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+          Quick Access
+        </h2>
+        <span className="text-sm text-gray-500 dark:text-gray-400">
+          Frequently used
+        </span>
+      </div>
+
+      <div className={gridClass}>
+        {links.map((link, index) => {
+          const Icon = iconMap[link.icon];
+          const colorClasses = {
+            violet: {
+              card: 'bg-gradient-to-br from-violet-500 to-violet-700 text-white hover:from-violet-600 hover:to-violet-800 shadow-violet-200',
+              icon: 'text-white/90',
+              label: 'text-white font-semibold',
+            },
+            blue: {
+              card: 'bg-gradient-to-br from-blue-500 to-blue-700 text-white hover:from-blue-600 hover:to-blue-800 shadow-blue-200',
+              icon: 'text-white/90',
+              label: 'text-white font-semibold',
+            },
+            green: {
+              card: 'bg-gradient-to-br from-emerald-500 to-emerald-700 text-white hover:from-emerald-600 hover:to-emerald-800 shadow-emerald-200',
+              icon: 'text-white/90',
+              label: 'text-white font-semibold',
+            },
+            amber: {
+              card: 'bg-gradient-to-br from-amber-500 to-orange-600 text-white hover:from-amber-600 hover:to-orange-700 shadow-amber-200',
+              icon: 'text-white/90',
+              label: 'text-white font-semibold',
+            },
+            indigo: {
+              card: 'bg-gradient-to-br from-indigo-500 to-indigo-700 text-white hover:from-indigo-600 hover:to-indigo-800 shadow-indigo-200',
+              icon: 'text-white/90',
+              label: 'text-white font-semibold',
+            },
+            rose: {
+              card: 'bg-gradient-to-br from-rose-500 to-rose-700 text-white hover:from-rose-600 hover:to-rose-800 shadow-rose-200',
+              icon: 'text-white/90',
+              label: 'text-white font-semibold',
+            },
+          };
+          const theme = colorClasses[link.color] || colorClasses.violet;
+
+          return (
+            <Link
+              key={index}
+              to={link.path}
+              className={`
+                flex items-center gap-3 p-4 rounded-xl transition-all duration-200 shadow-sm
+                ${theme.card}
+                focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2
+                hover:shadow-lg hover:-translate-y-0.5
+              `}
+              aria-label={`Navigate to ${link.label}`}
+            >
+              {Icon && <Icon className={`w-5 h-5 flex-shrink-0 ${theme.icon}`} aria-hidden="true" />}
+              <span className={`text-sm ${theme.label}`}>
+                {link.label}
+              </span>
+            </Link>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+export default QuickAccessLinks;

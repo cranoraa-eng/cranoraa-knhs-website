@@ -1,0 +1,23 @@
+{
+  "name": "knhs-school-portal",
+  "version": "1.0.0",
+  "private": true,
+  "description": "KNHS School Portal - Monorepo",
+  "scripts": {
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^17.0.8",
+    "prettier": "^3.9.4"
+  },
+  "lint-staged": {
+    "frontend/**/*.{js,jsx,ts,tsx}": [
+      "npm run lint --prefix frontend -- --fix",
+      "prettier --write"
+    ],
+    "frontend/**/*.{json,css,md}": [
+      "prettier --write"
+    ]
+  }
+}
