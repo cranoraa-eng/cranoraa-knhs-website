@@ -10,19 +10,21 @@ import {
   modalInputCls, modalSelectCls, modalTextareaCls
 } from '../components/ui';
 
-const GRADE_LEVELS = ['Grade 7', 'Grade 8', 'Grade 9', 'Grade 10', 'Grade 11', 'Grade 12'];
+const JHS_GRADES = ['Grade 7', 'Grade 8', 'Grade 9', 'Grade 10'];
+const SHS_GRADES = ['Grade 11', 'Grade 12'];
 
 const STEPS = [
-  { id: 'academic-year', label: 'Academic Year', icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z' },
-  { id: 'semester', label: 'Semester / Quarter', icon: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z' },
-  { id: 'grade-levels', label: 'Grade Levels', icon: 'M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10' },
-  { id: 'sections', label: 'Sections / Classrooms', icon: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4' },
-  { id: 'subjects', label: 'Subjects', icon: 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332-.477-4.5-1.253' },
-  { id: 'assign-subjects', label: 'Assign Subjects to Classes', icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4' },
-  { id: 'assign-teachers', label: 'Assign Teachers', icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' },
-  { id: 'schedule', label: 'Set Class Schedule', icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z' },
-  { id: 'enrollment', label: 'Open Enrollment', icon: 'M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z' },
-  { id: 'complete', label: 'Setup Complete', icon: 'M5 13l4 4L19 7' },
+  { id: 'academic-year', label: 'Academic Year', shortLabel: 'Year', icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z' },
+  { id: 'education-level', label: 'Education Level', shortLabel: 'Level', icon: 'M8 9l4-4 4 4m0 6l-4 4-4-4' },
+  { id: 'academic-periods', label: 'Academic Periods', shortLabel: 'Periods', icon: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z' },
+  { id: 'grade-levels', label: 'Grade Levels', shortLabel: 'Grades', icon: 'M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10' },
+  { id: 'sections', label: 'Sections', shortLabel: 'Sections', icon: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4' },
+  { id: 'subjects', label: 'Subjects', shortLabel: 'Subjects', icon: 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332-.477-4.5-1.253' },
+  { id: 'assign-subjects', label: 'Assign Subjects', shortLabel: 'Assign Subj.', icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4' },
+  { id: 'assign-teachers', label: 'Assign Teachers', shortLabel: 'Teachers', icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' },
+  { id: 'schedule', label: 'Class Schedule', shortLabel: 'Schedule', icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z' },
+  { id: 'publish', label: 'Publish Setup', shortLabel: 'Publish', icon: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z' },
+  { id: 'complete', label: 'Setup Complete', shortLabel: 'Done', icon: 'M5 13l4 4L19 7' },
 ];
 
 const AcademicSetup = () => {
@@ -41,14 +43,16 @@ const AcademicSetup = () => {
   const [schedules, setSchedules] = useState([]);
   const [systemSettings, setSystemSettings] = useState(null);
 
+  // Education level state
+  const [educationLevel, setEducationLevel] = useState(''); // 'jhs' or 'shs'
+  const [selectedGradeLevels, setSelectedGradeLevels] = useState([]);
+
   // Form state
   const [ayForm, setAyForm] = useState({ name: '', start_date: '', end_date: '', is_active: true });
-  const [semesterForm, setSemesterForm] = useState({ name: '', academic_year: '', semester_type: 'semester' });
-  const [selectedGradeLevels, setSelectedGradeLevels] = useState([]);
+  const [semesterForm, setSemesterForm] = useState({ name: '', academic_year: '', semester_type: 'quarter' });
   const [sectionForm, setSectionForm] = useState({ name: '', grade_level: '', teacher: '' });
   const [subjectForm, setSubjectForm] = useState({ name: '', code: '', description: '', grade_level: '' });
   const [assignSubjectForm, setAssignSubjectForm] = useState({ classroom: '', subject: '', teacher: '' });
-  const [enrollmentOpen, setEnrollmentOpen] = useState(true);
 
   // Modal state
   const [showModal, setShowModal] = useState(false);
@@ -87,8 +91,11 @@ const AcademicSetup = () => {
         }
       }
 
-      if (settingsRes.data?.enrollment_open !== undefined) {
-        setEnrollmentOpen(settingsRes.data.enrollment_open);
+      if (settingsRes.data?.education_level) {
+        setEducationLevel(settingsRes.data.education_level);
+      }
+      if (settingsRes.data?.selected_grade_levels) {
+        setSelectedGradeLevels(settingsRes.data.selected_grade_levels);
       }
     } catch {
       toast.error('Failed to load setup data');
@@ -104,14 +111,32 @@ const AcademicSetup = () => {
     if (loading) return;
     const activeAY = academicYears.find(y => y.is_active);
     if (!activeAY) { setCurrentStep(0); return; }
-    if (semesters.length === 0) { setCurrentStep(1); return; }
-    if (classrooms.length === 0) { setCurrentStep(3); return; }
-    if (subjects.length === 0) { setCurrentStep(4); return; }
-    if (classroomSubjects.length === 0) { setCurrentStep(5); return; }
-    setCurrentStep(9);
-  }, [loading, academicYears, semesters, classrooms, subjects, classroomSubjects]);
+    if (!educationLevel) { setCurrentStep(1); return; }
+    if (semesters.length === 0) { setCurrentStep(2); return; }
+    if (selectedGradeLevels.length === 0) { setCurrentStep(3); return; }
+    if (classrooms.length === 0) { setCurrentStep(4); return; }
+    if (subjects.length === 0) { setCurrentStep(5); return; }
+    if (classroomSubjects.length === 0) { setCurrentStep(6); return; }
+    setCurrentStep(10);
+  }, [loading, academicYears, educationLevel, semesters, selectedGradeLevels, classrooms, subjects, classroomSubjects]);
 
   const activeAY = academicYears.find(y => y.is_active);
+
+  const getAvailableGrades = () => {
+    if (educationLevel === 'jhs') return JHS_GRADES;
+    if (educationLevel === 'shs') return SHS_GRADES;
+    return [...JHS_GRADES, ...SHS_GRADES];
+  };
+
+  const getDefaultPeriods = () => {
+    if (educationLevel === 'jhs') {
+      return ['Quarter 1', 'Quarter 2', 'Quarter 3', 'Quarter 4'];
+    }
+    if (educationLevel === 'shs') {
+      return ['Term 1', 'Term 2', 'Term 3'];
+    }
+    return [];
+  };
 
   // ── Step Handlers ──────────────────────────────────────────────────────────
 
@@ -131,17 +156,44 @@ const AcademicSetup = () => {
     }
   };
 
+  const handleSelectEducationLevel = () => {
+    if (!educationLevel) return toast.error('Select an education level');
+    toast.success(`Education level set to ${educationLevel === 'jhs' ? 'Junior High School' : 'Senior High School'}`);
+    goToNextStep();
+  };
+
   const handleCreateSemester = async (e) => {
     e.preventDefault();
-    if (!semesterForm.name.trim()) return toast.error('Semester name is required');
+    if (!semesterForm.name.trim()) return toast.error('Period name is required');
     setSaving(true);
     try {
       await api.post('/admin/semesters/', { ...semesterForm, academic_year: activeAY?.id });
-      toast.success('Semester created');
+      toast.success('Period created');
       setShowModal(false);
       fetchData();
     } catch (err) {
-      toast.error(err.response?.data?.detail || 'Failed to create semester');
+      toast.error(err.response?.data?.detail || 'Failed to create period');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleQuickCreatePeriods = async () => {
+    const defaults = getDefaultPeriods();
+    if (defaults.length === 0) return;
+    setSaving(true);
+    try {
+      for (const name of defaults) {
+        await api.post('/admin/semesters/', {
+          name,
+          academic_year: activeAY?.id,
+          semester_type: educationLevel === 'jhs' ? 'quarter' : 'term',
+        });
+      }
+      toast.success(`${defaults.length} periods created`);
+      fetchData();
+    } catch (err) {
+      toast.error(err.response?.data?.detail || 'Failed to create periods');
     } finally {
       setSaving(false);
     }
@@ -211,14 +263,14 @@ const AcademicSetup = () => {
     }
   };
 
-  const handleToggleEnrollment = async () => {
+  const handlePublish = async () => {
     setSaving(true);
     try {
-      await api.patch('/system/settings/', { enrollment_open: !enrollmentOpen });
-      setEnrollmentOpen(!enrollmentOpen);
-      toast.success(enrollmentOpen ? 'Enrollment closed' : 'Enrollment opened');
+      await api.patch('/system/settings/', { setup_published: true });
+      toast.success('Academic setup published successfully');
+      goToNextStep();
     } catch {
-      toast.error('Failed to update enrollment setting');
+      toast.error('Failed to publish setup');
     } finally {
       setSaving(false);
     }
@@ -251,7 +303,7 @@ const AcademicSetup = () => {
                 </svg>
               </div>
               <h3 className="text-xl font-extrabold text-slate-900 mb-2">Create Academic Year</h3>
-              <p className="text-sm text-slate-500">Set up the school year (e.g., 2025-2026) to organize all academic data.</p>
+              <p className="text-sm text-slate-500">Set up the school year (e.g., 2026-2027) to organize all academic data.</p>
             </div>
             {academicYears.length > 0 ? (
               <div className="space-y-3 max-w-lg mx-auto">
@@ -286,25 +338,112 @@ const AcademicSetup = () => {
           </div>
         );
 
-      case 'semester':
+      case 'education-level':
         return (
           <div className="space-y-6">
             <div className="text-center max-w-md mx-auto">
-              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-500 to-violet-600 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-violet-200">
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-indigo-200">
+                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 9l4-4 4 4m0 6l-4 4-4-4" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-extrabold text-slate-900 mb-2">Select Education Level</h3>
+              <p className="text-sm text-slate-500">Choose the education level for this academic year. This determines grade levels and academic period structure.</p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-xl mx-auto">
+              <button
+                type="button"
+                onClick={() => {
+                  setEducationLevel('jhs');
+                  setSelectedGradeLevels(JHS_GRADES);
+                }}
+                className={`relative p-6 rounded-2xl border-2 text-left transition-all duration-200 ${
+                  educationLevel === 'jhs'
+                    ? 'border-blue-500 bg-gradient-to-br from-blue-50 to-blue-100 shadow-lg shadow-blue-100'
+                    : 'border-slate-200 bg-white hover:border-slate-300 hover:shadow-md'
+                }`}
+              >
+                {educationLevel === 'jhs' && (
+                  <div className="absolute top-3 right-3 w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center">
+                    <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+                  </div>
+                )}
+                <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center mb-3">
+                  <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332-.477-4.5-1.253" /></svg>
+                </div>
+                <h4 className="font-extrabold text-slate-900 text-base mb-1">Junior High School</h4>
+                <p className="text-xs text-slate-500 font-semibold">Grade 7 – Grade 10</p>
+                <div className="mt-3 flex items-center gap-1.5">
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-100 text-blue-700">4 Quarters</span>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setEducationLevel('shs');
+                  setSelectedGradeLevels(SHS_GRADES);
+                }}
+                className={`relative p-6 rounded-2xl border-2 text-left transition-all duration-200 ${
+                  educationLevel === 'shs'
+                    ? 'border-pink-500 bg-gradient-to-br from-pink-50 to-pink-100 shadow-lg shadow-pink-100'
+                    : 'border-slate-200 bg-white hover:border-slate-300 hover:shadow-md'
+                }`}
+              >
+                {educationLevel === 'shs' && (
+                  <div className="absolute top-3 right-3 w-6 h-6 rounded-full bg-pink-500 flex items-center justify-center">
+                    <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+                  </div>
+                )}
+                <div className="w-12 h-12 rounded-xl bg-pink-100 flex items-center justify-center mb-3">
+                  <svg className="w-6 h-6 text-pink-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332-.477-4.5-1.253" /></svg>
+                </div>
+                <h4 className="font-extrabold text-slate-900 text-base mb-1">Senior High School</h4>
+                <p className="text-xs text-slate-500 font-semibold">Grade 11 – Grade 12</p>
+                <div className="mt-3 flex items-center gap-1.5">
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-pink-100 text-pink-700">3 Terms</span>
+                </div>
+              </button>
+            </div>
+            <p className="text-center text-xs text-slate-400 italic">The system supports different academic period structures for JHS and SHS.</p>
+            <div className="flex justify-center">
+              <Button variant="primary" onClick={handleSelectEducationLevel} disabled={!educationLevel}>
+                Continue with {educationLevel === 'jhs' ? 'Junior High' : educationLevel === 'shs' ? 'Senior High' : '...'}
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+              </Button>
+            </div>
+          </div>
+        );
+
+      case 'academic-periods':
+        return (
+          <div className="space-y-6">
+            <div className="text-center max-w-md mx-auto">
+              <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${educationLevel === 'jhs' ? 'from-blue-500 to-blue-600 shadow-blue-200' : 'from-pink-500 to-pink-600 shadow-pink-200'} flex items-center justify-center mx-auto mb-4 shadow-lg`}>
                 <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
-              <h3 className="text-xl font-extrabold text-slate-900 mb-2">Create Semester / Quarter</h3>
-              <p className="text-sm text-slate-500">Define the grading periods for {activeAY?.name || 'this academic year'}.</p>
+              <h3 className="text-xl font-extrabold text-slate-900 mb-2">
+                Configure {educationLevel === 'jhs' ? '4 Quarters' : '3 Terms'}
+              </h3>
+              <p className="text-sm text-slate-500">
+                {educationLevel === 'jhs'
+                  ? 'Set up the 4 quarterly grading periods for Junior High School.'
+                  : 'Set up the 3 term grading periods for Senior High School.'}
+              </p>
+              <div className={`mt-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${educationLevel === 'jhs' ? 'bg-blue-50 text-blue-700 border border-blue-200' : 'bg-pink-50 text-pink-700 border border-pink-200'}`}>
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                {educationLevel === 'jhs' ? 'JHS: 4 Quarters' : 'SHS: 3 Terms'}
+              </div>
             </div>
             {semesters.length > 0 ? (
               <div className="space-y-3 max-w-lg mx-auto">
-                {semesters.map(s => (
+                {semesters.map((s, i) => (
                   <div key={s.id} className="flex items-center justify-between p-4 rounded-xl border-2 border-slate-200 bg-white hover:border-slate-300 transition-all">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-violet-100 flex items-center justify-center text-violet-700 font-extrabold text-sm">
-                        {s.name?.charAt(0) || '?'}
+                      <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-white font-extrabold text-sm ${educationLevel === 'jhs' ? 'bg-blue-500' : 'bg-pink-500'}`}>
+                        {i + 1}
                       </div>
                       <div>
                         <p className="font-bold text-sm text-slate-900">{s.name}</p>
@@ -318,14 +457,22 @@ const AcademicSetup = () => {
             ) : (
               <div className="text-center py-8 bg-slate-50 rounded-xl border border-dashed border-slate-300 max-w-lg mx-auto">
                 <svg className="w-10 h-10 text-slate-300 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                <p className="text-sm font-semibold text-slate-500">No semesters yet</p>
-                <p className="text-xs text-slate-400 mt-1">Add semesters or quarters for grading periods</p>
+                <p className="text-sm font-semibold text-slate-500">No periods configured yet</p>
+                <p className="text-xs text-slate-400 mt-1">
+                  {educationLevel === 'jhs' ? 'Create 4 quarters or use quick setup' : 'Create 3 terms or use quick setup'}
+                </p>
               </div>
             )}
-            <div className="flex justify-center">
-              <Button variant="primary" onClick={() => openModal('semester')}>
+            <div className="flex justify-center gap-3">
+              {semesters.length === 0 && (
+                <Button variant="primary" onClick={handleQuickCreatePeriods} loading={saving}>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                  Quick Setup ({getDefaultPeriods().join(', ')})
+                </Button>
+              )}
+              <Button variant="secondary" onClick={() => openModal('semester')}>
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" /></svg>
-                Add Semester / Quarter
+                Add Period Manually
               </Button>
             </div>
           </div>
@@ -341,10 +488,14 @@ const AcademicSetup = () => {
                 </svg>
               </div>
               <h3 className="text-xl font-extrabold text-slate-900 mb-2">Enable Grade Levels</h3>
-              <p className="text-sm text-slate-500">Select which grade levels are active for this school year.</p>
+              <p className="text-sm text-slate-500">
+                {educationLevel === 'jhs'
+                  ? 'Grade 7–10 are pre-selected for Junior High School.'
+                  : 'Grade 11–12 are pre-selected for Senior High School.'}
+              </p>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-w-lg mx-auto">
-              {GRADE_LEVELS.map(level => (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 max-w-lg mx-auto">
+              {getAvailableGrades().map(level => (
                 <button
                   key={level}
                   type="button"
@@ -355,12 +506,14 @@ const AcademicSetup = () => {
                   }}
                   className={`relative p-4 rounded-xl border-2 text-center font-bold transition-all duration-200 ${
                     selectedGradeLevels.includes(level)
-                      ? 'border-violet-500 bg-violet-50 text-violet-700 shadow-md shadow-violet-100'
+                      ? educationLevel === 'jhs'
+                        ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-md shadow-blue-100'
+                        : 'border-pink-500 bg-pink-50 text-pink-700 shadow-md shadow-pink-100'
                       : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50'
                   }`}
                 >
                   {selectedGradeLevels.includes(level) && (
-                    <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-violet-500 flex items-center justify-center">
+                    <div className={`absolute top-2 right-2 w-5 h-5 rounded-full flex items-center justify-center ${educationLevel === 'jhs' ? 'bg-blue-500' : 'bg-pink-500'}`}>
                       <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
                     </div>
                   )}
@@ -370,7 +523,7 @@ const AcademicSetup = () => {
             </div>
             {selectedGradeLevels.length > 0 && (
               <div className="text-center">
-                <p className="text-xs font-semibold text-violet-600">{selectedGradeLevels.length} grade level(s) selected</p>
+                <p className={`text-xs font-semibold ${educationLevel === 'jhs' ? 'text-blue-600' : 'text-pink-600'}`}>{selectedGradeLevels.length} grade level(s) selected</p>
               </div>
             )}
           </div>
@@ -476,7 +629,7 @@ const AcademicSetup = () => {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
                 </svg>
               </div>
-              <h3 className="text-xl font-extrabold text-slate-900 mb-2">Assign Subjects to Classes</h3>
+              <h3 className="text-xl font-extrabold text-slate-900 mb-2">Assign Subjects to Sections</h3>
               <p className="text-sm text-slate-500">Link subjects to sections and assign a teacher for each.</p>
             </div>
             {classroomSubjects.length > 0 ? (
@@ -523,7 +676,7 @@ const AcademicSetup = () => {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
               </div>
-              <h3 className="text-xl font-extrabold text-slate-900 mb-2">Assign Teachers</h3>
+              <h3 className="text-xl font-extrabold text-slate-900 mb-2">Assign Teachers to Subjects</h3>
               <p className="text-sm text-slate-500">Teachers are assigned when linking subjects to classes. Review your faculty below.</p>
             </div>
             {teachers.filter(t => t.is_active).length > 0 ? (
@@ -584,54 +737,57 @@ const AcademicSetup = () => {
           </div>
         );
 
-      case 'enrollment':
+      case 'publish':
         return (
           <div className="space-y-6">
             <div className="text-center max-w-md mx-auto">
-              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-500 to-violet-600 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-violet-200">
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-emerald-200">
                 <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
-              <h3 className="text-xl font-extrabold text-slate-900 mb-2">Open Enrollment</h3>
-              <p className="text-sm text-slate-500">Toggle enrollment open/close and manage student applications.</p>
+              <h3 className="text-xl font-extrabold text-slate-900 mb-2">Publish Academic Setup</h3>
+              <p className="text-sm text-slate-500">Review your configuration and publish to make it live for students and faculty.</p>
             </div>
-            <div className="max-w-md mx-auto space-y-4">
-              <div className={`flex items-center justify-between p-4 rounded-xl border-2 transition-all ${enrollmentOpen ? 'border-emerald-300 bg-emerald-50' : 'border-slate-200 bg-white'}`}>
-                <div className="flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${enrollmentOpen ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-100 text-slate-500'}`}>
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" /></svg>
-                  </div>
-                  <div>
-                    <p className="font-bold text-sm text-slate-900">Student Enrollment</p>
-                    <p className={`text-xs font-semibold ${enrollmentOpen ? 'text-emerald-600' : 'text-slate-500'}`}>
-                      {enrollmentOpen ? 'Currently open' : 'Currently closed'}
-                    </p>
-                  </div>
+            <div className="max-w-lg mx-auto space-y-3">
+              <div className="p-4 rounded-xl bg-white border border-slate-200">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wide">Academic Year</span>
+                  <span className="text-sm font-bold text-slate-900">{activeAY?.name || '—'}</span>
                 </div>
-                <button
-                  type="button"
-                  onClick={handleToggleEnrollment}
-                  disabled={saving}
-                  className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors duration-200 ${
-                    enrollmentOpen ? 'bg-emerald-500' : 'bg-slate-300'
-                  }`}
-                >
-                  <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-sm transition-transform duration-200 ${
-                    enrollmentOpen ? 'translate-x-6' : 'translate-x-1'
-                  }`} />
-                </button>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wide">Education Level</span>
+                  <span className={`text-sm font-bold ${educationLevel === 'jhs' ? 'text-blue-700' : 'text-pink-700'}`}>
+                    {educationLevel === 'jhs' ? 'Junior High School' : educationLevel === 'shs' ? 'Senior High School' : '—'}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wide">Periods</span>
+                  <span className="text-sm font-bold text-slate-900">{semesters.length} configured</span>
+                </div>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wide">Grade Levels</span>
+                  <span className="text-sm font-bold text-slate-900">{selectedGradeLevels.length} enabled</span>
+                </div>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wide">Sections</span>
+                  <span className="text-sm font-bold text-slate-900">{classrooms.length} created</span>
+                </div>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wide">Subjects</span>
+                  <span className="text-sm font-bold text-slate-900">{subjects.length} created</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wide">Teachers</span>
+                  <span className="text-sm font-bold text-slate-900">{teachers.filter(t => t.is_active).length} active</span>
+                </div>
               </div>
-              <div className="flex justify-center gap-3">
-                <Button variant="secondary" size="sm" onClick={() => navigate('/enrollment-classes?tab=classrooms')}>
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5" /></svg>
-                  Manage Sections
-                </Button>
-                <Button variant="primary" size="sm" onClick={() => navigate('/enrollment-classes?tab=applications')}>
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-                  View Applications
-                </Button>
-              </div>
+            </div>
+            <div className="flex justify-center">
+              <Button variant="primary" onClick={handlePublish} loading={saving}>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                Publish Academic Setup
+              </Button>
             </div>
           </div>
         );
@@ -647,7 +803,7 @@ const AcademicSetup = () => {
             <div>
               <h3 className="text-2xl font-extrabold text-slate-900 mb-2">Academic Setup Complete!</h3>
               <p className="text-sm text-slate-500 max-w-md mx-auto">
-                Your academic year <span className="font-bold text-violet-700">{activeAY?.name}</span> is fully configured.
+                Your academic year <span className="font-bold text-violet-700">{activeAY?.name}</span> is fully configured and published.
               </p>
             </div>
             <div className="grid grid-cols-3 gap-4 max-w-md mx-auto">
@@ -724,18 +880,27 @@ const AcademicSetup = () => {
         return (
           <Modal isOpen={showModal} onClose={() => setShowModal(false)} size="md">
             <ModalHeader onClose={() => setShowModal(false)}>
-              <ModalTitle title="Create Semester / Quarter" subtitle={`For ${activeAY?.name || 'active year'}`} />
+              <ModalTitle title={`Add ${educationLevel === 'jhs' ? 'Quarter' : 'Term'}`} subtitle={`For ${activeAY?.name || 'active year'}`} />
             </ModalHeader>
             <form onSubmit={handleCreateSemester}>
               <ModalBody>
                 <div className="space-y-4">
-                  <ModalField label="Name" required hint='e.g. "1st Semester" or "1st Quarter"'>
-                    <input type="text" value={semesterForm.name} onChange={e => setSemesterForm({ ...semesterForm, name: e.target.value })} placeholder="1st Semester" className={modalInputCls} required />
+                  <ModalField label="Name" required hint={educationLevel === 'jhs' ? 'e.g. "Quarter 1"' : 'e.g. "Term 1"'}>
+                    <input type="text" value={semesterForm.name} onChange={e => setSemesterForm({ ...semesterForm, name: e.target.value })} placeholder={educationLevel === 'jhs' ? 'Quarter 1' : 'Term 1'} className={modalInputCls} required />
                   </ModalField>
                   <ModalField label="Type">
                     <select value={semesterForm.semester_type} onChange={e => setSemesterForm({ ...semesterForm, semester_type: e.target.value })} className={modalSelectCls}>
-                      <option value="semester">Semester</option>
-                      <option value="quarter">Quarter</option>
+                      {educationLevel === 'jhs' ? (
+                        <>
+                          <option value="quarter">Quarter</option>
+                          <option value="semester">Semester</option>
+                        </>
+                      ) : (
+                        <>
+                          <option value="term">Term</option>
+                          <option value="semester">Semester</option>
+                        </>
+                      )}
                     </select>
                   </ModalField>
                 </div>
@@ -760,7 +925,7 @@ const AcademicSetup = () => {
                   <ModalField label="Grade Level" required>
                     <select value={sectionForm.grade_level} onChange={e => setSectionForm({ ...sectionForm, grade_level: e.target.value })} className={modalSelectCls} required>
                       <option value="">— Select Grade Level —</option>
-                      {GRADE_LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
+                      {getAvailableGrades().map(l => <option key={l} value={l}>{l}</option>)}
                     </select>
                   </ModalField>
                   <ModalField label="Section Name" required hint='e.g. "Grade 7 - Rizal"'>
@@ -800,7 +965,7 @@ const AcademicSetup = () => {
                     <ModalField label="Grade Level" required>
                       <select value={subjectForm.grade_level} onChange={e => setSubjectForm({ ...subjectForm, grade_level: e.target.value })} className={modalSelectCls} required>
                         <option value="">— Select —</option>
-                        {GRADE_LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
+                        {getAvailableGrades().map(l => <option key={l} value={l}>{l}</option>)}
                       </select>
                     </ModalField>
                   </div>
