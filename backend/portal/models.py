@@ -185,11 +185,18 @@ class Semester(models.Model):
         ('1st', 'First Semester'),
         ('2nd', 'Second Semester'),
         ('summer', 'Summer'),
+        ('1st Quarter', 'First Quarter'),
+        ('2nd Quarter', 'Second Quarter'),
+        ('3rd Quarter', 'Third Quarter'),
+        ('4th Quarter', 'Fourth Quarter'),
+        ('1st Term', 'First Term'),
+        ('2nd Term', 'Second Term'),
+        ('3rd Term', 'Third Term'),
     ]
     academic_year = models.ForeignKey(AcademicYear, on_delete=models.CASCADE, related_name='semesters')
-    semester_type = models.CharField(max_length=10, choices=SEMESTER_CHOICES)
-    start_date = models.DateField()
-    end_date = models.DateField()
+    semester_type = models.CharField(max_length=20, choices=SEMESTER_CHOICES)
+    start_date = models.DateField(blank=True, null=True)
+    end_date = models.DateField(blank=True, null=True)
     is_active = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

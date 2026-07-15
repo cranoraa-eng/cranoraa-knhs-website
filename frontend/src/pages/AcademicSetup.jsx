@@ -49,7 +49,7 @@ const AcademicSetup = () => {
 
   // Form state
   const [ayForm, setAyForm] = useState({ name: '', start_date: '', end_date: '', is_active: true });
-  const [semesterForm, setSemesterForm] = useState({ name: '', academic_year: '', semester_type: 'quarter' });
+  const [semesterForm, setSemesterForm] = useState({ name: '', academic_year: '', semester_type: '1st Quarter' });
   const [sectionForm, setSectionForm] = useState({ name: '', grade_level: '', teacher: '' });
   const [subjectForm, setSubjectForm] = useState({ name: '', code: '', description: '', grade_level: '' });
   const [assignSubjectForm, setAssignSubjectForm] = useState({ classroom: '', subject: '', teacher: '' });
@@ -91,8 +91,8 @@ const AcademicSetup = () => {
         }
       }
 
-      if (settingsRes.data?.education_level) {
-        setEducationLevel(settingsRes.data.education_level);
+      if (settingsRes.data?.academic_level) {
+        setEducationLevel(settingsRes.data.academic_level);
       }
       if (settingsRes.data?.selected_grade_levels) {
         setSelectedGradeLevels(settingsRes.data.selected_grade_levels);
@@ -130,12 +130,37 @@ const AcademicSetup = () => {
 
   const getDefaultPeriods = () => {
     if (educationLevel === 'jhs') {
-      return ['Quarter 1', 'Quarter 2', 'Quarter 3', 'Quarter 4'];
+      return [
+        { name: '1st Quarter', semester_type: '1st Quarter' },
+        { name: '2nd Quarter', semester_type: '2nd Quarter' },
+        { name: '3rd Quarter', semester_type: '3rd Quarter' },
+        { name: '4th Quarter', semester_type: '4th Quarter' },
+      ];
     }
     if (educationLevel === 'shs') {
-      return ['Term 1', 'Term 2', 'Term 3'];
+      return [
+        { name: '1st Term', semester_type: '1st Term' },
+        { name: '2nd Term', semester_type: '2nd Term' },
+        { name: '3rd Term', semester_type: '3rd Term' },
+      ];
     }
     return [];
+  };
+
+  const parseBackendErrors = (err) => {
+    const data = err.response?.data;
+    if (!data) return 'An unexpected error occurred';
+    if (typeof data === 'string') return data;
+    if (data.detail) return data.detail;
+    const messages = [];
+    for (const [field, errors] of Object.entries(data)) {
+      if (Array.isArray(errors)) {
+        messages.push(`${field}: ${errors.join(', ')}`);
+      } else if (typeof errors === 'string') {
+        messages.push(`${field}: ${errors}`);
+      }
+    }
+    return messages.length > 0 ? messages.join('\n') : 'Failed to save. Check your input.';
   };
 
   // ── Step Handlers ──────────────────────────────────────────────────────────
@@ -150,13 +175,24 @@ const AcademicSetup = () => {
       setShowModal(false);
       fetchData();
     } catch (err) {
-      toast.error(err.response?.data?.detail || 'Failed to create academic year');
+      toast.error(parseBackendErrors(err), { duration: 6000 });
     } finally {
       setSaving(false);
     }
   };
 
-  const handleSelectEducationLevel = () => {
+  const handleSelectEducationLevel = async () => {
+    if (!educationLevel) return toast.error('Select an education level');
+    try {
+      await api.patch('/system/settings/', { academic_level: educationLevel });
+      toast.success(`Education level set to ${educationLevel === 'jhs' ? 'Junior High School' : 'Senior High School'}`);
+      goToNextStep();
+    } catch (err) {
+      toast.error(parseBackendErrors(err), { duration: 6000 });
+    }
+  };
+
+  const handleCreateSemester = () => {
     if (!educationLevel) return toast.error('Select an education level');
     toast.success(`Education level set to ${educationLevel === 'jhs' ? 'Junior High School' : 'Senior High School'}`);
     goToNextStep();
@@ -165,14 +201,20 @@ const AcademicSetup = () => {
   const handleCreateSemester = async (e) => {
     e.preventDefault();
     if (!semesterForm.name.trim()) return toast.error('Period name is required');
+    if (!semesterForm.semester_type) return toast.error('Period type is required');
     setSaving(true);
     try {
-      await api.post('/admin/semesters/', { ...semesterForm, academic_year: activeAY?.id });
+      await api.post('/admin/semesters/', {
+        name: semesterForm.name.trim(),
+        academic_year: activeAY?.id,
+        semester_type: semesterForm.semester_type,
+      });
       toast.success('Period created');
       setShowModal(false);
+      setSemesterForm({ name: '', academic_year: '', semester_type: educationLevel === 'jhs' ? '1st Quarter' : '1st Term' });
       fetchData();
     } catch (err) {
-      toast.error(err.response?.data?.detail || 'Failed to create period');
+      toast.error(parseBackendErrors(err), { duration: 6000 });
     } finally {
       setSaving(false);
     }
@@ -182,21 +224,32 @@ const AcademicSetup = () => {
     const defaults = getDefaultPeriods();
     if (defaults.length === 0) return;
     setSaving(true);
-    try {
-      for (const name of defaults) {
+    let created = 0;
+    let errors = 0;
+    for (const period of defaults) {
+      try {
         await api.post('/admin/semesters/', {
-          name,
+          name: period.name,
           academic_year: activeAY?.id,
-          semester_type: educationLevel === 'jhs' ? 'quarter' : 'term',
+          semester_type: period.semester_type,
         });
+        created++;
+      } catch (err) {
+        const msg = err.response?.data?.detail || err.response?.data?.academic_year?.[0] || '';
+        if (msg.includes('already exists')) {
+          created++;
+        } else {
+          errors++;
+        }
       }
-      toast.success(`${defaults.length} periods created`);
-      fetchData();
-    } catch (err) {
-      toast.error(err.response?.data?.detail || 'Failed to create periods');
-    } finally {
-      setSaving(false);
     }
+    if (errors > 0) {
+      toast.error(`${errors} period(s) failed to create. ${created} succeeded.`);
+    } else {
+      toast.success(`${created} period(s) created`);
+    }
+    fetchData();
+    setSaving(false);
   };
 
   const handleEnableGradeLevels = () => {
@@ -221,7 +274,7 @@ const AcademicSetup = () => {
       setShowModal(false);
       fetchData();
     } catch (err) {
-      toast.error(err.response?.data?.detail || 'Failed to create section');
+      toast.error(parseBackendErrors(err), { duration: 6000 });
     } finally {
       setSaving(false);
     }
@@ -238,7 +291,7 @@ const AcademicSetup = () => {
       setShowModal(false);
       fetchData();
     } catch (err) {
-      toast.error(err.response?.data?.code?.[0] || err.response?.data?.detail || 'Failed to create subject');
+      toast.error(parseBackendErrors(err), { duration: 6000 });
     } finally {
       setSaving(false);
     }
@@ -256,8 +309,7 @@ const AcademicSetup = () => {
       setShowModal(false);
       fetchData();
     } catch (err) {
-      const msg = err.response?.data?.non_field_errors?.[0] || err.response?.data?.detail || 'Failed to assign';
-      toast.error(msg);
+      toast.error(parseBackendErrors(err), { duration: 6000 });
     } finally {
       setSaving(false);
     }
@@ -885,22 +937,28 @@ const AcademicSetup = () => {
             <form onSubmit={handleCreateSemester}>
               <ModalBody>
                 <div className="space-y-4">
-                  <ModalField label="Name" required hint={educationLevel === 'jhs' ? 'e.g. "Quarter 1"' : 'e.g. "Term 1"'}>
-                    <input type="text" value={semesterForm.name} onChange={e => setSemesterForm({ ...semesterForm, name: e.target.value })} placeholder={educationLevel === 'jhs' ? 'Quarter 1' : 'Term 1'} className={modalInputCls} required />
+                  <ModalField label="Name" required hint={educationLevel === 'jhs' ? 'e.g. "1st Quarter"' : 'e.g. "1st Term"'}>
+                    <input type="text" value={semesterForm.name} onChange={e => setSemesterForm({ ...semesterForm, name: e.target.value })} placeholder={educationLevel === 'jhs' ? '1st Quarter' : '1st Term'} className={modalInputCls} required />
                   </ModalField>
-                  <ModalField label="Type">
-                    <select value={semesterForm.semester_type} onChange={e => setSemesterForm({ ...semesterForm, semester_type: e.target.value })} className={modalSelectCls}>
+                  <ModalField label="Type" required>
+                    <select value={semesterForm.semester_type} onChange={e => setSemesterForm({ ...semesterForm, semester_type: e.target.value })} className={modalSelectCls} required>
                       {educationLevel === 'jhs' ? (
                         <>
-                          <option value="quarter">Quarter</option>
-                          <option value="semester">Semester</option>
+                          <option value="1st Quarter">1st Quarter</option>
+                          <option value="2nd Quarter">2nd Quarter</option>
+                          <option value="3rd Quarter">3rd Quarter</option>
+                          <option value="4th Quarter">4th Quarter</option>
                         </>
                       ) : (
                         <>
-                          <option value="term">Term</option>
-                          <option value="semester">Semester</option>
+                          <option value="1st Term">1st Term</option>
+                          <option value="2nd Term">2nd Term</option>
+                          <option value="3rd Term">3rd Term</option>
                         </>
                       )}
+                      <option value="1st">1st Semester</option>
+                      <option value="2nd">2nd Semester</option>
+                      <option value="summer">Summer</option>
                     </select>
                   </ModalField>
                 </div>
