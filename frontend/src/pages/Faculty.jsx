@@ -1,5 +1,3 @@
-import { LoadingSpinner } from '../components/ui';
-
 const Faculty = () => {
   return (
     <div className="bg-white">

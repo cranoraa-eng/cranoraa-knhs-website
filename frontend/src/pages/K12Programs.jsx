@@ -1,5 +1,3 @@
-import { LoadingSpinner } from '../components/ui';
-
 const K12Programs = () => {
   return (
     <div className="bg-white">
