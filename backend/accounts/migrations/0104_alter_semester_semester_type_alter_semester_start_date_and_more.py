@@ -10,6 +10,11 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        migrations.AddField(
+            model_name='semester',
+            name='name',
+            field=models.CharField(blank=True, help_text="Display name (e.g. '1st Quarter')", max_length=100),
+        ),
         migrations.AlterField(
             model_name='semester',
             name='semester_type',

@@ -38,6 +38,7 @@ class Semester(models.Model):
         ('3rd Term', 'Third Term'),
     ]
     academic_year = models.ForeignKey(AcademicYear, on_delete=models.CASCADE, related_name='semesters')
+    name = models.CharField(max_length=100, blank=True, help_text="Display name (e.g. '1st Quarter')")
     semester_type = models.CharField(max_length=20, choices=SEMESTER_CHOICES)
     start_date = models.DateField(blank=True, null=True)
     end_date = models.DateField(blank=True, null=True)

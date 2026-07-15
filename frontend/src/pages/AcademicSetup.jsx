@@ -113,12 +113,11 @@ const AcademicSetup = () => {
     if (!activeAY) { setCurrentStep(0); return; }
     if (!educationLevel) { setCurrentStep(1); return; }
     if (semesters.length === 0) { setCurrentStep(2); return; }
-    if (selectedGradeLevels.length === 0) { setCurrentStep(3); return; }
     if (classrooms.length === 0) { setCurrentStep(4); return; }
     if (subjects.length === 0) { setCurrentStep(5); return; }
     if (classroomSubjects.length === 0) { setCurrentStep(6); return; }
     setCurrentStep(10);
-  }, [loading, academicYears, educationLevel, semesters, selectedGradeLevels, classrooms, subjects, classroomSubjects]);
+  }, [loading, academicYears, educationLevel, semesters, classrooms, subjects, classroomSubjects]);
 
   const activeAY = academicYears.find(y => y.is_active);
 
