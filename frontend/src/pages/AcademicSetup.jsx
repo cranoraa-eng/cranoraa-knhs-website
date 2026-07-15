@@ -245,32 +245,41 @@ const AcademicSetup = () => {
         return (
           <div className="space-y-6">
             <div className="text-center max-w-md mx-auto">
-              <div className="w-16 h-16 rounded-2xl bg-violet-100 flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-500 to-violet-600 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-violet-200">
+                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
               </div>
-              <h3 className="text-lg font-extrabold text-slate-900 mb-2">Create Academic Year</h3>
-              <p className="text-sm text-slate-600">Set up the school year (e.g., 2025-2026) to organize all academic data.</p>
+              <h3 className="text-xl font-extrabold text-slate-900 mb-2">Create Academic Year</h3>
+              <p className="text-sm text-slate-500">Set up the school year (e.g., 2025-2026) to organize all academic data.</p>
             </div>
             {academicYears.length > 0 ? (
-              <div className="space-y-3">
+              <div className="space-y-3 max-w-lg mx-auto">
                 {academicYears.map(y => (
-                  <div key={y.id} className={`flex items-center justify-between p-4 rounded-xl border-2 ${y.is_active ? 'border-violet-300 bg-violet-50' : 'border-slate-200 bg-white'}`}>
-                    <div>
-                      <p className="font-bold text-slate-900">{y.name}</p>
-                      <p className="text-xs text-slate-500">{y.start_date} to {y.end_date}</p>
+                  <div key={y.id} className={`flex items-center justify-between p-4 rounded-xl border-2 transition-all ${y.is_active ? 'border-violet-300 bg-violet-50 shadow-sm' : 'border-slate-200 bg-white hover:border-slate-300'}`}>
+                    <div className="flex items-center gap-3">
+                      <div className={`w-10 h-10 rounded-lg flex items-center justify-center font-extrabold text-sm ${y.is_active ? 'bg-violet-100 text-violet-700' : 'bg-slate-100 text-slate-500'}`}>
+                        {y.name?.slice(0, 4) || '?'}
+                      </div>
+                      <div>
+                        <p className="font-bold text-sm text-slate-900">SY {y.name}</p>
+                        <p className="text-xs text-slate-500">{y.start_date || '—'} to {y.end_date || '—'}</p>
+                      </div>
                     </div>
                     {y.is_active && <Badge variant="violet">Active</Badge>}
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-slate-500 text-center">No academic years created yet.</p>
+              <div className="text-center py-8 bg-slate-50 rounded-xl border border-dashed border-slate-300 max-w-lg mx-auto">
+                <svg className="w-10 h-10 text-slate-300 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                <p className="text-sm font-semibold text-slate-500">No academic years yet</p>
+                <p className="text-xs text-slate-400 mt-1">Create your first academic year to get started</p>
+              </div>
             )}
             <div className="flex justify-center">
               <Button variant="primary" onClick={() => openModal('academic-year')}>
-                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" /></svg>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" /></svg>
                 {academicYears.length > 0 ? 'Add Another Year' : 'Create Academic Year'}
               </Button>
             </div>
@@ -281,32 +290,41 @@ const AcademicSetup = () => {
         return (
           <div className="space-y-6">
             <div className="text-center max-w-md mx-auto">
-              <div className="w-16 h-16 rounded-2xl bg-violet-100 flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-500 to-violet-600 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-violet-200">
+                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
-              <h3 className="text-lg font-extrabold text-slate-900 mb-2">Create Semester / Quarter</h3>
-              <p className="text-sm text-slate-600">Define the grading periods for {activeAY?.name || 'this academic year'}.</p>
+              <h3 className="text-xl font-extrabold text-slate-900 mb-2">Create Semester / Quarter</h3>
+              <p className="text-sm text-slate-500">Define the grading periods for {activeAY?.name || 'this academic year'}.</p>
             </div>
             {semesters.length > 0 ? (
-              <div className="space-y-3">
+              <div className="space-y-3 max-w-lg mx-auto">
                 {semesters.map(s => (
-                  <div key={s.id} className="flex items-center justify-between p-4 rounded-xl border-2 border-slate-200 bg-white">
-                    <div>
-                      <p className="font-bold text-slate-900">{s.name}</p>
-                      <p className="text-xs text-slate-500">{s.start_date || 'No start date'} to {s.end_date || 'No end date'}</p>
+                  <div key={s.id} className="flex items-center justify-between p-4 rounded-xl border-2 border-slate-200 bg-white hover:border-slate-300 transition-all">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-lg bg-violet-100 flex items-center justify-center text-violet-700 font-extrabold text-sm">
+                        {s.name?.charAt(0) || '?'}
+                      </div>
+                      <div>
+                        <p className="font-bold text-sm text-slate-900">{s.name}</p>
+                        <p className="text-xs text-slate-500">{s.start_date || 'No start date'} to {s.end_date || 'No end date'}</p>
+                      </div>
                     </div>
                     {s.is_active && <Badge variant="green">Active</Badge>}
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-slate-500 text-center">No semesters created yet.</p>
+              <div className="text-center py-8 bg-slate-50 rounded-xl border border-dashed border-slate-300 max-w-lg mx-auto">
+                <svg className="w-10 h-10 text-slate-300 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                <p className="text-sm font-semibold text-slate-500">No semesters yet</p>
+                <p className="text-xs text-slate-400 mt-1">Add semesters or quarters for grading periods</p>
+              </div>
             )}
             <div className="flex justify-center">
               <Button variant="primary" onClick={() => openModal('semester')}>
-                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" /></svg>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" /></svg>
                 Add Semester / Quarter
               </Button>
             </div>
@@ -317,13 +335,13 @@ const AcademicSetup = () => {
         return (
           <div className="space-y-6">
             <div className="text-center max-w-md mx-auto">
-              <div className="w-16 h-16 rounded-2xl bg-violet-100 flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-500 to-violet-600 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-violet-200">
+                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                 </svg>
               </div>
-              <h3 className="text-lg font-extrabold text-slate-900 mb-2">Enable Grade Levels</h3>
-              <p className="text-sm text-slate-600">Select which grade levels are active for this school year.</p>
+              <h3 className="text-xl font-extrabold text-slate-900 mb-2">Enable Grade Levels</h3>
+              <p className="text-sm text-slate-500">Select which grade levels are active for this school year.</p>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-w-lg mx-auto">
               {GRADE_LEVELS.map(level => (
@@ -335,16 +353,26 @@ const AcademicSetup = () => {
                       prev.includes(level) ? prev.filter(l => l !== level) : [...prev, level]
                     );
                   }}
-                  className={`p-4 rounded-xl border-2 text-center font-bold transition-all ${
+                  className={`relative p-4 rounded-xl border-2 text-center font-bold transition-all duration-200 ${
                     selectedGradeLevels.includes(level)
-                      ? 'border-violet-500 bg-violet-50 text-violet-700'
-                      : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
+                      ? 'border-violet-500 bg-violet-50 text-violet-700 shadow-md shadow-violet-100'
+                      : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50'
                   }`}
                 >
+                  {selectedGradeLevels.includes(level) && (
+                    <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-violet-500 flex items-center justify-center">
+                      <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+                    </div>
+                  )}
                   {level}
                 </button>
               ))}
             </div>
+            {selectedGradeLevels.length > 0 && (
+              <div className="text-center">
+                <p className="text-xs font-semibold text-violet-600">{selectedGradeLevels.length} grade level(s) selected</p>
+              </div>
+            )}
           </div>
         );
 
@@ -352,20 +380,20 @@ const AcademicSetup = () => {
         return (
           <div className="space-y-6">
             <div className="text-center max-w-md mx-auto">
-              <div className="w-16 h-16 rounded-2xl bg-violet-100 flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-500 to-violet-600 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-violet-200">
+                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                 </svg>
               </div>
-              <h3 className="text-lg font-extrabold text-slate-900 mb-2">Create Sections / Classrooms</h3>
-              <p className="text-sm text-slate-600">Set up the sections for each grade level.</p>
+              <h3 className="text-xl font-extrabold text-slate-900 mb-2">Create Sections / Classrooms</h3>
+              <p className="text-sm text-slate-500">Set up the sections for each grade level.</p>
             </div>
             {classrooms.length > 0 ? (
               <div className="space-y-3 max-w-lg mx-auto">
                 {classrooms.map(c => (
-                  <div key={c.id} className="flex items-center justify-between p-3 rounded-xl border border-slate-200 bg-white">
+                  <div key={c.id} className="flex items-center justify-between p-3 rounded-xl border border-slate-200 bg-white hover:border-slate-300 hover:shadow-sm transition-all">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-violet-100 flex items-center justify-center text-violet-700 font-extrabold text-sm">
+                      <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-violet-500 to-violet-600 flex items-center justify-center text-white font-extrabold text-sm shadow-sm">
                         {c.name?.match(/\d+/)?.[0] || c.name?.charAt(0)}
                       </div>
                       <div>
@@ -377,11 +405,15 @@ const AcademicSetup = () => {
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-slate-500 text-center">No sections created yet.</p>
+              <div className="text-center py-8 bg-slate-50 rounded-xl border border-dashed border-slate-300 max-w-lg mx-auto">
+                <svg className="w-10 h-10 text-slate-300 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5" /></svg>
+                <p className="text-sm font-semibold text-slate-500">No sections yet</p>
+                <p className="text-xs text-slate-400 mt-1">Create sections for your grade levels</p>
+              </div>
             )}
             <div className="flex justify-center">
               <Button variant="primary" onClick={() => openModal('section')}>
-                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" /></svg>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" /></svg>
                 Add Section
               </Button>
             </div>
@@ -392,35 +424,43 @@ const AcademicSetup = () => {
         return (
           <div className="space-y-6">
             <div className="text-center max-w-md mx-auto">
-              <div className="w-16 h-16 rounded-2xl bg-violet-100 flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-500 to-violet-600 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-violet-200">
+                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332-.477-4.5-1.253" />
                 </svg>
               </div>
-              <h3 className="text-lg font-extrabold text-slate-900 mb-2">Create Subjects</h3>
-              <p className="text-sm text-slate-600">Add the subjects for each grade level.</p>
+              <h3 className="text-xl font-extrabold text-slate-900 mb-2">Create Subjects</h3>
+              <p className="text-sm text-slate-500">Add the subjects for each grade level.</p>
             </div>
             {subjects.length > 0 ? (
-              <div className="space-y-3 max-w-lg mx-auto">
+              <div className="space-y-2 max-w-lg mx-auto">
                 {subjects.slice(0, 10).map(s => (
-                  <div key={s.id} className="flex items-center justify-between p-3 rounded-xl border border-slate-200 bg-white">
+                  <div key={s.id} className="flex items-center justify-between p-3 rounded-xl border border-slate-200 bg-white hover:border-slate-300 hover:shadow-sm transition-all">
                     <div className="flex items-center gap-3">
-                      <Badge variant="blue" className="font-mono">{s.code}</Badge>
+                      <div className="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center text-slate-600 font-mono font-bold text-xs">
+                        {s.code?.substring(0, 3) || '—'}
+                      </div>
                       <div>
                         <p className="font-bold text-sm text-slate-900">{s.name}</p>
-                        <p className="text-xs text-slate-500">{s.grade_level}</p>
+                        <p className="text-xs text-slate-500">{s.grade_level || 'All levels'}</p>
                       </div>
                     </div>
                   </div>
                 ))}
-                {subjects.length > 10 && <p className="text-xs text-slate-400 text-center">+ {subjects.length - 10} more subjects</p>}
+                {subjects.length > 10 && (
+                  <p className="text-xs text-slate-400 text-center py-2">+ {subjects.length - 10} more subjects</p>
+                )}
               </div>
             ) : (
-              <p className="text-sm text-slate-500 text-center">No subjects created yet.</p>
+              <div className="text-center py-8 bg-slate-50 rounded-xl border border-dashed border-slate-300 max-w-lg mx-auto">
+                <svg className="w-10 h-10 text-slate-300 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253" /></svg>
+                <p className="text-sm font-semibold text-slate-500">No subjects yet</p>
+                <p className="text-xs text-slate-400 mt-1">Add subjects to the curriculum</p>
+              </div>
             )}
             <div className="flex justify-center">
               <Button variant="primary" onClick={() => openModal('subject')}>
-                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" /></svg>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" /></svg>
                 Add Subject
               </Button>
             </div>
@@ -431,33 +471,43 @@ const AcademicSetup = () => {
         return (
           <div className="space-y-6">
             <div className="text-center max-w-md mx-auto">
-              <div className="w-16 h-16 rounded-2xl bg-violet-100 flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-500 to-violet-600 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-violet-200">
+                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
                 </svg>
               </div>
-              <h3 className="text-lg font-extrabold text-slate-900 mb-2">Assign Subjects to Classes</h3>
-              <p className="text-sm text-slate-600">Link subjects to sections and assign a teacher for each.</p>
+              <h3 className="text-xl font-extrabold text-slate-900 mb-2">Assign Subjects to Classes</h3>
+              <p className="text-sm text-slate-500">Link subjects to sections and assign a teacher for each.</p>
             </div>
             {classroomSubjects.length > 0 ? (
               <div className="space-y-2 max-w-lg mx-auto">
                 {classroomSubjects.slice(0, 10).map(cs => (
-                  <div key={cs.id} className="flex items-center justify-between p-3 rounded-xl border border-slate-200 bg-white text-sm">
+                  <div key={cs.id} className="flex items-center justify-between p-3 rounded-xl border border-slate-200 bg-white hover:border-slate-300 hover:shadow-sm transition-all">
                     <div className="flex items-center gap-3">
-                      <Badge variant="violet" size="sm">{cs.classroom_name}</Badge>
-                      <span className="font-bold text-slate-700">{cs.subject_name}</span>
+                      <div className="w-10 h-10 rounded-lg bg-violet-100 flex items-center justify-center text-violet-700 font-extrabold text-xs">
+                        {cs.classroom_name?.match(/\d+/)?.[0] || cs.classroom_name?.charAt(0)}
+                      </div>
+                      <div>
+                        <p className="font-bold text-sm text-slate-900">{cs.subject_name}</p>
+                        <p className="text-xs text-slate-500">{cs.classroom_name} · {cs.teacher_name}</p>
+                      </div>
                     </div>
-                    <span className="text-xs text-slate-500">{cs.teacher_name}</span>
                   </div>
                 ))}
-                {classroomSubjects.length > 10 && <p className="text-xs text-slate-400 text-center">+ {classroomSubjects.length - 10} more assignments</p>}
+                {classroomSubjects.length > 10 && (
+                  <p className="text-xs text-slate-400 text-center py-2">+ {classroomSubjects.length - 10} more assignments</p>
+                )}
               </div>
             ) : (
-              <p className="text-sm text-slate-500 text-center">No subjects assigned yet.</p>
+              <div className="text-center py-8 bg-slate-50 rounded-xl border border-dashed border-slate-300 max-w-lg mx-auto">
+                <svg className="w-10 h-10 text-slate-300 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
+                <p className="text-sm font-semibold text-slate-500">No assignments yet</p>
+                <p className="text-xs text-slate-400 mt-1">Assign subjects to your sections</p>
+              </div>
             )}
             <div className="flex justify-center">
               <Button variant="primary" onClick={() => openModal('assign-subject')}>
-                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" /></svg>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" /></svg>
                 Assign Subject to Class
               </Button>
             </div>
@@ -468,28 +518,45 @@ const AcademicSetup = () => {
         return (
           <div className="space-y-6">
             <div className="text-center max-w-md mx-auto">
-              <div className="w-16 h-16 rounded-2xl bg-violet-100 flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-500 to-violet-600 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-violet-200">
+                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
               </div>
-              <h3 className="text-lg font-extrabold text-slate-900 mb-2">Assign Teachers</h3>
-              <p className="text-sm text-slate-600">Teachers are assigned when linking subjects to classes. You can also set advisory teachers in Class Management.</p>
+              <h3 className="text-xl font-extrabold text-slate-900 mb-2">Assign Teachers</h3>
+              <p className="text-sm text-slate-500">Teachers are assigned when linking subjects to classes. Review your faculty below.</p>
             </div>
-            <div className="space-y-2 max-w-lg mx-auto">
-              {teachers.filter(t => t.is_active).slice(0, 8).map(t => (
-                <div key={t.id} className="flex items-center gap-3 p-3 rounded-xl border border-slate-200 bg-white">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white font-bold text-xs">
-                    {t.first_name?.charAt(0)}{t.last_name?.charAt(0)}
+            {teachers.filter(t => t.is_active).length > 0 ? (
+              <div className="space-y-2 max-w-lg mx-auto">
+                {teachers.filter(t => t.is_active).slice(0, 8).map(t => (
+                  <div key={t.id} className="flex items-center gap-3 p-3 rounded-xl border border-slate-200 bg-white hover:border-slate-300 hover:shadow-sm transition-all">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white font-bold text-xs flex-shrink-0 shadow-sm">
+                      {t.first_name?.charAt(0)}{t.last_name?.charAt(0)}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="font-bold text-sm text-slate-900 truncate">{t.first_name} {t.last_name}</p>
+                      <p className="text-xs text-slate-500 truncate">{t.email}</p>
+                    </div>
+                    <Badge variant="violet" size="sm">Faculty</Badge>
                   </div>
-                  <div>
-                    <p className="font-bold text-sm text-slate-900">{t.first_name} {t.last_name}</p>
-                    <p className="text-xs text-slate-500">{t.email}</p>
-                  </div>
-                </div>
-              ))}
+                ))}
+                {teachers.filter(t => t.is_active).length > 8 && (
+                  <p className="text-xs text-slate-400 text-center py-2">+ {teachers.filter(t => t.is_active).length - 8} more teachers</p>
+                )}
+              </div>
+            ) : (
+              <div className="text-center py-8 bg-slate-50 rounded-xl border border-dashed border-slate-300 max-w-lg mx-auto">
+                <svg className="w-10 h-10 text-slate-300 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                <p className="text-sm font-semibold text-slate-500">No teachers yet</p>
+                <p className="text-xs text-slate-400 mt-1">Add faculty members in People Directory</p>
+              </div>
+            )}
+            <div className="text-center">
+              <Button variant="secondary" size="sm" onClick={() => navigate('/people-directory?tab=teachers')}>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                Manage Faculty
+              </Button>
             </div>
-            <p className="text-xs text-slate-400 text-center">Teachers are assigned per subject in the previous step.</p>
           </div>
         );
 
@@ -497,17 +564,20 @@ const AcademicSetup = () => {
         return (
           <div className="space-y-6">
             <div className="text-center max-w-md mx-auto">
-              <div className="w-16 h-16 rounded-2xl bg-violet-100 flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-500 to-violet-600 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-violet-200">
+                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
               </div>
-              <h3 className="text-lg font-extrabold text-slate-900 mb-2">Set Class Schedule</h3>
-              <p className="text-sm text-slate-600">Configure bell schedules and assign classes to time slots.</p>
+              <h3 className="text-xl font-extrabold text-slate-900 mb-2">Set Class Schedule</h3>
+              <p className="text-sm text-slate-500">Configure bell schedules and assign classes to time slots.</p>
             </div>
-            <div className="flex justify-center">
+            <div className="text-center py-8 bg-slate-50 rounded-xl border border-dashed border-slate-300 max-w-lg mx-auto">
+              <svg className="w-10 h-10 text-slate-300 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+              <p className="text-sm font-semibold text-slate-500">Schedule Management</p>
+              <p className="text-xs text-slate-400 mt-1 mb-4">Open the schedule manager to configure time slots and bell schedules</p>
               <Button variant="primary" onClick={() => navigate('/academics-hub?tab=schedules')}>
-                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
                 Open Schedule Manager
               </Button>
             </div>
@@ -518,38 +588,47 @@ const AcademicSetup = () => {
         return (
           <div className="space-y-6">
             <div className="text-center max-w-md mx-auto">
-              <div className="w-16 h-16 rounded-2xl bg-violet-100 flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-500 to-violet-600 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-violet-200">
+                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
                 </svg>
               </div>
-              <h3 className="text-lg font-extrabold text-slate-900 mb-2">Open Enrollment / Student Assignment</h3>
-              <p className="text-sm text-slate-600">Toggle enrollment open/close and assign students to sections.</p>
+              <h3 className="text-xl font-extrabold text-slate-900 mb-2">Open Enrollment</h3>
+              <p className="text-sm text-slate-500">Toggle enrollment open/close and manage student applications.</p>
             </div>
             <div className="max-w-md mx-auto space-y-4">
-              <div className="flex items-center justify-between p-4 rounded-xl border-2 border-slate-200 bg-white">
-                <div>
-                  <p className="font-bold text-sm text-slate-900">Student Enrollment</p>
-                  <p className="text-xs text-slate-500">{enrollmentOpen ? 'Currently open' : 'Currently closed'}</p>
+              <div className={`flex items-center justify-between p-4 rounded-xl border-2 transition-all ${enrollmentOpen ? 'border-emerald-300 bg-emerald-50' : 'border-slate-200 bg-white'}`}>
+                <div className="flex items-center gap-3">
+                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${enrollmentOpen ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-100 text-slate-500'}`}>
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" /></svg>
+                  </div>
+                  <div>
+                    <p className="font-bold text-sm text-slate-900">Student Enrollment</p>
+                    <p className={`text-xs font-semibold ${enrollmentOpen ? 'text-emerald-600' : 'text-slate-500'}`}>
+                      {enrollmentOpen ? 'Currently open' : 'Currently closed'}
+                    </p>
+                  </div>
                 </div>
                 <button
                   type="button"
                   onClick={handleToggleEnrollment}
                   disabled={saving}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                    enrollmentOpen ? 'bg-violet-600' : 'bg-slate-300'
+                  className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors duration-200 ${
+                    enrollmentOpen ? 'bg-emerald-500' : 'bg-slate-300'
                   }`}
                 >
-                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                  <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-sm transition-transform duration-200 ${
                     enrollmentOpen ? 'translate-x-6' : 'translate-x-1'
                   }`} />
                 </button>
               </div>
               <div className="flex justify-center gap-3">
-                <Button variant="secondary" onClick={() => navigate('/enrollment-classes?tab=classrooms')}>
+                <Button variant="secondary" size="sm" onClick={() => navigate('/enrollment-classes?tab=classrooms')}>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5" /></svg>
                   Manage Sections
                 </Button>
-                <Button variant="primary" onClick={() => navigate('/enrollment-classes?tab=applications')}>
+                <Button variant="primary" size="sm" onClick={() => navigate('/enrollment-classes?tab=applications')}>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
                   View Applications
                 </Button>
               </div>
@@ -560,25 +639,38 @@ const AcademicSetup = () => {
       case 'complete':
         return (
           <div className="space-y-6 text-center">
-            <div className="w-20 h-20 rounded-full bg-emerald-100 flex items-center justify-center mx-auto">
-              <svg className="w-10 h-10 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center mx-auto shadow-lg shadow-emerald-200">
+              <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
               </svg>
             </div>
             <div>
-              <h3 className="text-xl font-extrabold text-slate-900 mb-2">Academic Setup Complete!</h3>
-              <p className="text-sm text-slate-600 max-w-md mx-auto">
-                Your academic year <span className="font-bold text-violet-700">{activeAY?.name}</span> is fully configured with{' '}
-                <span className="font-bold">{classrooms.length} section(s)</span>,{' '}
-                <span className="font-bold">{subjects.length} subject(s)</span>, and{' '}
-                <span className="font-bold">{teachers.filter(t => t.is_active).length} teacher(s)</span>.
+              <h3 className="text-2xl font-extrabold text-slate-900 mb-2">Academic Setup Complete!</h3>
+              <p className="text-sm text-slate-500 max-w-md mx-auto">
+                Your academic year <span className="font-bold text-violet-700">{activeAY?.name}</span> is fully configured.
               </p>
+            </div>
+            <div className="grid grid-cols-3 gap-4 max-w-md mx-auto">
+              <div className="p-4 bg-violet-50 rounded-xl border border-violet-200">
+                <p className="text-2xl font-extrabold text-violet-700">{classrooms.length}</p>
+                <p className="text-xs font-semibold text-violet-600 mt-1">Sections</p>
+              </div>
+              <div className="p-4 bg-emerald-50 rounded-xl border border-emerald-200">
+                <p className="text-2xl font-extrabold text-emerald-700">{subjects.length}</p>
+                <p className="text-xs font-semibold text-emerald-600 mt-1">Subjects</p>
+              </div>
+              <div className="p-4 bg-sky-50 rounded-xl border border-sky-200">
+                <p className="text-2xl font-extrabold text-sky-700">{teachers.filter(t => t.is_active).length}</p>
+                <p className="text-xs font-semibold text-sky-600 mt-1">Teachers</p>
+              </div>
             </div>
             <div className="flex justify-center gap-3">
               <Button variant="primary" onClick={() => navigate('/dashboard')}>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
                 Go to Dashboard
               </Button>
               <Button variant="secondary" onClick={() => navigate('/enrollment-classes?tab=classrooms')}>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5" /></svg>
                 Manage Classes
               </Button>
             </div>
@@ -774,8 +866,9 @@ const AcademicSetup = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
+      <div className="flex flex-col items-center justify-center h-64 gap-3">
         <LoadingSpinner />
+        <p className="text-xs font-semibold text-slate-500">Loading setup data...</p>
       </div>
     );
   }
@@ -785,45 +878,62 @@ const AcademicSetup = () => {
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: 'easeOut' }}
-      className="page-bottom-safe max-w-[1200px] mx-auto bg-slate-50 px-4 py-4 md:px-6 md:py-6 space-y-6"
+      className="page-bottom-safe max-w-[1200px] mx-auto bg-slate-50 px-4 py-4 md:px-6 md:py-6 space-y-5"
     >
       {/* Header */}
       <div className="text-center">
-        <div className="flex items-center gap-2 text-xs font-bold text-violet-700 uppercase tracking-wide mb-2 justify-center">
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="inline-flex items-center gap-2 text-xs font-bold text-violet-700 uppercase tracking-wide mb-2 bg-violet-50 px-3 py-1.5 rounded-full border border-violet-200">
+          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
           </svg>
           <span>Academic Setup</span>
         </div>
         <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight">Setup Wizard</h1>
-        <p className="text-xs text-slate-600 mt-1 font-semibold">Follow the steps to configure your academic year</p>
+        <p className="text-xs text-slate-500 mt-1 font-semibold">Follow the steps to configure your academic year</p>
       </div>
 
       {/* Step Progress */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-4 md:p-6">
-        <div className="flex items-center gap-1 overflow-x-auto pb-2 scrollbar-none">
-          {STEPS.map((step, idx) => (
-            <button
-              key={step.id}
-              type="button"
-              onClick={() => idx <= currentStep && setCurrentStep(idx)}
-              disabled={idx > currentStep}
-              className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold whitespace-nowrap transition-all ${
-                idx === currentStep
-                  ? 'bg-violet-600 text-white shadow-md'
-                  : idx < currentStep
-                    ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 cursor-pointer'
-                    : 'bg-slate-50 text-slate-400 cursor-not-allowed'
-              }`}
-            >
-              <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black ${
-                idx < currentStep ? 'bg-emerald-500 text-white' : idx === currentStep ? 'bg-white/20' : 'bg-slate-200'
-              }`}>
-                {idx < currentStep ? '\u2713' : idx + 1}
-              </span>
-              <span className="hidden sm:inline">{step.label}</span>
-            </button>
-          ))}
+      <div className="bg-white border border-slate-200 rounded-2xl p-4 md:p-6 shadow-sm">
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+          {STEPS.map((step, idx) => {
+            const status = getStepStatus(idx);
+            return (
+              <button
+                key={step.id}
+                type="button"
+                onClick={() => idx <= currentStep && setCurrentStep(idx)}
+                disabled={idx > currentStep}
+                className={`flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all duration-200 ${
+                  status === 'current'
+                    ? 'bg-violet-600 text-white shadow-lg shadow-violet-200 ring-2 ring-violet-200'
+                    : status === 'completed'
+                      ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 cursor-pointer border border-emerald-200'
+                      : 'bg-slate-50 text-slate-400 cursor-not-allowed border border-transparent'
+                }`}
+              >
+                <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black flex-shrink-0 ${
+                  status === 'completed' ? 'bg-emerald-500 text-white' :
+                  status === 'current' ? 'bg-white/25 text-white' :
+                  'bg-slate-200 text-slate-500'
+                }`}>
+                  {status === 'completed' ? (
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+                  ) : (
+                    idx + 1
+                  )}
+                </span>
+                <span className="hidden md:inline">{step.label}</span>
+                <span className="md:hidden">{step.shortLabel}</span>
+              </button>
+            );
+          })}
+        </div>
+        {/* Step counter for mobile */}
+        <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between md:hidden">
+          <span className="text-xs font-semibold text-slate-500">
+            Step {currentStep + 1} of {STEPS.length}
+          </span>
+          <span className="text-xs font-bold text-violet-600">{STEPS[currentStep].label}</span>
         </div>
       </div>
 
@@ -831,12 +941,12 @@ const AcademicSetup = () => {
       <AnimatePresence mode="wait">
         <motion.div
           key={currentStep}
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -20 }}
-          transition={{ duration: 0.3 }}
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -8 }}
+          transition={{ duration: 0.25 }}
         >
-          <Card>
+          <Card className="shadow-sm">
             <CardBody className="p-6 md:p-8">
               {renderStepContent()}
             </CardBody>
@@ -845,20 +955,35 @@ const AcademicSetup = () => {
       </AnimatePresence>
 
       {/* Navigation Buttons */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between bg-white border border-slate-200 rounded-xl px-4 py-3 shadow-sm">
         <Button
           variant="secondary"
+          size="sm"
           onClick={goToPrevStep}
           disabled={currentStep === 0}
         >
-          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
           Previous
         </Button>
-        {currentStep < STEPS.length - 1 && (
-          <Button variant="primary" onClick={goToNextStep}>
-            Next Step
-            <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+        <div className="flex items-center gap-2">
+          {STEPS.map((_, idx) => (
+            <div
+              key={idx}
+              className={`rounded-full transition-all duration-300 ${
+                idx === currentStep ? 'w-6 h-2 bg-violet-600' :
+                idx < currentStep ? 'w-2 h-2 bg-emerald-400' :
+                'w-2 h-2 bg-slate-200'
+              }`}
+            />
+          ))}
+        </div>
+        {currentStep < STEPS.length - 1 ? (
+          <Button variant="primary" size="sm" onClick={goToNextStep}>
+            Next
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
           </Button>
+        ) : (
+          <div className="w-16" />
         )}
       </div>
 
