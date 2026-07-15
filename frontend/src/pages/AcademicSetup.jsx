@@ -864,6 +864,12 @@ const AcademicSetup = () => {
     }
   };
 
+  const getStepStatus = (idx) => {
+    if (idx < currentStep) return 'completed';
+    if (idx === currentStep) return 'current';
+    return 'upcoming';
+  };
+
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center h-64 gap-3">
