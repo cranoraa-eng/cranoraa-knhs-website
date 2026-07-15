@@ -207,6 +207,8 @@ const AcademicSetup = () => {
         name: semesterForm.name.trim(),
         academic_year: activeAY?.id,
         semester_type: semesterForm.semester_type,
+        start_date: null,
+        end_date: null,
       });
       toast.success('Period created');
       setShowModal(false);
@@ -224,26 +226,28 @@ const AcademicSetup = () => {
     if (defaults.length === 0) return;
     setSaving(true);
     let created = 0;
-    let errors = 0;
+    let failedNames = [];
     for (const period of defaults) {
       try {
         await api.post('/admin/semesters/', {
           name: period.name,
           academic_year: activeAY?.id,
           semester_type: period.semester_type,
+          start_date: null,
+          end_date: null,
         });
         created++;
       } catch (err) {
-        const msg = err.response?.data?.detail || err.response?.data?.academic_year?.[0] || '';
-        if (msg.includes('already exists')) {
+        const detail = parseBackendErrors(err);
+        if (detail.includes('already exists')) {
           created++;
         } else {
-          errors++;
+          failedNames.push(`${period.name}: ${detail}`);
         }
       }
     }
-    if (errors > 0) {
-      toast.error(`${errors} period(s) failed to create. ${created} succeeded.`);
+    if (failedNames.length > 0) {
+      toast.error(`Failed: ${failedNames.join(' | ')}`, { duration: 8000 });
     } else {
       toast.success(`${created} period(s) created`);
     }
