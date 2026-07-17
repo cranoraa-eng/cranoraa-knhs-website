@@ -69,7 +69,7 @@ const StudentManagement = () => {
       
       setShowAddModal(false);
       setNewStudent({ username: '', first_name: '', last_name: '', email: '', password: '', grade_level: '', sex: '' });
-      fetchData();
+      refetch();
 
       Swal.fire({
         icon: 'success',
@@ -171,7 +171,7 @@ const StudentManagement = () => {
           }
           
           setShowImportModal(false);
-          fetchData();
+          refetch();
         } catch (err) {
           toast.dismiss(loadingToast);
           toast.error('Failed to parse Excel file');
@@ -198,7 +198,7 @@ const StudentManagement = () => {
     if (result.isConfirmed) {
       try {
         await api.delete(`/users/${id}/`);
-        fetchData();
+        refetch();
         toast.success('Student account deleted');
       } catch (err) {
         console.error('Failed to delete student:', err);
@@ -223,8 +223,8 @@ const StudentManagement = () => {
     if (result.isConfirmed) {
       try {
         await api.post('/users/bulk-delete/', { user_ids: selectedIds });
-        setSelectedIds([]);
-        fetchData();
+setSelectedIds([]);
+      refetch();
         toast.success(`Successfully deleted ${selectedIds.length} students`);
       } catch (err) {
         toast.error(err.response?.data?.error || 'Failed to perform bulk delete');
@@ -304,7 +304,7 @@ const StudentManagement = () => {
 
         const classroom = classrooms.find(c => String(c.id) === String(value));
         toast.success(`Assigned to ${classroom?.name || 'section'}`);
-        fetchData();
+        refetch();
       } catch (err) {
         toast.error(err.response?.data?.error || err.response?.data?.detail?.[0] || 'Failed to assign section');
       }
@@ -325,7 +325,7 @@ const StudentManagement = () => {
     try {
       const response = await api.post(`/users/${student.id}/update_status/`, { status: newStatus });
       toast.success(response.data.status);
-      fetchData();
+      refetch();
     } catch (err) {
       toast.error('Failed to update status');
     }
@@ -340,7 +340,7 @@ const StudentManagement = () => {
         'Sex': s.profile?.sex || 'N/A',
         'Classroom': s.profile?.classroom_name || 'N/A',
         'Email': s.email || '',
-        'Temp Password': s.must_change_password ? (s.temp_password_storage || 'Pending') : 'Changed',
+        'Temp Password': s.must_change_password ? 'Pending' : 'Changed',
         'Status': s.account_status
       };
 
@@ -1003,8 +1003,8 @@ const StudentManagement = () => {
               <ProfileField label="Section" value={selectedStudent.profile?.classroom_name} />
               <ProfileField label="Email" value={selectedStudent.email} />
               <ProfileField label="Status" value={selectedStudent.account_status} />
-              {selectedStudent.must_change_password && selectedStudent.temp_password_storage && (
-                <ProfileField label="Temp Password" value={selectedStudent.temp_password_storage} />
+              {selectedStudent.must_change_password && (
+                <ProfileField label="Temp Password" value="Pending" />
               )}
             </div>
             <div className="px-3 sm:px-4 md:px-5 py-2.5 sm:py-3 border-t border-gray-200 bg-gray-50 flex justify-end">

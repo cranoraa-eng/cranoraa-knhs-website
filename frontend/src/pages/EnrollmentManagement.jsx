@@ -25,6 +25,12 @@ const EnrollmentManagement = () => {
   const applications = data.applications?.results || data.applications || [];
   const analytics = data.analytics || null;
   const classrooms = data.classrooms?.results || data.classrooms || [];
+
+  // Dynamic school years from applications
+  const schoolYears = useMemo(() => {
+    const years = new Set(applications.map(a => a.school_year).filter(Boolean));
+    return Array.from(years).sort().reverse();
+  }, [applications]);
   const [selected, setSelected] = useState(null);
   const [selectedIds, setSelectedIds] = useState([]);
   const [filter, setFilter] = useState('all');
@@ -46,7 +52,7 @@ const EnrollmentManagement = () => {
         ? await api.delete(`/enrollment-applications/${id}/delete_application/`)
         : await api.post(`/enrollment-applications/${id}/${action}/`, opts);
       Swal.fire({ icon: 'success', title: 'Done', text: res.data?.status || res.data?.message || 'Action completed.' });
-      fetchAll();
+      refetch();
       if (selected?.id === id && action !== 'enroll_student') setSelected(null);
       return res.data;
     } catch (err) {
@@ -78,7 +84,7 @@ const EnrollmentManagement = () => {
       try {
         const res = await api.post(`/enrollment-applications/${app.id}/start-review/`, { remarks: '' });
         setSelected({ ...app, status: 'under_review' });
-        fetchAll();
+        refetch();
       } catch {}
     }
   };
@@ -183,31 +189,6 @@ const EnrollmentManagement = () => {
       }
     });
     if (value) handleAction(id, 'assign_section', { classroom_id: value });
-  };
-
-  const editCapacity = async (classroomId, currentCapacity) => {
-    const { value } = await Swal.fire({
-      title: 'Update Classroom Capacity',
-      input: 'number',
-      inputValue: currentCapacity || 40,
-      inputAttributes: { min: 1, max: 200 },
-      inputLabel: 'Maximum students',
-      showCancelButton: true,
-      confirmButtonText: 'Update',
-      confirmButtonColor: '#7C3AED',
-    });
-    if (value) {
-      try {
-        await api.post('/enrollment-applications/update-classroom-capacity/', {
-          classroom_id: classroomId,
-          capacity: parseInt(value),
-        });
-        Swal.fire({ icon: 'success', title: 'Updated', text: 'Classroom capacity updated.' });
-        fetchAll();
-      } catch (err) {
-        Swal.fire({ icon: 'error', title: 'Error', text: err.response?.data?.error || 'Failed to update capacity.' });
-      }
-    }
   };
 
   const verifyDoc = async (appId, docId, status) => {
@@ -376,8 +357,7 @@ const EnrollmentManagement = () => {
           <select value={schoolYearFilter} onChange={e => setSchoolYearFilter(e.target.value)}
             className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 focus:outline-none focus:ring-2 focus:ring-violet-500/40">
             <option value="">All Years</option>
-            <option value="2025-2026">2025-2026</option>
-            <option value="2026-2027">2026-2027</option>
+            {schoolYears.map(y => <option key={y} value={y}>{y}</option>)}
           </select>
         </div>
 

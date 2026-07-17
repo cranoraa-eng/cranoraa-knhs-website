@@ -43,7 +43,7 @@ export default function ParentManagement() {
       });
       setShowAddModal(false);
       setForm(emptyForm);
-      fetchAll();
+      refetch();
       Swal.fire({
         icon: 'success',
         title: 'Parent Account Created',
@@ -90,7 +90,7 @@ export default function ParentManagement() {
       });
       toast.success('Linked students updated');
       setShowLinkModal(false);
-      fetchAll();
+      refetch();
     } catch (err) {
       toast.error(err.response?.data?.error || 'Failed to update links');
     } finally { setLinkSaving(false); }
@@ -109,7 +109,7 @@ export default function ParentManagement() {
     try {
       await api.delete(`/users/${id}/`);
       toast.success('Parent account deleted');
-      fetchAll();
+      refetch();
     } catch { toast.error('Failed to delete'); }
   };
 
@@ -285,9 +285,9 @@ export default function ParentManagement() {
                         }`}>{p.account_status}</span>
                       </td>
                       <td className="px-4 py-3 hidden lg:table-cell">
-                        {p.must_change_password && p.temp_password_storage ? (
+                        {p.must_change_password ? (
                           <span className="font-mono text-[10px] text-amber-600 bg-amber-50 px-1.5 py-0.5 border border-amber-200 select-all cursor-help" title="Visible until parent changes password">
-                            {p.temp_password_storage}
+                            Pending
                           </span>
                         ) : (
                           <span className="text-[10px] text-slate-400">Changed</span>

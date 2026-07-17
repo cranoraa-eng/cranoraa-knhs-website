@@ -76,7 +76,7 @@ const Teachers = () => {
         sex: '',
         staff_title: 'teacher'
       });
-      fetchTeachers();
+      refetch();
 
       Swal.fire({
         icon: 'success',
@@ -115,7 +115,7 @@ const Teachers = () => {
       });
       setShowEditModal(false);
       setEditingTeacher(null);
-      fetchTeachers();
+      refetch();
       toast.success('Teacher updated successfully!');
     } catch (err) {
       console.error('Failed to update teacher:', err);
@@ -137,7 +137,7 @@ const Teachers = () => {
     if (result.isConfirmed) {
       try {
         await api.delete(`/users/${id}/`);
-        fetchTeachers();
+        refetch();
         toast.success('Teacher account deleted');
       } catch (err) {
         console.error('Failed to delete teacher:', err);
@@ -163,7 +163,7 @@ const Teachers = () => {
         additional_roles: roleForm.additional_roles,
       });
       setEditingRolesId(null);
-      fetchTeachers();
+      refetch();
       toast.success('Roles updated');
     } catch (err) {
       console.error('Failed to update roles:', err);
@@ -212,7 +212,7 @@ const Teachers = () => {
           title: 'Password Reset',
           html: `New temporary password: <strong>${response.data.temporary_password}</strong><br/>The teacher will be forced to change it on login.`,
         });
-        fetchTeachers();
+        refetch();
       } catch (err) {
         toast.error('Failed to reset password');
       }
@@ -223,7 +223,7 @@ const Teachers = () => {
     try {
       const response = await api.post(`/users/${teacher.id}/update_status/`, { status: newStatus });
       toast.success(response.data.status);
-      fetchTeachers();
+      refetch();
     } catch (err) {
       toast.error('Failed to update status');
     }
@@ -236,7 +236,7 @@ const Teachers = () => {
       'Last Name': t.last_name,
       'Email': t.email,
       'Phone': t.profile?.phone_number || '',
-      'Temp Password': t.must_change_password ? (t.temp_password_storage || 'Pending') : 'Changed',
+      'Temp Password': t.must_change_password ? 'Pending' : 'Changed',
       'Status': t.account_status
     }));
 
@@ -385,7 +385,7 @@ const Teachers = () => {
           }
           
           setShowImportModal(false);
-          fetchTeachers();
+          refetch();
         } catch (err) {
           toast.dismiss(loadingToast);
           toast.error('Failed to parse Excel file');
@@ -621,11 +621,11 @@ const Teachers = () => {
                         </span>
                       ))}
                     </div>
-                    {teacher.must_change_password && teacher.temp_password_storage && (
+                    {teacher.must_change_password && (
                       <div className="mt-1 flex items-center gap-1">
                         <span className="text-[8px] font-bold text-amber-600 uppercase">Temp:</span>
                         <span className="text-[9px] font-mono font-bold text-amber-600 bg-amber-50 px-1.5 py-0.5 border border-amber-200 select-all cursor-help" title="Visible until teacher changes password">
-                          {teacher.temp_password_storage}
+                          Pending
                         </span>
                       </div>
                     )}

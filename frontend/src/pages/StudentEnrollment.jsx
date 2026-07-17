@@ -94,14 +94,10 @@ const StudentEnrollment = () => {
     const loadingToast = toast.loading(`Enrolling ${selectedStudents.length} student(s)...`);
     
     try {
-      // Since backend usually handles single enrollment, we map and await all
-      // If backend had a bulk endpoint, we would use that.
-      await Promise.all(selectedStudents.map(studentId => 
-        api.post('/enrollments/', {
-          classroom: parseInt(formData.classroom),
-          student: parseInt(studentId),
-        })
-      ));
+      // Use bulk enrollment endpoint for efficiency
+      await api.post(`/classrooms/${parseInt(formData.classroom)}/bulk_enroll/`, {
+        student_ids: selectedStudents.map(id => parseInt(id)),
+      });
       
       toast.success(`${selectedStudents.length} student(s) enrolled successfully`, { id: loadingToast });
       setShowModal(false);
