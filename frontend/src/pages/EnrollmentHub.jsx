@@ -886,5 +886,3 @@ export default function EnrollmentHub() {
     </div>
   );
 }
-
-export default EnrollmentHub;

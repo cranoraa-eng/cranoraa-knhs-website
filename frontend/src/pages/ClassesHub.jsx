@@ -354,5 +354,3 @@ export default function ClassesHub() {
     </div>
   );
 }
-
-export default ClassesHub;

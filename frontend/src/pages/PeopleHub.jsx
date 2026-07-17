@@ -351,5 +351,3 @@ export default function PeopleHub() {
     </div>
   );
 }
-
-export default PeopleHub;
