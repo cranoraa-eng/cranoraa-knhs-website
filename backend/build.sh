@@ -22,3 +22,7 @@ else
     echo "Seeding website content..."
     python manage.py seed_website_content
 fi
+
+# Seed faculty staff accounts (idempotent — skips existing usernames)
+echo "Seeding faculty accounts..."
+python manage.py seed_faculty_accounts
