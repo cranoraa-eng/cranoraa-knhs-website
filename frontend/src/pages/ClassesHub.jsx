@@ -7,6 +7,89 @@ import Swal from 'sweetalert2';
 import { LoadingSpinner, EmptyState, Button, Badge } from '../components/ui';
 
 const GRADE_LEVELS = ['Grade 7', 'Grade 8', 'Grade 9', 'Grade 10', 'Grade 11', 'Grade 12'];
+const DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+const DAY_LABELS = { monday: 'Mon', tuesday: 'Tue', wednesday: 'Wed', thursday: 'Thu', friday: 'Fri', saturday: 'Sat' };
+
+function ScheduleGrid({ schedules }) {
+  const byDay = useMemo(() => {
+    const map = {};
+    DAYS.forEach(d => { map[d] = []; });
+    schedules.forEach(s => {
+      const day = s.time_slot_detail?.day;
+      if (day && map[day]) map[day].push(s);
+    });
+    DAYS.forEach(d => { map[d].sort((a, b) => (a.time_slot_detail?.start_time || '').localeCompare(b.time_slot_detail?.start_time || '')); });
+    return map;
+  }, [schedules]);
+
+  const timeSlots = useMemo(() => {
+    const seen = new Set();
+    return schedules
+      .map(s => s.time_slot_detail)
+      .filter(ts => {
+        if (!ts || seen.has(ts.start_time + ts.end_time)) return false;
+        seen.add(ts.start_time + ts.end_time);
+        return true;
+      })
+      .sort((a, b) => (a.start_time || '').localeCompare(b.start_time || ''));
+  }, [schedules]);
+
+  const scheduleMap = useMemo(() => {
+    const map = {};
+    schedules.forEach(s => {
+      const day = s.time_slot_detail?.day;
+      const key = `${day}_${s.time_slot_detail?.start_time}_${s.time_slot_detail?.end_time}`;
+      map[key] = s;
+    });
+    return map;
+  }, [schedules]);
+
+  if (timeSlots.length === 0) return null;
+
+  return (
+    <div className="border border-slate-200 rounded-lg bg-white overflow-hidden">
+      <div className="overflow-x-auto">
+        <table className="w-full text-[11px]">
+          <thead>
+            <tr className="bg-slate-50 border-b border-slate-200">
+              <th className="px-3 py-2 text-left font-bold text-slate-600 whitespace-nowrap w-28">Time</th>
+              {DAYS.map(d => (
+                <th key={d} className="px-3 py-2 text-center font-bold text-slate-600 whitespace-nowrap">{DAY_LABELS[d]}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100">
+            {timeSlots.map((ts, i) => (
+              <tr key={i} className="hover:bg-slate-50/50">
+                <td className="px-3 py-2 text-slate-500 font-semibold whitespace-nowrap">
+                  <div>{ts.start_time_display}</div>
+                  <div className="text-[9px] text-slate-400">— {ts.end_time_display}</div>
+                </td>
+                {DAYS.map(d => {
+                  const key = `${d}_${ts.start_time}_${ts.end_time}`;
+                  const sched = scheduleMap[key];
+                  return (
+                    <td key={d} className="px-2 py-1.5 text-center">
+                      {sched ? (
+                        <div className="bg-violet-50 border border-violet-200 rounded px-2 py-1.5">
+                          <div className="font-bold text-violet-800 truncate">{sched.subject_code}</div>
+                          <div className="text-[9px] text-violet-600 truncate">{sched.teacher_name}</div>
+                          {sched.room_name && <div className="text-[9px] text-slate-400 truncate">{sched.room_name}</div>}
+                        </div>
+                      ) : (
+                        <span className="text-slate-300">—</span>
+                      )}
+                    </td>
+                  );
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
 
 export default function ClassesHub() {
   const navigate = useNavigate();
@@ -27,6 +110,8 @@ export default function ClassesHub() {
   const [filterLevel, setFilterLevel] = useState('');
   const [formData, setFormData] = useState({ name: '', teacher: '', grade_level: '' });
   const [sectionSubjects, setSectionSubjects] = useState({});
+  const [sectionSchedules, setSectionSchedules] = useState({});
+  const [expandedSchedule, setExpandedSchedule] = useState(null);
 
   const activeYear = academicYears.find(y => y.is_active) || academicYears[0];
   useEffect(() => {
@@ -52,6 +137,21 @@ export default function ClassesHub() {
     };
     load();
   }, [classes]);
+
+  useEffect(() => {
+    if (!classes.length || !selectedYearId) return;
+    const load = async () => {
+      const results = {};
+      await Promise.all(classes.map(async (cls) => {
+        try {
+          const res = await api.get(`/schedules/?classroom=${cls.id}&academic_year=${selectedYearId}`);
+          results[cls.id] = Array.isArray(res.data) ? res.data : res.data?.results || [];
+        } catch { results[cls.id] = []; }
+      }));
+      setSectionSchedules(results);
+    };
+    load();
+  }, [classes, selectedYearId]);
 
   const filteredClasses = useMemo(() => {
     let filtered = classes;
@@ -197,6 +297,16 @@ export default function ClassesHub() {
                             </div>
                           </div>
                           <div className="flex items-center gap-2 flex-shrink-0">
+                            {(sectionSchedules[cls.id] || []).length > 0 && (
+                              <Button
+                                variant={expandedSchedule === cls.id ? 'primary' : 'secondary'}
+                                size="sm"
+                                onClick={() => setExpandedSchedule(expandedSchedule === cls.id ? null : cls.id)}
+                              >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                                Schedule
+                              </Button>
+                            )}
                             <Button variant="secondary" size="sm" onClick={() => { setEditingClass(cls); setFormData({ name: cls.name, grade_level: cls.grade_level, teacher: cls.teacher || '' }); setShowModal(true); }}>
                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
                               Edit
@@ -226,6 +336,22 @@ export default function ClassesHub() {
                             <button onClick={() => navigate('/subjects?tab=assignments')} className="text-xs font-semibold text-slate-400 hover:text-violet-600 transition-colors">
                               + Assign subjects
                             </button>
+                          </div>
+                        )}
+                        {(sectionSchedules[cls.id] || []).length > 0 && (
+                          <div className="mt-3 ml-14">
+                            <button
+                              onClick={() => setExpandedSchedule(expandedSchedule === cls.id ? null : cls.id)}
+                              className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-violet-600 transition-colors"
+                            >
+                              <svg className={`w-3.5 h-3.5 transition-transform ${expandedSchedule === cls.id ? 'rotate-90' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                              {expandedSchedule === cls.id ? 'Hide' : 'View'} Schedule ({sectionSchedules[cls.id].length} periods)
+                            </button>
+                          </div>
+                        )}
+                        {expandedSchedule === cls.id && (sectionSchedules[cls.id] || []).length > 0 && (
+                          <div className="mt-3 ml-14 overflow-x-auto">
+                            <ScheduleGrid schedules={sectionSchedules[cls.id]} />
                           </div>
                         )}
                       </div>
