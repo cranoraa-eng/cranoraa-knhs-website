@@ -247,10 +247,6 @@ const Layout = () => {
       '/enrollment': [
         { id: 'applications', label: 'Applications', roles: ['admin'] },
         { id: 'enroll-students', label: 'Enroll Students', roles: ['admin'] }
-      ],
-      '/subjects': [
-        { id: 'subjects', label: 'Subjects', roles: ['admin'] },
-        { id: 'assignments', label: 'Assignments', roles: ['admin'] }
       ]
     };
     const tabs = allTabs[path];
