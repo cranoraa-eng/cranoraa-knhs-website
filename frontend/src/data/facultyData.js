@@ -26,7 +26,7 @@ export const administration = [
     id: 'jaylen-navato',
     name: 'Jaylen S. Navato',
     position: 'School Guidance Designate',
-    photo: '/faculty/jaylen-navato.jpg',
+    photo: '/faculty/jaylen-navato.JPG',
   },
   {
     id: 'michelyn-biera',
