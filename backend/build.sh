@@ -26,3 +26,7 @@ fi
 # Seed faculty staff accounts (idempotent — skips existing usernames)
 echo "Seeding faculty accounts..."
 python manage.py seed_faculty_accounts
+
+# Update existing accounts to correct DepEd rank titles
+echo "Updating staff titles to DepEd ranks..."
+python manage.py update_staff_titles

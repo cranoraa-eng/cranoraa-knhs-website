@@ -11,15 +11,30 @@ class User(AbstractUser):
     ]
 
     STAFF_TITLE_CHOICES = [
-        ('teacher', 'Teacher'),
-        ('registrar', 'Registrar'),
-        ('advisory', 'Advisory'),
-        ('principal', 'Principal'),
-        ('guidance_counselor', 'Guidance Counselor'),
-        ('it_staff', 'IT Staff'),
-        ('librarian', 'Librarian'),
-        ('cashier', 'Cashier'),
-        ('other', 'Other'),
+        # ── DepEd teaching ranks ───────────────────────────────────────────
+        ('teacher_i',             'Teacher I'),
+        ('teacher_ii',            'Teacher II'),
+        ('teacher_iii',           'Teacher III'),
+        ('teacher_iv',            'Teacher IV'),
+        ('teacher_v',             'Teacher V'),
+        ('teacher_vi',            'Teacher VI'),
+        ('master_teacher_i',      'Master Teacher I'),
+        ('master_teacher_ii',     'Master Teacher II'),
+        ('special_science_teacher_i', 'Special Science Teacher I'),
+        ('als_teacher',           'ALS Teacher'),
+        # ── Administrative / non-teaching ─────────────────────────────────
+        ('principal',             'School Principal I'),
+        ('guidance_counselor',    'Guidance Counselor'),
+        ('administrative_officer','Administrative Officer I'),
+        ('admin_assistant',       'Administrative Assistant'),
+        ('registrar',             'Registrar'),
+        ('librarian',             'Librarian'),
+        ('it_staff',              'IT Staff'),
+        ('cashier',               'Cashier'),
+        # ── Legacy / fallback ─────────────────────────────────────────────
+        ('teacher',               'Teacher'),
+        ('advisory',              'Advisory'),
+        ('other',                 'Other'),
     ]
 
     STATUS_CHOICES = [
@@ -31,7 +46,7 @@ class User(AbstractUser):
 
     email = models.EmailField(unique=True, null=True, blank=True)
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='student', db_index=True)
-    staff_title = models.CharField(max_length=20, choices=STAFF_TITLE_CHOICES, null=True, blank=True, db_index=True)
+    staff_title = models.CharField(max_length=30, choices=STAFF_TITLE_CHOICES, null=True, blank=True, db_index=True)
     additional_roles = models.TextField(blank=True, default='', help_text="Comma-separated additional staff titles e.g. teacher,guidance_counselor")
     is_verified = models.BooleanField(default=False)
     is_approved = models.BooleanField(default=False)

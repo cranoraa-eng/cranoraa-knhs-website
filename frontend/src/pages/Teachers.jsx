@@ -116,15 +116,30 @@ const Teachers = () => {
   useScrollLock(showAddModal || showEditModal || showImportModal);
 
   const STAFF_TITLES = [
-    { value: 'teacher', label: 'Teacher' },
-    { value: 'registrar', label: 'Registrar' },
-    { value: 'advisory', label: 'Advisory' },
-    { value: 'principal', label: 'Principal' },
-    { value: 'guidance_counselor', label: 'Guidance Counselor' },
-    { value: 'it_staff', label: 'IT Staff' },
-    { value: 'librarian', label: 'Librarian' },
-    { value: 'cashier', label: 'Cashier' },
-    { value: 'other', label: 'Other' },
+    // ── DepEd teaching ranks ──────────────────────────────────────────────
+    { value: 'teacher_i',                  label: 'Teacher I' },
+    { value: 'teacher_ii',                 label: 'Teacher II' },
+    { value: 'teacher_iii',                label: 'Teacher III' },
+    { value: 'teacher_iv',                 label: 'Teacher IV' },
+    { value: 'teacher_v',                  label: 'Teacher V' },
+    { value: 'teacher_vi',                 label: 'Teacher VI' },
+    { value: 'master_teacher_i',           label: 'Master Teacher I' },
+    { value: 'master_teacher_ii',          label: 'Master Teacher II' },
+    { value: 'special_science_teacher_i',  label: 'Special Science Teacher I' },
+    { value: 'als_teacher',                label: 'ALS Teacher' },
+    // ── Administrative / non-teaching ────────────────────────────────────
+    { value: 'principal',                  label: 'School Principal I' },
+    { value: 'guidance_counselor',         label: 'Guidance Counselor' },
+    { value: 'administrative_officer',     label: 'Administrative Officer I' },
+    { value: 'admin_assistant',            label: 'Administrative Assistant' },
+    { value: 'registrar',                  label: 'Registrar' },
+    { value: 'librarian',                  label: 'Librarian' },
+    { value: 'it_staff',                   label: 'IT Staff' },
+    { value: 'cashier',                    label: 'Cashier' },
+    // ── Legacy / fallback ────────────────────────────────────────────────
+    { value: 'teacher',                    label: 'Teacher (Generic)' },
+    { value: 'advisory',                   label: 'Advisory' },
+    { value: 'other',                      label: 'Other' },
   ];
 
   const handleAddTeacher = async (e) => {

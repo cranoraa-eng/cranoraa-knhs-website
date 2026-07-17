@@ -54,7 +54,7 @@ FACULTY_ROSTER = [
         "last_name":   "Biera",
         "middle_name": "B.",
         "position":    "Administrative Officer I",
-        "staff_title": "other",
+        "staff_title": "administrative_officer",
         "photo_file":  "michelyn-biera.jpg",
     },
     {
@@ -63,7 +63,7 @@ FACULTY_ROSTER = [
         "last_name":   "Sagrado",
         "middle_name": "B.",
         "position":    "Administrative Assistant III",
-        "staff_title": "other",
+        "staff_title": "admin_assistant",
         "photo_file":  "cherry-sagrado.jpg",
     },
 
@@ -74,7 +74,7 @@ FACULTY_ROSTER = [
         "last_name":   "Perez",
         "middle_name": "S.",
         "position":    "Master Teacher I",
-        "staff_title": "teacher",
+        "staff_title": "master_teacher_i",
         "photo_file":  "beverly-perez.JPG",
     },
     {
@@ -83,7 +83,7 @@ FACULTY_ROSTER = [
         "last_name":   "Actub",
         "middle_name": "B.",
         "position":    "Special Science Teacher I",
-        "staff_title": "teacher",
+        "staff_title": "special_science_teacher_i",
         "photo_file":  "jessica-actub.JPG",
     },
 
@@ -94,7 +94,7 @@ FACULTY_ROSTER = [
         "last_name":   "Bartolata",
         "middle_name": "D.",
         "position":    "Teacher VI",
-        "staff_title": "teacher",
+        "staff_title": "teacher_vi",
         "photo_file":  "rusty-bartolata.JPG",
     },
     {
@@ -103,7 +103,7 @@ FACULTY_ROSTER = [
         "last_name":   "Rangaig",
         "middle_name": "A.",
         "position":    "Teacher VI",
-        "staff_title": "teacher",
+        "staff_title": "teacher_vi",
         "photo_file":  "tahany-rangaig.JPG",
     },
     {
@@ -112,7 +112,7 @@ FACULTY_ROSTER = [
         "last_name":   "Tatoy",
         "middle_name": "B.",
         "position":    "Teacher VI",
-        "staff_title": "teacher",
+        "staff_title": "teacher_vi",
         "photo_file":  "jonathan-tatoy.JPG",
     },
 
@@ -123,7 +123,7 @@ FACULTY_ROSTER = [
         "last_name":   "Gedaro",
         "middle_name": "E.",
         "position":    "Teacher V",
-        "staff_title": "teacher",
+        "staff_title": "teacher_v",
         "photo_file":  "ellen-gedaro.JPG",
     },
     {
@@ -132,7 +132,7 @@ FACULTY_ROSTER = [
         "last_name":   "Gomez",
         "middle_name": "P.",
         "position":    "Teacher V",
-        "staff_title": "teacher",
+        "staff_title": "teacher_v",
         "photo_file":  "mildred-gomez.JPG",
     },
     {
@@ -141,7 +141,7 @@ FACULTY_ROSTER = [
         "last_name":   "Valdez",
         "middle_name": "E.",
         "position":    "Teacher V",
-        "staff_title": "teacher",
+        "staff_title": "teacher_v",
         "photo_file":  "janice-valdez.JPG",
     },
 
@@ -152,7 +152,7 @@ FACULTY_ROSTER = [
         "last_name":   "Acaso",
         "middle_name": "B.",
         "position":    "Teacher IV",
-        "staff_title": "teacher",
+        "staff_title": "teacher_iv",
         "photo_file":  "kimberly-acaso.JPG",
     },
     {
@@ -161,7 +161,7 @@ FACULTY_ROSTER = [
         "last_name":   "Catubig",
         "middle_name": "B.",
         "position":    "Teacher IV",
-        "staff_title": "teacher",
+        "staff_title": "teacher_iv",
         "photo_file":  "lucelle-catubig.JPG",
     },
     {
@@ -170,7 +170,7 @@ FACULTY_ROSTER = [
         "last_name":   "Pabillar",
         "middle_name": "P.",
         "position":    "Teacher IV",
-        "staff_title": "teacher",
+        "staff_title": "teacher_iv",
         "photo_file":  "clarence-pabillar.JPG",
     },
 
@@ -181,8 +181,8 @@ FACULTY_ROSTER = [
         "last_name":   "Bacus",
         "middle_name": "J.",
         "position":    "Teacher III",
-        "staff_title": "teacher",
-        "photo_file":  None,          # no photo yet
+        "staff_title": "teacher_iii",
+        "photo_file":  None,
     },
     {
         "username":    "norhata.casana",
@@ -190,7 +190,7 @@ FACULTY_ROSTER = [
         "last_name":   "Casana",
         "middle_name": "B.",
         "position":    "Teacher III",
-        "staff_title": "teacher",
+        "staff_title": "teacher_iii",
         "photo_file":  "norhata-casana.JPG",
     },
     {
@@ -199,7 +199,7 @@ FACULTY_ROSTER = [
         "last_name":   "Cena",
         "middle_name": "C.",
         "position":    "Teacher III",
-        "staff_title": "teacher",
+        "staff_title": "teacher_iii",
         "photo_file":  "clarice-cena.JPG",
     },
     {
@@ -208,7 +208,7 @@ FACULTY_ROSTER = [
         "last_name":   "Clordealta",
         "middle_name": "L.",
         "position":    "Teacher III",
-        "staff_title": "teacher",
+        "staff_title": "teacher_iii",
         "photo_file":  "jellieta-clordealta.JPG",
     },
     {
@@ -217,7 +217,7 @@ FACULTY_ROSTER = [
         "last_name":   "Coca",
         "middle_name": "C.",
         "position":    "Teacher III",
-        "staff_title": "teacher",
+        "staff_title": "teacher_iii",
         "photo_file":  "hegenia-coca.JPG",
     },
     {
@@ -226,7 +226,7 @@ FACULTY_ROSTER = [
         "last_name":   "Dicol",
         "middle_name": "D.",
         "position":    "Teacher III",
-        "staff_title": "teacher",
+        "staff_title": "teacher_iii",
         "photo_file":  "monalissa-dicol.JPG",
     },
     {
@@ -235,7 +235,7 @@ FACULTY_ROSTER = [
         "last_name":   "Garma",
         "middle_name": "S.",
         "position":    "Teacher III",
-        "staff_title": "teacher",
+        "staff_title": "teacher_iii",
         "photo_file":  "leo-garma.JPG",
     },
     {
@@ -244,7 +244,7 @@ FACULTY_ROSTER = [
         "last_name":   "Layos",
         "middle_name": "M.",
         "position":    "Teacher III",
-        "staff_title": "teacher",
+        "staff_title": "teacher_iii",
         "photo_file":  None,
     },
     {
@@ -253,7 +253,7 @@ FACULTY_ROSTER = [
         "last_name":   "Nunez",
         "middle_name": "M.",
         "position":    "Teacher III",
-        "staff_title": "teacher",
+        "staff_title": "teacher_iii",
         "photo_file":  "mary-nunez.JPG",
     },
     {
@@ -262,7 +262,7 @@ FACULTY_ROSTER = [
         "last_name":   "Pastidio",
         "middle_name": "T.",
         "position":    "Teacher III",
-        "staff_title": "teacher",
+        "staff_title": "teacher_iii",
         "photo_file":  "krystine-pastidio.JPG",
     },
 
@@ -273,7 +273,7 @@ FACULTY_ROSTER = [
         "last_name":   "Turtosa",
         "middle_name": "F.",
         "position":    "Teacher II",
-        "staff_title": "teacher",
+        "staff_title": "teacher_ii",
         "photo_file":  "maria-turtosa.JPG",
     },
     {
@@ -282,7 +282,7 @@ FACULTY_ROSTER = [
         "last_name":   "Macatol",
         "middle_name": "H.",
         "position":    "Teacher II",
-        "staff_title": "teacher",
+        "staff_title": "teacher_ii",
         "photo_file":  "grace-macatol.JPG",
     },
 
@@ -293,7 +293,7 @@ FACULTY_ROSTER = [
         "last_name":   "Amer",
         "middle_name": "S.",
         "position":    "Teacher I",
-        "staff_title": "teacher",
+        "staff_title": "teacher_i",
         "photo_file":  "tasneemah-amer.JPG",
     },
     {
@@ -302,7 +302,7 @@ FACULTY_ROSTER = [
         "last_name":   "Cabual",
         "middle_name": "D.",
         "position":    "Teacher I",
-        "staff_title": "teacher",
+        "staff_title": "teacher_i",
         "photo_file":  "elizalde-cabual.JPG",
     },
     {
@@ -311,7 +311,7 @@ FACULTY_ROSTER = [
         "last_name":   "Cadiz",
         "middle_name": "B.",
         "position":    "Teacher I",
-        "staff_title": "teacher",
+        "staff_title": "teacher_i",
         "photo_file":  "shane-cadiz.JPG",
     },
     {
@@ -320,7 +320,7 @@ FACULTY_ROSTER = [
         "last_name":   "Cantila",
         "middle_name": "V.",
         "position":    "Teacher I",
-        "staff_title": "teacher",
+        "staff_title": "teacher_i",
         "photo_file":  "annabel-cantila.JPG",
     },
     {
@@ -329,7 +329,7 @@ FACULTY_ROSTER = [
         "last_name":   "Castillon",
         "middle_name": "A.",
         "position":    "Teacher I",
-        "staff_title": "teacher",
+        "staff_title": "teacher_i",
         "photo_file":  "darwin-castillon.JPG",
     },
     {
@@ -338,7 +338,7 @@ FACULTY_ROSTER = [
         "last_name":   "Paler",
         "middle_name": "R.",
         "position":    "Teacher I",
-        "staff_title": "teacher",
+        "staff_title": "teacher_i",
         "photo_file":  "julius-paler.JPG",
     },
     {
@@ -347,7 +347,7 @@ FACULTY_ROSTER = [
         "last_name":   "Tatoy",
         "middle_name": "G.",
         "position":    "Teacher I",
-        "staff_title": "teacher",
+        "staff_title": "teacher_i",
         "photo_file":  "chozily-tatoy.JPG",
     },
 
@@ -358,7 +358,7 @@ FACULTY_ROSTER = [
         "last_name":   "Maghinay",
         "middle_name": "L.",
         "position":    "ALS Teacher",
-        "staff_title": "teacher",
+        "staff_title": "als_teacher",
         "photo_file":  "aldrin-maghinay.JPG",
     },
 ]
