@@ -186,6 +186,7 @@ const Layout = () => {
     if (path === '/classes') return 'Classes';
     if (path === '/people') return 'People';
     if (path === '/subjects') return 'Subjects';
+    if (path === '/schedules') return 'Schedules';
     if (path === '/my-classes') return 'My Classes';
     if (path === '/my-schedule') return 'My Schedule';
     if (path === '/materials') return 'Materials';
@@ -273,7 +274,7 @@ const Layout = () => {
       admin: [
         { label: 'Academic Setup', path: '/academic-setup', category: 'Management', description: 'Set up academic year' },
         { label: 'Subjects', path: '/subjects', category: 'Management', description: 'Manage curriculum subjects' },
-        { label: 'Schedules', path: '/subjects?tab=assignments', category: 'Management', description: 'Manage schedules' },
+        { label: 'Schedules', path: '/schedules', category: 'Management', description: 'Manage schedules' },
         { label: 'Enrollment', path: '/enrollment?tab=applications', category: 'Management', description: 'Enrollment applications' },
         { label: 'Enroll Students', path: '/enrollment?tab=enroll-students', category: 'Management', description: 'Enroll students' },
         { label: 'Class Sections', path: '/classes', category: 'Management', description: 'Manage class sections' },
@@ -348,6 +349,7 @@ const Layout = () => {
           { to: '/enrollment', label: 'Enrollment', icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4' },
           { to: '/classes', label: 'Classes', icon: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4' },
           { to: '/subjects', label: 'Subjects', icon: 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332-.477-4.5-1.253' },
+          { to: '/schedules', label: 'Schedules', icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z' },
           { to: '/materials', label: 'Materials', icon: 'M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z' },
           { to: '/announcements', label: 'Announcements', icon: 'M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z' },
         ]
