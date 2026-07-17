@@ -887,8 +887,8 @@ class GradeReportViewSet(viewsets.ModelViewSet):
         elif user.role == 'student':
             return queryset.filter(student=user)
         elif user.role == 'parent':
-            from ..models import ParentLink
-            child_ids = ParentLink.objects.filter(parent=user).values_list('student_id', flat=True)
+            profile = getattr(user, 'profile', None)
+            child_ids = profile.linked_students.values_list('id', flat=True) if profile else []
             return queryset.filter(student_id__in=child_ids)
         return queryset.none()
 

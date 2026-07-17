@@ -190,8 +190,8 @@ class BehavioralRecordViewSet(viewsets.ModelViewSet):
                 Q(classroom__teacher=user) | Q(recorded_by=user)
             ).distinct()
         if user.role == 'parent':
-            from ..models import ParentLink
-            child_ids = ParentLink.objects.filter(parent=user).values_list('student_id', flat=True)
+            profile = getattr(user, 'profile', None)
+            child_ids = profile.linked_students.values_list('id', flat=True) if profile else []
             return BehavioralRecord.objects.select_related('student', 'classroom', 'recorded_by').filter(student_id__in=child_ids)
         if user.role == 'student':
             return BehavioralRecord.objects.select_related('student', 'classroom', 'recorded_by').filter(student=user)
@@ -200,11 +200,9 @@ class BehavioralRecordViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         record = serializer.save(recorded_by=self.request.user)
         if record.severity in ['major', 'critical']:
-            from ..models import ParentLink
-            parent_links = ParentLink.objects.filter(student=record.student)
-            for link in parent_links:
+            for profile in record.student.parent_profiles.all():
                 Notification.objects.create(
-                    recipient=link.parent,
+                    recipient=profile.user,
                     notification_type='system',
                     title='Behavioral Record',
                     message=f'{full_name(record.student)} has a {record.get_severity_display()} incident: {record.get_incident_type_display()}',

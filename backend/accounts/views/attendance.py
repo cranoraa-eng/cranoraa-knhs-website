@@ -348,14 +348,12 @@ class AttendanceViewSet(viewsets.ModelViewSet):
             request=self.request
         )
         if attendance.status in ['absent', 'late']:
-            from ..models import ParentLink
             from ..fcm import send_push_notification
-            parent_links = ParentLink.objects.filter(student=attendance.student).select_related('parent')
-            for link in parent_links:
+            for profile in attendance.student.parent_profiles.all():
                 try:
                     status_display = 'absent' if attendance.status == 'absent' else f'late ({attendance.minutes_late} min)'
                     send_push_notification(
-                        user=link.parent,
+                        user=profile.user,
                         title='Attendance Alert',
                         body=f'{full_name(attendance.student)} was marked {status_display} on {attendance.date}',
                     )
@@ -414,8 +412,8 @@ class AbsenceExcuseViewSet(viewsets.ModelViewSet):
                 attendance__classroom__subject__teacher=user
             ).distinct()
         if user.role == 'parent':
-            from ..models import ParentLink
-            child_ids = ParentLink.objects.filter(parent=user).values_list('student_id', flat=True)
+            profile = getattr(user, 'profile', None)
+            child_ids = profile.linked_students.values_list('id', flat=True) if profile else []
             return AbsenceExcuse.objects.select_related('student', 'attendance', 'reviewed_by').filter(
                 student_id__in=child_ids
             )
