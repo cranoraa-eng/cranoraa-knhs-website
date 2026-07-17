@@ -1,27 +1,16 @@
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useParallelFetch } from '../hooks/useFetch';
 import api from '../utils/api';
 import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
-import { LoadingSpinner, EmptyState, Button, Badge } from '../components/ui';
+import { LoadingSpinner, Button } from '../components/ui';
 
 const GRADE_LEVELS = ['Grade 7', 'Grade 8', 'Grade 9', 'Grade 10', 'Grade 11', 'Grade 12'];
 const DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
 const DAY_LABELS = { monday: 'Mon', tuesday: 'Tue', wednesday: 'Wed', thursday: 'Thu', friday: 'Fri', saturday: 'Sat' };
 
 function ScheduleGrid({ schedules }) {
-  const byDay = useMemo(() => {
-    const map = {};
-    DAYS.forEach(d => { map[d] = []; });
-    schedules.forEach(s => {
-      const day = s.time_slot_detail?.day;
-      if (day && map[day]) map[day].push(s);
-    });
-    DAYS.forEach(d => { map[d].sort((a, b) => (a.time_slot_detail?.start_time || '').localeCompare(b.time_slot_detail?.start_time || '')); });
-    return map;
-  }, [schedules]);
-
   const timeSlots = useMemo(() => {
     const seen = new Set();
     return schedules
