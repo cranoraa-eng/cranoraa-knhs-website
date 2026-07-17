@@ -216,16 +216,26 @@ class UserViewSet(viewsets.ModelViewSet):
                 from rest_framework.exceptions import PermissionDenied
                 raise PermissionDenied("You can only delete students from your advisory classroom.")
 
-        log_audit_action(
-            user=self.request.user,
-            action='delete',
-            model_name='User',
-            object_id=instance.id,
-            object_repr=str(instance),
-            description=f'{self.request.user.role.capitalize()} deleted user account: {instance.username}',
-            request=self.request
-        )
+        # Capture repr before deletion so the audit log survives even after the row is gone
+        user_id = instance.id
+        user_repr = str(instance)
+        username = instance.username
+
         instance.delete()
+
+        # Audit log is best-effort — a logging failure must never surface as a 500
+        try:
+            log_audit_action(
+                user=user,
+                action='delete',
+                model_name='User',
+                object_id=user_id,
+                object_repr=user_repr,
+                description=f'{user.role.capitalize()} deleted user account: {username}',
+                request=self.request
+            )
+        except Exception as audit_exc:
+            logger.warning(f"Audit log failed after deleting user {user_id}: {audit_exc}")
 
     @action(detail=False, methods=['get'])
     def pending(self, request):
@@ -284,17 +294,25 @@ class UserViewSet(viewsets.ModelViewSet):
         if count == 0:
             return Response({'error': 'No valid users found to delete'}, status=404)
 
-        log_audit_action(
-            user=self.request.user,
-            action='delete',
-            model_name='User',
-            object_id=None,
-            object_repr=f'Bulk delete {count} users',
-            description=f'{self.request.user.role.capitalize()} performed bulk delete on {count} user accounts: {list(queryset.values_list("username", flat=True))}',
-            request=self.request
-        )
+        # Capture details before deletion
+        usernames = list(queryset.values_list("username", flat=True))
 
         queryset.delete()
+
+        # Best-effort audit log
+        try:
+            log_audit_action(
+                user=self.request.user,
+                action='delete',
+                model_name='User',
+                object_id=None,
+                object_repr=f'Bulk delete {count} users',
+                description=f'{self.request.user.role.capitalize()} performed bulk delete on {count} user accounts: {usernames}',
+                request=self.request
+            )
+        except Exception as audit_exc:
+            logger.warning(f"Audit log failed after bulk delete of {count} users: {audit_exc}")
+
         return Response({'status': f'Successfully deleted {count} users'})
 
     @action(detail=True, methods=['post'])
