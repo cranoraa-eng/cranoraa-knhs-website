@@ -11,6 +11,7 @@ const GRADE_LEVELS = ['Grade 7', 'Grade 8', 'Grade 9', 'Grade 10', 'Grade 11', '
 const EMPTY_SUBJECT = { name: '', code: '', description: '', grade_level: '' };
 
 function SubjectsTab() {
+  const navigate = useNavigate();
   const { data, loading, refetch } = useParallelFetch({
     subjects: '/subjects/',
   });
