@@ -50,6 +50,7 @@ const AcademicSetup = lazy(() => retryImport(() => import('../pages/AcademicSetu
 const PeopleHub = lazy(() => retryImport(() => import('../pages/PeopleHub')));
 const ClassesHub = lazy(() => retryImport(() => import('../pages/ClassesHub')));
 const EnrollmentHub = lazy(() => retryImport(() => import('../pages/EnrollmentHub')));
+const SubjectsHub = lazy(() => retryImport(() => import('../pages/SubjectsHub')));
 
 // ── Route definitions ────────────────────────────────────────────────────────
 
@@ -98,6 +99,7 @@ export const protectedRoutes = [
   { path: 'people', element: PeopleHub, roles: [Role.ADMIN, Role.STAFF] },
   { path: 'classes', element: ClassesHub, roles: [Role.ADMIN, Role.STAFF] },
   { path: 'enrollment', element: EnrollmentHub, roles: [Role.ADMIN, Role.STAFF] },
+  { path: 'subjects', element: SubjectsHub, roles: [Role.ADMIN] },
   { path: 'academic-setup', element: AcademicSetup, roles: [Role.ADMIN] },
 
   // Standalone routes

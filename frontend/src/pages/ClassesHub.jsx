@@ -284,14 +284,20 @@ function SectionsTab({ refetch }) {
 }
 
 function SubjectsTab({ refetch }) {
+  const navigate = useNavigate();
   return (
     <div className="page-bottom-safe bg-slate-50/50">
       <div className="mb-4 md:mb-6">
         <h1 className="text-xl md:text-2xl font-extrabold text-slate-900 tracking-tight">Subject Management</h1>
         <p className="text-xs text-slate-500 mt-1">Manage subjects and assign to sections</p>
       </div>
-      <div className="bg-white border border-slate-200 rounded-xl p-6">
-        <p className="text-slate-500">Subject management coming soon...</p>
+      <div className="bg-white border border-slate-200 rounded-xl p-6 text-center">
+        <svg className="w-10 h-10 mx-auto text-slate-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332-.477-4.5-1.253" /></svg>
+        <p className="text-sm font-bold text-slate-700 mb-1">Full subject management is available in the Subjects hub</p>
+        <p className="text-xs text-slate-500 mb-4">Create subjects, manage curriculum, and assign teachers to sections</p>
+        <button onClick={() => navigate('/subjects')} className="px-4 py-2 text-sm font-bold text-white bg-violet-600 rounded-md hover:bg-violet-700 transition-colors">
+          Open Subject Management
+        </button>
       </div>
     </div>
   );
