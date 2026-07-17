@@ -12,3 +12,9 @@ export { default as EmptyState } from './EmptyState';
 export { default as LoadingSpinner, SkeletonLine, SkeletonCard } from './LoadingSpinner';
 export { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from './Table';
 export { default as Skeleton } from './Skeleton';
+
+// People components
+export { default as UserTableRow } from '../people/UserTableRow';
+export { default as UserFormModal } from '../people/UserFormModal';
+export { default as ImportModal } from '../people/ImportModal';
+export { default as ExportMenu } from '../people/ExportMenu';
