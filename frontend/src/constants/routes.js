@@ -66,6 +66,7 @@ export const publicRoutes = [
   { path: 'mission', element: Mission },
   { path: 'vision', element: Vision },
   { path: 'faculty', element: Faculty },
+  { path: 'people', element: Faculty }, // public alias → same Faculty & Staff page
   { path: 'programs', element: Programs },
   { path: 'k12-programs', element: K12Programs },
   { path: 'senior-high', element: SeniorHigh },
