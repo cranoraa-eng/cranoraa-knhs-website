@@ -98,6 +98,7 @@ const Teachers = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [roleFilter, setRoleFilter] = useState('');
   const [editingTeacher, setEditingTeacher] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [activeMenu, setActiveMenu] = useState(null);
@@ -481,14 +482,14 @@ const Teachers = () => {
     return teachers.filter(t => {
       const search = searchQuery.toLowerCase();
       const title = t.profile?.title || '';
-      const fullName = `${title || ''} ${t.first_name || ''} ${t.last_name || ''}`.trim().toLowerCase();
+      const fullName = `${title} ${t.first_name || ''} ${t.last_name || ''}`.trim().toLowerCase();
       const email = (t.email || '').toLowerCase();
-      return (
-        email.includes(search) ||
-        fullName.includes(search)
-      );
+      const matchesSearch = !search || email.includes(search) || fullName.includes(search);
+      const matchesRole = !roleFilter || t.staff_title === roleFilter ||
+        (t.additional_roles || '').split(',').filter(Boolean).includes(roleFilter);
+      return matchesSearch && matchesRole;
     });
-  }, [teachers, searchQuery]);
+  }, [teachers, searchQuery, roleFilter]);
 
   if (loading) {
     return (
@@ -500,175 +501,120 @@ const Teachers = () => {
 
   const TITLES = ['Mr.', 'Ms.', 'Mrs.', 'Dr.', 'Prof.'];
 
+  const activeCount    = teachers.filter(t => t.account_status === 'active').length;
+  const suspendedCount = teachers.filter(t => t.account_status === 'suspended').length;
+  const pendingCount   = teachers.filter(t => t.must_change_password).length;
+  const adviserCount   = teachers.filter(t => t.is_adviser).length;
+
   return (
-    <div className="page-bottom-safe bg-slate-50/50">
-      {/* DepEd Official Header */}
-      <div className="bg-white border-b-4 border-violet-600 px-4 md:px-6 py-3 md:py-4 mb-3 md:mb-6">
-        <div className="flex items-center gap-3">
-          <div className="h-10 w-10 md:h-12 md:w-12 rounded-md bg-violet-600 flex items-center justify-center shrink-0">
-            <svg className="w-6 h-6 md:w-7 md:h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-            </svg>
-          </div>
-          <div>
-            <h1 className="text-lg md:text-2xl font-extrabold text-slate-900 uppercase tracking-tight">
-              Faculty Management
-            </h1>
-            <p className="text-xs md:text-sm font-bold text-violet-700 uppercase tracking-wide mt-0.5">
-              Staff Accounts & Assignments
-            </p>
-          </div>
-        </div>
-      </div>
+    <div className="page-bottom-safe bg-slate-50 min-h-screen">
 
-      <div className="p-1.5 md:p-6 space-y-2 md:space-y-6">
-      {/* Action buttons */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 md:gap-4 mb-3 md:mb-4 overflow-x-auto">
-        <div className="flex-1"></div>
-        <div className="flex flex-wrap items-center justify-center gap-2">
-          <button
-            onClick={() => {
-              setNewTeacher({
-                email: '',
-                first_name: '',
-                last_name: '',
-                title: '',
-              });
-              setShowAddModal(true);
-            }}
-            className="flex items-center gap-1.5 bg-violet-600 hover:bg-violet-700 text-white font-bold py-2 px-4 rounded text-sm transition-colors"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-            Add Teacher
-          </button>
-
-          <button 
-            onClick={() => setShowImportModal(true)}
-            className="bg-white border border-slate-200 text-slate-700 font-bold py-2 px-4 rounded text-sm hover:bg-slate-50 flex items-center gap-1.5 transition-colors"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
-            Import
-          </button>
-
-          <div className="flex items-center gap-1">
-            <button 
-              onClick={() => {
-                const headers = [['Title', 'First Name', 'Last Name', 'Email', 'Sex']];
-                const sampleData = [
-                  ['Mr.', 'John', 'Doe', 'john.doe@example.com', 'Male'],
-                  ['Ms.', 'Jane', 'Smith', 'jane.smith@example.com', 'Female'],
-                ];
-                
-                const ws = XLSX.utils.aoa_to_sheet([...headers, ...sampleData]);
-                
-                const headerRange = XLSX.utils.decode_range(ws['!ref']);
-                for (let C = headerRange.s.c; C <= 4; ++C) {
-                  const address = XLSX.utils.encode_col(C) + '1';
-                  if (!ws[address]) continue;
-                  ws[address].s = {
-                    font: { bold: true, color: { rgb: "FFFFFF" } },
-                    fill: { fgColor: { rgb: "4F46E5" } }, 
-                    alignment: { horizontal: "center" }
-                  };
-                }
-
-                ws['!cols'] = [
-                  { wch: 10 },
-                  { wch: 20 },
-                  { wch: 20 },
-                  { wch: 30 },
-                  { wch: 10 },
-                ];
-
-                const wb = XLSX.utils.book_new();
-                XLSX.utils.book_append_sheet(wb, ws, "Teacher Template");
-                XLSX.writeFile(wb, "KNHS_Teacher_Import_Template.xlsx");
-                toast.success('Template downloaded');
-              }}
-              className="bg-white border border-slate-200 text-slate-700 font-bold py-2 px-4 rounded text-sm hover:bg-slate-50 flex items-center gap-1.5 transition-colors"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-              Template
-            </button>
-            
-            <div className="relative group/info">
-              <button className="w-8 h-8 flex items-center justify-center rounded bg-white border border-slate-200 text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition-colors text-sm font-bold">
-                ?
-              </button>
-              
-              <div className="absolute top-full right-0 mt-2 w-64 p-4 bg-slate-900 text-white rounded shadow-xl opacity-0 invisible group-hover/info:opacity-100 group-hover/info:visible transition-all z-[110]">
-                <h4 className="text-xs font-bold uppercase tracking-wide text-indigo-400 mb-3 border-b border-white/10 pb-2">Import Instructions</h4>
-                <ul className="space-y-2">
-                  <li className="flex gap-2">
-                    <span className="text-indigo-400 font-bold text-xs">1.</span>
-                    <p className="text-xs leading-relaxed text-slate-300">Email is <span className="text-white">required</span> and serves as the username.</p>
-                  </li>
-                  <li className="flex gap-2">
-                    <span className="text-indigo-400 font-bold text-xs">2.</span>
-                    <p className="text-xs leading-relaxed text-slate-300">Valid Titles: <span className="text-white">Mr., Ms., Mrs., Dr., Prof.</span></p>
-                  </li>
-                  <li className="flex gap-2">
-                    <span className="text-indigo-400 font-bold text-xs">3.</span>
-                    <p className="text-xs leading-relaxed text-slate-300">Sex: <span className="text-white">Male</span> or <span className="text-white">Female</span></p>
-                  </li>
-                  <li className="flex gap-2">
-                    <span className="text-indigo-400 font-bold text-xs">4.</span>
-                    <p className="text-xs leading-relaxed text-slate-300">Do <span className="text-rose-400">NOT</span> change the header names.</p>
-                  </li>
-                </ul>
-              </div>
+      {/* ── Header with live stats ── */}
+      <div className="bg-white border-b border-slate-200 px-4 md:px-6 py-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-lg bg-violet-600 flex items-center justify-center shrink-0">
+              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+              </svg>
+            </div>
+            <div>
+              <h1 className="text-xl font-black text-slate-900 uppercase tracking-tight">Faculty Management</h1>
+              <p className="text-xs font-semibold text-violet-600 uppercase tracking-wide">Staff Accounts & Assignments</p>
             </div>
           </div>
-
-          <div className="flex items-center gap-1 bg-white p-1 rounded border border-slate-200">
-            <button 
-              onClick={handleExportExcel}
-              className="p-2 text-emerald-600 hover:bg-emerald-50 rounded transition-colors"
-              title="Export Excel"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-            </button>
-            <button 
-              onClick={handleExportPDF}
-              className="p-2 text-rose-600 hover:bg-rose-50 rounded transition-colors"
-              title="Export PDF"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
-            </button>
+          <div className="flex items-center gap-2 flex-wrap">
+            <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5">
+              <span className="text-lg font-black text-slate-800">{teachers.length}</span>
+              <span className="text-[10px] font-bold text-slate-400 uppercase">Total</span>
+            </div>
+            <div className="flex items-center gap-1.5 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-1.5">
+              <span className="w-2 h-2 rounded-full bg-emerald-400" />
+              <span className="text-sm font-black text-emerald-700">{activeCount}</span>
+              <span className="text-[10px] font-bold text-emerald-500 uppercase">Active</span>
+            </div>
+            {suspendedCount > 0 && (
+              <div className="flex items-center gap-1.5 bg-rose-50 border border-rose-200 rounded-lg px-3 py-1.5">
+                <span className="w-2 h-2 rounded-full bg-rose-400" />
+                <span className="text-sm font-black text-rose-700">{suspendedCount}</span>
+                <span className="text-[10px] font-bold text-rose-400 uppercase">Suspended</span>
+              </div>
+            )}
+            {pendingCount > 0 && (
+              <div className="flex items-center gap-1.5 bg-amber-50 border border-amber-200 rounded-lg px-3 py-1.5">
+                <span className="w-2 h-2 rounded-full bg-amber-400" />
+                <span className="text-sm font-black text-amber-700">{pendingCount}</span>
+                <span className="text-[10px] font-bold text-amber-500 uppercase">Pending login</span>
+              </div>
+            )}
+            <div className="flex items-center gap-1.5 bg-violet-50 border border-violet-200 rounded-lg px-3 py-1.5">
+              <span className="text-sm font-black text-violet-700">{adviserCount}</span>
+              <span className="text-[10px] font-bold text-violet-500 uppercase">Advisers</span>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Search Bar */}
-      <div className="bg-white p-3 border border-slate-200 rounded mb-3 md:mb-4">
-        <div className="relative max-w-xl">
-          <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-          <input 
-            type="text" 
-            placeholder="Search by name or email..."
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded focus:outline-none focus:ring-1 focus:ring-violet-500 focus:bg-white text-sm"
-          />
-        </div>
-      </div>
-
-      {/* Teachers List */}
-      <div className="animate-fade-in-up [animation-delay:200ms]">
-        {filteredTeachers.length === 0 ? (
-          <EmptyState
-            icon={
-              <svg className="w-10 h-10 text-violet-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+      <div className="px-4 md:px-6 py-4 space-y-4">
+        {/* ── Toolbar: search + role filter + actions ── */}
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            <div className="relative flex-1 max-w-xs">
+              <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
-            }
-            title="No Staff Found"
-            message="Try a different search."
-          />
+              <input type="text" placeholder="Search name or email…" value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
+                className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-violet-400 focus:border-transparent" />
+            </div>
+            <select value={roleFilter} onChange={e => setRoleFilter(e.target.value)}
+              className="py-2 pl-3 pr-8 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-violet-400 text-slate-600 font-semibold">
+              <option value="">All roles</option>
+              {STAFF_TITLES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+            </select>
+          </div>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <button onClick={() => { setNewTeacher({ email: '', first_name: '', last_name: '', title: '', sex: '', staff_title: 'teacher' }); setShowAddModal(true); }}
+              className="flex items-center gap-1.5 bg-violet-600 hover:bg-violet-700 text-white font-bold py-2 px-4 rounded-lg text-sm transition-colors">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+              Add Staff
+            </button>
+
+            <button onClick={() => setShowImportModal(true)} className="flex items-center gap-1.5 bg-white border border-slate-200 text-slate-700 font-bold py-2 px-3 rounded-lg text-sm hover:bg-slate-50 transition-colors">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
+              Import
+            </button>
+
+            <div className="flex items-center bg-white border border-slate-200 rounded-lg overflow-hidden">
+              <button onClick={handleExportExcel} className="px-3 py-2 text-emerald-600 hover:bg-emerald-50 transition-colors border-r border-slate-200" title="Export Excel">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+              </button>
+              <button onClick={handleExportPDF} className="px-3 py-2 text-rose-600 hover:bg-rose-50 transition-colors" title="Export PDF">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {(searchQuery || roleFilter) && (
+          <p className="text-xs text-slate-400 font-semibold">
+            {filteredTeachers.length} result{filteredTeachers.length !== 1 ? 's' : ''}
+            {searchQuery && <> for "<span className="text-slate-600">{searchQuery}</span>"</>}
+            {roleFilter && <> · <span className="text-violet-600">{STAFF_TITLES.find(t => t.value === roleFilter)?.label}</span></>}
+          </p>
+        )}
+
+        {filteredTeachers.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20 text-center">
+            <svg className="w-12 h-12 text-violet-200 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            <p className="text-slate-400 font-semibold text-sm">No staff found</p>
+            {(searchQuery || roleFilter) && (
+              <button onClick={() => { setSearchQuery(''); setRoleFilter(''); }} className="mt-2 text-xs font-bold text-violet-600 hover:underline">
+                Clear filters
+              </button>
+            )}
+          </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
             {filteredTeachers.map((teacher) => (
