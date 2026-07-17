@@ -493,17 +493,50 @@ const Teachers = () => {
     return classrooms.filter(cls => cls.teacher === teacherId);
   };
 
+  // Rank order: principal (0) → teacher_i (last) → unknown ranks at bottom
+  const RANK_ORDER = {
+    'principal':                  0,
+    'guidance_counselor':         1,
+    'administrative_officer':     2,
+    'admin_assistant':            3,
+    'master_teacher_ii':          4,
+    'master_teacher_i':           5,
+    'special_science_teacher_i':  6,
+    'teacher_vi':                 7,
+    'teacher_v':                  8,
+    'teacher_iv':                 9,
+    'teacher_iii':               10,
+    'teacher_ii':                11,
+    'teacher_i':                 12,
+    'als_teacher':               13,
+    'registrar':                 14,
+    'librarian':                 15,
+    'it_staff':                  16,
+    'cashier':                   17,
+    'advisory':                  18,
+    'teacher':                   19,
+    'other':                     20,
+  };
+
   const filteredTeachers = useMemo(() => {
-    return teachers.filter(t => {
-      const search = searchQuery.toLowerCase();
-      const title = t.profile?.title || '';
-      const fullName = `${title} ${t.first_name || ''} ${t.last_name || ''}`.trim().toLowerCase();
-      const email = (t.email || '').toLowerCase();
-      const matchesSearch = !search || email.includes(search) || fullName.includes(search);
-      const matchesRole = !roleFilter || t.staff_title === roleFilter ||
-        (t.additional_roles || '').split(',').filter(Boolean).includes(roleFilter);
-      return matchesSearch && matchesRole;
-    });
+    return teachers
+      .filter(t => {
+        const search = searchQuery.toLowerCase();
+        const title = t.profile?.title || '';
+        const fullName = `${title} ${t.first_name || ''} ${t.last_name || ''}`.trim().toLowerCase();
+        const email = (t.email || '').toLowerCase();
+        const matchesSearch = !search || email.includes(search) || fullName.includes(search);
+        const matchesRole = !roleFilter || t.staff_title === roleFilter ||
+          (t.additional_roles || '').split(',').filter(Boolean).includes(roleFilter);
+        return matchesSearch && matchesRole;
+      })
+      .sort((a, b) => {
+        const rankA = RANK_ORDER[a.staff_title] ?? 99;
+        const rankB = RANK_ORDER[b.staff_title] ?? 99;
+        if (rankA !== rankB) return rankA - rankB;
+        // Same rank → sort alphabetically by last name
+        return (a.last_name || '').localeCompare(b.last_name || '');
+      });
   }, [teachers, searchQuery, roleFilter]);
 
   if (loading) {
