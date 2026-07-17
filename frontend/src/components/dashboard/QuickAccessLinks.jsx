@@ -16,17 +16,17 @@ const iconMap = {
 // Role-based quick access link configurations
 export const QUICK_ACCESS_CONFIGS = {
   student: [
-    { label: 'My Grades', path: '/academics-hub?tab=classes', icon: 'Award', color: 'violet' },
-    { label: 'My Classes', path: '/academics-hub?tab=classes', icon: 'BookOpen', color: 'blue' },
+    { label: 'My Grades', path: '/grading-suite', icon: 'Award', color: 'violet' },
+    { label: 'My Classes', path: '/my-classes', icon: 'BookOpen', color: 'blue' },
     { label: 'Announcements', path: '/announcements', icon: 'Bell', color: 'amber' },
-    { label: 'Schedule', path: '/academics-hub?tab=schedule', icon: 'Calendar', color: 'green' },
-    { label: 'Learning Materials', path: '/academics-hub?tab=materials', icon: 'FileText', color: 'indigo' },
+    { label: 'Schedule', path: '/my-schedule', icon: 'Calendar', color: 'green' },
+    { label: 'Learning Materials', path: '/materials', icon: 'FileText', color: 'indigo' },
     { label: 'Communication', path: '/communication-center', icon: 'MessageSquare', color: 'rose' }
   ],
   teacher: [
-    { label: 'My Classes', path: '/academics-hub?tab=classes', icon: 'BookOpen', color: 'violet' },
-    { label: 'Learning Materials', path: '/academics-hub?tab=materials', icon: 'FileText', color: 'blue' },
-    { label: 'Schedule', path: '/academics-hub?tab=schedules', icon: 'Clock', color: 'green' },
+    { label: 'My Classes', path: '/my-classes', icon: 'BookOpen', color: 'violet' },
+    { label: 'Learning Materials', path: '/materials', icon: 'FileText', color: 'blue' },
+    { label: 'Schedule', path: '/my-schedule', icon: 'Clock', color: 'green' },
     { label: 'Announcements', path: '/announcements', icon: 'Bell', color: 'amber' },
     { label: 'People', path: '/people?tab=teachers', icon: 'Users', color: 'indigo' },
     { label: 'Communication', path: '/communication-center', icon: 'MessageSquare', color: 'rose' }

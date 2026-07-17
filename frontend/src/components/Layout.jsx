@@ -187,14 +187,15 @@ const Layout = () => {
     if (path === '/classes') return 'Classes';
     if (path === '/people') return 'People';
     if (path === '/subjects') return 'Subjects';
+    if (path === '/my-classes') return 'My Classes';
+    if (path === '/my-schedule') return 'My Schedule';
+    if (path === '/materials') return 'Materials';
     if (path === '/system-admin') return 'System Admin Hub';
     if (path === '/communication-center') return 'Communication Center';
     if (path === '/notifications') return 'Notifications';
     if (path === '/portal-calendar') return 'Calendar';
     if (path === '/analytics') return 'Analytics';
     if (path === '/system-health') return 'System Health';
-    if (path === '/subjects') return 'Subjects';
-    if (path === '/materials') return 'Materials';
     if (path === '/grade-input') return 'Grade Input';
     if (path === '/grade-management') return 'Grade Management';
     if (path === '/attendance') return 'Attendance';
@@ -210,7 +211,6 @@ const Layout = () => {
     if (path === '/profile') return 'My Profile';
     if (path === '/password-reset') return 'Change Password';
     if (path === '/schedule-management') return 'Schedules';
-    if (path === '/schedule') return 'My Schedule';
     if (path === '/parent-dashboard') return 'Parent Dashboard';
     if (path === '/parent-management') return 'Parents';
     return 'Portal';
@@ -220,13 +220,6 @@ const Layout = () => {
     const path = location.pathname;
     const tab = new URLSearchParams(location.search).get('tab');
     const allTabs = {
-      '/academics-hub': [
-        { id: 'subjects', label: 'Subjects', roles: ['admin'] },
-        { id: 'schedules', label: 'Schedules', roles: ['admin'] },
-        { id: 'materials', label: 'Materials', roles: ['admin', 'staff', 'student'] },
-        { id: 'classes', label: 'My Classes', roles: ['staff', 'student'] },
-        { id: 'schedule', label: 'My Schedule', roles: ['staff', 'student'] }
-      ],
       '/system-admin': [
         { id: 'audit-logs', label: 'Audit Logs', roles: ['admin'] },
         { id: 'backups', label: 'Backups', roles: ['admin'] },
@@ -266,27 +259,27 @@ const Layout = () => {
 
     const roleSuggestions = {
       student: [
-        { label: 'My Grades', path: '/academics-hub?tab=classes', category: 'Academics', description: 'View your grades' },
-        { label: 'My Schedule', path: '/academics-hub?tab=schedule', category: 'Academics', description: 'Your class schedule' },
-        { label: 'Learning Materials', path: '/academics-hub?tab=materials', category: 'Academics', description: 'Course materials' },
-        { label: 'My Classes', path: '/academics-hub?tab=classes', category: 'Academics', description: 'View your classes' },
+        { label: 'My Classes', path: '/my-classes', category: 'Academics', description: 'View your classes' },
+        { label: 'My Schedule', path: '/my-schedule', category: 'Academics', description: 'Your class schedule' },
+        { label: 'Learning Materials', path: '/materials', category: 'Academics', description: 'Course materials' },
+        { label: 'Grading Suite', path: '/grading-suite', category: 'Academics', description: 'View your grades' },
       ],
       staff: [
-        { label: 'My Classes', path: '/academics-hub?tab=classes', category: 'Teaching', description: 'Your assigned classes' },
-        { label: 'Learning Materials', path: '/academics-hub?tab=materials', category: 'Teaching', description: 'Upload and manage materials' },
-        { label: 'My Schedule', path: '/academics-hub?tab=schedules', category: 'Teaching', description: 'View your schedule' },
+        { label: 'My Classes', path: '/my-classes', category: 'Teaching', description: 'Your assigned classes' },
+        { label: 'My Schedule', path: '/my-schedule', category: 'Teaching', description: 'View your schedule' },
+        { label: 'Learning Materials', path: '/materials', category: 'Teaching', description: 'Upload and manage materials' },
         { label: 'Students', path: '/people?tab=students', category: 'Directory', description: 'Student directory' },
         { label: 'Announcements', path: '/announcements', category: 'Communication', description: 'Post announcements' },
       ],
       admin: [
         { label: 'Academic Setup', path: '/academic-setup', category: 'Management', description: 'Set up academic year' },
-        { label: 'Subjects', path: '/academics-hub?tab=subjects', category: 'Management', description: 'Manage subjects' },
+        { label: 'Subjects', path: '/subjects', category: 'Management', description: 'Manage curriculum subjects' },
         { label: 'Schedules', path: '/academics-hub?tab=schedules', category: 'Management', description: 'Manage schedules' },
         { label: 'Enrollment', path: '/enrollment?tab=applications', category: 'Management', description: 'Enrollment applications' },
         { label: 'Enroll Students', path: '/enrollment?tab=enroll-students', category: 'Management', description: 'Enroll students' },
-        { label: 'Class Sections', path: '/classes?tab=sections', category: 'Management', description: 'Manage class sections' },
-        { label: 'Subjects', path: '/subjects?tab=subjects', category: 'Management', description: 'Manage curriculum subjects' },
+        { label: 'Class Sections', path: '/classes', category: 'Management', description: 'Manage class sections' },
         { label: 'Subject Assignments', path: '/subjects?tab=assignments', category: 'Management', description: 'Assign subjects to sections' },
+        { label: 'Materials', path: '/materials', category: 'Management', description: 'Learning materials' },
         { label: 'Teachers', path: '/people?tab=teachers', category: 'Directory', description: 'Teacher directory' },
         { label: 'Students', path: '/people?tab=students', category: 'Directory', description: 'Student directory' },
         { label: 'Parents', path: '/people?tab=parents', category: 'Directory', description: 'Parent directory' },
@@ -309,7 +302,9 @@ const Layout = () => {
         header: 'Workspaces',
         items: [
           { to: '/dashboard', label: 'Dashboard', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' },
-          { to: '/academics-hub', label: 'Academics Hub', icon: 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332-.477-4.5-1.253' },
+          { to: '/my-classes', label: 'My Classes', icon: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4' },
+          { to: '/my-schedule', label: 'My Schedule', icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z' },
+          { to: '/materials', label: 'Materials', icon: 'M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z' },
           { to: '/communication-center', label: 'Communication Center', icon: 'M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z' },
           { to: '/notifications', label: 'Notifications', icon: 'M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9' },
           { to: '/portal-calendar', label: 'Calendar', icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z' },
@@ -320,7 +315,6 @@ const Layout = () => {
         items: [
           { to: '/enrollment', label: 'Enrollment', icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4' },
           { to: '/classes', label: 'Classes', icon: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4' },
-          { to: '/academics-hub?tab=schedule', label: 'My Schedule', icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z' },
           { to: '/announcements', label: 'Announcements', icon: 'M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z' },
         ]
       },
@@ -356,6 +350,7 @@ const Layout = () => {
           { to: '/classes', label: 'Classes', icon: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4' },
           { to: '/academics-hub?tab=schedules', label: 'Schedules', icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z' },
           { to: '/subjects', label: 'Subjects', icon: 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332-.477-4.5-1.253' },
+          { to: '/materials', label: 'Materials', icon: 'M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z' },
           { to: '/announcements', label: 'Announcements', icon: 'M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z' },
         ]
       },
@@ -378,8 +373,10 @@ const Layout = () => {
         header: 'Workspaces',
         items: [
           { to: '/dashboard', label: 'Dashboard', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' },
-          { to: '/academics-hub', label: 'Academics Hub', icon: 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332-.477-4.5-1.253' },
+          { to: '/my-classes', label: 'My Classes', icon: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4' },
+          { to: '/my-schedule', label: 'My Schedule', icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z' },
           { to: '/grading-suite', label: 'Grading Suite', icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z' },
+          { to: '/materials', label: 'Materials', icon: 'M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z' },
           { to: '/communication-center', label: 'Communication Center', icon: 'M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z' },
         ]
       },

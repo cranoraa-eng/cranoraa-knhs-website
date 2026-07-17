@@ -51,6 +51,9 @@ const PeopleHub = lazy(() => retryImport(() => import('../pages/PeopleHub')));
 const ClassesHub = lazy(() => retryImport(() => import('../pages/ClassesHub')));
 const EnrollmentHub = lazy(() => retryImport(() => import('../pages/EnrollmentHub')));
 const SubjectsHub = lazy(() => retryImport(() => import('../pages/SubjectsHub')));
+const Materials = lazy(() => retryImport(() => import('../pages/Materials')));
+const MySchedule = lazy(() => retryImport(() => import('../pages/MySchedule')));
+const ClassroomHub = lazy(() => retryImport(() => import('../pages/ClassroomHub')));
 
 // ── Route definitions ────────────────────────────────────────────────────────
 
@@ -101,6 +104,9 @@ export const protectedRoutes = [
   { path: 'enrollment', element: EnrollmentHub, roles: [Role.ADMIN, Role.STAFF] },
   { path: 'subjects', element: SubjectsHub, roles: [Role.ADMIN] },
   { path: 'academic-setup', element: AcademicSetup, roles: [Role.ADMIN] },
+  { path: 'materials', element: Materials, roles: [Role.ADMIN, Role.STAFF, Role.STUDENT] },
+  { path: 'my-classes', element: ClassroomHub, roles: [Role.STAFF, Role.STUDENT] },
+  { path: 'my-schedule', element: MySchedule, roles: [Role.STAFF, Role.STUDENT] },
 
   // Standalone routes
   { path: 'portal-calendar', element: Calendar, props: { mode: 'portal' }, roles: Role.ALL },
