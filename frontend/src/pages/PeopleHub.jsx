@@ -1,7 +1,7 @@
 import { useState, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useParallelFetch } from '../../hooks/useFetch';
-import api from '../../utils/api';
+import { useParallelFetch } from '../hooks/useFetch';
+import api from '../utils/api';
 import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
 import { LoadingSpinner, EmptyState, Button } from '../components/ui';

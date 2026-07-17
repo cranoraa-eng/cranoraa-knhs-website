@@ -1,6 +1,7 @@
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Role, ROLE_HOME, ROUTE_ACCESS } from '../constants/roles';
+import { Role, ROLE_HOME } from '../constants/roles';
+import { protectedRoutes } from '../constants/routes';
 
 function getRouteKey(pathname) {
   return pathname.replace(/^\/+/, '').replace(/\/+$/, '').split('?')[0].split('/')[0];
@@ -27,9 +28,10 @@ const ProtectedRoute = ({ children }) => {
     return <Navigate to="/parent-dashboard" replace />;
   }
 
-  // Check route access
+  // Check route access using protectedRoutes from routes.js
   const routeKey = getRouteKey(location.pathname);
-  const allowedRoles = ROUTE_ACCESS[routeKey];
+  const routeDef = protectedRoutes.find(r => r.path === routeKey);
+  const allowedRoles = routeDef?.roles;
 
   if (allowedRoles && !allowedRoles.includes(user.role)) {
     return <Navigate to={ROLE_HOME[user.role] || '/dashboard'} replace />;

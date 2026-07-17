@@ -28,7 +28,7 @@ export const QUICK_ACCESS_CONFIGS = {
     { label: 'Learning Materials', path: '/academics-hub?tab=materials', icon: 'FileText', color: 'blue' },
     { label: 'Schedule', path: '/academics-hub?tab=schedules', icon: 'Clock', color: 'green' },
     { label: 'Announcements', path: '/announcements', icon: 'Bell', color: 'amber' },
-    { label: 'People Directory', path: '/people-directory?tab=teachers', icon: 'Users', color: 'indigo' },
+    { label: 'People', path: '/people?tab=teachers', icon: 'Users', color: 'indigo' },
     { label: 'Communication', path: '/communication-center', icon: 'MessageSquare', color: 'rose' }
   ],
   parent: [
@@ -43,7 +43,7 @@ export const QUICK_ACCESS_CONFIGS = {
     { label: 'Dashboard Analytics', path: '/analytics', icon: 'TrendingUp', color: 'violet' },
     { label: 'User Management', path: '/teachers', icon: 'Users', color: 'blue' },
     { label: 'Enrollment', path: '/enrollment-management', icon: 'GraduationCap', color: 'green' },
-    { label: 'Class Management', path: '/enrollment-classes?tab=classrooms', icon: 'Grid', color: 'amber' },
+    { label: 'Class Management', path: '/classes?tab=sections', icon: 'Grid', color: 'amber' },
     { label: 'System Settings', path: '/settings', icon: 'Settings', color: 'indigo' },
     { label: 'Audit Logs', path: '/audit-logs', icon: 'ClipboardList', color: 'rose' }
   ]

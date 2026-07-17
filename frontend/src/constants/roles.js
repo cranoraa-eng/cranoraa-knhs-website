@@ -2,7 +2,7 @@
  * Centralized RBAC constants for the KNHS School Portal frontend.
  *
  * Import from here instead of hardcoding role strings:
- *   import { Role, ROLE_HOME, ROUTE_ACCESS, hasRole } from '@/constants/roles';
+ *   import { Role, RoleLabel, ROLE_HOME, hasRole } from '@/constants/roles';
  */
 
 export const Role = Object.freeze({
@@ -27,50 +27,10 @@ export const ROLE_HOME = Object.freeze({
   [Role.PARENT]: '/parent-dashboard',
 });
 
-export const ROUTE_ACCESS = Object.freeze({
-  'academics-hub': [Role.ADMIN, Role.STAFF, Role.STUDENT],
-  'enrollment-classes': [Role.ADMIN],
-  'grading-suite': [Role.ADMIN, Role.STAFF, Role.STUDENT],
-  'people-directory': [Role.ADMIN, Role.STAFF],
-  'system-admin': [Role.ADMIN],
-  'communication-center': Role.ALL,
-  dashboard: Role.ALL,
-  announcements: Role.ALL,
-  'attendance': [Role.ADMIN, Role.STAFF],
-  'materials': [Role.ADMIN, Role.STAFF, Role.STUDENT],
-  'messages': Role.ALL,
-  'subjects': [Role.ADMIN],
-  'teachers': [Role.ADMIN],
-  'profile': Role.ALL,
-  // Legacy redirects — kept for reference only
-  'portal-calendar': Role.ALL,
-  'password-reset': [Role.PARENT],
-
-  'student-enrollment': [Role.ADMIN],
-  'student-management': [Role.ADMIN, Role.STAFF],
-  'audit-logs': [Role.ADMIN],
-  'backups': [Role.ADMIN],
-  'website-content': [Role.ADMIN],
-  'enrollment-management': [Role.ADMIN],
-  'settings': [Role.ADMIN, Role.STAFF, Role.STUDENT],
-  'grade-input': [Role.ADMIN, Role.STAFF],
-  'grades': [Role.ADMIN],
-  'grade-management': [Role.ADMIN],
-  'student-grades': [Role.STUDENT],
-  'moderation': [Role.ADMIN],
-  'analytics': [Role.ADMIN, Role.STAFF],
-  'system-health': [Role.ADMIN],
-  'notifications': Role.ALL,
-  'schedule-management': [Role.ADMIN],
-  'schedule': [Role.STAFF, Role.STUDENT],
-  'parent-dashboard': [Role.PARENT],
-  'parent-management': [Role.ADMIN],
-});
-
 /**
  * Check if a user has one of the specified roles.
  * @param {Object} user - The user object (must have a `role` property)
-  * @param {...string} roles - Allowed roles
+ * @param {...string} roles - Allowed roles
  * @returns {boolean}
  */
 export function hasRole(user, ...roles) {

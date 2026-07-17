@@ -183,8 +183,9 @@ const Layout = () => {
     const path = location.pathname;
     if (path === '/dashboard') return 'Dashboard';
     if (path === '/academics-hub') return 'Academics Hub';
-    if (path === '/enrollment-classes') return 'Enrollment & Classes';
-    if (path === '/people-directory') return 'People Directory';
+    if (path === '/enrollment') return 'Enrollment';
+    if (path === '/classes') return 'Classes';
+    if (path === '/people') return 'People';
     if (path === '/system-admin') return 'System Admin Hub';
     if (path === '/communication-center') return 'Communication Center';
     if (path === '/notifications') return 'Notifications';
@@ -192,7 +193,6 @@ const Layout = () => {
     if (path === '/analytics') return 'Analytics';
     if (path === '/system-health') return 'System Health';
     if (path === '/subjects') return 'Subjects';
-
     if (path === '/materials') return 'Materials';
     if (path === '/grade-input') return 'Grade Input';
     if (path === '/grade-management') return 'Grade Management';
@@ -201,6 +201,7 @@ const Layout = () => {
     if (path === '/student-management') return 'Students';
     if (path === '/moderation') return 'Moderation';
     if (path === '/enrollment-management') return 'Enrollment';
+    if (path === '/academic-setup') return 'Academic Setup';
     if (path === '/audit-logs') return 'Audit Logs';
     if (path === '/backups') return 'Backups';
     if (path === '/website-content') return 'Website Editor';
@@ -225,7 +226,7 @@ const Layout = () => {
         { id: 'classes', label: 'My Classes', roles: ['staff', 'student'] },
         { id: 'schedule', label: 'My Schedule', roles: ['staff', 'student'] }
       ],
-      '/people-directory': [
+      '/people': [
         { id: 'teachers', label: 'Teachers', roles: ['admin'] },
         { id: 'students', label: 'Students', roles: ['admin', 'staff'] },
         { id: 'parents', label: 'Parents', roles: ['admin'] }
@@ -237,10 +238,14 @@ const Layout = () => {
         { id: 'moderation', label: 'Moderation', roles: ['admin'] },
         { id: 'system-health', label: 'System Health', roles: ['admin'] }
       ],
-      '/enrollment-classes': [
-        { id: 'student-enrollment', label: 'Student Enrollment', roles: ['admin'] },
+      '/classes': [
+        { id: 'sections', label: 'Sections', roles: ['admin', 'staff'] },
+        { id: 'subjects', label: 'Subjects', roles: ['admin', 'staff'] },
+        { id: 'schedule', label: 'Schedule', roles: ['admin', 'staff'] }
+      ],
+      '/enrollment': [
         { id: 'applications', label: 'Applications', roles: ['admin'] },
-        { id: 'classrooms', label: 'Class Management', roles: ['admin', 'staff'] }
+        { id: 'enroll-students', label: 'Enroll Students', roles: ['admin'] }
       ]
     };
     const tabs = allTabs[path];
@@ -283,18 +288,19 @@ const Layout = () => {
         { label: 'My Classes', path: '/academics-hub?tab=classes', category: 'Teaching', description: 'Your assigned classes' },
         { label: 'Learning Materials', path: '/academics-hub?tab=materials', category: 'Teaching', description: 'Upload and manage materials' },
         { label: 'My Schedule', path: '/academics-hub?tab=schedules', category: 'Teaching', description: 'View your schedule' },
-        { label: 'Students', path: '/people-directory?tab=students', category: 'Directory', description: 'Student directory' },
+        { label: 'Students', path: '/people?tab=students', category: 'Directory', description: 'Student directory' },
         { label: 'Announcements', path: '/announcements', category: 'Communication', description: 'Post announcements' },
       ],
       admin: [
         { label: 'Academic Setup', path: '/academic-setup', category: 'Management', description: 'Set up academic year' },
         { label: 'Subjects', path: '/academics-hub?tab=subjects', category: 'Management', description: 'Manage subjects' },
         { label: 'Schedules', path: '/academics-hub?tab=schedules', category: 'Management', description: 'Manage schedules' },
-        { label: 'Student Enrollment', path: '/enrollment-classes?tab=student-enrollment', category: 'Management', description: 'Enroll students' },
-        { label: 'Class Management', path: '/enrollment-classes?tab=classrooms', category: 'Management', description: 'Manage classes' },
-        { label: 'Teachers', path: '/people-directory?tab=teachers', category: 'Directory', description: 'Teacher directory' },
-        { label: 'Students', path: '/people-directory?tab=students', category: 'Directory', description: 'Student directory' },
-        { label: 'Parents', path: '/people-directory?tab=parents', category: 'Directory', description: 'Parent directory' },
+        { label: 'Enrollment', path: '/enrollment?tab=applications', category: 'Management', description: 'Enrollment applications' },
+        { label: 'Enroll Students', path: '/enrollment?tab=enroll-students', category: 'Management', description: 'Enroll students' },
+        { label: 'Class Sections', path: '/classes?tab=sections', category: 'Management', description: 'Manage class sections' },
+        { label: 'Teachers', path: '/people?tab=teachers', category: 'Directory', description: 'Teacher directory' },
+        { label: 'Students', path: '/people?tab=students', category: 'Directory', description: 'Student directory' },
+        { label: 'Parents', path: '/people?tab=parents', category: 'Directory', description: 'Parent directory' },
         { label: 'Audit Logs', path: '/system-admin?tab=audit-logs', category: 'System', description: 'System audit logs' },
         { label: 'Backups', path: '/system-admin?tab=backups', category: 'System', description: 'System backups' },
         { label: 'Website Editor', path: '/system-admin?tab=website-editor', category: 'System', description: 'Edit website content' },
@@ -323,14 +329,15 @@ const Layout = () => {
       {
         header: 'Operations',
         items: [
-          { to: '/enrollment-classes', label: 'Enrollment & Classes', icon: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4' },
+          { to: '/enrollment', label: 'Enrollment', icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4' },
+          { to: '/classes', label: 'Classes', icon: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4' },
           { to: '/announcements', label: 'Announcements', icon: 'M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z' },
         ]
       },
       {
         header: 'Directory',
         items: [
-          { to: '/people-directory', label: 'People Directory', icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z' },
+          { to: '/people', label: 'People', icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z' },
         ]
       },
       {
@@ -355,14 +362,15 @@ const Layout = () => {
         header: 'Operations',
         items: [
           { to: '/academic-setup', label: 'Academic Setup', icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4' },
-          { to: '/enrollment-classes', label: 'Enrollment & Classes', icon: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4' },
+          { to: '/enrollment', label: 'Enrollment', icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4' },
+          { to: '/classes', label: 'Classes', icon: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4' },
           { to: '/announcements', label: 'Announcements', icon: 'M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z' },
         ]
       },
       {
         header: 'Directory',
         items: [
-          { to: '/people-directory', label: 'People Directory', icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z' },
+          { to: '/people', label: 'People', icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z' },
         ]
       },
       {

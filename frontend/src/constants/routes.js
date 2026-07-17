@@ -38,15 +38,18 @@ const PasswordReset = lazy(() => retryImport(() => import('../pages/PasswordRese
 const Settings = lazy(() => retryImport(() => import('../pages/Settings')));
 const Notifications = lazy(() => retryImport(() => import('../pages/Notifications')));
 const AcademicsHub = lazy(() => retryImport(() => import('../pages/AcademicsHub')));
-const EnrollmentClassesHub = lazy(() => retryImport(() => import('../pages/EnrollmentClassesHub')));
 const GradingSuite = lazy(() => retryImport(() => import('../pages/GradingSuite')));
-const PeopleDirectory = lazy(() => retryImport(() => import('../pages/PeopleDirectory')));
 const SystemAdminHub = lazy(() => retryImport(() => import('../pages/SystemAdminHub')));
 const CommunicationCenter = lazy(() => retryImport(() => import('../pages/CommunicationCenter')));
 const Announcements = lazy(() => retryImport(() => import('../pages/Announcements')));
 const ParentDashboard = lazy(() => retryImport(() => import('../pages/ParentDashboard')));
 const Dashboard = lazy(() => retryImport(() => import('../pages/Dashboard')));
 const AcademicSetup = lazy(() => retryImport(() => import('../pages/AcademicSetup')));
+
+// New Hub Pages
+const PeopleHub = lazy(() => retryImport(() => import('../pages/PeopleHub')));
+const ClassesHub = lazy(() => retryImport(() => import('../pages/ClassesHub')));
+const EnrollmentHub = lazy(() => retryImport(() => import('../pages/EnrollmentHub')));
 
 // ── Route definitions ────────────────────────────────────────────────────────
 
@@ -82,10 +85,7 @@ export const protectedRoutes = [
   // Hub routes (primary navigation)
   { path: 'dashboard', element: Dashboard, roles: Role.ALL },
   { path: 'academics-hub', element: AcademicsHub, roles: [Role.ADMIN, Role.STAFF, Role.STUDENT] },
-  { path: 'enrollment-classes', element: EnrollmentClassesHub, roles: [Role.ADMIN, Role.STAFF] },
-  { path: 'academic-setup', element: AcademicSetup, roles: [Role.ADMIN] },
   { path: 'grading-suite', element: GradingSuite, roles: [Role.ADMIN, Role.STAFF, Role.STUDENT] },
-  { path: 'people-directory', element: PeopleDirectory, roles: [Role.ADMIN, Role.STAFF] },
   { path: 'system-admin', element: SystemAdminHub, roles: [Role.ADMIN] },
   { path: 'communication-center', element: CommunicationCenter, roles: Role.ALL },
   { path: 'announcements', element: Announcements, roles: Role.ALL },
@@ -94,32 +94,14 @@ export const protectedRoutes = [
   { path: 'settings', element: Settings, roles: [Role.ADMIN, Role.STAFF, Role.STUDENT] },
   { path: 'parent-dashboard', element: ParentDashboard, roles: [Role.PARENT] },
 
+  // New Hub routes
+  { path: 'people', element: PeopleHub, roles: [Role.ADMIN, Role.STAFF] },
+  { path: 'classes', element: ClassesHub, roles: [Role.ADMIN, Role.STAFF] },
+  { path: 'enrollment', element: EnrollmentHub, roles: [Role.ADMIN, Role.STAFF] },
+  { path: 'academic-setup', element: AcademicSetup, roles: [Role.ADMIN] },
+
   // Standalone routes
   { path: 'portal-calendar', element: Calendar, props: { mode: 'portal' }, roles: Role.ALL },
   { path: 'password-reset', element: PasswordReset, roles: [Role.PARENT] },
   { path: 'attendance', element: Attendance, roles: [Role.ADMIN, Role.STAFF] },
-
-  // Legacy redirects (old paths → new hub-based paths)
-  { path: 'grades', redirect: '/academics-hub?tab=classes' },
-  { path: 'materials', redirect: '/academics-hub?tab=materials' },
-  { path: 'subjects', redirect: '/academics-hub?tab=subjects' },
-  { path: 'teachers', redirect: '/people-directory?tab=teachers' },
-  { path: 'class-management', redirect: '/enrollment-classes?tab=classrooms' },
-  { path: 'my-classes', redirect: '/academics-hub?tab=classes' },
-  { path: 'subject-assignment', redirect: '/academics-hub?tab=subjects' },
-  { path: 'student-enrollment', redirect: '/enrollment-classes?tab=student-enrollment' },
-  { path: 'student-management', redirect: '/people-directory?tab=students' },
-  { path: 'audit-logs', redirect: '/system-admin?tab=audit-logs' },
-  { path: 'backups', redirect: '/system-admin?tab=backups' },
-  { path: 'website-content', redirect: '/system-admin?tab=website-editor' },
-  { path: 'enrollment-management', redirect: '/enrollment-classes?tab=applications' },
-  { path: 'grade-input', redirect: '/grading-suite?tab=grade-input' },
-  { path: 'grade-management', redirect: '/grading-suite?tab=grade-management' },
-  { path: 'student-grades', redirect: '/grading-suite?tab=my-grades' },
-  { path: 'moderation', redirect: '/system-admin?tab=moderation' },
-  { path: 'analytics', redirect: '/grading-suite?tab=grade-analytics' },
-  { path: 'system-health', redirect: '/system-admin?tab=system-health' },
-  { path: 'schedule-management', redirect: '/academics-hub?tab=schedules' },
-  { path: 'schedule', redirect: '/academics-hub?tab=schedule' },
-  { path: 'parent-management', redirect: '/people-directory?tab=parents' },
 ];

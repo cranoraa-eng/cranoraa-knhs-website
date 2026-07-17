@@ -18,11 +18,13 @@ const PATH_LABEL_MAP = {
   
   // Hub Routes
   'academics-hub': 'Academics Hub',
-  'enrollment-classes': 'Enrollment & Classes',
+  'enrollment': 'Enrollment',
+  'classes': 'Classes',
   'grading-suite': 'Grading Suite',
-  'people-directory': 'People Directory',
+  'people': 'People',
   'system-admin': 'System Admin',
   'communication-center': 'Communication Center',
+  'academic-setup': 'Academic Setup',
   
   // Standalone Routes
   'announcements': 'Announcements',

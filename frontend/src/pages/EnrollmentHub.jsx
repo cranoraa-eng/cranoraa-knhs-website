@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
-import { useParallelFetch } from '../../hooks/useFetch';
-import api from '../../utils/api';
+import { useParallelFetch } from '../hooks/useFetch';
+import api from '../utils/api';
 import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
 import { LoadingSpinner, Button } from '../components/ui';
