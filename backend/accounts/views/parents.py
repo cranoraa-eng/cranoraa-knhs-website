@@ -5,7 +5,7 @@ from rest_framework.response import Response
 
 from ..models import (
     User, StudentClassEnrollment, Attendance, Grade,
-    Schedule, Notification, Announcement, Assignment, GradeReport, ParentLink,
+    Schedule, Notification, Announcement, Assignment, GradeReport,
 )
 from ..serializers import full_name
 from ..pdf_export import generate_report_card_pdf
@@ -328,7 +328,8 @@ def parent_report_card_pdf(request, student_id):
     
     # Verify access
     if user.role == 'parent':
-        if not ParentLink.objects.filter(parent=user, student_id=student_id).exists():
+        profile = getattr(user, 'profile', None)
+        if not profile or not profile.linked_students.filter(id=student_id).exists():
             return Response({'error': 'Access denied'}, status=403)
     elif user.role == 'student' and user.id != student_id:
         return Response({'error': 'Access denied'}, status=403)
@@ -361,7 +362,8 @@ def parent_year_over_year(request, student_id):
     """Return year-over-year grade comparison for a student."""
     user = request.user
     if user.role == 'parent':
-        if not ParentLink.objects.filter(parent=user, student_id=student_id).exists():
+        profile = getattr(user, 'profile', None)
+        if not profile or not profile.linked_students.filter(id=student_id).exists():
             return Response({'error': 'Access denied'}, status=403)
     elif user.role == 'student' and user.id != student_id:
         return Response({'error': 'Access denied'}, status=403)

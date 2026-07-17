@@ -192,10 +192,10 @@ function AssignmentsTab() {
   const [saving, setSaving] = useState(false);
   const [search, setSearch] = useState('');
   const [filterClassroom, setFilterClassroom] = useState('');
-  const [form, setForm] = useState({ classroom: '', subject: '', teacher: '', ww_weight: '30', pt_weight: '50', qa_weight: '20' });
+  const [form, setForm] = useState({ classroom: '', subject: '', teacher: '' });
 
-  const openCreate = () => { setEditing(null); setForm({ classroom: '', subject: '', teacher: '', ww_weight: '30', pt_weight: '50', qa_weight: '20' }); setShowModal(true); };
-  const openEdit = (a) => { setEditing(a); setForm({ classroom: a.classroom, subject: a.subject, teacher: a.teacher, ww_weight: String(a.ww_weight), pt_weight: String(a.pt_weight), qa_weight: String(a.qa_weight) }); setShowModal(true); };
+  const openCreate = () => { setEditing(null); setForm({ classroom: '', subject: '', teacher: '' }); setShowModal(true); };
+  const openEdit = (a) => { setEditing(a); setForm({ classroom: a.classroom, subject: a.subject, teacher: a.teacher }); setShowModal(true); };
 
   const handleDelete = async (assignment) => {
     const result = await Swal.fire({ title: 'Remove Assignment?', text: `Remove "${assignment.subject_name}" from "${assignment.classroom_name}"?`, icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', cancelButtonColor: '#6b7280', confirmButtonText: 'Remove' });
@@ -208,12 +208,8 @@ function AssignmentsTab() {
     if (!form.classroom) return toast.error('Section is required');
     if (!form.subject) return toast.error('Subject is required');
     if (!form.teacher) return toast.error('Teacher is required');
-    const ww = parseFloat(form.ww_weight) || 0;
-    const pt = parseFloat(form.pt_weight) || 0;
-    const qa = parseFloat(form.qa_weight) || 0;
-    if (Math.round((ww + pt + qa) * 100) !== 10000) return toast.error(`Grading weights must sum to 100% (currently ${ww + pt + qa}%)`);
     setSaving(true);
-    const payload = { classroom: parseInt(form.classroom), subject: parseInt(form.subject), teacher: parseInt(form.teacher), ww_weight: ww, pt_weight: pt, qa_weight: qa };
+    const payload = { classroom: parseInt(form.classroom), subject: parseInt(form.subject), teacher: parseInt(form.teacher) };
     try {
       if (editing) { await api.patch(`/classroom-subjects/${editing.id}/`, payload); toast.success('Assignment updated'); }
       else { await api.post('/classroom-subjects/', payload); toast.success('Assignment created'); }
@@ -228,9 +224,6 @@ function AssignmentsTab() {
     const q = search.toLowerCase();
     return (!q || a.subject_name?.toLowerCase().includes(q) || a.subject_code?.toLowerCase().includes(q) || a.classroom_name?.toLowerCase().includes(q) || a.teacher_name?.toLowerCase().includes(q)) && (!filterClassroom || String(a.classroom) === filterClassroom);
   }), [assignments, search, filterClassroom]);
-
-  const totalWeight = (parseFloat(form.ww_weight) || 0) + (parseFloat(form.pt_weight) || 0) + (parseFloat(form.qa_weight) || 0);
-  const weightOk = Math.round(totalWeight * 100) === 10000;
 
   if (loading) return <div className="flex items-center justify-center h-64"><LoadingSpinner /></div>;
 
@@ -273,7 +266,6 @@ function AssignmentsTab() {
                   <th className="px-4 py-3 text-xs font-extrabold text-slate-700 uppercase tracking-wider">Section</th>
                   <th className="px-4 py-3 text-xs font-extrabold text-slate-700 uppercase tracking-wider">Subject</th>
                   <th className="px-4 py-3 text-xs font-extrabold text-slate-700 uppercase tracking-wider">Teacher</th>
-                  <th className="hidden lg:table-cell px-4 py-3 text-xs font-extrabold text-slate-700 uppercase tracking-wider text-center">Weights (WW/PT/QA)</th>
                   <th className="px-4 py-3 text-xs font-extrabold text-slate-700 uppercase tracking-wider text-center w-28">Actions</th>
                 </tr>
               </thead>
@@ -288,13 +280,6 @@ function AssignmentsTab() {
                       </div>
                     </td>
                     <td className="px-4 py-3"><span className="text-sm text-slate-600">{a.teacher_name || '—'}</span></td>
-                    <td className="hidden lg:table-cell px-4 py-3 text-center">
-                      <div className="flex items-center justify-center gap-1">
-                        <Badge variant="green" className="text-[10px]">WW {a.ww_weight}%</Badge>
-                        <Badge variant="violet" className="text-[10px]">PT {a.pt_weight}%</Badge>
-                        <Badge variant="amber" className="text-[10px]">QA {a.qa_weight}%</Badge>
-                      </div>
-                    </td>
                     <td className="px-4 py-3 text-center">
                       <div className="flex items-center justify-center gap-2">
                         <Button variant="secondary" size="sm" onClick={() => openEdit(a)}>Edit</Button>
@@ -344,39 +329,10 @@ function AssignmentsTab() {
                     {teachers.map(t => <option key={t.id} value={t.id}>{t.first_name} {t.last_name}</option>)}
                   </select>
                 </div>
-                <div className="border-t border-slate-200 pt-4">
-                  <div className="flex items-center justify-between mb-3">
-                    <label className="text-xs font-bold text-slate-700">Grading Weights</label>
-                    <span className={`text-xs font-bold ${weightOk ? 'text-emerald-600' : 'text-red-600'}`}>{totalWeight}% / 100%</span>
-                  </div>
-                  <div className="grid grid-cols-3 gap-3">
-                    <div>
-                      <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1">Written Work</label>
-                      <div className="relative">
-                        <input type="number" min="0" max="100" step="0.01" value={form.ww_weight} onChange={e => setForm({ ...form, ww_weight: e.target.value })} className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-violet-100 focus:border-violet-500" />
-                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">%</span>
-                      </div>
-                    </div>
-                    <div>
-                      <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1">Performance Task</label>
-                      <div className="relative">
-                        <input type="number" min="0" max="100" step="0.01" value={form.pt_weight} onChange={e => setForm({ ...form, pt_weight: e.target.value })} className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-violet-100 focus:border-violet-500" />
-                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">%</span>
-                      </div>
-                    </div>
-                    <div>
-                      <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1">Quarterly Exam</label>
-                      <div className="relative">
-                        <input type="number" min="0" max="100" step="0.01" value={form.qa_weight} onChange={e => setForm({ ...form, qa_weight: e.target.value })} className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-violet-100 focus:border-violet-500" />
-                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">%</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
               </div>
               <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-200 bg-slate-50 rounded-b-2xl">
                 <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 text-sm font-bold text-slate-700 bg-white border border-slate-300 rounded-md hover:bg-slate-50 transition-colors">Cancel</button>
-                <button type="submit" disabled={saving || !weightOk} className="px-4 py-2 text-sm font-bold text-white bg-violet-600 rounded-md hover:bg-violet-700 disabled:opacity-50 transition-colors">{saving ? 'Saving...' : editing ? 'Save Changes' : 'Create Assignment'}</button>
+                <button type="submit" disabled={saving} className="px-4 py-2 text-sm font-bold text-white bg-violet-600 rounded-md hover:bg-violet-700 disabled:opacity-50 transition-colors">{saving ? 'Saving...' : editing ? 'Save Changes' : 'Create Assignment'}</button>
               </div>
             </form>
           </div>
@@ -394,7 +350,7 @@ const tabs = [
 const SubjectsHub = () => (
   <PortalHubShell
     title="Subject Management"
-    description="Manage curriculum subjects and assign them to sections with teacher and grading weight configurations."
+    description="Manage curriculum subjects and assign them to sections with teacher allocations."
     tabs={tabs}
     showHeader={false}
   />
