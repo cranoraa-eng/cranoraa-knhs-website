@@ -225,7 +225,7 @@ export default function ContextActions({
                 {action.icon}
                 {action.label}
               </button>
-            )}
+            ))}
 
             <div className="border-t border-slate-100 mt-1 pt-1 px-3 py-2">
               <button 

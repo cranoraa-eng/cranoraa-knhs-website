@@ -219,7 +219,7 @@ export default function UserTableRow({
                     {action.icon}
                     {action.label}
                   </button>
-                )}
+                ))}
 
                 <div className="border-t border-slate-100 mt-1 pt-1 px-3 py-2">
                   <button 
@@ -300,7 +300,7 @@ export default function UserTableRow({
               }`}>
                 {cls.name}
               </span>
-            ))}
+            ))
           ) : (
             <p className="text-[9px] text-slate-300 italic">No assignments</p>
           )}
