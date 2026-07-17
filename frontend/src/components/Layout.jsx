@@ -227,11 +227,6 @@ const Layout = () => {
         { id: 'classes', label: 'My Classes', roles: ['staff', 'student'] },
         { id: 'schedule', label: 'My Schedule', roles: ['staff', 'student'] }
       ],
-      '/people': [
-        { id: 'teachers', label: 'Teachers', roles: ['admin'] },
-        { id: 'students', label: 'Students', roles: ['admin', 'staff'] },
-        { id: 'parents', label: 'Parents', roles: ['admin'] }
-      ],
       '/system-admin': [
         { id: 'audit-logs', label: 'Audit Logs', roles: ['admin'] },
         { id: 'backups', label: 'Backups', roles: ['admin'] },
@@ -239,15 +234,6 @@ const Layout = () => {
         { id: 'moderation', label: 'Moderation', roles: ['admin'] },
         { id: 'system-health', label: 'System Health', roles: ['admin'] }
       ],
-      '/classes': [
-        { id: 'sections', label: 'Sections', roles: ['admin', 'staff'] },
-        { id: 'subjects', label: 'Subjects', roles: ['admin', 'staff'] },
-        { id: 'schedule', label: 'Schedule', roles: ['admin', 'staff'] }
-      ],
-      '/enrollment': [
-        { id: 'applications', label: 'Applications', roles: ['admin'] },
-        { id: 'enroll-students', label: 'Enroll Students', roles: ['admin'] }
-      ]
     };
     const tabs = allTabs[path];
     if (!tabs) return null;
