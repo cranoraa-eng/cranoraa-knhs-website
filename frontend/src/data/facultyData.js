@@ -33,7 +33,7 @@ export const administration = [
     id: 'cherry-sagrado',
     name: 'Cherry B. Sagrado',
     position: 'Administrative Assistant III',
-    photo: null,
+    photo: '/faculty/cherry-sagrado.jpg',
   },
 ];
 
