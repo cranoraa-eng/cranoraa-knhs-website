@@ -3,16 +3,11 @@
  *
  * HOW TO ADD PHOTOS:
  * 1. Place your image file inside:  frontend/public/faculty/
- *    (create the folder if it doesn't exist)
- * 2. Name the file using the person's key below, e.g.  sanny-delfin.jpg
+ * 2. Name the file using the person's id below, e.g.  sanny-delfin.jpg
  * 3. Set the `photo` field to the path:  "/faculty/sanny-delfin.jpg"
- * 4. If no photo is provided, the card will automatically show an
- *    avatar with the person's initials instead.
+ * 4. If no photo is provided, the card shows initials instead.
  *
- * PHOTO TIPS:
- * - Recommended size: 400×400 px (square), max 200 KB
- * - Supported formats: .jpg, .jpeg, .png, .webp
- * - Keep file names lowercase with hyphens, no spaces
+ * NOTE: File extension casing matters on Linux/Vercel — match exactly.
  */
 
 export const administration = [
@@ -20,7 +15,7 @@ export const administration = [
     id: 'sanny-delfin',
     name: 'Sanny O. Delfin',
     position: 'School Principal I',
-    photo: null, // e.g. "/faculty/sanny-delfin.jpg"
+    photo: '/faculty/sanny-delfin.jpg',
   },
   {
     id: 'jaylen-navato',
@@ -32,7 +27,7 @@ export const administration = [
     id: 'michelyn-biera',
     name: 'Michelyn B. Biera',
     position: 'Administrative Officer I',
-    photo: null,
+    photo: '/faculty/michelyn-biera.jpg',
   },
   {
     id: 'cherry-sagrado',
@@ -48,13 +43,13 @@ export const faculty = [
     id: 'beverly-perez',
     name: 'Beverly S. Perez',
     position: 'Master Teacher I',
-    photo: null,
+    photo: '/faculty/beverly-perez.JPG',
   },
   {
     id: 'jessica-actub',
     name: 'Jessica B. Actub',
     position: 'Special Science Teacher I',
-    photo: null,
+    photo: '/faculty/jessica-actub.JPG',
   },
 
   // ── Teacher VI ────────────────────────────────────────────────────
@@ -62,19 +57,19 @@ export const faculty = [
     id: 'rusty-bartolata',
     name: 'Rusty D. Bartolata',
     position: 'Teacher VI',
-    photo: null,
+    photo: '/faculty/rusty-bartolata.JPG',
   },
   {
     id: 'tahany-rangaig',
     name: 'Tahany A. Rangaig',
     position: 'Teacher VI',
-    photo: null,
+    photo: '/faculty/tahany-rangaig.JPG',
   },
   {
     id: 'jonathan-tatoy',
     name: 'Jonathan B. Tatoy',
     position: 'Teacher VI',
-    photo: null,
+    photo: '/faculty/jonathan-tatoy.JPG',
   },
 
   // ── Teacher V ─────────────────────────────────────────────────────
@@ -82,19 +77,19 @@ export const faculty = [
     id: 'ellen-gedaro',
     name: 'Ellen E. Gedaro',
     position: 'Teacher V',
-    photo: null,
+    photo: '/faculty/ellen-gedaro.JPG',
   },
   {
     id: 'mildred-gomez',
     name: 'Mildred P. Gomez',
     position: 'Teacher V',
-    photo: null,
+    photo: '/faculty/mildred-gomez.JPG',
   },
   {
     id: 'janice-valdez',
     name: 'Janice May E. Valdez',
     position: 'Teacher V',
-    photo: null,
+    photo: '/faculty/janice-valdez.JPG',
   },
 
   // ── Teacher IV ────────────────────────────────────────────────────
@@ -102,19 +97,19 @@ export const faculty = [
     id: 'kimberly-acaso',
     name: 'Kimberly B. Acaso',
     position: 'Teacher IV',
-    photo: null,
+    photo: '/faculty/kimberly-acaso.JPG',
   },
   {
     id: 'lucelle-catubig',
     name: 'Lucelle B. Catubig',
     position: 'Teacher IV',
-    photo: null,
+    photo: '/faculty/lucelle-catubig.JPG',
   },
   {
     id: 'clarence-pabillar',
     name: 'Clarence P. Pabillar',
     position: 'Teacher IV',
-    photo: null,
+    photo: '/faculty/clarence-pabillar.JPG',
   },
 
   // ── Teacher III ───────────────────────────────────────────────────
@@ -128,37 +123,37 @@ export const faculty = [
     id: 'norhata-casana',
     name: 'Norhata B. Casana',
     position: 'Teacher III',
-    photo: null,
+    photo: '/faculty/norhata-casana.JPG',
   },
   {
     id: 'clarice-cena',
     name: 'Clarice C. Cena',
     position: 'Teacher III',
-    photo: null,
+    photo: '/faculty/clarice-cena.JPG',
   },
   {
     id: 'jellieta-clordealta',
     name: 'Jellieta L. Clordealta',
     position: 'Teacher III',
-    photo: null,
+    photo: '/faculty/jellieta-clordealta.JPG',
   },
   {
     id: 'hegenia-coca',
     name: 'Hegenia C. Coca',
     position: 'Teacher III',
-    photo: null,
+    photo: '/faculty/hegenia-coca.JPG',
   },
   {
     id: 'monalissa-dicol',
     name: 'Monalissa D. Dicol',
     position: 'Teacher III',
-    photo: null,
+    photo: '/faculty/monalissa-dicol.JPG',
   },
   {
     id: 'leo-garma',
     name: 'Leo Ann S. Garma',
     position: 'Teacher III',
-    photo: null,
+    photo: '/faculty/leo-garma.JPG',
   },
   {
     id: 'daisy-layos',
@@ -170,13 +165,13 @@ export const faculty = [
     id: 'mary-nunez',
     name: 'Mary Jean M. Nuñez',
     position: 'Teacher III',
-    photo: null,
+    photo: '/faculty/mary-nunez.JPG',
   },
   {
     id: 'krystine-pastidio',
     name: 'Krystine Mae T. Pastidio',
     position: 'Teacher III',
-    photo: null,
+    photo: '/faculty/krystine-pastidio.JPG',
   },
 
   // ── Teacher II ────────────────────────────────────────────────────
@@ -184,13 +179,13 @@ export const faculty = [
     id: 'maria-turtosa',
     name: 'Maria Cristina F. Turtosa',
     position: 'Teacher II',
-    photo: null,
+    photo: '/faculty/maria-turtosa.JPG',
   },
   {
     id: 'grace-macatol',
     name: 'Grace H. Macatol',
     position: 'Teacher II',
-    photo: null,
+    photo: '/faculty/grace-macatol.JPG',
   },
 
   // ── Teacher I ─────────────────────────────────────────────────────
@@ -198,43 +193,43 @@ export const faculty = [
     id: 'tasneemah-amer',
     name: 'Tasneemah S. Amer',
     position: 'Teacher I',
-    photo: null,
+    photo: '/faculty/tasneemah-amer.JPG',
   },
   {
     id: 'elizalde-cabual',
     name: 'Elizalde D. Cabual',
     position: 'Teacher I',
-    photo: null,
+    photo: '/faculty/elizalde-cabual.JPG',
   },
   {
     id: 'shane-cadiz',
     name: 'Shane Phoebe Olive B. Cadiz',
     position: 'Teacher I',
-    photo: null,
+    photo: '/faculty/shane-cadiz.JPG',
   },
   {
     id: 'annabel-cantila',
     name: 'Annabel V. Cantila',
     position: 'Teacher I',
-    photo: null,
+    photo: '/faculty/annabel-cantila.JPG',
   },
   {
     id: 'darwin-castillon',
     name: 'Darwin A. Castillon',
     position: 'Teacher I',
-    photo: null,
+    photo: '/faculty/darwin-castillon.JPG',
   },
   {
     id: 'julius-paler',
     name: 'Julius Caesar R. Paler',
     position: 'Teacher I',
-    photo: null,
+    photo: '/faculty/julius-paler.JPG',
   },
   {
     id: 'chozily-tatoy',
     name: 'Chozily G. Tatoy',
     position: 'Teacher I',
-    photo: null,
+    photo: '/faculty/chozily-tatoy.JPG',
   },
 
   // ── ALS ───────────────────────────────────────────────────────────
@@ -242,7 +237,7 @@ export const faculty = [
     id: 'aldrin-maghinay',
     name: 'Aldrin L. Maghinay',
     position: 'ALS Teacher',
-    photo: null,
+    photo: '/faculty/aldrin-maghinay.JPG',
   },
 ];
 
