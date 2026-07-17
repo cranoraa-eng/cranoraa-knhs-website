@@ -191,12 +191,6 @@ const AcademicSetup = () => {
     }
   };
 
-  const handleCreateSemester = () => {
-    if (!educationLevel) return toast.error('Select an education level');
-    toast.success(`Education level set to ${educationLevel === 'jhs' ? 'Junior High School' : 'Senior High School'}`);
-    goToNextStep();
-  };
-
   const handleCreateSemester = async (e) => {
     e.preventDefault();
     if (!semesterForm.name.trim()) return toast.error('Period name is required');
