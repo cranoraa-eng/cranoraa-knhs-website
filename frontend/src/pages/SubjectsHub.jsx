@@ -64,10 +64,16 @@ function SubjectsTab() {
           <h1 className="text-xl md:text-2xl font-extrabold text-slate-900 tracking-tight">Subjects</h1>
           <p className="text-xs text-slate-500 mt-1">{subjects.length} subjects in the curriculum</p>
         </div>
-        <Button variant="primary" onClick={openCreate}>
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" /></svg>
-          Add Subject
-        </Button>
+        <div className="flex items-center gap-2">
+          <button onClick={() => navigate('/classes')} className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 transition-all">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+            View Sections
+          </button>
+          <Button variant="primary" onClick={openCreate}>
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" /></svg>
+            Add Subject
+          </Button>
+        </div>
       </div>
 
       <div className="bg-white border border-slate-200 rounded-xl p-4 mb-4 md:mb-6">
@@ -234,10 +240,16 @@ function AssignmentsTab() {
           <h1 className="text-xl md:text-2xl font-extrabold text-slate-900 tracking-tight">Subject Assignments</h1>
           <p className="text-xs text-slate-500 mt-1">{assignments.length} assignments across {classrooms.length} sections</p>
         </div>
-        <Button variant="primary" onClick={openCreate}>
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" /></svg>
-          Assign Subject
-        </Button>
+        <div className="flex items-center gap-2">
+          <button onClick={() => navigate('/classes')} className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 transition-all">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+            View Sections
+          </button>
+          <Button variant="primary" onClick={openCreate}>
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" /></svg>
+            Assign Subject
+          </Button>
+        </div>
       </div>
 
       <div className="bg-white border border-slate-200 rounded-xl p-4 mb-4 md:mb-6">
