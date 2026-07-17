@@ -237,17 +237,11 @@ export const faculty = [
     photo: null,
   },
 
-  // ── ALS / ALIVE ───────────────────────────────────────────────────
+  // ── ALS ───────────────────────────────────────────────────────────
   {
     id: 'aldrin-maghinay',
     name: 'Aldrin L. Maghinay',
     position: 'ALS Teacher',
-    photo: null,
-  },
-  {
-    id: 'hosnie-balimbing',
-    name: 'Hosnie M. Balimbing',
-    position: 'ALIVE Teacher',
     photo: null,
   },
 ];

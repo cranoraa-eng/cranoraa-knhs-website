@@ -16,7 +16,6 @@ const BADGE_COLORS = {
   'Teacher II':                  'bg-cyan-100 text-cyan-800 border-cyan-200',
   'Teacher I':                   'bg-teal-100 text-teal-800 border-teal-200',
   'ALS Teacher':                 'bg-orange-100 text-orange-800 border-orange-200',
-  'ALIVE Teacher':               'bg-rose-100 text-rose-800 border-rose-200',
 };
 
 function badgeColor(position) {
@@ -28,24 +27,25 @@ function Avatar({ name, photo, size = 'lg' }) {
   const [imgError, setImgError] = useState(false);
   const showPhoto = photo && !imgError;
 
+  // Portrait (3:4) container — matches typical ID/headshot photos
   const sizeClasses = {
-    lg: 'w-28 h-28 text-2xl',
-    md: 'w-20 h-20 text-lg',
+    lg: 'w-32 h-44 text-2xl',   // ~128×176 px
+    md: 'w-24 h-32 text-lg',    // ~96×128 px
   };
 
   const initials = getInitials(name);
 
   return (
     <div
-      className={`${sizeClasses[size]} rounded-full overflow-hidden flex items-center justify-center
-        bg-violet-100 border-4 border-white shadow-md mx-auto flex-shrink-0`}
+      className={`${sizeClasses[size]} rounded-xl overflow-hidden flex items-center justify-center
+        bg-violet-100 border-2 border-slate-200 shadow-sm mx-auto flex-shrink-0`}
       aria-label={`Photo of ${name}`}
     >
       {showPhoto ? (
         <img
           src={photo}
           alt={name}
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover object-top"
           onError={() => setImgError(true)}
         />
       ) : (
@@ -60,15 +60,21 @@ function Avatar({ name, photo, size = 'lg' }) {
 // ── Individual person card ────────────────────────────────────────────────────
 function PersonCard({ person }) {
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 p-5 flex flex-col items-center text-center
+    <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden
       hover:shadow-lg hover:-translate-y-1 transition-all duration-200 group">
-      <Avatar name={person.name} photo={person.photo} size="lg" />
-      <h3 className="mt-4 text-sm font-black text-slate-900 leading-snug uppercase tracking-wide">
-        {person.name}
-      </h3>
-      <span className={`mt-2 inline-block px-3 py-1 rounded-full text-[11px] font-bold border ${badgeColor(person.position)}`}>
-        {person.position}
-      </span>
+      {/* Portrait photo area */}
+      <div className="bg-slate-50 flex items-center justify-center pt-5 pb-3 px-4">
+        <Avatar name={person.name} photo={person.photo} size="lg" />
+      </div>
+      {/* Info */}
+      <div className="px-4 pb-5 pt-2 text-center">
+        <h3 className="text-xs font-black text-slate-900 leading-snug uppercase tracking-wide">
+          {person.name}
+        </h3>
+        <span className={`mt-2 inline-block px-2.5 py-1 rounded-full text-[10px] font-bold border ${badgeColor(person.position)}`}>
+          {person.position}
+        </span>
+      </div>
     </div>
   );
 }
@@ -76,15 +82,21 @@ function PersonCard({ person }) {
 // ── Admin card — slightly larger, featured layout ────────────────────────────
 function AdminCard({ person }) {
   return (
-    <div className="bg-white rounded-2xl border-2 border-violet-200 p-6 flex flex-col items-center text-center
+    <div className="bg-white rounded-2xl border-2 border-violet-200 overflow-hidden
       hover:shadow-xl hover:-translate-y-1 transition-all duration-200">
-      <Avatar name={person.name} photo={person.photo} size="lg" />
-      <h3 className="mt-4 text-base font-black text-slate-900 leading-snug uppercase tracking-wide">
-        {person.name}
-      </h3>
-      <span className={`mt-2 inline-block px-3 py-1 rounded-full text-[11px] font-bold border ${badgeColor(person.position)}`}>
-        {person.position}
-      </span>
+      {/* Portrait photo area */}
+      <div className="bg-violet-50 flex items-center justify-center pt-6 pb-3 px-4">
+        <Avatar name={person.name} photo={person.photo} size="lg" />
+      </div>
+      {/* Info */}
+      <div className="px-4 pb-6 pt-2 text-center">
+        <h3 className="text-sm font-black text-slate-900 leading-snug uppercase tracking-wide">
+          {person.name}
+        </h3>
+        <span className={`mt-2 inline-block px-3 py-1 rounded-full text-[11px] font-bold border ${badgeColor(person.position)}`}>
+          {person.position}
+        </span>
+      </div>
     </div>
   );
 }
