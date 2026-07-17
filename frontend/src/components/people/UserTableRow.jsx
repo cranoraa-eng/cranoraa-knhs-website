@@ -309,5 +309,3 @@ export default function UserTableRow({
     </div>
   );
 }
-
-export default UserTableRow;

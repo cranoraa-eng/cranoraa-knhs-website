@@ -216,5 +216,3 @@ export default function ExportMenu({
     </div>
   );
 }
-
-export default ExportMenu;

@@ -244,5 +244,3 @@ export default function ContextActions({
     </div>
   );
 }
-
-export default ContextActions;

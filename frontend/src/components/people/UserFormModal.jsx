@@ -296,5 +296,3 @@ export default function UserFormModal({
     </div>
   );
 }
-
-export default UserFormModal;
