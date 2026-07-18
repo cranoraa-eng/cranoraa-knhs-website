@@ -972,49 +972,18 @@ setSelectedIds([]);
         )}
       </div>
 
-      {/* Profile Modal */}
+      {/* ── Student Profile Drawer ── */}
       {showProfileModal && selectedStudent && (
-        <div className="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center p-2 sm:p-3 md:p-4">
-          <div className="bg-white border border-gray-300 shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
-            <div className="bg-[#5e2a84] flex items-center justify-between px-3 sm:px-4 md:px-5 py-2.5 sm:py-3 border-b-2 border-violet-900">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-white/20 border border-white/30 flex items-center justify-center">
-                  <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                  </svg>
-                </div>
-                <div>
-                  <h2 className="text-sm font-black text-white uppercase tracking-widest leading-none">Student Profile</h2>
-                  <p className="text-violet-200 text-[10px] mt-0.5 font-medium uppercase tracking-wide">{selectedStudent.first_name} {selectedStudent.last_name}</p>
-                </div>
-              </div>
-              <button type="button" onClick={() => { setShowProfileModal(false); setSelectedStudent(null); }}
-                className="ml-4 w-7 h-7 flex items-center justify-center rounded text-white/60 hover:bg-white/20 hover:text-white transition-all">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12"/>
-                </svg>
-              </button>
-            </div>
-            <div className="p-3 sm:p-4 md:p-5 space-y-1">
-              <ProfileField label="Full Name" value={`${selectedStudent.profile?.title || ''} ${selectedStudent.first_name} ${selectedStudent.last_name}`} />
-              <ProfileField label="Student ID / LRN" value={selectedStudent.profile?.registration_number || selectedStudent.username} />
-              <ProfileField label="Sex" value={selectedStudent.profile?.sex} />
-              <ProfileField label="Grade Level" value={selectedStudent.profile?.grade_level} />
-              <ProfileField label="Section" value={selectedStudent.profile?.classroom_name} />
-              <ProfileField label="Email" value={selectedStudent.email} />
-              <ProfileField label="Status" value={selectedStudent.account_status} />
-              {selectedStudent.must_change_password && (
-                <ProfileField label="Temp Password" value="Pending" />
-              )}
-            </div>
-            <div className="px-3 sm:px-4 md:px-5 py-2.5 sm:py-3 border-t border-gray-200 bg-gray-50 flex justify-end">
-              <button type="button" onClick={() => { setShowProfileModal(false); setSelectedStudent(null); }}
-                className="px-5 py-2 bg-white text-gray-700 text-xs font-bold uppercase tracking-wide border border-gray-300 hover:bg-gray-100">
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
+        <StudentProfileDrawer
+          student={selectedStudent}
+          classrooms={classrooms}
+          onClose={() => { setShowProfileModal(false); setSelectedStudent(null); }}
+          onResetPassword={handleResetPassword}
+          onAssignSection={handleAssignSection}
+          onDelete={handleDelete}
+          onStartChat={handleStartChat}
+          currentUser={user}
+        />
       )}
 
       {/* Add Student Modal */}
