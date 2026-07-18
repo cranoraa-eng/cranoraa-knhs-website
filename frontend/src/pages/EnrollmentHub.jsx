@@ -130,6 +130,22 @@ function ApplicationsTab({ refetch }) {
 
   const enrollStudent = async () => {
     if (!enrollApp || enrolling) return;
+
+    // Warn if no section selected — student will be enrolled without a classroom
+    if (!enrollClassroom) {
+      const { isConfirmed } = await Swal.fire({
+        icon: 'warning',
+        title: 'No Section Selected',
+        html: `<p class="text-sm text-slate-700">You are enrolling <strong>${enrollApp.first_name} ${enrollApp.last_name}</strong> without assigning a section.</p>
+               <p class="text-xs text-amber-600 mt-2 font-bold">The student will have an account but won't appear in any class roster. You can assign a section later from the Enroll Students tab.</p>`,
+        showCancelButton: true,
+        confirmButtonText: 'Enroll Anyway',
+        cancelButtonText: 'Go Back',
+        confirmButtonColor: '#7C3AED',
+      });
+      if (!isConfirmed) return;
+    }
+
     setEnrolling(true);
     try {
       const result = await handleAction(enrollApp.id, 'enroll_student', {
@@ -526,12 +542,12 @@ function ApplicationsTab({ refetch }) {
                               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542 7z" /></svg>
                             </a>
                             {doc.verification_status !== 'verified' && (
-                              <Button onClick={() => { /* verifyDoc logic */ }} variant="ghost" size="sm" title="Verify">
+                              <Button onClick={() => verifyDoc(selected.id, doc.id, 'verified')} variant="ghost" size="sm" title="Verify">
                                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
                               </Button>
                             )}
                             {doc.verification_status !== 'rejected' && (
-                              <Button onClick={() => { /* rejectDoc logic */ }} variant="ghost" size="sm" title="Reject">
+                              <Button onClick={() => verifyDoc(selected.id, doc.id, 'rejected')} variant="ghost" size="sm" title="Reject">
                                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" /></svg>
                               </Button>
                             )}
@@ -574,24 +590,24 @@ function ApplicationsTab({ refetch }) {
 
                 <div className="px-5 py-4 border-t border-gray-200 bg-gray-50 flex items-center justify-between gap-2 flex-shrink-0">
                   <div className="flex gap-2">
-                    <Button onClick={() => { /* promptRequestDocs */ }} variant="secondary" size="sm">Request Docs</Button>
-                    <Button onClick={() => { /* assignSection */ }} variant="secondary" size="sm">Set Section</Button>
+                    <Button onClick={() => promptRequestDocs(selected.id)} variant="secondary" size="sm">Request Docs</Button>
+                    <Button onClick={() => assignSection(selected.id, selected.grade_level)} variant="secondary" size="sm">Set Section</Button>
                     <a href={`/api/enrollment-applications/export-form-pdf/?id=${selected.id}`} target="_blank" rel="noreferrer" className="px-4 py-2 border border-gray-300 bg-white text-gray-700 text-xs font-black uppercase tracking-widest hover:bg-gray-100 rounded-sm">Print Form</a>
                   </div>
                   <div className="flex gap-2">
                     {(selected.status === 'pending' || selected.status === 'under_review') && (
                       <>
-                        <Button onClick={() => { /* promptReject */ }} variant="danger" size="sm">Reject</Button>
+                        <Button onClick={() => promptReject(selected.id)} variant="danger" size="sm">Reject</Button>
                         {selected.status === 'under_review' && (
-                          <Button onClick={() => { /* promptApproveApplication */ }} variant="success" size="sm">Approve</Button>
+                          <Button onClick={() => promptApproveApplication(selected.id)} variant="success" size="sm">Approve</Button>
                         )}
                       </>
                     )}
                     {selected.status === 'approved' && (
-                      <Button onClick={() => { /* enrollStudent */ }} variant="primary" size="sm">Enroll Student</Button>
+                      <Button onClick={() => { setEnrollApp(selected); setShowEnrollModal(true); setSelected(null); }} variant="primary" size="sm">Enroll Student</Button>
                     )}
                     {selected.status !== 'enrolled' && (
-                      <Button onClick={() => { /* promptDelete */ }} variant="danger" size="sm">Delete</Button>
+                      <Button onClick={() => promptDelete(selected.id, `${selected.first_name} ${selected.last_name}`)} variant="danger" size="sm">Delete</Button>
                     )}
                     <Button onClick={() => setSelected(null)} variant="secondary" size="sm">Close</Button>
                   </div>

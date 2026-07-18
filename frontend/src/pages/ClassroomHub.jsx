@@ -77,54 +77,53 @@ const ClassroomHub = () => {
 
   const fetchClasses = async () => {
     try {
-      const endpoint = isTeacher
-        ? `/classroom-subjects/by_teacher/?teacher_id=${user?.id}`
-        : `/enrollments/?student=${user?.id}`;
-      
-      const res = await api.get(endpoint);
-      
       if (isTeacher) {
-        // Group by classroom for teachers
-        const grouped = {};
-        res.data.forEach(a => {
-          if (!grouped[a.classroom]) {
-            grouped[a.classroom] = {
-              id: a.classroom,
-              name: a.classroom_name,
-              subjects: [],
-              studentCount: null, // will be fetched below
-              students: [],
-              color: getClassroomColor(a.classroom_name)
-            };
-          }
-          grouped[a.classroom].subjects.push({
-            id: a.id,
-            name: a.subject_name,
-            code: a.subject_code
-          });
-        });
-        const groupedList = Object.values(grouped);
+        // Use /classrooms/ directly — the backend already filters by advisory + subject assignments for staff.
+        // The old by_teacher endpoint only returned classrooms with subject assignments,
+        // leaving advisory-only teachers with an empty list.
+        const res = await api.get('/classrooms/');
+        const classroomList = Array.isArray(res.data) ? res.data : res.data?.results || [];
 
-        // Fetch enrollment counts in parallel
-        const countResults = await Promise.allSettled(
-          groupedList.map(c => api.get(`/enrollments/?classroom=${c.id}`))
+        // For each classroom, fetch subjects assigned to this teacher
+        const withSubjects = await Promise.all(
+          classroomList.map(async (cls) => {
+            try {
+              const subjRes = await api.get(`/classroom-subjects/by_classroom/?classroom_id=${cls.id}`);
+              const mySubjects = (Array.isArray(subjRes.data) ? subjRes.data : [])
+                .filter(s => s.teacher === user?.id)
+                .map(s => ({ id: s.subject, name: s.subject_name, code: s.subject_code }));
+              return {
+                id: cls.id,
+                name: cls.name,
+                grade_level: cls.grade_level,
+                subjects: mySubjects,
+                studentCount: cls.student_count ?? null,
+                students: [],
+                color: getClassroomColor(cls.name),
+              };
+            } catch {
+              return {
+                id: cls.id,
+                name: cls.name,
+                grade_level: cls.grade_level,
+                subjects: [],
+                studentCount: cls.student_count ?? null,
+                students: [],
+                color: getClassroomColor(cls.name),
+              };
+            }
+          })
         );
-        countResults.forEach((result) => {
-          const index = countResults.indexOf(result);
-          if (result.status === 'fulfilled') {
-            groupedList[index].studentCount = result.value.data.length;
-          }
-        });
 
-        setClasses(groupedList);
+        setClasses(withSubjects);
       } else {
-        // For students, get their enrolled classrooms
+        // Students: fetch enrollments then resolve classroom details
+        const res = await api.get(`/enrollments/?student=${user?.id}`);
         const classroomIds = [...new Set(res.data.map(e => e.classroom))];
-        const classroomsPromises = classroomIds.map(id => api.get(`/classrooms/${id}/`));
-        const classroomsData = await Promise.all(classroomsPromises);
+        const classroomsData = await Promise.all(classroomIds.map(id => api.get(`/classrooms/${id}/`)));
         setClasses(classroomsData.map((r) => ({
           ...r.data,
-          color: getClassroomColor(r.data.name)
+          color: getClassroomColor(r.data.name),
         })));
       }
     } catch {

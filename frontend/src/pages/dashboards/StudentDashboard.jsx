@@ -71,6 +71,7 @@ const StudentDashboard = () => {
   const [announcements, setAnnouncements] = useState([]);
   const [schedule, setSchedule] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [classrooms, setClassrooms] = useState([]);
   // Messages fetched independently so the widget degrades gracefully
   const [messages, setMessages] = useState(null); // null = still loading
 
@@ -92,7 +93,8 @@ const StudentDashboard = () => {
       api.get('/assignments/').catch(() => ({ data: [] })),
       api.get('/announcements/').catch(() => ({ data: [] })),
       api.get('/schedules/today/').catch(() => ({ data: [] })),
-    ]).then(([gradeRes, attRes, statsRes, assignRes, annRes, schedRes]) => {
+      api.get('/classrooms/').catch(() => ({ data: [] })),
+    ]).then(([gradeRes, attRes, statsRes, assignRes, annRes, schedRes, classRes]) => {
       setGrades(gradeRes.data);
       setAttendance(attRes.data);
       const s = statsRes.data;
@@ -102,6 +104,8 @@ const StudentDashboard = () => {
       setAssignments(Array.isArray(assignRes.data) ? assignRes.data : assignRes.data?.results || []);
       setAnnouncements(Array.isArray(annRes.data) ? annRes.data : annRes.data?.results || []);
       setSchedule(schedRes.data || []);
+      const cls = Array.isArray(classRes.data) ? classRes.data : classRes.data?.results || [];
+      setClassrooms(cls);
     }).finally(() => setLoading(false));
 
     // Load messages in parallel — doesn't block the rest of the UI
@@ -299,6 +303,43 @@ const StudentDashboard = () => {
       {/* ══════════════════════════════════════════════════════════════ */}
       
       <QuickAccessLinks role="student" variant="grid" />
+
+      {/* ══════════════════════════════════════════════════════════════ */}
+      {/* MY ENROLLED CLASS */}
+      {/* ══════════════════════════════════════════════════════════════ */}
+
+      {classrooms.length > 0 && (
+        <div>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-sm font-black text-slate-700 uppercase tracking-wide">My Enrolled Class{classrooms.length > 1 ? 'es' : ''}</h2>
+            <button onClick={() => navigate('/my-classes')} className="text-xs font-bold text-violet-600 hover:underline">
+              Open Classes →
+            </button>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {classrooms.map(cls => (
+              <button
+                key={cls.id}
+                onClick={() => navigate(`/my-classes?classroom=${cls.id}`)}
+                className="flex items-center gap-3 bg-white border border-slate-200 rounded-xl px-4 py-3 hover:border-violet-300 hover:shadow-md transition-all text-left group"
+              >
+                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-violet-500 to-violet-700 flex items-center justify-center text-white font-black text-sm flex-shrink-0">
+                  {cls.name?.charAt(0)?.toUpperCase() || '?'}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-black text-slate-900 truncate">{cls.name}</p>
+                  <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wide">
+                    {cls.grade_level || 'Classroom'}{cls.teacher_name ? ` · ${cls.teacher_name}` : ''}
+                  </p>
+                </div>
+                <svg className="w-4 h-4 text-slate-300 group-hover:text-violet-500 transition-colors flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* ══════════════════════════════════════════════════════════════ */}
       {/* ROW 1: TODAY'S SCHEDULE | ATTENDANCE | GRADES */}
