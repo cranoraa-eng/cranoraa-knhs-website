@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useNotifications } from '../../context/NotificationContext';
 import { motion } from 'framer-motion';
 import api from '../../utils/api';
 import {
@@ -167,10 +168,10 @@ const TeacherDashboard = () => {
   const unmarkedCount = classrooms.filter(c => !todayAttMap[c.id]?.marked).length;
   // Real attendance rate from the stats endpoint (present/late ÷ total records today)
   const realAttRate = data?.attendance_rate ?? 0;
+  // Unread notifications from global context
+  const { unreadCount: notifUnread } = useNotifications();
   // Pending grades from backend (students without a grade for teacher's subjects)
   const pendingGrades = data?.pending_grades ?? 0;
-  // Unread notifications if returned, fallback to announcements_sent
-  const notifValue = data?.unread_notifications ?? data?.announcements_sent ?? 0;
 
   return (
     <motion.div
@@ -184,6 +185,48 @@ const TeacherDashboard = () => {
 
       <RoleManual role="teacher" />
       <QuickAccessLinks role="teacher" variant="grid" />
+
+      {/* ── QUICK ACTIONS ──────────────────────────────────────────────── */}
+      <div className="flex flex-wrap gap-2">
+        <button
+          onClick={() => navigate('/announcements')}
+          className="flex items-center gap-2 px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold rounded-lg transition-colors"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
+          </svg>
+          Post Announcement
+        </button>
+        <button
+          onClick={() => navigate('/attendance')}
+          className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-700 text-xs font-bold rounded-lg hover:bg-slate-50 transition-colors"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          Mark Attendance
+        </button>
+        <button
+          onClick={() => navigate('/my-classes')}
+          className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-700 text-xs font-bold rounded-lg hover:bg-slate-50 transition-colors"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+          </svg>
+          Input Grades
+        </button>
+        {notifUnread > 0 && (
+          <button
+            onClick={() => navigate('/notifications')}
+            className="flex items-center gap-2 px-4 py-2 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold rounded-lg hover:bg-rose-100 transition-colors"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+            </svg>
+            {notifUnread} unread notification{notifUnread !== 1 ? 's' : ''}
+          </button>
+        )}
+      </div>
 
       {/* ── STAT CARDS ─────────────────────────────────────────────────── */}
       <div>

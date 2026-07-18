@@ -103,14 +103,20 @@ def notifications_polling_view(request):
     """
     user = request.user
     from django.utils import timezone
+    import datetime
 
-    unread_qs = list(
-        Notification.objects.filter(recipient=user, is_read=False)
+    cutoff = timezone.now() - datetime.timedelta(days=30)
+
+    # Return recent 20 notifications (read + unread) so the bell stays populated
+    # after marking all as read — unread_count is calculated separately
+    recent_qs = list(
+        Notification.objects.filter(recipient=user, created_at__gte=cutoff)
         .select_related('recipient')
         .order_by('-created_at')[:20]
     )
-    notifications_data = NotificationSerializer(unread_qs, many=True).data
-    unread_count = len(unread_qs)
+    notifications_data = NotificationSerializer(recent_qs, many=True).data
+    # Accurate unread count — always from DB, not from the slice above
+    unread_count = Notification.objects.filter(recipient=user, is_read=False).count()
 
     announcements_qs = Announcement.objects.filter(status='live').exclude(
         event_date__lt=timezone.now()

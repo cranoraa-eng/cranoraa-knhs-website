@@ -1,4 +1,5 @@
 from django.db import models
+from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from channels.layers import get_channel_layer
@@ -138,3 +139,14 @@ def broadcast_notification(sender, instance, created, **kwargs):
             )
         except Exception as e:
             logging.getLogger(__name__).warning(f"FCM push failed for notification {instance.id}: {e}")
+
+
+@receiver(post_save, sender=User)
+def ensure_notification_preferences(sender, instance, created, **kwargs):
+    """Auto-create a NotificationPreference row whenever a new User is saved.
+    This ensures the broadcast_notification signal always finds valid prefs
+    instead of falling through with no preferences row (which would treat
+    every notification type as enabled — correct default, but prevents
+    per-user opt-outs from working on first notification)."""
+    if created:
+        NotificationPreference.objects.get_or_create(user=instance)
