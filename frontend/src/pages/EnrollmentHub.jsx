@@ -622,220 +622,320 @@ function ApplicationsTab({ refetch }) {
 }
 
 function EnrollStudentsTab({ refetch }) {
-  const { data, loading, refetch: localRefetch } = useParallelFetch({
+  const { data, loading } = useParallelFetch({
     classrooms: '/classrooms/',
-    students: '/users/?role=student',
+    students: '/users/?role=student&page_size=500',
   });
   const classrooms = useMemo(() => Array.isArray(data.classrooms) ? data.classrooms : [], [data.classrooms]);
-  const students = useMemo(() => Array.isArray(data.students) ? data.students : [], [data.students]);
-  
+  const students   = useMemo(() => Array.isArray(data.students)   ? data.students   : [], [data.students]);
+
   const [selectedClassroom, setSelectedClassroom] = useState('');
-  const [enrollments, setEnrollments] = useState([]);
-  const [loadingMeta, setLoadingMeta] = useState(true);
-  const [showModal, setShowModal] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [studentSearch, setStudentSearch] = useState('');
-  const [selectedStudents, setSelectedStudents] = useState([]);
+  const [enrollments,        setEnrollments]       = useState([]);
+  const [loadingEnrollments, setLoadingEnrollments] = useState(false);
+  const [showModal,          setShowModal]          = useState(false);
+  const [saving,             setSaving]             = useState(false);
+  const [studentSearch,      setStudentSearch]      = useState('');
+  const [enrollSearch,       setEnrollSearch]       = useState('');
+  const [selectedStudents,   setSelectedStudents]   = useState([]);
 
   useEffect(() => {
-    fetchMeta();
-  }, []);
-
-  useEffect(() => {
-    if (selectedClassroom) fetchEnrollments(selectedClassroom);
-    else setEnrollments([]);
+    if (!selectedClassroom) { setEnrollments([]); return; }
+    setLoadingEnrollments(true);
+    api.get(`/enrollments/?classroom=${selectedClassroom}`)
+      .then(res => setEnrollments(res.data.results || res.data))
+      .catch(() => toast.error('Failed to load enrollments'))
+      .finally(() => setLoadingEnrollments(false));
   }, [selectedClassroom]);
 
-  const fetchMeta = async () => {
-    setLoadingMeta(true);
-    try {
-      const [classRes, studentRes] = await Promise.all([
-        api.get('/classrooms/'),
-        api.get('/users/?role=student&page_size=500'),
-      ]);
-      localRefetch();
-    } catch (err) {
-      toast.error(err.response?.data?.error || 'Failed to load data');
-    } finally {
-      setLoadingMeta(false);
-    }
-  };
+  const currentClassroom = classrooms.find(c => String(c.id) === String(selectedClassroom));
+  const capacity      = currentClassroom?.capacity || 40;
+  const enrolledCount = enrollments.length;
+  const isFull        = enrolledCount >= capacity;
 
-  const fetchEnrollments = async (classroomId) => {
+  const sortedClassrooms = useMemo(() => {
+    const order = ['Grade 7','Grade 8','Grade 9','Grade 10','Grade 11','Grade 12'];
+    return [...classrooms].sort((a, b) => {
+      const getGrade = n => order.find(g => n.toLowerCase().includes(g.toLowerCase())) || '';
+      const iA = order.indexOf(getGrade(a.name));
+      const iB = order.indexOf(getGrade(b.name));
+      if (iA === -1 && iB === -1) return a.name.localeCompare(b.name);
+      if (iA === -1) return 1; if (iB === -1) return -1;
+      return iA - iB;
+    });
+  }, [classrooms]);
+
+  const enrolledIds = useMemo(() => new Set(enrollments.map(e => e.student)), [enrollments]);
+
+  const availableStudents = useMemo(() => {
+    const q = studentSearch.toLowerCase();
+    return students.filter(s => {
+      if (enrolledIds.has(s.id)) return false;
+      if (!q) return true;
+      const lrn = s.profile?.lrn || s.profile?.registration_number || '';
+      return (
+        (`${s.first_name || ''} ${s.last_name || ''}`).toLowerCase().includes(q) ||
+        (s.email || '').toLowerCase().includes(q) ||
+        (s.username || '').toLowerCase().includes(q) ||
+        lrn.toLowerCase().includes(q)
+      );
+    });
+  }, [students, enrolledIds, studentSearch]);
+
+  const filteredEnrollments = useMemo(() => {
+    const q = enrollSearch.toLowerCase();
+    if (!q) return enrollments;
+    return enrollments.filter(e =>
+      (e.student_name || '').toLowerCase().includes(q) ||
+      (e.student_email || '').toLowerCase().includes(q) ||
+      (e.student_lrn || '').toLowerCase().includes(q)
+    );
+  }, [enrollments, enrollSearch]);
+
+  const openModal = () => { setSelectedStudents([]); setStudentSearch(''); setShowModal(true); };
+  const toggleStudent = id => setSelectedStudents(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+  const toggleAll = () => setSelectedStudents(selectedStudents.length === availableStudents.length ? [] : availableStudents.map(s => s.id));
+
+  const handleEnroll = async e => {
+    e.preventDefault();
+    if (!selectedStudents.length) return toast.error('Select at least one student');
+    setSaving(true);
+    const t = toast.loading(`Enrolling ${selectedStudents.length} student(s)…`);
     try {
-      const res = await api.get(`/enrollments/?classroom=${classroomId}`);
+      await api.post(`/classrooms/${parseInt(selectedClassroom)}/bulk_enroll/`, {
+        student_ids: selectedStudents.map(Number),
+      });
+      toast.success(`${selectedStudents.length} student(s) enrolled`, { id: t });
+      setShowModal(false); setSelectedStudents([]);
+      const res = await api.get(`/enrollments/?classroom=${selectedClassroom}`);
       setEnrollments(res.data.results || res.data);
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Failed to load enrollments');
-    }
+      toast.error(err.response?.data?.error || err.response?.data?.detail || 'Failed to enroll', { id: t });
+    } finally { setSaving(false); }
   };
 
-  const openModal = () => {
-    setSelectedStudents([]);
-    setStudentSearch('');
-    setShowModal(true);
-  };
-
-  const handleRemove = async (enrollment) => {
-    const result = await Swal.fire({
+  const handleRemove = async enrollment => {
+    const { isConfirmed } = await Swal.fire({
       title: 'Remove Student?',
-      text: `Remove "${enrollment.student_name}" from this classroom?`,
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#ef4444',
-      cancelButtonColor: '#6b7280',
-      confirmButtonText: 'Remove',
+      html: `Remove <strong>${enrollment.student_name}</strong> from this section?`,
+      icon: 'warning', showCancelButton: true,
+      confirmButtonColor: '#ef4444', confirmButtonText: 'Remove',
     });
-    if (!result.isConfirmed) return;
+    if (!isConfirmed) return;
     try {
       await api.delete(`/enrollments/${enrollment.id}/`);
       toast.success('Student removed');
-      fetchEnrollments(selectedClassroom);
+      setEnrollments(prev => prev.filter(e => e.id !== enrollment.id));
     } catch { toast.error('Failed to remove student'); }
   };
 
-  const toggleStudentSelection = (studentId) => {
-    setSelectedStudents(prev => 
-      prev.includes(studentId) 
-        ? prev.filter(id => id !== studentId)
-        : [...prev, studentId]
-    );
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (selectedStudents.length === 0) return toast.error('Please select at least one student');
-    setSaving(true);
-    
-    const loadingToast = toast.loading(`Enrolling ${selectedStudents.length} student(s)...`);
-    
-    try {
-      await api.post(`/classrooms/${parseInt(selectedClassroom)}/bulk_enroll/`, {
-        student_ids: selectedStudents.map(id => parseInt(id)),
-      });
-      
-      toast.success(`${selectedStudents.length} student(s) enrolled successfully`, { id: loadingToast });
-      setShowModal(false);
-      fetchEnrollments(selectedClassroom);
-    } catch (err) {
-      const msg = err.response?.data?.error
-        || err.response?.data?.detail
-        || err.response?.data?.non_field_errors?.[0];
-      toast.error(msg || 'Failed to enroll student(s)', { id: loadingToast });
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const enrolledIds = new Set(enrollments.map(e => e.student));
-  const filteredStudents = useMemo(() => students.filter(s => {
-    if (enrolledIds.has(s.id)) return false;
-    if (!studentSearch) return true;
-    const q = studentSearch.toLowerCase();
-    const lrn = s.profile?.lrn || s.profile?.registration_number || '';
-    return (s.username || '').toLowerCase().includes(q) ||
-      (s.email || '').toLowerCase().includes(q) ||
-      (`${s.first_name || ''} ${s.last_name || ''}`).toLowerCase().includes(q) ||
-      lrn.toLowerCase().includes(q);
-  }), [students, enrolledIds, studentSearch]);
-
-  if (loading) return <LoadingSpinner />;
+  if (loading) return <div className="flex items-center justify-center h-64"><LoadingSpinner /></div>;
 
   return (
-    <div className="page-bottom-safe bg-slate-50/50">
+    <div className="space-y-4">
 
-      <div className={`bg-white border border-slate-200 rounded-xl shadow-sm p-3 md:p-5 transition-all duration-300 ${selectedClassroom ? 'mb-2 md:mb-5' : 'mb-5'}`}>
-        <label className="block text-[10px] md:text-sm font-black text-slate-700 mb-1 md:mb-2 uppercase tracking-widest">Select Classroom</label>
-        {loadingMeta ? (
-          <div className="h-8 md:h-10 bg-slate-100 rounded-lg animate-pulse" />
-        ) : (
-          <select
-            value={selectedClassroom}
-            onChange={e => setSelectedClassroom(e.target.value)}
-            className="w-full px-3 py-1.5 md:px-4 md:py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-1 focus:ring-violet-500 text-[10px] md:text-sm font-bold shadow-inner uppercase tracking-wider"
-          >
-            <option value="">— Choose a classroom —</option>
-            {classrooms.sort((a, b) => {
-              const order = ['Grade 7', 'Grade 8', 'Grade 9', 'Grade 10', 'Grade 11', 'Grade 12'];
-              const getGrade = (name) => order.find(g => name.toLowerCase().includes(g.toLowerCase())) || '';
-              const gradeA = getGrade(a.name);
-              const gradeB = getGrade(b.name);
-              const indexA = order.indexOf(gradeA);
-              const indexB = order.indexOf(gradeB);
-              if (indexA === -1 && indexB === -1) return a.name.localeCompare(b.name);
-              if (indexA === -1) return 1;
-              if (indexB === -1) return -1;
-              return indexA - indexB;
-            }).map(c => {
-              const cap = c.capacity || 40;
-              return <option key={c.id} value={c.id}>{c.name} ({c.student_count ?? 0}/{cap})</option>;
-            })}
-          </select>
-        )}
+      {/* Classroom selector */}
+      <div className="bg-white border border-slate-200 rounded-xl p-5">
+        <label className="block text-xs font-black text-slate-700 uppercase tracking-widest mb-2">Select Section</label>
+        <select value={selectedClassroom}
+          onChange={e => { setSelectedClassroom(e.target.value); setEnrollSearch(''); }}
+          className="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-400 bg-slate-50">
+          <option value="">— Choose a section —</option>
+          {sortedClassrooms.map(c => {
+            const cnt = c.student_count ?? 0; const cap = c.capacity || 40;
+            return <option key={c.id} value={c.id}>{c.name} — {cnt}/{cap} students{cnt >= cap ? ' (FULL)' : ''}</option>;
+          })}
+        </select>
       </div>
 
       {selectedClassroom && (
-        <div className="bg-white border border-slate-200 rounded-lg md:rounded-xl shadow-sm overflow-hidden min-w-0">
-          <div className="flex items-center justify-between px-2 py-1 md:px-6 md:py-4 border-b border-slate-100 bg-[#2D1B4D]">
-            <h2 className="font-black text-[9px] md:text-base uppercase tracking-tight !text-white flex items-center gap-1">
-              ENROLLED
-              <span className="text-[7px] md:text-sm font-bold !text-white">
-                ({enrollments.length}{classrooms.find(c => String(c.id) === String(selectedClassroom)) ? ` / ${classrooms.find(c => String(c.id) === String(selectedClassroom)).capacity || 40}` : ''})
-              </span>
-            </h2>
-            <Button onClick={openModal} className="flex items-center gap-1 bg-violet-600 hover:bg-violet-700 text-white text-[7px] md:text-sm font-black py-0.5 px-1.5 md:py-2 md:px-3 rounded md:rounded-lg transition-all active:scale-95 uppercase tracking-widest shadow-sm">
-              <svg className="w-2.5 h-2.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
-              </svg>
-              Enroll
-            </Button>
+        <>
+          {/* Stats + action bar */}
+          <div className="bg-white border border-slate-200 rounded-xl px-5 py-4 flex flex-wrap items-center gap-4">
+            <div>
+              <p className="text-sm font-black text-slate-900">{currentClassroom?.name}</p>
+              {currentClassroom?.grade_level && (
+                <p className="text-xs text-slate-400 font-semibold mt-0.5">
+                  {currentClassroom.grade_level}{currentClassroom.teacher_name ? ` · Adviser: ${currentClassroom.teacher_name}` : ''}
+                </p>
+              )}
+            </div>
+            <div className="flex items-center gap-3 ml-auto flex-wrap">
+              <div className="flex items-center gap-2">
+                <div className="w-28 h-2 bg-slate-100 rounded-full overflow-hidden">
+                  <div className={`h-full rounded-full transition-all ${isFull ? 'bg-rose-400' : enrolledCount / capacity > 0.8 ? 'bg-amber-400' : 'bg-emerald-400'}`}
+                    style={{ width: `${Math.min((enrolledCount / capacity) * 100, 100)}%` }} />
+                </div>
+                <span className={`text-xs font-black ${isFull ? 'text-rose-600' : 'text-slate-600'}`}>{enrolledCount}/{capacity}</span>
+                {isFull && <span className="text-[9px] font-black text-rose-600 bg-rose-50 border border-rose-200 px-2 py-0.5 rounded uppercase">Full</span>}
+              </div>
+              {!isFull ? (
+                <button onClick={openModal}
+                  className="flex items-center gap-1.5 bg-violet-600 hover:bg-violet-700 text-white font-bold py-2 px-4 rounded-lg text-sm transition-colors">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+                  Add Students
+                </button>
+              ) : <span className="text-xs text-rose-500 font-semibold">Section is at capacity</span>}
+            </div>
           </div>
 
-          {enrollments.length === 0 ? (
-            <div className="text-center py-6 md:py-12 text-slate-400 font-bold text-[9px] md:text-sm uppercase tracking-widest">
-              No students enrolled yet.
+          {/* Enrolled list */}
+          <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-slate-100 flex items-center gap-3">
+              <p className="text-sm font-black text-slate-700 uppercase tracking-wide">Enrolled Students</p>
+              <div className="ml-auto relative w-56">
+                <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                <input type="text" value={enrollSearch} onChange={e => setEnrollSearch(e.target.value)}
+                  placeholder="Search enrolled…"
+                  className="w-full pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-violet-400" />
+              </div>
             </div>
-          ) : (
-            <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-slate-200 max-w-full">
-              <table className="w-full min-w-[320px] md:min-w-full">
-                <thead className="bg-slate-50">
-                  <tr className="text-[6px] md:text-xs font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">
-                    <th className="text-left px-2 py-1 md:px-6 md:py-3">Student</th>
-                    <th className="text-center px-1 py-1 md:px-6 md:py-3">Q1</th>
-                    <th className="text-center px-1 py-1 md:px-6 md:py-3">Q2</th>
-                    <th className="text-center px-1 py-1 md:px-6 md:py-3">Q3</th>
-                    <th className="text-center px-1 py-1 md:px-6 md:py-3">Q4</th>
-                    <th className="text-center px-1 py-1 md:px-6 md:py-3">AVG</th>
-                    <th className="text-center px-2 py-1 md:px-6 md:py-3">OPT</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {enrollments.map(e => (
-                    <tr key={e.id} className="hover:bg-violet-50 transition-colors">
-                      <td className="px-2 py-1 md:px-6 md:py-4">
-                        <div className="font-black text-slate-800 text-[8px] md:text-sm uppercase tracking-tighter truncate max-w-[100px] md:max-w-none">{e.student_name}</div>
-                        <div className="text-[6px] md:text-xs text-slate-400 font-bold truncate max-w-[100px] md:max-w-none leading-none">{e.student_email}</div>
-                        {e.student_lrn && <div className="text-[5px] md:text-[10px] text-slate-300 font-bold">LRN: {e.student_lrn}</div>}
-                      </td>
-                      {['q1','q2','q3','q4'].map(q => (
-                        <td key={q} className="px-1 py-1 md:px-6 md:py-4 text-center text-[8px] md:text-sm font-bold text-slate-600">
-                          {e[q] ?? <span className="text-slate-300">—</span>}
-                        </td>
-                      ))}
-                      <td className="px-1 py-1 md:px-6 md:py-4 text-center">
-                        <span className="text-slate-300 text-[8px] md:text-sm">—</span>
-                      </td>
-                      <td className="px-2 py-1 md:px-6 md:py-4 text-center">
-                        <Button variant="danger" size="xs" onClick={() => handleRemove(e)}>
-                          Rem
-                        </Button>
-                      </td>
+            {loadingEnrollments ? (
+              <div className="flex items-center justify-center h-32"><LoadingSpinner /></div>
+            ) : filteredEnrollments.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-16 text-center">
+                <svg className="w-10 h-10 text-slate-200 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                <p className="text-sm font-semibold text-slate-400">{enrollSearch ? 'No students match your search' : 'No students enrolled yet'}</p>
+                {!enrollSearch && !isFull && <button onClick={openModal} className="mt-3 text-xs font-bold text-violet-600 hover:underline">Add students →</button>}
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left">
+                  <thead className="bg-slate-50 text-[10px] font-black text-slate-400 uppercase tracking-wider border-b border-slate-100">
+                    <tr>
+                      <th className="px-4 py-3">#</th>
+                      <th className="px-4 py-3">Student</th>
+                      <th className="px-4 py-3 hidden sm:table-cell">LRN</th>
+                      <th className="px-4 py-3 hidden md:table-cell">Email</th>
+                      <th className="px-4 py-3 text-center">Action</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {filteredEnrollments.map((e, idx) => (
+                      <tr key={e.id} className="hover:bg-slate-50 transition-colors">
+                        <td className="px-4 py-3 text-xs font-semibold text-slate-400 w-10">{idx + 1}</td>
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full bg-violet-100 flex items-center justify-center flex-shrink-0">
+                              <span className="text-xs font-black text-violet-600">
+                                {(e.student_name || '?').split(' ').slice(0,2).map(n=>n[0]).join('').toUpperCase()}
+                              </span>
+                            </div>
+                            <p className="text-sm font-bold text-slate-900">{e.student_name || '—'}</p>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 hidden sm:table-cell text-xs text-slate-500 font-mono">{e.student_lrn || '—'}</td>
+                        <td className="px-4 py-3 hidden md:table-cell text-xs text-slate-400">{e.student_email || '—'}</td>
+                        <td className="px-4 py-3 text-center">
+                          <button onClick={() => handleRemove(e)}
+                            className="inline-flex items-center gap-1 text-[10px] font-bold text-rose-600 hover:bg-rose-50 border border-rose-200 px-2.5 py-1 rounded-lg transition-colors">
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                            Remove
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </>
+      )}
+
+      {/* Add Students Modal */}
+      {showModal && (
+        <div className="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center p-4">
+          <div className="bg-white w-full max-w-xl border border-gray-300 shadow-2xl rounded-sm flex flex-col max-h-[88vh]" onClick={e => e.stopPropagation()}>
+            <div className="bg-[#5e2a84] flex items-center justify-between px-5 py-3 flex-shrink-0 border-b-2 border-violet-900">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-7 h-7 rounded-full bg-white/20 border border-white/30 flex items-center justify-center flex-shrink-0">
+                  <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                  </svg>
+                </div>
+                <div>
+                  <h2 className="text-sm font-black text-white uppercase tracking-widest leading-none">Add Students</h2>
+                  <p className="text-violet-200 text-[10px] mt-0.5 font-medium uppercase tracking-wide">
+                    {currentClassroom?.name} · {enrolledCount}/{capacity} enrolled
+                  </p>
+                </div>
+              </div>
+              <button onClick={() => setShowModal(false)}
+                className="ml-4 w-7 h-7 flex items-center justify-center rounded text-white/60 hover:bg-white/20 hover:text-white transition-all">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
             </div>
-          )}
+            <div className="px-4 pt-4 pb-2 flex-shrink-0 space-y-2 border-b border-slate-100">
+              <div className="relative">
+                <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                <input type="text" value={studentSearch} onChange={e => setStudentSearch(e.target.value)}
+                  placeholder="Search by name, LRN, or email…" autoFocus
+                  className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-violet-400" />
+              </div>
+              <div className="flex items-center justify-between">
+                <label className="flex items-center gap-2 cursor-pointer select-none">
+                  <input type="checkbox"
+                    checked={availableStudents.length > 0 && selectedStudents.length === availableStudents.length}
+                    onChange={toggleAll} className="w-4 h-4 rounded text-violet-600" />
+                  <span className="text-xs font-bold text-slate-600">Select all ({availableStudents.length})</span>
+                </label>
+                {selectedStudents.length > 0 && (
+                  <span className="text-xs font-bold text-violet-600 bg-violet-50 border border-violet-200 px-2 py-0.5 rounded">
+                    {selectedStudents.length} selected
+                  </span>
+                )}
+              </div>
+            </div>
+            <div className="flex-1 overflow-y-auto divide-y divide-slate-100">
+              {availableStudents.length === 0 ? (
+                <div className="flex items-center justify-center py-12 text-sm font-semibold text-slate-400">
+                  {studentSearch ? 'No students match your search' : 'All students are already enrolled'}
+                </div>
+              ) : availableStudents.map(s => {
+                const checked = selectedStudents.includes(s.id);
+                const lrn = s.profile?.lrn || s.profile?.registration_number || '';
+                return (
+                  <label key={s.id} className={`flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors ${checked ? 'bg-violet-50' : 'hover:bg-slate-50'}`}>
+                    <input type="checkbox" checked={checked} onChange={() => toggleStudent(s.id)} className="w-4 h-4 rounded text-violet-600 flex-shrink-0" />
+                    <div className="w-8 h-8 rounded-full bg-violet-100 flex items-center justify-center flex-shrink-0">
+                      <span className="text-xs font-black text-violet-600">
+                        {`${s.first_name?.[0] || ''}${s.last_name?.[0] || ''}`.toUpperCase() || '?'}
+                      </span>
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-bold text-slate-900 truncate">{s.last_name}, {s.first_name}</p>
+                      <p className="text-[10px] text-slate-400 truncate">{lrn ? `LRN: ${lrn}` : (s.email || s.username)}</p>
+                    </div>
+                    {s.profile?.grade_level && (
+                      <span className="text-[9px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded flex-shrink-0">
+                        {s.profile.grade_level}
+                      </span>
+                    )}
+                  </label>
+                );
+              })}
+            </div>
+            <div className="px-4 py-3 border-t border-gray-200 bg-gray-50 flex items-center justify-end gap-3 flex-shrink-0">
+              <button onClick={() => setShowModal(false)}
+                className="px-5 py-2.5 bg-white text-gray-700 text-xs font-black uppercase tracking-widest border border-gray-300 hover:bg-gray-100 rounded-sm">
+                Cancel
+              </button>
+              <button onClick={handleEnroll} disabled={saving || !selectedStudents.length}
+                className="px-5 py-2.5 bg-[#5e2a84] text-white text-xs font-black uppercase tracking-widest hover:bg-violet-700 rounded-sm disabled:opacity-50">
+                {saving ? 'Enrolling…' : `Enroll ${selectedStudents.length || ''} Student${selectedStudents.length !== 1 ? 's' : ''}`}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
