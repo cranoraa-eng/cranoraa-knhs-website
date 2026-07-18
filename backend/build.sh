@@ -30,3 +30,7 @@ python manage.py seed_faculty_accounts
 # Update existing accounts to correct DepEd rank titles
 echo "Updating staff titles to DepEd ranks..."
 python manage.py update_staff_titles
+
+# Seed JHS subjects (Grade 7-10) based on SF10-JHS form (idempotent — skips existing)
+echo "Seeding JHS subjects (Grade 7-10)..."
+python manage.py seed_jhs_subjects
