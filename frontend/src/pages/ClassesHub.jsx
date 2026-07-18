@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+﻿import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useParallelFetch } from '../hooks/useFetch';
 import api from '../utils/api';
@@ -52,7 +52,7 @@ function ScheduleGrid({ schedules }) {
               <tr key={i} className="hover:bg-slate-50/50">
                 <td className="px-3 py-2 text-slate-500 font-semibold whitespace-nowrap">
                   <div>{ts.start_time_display}</div>
-                  <div className="text-[9px] text-slate-400">— {ts.end_time_display}</div>
+                  <div className="text-[9px] text-slate-400">ΓÇö {ts.end_time_display}</div>
                 </td>
                 {DAYS.map(d => {
                   const key = `${d}_${ts.start_time}_${ts.end_time}`;
@@ -66,7 +66,7 @@ function ScheduleGrid({ schedules }) {
                           {sched.room_name && <div className="text-[9px] text-slate-400 truncate">{sched.room_name}</div>}
                         </div>
                       ) : (
-                        <span className="text-slate-300">—</span>
+                        <span className="text-slate-300">ΓÇö</span>
                       )}
                     </td>
                   );
@@ -205,52 +205,71 @@ export default function ClassesHub() {
   if (loading) return <div className="flex items-center justify-center h-64"><LoadingSpinner /></div>;
 
   return (
-    <div className="page-bottom-safe bg-slate-50">
-      <div className="bg-white border-b-2 border-slate-200 px-4 md:px-6 py-4 mb-4">
-        <div className="flex items-center justify-between">
+    <div className="page-bottom-safe bg-slate-50 min-h-screen">
+
+      {/* ── Header with live stats ── */}
+      <div className="bg-white border-b border-slate-200 px-4 md:px-6 py-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 bg-[#5e2a84] flex items-center justify-center rounded-lg">
-              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+            <div className="h-10 w-10 rounded-lg bg-[#5e2a84] flex items-center justify-center shrink-0">
+              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+              </svg>
             </div>
             <div>
-              <h1 className="text-2xl font-extrabold text-slate-900">Classes Hub</h1>
-              <p className="text-sm text-slate-500">Manage classroom sections and view subject assignments</p>
+              <h1 className="text-xl font-black text-slate-900 uppercase tracking-tight">Classes Hub</h1>
+              <p className="text-xs font-semibold text-violet-600 uppercase tracking-wide">Classroom sections & subject assignments</p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <button onClick={() => navigate('/subjects')} className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 transition-all">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332-.477-4.5-1.253" /></svg>
-              Subjects
-            </button>
-            <button onClick={() => navigate('/subjects?tab=assignments')} className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-violet-700 bg-violet-50 hover:bg-violet-100 border border-violet-200 transition-all">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
-              Assign Subjects
-            </button>
+          <div className="flex items-center gap-2 flex-wrap">
+            <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5">
+              <span className="text-lg font-black text-slate-800">{classes.length}</span>
+              <span className="text-[10px] font-bold text-slate-400 uppercase">Sections</span>
+            </div>
+            <div className="flex items-center gap-1.5 bg-violet-50 border border-violet-200 rounded-lg px-3 py-1.5">
+              <span className="text-sm font-black text-violet-700">{sortedGrades.length}</span>
+              <span className="text-[10px] font-bold text-violet-500 uppercase">Grade Levels</span>
+            </div>
+            <div className="flex items-center gap-1.5 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-1.5">
+              <span className="text-sm font-black text-emerald-700">{classes.reduce((sum, c) => sum + (c.student_count ?? 0), 0)}</span>
+              <span className="text-[10px] font-bold text-emerald-500 uppercase">Students</span>
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="px-4 md:px-6 mb-4 md:mb-6">
+      <div className="px-4 md:px-6 py-4 space-y-4">
+        {/* ── Toolbar ── */}
         <div className="flex flex-col sm:flex-row gap-3">
-          <select value={selectedYearId} onChange={e => setSelectedYearId(e.target.value)} className="px-3 py-2 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 focus:outline-none focus:ring-2 focus:ring-violet-500/40">
+          <select value={selectedYearId} onChange={e => setSelectedYearId(e.target.value)}
+            className="px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm font-semibold text-slate-600 focus:outline-none focus:ring-2 focus:ring-violet-500/40">
             {academicYears.map(y => <option key={y.id} value={y.id}>{y.name} {y.is_active && '(Active)'}</option>)}
           </select>
-          <select value={filterLevel} onChange={e => setFilterLevel(e.target.value)} className="px-3 py-2 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 focus:outline-none focus:ring-2 focus:ring-violet-500/40">
+          <select value={filterLevel} onChange={e => setFilterLevel(e.target.value)}
+            className="px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm font-semibold text-slate-600 focus:outline-none focus:ring-2 focus:ring-violet-500/40">
             <option value="">All Grades</option>
             {GRADE_LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
           </select>
           <div className="relative flex-1">
-            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search sections..." className="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/40" />
+            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search sections…"
+              className="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/40" />
           </div>
-          <Button onClick={() => { setFormData({ name: '', grade_level: '', teacher: '' }); setEditingClass(null); setShowModal(true); }}>
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
-            Add Section
-          </Button>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <button onClick={() => navigate('/subjects')}
+              className="flex items-center gap-1.5 bg-white border border-slate-200 text-slate-700 font-bold py-2 px-3 rounded-lg text-sm hover:bg-slate-50 transition-colors">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332-.477-4.5-1.253" /></svg>
+              Subjects
+            </button>
+            <button onClick={() => { setFormData({ name: '', grade_level: '', teacher: '' }); setEditingClass(null); setShowModal(true); }}
+              className="flex items-center gap-1.5 bg-violet-600 hover:bg-violet-700 text-white font-bold py-2 px-4 rounded-lg text-sm transition-colors">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+              Add Section
+            </button>
+          </div>
         </div>
-      </div>
-
-      <div className="px-4 md:px-6">
         {sortedGrades.length === 0 ? (
           <div className="bg-white border border-slate-200 rounded-xl p-12 text-center">
             <svg className="w-16 h-16 text-slate-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
@@ -282,7 +301,7 @@ export default function ClassesHub() {
                             </div>
                             <div className="min-w-0">
                               <h4 className="font-bold text-slate-900 truncate">{cls.name}</h4>
-                              <p className="text-sm text-slate-500">{cls.teacher_name ? `Adviser: ${cls.teacher_name}` : 'No adviser'} · {cls.student_count ?? 0} students</p>
+                              <p className="text-sm text-slate-500">{cls.teacher_name ? `Adviser: ${cls.teacher_name}` : 'No adviser'} ┬╖ {cls.student_count ?? 0} students</p>
                             </div>
                           </div>
                           <div className="flex items-center gap-2 flex-shrink-0">
@@ -311,7 +330,7 @@ export default function ClassesHub() {
                             {subs.map(s => (
                               <span key={s.id} className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold rounded-full bg-violet-50 text-violet-700 border border-violet-200">
                                 <span className="font-mono">{s.subject_code}</span>
-                                <span className="text-violet-400">·</span>
+                                <span className="text-violet-400">┬╖</span>
                                 <span>{s.teacher_name}</span>
                               </span>
                             ))}
@@ -355,10 +374,25 @@ export default function ClassesHub() {
 
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setShowModal(false)}>
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg border border-slate-200" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200">
-              <h2 className="text-lg font-extrabold text-slate-900">{editingClass ? 'Edit Section' : 'New Section'}</h2>
-              <button onClick={() => setShowModal(false)} className="text-slate-400 hover:text-slate-600"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg></button>
+          <div className="bg-white w-full max-w-lg border border-gray-300 shadow-2xl rounded-sm flex flex-col max-h-[92vh]" onClick={e => e.stopPropagation()}>
+            <div className="bg-[#5e2a84] flex items-center justify-between px-5 py-3 flex-shrink-0 border-b-2 border-violet-900">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-7 h-7 rounded-full bg-white/20 border border-white/30 flex items-center justify-center flex-shrink-0">
+                  <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                  </svg>
+                </div>
+                <div>
+                  <h2 className="text-sm font-black text-white uppercase tracking-widest leading-none">{editingClass ? 'Edit Section' : 'New Section'}</h2>
+                  <p className="text-violet-200 text-[10px] mt-0.5 font-medium uppercase tracking-wide">Classroom Management</p>
+                </div>
+              </div>
+              <button type="button" onClick={() => setShowModal(false)}
+                className="ml-4 w-7 h-7 flex items-center justify-center rounded text-white/60 hover:bg-white/20 hover:text-white transition-all">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+              </button>
             </div>
             <form onSubmit={editingClass ? handleUpdateClass : handleCreateClass}>
               <div className="px-6 py-4 space-y-4">
@@ -370,22 +404,28 @@ export default function ClassesHub() {
                   <div>
                     <label className="block text-xs font-bold text-slate-700 mb-1">Grade Level <span className="text-red-500">*</span></label>
                     <select value={formData.grade_level} onChange={e => setFormData({ ...formData, grade_level: e.target.value })} className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-violet-100 focus:border-violet-500" required>
-                      <option value="">— Select —</option>
+                      <option value="">ΓÇö Select ΓÇö</option>
                       {GRADE_LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
                     </select>
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-slate-700 mb-1">Adviser</label>
                     <select value={formData.teacher} onChange={e => setFormData({ ...formData, teacher: e.target.value })} className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-violet-100 focus:border-violet-500">
-                      <option value="">— None —</option>
+                      <option value="">ΓÇö None ΓÇö</option>
                       {teachers.map(t => <option key={t.id} value={t.id}>{t.first_name} {t.last_name}</option>)}
                     </select>
                   </div>
                 </div>
               </div>
-              <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-200 bg-slate-50 rounded-b-2xl">
-                <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 text-sm font-bold text-slate-700 bg-white border border-slate-300 rounded-md hover:bg-slate-50 transition-colors">Cancel</button>
-                <button type="submit" disabled={saving} className="px-4 py-2 text-sm font-bold text-white bg-violet-600 rounded-md hover:bg-violet-700 disabled:opacity-50 transition-colors">{saving ? 'Saving...' : editingClass ? 'Save Changes' : 'Create Section'}</button>
+              <div className="px-4 sm:px-6 py-4 border-t border-gray-200 bg-gray-50 flex items-center justify-end gap-3 flex-shrink-0">
+                <button type="button" onClick={() => setShowModal(false)}
+                  className="px-4 sm:px-6 py-2.5 bg-white text-gray-700 text-xs font-black uppercase tracking-widest border border-gray-300 hover:bg-gray-100 rounded-sm">
+                  Cancel
+                </button>
+                <button type="submit" disabled={saving}
+                  className="px-4 sm:px-6 py-2.5 bg-[#5e2a84] text-white text-xs font-black uppercase tracking-widest hover:bg-violet-700 rounded-sm disabled:opacity-50">
+                  {saving ? 'Saving...' : editingClass ? 'Save Changes' : 'Create Section'}
+                </button>
               </div>
             </form>
           </div>
