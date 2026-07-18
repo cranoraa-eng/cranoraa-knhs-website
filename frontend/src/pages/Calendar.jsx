@@ -30,11 +30,13 @@ const PRIORITY_CONFIG = {
 };
 
 const FILTER_OPTIONS = [
-  { id: 'all',          label: 'All Events',  icon: 'M4 6h16M4 10h16M4 14h16M4 18h16' },
-  { id: 'academic',     label: 'Academics',   icon: 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332-.477-4.5-1.253' },
-  { id: 'examinations', label: 'Exams',       icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' },
-  { id: 'holiday',      label: 'Holidays',    icon: 'M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z' },
-  { id: 'sports',       label: 'Sports',      icon: 'M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z M21 12a9 9 0 11-18 0 9 9 0 0118 0z' },
+  { id: 'all',          label: 'All Events',    icon: 'M4 6h16M4 10h16M4 14h16M4 18h16' },
+  { id: 'academic',     label: 'Academics',     icon: 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332-.477-4.5-1.253' },
+  { id: 'examinations', label: 'Exams',         icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' },
+  { id: 'holiday',      label: 'Holidays',      icon: 'M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z' },
+  { id: 'sports',       label: 'Sports',        icon: 'M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z M21 12a9 9 0 11-18 0 9 9 0 0118 0z' },
+  { id: 'cultural',     label: 'Cultural',      icon: 'M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3' },
+  { id: 'meeting',      label: 'Meetings',      icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z' },
   { id: 'events',       label: 'School Events', icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z' },
 ];
 
@@ -202,45 +204,32 @@ const Calendar = ({ mode = 'public' }) => {
   const handleDuplicateEvent = async (event) => {
     try {
       const rawId = event.id?.replace('ann-', '').replace('event-', '') || event.id;
-      let data;
       if (event.type === 'event') {
         const r = await api.get(`/school-events/${rawId}/`);
-        data = r.data;
-        setEditingEvent(null);
-        setNewEventFromSchoolEvent(data);
+        const data = r.data;
+        setEditingEvent({
+          id: null,
+          title: `${data.title} (Copy)`,
+          content: data.description || '',
+          category: data.category,
+          target_audience: data.target_audience,
+          event_date: data.start_date ? `${data.start_date}T${data.start_time || '00:00'}` : null,
+          end_date: data.end_date ? `${data.end_date}T${data.end_time || '23:59'}` : null,
+          status: 'draft',
+        });
       } else {
         const r = await api.get(`/announcements/${rawId}/`);
-        data = r.data;
-        setEditingEvent(null);
-        setNewEventFromAnnouncement(data);
+        const data = r.data;
+        setEditingEvent({
+          ...data,
+          id: null,
+          title: `${data.title} (Copy)`,
+          status: 'draft',
+        });
       }
       setShowEventModal(true);
       toast.success('Event loaded — edit and save as new');
     } catch { toast.error('Failed to load event'); }
-  };
-
-  const setNewEventFromAnnouncement = (data) => {
-    setEditingEvent({
-      ...data,
-      id: null,
-      title: `${data.title} (Copy)`,
-      status: 'draft',
-    });
-    setShowEventModal(true);
-  };
-
-  const setNewEventFromSchoolEvent = (data) => {
-    setEditingEvent({
-      id: null,
-      title: `${data.title} (Copy)`,
-      content: data.description || '',
-      category: data.category,
-      target_audience: data.target_audience,
-      event_date: data.start_date ? `${data.start_date}T${data.start_time || '00:00'}` : null,
-      end_date: data.end_date ? `${data.end_date}T${data.end_time || '23:59'}` : null,
-      status: 'draft',
-    });
-    setShowEventModal(true);
   };
 
   const days = getDaysInMonth(currentMonth);
@@ -550,7 +539,7 @@ const Calendar = ({ mode = 'public' }) => {
             <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
               <h3 className="text-xs font-black text-slate-500 uppercase tracking-widest mb-3">Event Types</h3>
               <div className="space-y-2">
-                {Object.entries(CATEGORY_CONFIG).filter(([k]) => !['general', 'system_update'].includes(k)).map(([key, cfg]) => (
+                {Object.entries(CATEGORY_CONFIG).filter(([k]) => !['general', 'system_update', 'exam', 'other'].includes(k)).map(([key, cfg]) => (
                   <div key={key} className="flex items-center gap-2.5">
                     <span className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: cfg.hex }} />
                     <span className="text-xs font-semibold text-slate-700">{cfg.label}</span>

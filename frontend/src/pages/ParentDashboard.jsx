@@ -73,7 +73,7 @@ export default function ParentDashboard() {
   }, [selectedChild?.id, fetchChildDetail]);
 
   if (loading) return (
-    <div className="space-y-3 md:space-y-6 page-bottom-safe max-w-full px-4 py-4 md:px-6 md:py-6"
+    <div className="space-y-4 md:space-y-6 page-bottom-safe max-w-[1800px] mx-auto px-4 py-4 md:px-6 md:py-6"
       aria-busy="true" aria-label="Loading dashboard…">
       <Skeleton className="h-32 w-full rounded-xl" />
       <Skeleton className="h-12 w-full rounded-lg" />
@@ -117,37 +117,35 @@ export default function ParentDashboard() {
   const today = new Date().toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
 
   return (
-    <div className="space-y-3 md:space-y-6 page-bottom-safe max-w-full overflow-x-hidden">
+    <div className="space-y-4 md:space-y-6 page-bottom-safe max-w-[1800px] mx-auto px-4 py-4 md:px-6 md:py-6 overflow-x-hidden">
       {/* Welcome Banner */}
-      <div className="bg-white rounded-lg md:rounded-xl p-4 sm:p-5 md:p-8 border border-slate-200 shadow-sm relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-violet-50 rounded-full blur-3xl -mr-32 -mt-32 opacity-60" />
+      <div className="bg-gradient-to-r from-violet-600 to-violet-700 rounded-xl p-5 md:p-6 border border-violet-700 relative overflow-hidden shadow-sm">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl -mr-32 -mt-32" />
         <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
           <div className="space-y-1 min-w-0">
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
-              <p className="text-[10px] sm:text-xs font-bold text-violet-600 uppercase tracking-widest">Parent Portal</p>
-            </div>
-            <h1 className="text-lg sm:text-xl md:text-3xl font-black text-slate-900 tracking-tight leading-tight">
-              Welcome, <span className="text-violet-600">{user?.first_name || 'Parent'}</span>
+            <p className="text-[10px] sm:text-xs font-bold text-violet-200 uppercase tracking-widest">{today}</p>
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-black text-white tracking-tight leading-tight">
+              Welcome, <span className="text-violet-100">{user?.first_name || 'Parent'}</span>
             </h1>
-            <p className="text-slate-500 font-medium text-[11px] sm:text-xs md:text-sm flex items-start sm:items-center gap-1.5 sm:gap-2">
-              <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-400 flex-shrink-0 mt-0.5 sm:mt-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-              <span className="leading-snug">{today}</span>
-            </p>
-          </div>
-          <div className="flex items-center gap-2 flex-shrink-0">
-            <div className="flex items-center gap-2 text-xs sm:text-sm font-bold text-slate-500 bg-slate-50 sm:bg-transparent border border-slate-100 sm:border-0 rounded-lg px-3 py-2 sm:p-0 w-fit">
-              <svg className="w-4 h-4 sm:w-5 sm:h-5 text-violet-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
-              {children.length} Linked {children.length === 1 ? 'Child' : 'Children'}
+            <div className="flex flex-wrap gap-2 mt-2">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/10 border border-white/20 text-white text-xs font-bold">
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                {children.length} Linked {children.length === 1 ? 'Child' : 'Children'}
+              </span>
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/10 border border-white/20 text-white text-xs font-bold">
+                Parent Portal
+              </span>
             </div>
-            <button onClick={fetchDashboard}
-              className="p-2 rounded-lg border border-slate-200 bg-white hover:bg-violet-50 hover:border-violet-300 transition-all"
-              title="Refresh dashboard">
-              <svg className="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-            </button>
           </div>
+          <button
+            onClick={fetchDashboard}
+            className="flex-shrink-0 flex items-center gap-2 px-4 py-2 bg-white/10 border border-white/20 text-white text-xs font-bold rounded-xl hover:bg-white/20 transition-all"
+            title="Refresh dashboard">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            Refresh
+          </button>
         </div>
       </div>
 
@@ -207,32 +205,32 @@ export default function ParentDashboard() {
             <>
               {/* Quick Stats for selected child */}
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
-                <div className="bg-white border border-slate-200 rounded-lg p-3 sm:p-4 hover:shadow-md transition-all">
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-md bg-emerald-50 flex items-center justify-center mb-2 sm:mb-3">
+                <div className="bg-white border border-slate-200 rounded-xl p-3 sm:p-4 hover:shadow-md transition-all border-l-4 border-l-emerald-500">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-emerald-50 flex items-center justify-center mb-2 sm:mb-3">
                     <svg className="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 8l2 2 4-4" /></svg>
                   </div>
                   <p className="text-[10px] sm:text-xs font-black text-slate-400 uppercase tracking-widest">Attendance</p>
                   <p className="text-lg sm:text-2xl font-black text-slate-900 mt-0.5 sm:mt-1">{child.attendance_rate != null ? `${child.attendance_rate}%` : '—'}</p>
                   <p className="text-[10px] sm:text-xs text-slate-400 mt-0.5 line-clamp-2">{child.attendance_present}/{child.attendance_total} days this month</p>
                 </div>
-                <div className="bg-white border border-slate-200 rounded-lg p-3 sm:p-4 hover:shadow-md transition-all">
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-md bg-violet-50 flex items-center justify-center mb-2 sm:mb-3">
+                <div className="bg-white border border-slate-200 rounded-xl p-3 sm:p-4 hover:shadow-md transition-all border-l-4 border-l-violet-500">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-violet-50 flex items-center justify-center mb-2 sm:mb-3">
                     <svg className="w-5 h-5 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
                   </div>
                   <p className="text-[10px] sm:text-xs font-black text-slate-400 uppercase tracking-widest">General Average</p>
                   <p className="text-lg sm:text-2xl font-black text-slate-900 mt-0.5 sm:mt-1">{child.general_average ?? '—'}</p>
                   <p className="text-[10px] sm:text-xs text-slate-400 mt-0.5">{child.grades?.length || 0} subjects graded</p>
                 </div>
-                <div className="bg-white border border-slate-200 rounded-lg p-3 sm:p-4 hover:shadow-md transition-all">
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-md bg-violet-50 flex items-center justify-center mb-2 sm:mb-3">
-                    <svg className="w-5 h-5 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+                <div className="bg-white border border-slate-200 rounded-xl p-3 sm:p-4 hover:shadow-md transition-all border-l-4 border-l-sky-500">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-sky-50 flex items-center justify-center mb-2 sm:mb-3">
+                    <svg className="w-5 h-5 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
                   </div>
                   <p className="text-[10px] sm:text-xs font-black text-slate-400 uppercase tracking-widest">Classroom</p>
                   <p className="text-xs sm:text-sm font-black text-slate-900 mt-0.5 sm:mt-1 truncate">{child.classroom_name || '—'}</p>
                   <p className="text-[10px] sm:text-xs text-slate-400 mt-0.5 truncate">Adviser: {child.adviser_name || '—'}</p>
                 </div>
-                <div className="bg-white border border-slate-200 rounded-lg p-3 sm:p-4 hover:shadow-md transition-all">
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-md bg-amber-50 flex items-center justify-center mb-2 sm:mb-3">
+                <div className="bg-white border border-slate-200 rounded-xl p-3 sm:p-4 hover:shadow-md transition-all border-l-4 border-l-amber-500">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-amber-50 flex items-center justify-center mb-2 sm:mb-3">
                     <svg className="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
                   </div>
                   <p className="text-[10px] sm:text-xs font-black text-slate-400 uppercase tracking-widest">Alerts</p>
