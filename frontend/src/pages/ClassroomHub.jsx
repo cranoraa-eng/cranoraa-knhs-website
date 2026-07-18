@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../utils/api';
@@ -42,6 +42,12 @@ const ClassroomHub = () => {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('stream'); // stream, materials, people, grades
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Upload modal state
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [uploadForm, setUploadForm] = useState({ title: '', description: '', material_type: 'dlp', file: null, quarter: '', week: '' });
+  const fileInputRef = useRef(null);
 
   // Sync activeTab with ?view= URL param
   const viewParam = searchParams.get('view');
@@ -188,6 +194,34 @@ const ClassroomHub = () => {
       // Keep text in input so teacher can retry
     } finally {
       setLoadingAnnouncements(false);
+    }
+  };
+
+  const handleUploadMaterial = async () => {
+    if (!uploadForm.title.trim()) return toast.error('Title is required');
+    if (!uploadForm.file) return toast.error('Please select a file');
+
+    setUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append('title', uploadForm.title.trim());
+      fd.append('description', uploadForm.description.trim());
+      fd.append('material_type', uploadForm.material_type);
+      fd.append('classroom', selectedClass.id);
+      fd.append('file', uploadForm.file);
+      if (uploadForm.quarter) fd.append('quarter', uploadForm.quarter);
+      if (uploadForm.week) fd.append('week', uploadForm.week);
+
+      const res = await api.post('/materials/', fd);
+      setMaterials([res.data, ...materials]);
+      setShowUploadModal(false);
+      setUploadForm({ title: '', description: '', material_type: 'dlp', file: null, quarter: '', week: '' });
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      toast.success('Material uploaded');
+    } catch (err) {
+      toast.error(err.response?.data?.file?.[0] || err.response?.data?.detail || 'Upload failed');
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -435,6 +469,7 @@ const ClassroomHub = () => {
               setSearchQuery={setSearchQuery}
               getMaterialIcon={getMaterialIcon}
               loading={loading}
+              onUploadClick={() => setShowUploadModal(true)}
             />
           )}
 
@@ -456,6 +491,69 @@ const ClassroomHub = () => {
           )}
         </AnimatePresence>
       </div>
+
+      {/* Upload Material Modal */}
+      <Modal isOpen={showUploadModal} onClose={() => setShowUploadModal(false)} size="md">
+        <ModalBody>
+          <h3 className="text-lg font-bold text-slate-900 mb-1">Upload Material</h3>
+          <p className="text-sm text-slate-500 mb-4">Add a learning material to {selectedClass?.name}</p>
+          <div className="space-y-3">
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">Title *</label>
+              <input type="text" value={uploadForm.title} onChange={e => setUploadForm({ ...uploadForm, title: e.target.value })}
+                className={modalInputCls} placeholder="Material title" required />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">Description</label>
+              <textarea value={uploadForm.description} onChange={e => setUploadForm({ ...uploadForm, description: e.target.value })}
+                className={modalInputCls} rows={2} placeholder="Brief description (optional)" />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Type *</label>
+                <select value={uploadForm.material_type} onChange={e => setUploadForm({ ...uploadForm, material_type: e.target.value })}
+                  className={modalInputCls}>
+                  <option value="dlp">Daily Lesson Plan (DLP)</option>
+                  <option value="dll">Daily Lesson Log (DLL)</option>
+                  <option value="module">Learning Module</option>
+                  <option value="activity">Activity Sheet</option>
+                  <option value="assessment">Assessment</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">File *</label>
+                <input type="file" ref={fileInputRef} onChange={e => setUploadForm({ ...uploadForm, file: e.target.files?.[0] || null })}
+                  className="w-full text-sm text-slate-700 file:mr-2 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-violet-100 file:text-violet-700 hover:file:bg-violet-200" />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Quarter</label>
+                <select value={uploadForm.quarter} onChange={e => setUploadForm({ ...uploadForm, quarter: e.target.value })}
+                  className={modalInputCls}>
+                  <option value="">None</option>
+                  <option value="1">1st Quarter</option>
+                  <option value="2">2nd Quarter</option>
+                  <option value="3">3rd Quarter</option>
+                  <option value="4">4th Quarter</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Week</label>
+                <input type="number" min="1" value={uploadForm.week} onChange={e => setUploadForm({ ...uploadForm, week: e.target.value })}
+                  className={modalInputCls} placeholder="Week #" />
+              </div>
+            </div>
+          </div>
+        </ModalBody>
+        <ModalFooter>
+          <ModalBtnSecondary onClick={() => setShowUploadModal(false)}>Cancel</ModalBtnSecondary>
+          <ModalBtnPrimary onClick={handleUploadMaterial} loading={uploading} disabled={!uploadForm.title.trim() || !uploadForm.file}>
+            Upload
+          </ModalBtnPrimary>
+        </ModalFooter>
+      </Modal>
     </motion.div>
   );
 };
@@ -539,7 +637,7 @@ const StreamTab = ({ classroom, isTeacher, announcements, announcementText, setA
 );
 
 // Materials Tab Component
-const MaterialsTab = ({ classroom, materials, isTeacher, searchQuery, setSearchQuery, getMaterialIcon, loading }) => (
+const MaterialsTab = ({ classroom, materials, isTeacher, searchQuery, setSearchQuery, getMaterialIcon, loading, onUploadClick }) => (
   <motion.div
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
@@ -559,7 +657,7 @@ const MaterialsTab = ({ classroom, materials, isTeacher, searchQuery, setSearchQ
         />
       </div>
       {isTeacher && (
-        <Button variant="primary">
+        <Button variant="primary" onClick={onUploadClick}>
           <Upload className="w-4 h-4 mr-2" />
           Upload
         </Button>
