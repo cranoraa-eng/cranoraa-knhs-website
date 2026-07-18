@@ -48,10 +48,6 @@ export default function UserFormModal({
           lrn: initialData.profile?.lrn || '',
           username: initialData.username || '',
           password: '',
-          first_name: initialData.first_name || '',
-          last_name: initialData.last_name || '',
-          email: initialData.email || '',
-          sex: initialData.profile?.sex || '',
           ...initialData,
         });
       } else {
