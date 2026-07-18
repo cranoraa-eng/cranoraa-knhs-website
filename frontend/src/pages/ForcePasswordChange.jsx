@@ -51,7 +51,7 @@ const ForcePasswordChange = () => {
       <div className="w-full max-w-sm bg-white rounded-xl border border-slate-200 shadow-sm p-8">
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-violet-100 rounded-full mb-4">
-            <img src="/icons/school-logo-source.png" alt="KNHS Logo" className="w-10 h-10 object-contain" />
+            <img src="/icons/school-logo-source.png" alt="KNHS Logo" className="w-10 h-10 object-contain" loading="lazy" />
           </div>
           <h1 className="text-xl font-extrabold text-slate-900 tracking-tight">Security Policy</h1>
           <p className="text-xs text-slate-500 mt-1">Mandatory Password Update</p>

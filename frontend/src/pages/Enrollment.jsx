@@ -399,7 +399,7 @@ const Enrollment = () => {
         {/* Official School Header */}
         <div className="bg-violet-950 text-white text-center py-4 px-6 rounded-t-sm border-b-4 border-yellow-400 shadow-lg">
           <div className="flex items-center justify-center gap-3 mb-1">
-            <img src="/icons/school-logo-source.png" alt="KNHS" className="w-10 h-10 object-contain" />
+            <img src="/icons/school-logo-source.png" alt="KNHS" className="w-10 h-10 object-contain" loading="lazy" />
             <div>
               <p className="text-[9px] font-bold uppercase tracking-widest text-violet-200">Republic of the Philippines / Department of Education</p>
               <h1 className="text-base font-black uppercase tracking-tight">Kiwalan National High School</h1>

@@ -17,7 +17,7 @@ export const SchoolHeaderBanner = ({ user, today }) => {
           {/* School Identity */}
           <div className="flex items-center gap-4">
             <div className="w-14 h-14 md:w-16 md:h-16 rounded-md bg-white p-2 flex items-center justify-center border-2 border-slate-200 shadow-sm shrink-0">
-              <img src="/icons/deped-logo.png" alt="KNHS Seal" className="w-full h-full object-contain" />
+              <img src="/icons/deped-logo.png" alt="KNHS Seal" className="w-full h-full object-contain" loading="lazy" />
             </div>
             <div>
               <h1 className="text-base md:text-lg font-extrabold text-slate-900 uppercase tracking-tight leading-tight">
@@ -36,7 +36,7 @@ export const SchoolHeaderBanner = ({ user, today }) => {
           <div className="flex items-center gap-3 p-3 rounded-md bg-violet-50 border border-violet-200">
             <div className="w-12 h-12 rounded-md bg-gradient-to-br from-violet-500 to-violet-600 flex items-center justify-center text-white font-bold shadow-sm overflow-hidden border border-violet-700 shrink-0">
               {user?.profile_picture ? (
-                <img src={user.profile_picture} alt="Profile" className="w-full h-full object-cover" />
+                <img src={user.profile_picture} alt="Profile" className="w-full h-full object-cover" loading="lazy" />
               ) : (
                 <span className="text-sm">{user?.first_name?.charAt(0)}{user?.last_name?.charAt(0)}</span>
               )}

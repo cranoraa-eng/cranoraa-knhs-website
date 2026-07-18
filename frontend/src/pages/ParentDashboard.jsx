@@ -178,7 +178,7 @@ export default function ParentDashboard() {
                   }`}>
                   <div className={`w-8 h-8 rounded-md flex items-center justify-center font-black text-xs overflow-hidden ${selectedChild?.id === c.id ? 'bg-white/20' : 'bg-violet-100 text-violet-600'}`}>
                     {c.profile_picture
-                      ? <img src={c.profile_picture} alt="" className="w-full h-full object-cover" />
+                      ? <img src={c.profile_picture} alt="" className="w-full h-full object-cover" loading="lazy" />
                       : `${c.first_name?.[0] || ''}${c.last_name?.[0] || ''}`}
                   </div>
                   <div className="text-left">
@@ -193,7 +193,7 @@ export default function ParentDashboard() {
             <div className="flex items-center gap-3 px-4 py-3 bg-violet-50 border border-violet-200 rounded-lg w-fit">
               <div className="w-9 h-9 rounded-md bg-violet-200 text-violet-700 flex items-center justify-center font-black text-sm overflow-hidden shrink-0">
                 {child.profile_picture
-                  ? <img src={child.profile_picture} alt="" className="w-full h-full object-cover" />
+                  ? <img src={child.profile_picture} alt="" className="w-full h-full object-cover" loading="lazy" />
                   : `${child.first_name?.[0] || ''}${child.last_name?.[0] || ''}`}
               </div>
               <div>

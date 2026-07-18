@@ -449,7 +449,7 @@ const Layout = () => {
           {/* School Header */}
           <div className="flex items-center gap-3 px-4 py-4 border-b-4 border-violet-600 bg-white">
             <div className="h-12 w-12 rounded-md bg-white p-1.5 flex items-center justify-center border-2 border-slate-200 shadow-sm shrink-0">
-              <img src="/icons/school-logo-source.png" alt="KNHS Logo" className="h-full w-full object-contain" />
+              <img src="/icons/school-logo-source.png" alt="KNHS Logo" className="h-full w-full object-contain" loading="lazy" />
             </div>
             <div className="flex flex-col min-w-0">
               <span className="text-sm font-extrabold tracking-tight leading-none text-slate-900 uppercase">Kiwalan NHS</span>
@@ -471,7 +471,7 @@ const Layout = () => {
               className="flex items-center gap-3 p-3 rounded-md bg-slate-50 border border-slate-200 hover:bg-slate-100 hover:border-slate-300 transition-colors cursor-pointer group">
               <div className="h-10 w-10 rounded-md bg-gradient-to-br from-violet-500 to-violet-600 flex items-center justify-center text-white font-bold shadow-sm group-hover:scale-105 transition-transform uppercase overflow-hidden border border-violet-700 shrink-0">
                 {user?.profile_picture ? (
-                  <img src={user.profile_picture} alt="Avatar" className="w-full h-full object-cover" />
+                  <img src={user.profile_picture} alt="Avatar" className="w-full h-full object-cover" loading="lazy" />
                 ) : (
                   <span className="text-xs">{user?.first_name?.charAt(0)}{user?.last_name?.charAt(0)}</span>
                 )}
@@ -733,7 +733,7 @@ const Layout = () => {
                 <div data-tour="user-profile" className="relative group cursor-pointer" onClick={() => navigate('/profile')}>
                   <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-white shadow-lg group-hover:rotate-3 transition-all overflow-hidden border border-slate-200">
                     {user?.profile_picture ? (
-                      <img src={user.profile_picture} alt="Avatar" className="w-full h-full object-cover" />
+                  <img src={user.profile_picture} alt="Avatar" className="w-full h-full object-cover" loading="lazy" />
                     ) : (
                       <span className="text-sm font-black uppercase tracking-tighter">
                         {user?.first_name?.charAt(0)}{user?.last_name?.charAt(0)}

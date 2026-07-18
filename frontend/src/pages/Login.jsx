@@ -223,7 +223,7 @@ const Login = () => {
           {/* School Identity */}
           <div className="flex items-center gap-4">
             <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center">
-              <img src="/icons/school-logo-source.png" alt="KNHS" className="w-10 h-10 object-contain" />
+               <img src="/icons/school-logo-source.png" alt="KNHS" className="w-10 h-10 object-contain" loading="lazy" />
             </div>
             <div>
               <h1 className="text-lg font-bold text-white tracking-tight">Kiwalan National</h1>
@@ -285,7 +285,7 @@ const Login = () => {
         <div className="lg:hidden px-6 py-4 flex items-center justify-between border-b border-gray-100">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-slate-900 rounded-lg flex items-center justify-center">
-              <img src="/icons/school-logo-source.png" alt="KNHS" className="w-7 h-7 object-contain" />
+               <img src="/icons/school-logo-source.png" alt="KNHS" className="w-7 h-7 object-contain" loading="lazy" />
             </div>
             <div>
               <h1 className="text-sm font-bold text-gray-900">KNHS Portal</h1>

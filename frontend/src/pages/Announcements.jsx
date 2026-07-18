@@ -941,7 +941,7 @@ const Announcements = () => {
               </span>
             </>
           )}
-          <img src={zoomGallery.urls[zoomGallery.index]} alt="" className="max-w-full max-h-full object-contain pointer-events-none" onClick={e => e.stopPropagation()} />
+           <img src={zoomGallery.urls[zoomGallery.index]} alt="" className="max-w-full max-h-full object-contain pointer-events-none" loading="lazy" onClick={e => e.stopPropagation()} />
         </div>
       )}
     </div>

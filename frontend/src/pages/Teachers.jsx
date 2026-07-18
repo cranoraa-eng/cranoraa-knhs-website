@@ -77,7 +77,7 @@ function TeacherAvatar({ teacher, size = 'card' }) {
   return (
     <div className="w-10 h-10 rounded-full overflow-hidden bg-violet-100 flex-shrink-0 flex items-center justify-center">
       {showPhoto ? (
-        <img src={photo} alt={name} className="w-full h-full object-cover object-top" onError={() => setImgError(true)} />
+         <img src={photo} alt={name} className="w-full h-full object-cover object-top" loading="lazy" onError={() => setImgError(true)} />
       ) : (
         <span className="text-sm font-black text-violet-500">{initials}</span>
       )}

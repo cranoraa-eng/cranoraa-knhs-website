@@ -274,7 +274,7 @@ const HomeDepEd = () => {
                       <div className="flex gap-3">
                         {imageUrl && (
                           <button onClick={() => setZoomedImage(imageUrl)} className="flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border border-violet-200">
-                            <img src={imageUrl} alt={a.title} className="w-full h-full object-cover" />
+                            <img src={imageUrl} alt={a.title} className="w-full h-full object-cover" loading="lazy" />
                           </button>
                         )}
                         <div className="flex-1 min-w-0">
@@ -343,7 +343,7 @@ const HomeDepEd = () => {
                     ].map((prog, i) => (
                       <Link key={i} to="/senior-high" className="bg-slate-50 rounded-lg overflow-hidden border-2 border-violet-200 hover:border-violet-400 transition-all group">
                         <div className="w-full h-16 overflow-hidden">
-                          <img src={prog.img} alt={prog.code} className="w-full h-full object-cover" />
+                           <img src={prog.img} alt={prog.code} className="w-full h-full object-cover" loading="lazy" />
                         </div>
                         <p className="text-xs font-black text-slate-900 text-center py-2 uppercase">{prog.code}</p>
                       </Link>
@@ -550,7 +550,7 @@ const HomeDepEd = () => {
           <button className="absolute top-4 right-4 p-2 rounded-full bg-white/20 text-white hover:bg-white/30 transition-colors" onClick={() => setZoomedImage(null)}>
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
           </button>
-          <img src={zoomedImage} alt="Zoomed" className="max-w-full max-h-[90vh] object-contain rounded-2xl shadow-2xl" onClick={e => e.stopPropagation()} />
+          <img src={zoomedImage} alt="Zoomed" className="max-w-full max-h-[90vh] object-contain rounded-2xl shadow-2xl" loading="lazy" onClick={e => e.stopPropagation()} />
         </div>
       )}
     </div>

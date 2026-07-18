@@ -758,7 +758,7 @@ const SchoolInfoTab = () => {
           <div className="flex-shrink-0">
             <div className="w-20 h-20 rounded-lg border-2 border-dashed border-slate-200 bg-slate-50 flex items-center justify-center overflow-hidden">
               {logoPreview
-                ? <img src={logoPreview} alt="School logo" className="w-full h-full object-contain" />
+                 ? <img src={logoPreview} alt="School logo" className="w-full h-full object-contain" loading="lazy" />
                 : <svg className="w-8 h-8 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
               }
             </div>
@@ -1050,7 +1050,7 @@ const ProfileTab = () => {
           <div className="relative">
             <div className="w-20 h-20 rounded-lg bg-gradient-to-br from-violet-500 to-violet-600 flex items-center justify-center text-white text-2xl font-black overflow-hidden shadow-lg">
               {user?.profile_picture
-                ? <img src={user.profile_picture} alt="Profile" className="w-full h-full object-cover" />
+                ? <img src={user.profile_picture} alt="Profile" className="w-full h-full object-cover" loading="lazy" />
                 : <span aria-hidden="true">{user?.first_name?.[0]}{user?.last_name?.[0]}</span>
               }
             </div>

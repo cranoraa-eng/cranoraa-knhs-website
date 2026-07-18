@@ -242,7 +242,7 @@ const ChatMessage = memo(function ChatMessage({ msg, i, chatMessages, userId, sh
         <div className="relative group">
           {msg.message_type === 'image' && msg.attachment_url ? (
             <a href={msg.attachment_url} target="_blank" rel="noreferrer" className="block">
-              <img src={msg.attachment_url} alt={msg.attachment_filename} className="max-w-[280px] max-h-[200px] rounded-xl object-cover block" />
+              <img src={msg.attachment_url} alt={msg.attachment_filename} className="max-w-[280px] max-h-[200px] rounded-xl object-cover block" loading="lazy" />
               {msg.content && <p className="text-sm mt-1 px-1">{msg.content}</p>}
             </a>
           ) : msg.message_type === 'file' && msg.attachment_url ? (
@@ -615,7 +615,7 @@ export default function CommunicationCenter() {
                 >
                   <div className="relative flex-shrink-0">
                     {avatar ? (
-                      <img src={avatar} alt="" className="w-11 h-11 rounded-full object-cover" />
+                      <img src={avatar} alt="" className="w-11 h-11 rounded-full object-cover" loading="lazy" />
                     ) : room.is_group ? (
                       <div className="w-11 h-11 rounded-full bg-violet-100 flex items-center justify-center">
                         <UsersIcon size={20} className="text-violet-600" />
@@ -670,7 +670,7 @@ export default function CommunicationCenter() {
                     <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M15 18l-6-6 6-6"/></svg>
                   </button>
                   {getRoomAvatar(selectedRoom, userId) ? (
-                    <img src={getRoomAvatar(selectedRoom, userId)} alt="" className="w-9 h-9 rounded-full object-cover" />
+                    <img src={getRoomAvatar(selectedRoom, userId)} alt="" className="w-9 h-9 rounded-full object-cover" loading="lazy" />
                   ) : selectedRoom.is_group ? (
                     <div className="w-9 h-9 rounded-full bg-violet-100 flex items-center justify-center"><UsersIcon size={18} className="text-violet-600" /></div>
                   ) : (

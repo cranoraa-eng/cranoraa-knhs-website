@@ -176,7 +176,7 @@ const Profile = () => {
             <div className="relative group/avatar flex-shrink-0">
               <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-[2rem] bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-white text-3xl font-black border-4 border-white/20 shadow-2xl mb-[-3.5rem] overflow-hidden">
                 {profilePic ? (
-                  <img src={profilePic} alt="Profile" className="w-full h-full object-cover" />
+                   <img src={profilePic} alt="Profile" className="w-full h-full object-cover" loading="lazy" />
                 ) : initials}
                 {!studentId && (
                   <label className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover/avatar:opacity-100 transition-opacity cursor-pointer z-10">

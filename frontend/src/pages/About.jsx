@@ -18,7 +18,7 @@ const About = () => {
       {/* ── Hero Banner ── */}
       <section className="bg-violet-950 py-16 md:py-20 relative overflow-hidden">
         <div className="absolute inset-0 pointer-events-none opacity-10">
-          <img src="https://images.unsplash.com/photo-1577896851231-70ef18881754?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80" alt="" className="w-full h-full object-cover" />
+          <img src="https://images.unsplash.com/photo-1577896851231-70ef18881754?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80" alt="" className="w-full h-full object-cover" loading="lazy" />
         </div>
         <div className="absolute inset-0 bg-gradient-to-r from-violet-950 via-violet-900 to-violet-800" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

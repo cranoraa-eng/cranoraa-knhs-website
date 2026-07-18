@@ -26,6 +26,7 @@ const Maintenance = ({ message }) => {
               src="https://plain-apac-prod-public.komododecks.com/202605/18/u3t1lOolacFscP6v1Bq8/image.png" 
               alt="KNHS Logo" 
               className="w-16 h-16 object-contain group-hover:scale-110 transition-transform duration-500"
+              loading="lazy"
             />
           </div>
           
