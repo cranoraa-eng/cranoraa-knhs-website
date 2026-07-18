@@ -2,6 +2,7 @@ import { memo, useState, useEffect } from 'react';
 import { Card, CardBody, CardHeader, CardTitle, EmptyState, Skeleton } from '../../components/ui';
 import { cn } from '../../styles/designSystem';
 import api from '../../utils/api';
+import { useActiveAcademicYear } from '../../hooks/useActiveAcademicYear';
 
 /**
  * Shared Dashboard Components - DepEd Academic Style
@@ -10,6 +11,8 @@ import api from '../../utils/api';
 
 // Official KNHS School Header Banner
 export const SchoolHeaderBanner = ({ user, today }) => {
+  const { academicYear } = useActiveAcademicYear();
+
   return (
     <Card className="relative overflow-hidden border-b-4 border-violet-600 shadow-md">
       <CardBody className="p-4 md:p-6">
@@ -17,7 +20,7 @@ export const SchoolHeaderBanner = ({ user, today }) => {
           {/* School Identity */}
           <div className="flex items-center gap-4">
             <div className="w-14 h-14 md:w-16 md:h-16 rounded-md bg-white p-2 flex items-center justify-center border-2 border-slate-200 shadow-sm shrink-0">
-              <img src="/icons/deped-logo.png" alt="KNHS Seal" className="w-full h-full object-contain" loading="lazy" />
+              <img src="/icons/school-logo-source.png" alt="KNHS Logo" className="w-full h-full object-contain" loading="lazy" />
             </div>
             <div>
               <h1 className="text-base md:text-lg font-extrabold text-slate-900 uppercase tracking-tight leading-tight">
@@ -26,9 +29,11 @@ export const SchoolHeaderBanner = ({ user, today }) => {
               <p className="text-xs md:text-sm font-bold text-violet-700 uppercase tracking-wide mt-0.5">
                 Official Digital Campus Portal
               </p>
-              <p className="text-[10px] md:text-xs font-semibold text-slate-600 uppercase tracking-wide mt-1">
-                School Year 2025-2026 • Second Semester
-              </p>
+              {academicYear && (
+                <p className="text-[10px] md:text-xs font-semibold text-slate-600 uppercase tracking-wide mt-1">
+                  School Year {academicYear}
+                </p>
+              )}
             </div>
           </div>
 
