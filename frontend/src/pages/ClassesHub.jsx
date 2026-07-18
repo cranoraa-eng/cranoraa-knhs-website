@@ -1,10 +1,52 @@
 ﻿import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useParallelFetch } from '../hooks/useFetch';
 import api from '../utils/api';
 import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
 import { LoadingSpinner, Button } from '../components/ui';
+import { administration, faculty, getInitials } from '../data/facultyData';
+
+// ── Build a lookup: last name → photo from facultyData ──────────────────────
+const FACULTY_PHOTO_MAP = (() => {
+  const map = {};
+  [...administration, ...faculty].forEach(p => {
+    if (p.photo) {
+      const parts = p.name.split(' ');
+      const lastName = parts[parts.length - 1].replace(/[.,]$/, '').toLowerCase();
+      map[lastName] = p.photo;
+      map[p.name.toLowerCase()] = p.photo;
+    }
+  });
+  return map;
+})();
+
+function resolveAdviserPhoto(name, profilePicture) {
+  if (profilePicture) return profilePicture;
+  if (!name) return null;
+  const lastName = name.trim().split(' ').pop().toLowerCase();
+  if (FACULTY_PHOTO_MAP[lastName]) return FACULTY_PHOTO_MAP[lastName];
+  if (FACULTY_PHOTO_MAP[name.toLowerCase()]) return FACULTY_PHOTO_MAP[name.toLowerCase()];
+  return null;
+}
+
+function AdviserAvatar({ name, photo }) {
+  const [imgError, setImgError] = useState(false);
+  const src = resolveAdviserPhoto(name, photo);
+  const showPhoto = src && !imgError;
+  const initials = (name || '?').split(' ').filter(Boolean).slice(0, 2).map(n => n[0].toUpperCase()).join('');
+
+  return (
+    <div className="w-6 h-6 rounded-full overflow-hidden flex-shrink-0 border border-slate-200 shadow-sm bg-violet-100 flex items-center justify-center">
+      {showPhoto ? (
+        <img src={src} alt={name} className="w-full h-full object-cover object-top" onError={() => setImgError(true)} />
+      ) : (
+        <span className="text-[8px] font-black text-violet-600 select-none">{initials}</span>
+      )}
+    </div>
+  );
+}
 
 const GRADE_LEVELS = ['Grade 7', 'Grade 8', 'Grade 9', 'Grade 10', 'Grade 11', 'Grade 12'];
 const DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
@@ -52,7 +94,7 @@ function ScheduleGrid({ schedules }) {
               <tr key={i} className="hover:bg-slate-50/50">
                 <td className="px-3 py-2 text-slate-500 font-semibold whitespace-nowrap">
                   <div>{ts.start_time_display}</div>
-                  <div className="text-[9px] text-slate-400">ΓÇö {ts.end_time_display}</div>
+                  <div className="text-[9px] text-slate-400">— {ts.end_time_display}</div>
                 </td>
                 {DAYS.map(d => {
                   const key = `${d}_${ts.start_time}_${ts.end_time}`;
@@ -66,7 +108,7 @@ function ScheduleGrid({ schedules }) {
                           {sched.room_name && <div className="text-[9px] text-slate-400 truncate">{sched.room_name}</div>}
                         </div>
                       ) : (
-                        <span className="text-slate-300">ΓÇö</span>
+                        <span className="text-slate-300">—</span>
                       )}
                     </td>
                   );
@@ -301,7 +343,27 @@ export default function ClassesHub() {
                             </div>
                             <div className="min-w-0">
                               <h4 className="font-bold text-slate-900 truncate">{cls.name}</h4>
-                              <p className="text-sm text-slate-500">{cls.teacher_name ? `Adviser: ${cls.teacher_name}` : 'No adviser'} ┬╖ {cls.student_count ?? 0} students</p>
+                              <div className="flex items-center gap-2 mt-0.5">
+                                {cls.teacher_name ? (
+                                  <div className="flex items-center gap-1.5">
+                                    {/* Adviser mini photo */}
+                                    <AdviserAvatar
+                                      name={cls.teacher_name}
+                                      photo={(() => {
+                                        const t = teachers.find(t => t.id === cls.teacher);
+                                        return t?.profile?.profile_picture || null;
+                                      })()}
+                                    />
+                                    <span className="text-xs text-slate-500">
+                                      {cls.teacher_name}
+                                    </span>
+                                  </div>
+                                ) : (
+                                  <span className="text-xs text-slate-400 italic">No adviser</span>
+                                )}
+                                <span className="text-slate-300 text-xs">·</span>
+                                <span className="text-xs text-slate-500">{cls.student_count ?? 0} students</span>
+                              </div>
                             </div>
                           </div>
                           <div className="flex items-center gap-2 flex-shrink-0">
@@ -330,7 +392,7 @@ export default function ClassesHub() {
                             {subs.map(s => (
                               <span key={s.id} className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold rounded-full bg-violet-50 text-violet-700 border border-violet-200">
                                 <span className="font-mono">{s.subject_code}</span>
-                                <span className="text-violet-400">┬╖</span>
+                                <span className="text-violet-300">·</span>
                                 <span>{s.teacher_name}</span>
                               </span>
                             ))}
@@ -404,14 +466,14 @@ export default function ClassesHub() {
                   <div>
                     <label className="block text-xs font-bold text-slate-700 mb-1">Grade Level <span className="text-red-500">*</span></label>
                     <select value={formData.grade_level} onChange={e => setFormData({ ...formData, grade_level: e.target.value })} className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-violet-100 focus:border-violet-500" required>
-                      <option value="">ΓÇö Select ΓÇö</option>
+                      <option value="">— Select —</option>
                       {GRADE_LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
                     </select>
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-slate-700 mb-1">Adviser</label>
                     <select value={formData.teacher} onChange={e => setFormData({ ...formData, teacher: e.target.value })} className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-violet-100 focus:border-violet-500">
-                      <option value="">ΓÇö None ΓÇö</option>
+                      <option value="">— None —</option>
                       {teachers.map(t => <option key={t.id} value={t.id}>{t.first_name} {t.last_name}</option>)}
                     </select>
                   </div>
