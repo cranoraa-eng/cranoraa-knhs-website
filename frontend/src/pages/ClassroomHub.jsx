@@ -292,6 +292,18 @@ const ClassroomHub = () => {
 
                   {/* Content */}
                   <CardBody className="p-4">
+                    {classroom.teacher_name && classroom.teacher_name !== 'No Adviser' && (
+                      <div className="flex items-center gap-2 mb-3 pb-3 border-b border-slate-100">
+                        {classroom.teacher_profile_picture ? (
+                          <img src={classroom.teacher_profile_picture} alt="" className="w-7 h-7 rounded-full object-cover" loading="lazy" />
+                        ) : (
+                          <div className="w-7 h-7 rounded-full bg-violet-100 flex items-center justify-center text-violet-700 text-[10px] font-bold shrink-0">
+                            {classroom.teacher_name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                          </div>
+                        )}
+                        <span className="text-xs font-medium text-slate-600 truncate">{classroom.teacher_name}</span>
+                      </div>
+                    )}
                     <div className="flex items-center justify-between text-sm text-slate-600">
                       <div className="flex items-center gap-2">
                         <Users className="w-4 h-4" />

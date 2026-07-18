@@ -13,6 +13,7 @@ class SystemSettingSerializer(serializers.ModelSerializer):
 
 class ClassroomSerializer(serializers.ModelSerializer):
     teacher_name = serializers.SerializerMethodField()
+    teacher_profile_picture = serializers.SerializerMethodField()
     student_count = serializers.SerializerMethodField()
     average_gpa = serializers.SerializerMethodField()
     academic_year_name = serializers.SerializerMethodField()
@@ -21,7 +22,7 @@ class ClassroomSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Classroom
-        fields = ['id', 'name', 'grade_level', 'capacity', 'teacher', 'teacher_name', 'student_count',
+        fields = ['id', 'name', 'grade_level', 'capacity', 'teacher', 'teacher_name', 'teacher_profile_picture', 'student_count',
                   'average_gpa', 'academic_year', 'academic_year_name', 'subject_name', 'subject_code',
                   'created_at', 'updated_at']
         read_only_fields = ['id', 'created_at', 'updated_at']
@@ -31,6 +32,10 @@ class ClassroomSerializer(serializers.ModelSerializer):
         }
 
     def get_teacher_name(self, obj): return full_name(obj.teacher) if obj.teacher else 'No Adviser'
+    def get_teacher_profile_picture(self, obj):
+        if obj.teacher and hasattr(obj.teacher, 'profile') and obj.teacher.profile:
+            return obj.teacher.profile.profile_picture
+        return None
     def get_student_count(self, obj): return obj.enrollments.count()
     def get_average_gpa(self, obj): return obj.get_average_gpa()
     def get_academic_year_name(self, obj): return obj.academic_year.name if obj.academic_year else None
