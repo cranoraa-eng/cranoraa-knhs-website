@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../utils/api';
 import { useCurrentUser } from '../hooks/useCurrentUser';
@@ -9,6 +10,357 @@ import { jsPDF } from 'jspdf';
 import * as XLSX from 'xlsx';
 import { useScrollLock } from '../hooks/useScrollLock';
 import { LoadingSpinner } from '../components/ui';
+
+// ── Student Profile Drawer ─────────────────────────────────────────────────
+function StudentProfileDrawer({ student, classrooms, onClose, onResetPassword, onAssignSection, onDelete, onStartChat, currentUser }) {
+  const [tab, setTab] = useState('personal');
+  const [appData,  setAppData]  = useState(null);
+  const [grades,   setGrades]   = useState([]);
+  const [attend,   setAttend]   = useState([]);
+  const [records,  setRecords]  = useState([]);
+  const [loadingData, setLoadingData] = useState(true);
+
+  useEffect(() => {
+    if (!student) return;
+    setLoadingData(true);
+    Promise.allSettled([
+      api.get(`/enrollment-applications/?enrolled_student=${student.id}`),
+      api.get(`/grades/?student=${student.id}`),
+      api.get(`/attendance/?student=${student.id}`),
+      api.get(`/record-requests/?student=${student.id}`),
+    ]).then(([appRes, gradeRes, attRes, recRes]) => {
+      if (appRes.status === 'fulfilled') {
+        const apps = appRes.value.data?.results || appRes.value.data || [];
+        setAppData(Array.isArray(apps) ? apps[0] || null : null);
+      }
+      if (gradeRes.status === 'fulfilled') setGrades(Array.isArray(gradeRes.value.data) ? gradeRes.value.data : gradeRes.value.data?.results || []);
+      if (attRes.status  === 'fulfilled') setAttend(Array.isArray(attRes.value.data)  ? attRes.value.data  : attRes.value.data?.results  || []);
+      if (recRes.status  === 'fulfilled') setRecords(Array.isArray(recRes.value.data) ? recRes.value.data : recRes.value.data?.results || []);
+    }).finally(() => setLoadingData(false));
+  }, [student?.id]);
+
+  const lrn       = student.profile?.registration_number || student.username || '—';
+  const fullName  = `${student.profile?.title || ''} ${student.first_name} ${student.last_name}`.trim();
+  const grade     = student.profile?.grade_level || '—';
+  const section   = student.profile?.classroom_name || 'No section assigned';
+  const initials  = `${student.first_name?.[0] || ''}${student.last_name?.[0] || ''}`.toUpperCase();
+
+  // Attendance summary
+  const presentCount = attend.filter(a => a.status === 'present').length;
+  const lateCount    = attend.filter(a => a.status === 'late').length;
+  const absentCount  = attend.filter(a => a.status === 'absent').length;
+  const attRate = attend.length > 0
+    ? Math.round(((presentCount + lateCount) / attend.length) * 100) : null;
+
+  // Grade summary
+  const finalGrades = grades.filter(g => g.grade_type === 'final_grade' && g.raw_score != null);
+  const overallAvg  = finalGrades.length
+    ? (finalGrades.reduce((s, g) => s + parseFloat(g.raw_score), 0) / finalGrades.length).toFixed(1) : null;
+
+  const TABS = [
+    { id: 'personal',  label: 'Personal' },
+    { id: 'academic',  label: 'Academic' },
+    { id: 'family',    label: 'Family' },
+    { id: 'documents', label: 'Documents' },
+    { id: 'records',   label: 'Records' },
+  ];
+
+  const Field = ({ label, value, mono = false }) => (
+    <div className="py-2 border-b border-slate-100 last:border-0">
+      <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">{label}</p>
+      <p className={`text-sm font-semibold text-slate-800 ${mono ? 'font-mono' : ''}`}>{value || '—'}</p>
+    </div>
+  );
+
+  const docTypeLabel = {
+    birth_certificate: 'PSA Birth Certificate',
+    report_card: 'Report Card',
+    form_138: 'Form 138',
+    certificate_of_completion: 'Certificate of Completion',
+    good_moral: 'Good Moral Certificate',
+    id_picture: 'ID Picture',
+    last_school_attended: 'Last School Attended Cert.',
+    other: 'Other Document',
+  };
+
+  return (
+    <div className="fixed inset-0 z-[9999] flex">
+      {/* backdrop */}
+      <div className="flex-1 bg-black/40" onClick={onClose} />
+
+      {/* drawer */}
+      <div className="w-full max-w-xl bg-white shadow-2xl flex flex-col h-full overflow-hidden">
+
+        {/* Header */}
+        <div className="bg-[#5e2a84] px-5 py-4 flex items-start gap-4 flex-shrink-0">
+          <div className="w-12 h-12 rounded-full bg-white/20 border-2 border-white/30 flex items-center justify-center flex-shrink-0">
+            <span className="text-lg font-black text-white">{initials}</span>
+          </div>
+          <div className="flex-1 min-w-0">
+            <h2 className="text-base font-black text-white uppercase tracking-wide leading-tight truncate">{fullName}</h2>
+            <p className="text-violet-200 text-xs mt-0.5 font-mono">LRN: {lrn}</p>
+            <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+              <span className={`text-[9px] font-black px-2 py-0.5 rounded uppercase ${
+                student.account_status === 'active'    ? 'bg-emerald-400/20 text-emerald-200 border border-emerald-400/30' :
+                student.account_status === 'suspended' ? 'bg-rose-400/20 text-rose-200 border border-rose-400/30' :
+                'bg-white/10 text-white/70 border border-white/20'
+              }`}>{student.account_status}</span>
+              <span className="text-violet-300 text-xs">{grade} · {section}</span>
+            </div>
+          </div>
+          <button onClick={onClose} className="w-7 h-7 flex items-center justify-center rounded text-white/60 hover:bg-white/20 hover:text-white transition-all flex-shrink-0 mt-0.5">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+
+        {/* Quick action bar */}
+        <div className="bg-violet-950 px-4 py-2 flex items-center gap-2 flex-shrink-0 border-b border-violet-900">
+          <button onClick={() => onAssignSection(student.id, student.profile?.classroom_name, student.profile?.grade_level)}
+            className="flex items-center gap-1.5 text-[10px] font-bold text-violet-200 hover:text-white px-2.5 py-1.5 rounded hover:bg-white/10 transition-colors">
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5" /></svg>
+            Set Section
+          </button>
+          <button onClick={() => onResetPassword(student.id)}
+            className="flex items-center gap-1.5 text-[10px] font-bold text-violet-200 hover:text-white px-2.5 py-1.5 rounded hover:bg-white/10 transition-colors">
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" /></svg>
+            Reset Password
+          </button>
+          {onStartChat && (
+            <button onClick={() => { onStartChat(student.id); onClose(); }}
+              className="flex items-center gap-1.5 text-[10px] font-bold text-violet-200 hover:text-white px-2.5 py-1.5 rounded hover:bg-white/10 transition-colors">
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" /></svg>
+              Message
+            </button>
+          )}
+          <button onClick={() => { onDelete(student.id); onClose(); }}
+            className="flex items-center gap-1.5 text-[10px] font-bold text-rose-300 hover:text-rose-100 px-2.5 py-1.5 rounded hover:bg-rose-500/20 transition-colors ml-auto">
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+            Delete
+          </button>
+        </div>
+
+        {/* Tab bar */}
+        <div className="bg-white border-b border-slate-200 px-4 flex gap-0 flex-shrink-0 overflow-x-auto">
+          {TABS.map(t => (
+            <button key={t.id} onClick={() => setTab(t.id)}
+              className={`px-4 py-3 text-xs font-bold whitespace-nowrap border-b-2 transition-colors ${
+                tab === t.id ? 'border-violet-600 text-violet-700' : 'border-transparent text-slate-500 hover:text-slate-800'
+              }`}>
+              {t.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto bg-slate-50">
+          {loadingData && tab !== 'personal' ? (
+            <div className="flex items-center justify-center h-32">
+              <div className="w-5 h-5 border-2 border-violet-500 border-t-transparent rounded-full animate-spin" />
+            </div>
+          ) : (
+            <div className="p-5 space-y-1">
+
+              {/* ── PERSONAL ── */}
+              {tab === 'personal' && (
+                <div className="bg-white rounded-xl border border-slate-200 divide-y divide-slate-100 overflow-hidden">
+                  <div className="px-4 py-3 bg-slate-50">
+                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Personal Information</p>
+                  </div>
+                  <div className="px-4">
+                    <Field label="Full Name" value={fullName} />
+                    <Field label="Student ID / LRN" value={lrn} mono />
+                    <Field label="Date of Birth" value={student.profile?.date_of_birth} />
+                    <Field label="Sex" value={student.profile?.sex} />
+                    <Field label="Nationality" value={student.profile?.nationality} />
+                    <Field label="Address" value={student.profile?.address} />
+                    <Field label="Phone Number" value={student.profile?.phone_number} />
+                    <Field label="Email" value={student.email} />
+                    <Field label="Account Status" value={student.account_status} />
+                    <Field label="Password" value={student.must_change_password ? 'Temporary — pending change' : 'Changed by student'} />
+                  </div>
+                </div>
+              )}
+
+              {/* ── ACADEMIC ── */}
+              {tab === 'academic' && (
+                <div className="space-y-4">
+                  <div className="bg-white rounded-xl border border-slate-200 divide-y divide-slate-100 overflow-hidden">
+                    <div className="px-4 py-3 bg-slate-50">
+                      <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Enrollment Info</p>
+                    </div>
+                    <div className="px-4">
+                      <Field label="Grade Level" value={grade} />
+                      <Field label="Section / Classroom" value={section} />
+                      <Field label="School Year" value={appData?.school_year} />
+                      <Field label="Enrollment Type" value={appData?.enrollment_type?.replace(/_/g, ' ')} />
+                      <Field label="Strand" value={appData?.strand} />
+                    </div>
+                  </div>
+
+                  {/* Attendance summary */}
+                  <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+                    <div className="px-4 py-3 bg-slate-50 border-b border-slate-100">
+                      <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Attendance Summary</p>
+                    </div>
+                    <div className="p-4 grid grid-cols-4 gap-3">
+                      {[
+                        { label: 'Present', val: presentCount, color: 'text-emerald-700 bg-emerald-50 border-emerald-200' },
+                        { label: 'Late',    val: lateCount,    color: 'text-amber-700 bg-amber-50 border-amber-200' },
+                        { label: 'Absent',  val: absentCount,  color: 'text-rose-700 bg-rose-50 border-rose-200' },
+                        { label: 'Rate',    val: attRate !== null ? `${attRate}%` : '—', color: 'text-violet-700 bg-violet-50 border-violet-200' },
+                      ].map(s => (
+                        <div key={s.label} className={`border rounded-lg p-3 text-center ${s.color}`}>
+                          <p className="text-xl font-black">{s.val}</p>
+                          <p className="text-[9px] font-bold uppercase tracking-wider mt-0.5">{s.label}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Grades */}
+                  {finalGrades.length > 0 && (
+                    <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+                      <div className="px-4 py-3 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
+                        <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Subject Grades</p>
+                        {overallAvg && <span className="text-sm font-black text-violet-700">Avg: {overallAvg}</span>}
+                      </div>
+                      <div className="divide-y divide-slate-100">
+                        {finalGrades.map(g => (
+                          <div key={g.id} className="flex items-center justify-between px-4 py-2.5">
+                            <div>
+                              <p className="text-sm font-bold text-slate-900">{g.subject_name}</p>
+                              <p className="text-[10px] text-slate-400">Q{g.quarter} · {g.academic_year}</p>
+                            </div>
+                            <span className={`text-sm font-black px-3 py-1 rounded-lg border ${
+                              parseFloat(g.raw_score) >= 90 ? 'text-emerald-700 bg-emerald-50 border-emerald-200' :
+                              parseFloat(g.raw_score) >= 75 ? 'text-blue-700 bg-blue-50 border-blue-200' :
+                              'text-rose-700 bg-rose-50 border-rose-200'
+                            }`}>{g.raw_score}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* ── FAMILY ── */}
+              {tab === 'family' && (
+                <div className="space-y-4">
+                  {[
+                    { title: 'Father', color: 'bg-blue-50 border-blue-200', textColor: 'text-blue-700',
+                      fields: [['Name', appData?.father_name], ['Contact', appData?.father_contact], ['Email', appData?.father_email], ['Occupation', appData?.father_occupation]] },
+                    { title: 'Mother', color: 'bg-rose-50 border-rose-200', textColor: 'text-rose-700',
+                      fields: [['Name', appData?.mother_name], ['Contact', appData?.mother_contact], ['Email', appData?.mother_email], ['Occupation', appData?.mother_occupation]] },
+                    ...(appData?.guardian_name ? [{ title: 'Guardian', color: 'bg-amber-50 border-amber-200', textColor: 'text-amber-700',
+                      fields: [['Name', appData?.guardian_name], ['Relationship', appData?.guardian_relationship], ['Contact', appData?.guardian_contact]] }] : []),
+                  ].map(({ title, color, textColor, fields }) => (
+                    <div key={title} className={`rounded-xl border ${color} overflow-hidden`}>
+                      <div className={`px-4 py-3 ${color}`}>
+                        <p className={`text-[10px] font-black uppercase tracking-widest ${textColor}`}>{title}</p>
+                      </div>
+                      <div className="px-4 bg-white divide-y divide-slate-100">
+                        {fields.map(([label, val]) => val ? <Field key={label} label={label} value={val} /> : null)}
+                        {fields.every(([, v]) => !v) && <p className="py-3 text-xs text-slate-400 italic">No information provided</p>}
+                      </div>
+                    </div>
+                  ))}
+                  {!appData && !loadingData && (
+                    <div className="bg-white rounded-xl border border-slate-200 p-8 text-center">
+                      <p className="text-sm text-slate-400">No enrollment application found for this student.</p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* ── DOCUMENTS ── */}
+              {tab === 'documents' && (
+                <div className="space-y-3">
+                  <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-start gap-3">
+                    <svg className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    <p className="text-xs text-amber-800">Documents were submitted during enrollment. Click the view icon to open each file.</p>
+                  </div>
+
+                  {appData?.documents && appData.documents.length > 0 ? (
+                    <div className="bg-white rounded-xl border border-slate-200 divide-y divide-slate-100 overflow-hidden">
+                      {appData.documents.map(doc => (
+                        <div key={doc.id} className="flex items-center justify-between px-4 py-3">
+                          <div className="flex items-center gap-3 min-w-0">
+                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                              doc.verification_status === 'verified' ? 'bg-emerald-50' :
+                              doc.verification_status === 'rejected' ? 'bg-rose-50' : 'bg-slate-100'
+                            }`}>
+                              <svg className={`w-4 h-4 ${
+                                doc.verification_status === 'verified' ? 'text-emerald-600' :
+                                doc.verification_status === 'rejected' ? 'text-rose-600' : 'text-slate-400'
+                              }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                              </svg>
+                            </div>
+                            <div className="min-w-0">
+                              <p className="text-sm font-bold text-slate-900 truncate">{docTypeLabel[doc.document_type] || doc.document_type_display || doc.document_type}</p>
+                              <span className={`text-[9px] font-bold uppercase px-1.5 py-0.5 rounded ${
+                                doc.verification_status === 'verified' ? 'bg-emerald-100 text-emerald-700' :
+                                doc.verification_status === 'rejected' ? 'bg-rose-100 text-rose-700' :
+                                'bg-slate-100 text-slate-600'
+                              }`}>{doc.verification_status_display || doc.verification_status}</span>
+                            </div>
+                          </div>
+                          {doc.file_url && (
+                            <a href={doc.file_url} target="_blank" rel="noreferrer"
+                              className="p-2 text-slate-400 hover:text-violet-600 hover:bg-violet-50 rounded-lg transition-colors flex-shrink-0">
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+                            </a>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="bg-white rounded-xl border border-slate-200 p-10 text-center">
+                      <svg className="w-10 h-10 text-slate-200 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                      <p className="text-sm font-semibold text-slate-400">No documents on file</p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* ── RECORDS ── */}
+              {tab === 'records' && (
+                <div className="space-y-4">
+                  {records.length > 0 ? (
+                    <div className="bg-white rounded-xl border border-slate-200 divide-y divide-slate-100 overflow-hidden">
+                      <div className="px-4 py-3 bg-slate-50 border-b border-slate-100">
+                        <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Document Requests</p>
+                      </div>
+                      {records.map(r => (
+                        <div key={r.id} className="flex items-center justify-between px-4 py-3">
+                          <div>
+                            <p className="text-sm font-bold text-slate-900">{r.record_type_display || r.record_type}</p>
+                            <p className="text-[10px] text-slate-400">{r.purpose || ''} · {new Date(r.created_at).toLocaleDateString()}</p>
+                          </div>
+                          <span className={`text-[9px] font-bold px-2 py-0.5 rounded border uppercase ${
+                            r.status === 'approved' || r.status === 'released' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+                            r.status === 'pending'  ? 'bg-amber-50 text-amber-700 border-amber-200' :
+                            'bg-slate-100 text-slate-600 border-slate-200'
+                          }`}>{r.status}</span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="bg-white rounded-xl border border-slate-200 p-10 text-center">
+                      <svg className="w-10 h-10 text-slate-200 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" /></svg>
+                      <p className="text-sm font-semibold text-slate-400">No record requests</p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 const StudentManagement = () => {
   const { user } = useCurrentUser();
