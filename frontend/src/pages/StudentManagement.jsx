@@ -1,4 +1,5 @@
-import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import api from '../utils/api';
 import { useCurrentUser } from '../hooks/useCurrentUser';
@@ -925,7 +926,23 @@ setSelectedIds([]);
     </div>
   );
 
-  const StudentRow = ({ student, idx }) => (
+  const StudentRow = ({ student, idx }) => {
+    const btnRef = useRef(null);
+    const menuRef = useRef(null);
+    const [menuPos, setMenuPos] = useState({ top: 0, left: 0 });
+
+    useEffect(() => {
+      if (openMenuId === student.id && btnRef.current) {
+        const rect = btnRef.current.getBoundingClientRect();
+        const menuH = 180;
+        const spaceBelow = window.innerHeight - rect.bottom;
+        const top = spaceBelow < menuH ? rect.top - menuH - 4 : rect.bottom + 4;
+        const left = Math.min(rect.left, window.innerWidth - 180);
+        setMenuPos({ top, left });
+      }
+    }, [openMenuId, student.id]);
+
+    return (
     <tr key={student.id} className={`group transition-colors ${selectedIds.includes(student.id) ? 'bg-violet-50' : 'hover:bg-slate-50'}`}>
       <td className="px-3 py-2 md:px-4 md:py-3">
         <div className="flex items-center gap-2">
@@ -985,17 +1002,22 @@ setSelectedIds([]);
         </select>
       </td>
       <td className="px-3 py-2 md:px-4 md:py-3">
-        <div className="flex items-center justify-center relative">
+        <div className="flex items-center justify-center">
           <button
+            ref={el => { if (openMenuId === student.id) btnRef.current = el; }}
             onClick={() => setOpenMenuId(openMenuId === student.id ? null : student.id)}
             className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded transition-colors"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="5" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/><circle cx="12" cy="19" r="1.5" fill="currentColor"/></svg>
           </button>
-          {openMenuId === student.id && (
+          {openMenuId === student.id && createPortal(
             <>
-              <div className="fixed inset-0 z-40" onClick={() => setOpenMenuId(null)} />
-              <div className="absolute right-0 top-full mt-1 w-44 bg-white border border-slate-200 shadow-lg py-1 z-50">
+              <div className="fixed inset-0 z-[9998]" onClick={() => setOpenMenuId(null)} />
+              <div
+                ref={menuRef}
+                className="fixed w-44 bg-white border border-slate-200 shadow-lg py-1 z-[9999]"
+                style={menuPos}
+              >
                 <button
                   onClick={() => { setSelectedStudent(student); setShowProfileModal(true); setOpenMenuId(null); }}
                   className="w-full flex items-center gap-2 px-3 py-2 text-xs text-slate-700 hover:bg-slate-50 text-left"
@@ -1029,12 +1051,14 @@ setSelectedIds([]);
                   </button>
                 )}
               </div>
-            </>
+            </>,
+            document.body
           )}
         </div>
       </td>
     </tr>
-  );
+    );
+  };
 
   return (
     <div className="page-bottom-safe bg-slate-50">
