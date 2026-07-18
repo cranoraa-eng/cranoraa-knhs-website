@@ -7,6 +7,7 @@ import {
   Card, CardHeader, CardBody, CardTitle, Button, Badge,
   Skeleton, EmptyState,
 } from '../../components/ui';
+import RoleManual from './RoleManual';
 import QuickAccessLinks from '../../components/dashboard/QuickAccessLinks';
 
 /**
@@ -291,6 +292,8 @@ const StudentDashboard = () => {
           </div>
         </CardBody>
       </Card>
+
+      <RoleManual role="student" />
 
       {/* ══════════════════════════════════════════════════════════════ */}
       {/* QUICK ACCESS LINKS */}

@@ -5,6 +5,7 @@ import api from '../../utils/api';
 import { useActiveAcademicYear } from '../../hooks/useActiveAcademicYear';
 import { Card, CardHeader, CardBody, CardTitle, Button, Skeleton } from '../../components/ui';
 import { StatCard, RecentAnnouncementsWidget } from './shared';
+import RoleManual from './RoleManual';
 import QuickAccessLinks from '../../components/dashboard/QuickAccessLinks';
 
 // ── Small delta badge shown under a stat card value ───────────────────────────
@@ -287,6 +288,8 @@ const AdminDashboard = () => {
           </Button>
         </div>
       </div>
+
+      <RoleManual role="admin" />
 
       {/* ── QUICK ACCESS (single source of navigation — no duplicate card) ── */}
       <QuickAccessLinks role="admin" variant="grid" />

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../utils/api';
 import { Skeleton } from '../components/ui';
+import RoleManual from './dashboards/RoleManual';
 import QuickAccessLinks from '../components/dashboard/QuickAccessLinks';
 
 const DAYS = ['monday','tuesday','wednesday','thursday','friday','saturday'];
@@ -147,6 +148,8 @@ export default function ParentDashboard() {
           </button>
         </div>
       </div>
+
+      <RoleManual role="parent" />
 
       {/* Quick Access Links */}
       <QuickAccessLinks role="parent" variant="grid" />
