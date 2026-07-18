@@ -966,11 +966,6 @@ setSelectedIds([]);
       <td className="hidden sm:table-cell px-4 py-3">
         <span className="text-[10px] font-bold text-slate-500 uppercase">{student.profile?.sex || '—'}</span>
       </td>
-      <td className="hidden md:table-cell px-4 py-3">
-        <span className="text-[10px] font-bold text-slate-600 bg-slate-100 px-2 py-0.5 border border-slate-200">
-          {(/^\d+$/.test(student.profile?.grade_level) ? `Grade ${student.profile.grade_level}` : student.profile?.grade_level) || '—'}
-        </span>
-      </td>
       <td className="hidden lg:table-cell px-4 py-3">
         <span className={`text-[10px] font-bold px-2 py-0.5 border ${
           student.profile?.classroom_name 
@@ -1298,7 +1293,6 @@ setSelectedIds([]);
                             </th>
                             <th className="px-3 py-2 md:px-4 md:py-2.5">Student</th>
                             <th className="hidden sm:table-cell px-4 py-2.5">Sex</th>
-                            <th className="hidden md:table-cell px-4 py-2.5">Grade</th>
                             <th className="hidden lg:table-cell px-4 py-2.5">Section</th>
                             <th className="hidden lg:table-cell px-4 py-2.5">Email</th>
                             <th className="hidden md:table-cell px-4 py-2.5">LRN</th>
@@ -1310,7 +1304,7 @@ setSelectedIds([]);
                           {/* Male Students */}
                           {cls.male.length > 0 && (
                             <tr className="bg-blue-50">
-                              <td colSpan="8" className="px-4 py-1.5 text-[9px] font-bold text-blue-600 uppercase tracking-widest border-y border-blue-100">
+                              <td colSpan="7" className="px-4 py-1.5 text-[9px] font-bold text-blue-600 uppercase tracking-widest border-y border-blue-100">
                                 <div className="flex items-center gap-1.5">
                                   <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a8 8 0 100 16 8 8 0 000-16zM9 9H5v2h4v4h2v-4h4V9h-4V5H9v4z" /></svg>
                                   Male ({cls.male.length})
@@ -1325,7 +1319,7 @@ setSelectedIds([]);
                           {/* Female Students */}
                           {cls.female.length > 0 && (
                             <tr className="bg-rose-50">
-                              <td colSpan="8" className="px-4 py-1.5 text-[9px] font-bold text-rose-600 uppercase tracking-widest border-y border-rose-100">
+                              <td colSpan="7" className="px-4 py-1.5 text-[9px] font-bold text-rose-600 uppercase tracking-widest border-y border-rose-100">
                                 <div className="flex items-center gap-1.5">
                                   <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a8 8 0 100 16 8 8 0 000-16zM9 9H5v2h4v4h2v-4h4V9h-4V5H9v4z" /></svg>
                                   Female ({cls.female.length})
