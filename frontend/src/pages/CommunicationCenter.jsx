@@ -100,6 +100,8 @@ const ROLE_GROUPS = [
   { key: 'parent', label: 'Parents', roles: ['parent'] },
 ];
 
+const ADMIN_STAFF_TITLES = ['principal', 'guidance_counselor', 'administrative_officer', 'admin_assistant'];
+
 function PeopleDirectory({ onSelectPerson, currentUserId }) {
   const [groups, setGroups] = useState({});
   const [loading, setLoading] = useState(true);
@@ -135,11 +137,20 @@ function PeopleDirectory({ onSelectPerson, currentUserId }) {
     return () => { cancelled = true; };
   }, []);
 
+  const displayGroups = useMemo(() => {
+    const staffList = groups.staff || [];
+    return {
+      ...groups,
+      admin: [...(groups.admin || []), ...staffList.filter(p => ADMIN_STAFF_TITLES.includes(p.staff_title))],
+      staff: staffList.filter(p => !ADMIN_STAFF_TITLES.includes(p.staff_title)),
+    };
+  }, [groups]);
+
   const filtered = useMemo(() => {
-    if (!peopleSearch.trim()) return groups;
+    if (!peopleSearch.trim()) return displayGroups;
     const q = peopleSearch.toLowerCase();
     const result = {};
-    for (const [role, list] of Object.entries(groups)) {
+    for (const [role, list] of Object.entries(displayGroups)) {
       result[role] = (list || []).filter(p => {
         const name = `${p.first_name || ''} ${p.last_name || ''}`.toLowerCase();
         const email = (p.email || '').toLowerCase();
@@ -147,7 +158,7 @@ function PeopleDirectory({ onSelectPerson, currentUserId }) {
       });
     }
     return result;
-  }, [groups, peopleSearch]);
+  }, [displayGroups, peopleSearch]);
 
   return (
     <div className="w-full h-full flex flex-col bg-white">
@@ -206,7 +217,7 @@ function PeopleDirectory({ onSelectPerson, currentUserId }) {
                               {person.role === 'admin'
                                 ? 'Admin'
                                 : person.role === 'staff'
-                                  ? (person.staff_title || 'Staff')
+                                  ? (person.staff_title || 'Staff').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
                                   : person.role === 'parent'
                                     ? 'Parent'
                                     : (person.profile?.classroom_name || 'Student')}
