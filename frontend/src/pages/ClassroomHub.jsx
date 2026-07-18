@@ -11,7 +11,7 @@ import {
 import Modal, { ModalBody, ModalFooter, ModalBtnPrimary, ModalBtnSecondary, modalInputCls } from '../components/ui/Modal';
 import {
   BookOpen, Users, FileText, Award, CheckSquare,
-  Upload, Download, Clock, Folder,
+  Upload, Download, Clock, Folder, Trash2,
   MessageSquare, Bell, ArrowLeft,
   Search, ChevronRight, BarChart2, X
 } from 'lucide-react';
@@ -102,6 +102,9 @@ const ClassroomHub = () => {
                 id: cls.id,
                 name: cls.name,
                 grade_level: cls.grade_level,
+                teacher: cls.teacher,
+                teacher_name: cls.teacher_name,
+                teacher_profile_picture: cls.teacher_profile_picture,
                 subjects: mySubjects,
                 studentCount: cls.student_count ?? null,
                 students: [],
@@ -112,6 +115,9 @@ const ClassroomHub = () => {
                 id: cls.id,
                 name: cls.name,
                 grade_level: cls.grade_level,
+                teacher: cls.teacher,
+                teacher_name: cls.teacher_name,
+                teacher_profile_picture: cls.teacher_profile_picture,
                 subjects: [],
                 studentCount: cls.student_count ?? null,
                 students: [],
@@ -222,6 +228,17 @@ const ClassroomHub = () => {
       toast.error(err.response?.data?.file?.[0] || err.response?.data?.detail || 'Upload failed');
     } finally {
       setUploading(false);
+    }
+  };
+
+  const handleDeleteMaterial = async (materialId) => {
+    if (!window.confirm('Delete this material? This cannot be undone.')) return;
+    try {
+      await api.delete(`/materials/${materialId}/`);
+      setMaterials(materials.filter(m => m.id !== materialId));
+      toast.success('Material deleted');
+    } catch {
+      toast.error('Failed to delete material');
     }
   };
 
@@ -392,6 +409,18 @@ const ClassroomHub = () => {
               <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
                 {selectedClass.name}
               </h1>
+              {selectedClass.teacher_name && selectedClass.teacher_name !== 'No Adviser' && (
+                <div className="flex items-center gap-2 mb-3">
+                  {selectedClass.teacher_profile_picture ? (
+                    <img src={selectedClass.teacher_profile_picture} alt="" className="w-8 h-8 rounded-full object-cover border-2 border-white/40" loading="lazy" />
+                  ) : (
+                    <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white text-xs font-bold border-2 border-white/40 shrink-0">
+                      {selectedClass.teacher_name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                    </div>
+                  )}
+                  <span className="text-sm font-medium text-white/90">{selectedClass.teacher_name}</span>
+                </div>
+              )}
               {isTeacher && selectedClass.subjects && (
                 <div className="flex flex-wrap gap-2">
                   {selectedClass.subjects.map(subject => (
@@ -470,6 +499,7 @@ const ClassroomHub = () => {
               getMaterialIcon={getMaterialIcon}
               loading={loading}
               onUploadClick={() => setShowUploadModal(true)}
+              onDeleteMaterial={handleDeleteMaterial}
             />
           )}
 
@@ -637,7 +667,7 @@ const StreamTab = ({ classroom, isTeacher, announcements, announcementText, setA
 );
 
 // Materials Tab Component
-const MaterialsTab = ({ classroom, materials, isTeacher, searchQuery, setSearchQuery, getMaterialIcon, loading, onUploadClick }) => (
+const MaterialsTab = ({ classroom, materials, isTeacher, searchQuery, setSearchQuery, getMaterialIcon, loading, onUploadClick, onDeleteMaterial }) => (
   <motion.div
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
@@ -705,9 +735,18 @@ const MaterialsTab = ({ classroom, materials, isTeacher, searchQuery, setSearchQ
                     <Clock className="w-3 h-3 inline mr-1" />
                     {new Date(material.uploaded_at).toLocaleDateString()}
                   </span>
-                  <Button variant="ghost" size="sm">
-                    <Download className="w-4 h-4" />
-                  </Button>
+                  <div className="flex items-center gap-1">
+                    {material.file && (
+                      <Button variant="ghost" size="sm" onClick={() => window.open(material.file, '_blank')}>
+                        <Download className="w-4 h-4" />
+                      </Button>
+                    )}
+                    {isTeacher && (
+                      <Button variant="ghost" size="sm" onClick={() => onDeleteMaterial(material.id)} className="text-red-500 hover:text-red-700 hover:bg-red-50">
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    )}
+                  </div>
                 </div>
               </CardBody>
             </Card>
