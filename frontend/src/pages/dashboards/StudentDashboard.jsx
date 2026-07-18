@@ -288,9 +288,6 @@ const StudentDashboard = () => {
               <Button variant="secondary" size="sm" onClick={() => navigate('/schedule')}>
                 Schedule
               </Button>
-              <Button variant="secondary" size="sm" onClick={() => navigate('/materials')}>
-                Materials
-              </Button>
             </div>
           </div>
         </CardBody>
@@ -610,7 +607,6 @@ const StudentDashboard = () => {
                   <div
                     key={a.id}
                     className="px-3 py-2.5 border border-slate-200 rounded-md bg-white hover:bg-slate-50 hover:border-violet-300 cursor-pointer transition-all"
-                    onClick={() => navigate('/materials')}
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0 flex-1">

@@ -20,12 +20,10 @@ export const QUICK_ACCESS_CONFIGS = {
     { label: 'My Classes', path: '/my-classes', icon: 'BookOpen', color: 'blue' },
     { label: 'Announcements', path: '/announcements', icon: 'Bell', color: 'amber' },
     { label: 'Schedule', path: '/my-schedule', icon: 'Calendar', color: 'green' },
-    { label: 'Learning Materials', path: '/materials', icon: 'FileText', color: 'indigo' },
     { label: 'Communication', path: '/communication-center', icon: 'MessageSquare', color: 'rose' }
   ],
   teacher: [
     { label: 'My Classes', path: '/my-classes', icon: 'BookOpen', color: 'violet' },
-    { label: 'Learning Materials', path: '/materials', icon: 'FileText', color: 'blue' },
     { label: 'Schedule', path: '/my-schedule', icon: 'Clock', color: 'green' },
     { label: 'Announcements', path: '/announcements', icon: 'Bell', color: 'amber' },
     { label: 'People', path: '/people?tab=teachers', icon: 'Users', color: 'indigo' },
@@ -36,8 +34,7 @@ export const QUICK_ACCESS_CONFIGS = {
     { label: 'Attendance', path: '/attendance', icon: 'UserCheck', color: 'green' },
     { label: 'Announcements', path: '/announcements', icon: 'Bell', color: 'amber' },
     { label: 'Messages', path: '/communication', icon: 'MessageSquare', color: 'blue' },
-    { label: 'Calendar', path: '/calendar', icon: 'Calendar', color: 'rose' },
-    { label: 'Learning Materials', path: '/materials', icon: 'FileText', color: 'indigo' }
+    { label: 'Calendar', path: '/calendar', icon: 'Calendar', color: 'rose' }
   ],
   admin: [
     { label: 'Dashboard Analytics', path: '/analytics', icon: 'TrendingUp', color: 'violet' },
