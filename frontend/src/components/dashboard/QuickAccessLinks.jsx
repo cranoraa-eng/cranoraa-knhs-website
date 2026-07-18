@@ -3,14 +3,14 @@ import { Link } from 'react-router-dom';
 import { 
   BookOpen, Users, Calendar, FileText, MessageSquare, 
   BarChart2, Settings, UserCheck, GraduationCap, ClipboardList,
-  Award, TrendingUp, Mail, Bell, Clock, Grid
+  Award, TrendingUp, Mail, Bell, Clock, Grid, Clipboard
 } from 'lucide-react';
 
 // Icon mapping
 const iconMap = {
   BookOpen, Users, Calendar, FileText, MessageSquare,
   BarChart2, Settings, UserCheck, GraduationCap, ClipboardList,
-  Award, TrendingUp, Mail, Bell, Clock, Grid
+  Award, TrendingUp, Mail, Bell, Clock, Grid, Clipboard
 };
 
 // Role-based quick access link configurations
@@ -25,6 +25,7 @@ export const QUICK_ACCESS_CONFIGS = {
   teacher: [
     { label: 'My Classes', path: '/my-classes', icon: 'BookOpen', color: 'violet' },
     { label: 'Schedule', path: '/my-schedule', icon: 'Clock', color: 'green' },
+    { label: 'Grade Input', path: '/grade-input', icon: 'Clipboard', color: 'blue' },
     { label: 'Announcements', path: '/announcements', icon: 'Bell', color: 'amber' },
     { label: 'People', path: '/people?tab=teachers', icon: 'Users', color: 'indigo' },
     { label: 'Communication', path: '/communication-center', icon: 'MessageSquare', color: 'rose' }

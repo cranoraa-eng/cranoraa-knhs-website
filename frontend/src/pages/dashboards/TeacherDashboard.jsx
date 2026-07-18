@@ -12,7 +12,6 @@ import {
   SchoolHeaderBanner, StatCard,
   TodayScheduleWidget,
 } from './shared';
-import RoleManual from './RoleManual';
 import QuickAccessLinks from '../../components/dashboard/QuickAccessLinks';
 
 const getLocalDateStr = () => {
@@ -222,7 +221,6 @@ const TeacherDashboard = () => {
     >
       <SchoolHeaderBanner user={user} today={today} />
 
-      <RoleManual role="teacher" />
       <QuickAccessLinks role="teacher" variant="grid" />
 
       {/* ── QUICK ACTIONS ──────────────────────────────────────────────── */}
