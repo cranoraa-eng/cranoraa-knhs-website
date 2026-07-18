@@ -42,8 +42,11 @@ function formatFileSize(bytes) {
   return `${(bytes / 1048576).toFixed(1)} MB`;
 }
 
-function Avatar({ name, size = 'md' }) {
+function Avatar({ name, size = 'md', profilePicture }) {
   const sizes = { sm: 'w-8 h-8 text-xs', md: 'w-10 h-10 text-sm', lg: 'w-12 h-12 text-base' };
+  if (profilePicture) {
+    return <img src={profilePicture} alt="" className={`${sizes[size]} rounded-full object-cover flex-shrink-0`} loading="lazy" />;
+  }
   return (
     <div className={`${sizes[size]} ${getAvatarColor(name)} rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0`} title={name}>
       {getInitials(name)}
@@ -190,7 +193,7 @@ function PeopleDirectory({ onSelectPerson, currentUserId }) {
                           className="w-full flex items-center gap-3 px-5 py-2.5 hover:bg-violet-50/30 transition-colors text-left"
                         >
                           <div className="relative flex-shrink-0">
-                            <Avatar name={`${person.first_name || ''} ${person.last_name || ''}`} size="sm" />
+                            <Avatar name={`${person.first_name || ''} ${person.last_name || ''}`} size="sm" profilePicture={person.profile?.profile_picture} />
                             <span className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-white ${
                               person.is_online ? 'bg-emerald-400' : 'bg-slate-300'
                             }`} />
@@ -231,7 +234,7 @@ const ChatMessage = memo(function ChatMessage({ msg, i, chatMessages, userId, sh
 
   return (
     <div className={`flex ${isOwn ? 'justify-end' : 'justify-start'} ${!isLast ? 'mb-0.5' : 'mb-2'}`}>
-      {!isOwn && <div className="w-8 flex-shrink-0">{showAvatar && <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-[10px] font-bold ${getAvatarColor(msg.sender_name)}`}>{getInitials(msg.sender_name)}</div>}</div>}
+      {!isOwn && <div className="w-8 flex-shrink-0">{showAvatar && (msg.sender_profile_picture ? <img src={msg.sender_profile_picture} alt="" className="w-8 h-8 rounded-full object-cover" loading="lazy" /> : <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-[10px] font-bold ${getAvatarColor(msg.sender_name)}`}>{getInitials(msg.sender_name)}</div>)}</div>}
       <div className={`max-w-[70%] min-w-0 flex flex-col ${isOwn ? 'items-end' : 'items-start'}`}>
         {showAvatar && !isOwn && <span className="text-[11px] font-semibold text-slate-500 mb-0.5 ml-1">{msg.sender_name}</span>}
         {msg.parent_message_details && (
