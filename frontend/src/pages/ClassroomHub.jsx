@@ -40,6 +40,7 @@ const ClassroomHub = () => {
   const [announcementText, setAnnouncementText] = useState('');
   const [loadingAnnouncements, setLoadingAnnouncements] = useState(false);
   const [students, setStudents] = useState([]);
+  const [classroomSubjects, setClassroomSubjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('stream'); // stream, materials, people, grades
   const [searchQuery, setSearchQuery] = useState('');
@@ -162,10 +163,11 @@ const ClassroomHub = () => {
     
     try {
       // Fetch classroom details
-      const [materialsRes, studentsRes, announcementsRes] = await Promise.all([
+      const [materialsRes, studentsRes, announcementsRes, subjectsRes] = await Promise.all([
         api.get(`/materials/?classroom=${classroom.id}`),
         api.get(`/enrollments/?classroom=${classroom.id}`),
-        api.get(`/announcements/?classroom=${classroom.id}`)
+        api.get(`/announcements/?classroom=${classroom.id}`),
+        api.get(`/classroom-subjects/?classroom=${classroom.id}`),
       ]);
       
       setMaterials(materialsRes.data);
@@ -173,6 +175,8 @@ const ClassroomHub = () => {
       setAnnouncements(announcementsRes.data.sort((a, b) => 
         new Date(b.created_at) - new Date(a.created_at)
       ));
+      const subjData = Array.isArray(subjectsRes.data) ? subjectsRes.data : subjectsRes.data?.results || [];
+      setClassroomSubjects(subjData);
     } catch {
       toast.error('Failed to load classroom details');
     } finally {
@@ -510,6 +514,7 @@ const ClassroomHub = () => {
               classroom={selectedClass}
               isTeacher={isTeacher}
               announcements={announcements}
+              classroomSubjects={classroomSubjects}
               announcementTitle={announcementTitle}
               setAnnouncementTitle={setAnnouncementTitle}
               announcementText={announcementText}
@@ -945,7 +950,7 @@ const StudentDetailDrawer = ({ student, classroom, onClose }) => {
 };
 
 // Stream Tab Component
-const StreamTab = ({ classroom, isTeacher, announcements, announcementTitle, setAnnouncementTitle, announcementText, setAnnouncementText, handlePostAnnouncement, handleEditAnnouncement, handleDeleteAnnouncement, editingAnnouncement, setEditingAnnouncement, editAnnouncementTitle, setEditAnnouncementTitle, editAnnouncementContent, setEditAnnouncementContent, loadingAnnouncements, announcementSearch, setAnnouncementSearch }) => {
+const StreamTab = ({ classroom, isTeacher, announcements, classroomSubjects, announcementTitle, setAnnouncementTitle, announcementText, setAnnouncementText, handlePostAnnouncement, handleEditAnnouncement, handleDeleteAnnouncement, editingAnnouncement, setEditingAnnouncement, editAnnouncementTitle, setEditAnnouncementTitle, editAnnouncementContent, setEditAnnouncementContent, loadingAnnouncements, announcementSearch, setAnnouncementSearch }) => {
   const filteredAnnouncements = useMemo(() => {
     if (!announcementSearch) return announcements;
     const q = announcementSearch.toLowerCase();
@@ -997,6 +1002,28 @@ const StreamTab = ({ classroom, isTeacher, announcements, announcementTitle, set
                 Post Announcement
               </Button>
             </div>
+          </div>
+        </CardBody>
+      </Card>
+    )}
+
+    {/* Teachers & Subjects */}
+    {classroomSubjects.length > 0 && (
+      <Card>
+        <CardBody className="p-4">
+          <h3 className="text-xs font-black text-slate-500 uppercase tracking-widest mb-3">Teachers & Subjects</h3>
+          <div className="space-y-2">
+            {classroomSubjects.map(cs => (
+              <div key={cs.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 transition-colors">
+                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
+                  {cs.teacher_name ? cs.teacher_name.trim().split(/\s+/).slice(0, 2).map(n => n.charAt(0).toUpperCase()).join('') : '?'}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-slate-900 truncate">{cs.teacher_name}</p>
+                  <p className="text-xs text-slate-500 truncate">{cs.subject_name} ({cs.subject_code})</p>
+                </div>
+              </div>
+            ))}
           </div>
         </CardBody>
       </Card>

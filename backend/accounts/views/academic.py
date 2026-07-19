@@ -2044,7 +2044,10 @@ class ClassroomSubjectViewSet(viewsets.ModelViewSet):
         queryset = ClassroomSubject.objects.select_related('classroom', 'subject', 'teacher')
 
         if user.role == 'staff':
-            queryset = queryset.filter(teacher=user)
+            classroom_ids = set()
+            classroom_ids.update(Classroom.objects.filter(teacher=user).values_list('id', flat=True))
+            classroom_ids.update(ClassroomSubject.objects.filter(teacher=user).values_list('classroom_id', flat=True))
+            queryset = queryset.filter(classroom_id__in=classroom_ids)
         elif user.role == 'student':
             enrolled_classrooms = StudentClassEnrollment.objects.filter(student=user).values_list('classroom_id', flat=True)
             queryset = queryset.filter(classroom_id__in=enrolled_classrooms)
