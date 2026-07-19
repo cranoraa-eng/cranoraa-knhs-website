@@ -1425,19 +1425,88 @@ const GradesTab = ({ classroom, isTeacher, navigate }) => {
 // Overview View - Quick Actions Dashboard
 const OverviewView = ({ classroom, grades, loading, isTeacher, onNavigate, navigate }) => {
   if (!isTeacher) {
+    const [myGrades, setMyGrades] = useState([]);
+    const [gradesLoading, setGradesLoading] = useState(true);
+
+    useEffect(() => {
+      const fetchMyGrades = async () => {
+        try {
+          const res = await api.get(`/grades/?classroom=${classroom.id}&grade_type=final_grade`);
+          setMyGrades(res.data);
+        } catch {
+          // silent
+        } finally {
+          setGradesLoading(false);
+        }
+      };
+      fetchMyGrades();
+    }, [classroom.id]);
+
+    const grouped = {};
+    myGrades.forEach(g => {
+      const key = g.subject_name || g.subject;
+      if (!grouped[key]) grouped[key] = { subject: g.subject_name || g.subject, quarters: {} };
+      grouped[key].quarters[g.quarter] = g.raw_score;
+    });
+    const subjects = Object.values(grouped);
+
     return (
       <Card>
-        <CardBody className="p-6">
-          <div className="text-center">
-            <Award className="w-12 h-12 text-violet-500 mx-auto mb-3" />
-            <h3 className="font-semibold text-slate-900 mb-2">Your Grades</h3>
-            <p className="text-sm text-slate-600 mb-4">
-              View your grades for this class
-            </p>
-            <Button variant="primary" onClick={() => onNavigate('grades')}>
-              View My Grades
-            </Button>
-          </div>
+        <CardHeader>
+          <CardTitle>My Grades — {classroom.name}</CardTitle>
+        </CardHeader>
+        <CardBody>
+          {gradesLoading ? (
+            <LoadingSpinner />
+          ) : subjects.length === 0 ? (
+            <EmptyState title="No grades yet" description="Your teacher hasn't posted grades for this class yet." />
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-slate-200">
+                    <th className="text-left py-3 px-4 font-semibold text-slate-700">Subject</th>
+                    <th className="text-center py-3 px-2 font-semibold text-slate-700">Q1</th>
+                    <th className="text-center py-3 px-2 font-semibold text-slate-700">Q2</th>
+                    <th className="text-center py-3 px-2 font-semibold text-slate-700">Q3</th>
+                    <th className="text-center py-3 px-2 font-semibold text-slate-700">Q4</th>
+                    <th className="text-center py-3 px-4 font-semibold text-slate-700">Final</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {subjects.map((s, i) => {
+                    const vals = Object.values(s.quarters).filter(v => v != null && !isNaN(v));
+                    const avg = vals.length > 0 ? (vals.reduce((a, b) => a + b, 0) / vals.length).toFixed(2) : null;
+                    return (
+                      <tr key={i} className="border-b border-slate-100 hover:bg-slate-50">
+                        <td className="py-3 px-4 font-medium text-slate-900">{s.subject}</td>
+                        {[1, 2, 3, 4].map(q => (
+                          <td key={q} className="text-center py-3 px-2">
+                            {s.quarters[q] != null ? (
+                              <span className={`font-bold ${s.quarters[q] >= 75 ? 'text-emerald-600' : 'text-red-600'}`}>
+                                {parseFloat(s.quarters[q]).toFixed(1)}
+                              </span>
+                            ) : (
+                              <span className="text-slate-300">—</span>
+                            )}
+                          </td>
+                        ))}
+                        <td className="text-center py-3 px-4">
+                          {avg != null ? (
+                            <span className={`font-extrabold ${parseFloat(avg) >= 75 ? 'text-emerald-700' : 'text-red-700'}`}>
+                              {avg}
+                            </span>
+                          ) : (
+                            <span className="text-slate-300">—</span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
         </CardBody>
       </Card>
     );
