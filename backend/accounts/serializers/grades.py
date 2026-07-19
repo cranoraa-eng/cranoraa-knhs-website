@@ -8,6 +8,7 @@ class GradeSerializer(serializers.ModelSerializer):
     student_name = serializers.SerializerMethodField()
     student_email = serializers.CharField(source='student.email', read_only=True)
     student_sex = serializers.CharField(source='student.profile.sex', read_only=True)
+    student_profile_picture = serializers.SerializerMethodField()
     subject_name = serializers.CharField(source='subject.name', read_only=True)
     subject_code = serializers.CharField(source='subject.code', read_only=True)
     classroom_name = serializers.CharField(source='classroom.name', read_only=True)
@@ -19,7 +20,7 @@ class GradeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Grade
         fields = [
-            'id', 'student', 'student_name', 'student_email', 'student_sex', 'subject',
+            'id', 'student', 'student_name', 'student_email', 'student_sex', 'student_profile_picture', 'subject',
             'subject_name', 'subject_code', 'classroom', 'classroom_name',
             'teacher', 'teacher_name', 'grade_type', 'grade_type_display',
             'quarter', 'quarter_display', 'academic_year', 'raw_score', 'total_score',
@@ -31,6 +32,9 @@ class GradeSerializer(serializers.ModelSerializer):
     def get_student_name(self, obj): return full_name(obj.student)
     def get_teacher_name(self, obj): return full_name(obj.teacher)
     def get_percentage(self, obj): return obj.get_percentage()
+    def get_student_profile_picture(self, obj):
+        profile = getattr(obj.student, 'profile', None)
+        return profile.profile_picture if profile else None
 
 
 class GradeReportSerializer(serializers.ModelSerializer):

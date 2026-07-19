@@ -64,6 +64,7 @@ export const GradeManagementView = ({ classroom, onBack }) => {
             id: g.student,
             name: g.student_name,
             email: g.student_email,
+            profile_picture: g.student_profile_picture,
             quarters: {},
             gradeIds: {},
             gradeData: {}
@@ -406,9 +407,13 @@ export const GradeManagementView = ({ classroom, onBack }) => {
                         <td className="px-4 py-3 text-sm text-slate-500 font-semibold">{filteredGrades.indexOf(student) + 1}</td>
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-2">
-                            <div className="w-8 h-8 rounded-full bg-violet-100 flex items-center justify-center text-violet-600 font-bold text-xs">
-                              {student.name?.split(' ').map(n => n.charAt(0)).join('')}
-                            </div>
+                            {student.profile_picture ? (
+                              <img src={student.profile_picture} alt="" className="w-8 h-8 rounded-full object-cover ring-2 ring-white shadow-sm" />
+                            ) : (
+                              <div className="w-8 h-8 rounded-full bg-violet-100 flex items-center justify-center text-violet-600 font-bold text-xs">
+                                {student.name?.split(' ').map(n => n.charAt(0)).join('')}
+                              </div>
+                            )}
                             <span className="text-sm font-semibold text-slate-900">{student.name}</span>
                           </div>
                         </td>

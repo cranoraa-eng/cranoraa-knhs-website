@@ -902,11 +902,15 @@ const PeopleTab = ({ classroom, students, isTeacher, loading, peopleSearch, setP
 
   const renderStudent = (student) => (
     <div key={student.id} className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-50 transition-colors">
-      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm">
-        {student.student_name
-          ? student.student_name.trim().split(/\s+/).slice(0, 2).map(n => n.charAt(0).toUpperCase()).join('')
-          : '?'}
-      </div>
+      {student.student_profile_picture ? (
+        <img src={student.student_profile_picture} alt="" className="w-10 h-10 rounded-full object-cover ring-2 ring-white shadow-sm" />
+      ) : (
+        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm">
+          {student.student_name
+            ? student.student_name.trim().split(/\s+/).slice(0, 2).map(n => n.charAt(0).toUpperCase()).join('')
+            : '?'}
+        </div>
+      )}
       <div className="flex-1 min-w-0">
         <p className="font-medium text-slate-900 truncate">
           {student.student_name || student.student_email || 'Unknown Student'}
@@ -1598,11 +1602,15 @@ const GradeInputView = ({ classroom, onBack }) => {
                         </td>
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-full bg-violet-100 flex items-center justify-center text-violet-600 font-bold text-xs">
-                              {student.student_name
-                                ? student.student_name.trim().split(/\s+/).slice(0, 2).map(n => n.charAt(0).toUpperCase()).join('')
-                                : '?'}
-                            </div>
+                            {student.student_profile_picture ? (
+                              <img src={student.student_profile_picture} alt="" className="w-8 h-8 rounded-full object-cover ring-2 ring-white shadow-sm" />
+                            ) : (
+                              <div className="w-8 h-8 rounded-full bg-violet-100 flex items-center justify-center text-violet-600 font-bold text-xs">
+                                {student.student_name
+                                  ? student.student_name.trim().split(/\s+/).slice(0, 2).map(n => n.charAt(0).toUpperCase()).join('')
+                                  : '?'}
+                              </div>
+                            )}
                             <div>
                               <p className="text-sm font-semibold text-slate-900">
                                 {student.student_name || student.student_email || 'Unknown'}

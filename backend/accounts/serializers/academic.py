@@ -68,6 +68,7 @@ class StudentClassEnrollmentSerializer(serializers.ModelSerializer):
     student_email = serializers.CharField(source='student.email', read_only=True)
     student_lrn = serializers.SerializerMethodField()
     student_sex = serializers.CharField(source='student.profile.sex', read_only=True)
+    student_profile_picture = serializers.SerializerMethodField()
     classroom_name = serializers.CharField(source='classroom.name', read_only=True)
     classroom_advisor = serializers.SerializerMethodField()
     general_average = serializers.SerializerMethodField()
@@ -75,7 +76,7 @@ class StudentClassEnrollmentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = StudentClassEnrollment
-        fields = ['id', 'student', 'student_name', 'student_email', 'student_lrn', 'student_sex', 'classroom',
+        fields = ['id', 'student', 'student_name', 'student_email', 'student_lrn', 'student_sex', 'student_profile_picture', 'classroom',
                   'classroom_name', 'classroom_advisor', 'q1', 'q2', 'q3', 'q4', 'gpa',
                   'general_average', 'descriptive_equivalent', 'enrolled_at', 'updated_at']
         read_only_fields = ['student', 'classroom', 'classroom_name', 'classroom_advisor',
@@ -85,6 +86,9 @@ class StudentClassEnrollmentSerializer(serializers.ModelSerializer):
     def get_student_lrn(self, obj):
         profile = getattr(obj.student, 'profile', None)
         return profile.lrn if profile else None
+    def get_student_profile_picture(self, obj):
+        profile = getattr(obj.student, 'profile', None)
+        return profile.profile_picture if profile else None
     def get_classroom_advisor(self, obj): return full_name(obj.classroom.teacher) if obj.classroom.teacher else 'No Advisor'
     def get_general_average(self, obj): return obj.calculate_general_average()
     def get_descriptive_equivalent(self, obj): return obj.get_descriptive_equivalent()
