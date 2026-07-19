@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from django.db import transaction
+from rest_framework.validators import UniqueTogetherValidator
 
 from ..models import Attendance, AbsenceExcuse, Subject, TimeSlot, Schedule
 from ._base import full_name
@@ -39,13 +40,25 @@ class AttendanceSerializer(serializers.ModelSerializer):
         model = Attendance
         fields = ['id', 'student', 'student_name', 'student_email', 'classroom',
                   'classroom_name', 'date', 'status', 'remarks', 'marked_by',
-                  'marked_by_name', 'schedule', 'schedule_id', 'subject', 'subject_id',
-                  'subject_name', 'subject_code', 'time_slot', 'time_slot_id',
+                  'marked_by_name', 'schedule_id', 'subject_id',
+                  'subject_name', 'subject_code', 'time_slot_id',
                   'time_slot_detail',
                   'arrival_time', 'departure_time', 'minutes_late',
                   'has_excuse', 'excuse_verified',
                   'created_at', 'updated_at']
         read_only_fields = ['marked_by', 'subject', 'time_slot', 'minutes_late']
+        validators = [
+            UniqueTogetherValidator(
+                queryset=Attendance.objects.all(),
+                fields=['student', 'schedule', 'date'],
+                message='Attendance already exists for this student, schedule, and date.'
+            ),
+            UniqueTogetherValidator(
+                queryset=Attendance.objects.all(),
+                fields=['student', 'classroom', 'date'],
+                message='Attendance already exists for this student, classroom, and date.'
+            ),
+        ]
 
     def get_student_name(self, obj): return full_name(obj.student)
     def get_marked_by_name(self, obj): return full_name(obj.marked_by) if obj.marked_by else ''

@@ -13,7 +13,7 @@ import {
   BookOpen, Users, FileText, Award, CheckSquare,
   Upload, Download, Clock, Folder, Trash2, Pencil,
   MessageSquare, Bell, ArrowLeft,
-  Search, ChevronRight, BarChart2, X
+  Search, ChevronRight, BarChart2, X, Calendar
 } from 'lucide-react';
 import { GradeManagementView, AttendanceView, AnalyticsView } from './ClassroomHub/EmbeddedViews';
 
@@ -59,7 +59,7 @@ const ClassroomHub = () => {
 
   // Sync activeTab with ?view= URL param
   const viewParam = searchParams.get('view');
-  const validTabs = ['stream', 'materials', 'people', 'grades'];
+  const validTabs = ['stream', 'materials', 'people', 'grades', 'attendance'];
 
   useEffect(() => {
     if (viewParam && validTabs.includes(viewParam)) {
@@ -483,6 +483,7 @@ const ClassroomHub = () => {
               { key: 'stream', label: 'Stream', icon: MessageSquare },
               { key: 'materials', label: 'Materials', icon: Folder },
               { key: 'people', label: 'People', icon: Users },
+              { key: 'attendance', label: 'Attendance', icon: CheckSquare },
               { key: 'grades', label: 'Grades', icon: Award }
             ].map(tab => {
               const Icon = tab.icon;
@@ -557,6 +558,14 @@ const ClassroomHub = () => {
               peopleSearch={peopleSearch}
               setPeopleSearch={setPeopleSearch}
               onStudentClick={setSelectedStudent}
+            />
+          )}
+
+          {activeTab === 'attendance' && (
+            <AttendanceView
+              classroom={selectedClass}
+              isTeacher={isTeacher}
+              onBack={() => {}}
             />
           )}
 

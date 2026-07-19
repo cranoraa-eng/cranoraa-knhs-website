@@ -31,7 +31,6 @@ const Portals = lazy(() => retryImport(() => import('../pages/Portals')));
 const PrivacyPolicy = lazy(() => retryImport(() => import('../pages/PrivacyPolicy')));
 const TermsOfService = lazy(() => retryImport(() => import('../pages/TermsOfService')));
 const EnrollmentTracking = lazy(() => retryImport(() => import('../pages/EnrollmentTracking')));
-const Attendance = lazy(() => retryImport(() => import('../pages/Attendance')));
 const Profile = lazy(() => retryImport(() => import('../pages/Profile')));
 
 const PasswordReset = lazy(() => retryImport(() => import('../pages/PasswordReset')));
@@ -109,5 +108,4 @@ export const protectedRoutes = [
   // Standalone routes
   { path: 'portal-calendar', element: Calendar, props: { mode: 'portal' }, roles: Role.ALL },
   { path: 'password-reset', element: PasswordReset, roles: [Role.PARENT] },
-  { path: 'attendance', element: Attendance, roles: [Role.ADMIN, Role.STAFF, Role.STUDENT] },
 ];
