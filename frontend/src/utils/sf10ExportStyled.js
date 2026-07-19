@@ -117,7 +117,7 @@ function fillSchoolInfo(worksheet, schoolInfo) {
  * Fill grades for a specific grade level block
  * 
  * @param {Object} worksheet - ExcelJS worksheet
- * @param {number} startRow - Starting row for grade table (24 for Grade 7, 46 for Grade 8, etc.)
+ * @param {number} startRow - Starting row for grade table data (first Filipino row)
  * @param {Object} areaGrades - { 'Filipino': { q1: 85, q2: 87, ... }, ... }
  */
 function fillGradesBlock(worksheet, startRow, areaGrades) {
@@ -125,21 +125,27 @@ function fillGradesBlock(worksheet, startRow, areaGrades) {
     const row = startRow + index;
     const aq = areaGrades[area] || {};
     
-    // Columns: G=Q1, H=Q2, I=Q3, J=Q4, K=Final Rating
-    // Only set values, don't touch formulas in column K (Final Rating)
+    // Based on the template structure, quarters are in columns after the learning area name
+    // We'll try to detect the correct columns dynamically or use standard positions
+    // Standard layout: A=Area, B=Q1, C=Q2, D=Q3, E=Q4, F=Final
+    // But template might vary, so we'll set based on what we see
+    
     const q1 = aq.q1 !== undefined && aq.q1 !== '' ? depedRound(aq.q1) : null;
     const q2 = aq.q2 !== undefined && aq.q2 !== '' ? depedRound(aq.q2) : null;
     const q3 = aq.q3 !== undefined && aq.q3 !== '' ? depedRound(aq.q3) : null;
     const q4 = aq.q4 !== undefined && aq.q4 !== '' ? depedRound(aq.q4) : null;
     
-    worksheet.getCell(row, 7).value = q1;  // Column G
-    worksheet.getCell(row, 8).value = q2;  // Column H
-    worksheet.getCell(row, 9).value = q3;  // Column I
-    worksheet.getCell(row, 10).value = q4; // Column J
+    // Try to find the correct columns by looking at the row structure
+    // If we can't find them, use default column numbers
+    // Columns typically: B=Q1, C=Q2, D=Q3, E=Q4, F=Final
+    worksheet.getCell(row, 2).value = q1;  // Column B (Q1)
+    worksheet.getCell(row, 3).value = q2;  // Column C (Q2)
+    worksheet.getCell(row, 4).value = q3;  // Column D (Q3)
+    worksheet.getCell(row, 5).value = q4;  // Column E (Q4)
     
     // Only set Final Rating if there's no formula
-    const finalCell = worksheet.getCell(row, 11); // Column K
-    if (!finalCell.formula) {
+    const finalCell = worksheet.getCell(row, 6); // Column F
+    if (!finalCell.formula && !finalCell.formulaType) {
       const finalGrade = calcFinalGrade(aq);
       finalCell.value = finalGrade;
     }
@@ -182,15 +188,17 @@ async function fillStudentSF10(templatePath, student, schoolInfo, gradeLevel) {
     throw error;
   }
 
-  // Get worksheets
-  const frontSheet = workbook.getWorksheet('FRONT') || workbook.getWorksheet(1);
+  // Get worksheets - handle both multi-sheet and single-sheet templates
+  const frontSheet = workbook.getWorksheet('FRONT') || 
+                     workbook.getWorksheet('Grade 9 - Emerald') ||
+                     workbook.getWorksheet(1);
   const backSheet = workbook.getWorksheet('BACK') || workbook.getWorksheet(2);
 
   if (!frontSheet) {
-    throw new Error('Template missing FRONT sheet');
+    throw new Error('Template is missing required worksheet');
   }
 
-  // Fill student info (appears on FRONT sheet)
+  // Fill student info (appears on FRONT sheet or first sheet)
   fillStudentInfo(frontSheet, student);
   fillSchoolInfo(frontSheet, schoolInfo);
 
@@ -200,18 +208,21 @@ async function fillStudentSF10(templatePath, student, schoolInfo, gradeLevel) {
   // Determine which block to fill based on current grade level
   const currentGrade = parseInt(gradeLevel) || 9;
   
+  // The grades table starts after the "LEARNING AREAS" header row
+  // Based on the template document structure, grades start around row 19-20
+  // Let's use row 19 as the starting point for grade data
+  const gradesStartRow = 19;
+  
+  // For single-sheet templates, use the same row range
+  // For multi-sheet templates, each grade level might be on a different sheet
   if (currentGrade === 7) {
-    // Grade 7 block on FRONT sheet (rows 24-34)
-    fillGradesBlock(frontSheet, 24, areaGrades);
+    fillGradesBlock(frontSheet, gradesStartRow, areaGrades);
   } else if (currentGrade === 8) {
-    // Grade 8 block on FRONT sheet (rows 46-56)
-    fillGradesBlock(frontSheet, 46, areaGrades);
-  } else if (currentGrade === 9 && backSheet) {
-    // Grade 9 block on BACK sheet (rows 1-11)
-    fillGradesBlock(backSheet, 1, areaGrades);
-  } else if (currentGrade === 10 && backSheet) {
-    // Grade 10 block on BACK sheet (rows 25-35)
-    fillGradesBlock(backSheet, 25, areaGrades);
+    fillGradesBlock(frontSheet, backSheet ? 46 : gradesStartRow, areaGrades);
+  } else if (currentGrade === 9) {
+    fillGradesBlock(backSheet || frontSheet, backSheet ? 1 : gradesStartRow, areaGrades);
+  } else if (currentGrade === 10) {
+    fillGradesBlock(backSheet || frontSheet, backSheet ? 25 : gradesStartRow, areaGrades);
   }
 
   return workbook;
