@@ -57,7 +57,7 @@ const TodayAttendanceWidget = ({ data, navigate }) => {
       <CardHeader divider className="bg-slate-50">
         <div className="flex items-center justify-between">
           <CardTitle subtitle="School-wide today">Attendance</CardTitle>
-          <button onClick={() => navigate('/attendance')}
+          <button onClick={() => navigate('/analytics')}
             className="text-xs font-bold text-violet-600 hover:text-violet-700 uppercase tracking-wide">
             Details
           </button>
@@ -179,7 +179,7 @@ const AdminDashboard = () => {
         type: 'warning',
         title: 'Low Attendance',
         message: `Today's attendance is ${todayRate}% (below 85% threshold)`,
-        action: () => navigate('/attendance'),
+        action: () => navigate('/analytics'),
         actionLabel: 'View Details',
       });
     }
@@ -385,7 +385,7 @@ const AdminDashboard = () => {
             label="Active Now" value={data?.active_users ?? 0}
             sub={`${data?.today_rate != null ? data.today_rate + '% attend.' : 'No data'}`}
             icon={<svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.636 18.364a9 9 0 010-12.728m12.728 0a9 9 0 010 12.728M9 10a2 2 0 104 0 2 2 0 00-4 0m6.364-3.636a5 5 0 010 7.272M6.636 6.364a5 5 0 000 7.272" /></svg>}
-            color="slate" onClick={() => navigate('/attendance')}
+            color="slate" onClick={() => navigate('/analytics')}
           />
         </div>
       </div>

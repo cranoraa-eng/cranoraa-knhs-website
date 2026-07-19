@@ -60,7 +60,7 @@ const ClassroomHub = () => {
   // Sync activeTab with ?view= URL param
   const isTeacher = user?.role === 'staff' || user?.role === 'admin';
   const viewParam = searchParams.get('view');
-  const validTabs = ['stream', 'materials', 'people', 'grades'];
+  const validTabs = ['stream', 'materials', 'people', 'grades', 'attendance'];
   const teacherTabs = ['stream', 'materials', 'people', 'grades', 'attendance'];
 
   useEffect(() => {
@@ -483,8 +483,8 @@ const ClassroomHub = () => {
               { key: 'stream', label: 'Stream', icon: MessageSquare },
               { key: 'materials', label: 'Materials', icon: Folder },
               { key: 'people', label: 'People', icon: Users },
-              ...(isTeacher ? [{ key: 'attendance', label: 'Attendance', icon: CheckSquare }] : []),
-              { key: 'grades', label: 'Grades', icon: Award }
+              { key: 'attendance', label: isTeacher ? 'Attendance' : 'My Attendance', icon: CheckSquare },
+              { key: 'grades', label: isTeacher ? 'Grades' : 'My Grades', icon: Award }
             ].map(tab => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.key;

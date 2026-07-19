@@ -235,7 +235,7 @@ const TeacherDashboard = () => {
           Post Announcement
         </button>
         <button
-          onClick={() => navigate('/attendance')}
+          onClick={() => navigate('/my-classes')}
           className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-700 text-xs font-bold rounded-lg hover:bg-slate-50 transition-colors"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -288,7 +288,7 @@ const TeacherDashboard = () => {
             sub={`${unmarkedCount > 0 ? `${unmarkedCount} class${unmarkedCount !== 1 ? 'es' : ''} unmarked` : 'All classes marked'}`}
             icon={<svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
             color={realAttRate < 75 ? 'rose' : realAttRate < 85 ? 'amber' : 'emerald'}
-            onClick={() => navigate('/attendance')}
+            onClick={() => navigate('/my-classes')}
             badge={unmarkedCount}
           />
 
@@ -503,7 +503,7 @@ const TeacherDashboard = () => {
                     <p className="text-xs text-slate-700 mt-1">
                       <span className="font-bold text-amber-700">{unmarkedCount} {unmarkedCount === 1 ? 'class' : 'classes'}</span> with unmarked attendance today.
                     </p>
-                    <Button variant="primary" size="sm" onClick={() => navigate('/attendance')} className="mt-3">
+                    <Button variant="primary" size="sm" onClick={() => navigate('/my-classes')} className="mt-3">
                       Mark Attendance
                     </Button>
                   </div>
