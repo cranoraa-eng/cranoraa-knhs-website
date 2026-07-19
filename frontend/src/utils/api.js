@@ -1,5 +1,6 @@
 import axios from 'axios';
-import { getAccessToken, updateTokens, clearSession } from './auth';
+import { getAccessToken, updateTokens } from './auth';
+import { clearSession } from './session';
 
 const RAW_API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 
@@ -201,5 +202,4 @@ api.interceptors.response.use(
   }
 );
 
-export { clearSession };
 export default api;

@@ -1,4 +1,5 @@
 import api from './api';
+import { clearSession } from './session';
 
 // ---------------------------------------------------------------------------
 // Token / session helpers
@@ -45,13 +46,6 @@ export const getStoredUser = () => {
   } catch {
     return null;
   }
-};
-
-export const clearSession = () => {
-  clearAccessToken();
-  localStorage.removeItem('user');
-  // Dispatch a custom event so AuthContext can react without a hard reload
-  window.dispatchEvent(new Event('auth:logout'));
 };
 
 // Aliases kept for backward compatibility with existing pages
