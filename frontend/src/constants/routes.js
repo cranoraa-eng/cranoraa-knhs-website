@@ -52,6 +52,7 @@ const SubjectsHub = lazy(() => retryImport(() => import('../pages/SubjectsHub'))
 const MySchedule = lazy(() => retryImport(() => import('../pages/MySchedule')));
 const ClassroomHub = lazy(() => retryImport(() => import('../pages/ClassroomHub')));
 const ScheduleManagement = lazy(() => retryImport(() => import('../pages/ScheduleManagement')));
+const Analytics = lazy(() => retryImport(() => import('../pages/Analytics')));
 
 // ── Route definitions ────────────────────────────────────────────────────────
 
@@ -101,6 +102,7 @@ export const protectedRoutes = [
   { path: 'subjects', element: SubjectsHub, roles: [Role.ADMIN] },
   { path: 'schedules', element: ScheduleManagement, roles: [Role.ADMIN] },
   { path: 'academic-setup', element: AcademicSetup, roles: [Role.ADMIN] },
+  { path: 'analytics',      element: Analytics,     roles: [Role.ADMIN] },
   { path: 'my-classes', element: ClassroomHub, roles: [Role.STAFF, Role.STUDENT] },
   { path: 'my-schedule', element: MySchedule, roles: [Role.STAFF, Role.STUDENT] },
 

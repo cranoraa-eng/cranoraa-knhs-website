@@ -10,6 +10,7 @@ from ..models import (
     LearningMaterial,
     StudentClassEnrollment,
     Classroom,
+    ClassroomSubject,
     Assignment,
     Submission,
     Notification,
@@ -41,13 +42,29 @@ class LearningMaterialViewSet(viewsets.ModelViewSet):
         
         # RBAC: Students can see materials for their enrolled classrooms + general materials
         if user.role == 'student':
-            student_enrollments = StudentClassEnrollment.objects.filter(student=user).select_related('classroom')
-            student_classrooms = [e.classroom for e in student_enrollments]
-            queryset = queryset.filter(Q(classroom__in=student_classrooms) | Q(classroom__isnull=True))
+            from django.db.models import Q
+            enrolled_classroom_ids = StudentClassEnrollment.objects.filter(
+                student=user
+            ).values_list('classroom_id', flat=True)
+            # Also check if student is linked via profile (advisory class)
+            profile = getattr(user, 'profile', None)
+            profile_classroom_id = None
+            if profile and hasattr(profile, 'classroom') and profile.classroom:
+                profile_classroom_id = profile.classroom.id
+            q = Q(classroom_id__in=enrolled_classroom_ids) | Q(classroom__isnull=True)
+            if profile_classroom_id:
+                q |= Q(classroom_id=profile_classroom_id)
+            queryset = queryset.filter(q)
         # Teachers see materials for their classrooms + general materials
         elif user.role == 'staff':
-            teacher_classrooms = Classroom.objects.filter(teacher=user)
-            queryset = queryset.filter(Q(classroom__in=teacher_classrooms) | Q(classroom__isnull=True))
+            from django.db.models import Q
+            teacher_classroom_ids = Classroom.objects.filter(teacher=user).values_list('id', flat=True)
+            # Also see materials from classrooms where they teach subjects
+            subject_classroom_ids = ClassroomSubject.objects.filter(
+                teacher=user
+            ).values_list('classroom_id', flat=True)
+            all_teacher_ids = set(teacher_classroom_ids) | set(subject_classroom_ids)
+            queryset = queryset.filter(Q(classroom_id__in=all_teacher_ids) | Q(classroom__isnull=True))
         # Admins see everything
         
         if classroom_id:

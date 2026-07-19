@@ -1955,12 +1955,22 @@ class LearningMaterialViewSet(viewsets.ModelViewSet):
         quarter = self.request.query_params.get('quarter')
 
         if user.role == 'student':
-            student_enrollments = StudentClassEnrollment.objects.filter(student=user).select_related('classroom')
-            student_classrooms = [e.classroom for e in student_enrollments]
-            queryset = queryset.filter(Q(classroom__in=student_classrooms) | Q(classroom__isnull=True))
+            enrolled_classroom_ids = StudentClassEnrollment.objects.filter(
+                student=user
+            ).values_list('classroom_id', flat=True)
+            profile = getattr(user, 'profile', None)
+            profile_classroom_id = getattr(getattr(profile, 'classroom', None), 'id', None)
+            q = Q(classroom_id__in=enrolled_classroom_ids) | Q(classroom__isnull=True)
+            if profile_classroom_id:
+                q |= Q(classroom_id=profile_classroom_id)
+            queryset = queryset.filter(q)
         elif user.role == 'staff':
-            teacher_classrooms = Classroom.objects.filter(teacher=user)
-            queryset = queryset.filter(Q(classroom__in=teacher_classrooms) | Q(classroom__isnull=True))
+            teacher_classroom_ids = Classroom.objects.filter(teacher=user).values_list('id', flat=True)
+            subject_classroom_ids = ClassroomSubject.objects.filter(
+                teacher=user
+            ).values_list('classroom_id', flat=True)
+            all_ids = set(teacher_classroom_ids) | set(subject_classroom_ids)
+            queryset = queryset.filter(Q(classroom_id__in=all_ids) | Q(classroom__isnull=True))
 
         if classroom_id:
             queryset = queryset.filter(classroom_id=classroom_id)
