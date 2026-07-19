@@ -9,7 +9,7 @@ import Modal, { ModalBody, ModalFooter, ModalBtnPrimary, ModalBtnSecondary } fro
 import {
   ArrowLeft, Users, Award, Search, BarChart2, Trash2, Edit2, Download, X, Check
 } from 'lucide-react';
-import { exportSF10 } from '../../utils/sf10ExportStyled';
+import { exportSF10PDF } from '../../utils/sf10PdfExport';
 
 // Grade Management View - Custom inline implementation with edit, delete, export
 export const GradeManagementView = ({ classroom, onBack }) => {
@@ -318,14 +318,14 @@ export const GradeManagementView = ({ classroom, onBack }) => {
       const subjectMeta = subjects[0] || {};
       const adviser = subjectMeta.teacher_name || '';
 
-      await exportSF10(classroom, enrolledStudents, allGrades, {
+      await exportSF10PDF(classroom, enrolledStudents, allGrades, {
         schoolYear,
         gradeLevel,
         section: classroom.name,
         adviser,
       });
 
-      toast.success('SF10 template downloaded - please fill manually in Excel', { duration: 4000 });
+      toast.success('SF10 PDF exported successfully');
     } catch (err) {
       console.error('SF10 export error:', err);
       
@@ -369,7 +369,7 @@ export const GradeManagementView = ({ classroom, onBack }) => {
             className="border-green-300 text-green-700 hover:bg-green-50"
           >
             <Download className="w-4 h-4 mr-2" />
-            {exportingSF10 ? 'Generating...' : 'Export SF10 Excel'}
+            {exportingSF10 ? 'Generating...' : 'Export SF10 PDF'}
           </Button>
         </div>
       </div>
