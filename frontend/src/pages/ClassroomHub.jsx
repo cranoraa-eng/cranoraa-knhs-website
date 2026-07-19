@@ -1434,7 +1434,7 @@ const OverviewView = ({ classroom, grades, loading, isTeacher, onNavigate, navig
             <p className="text-sm text-slate-600 mb-4">
               View your grades for this class
             </p>
-            <Button variant="primary" onClick={() => navigate('/grades')}>
+            <Button variant="primary" onClick={() => onNavigate('grades')}>
               View My Grades
             </Button>
           </div>
