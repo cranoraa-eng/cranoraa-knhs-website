@@ -11,7 +11,7 @@ import {
 import Modal, { ModalBody, ModalFooter, ModalBtnPrimary, ModalBtnSecondary, modalInputCls } from '../components/ui/Modal';
 import {
   BookOpen, Users, FileText, Award, CheckSquare,
-  Upload, Download, Clock, Folder, Trash2,
+  Upload, Download, Clock, Folder, Trash2, Pencil,
   MessageSquare, Bell, ArrowLeft,
   Search, ChevronRight, BarChart2, X
 } from 'lucide-react';
@@ -36,12 +36,18 @@ const ClassroomHub = () => {
   const [selectedClass, setSelectedClass] = useState(null);
   const [materials, setMaterials] = useState([]);
   const [announcements, setAnnouncements] = useState([]);
+  const [announcementTitle, setAnnouncementTitle] = useState('');
   const [announcementText, setAnnouncementText] = useState('');
   const [loadingAnnouncements, setLoadingAnnouncements] = useState(false);
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('stream'); // stream, materials, people, grades
   const [searchQuery, setSearchQuery] = useState('');
+  const [announcementSearch, setAnnouncementSearch] = useState('');
+  const [editingAnnouncement, setEditingAnnouncement] = useState(null);
+  const [editAnnouncementTitle, setEditAnnouncementTitle] = useState('');
+  const [editAnnouncementContent, setEditAnnouncementContent] = useState('');
+  const [peopleSearch, setPeopleSearch] = useState('');
 
   // Upload modal state
   const [showUploadModal, setShowUploadModal] = useState(false);
@@ -184,18 +190,43 @@ const ClassroomHub = () => {
       const response = await api.post('/announcements/', {
         classroom: selectedClass.id,
         content: announcementText.trim(),
-        title: '' // Optional title field
+        title: announcementTitle.trim() || ''
       });
       
-      // Add new announcement to top of list
       setAnnouncements([response.data, ...announcements]);
       setAnnouncementText('');
+      setAnnouncementTitle('');
       toast.success('Announcement posted');
     } catch (error) {
       toast.error('Failed to post announcement');
-      // Keep text in input so teacher can retry
     } finally {
       setLoadingAnnouncements(false);
+    }
+  };
+
+  const handleEditAnnouncement = async () => {
+    if (!editAnnouncementContent.trim()) return toast.error('Content cannot be empty');
+    try {
+      const res = await api.patch(`/announcements/${editingAnnouncement.id}/`, {
+        title: editAnnouncementTitle.trim(),
+        content: editAnnouncementContent.trim()
+      });
+      setAnnouncements(announcements.map(a => a.id === editingAnnouncement.id ? res.data : a));
+      setEditingAnnouncement(null);
+      toast.success('Announcement updated');
+    } catch {
+      toast.error('Failed to update announcement');
+    }
+  };
+
+  const handleDeleteAnnouncement = async (id) => {
+    if (!window.confirm('Delete this announcement?')) return;
+    try {
+      await api.delete(`/announcements/${id}/`);
+      setAnnouncements(announcements.filter(a => a.id !== id));
+      toast.success('Announcement deleted');
+    } catch {
+      toast.error('Failed to delete announcement');
     }
   };
 
@@ -478,10 +509,22 @@ const ClassroomHub = () => {
               classroom={selectedClass}
               isTeacher={isTeacher}
               announcements={announcements}
+              announcementTitle={announcementTitle}
+              setAnnouncementTitle={setAnnouncementTitle}
               announcementText={announcementText}
               setAnnouncementText={setAnnouncementText}
               handlePostAnnouncement={handlePostAnnouncement}
+              handleEditAnnouncement={handleEditAnnouncement}
+              handleDeleteAnnouncement={handleDeleteAnnouncement}
+              editingAnnouncement={editingAnnouncement}
+              setEditingAnnouncement={setEditingAnnouncement}
+              editAnnouncementTitle={editAnnouncementTitle}
+              setEditAnnouncementTitle={setEditAnnouncementTitle}
+              editAnnouncementContent={editAnnouncementContent}
+              setEditAnnouncementContent={setEditAnnouncementContent}
               loadingAnnouncements={loadingAnnouncements}
+              announcementSearch={announcementSearch}
+              setAnnouncementSearch={setAnnouncementSearch}
             />
           )}
 
@@ -505,6 +548,8 @@ const ClassroomHub = () => {
               students={students}
               isTeacher={isTeacher}
               loading={loading}
+              peopleSearch={peopleSearch}
+              setPeopleSearch={setPeopleSearch}
             />
           )}
 
@@ -585,7 +630,18 @@ const ClassroomHub = () => {
 };
 
 // Stream Tab Component
-const StreamTab = ({ classroom, isTeacher, announcements, announcementText, setAnnouncementText, handlePostAnnouncement, loadingAnnouncements }) => (
+const StreamTab = ({ classroom, isTeacher, announcements, announcementTitle, setAnnouncementTitle, announcementText, setAnnouncementText, handlePostAnnouncement, handleEditAnnouncement, handleDeleteAnnouncement, editingAnnouncement, setEditingAnnouncement, editAnnouncementTitle, setEditAnnouncementTitle, editAnnouncementContent, setEditAnnouncementContent, loadingAnnouncements, announcementSearch, setAnnouncementSearch }) => {
+  const filteredAnnouncements = useMemo(() => {
+    if (!announcementSearch) return announcements;
+    const q = announcementSearch.toLowerCase();
+    return announcements.filter(a =>
+      (a.title || '').toLowerCase().includes(q) ||
+      (a.content || '').toLowerCase().includes(q) ||
+      (a.author_name || '').toLowerCase().includes(q)
+    );
+  }, [announcements, announcementSearch]);
+
+  return (
   <motion.div
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
@@ -596,6 +652,13 @@ const StreamTab = ({ classroom, isTeacher, announcements, announcementText, setA
       <Card>
         <CardBody className="p-4">
           <div className="flex flex-col gap-3">
+            <input
+              type="text"
+              className="px-4 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-violet-500 text-sm font-semibold"
+              placeholder="Announcement title (optional)"
+              value={announcementTitle}
+              onChange={(e) => setAnnouncementTitle(e.target.value)}
+            />
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-violet-100 flex items-center justify-center">
                 <MessageSquare className="w-5 h-5 text-violet-600" />
@@ -624,43 +687,91 @@ const StreamTab = ({ classroom, isTeacher, announcements, announcementText, setA
       </Card>
     )}
 
-    {announcements.length === 0 ? (
+    {/* Search announcements */}
+    {announcements.length > 0 && (
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+        <input
+          type="text"
+          value={announcementSearch}
+          onChange={(e) => setAnnouncementSearch(e.target.value)}
+          placeholder="Search announcements..."
+          className="w-full pl-9 pr-4 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-violet-500 text-sm"
+        />
+      </div>
+    )}
+
+    {filteredAnnouncements.length === 0 ? (
       <Card>
         <CardBody className="p-8 text-center">
           <Bell className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-          <p className="text-slate-600">No announcements yet</p>
+          <p className="text-slate-600">{announcementSearch ? 'No matching announcements' : 'No announcements yet'}</p>
         </CardBody>
       </Card>
     ) : (
       <div className="space-y-4">
-        {announcements.map(announcement => (
+        {filteredAnnouncements.map(announcement => (
           <Card key={announcement.id}>
             <CardBody className="p-4">
-              <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-full bg-violet-100 flex items-center justify-center flex-shrink-0">
-                  <MessageSquare className="w-5 h-5 text-violet-600" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  {announcement.title && (
-                    <h4 className="font-semibold text-slate-900 mb-1">{announcement.title}</h4>
-                  )}
-                  <p className="text-sm text-slate-700 whitespace-pre-wrap">{announcement.content}</p>
-                  <div className="flex items-center gap-2 mt-2 text-xs text-slate-500">
-                    <span>{announcement.author_name || 'Teacher'}</span>
-                    <span>•</span>
-                    <span>{new Date(announcement.created_at).toLocaleDateString()}</span>
-                    <span>at</span>
-                    <span>{new Date(announcement.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+              {editingAnnouncement?.id === announcement.id ? (
+                <div className="space-y-3">
+                  <input
+                    type="text"
+                    value={editAnnouncementTitle}
+                    onChange={(e) => setEditAnnouncementTitle(e.target.value)}
+                    placeholder="Title (optional)"
+                    className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-violet-500 text-sm font-semibold"
+                  />
+                  <textarea
+                    value={editAnnouncementContent}
+                    onChange={(e) => setEditAnnouncementContent(e.target.value)}
+                    rows={3}
+                    className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-violet-500 text-sm resize-none"
+                  />
+                  <div className="flex items-center gap-2 justify-end">
+                    <Button variant="ghost" size="sm" onClick={() => setEditingAnnouncement(null)}>Cancel</Button>
+                    <Button variant="primary" size="sm" onClick={handleEditAnnouncement}>Save</Button>
                   </div>
                 </div>
-              </div>
+              ) : (
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-full bg-violet-100 flex items-center justify-center flex-shrink-0">
+                    <MessageSquare className="w-5 h-5 text-violet-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    {announcement.title && (
+                      <h4 className="font-semibold text-slate-900 mb-1">{announcement.title}</h4>
+                    )}
+                    <p className="text-sm text-slate-700 whitespace-pre-wrap">{announcement.content}</p>
+                    <div className="flex items-center gap-2 mt-2 text-xs text-slate-500">
+                      <span>{announcement.author_name || 'Teacher'}</span>
+                      <span>•</span>
+                      <span>{new Date(announcement.created_at).toLocaleDateString()}</span>
+                      <span>at</span>
+                      <span>{new Date(announcement.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                      {isTeacher && (
+                        <>
+                          <span>•</span>
+                          <button onClick={() => {
+                            setEditingAnnouncement(announcement);
+                            setEditAnnouncementTitle(announcement.title || '');
+                            setEditAnnouncementContent(announcement.content || '');
+                          }} className="text-violet-600 hover:text-violet-800 font-semibold">Edit</button>
+                          <button onClick={() => handleDeleteAnnouncement(announcement.id)} className="text-red-500 hover:text-red-700 font-semibold">Delete</button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
             </CardBody>
           </Card>
         ))}
       </div>
     )}
   </motion.div>
-);
+  );
+};
 
 // Materials Tab Component
 const MaterialsTab = ({ classroom, materials, isTeacher, searchQuery, setSearchQuery, getMaterialIcon, loading, onUploadClick, onDeleteMaterial }) => (
@@ -709,7 +820,7 @@ const MaterialsTab = ({ classroom, materials, isTeacher, searchQuery, setSearchQ
         {materials.map(material => {
           const Icon = getMaterialIcon(material.material_type);
           return (
-            <Card key={material.id} className="hover:shadow-lg transition-shadow">
+            <Card key={material.id} className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => material.file && window.open(material.file, '_blank')}>
               <CardBody className="p-4">
                 <div className="flex items-start gap-3">
                   <div className="w-10 h-10 rounded-lg bg-violet-100 flex items-center justify-center shrink-0">
@@ -754,10 +865,13 @@ const MaterialsTab = ({ classroom, materials, isTeacher, searchQuery, setSearchQ
 );
 
 // People Tab Component
-const PeopleTab = ({ classroom, students, isTeacher, loading }) => {
+const PeopleTab = ({ classroom, students, isTeacher, loading, peopleSearch, setPeopleSearch }) => {
   const sortedStudents = useMemo(() => {
     const list = Array.isArray(students) ? [...students] : [];
-    list.sort((a, b) => {
+    const filtered = peopleSearch
+      ? list.filter(s => (s.student_name || '').toLowerCase().includes(peopleSearch.toLowerCase()) || (s.student_email || '').toLowerCase().includes(peopleSearch.toLowerCase()))
+      : list;
+    filtered.sort((a, b) => {
       const sexA = (a.student_sex || '').toLowerCase();
       const sexB = (b.student_sex || '').toLowerCase();
       if (sexA !== sexB) {
@@ -768,8 +882,8 @@ const PeopleTab = ({ classroom, students, isTeacher, loading }) => {
       const nameB = (b.student_name || '').toLowerCase();
       return nameA.localeCompare(nameB);
     });
-    return list;
-  }, [students]);
+    return filtered;
+  }, [students, peopleSearch]);
 
   const maleStudents = sortedStudents.filter(s => (s.student_sex || '').toLowerCase() === 'male');
   const femaleStudents = sortedStudents.filter(s => (s.student_sex || '').toLowerCase() === 'female');
@@ -804,13 +918,25 @@ const PeopleTab = ({ classroom, students, isTeacher, loading }) => {
       className="space-y-6"
     >
       <Card>
-        <CardHeader divider>
-          <div className="flex items-center justify-between">
-            <CardTitle>Students</CardTitle>
-            <Badge variant="slate">{sortedStudents.length} enrolled</Badge>
+      <CardHeader divider>
+        <div className="flex items-center justify-between">
+          <CardTitle>Students</CardTitle>
+          <Badge variant="slate">{sortedStudents.length} enrolled</Badge>
+        </div>
+      </CardHeader>
+      <CardBody>
+        {students.length > 3 && (
+          <div className="relative mb-4">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <input
+              type="text"
+              value={peopleSearch}
+              onChange={(e) => setPeopleSearch(e.target.value)}
+              placeholder="Search students..."
+              className="w-full pl-9 pr-4 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-violet-500 text-sm"
+            />
           </div>
-        </CardHeader>
-        <CardBody>
+        )}
           {loading ? (
             <div className="flex items-center justify-center h-32">
               <LoadingSpinner />
