@@ -1389,13 +1389,6 @@ const GradesTab = ({ classroom, isTeacher, navigate }) => {
             onBack={() => setActiveView('overview')}
           />
         );
-      case 'attendance':
-        return (
-          <AttendanceView
-            classroom={classroom}
-            onBack={() => setActiveView('overview')}
-          />
-        );
       case 'analytics':
         return (
           <AnalyticsView
@@ -1477,19 +1470,6 @@ const OverviewView = ({ classroom, grades, loading, isTeacher, onNavigate, navig
             </div>
             <h3 className="font-semibold text-slate-900 mb-2">Manage Grades</h3>
             <p className="text-sm text-slate-600">Review and adjust</p>
-          </CardBody>
-        </Card>
-
-        <Card 
-          className="hover:shadow-lg transition-shadow cursor-pointer group" 
-          onClick={() => onNavigate('attendance')}
-        >
-          <CardBody className="p-6 text-center">
-            <div className="w-12 h-12 rounded-lg bg-green-100 flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
-              <CheckSquare className="w-6 h-6 text-green-600" />
-            </div>
-            <h3 className="font-semibold text-slate-900 mb-2">Attendance</h3>
-            <p className="text-sm text-slate-600">Mark attendance</p>
           </CardBody>
         </Card>
 
