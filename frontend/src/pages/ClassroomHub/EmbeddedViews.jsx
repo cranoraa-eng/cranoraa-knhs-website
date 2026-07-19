@@ -553,8 +553,8 @@ export const AttendanceView = ({ classroom, onBack }) => {
       try {
         const res = await api.get(`/enrollments/?classroom=${classroom.id}`);
         const sorted = res.data.sort((a, b) => {
-          const nameA = `${a.student_last_name}, ${a.student_first_name}`.toLowerCase();
-          const nameB = `${b.student_last_name}, ${b.student_first_name}`.toLowerCase();
+          const nameA = (a.student_name || '').toLowerCase();
+          const nameB = (b.student_name || '').toLowerCase();
           return nameA.localeCompare(nameB);
         });
         setStudents(sorted);
@@ -809,16 +809,20 @@ export const AttendanceView = ({ classroom, onBack }) => {
                         const status = draftAttendance[s.student]?.status;
                         const savedStatus = savedAttendance[s.student]?.status;
                         const changed = status !== savedStatus;
-                        const name = `${s.student_last_name || ''}, ${s.student_first_name || ''}`.trim() || s.student_name || 'Unknown';
+                        const name = s.student_name || 'Unknown';
                         return (
                           <tr key={s.student}
                             className={`hover:bg-slate-50 transition-colors ${status === 'absent' ? 'bg-red-50/30' : status === 'late' ? 'bg-amber-50/30' : status === 'present' ? 'bg-emerald-50/20' : ''}`}>
                             <td className="px-4 py-3 text-xs font-bold text-slate-500">{i + 1}</td>
                             <td className="px-4 py-3">
                               <div className="flex items-center gap-3">
-                                <div className="w-9 h-9 rounded-md bg-gradient-to-br from-violet-500 to-violet-600 flex items-center justify-center text-white font-extrabold text-xs shadow-sm border border-violet-700 shrink-0">
-                                  {(s.student_first_name?.charAt(0) || '').toUpperCase()}{(s.student_last_name?.charAt(0) || '').toUpperCase()}
-                                </div>
+                                {s.student_profile_picture ? (
+                                  <img src={s.student_profile_picture} alt="" className="w-9 h-9 rounded-md object-cover ring-2 ring-white shadow-sm shrink-0" />
+                                ) : (
+                                  <div className="w-9 h-9 rounded-md bg-gradient-to-br from-violet-500 to-violet-600 flex items-center justify-center text-white font-extrabold text-xs shadow-sm border border-violet-700 shrink-0">
+                                    {name.split(' ').map(n => n.charAt(0).toUpperCase()).join('').slice(0, 2)}
+                                  </div>
+                                )}
                                 <div>
                                   <p className="text-sm font-bold text-slate-900">{name}</p>
                                   {changed && <Badge variant="blue" size="sm" className="mt-0.5">Unsaved</Badge>}
