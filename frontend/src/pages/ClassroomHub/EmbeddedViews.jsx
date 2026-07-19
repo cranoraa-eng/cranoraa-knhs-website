@@ -325,7 +325,7 @@ export const GradeManagementView = ({ classroom, onBack }) => {
         adviser,
       });
 
-      toast.success('SF10 Excel exported successfully');
+      toast.success('SF10 template downloaded - please fill manually in Excel', { duration: 4000 });
     } catch (err) {
       console.error('SF10 export error:', err);
       
