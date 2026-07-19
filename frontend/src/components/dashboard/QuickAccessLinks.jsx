@@ -23,27 +23,27 @@ export const QUICK_ACCESS_CONFIGS = {
     { label: 'Attendance', path: '/attendance', icon: 'UserCheck', color: 'green' }
   ],
   teacher: [
-    { label: 'My Classes', path: '/my-classes', icon: 'BookOpen', color: 'violet' },
-    { label: 'Schedule', path: '/my-schedule', icon: 'Clock', color: 'green' },
-    { label: 'Grade Input', path: '/grade-input', icon: 'Clipboard', color: 'blue' },
-    { label: 'Announcements', path: '/announcements', icon: 'Bell', color: 'amber' },
-    { label: 'People', path: '/people?tab=teachers', icon: 'Users', color: 'indigo' },
+    { label: 'My Classes',    path: '/my-classes',          icon: 'BookOpen',      color: 'violet' },
+    { label: 'Schedule',      path: '/my-schedule',          icon: 'Clock',         color: 'green' },
+    { label: 'Attendance',    path: '/attendance',           icon: 'UserCheck',     color: 'blue' },
+    { label: 'Announcements', path: '/announcements',        icon: 'Bell',          color: 'amber' },
+    { label: 'People',        path: '/people',               icon: 'Users',         color: 'indigo' },
     { label: 'Communication', path: '/communication-center', icon: 'MessageSquare', color: 'rose' }
   ],
   parent: [
-    { label: 'Child\'s Grades', path: '/grades', icon: 'Award', color: 'violet' },
-    { label: 'Attendance', path: '/attendance', icon: 'UserCheck', color: 'green' },
-    { label: 'Announcements', path: '/announcements', icon: 'Bell', color: 'amber' },
-    { label: 'Messages', path: '/communication', icon: 'MessageSquare', color: 'blue' },
-    { label: 'Calendar', path: '/calendar', icon: 'Calendar', color: 'rose' }
+    { label: 'Dashboard',     path: '/parent-dashboard',     icon: 'Award',         color: 'violet' },
+    { label: 'Attendance',    path: '/attendance',           icon: 'UserCheck',     color: 'green' },
+    { label: 'Announcements', path: '/announcements',        icon: 'Bell',          color: 'amber' },
+    { label: 'Messages',      path: '/communication-center', icon: 'MessageSquare', color: 'blue' },
+    { label: 'Calendar',      path: '/portal-calendar',      icon: 'Calendar',      color: 'rose' }
   ],
   admin: [
-    { label: 'Dashboard Analytics', path: '/analytics', icon: 'TrendingUp', color: 'violet' },
-    { label: 'User Management', path: '/teachers', icon: 'Users', color: 'blue' },
-    { label: 'Enrollment', path: '/enrollment-management', icon: 'GraduationCap', color: 'green' },
-    { label: 'Class Management', path: '/classes?tab=sections', icon: 'Grid', color: 'amber' },
-    { label: 'System Settings', path: '/settings', icon: 'Settings', color: 'indigo' },
-    { label: 'Audit Logs', path: '/audit-logs', icon: 'ClipboardList', color: 'rose' }
+    { label: 'Analytics',        path: '/analytics',                    icon: 'TrendingUp',  color: 'violet' },
+    { label: 'People',           path: '/people',                       icon: 'Users',        color: 'blue' },
+    { label: 'Enrollment',       path: '/enrollment?tab=applications',  icon: 'GraduationCap',color: 'green' },
+    { label: 'Classes',          path: '/classes',                      icon: 'Grid',         color: 'amber' },
+    { label: 'System Settings',  path: '/settings',                     icon: 'Settings',     color: 'indigo' },
+    { label: 'Audit Logs',       path: '/system-admin?tab=audit-logs',  icon: 'ClipboardList',color: 'rose' }
   ]
 };
 

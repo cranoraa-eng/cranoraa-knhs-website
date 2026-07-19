@@ -402,7 +402,7 @@ const AdminDashboard = () => {
             <CardHeader divider className="bg-slate-50">
               <div className="flex items-center justify-between">
                 <CardTitle subtitle="School-wide metrics">Academic Performance</CardTitle>
-                <Button variant="ghost" size="sm" onClick={() => navigate('/grade-input')}>
+                <Button variant="ghost" size="sm" onClick={() => navigate('/analytics')}>
                   Full Report
                 </Button>
               </div>
