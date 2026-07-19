@@ -8,6 +8,7 @@ import {
   Skeleton, EmptyState,
 } from '../../components/ui';
 import QuickAccessLinks from '../../components/dashboard/QuickAccessLinks';
+import { SchoolHeaderBanner, StatCard, TodayScheduleWidget } from './shared';
 
 /**
  * Student Dashboard - DepEd Government Education Style
@@ -220,7 +221,117 @@ const StudentDashboard = () => {
     .slice(0, 6);
 
   const recentAnnouncements = announcements.slice(0, 5);
-  const today = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+const today = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+
+  // ── Fix 1: inline skeleton instead of full-page spinner ──────────────────
+  if (loading) return (
+    <div className="page-bottom-safe max-w-[1800px] mx-auto bg-slate-50 px-4 py-4 md:px-6 md:py-6 space-y-5 md:space-y-6"
+      aria-busy="true" aria-label="Loading dashboard…">
+      {/* Welcome banner */}
+      <Skeleton className="h-36 md:h-32 w-full rounded-xl" />
+      {/* Role manual */}
+      <Skeleton className="h-12 w-full rounded-lg" />
+      {/* Quick access tiles */}
+      <div className="space-y-3">
+        <Skeleton className="h-3.5 w-24 rounded" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[1,2,3,4,5,6].map(i => <Skeleton.QuickTile key={i} />)}
+        </div>
+      </div>
+      {/* Row 1: schedule (6) | attendance (3) | grades (3) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-5">
+        <div className="lg:col-span-6 rounded-lg border border-slate-200 bg-white">
+          <div className="flex items-center justify-between p-4 border-b border-slate-100">
+            <Skeleton className="h-4 w-28 rounded" />
+            <Skeleton className="h-8 w-16 rounded-md" />
+          </div>
+          <div className="p-4 space-y-2">{[1,2,3,4,5].map(i => <Skeleton.ScheduleRow key={i} />)}</div>
+        </div>
+        {[1,2].map(col => (
+          <div key={col} className="lg:col-span-3 rounded-lg border border-slate-200 bg-white p-4 space-y-3">
+            <Skeleton className="h-4 w-24 rounded" />
+            <Skeleton className="h-16 w-full rounded-md" />
+            <div className="grid grid-cols-3 gap-2">
+              {[1,2,3].map(i => <Skeleton className="h-14 rounded-md" key={i} />)}
+            </div>
+          </div>
+        ))}
+      </div>
+      {/* Row 2: subject performance (8) | upcoming (4) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-5">
+        <div className="lg:col-span-8 rounded-lg border border-slate-200 bg-white">
+          <div className="flex items-center justify-between p-4 border-b border-slate-100">
+            <Skeleton className="h-4 w-32 rounded" />
+            <Skeleton className="h-8 w-16 rounded-md" />
+          </div>
+          <div className="p-4 space-y-2">{[1,2,3,4,5,6].map(i => <Skeleton className="h-12 w-full rounded-md" key={i} />)}</div>
+        </div>
+        <div className="lg:col-span-4 rounded-lg border border-slate-200 bg-white">
+          <div className="p-4 border-b border-slate-100"><Skeleton className="h-4 w-24 rounded" /></div>
+          <div className="p-4 space-y-2">{[1,2,3,4].map(i => <Skeleton.AnnouncementRow key={i} />)}</div>
+        </div>
+      </div>
+      {/* Row 3: announcements | messages */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-5">
+        {[1,2].map(col => (
+          <div key={col} className="rounded-lg border border-slate-200 bg-white">
+            <div className="flex items-center justify-between p-4 border-b border-slate-100">
+              <Skeleton className="h-4 w-28 rounded" />
+              <Skeleton className="h-8 w-16 rounded-md" />
+            </div>
+            <div className="p-4 space-y-2">{[1,2,3].map(i => <Skeleton.AnnouncementRow key={i} />)}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  const validAtt = Array.isArray(attendance) ? attendance.filter((r) => !isWeekend(r.date)) : [];
+  const presentCount = validAtt.filter((r) => r.status === 'present').length;
+  const lateCount = validAtt.filter((r) => r.status === 'late').length;
+  const absentCount = validAtt.filter((r) => r.status === 'absent').length;
+  const totalPresentForRate = validAtt.filter((r) => ['present', 'late'].includes(r.status)).length;
+  // Fix 4: require ≥5 weekday records before showing a percentage to avoid
+  // misleading 100% when only 1–2 records exist at the start of the school year.
+  const attRate = validAtt.length >= 5
+    ? Math.round((totalPresentForRate / validAtt.length) * 100)
+    : null;
+  const attRateDisplay = attRate !== null ? `${attRate}%` : '—';
+  const attRateSub = validAtt.length < 5
+    ? `${validAtt.length} day${validAtt.length !== 1 ? 's' : ''} recorded`
+    : `${validAtt.length} days total`;
+  const { streak, hasData: hasAttData } = computeStreak(attendance);
+
+  const todayStr = getLocalDateStr();
+  const todayRecord = Array.isArray(attendance) ? attendance.find((r) => r.date === todayStr) : null;
+  const todayIsWeekend = isWeekend(todayStr);
+  const todayAttLabel = todayIsWeekend
+    ? 'Weekend — no class today'
+    : !todayRecord
+    ? 'Today not marked yet'
+    : `Today: ${todayRecord.status.charAt(0).toUpperCase()}${todayRecord.status.slice(1)}`;
+
+  // Calculate grade stats
+  const finalGrades = Array.isArray(grades)
+    ? grades.filter((g) => g.grade_type === 'final_grade' && g.raw_score != null)
+    : [];
+  const sortedGrades = [...finalGrades].sort((a, b) => gradeScore(b) - gradeScore(a));
+  const overallAvg =
+    finalGrades.length > 0
+      ? (finalGrades.reduce((s, g) => s + gradeScore(g), 0) / finalGrades.length).toFixed(1)
+      : null;
+  const topSubject = sortedGrades[0]
+    ? { name: sortedGrades[0].subject_name, score: gradeScore(sortedGrades[0]) }
+    : null;
+
+  // Get upcoming assignments
+  const now = new Date();
+  const upcomingAssignments = assignments
+    .filter((a) => a.due_date && new Date(a.due_date) >= now)
+    .sort((a, b) => new Date(a.due_date) - new Date(b.due_date))
+    .slice(0, 6);
+
+  const recentAnnouncements = announcements.slice(0, 5);
 
   // Schedule helpers
   const toMinutes = (timeStr) => {
@@ -252,49 +363,15 @@ const StudentDashboard = () => {
       transition={{ duration: 0.5, ease: 'easeOut' }}
       className="page-bottom-safe max-w-[1800px] mx-auto bg-slate-50 px-4 py-4 md:px-6 md:py-6 space-y-5 md:space-y-6"
     >
-      {/* ══════════════════════════════════════════════════════════════ */}
-      {/* WELCOME BANNER */}
-      {/* ══════════════════════════════════════════════════════════════ */}
+      {/* ═════════════════════════════════════════════════════════════════════ */}
+      {/* WELCOME BANNER - SchoolHeaderBanner */}
+      {/* ══════════════════════════════════════════════════════════════════════ */}
       
-      <Card className="bg-gradient-to-r from-violet-600 to-violet-700 border-violet-700">
-        <CardBody className="p-5 md:p-6">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-wide text-violet-200 mb-2">
-                {today}
-              </p>
-              <h1 className="text-2xl md:text-3xl font-extrabold text-white tracking-tight">
-                {greeting}, <span className="text-violet-100">{user?.first_name || 'Student'}</span>
-              </h1>
-              <div className="flex flex-wrap gap-2 mt-3">
-                <Badge variant="slate" className="bg-white/10 border-white/20 text-white">
-                  Grade {user?.profile?.grade_level || 'N/A'}
-                </Badge>
-                <Badge variant="slate" className="bg-white/10 border-white/20 text-white">
-                  Attendance: {attRateDisplay}
-                </Badge>
-                {overallAvg && (
-                  <Badge variant="slate" className="bg-white/10 border-white/20 text-white">
-                    Average: {overallAvg}
-                  </Badge>
-                )}
-              </div>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <Button variant="secondary" size="sm" onClick={() => navigate('/my-classes')}>
-                My Grades
-              </Button>
-              <Button variant="secondary" size="sm" onClick={() => navigate('/my-schedule')}>
-                Schedule
-              </Button>
-            </div>
-          </div>
-        </CardBody>
-      </Card>
+      <SchoolHeaderBanner user={user} today={today} />
 
-      {/* ══════════════════════════════════════════════════════════════ */}
+      {/* ══════════════════════════════════════════════════════════════════════ */}
       {/* QUICK ACCESS LINKS */}
-      {/* ══════════════════════════════════════════════════════════════ */}
+      {/* ══════════════════════════════════════════════════════════════════════ */}
       
       <QuickAccessLinks role="student" variant="grid" />
 
