@@ -1,18 +1,11 @@
 /**
- * SF10-JHS Template-based Export
+ * SF10-JHS Template-based Export with xlsx-populate
  *
- * Loads the official SF10 template Excel file and fills in student data.
- * Preserves all existing formatting, merged cells, formulas, and styles.
- * Uses ExcelJS for reliable template preservation.
- *
- * Template location: /public/templates/SF10_Template.xlsx
- * 
- * Cell mapping:
- * - FRONT sheet: Student info (B7-M8), School info (B20-N21), Grade 7 & 8 grades
- * - BACK sheet: Grade 9 & 10 grades (same structure)
+ * Uses xlsx-populate library which preserves ALL template formatting perfectly.
+ * Loads the template, fills cells, maintains all styles, borders, colors, merged cells.
  */
 
-import ExcelJS from 'exceljs';
+import XlsxPopulate from 'xlsx-populate';
 
 // ═══ CONSTANTS ═══════════════════════════════════════════════════════════════
 
@@ -70,49 +63,9 @@ function calcFinalGrade(quarters) {
 }
 
 /**
- * Set cell value without losing style
- */
-function setCellValue(cell, value) {
-  if (!cell) return;
-  
-  // Get the current cell data including style
-  const currentStyle = cell.style;
-  const currentFont = cell.font;
-  const currentBorder = cell.border;
-  const currentFill = cell.fill;
-  const currentAlignment = cell.alignment;
-  const currentNumFmt = cell.numFmt;
-  
-  // Set the value
-  cell.value = value;
-  
-  // Explicitly restore all style properties
-  if (currentStyle) {
-    cell.style = currentStyle;
-  }
-  if (currentFont) {
-    cell.font = currentFont;
-  }
-  if (currentBorder) {
-    cell.border = currentBorder;
-  }
-  if (currentFill) {
-    cell.fill = currentFill;
-  }
-  if (currentAlignment) {
-    cell.alignment = currentAlignment;
-  }
-  if (currentNumFmt) {
-    cell.numFmt = currentNumFmt;
-  }
-}
-
-/**
  * Fill student information section
- * Based on screenshot: Row 7 has LAST NAME, FIRST NAME, MIDDLE NAME
- * Row 8 has LRN, Birthdate, Sex
  */
-function fillStudentInfo(worksheet, student) {
+function fillStudentInfo(sheet, student) {
   // Parse name
   const fullName = student.name || '';
   const nameParts = fullName.split(',').map(p => p.trim());
@@ -122,51 +75,47 @@ function fillStudentInfo(worksheet, student) {
   const middleName = restParts.slice(1).join(' ') || '';
 
   // Row 7: LAST NAME, FIRST NAME, MIDDLE NAME
-  // Looking at screenshot: B7=label, C7=value, F7=label, G7=value, etc.
-  setCellValue(worksheet.getCell('C7'), lastName);
-  setCellValue(worksheet.getCell('G7'), firstName);
-  setCellValue(worksheet.getCell('M7'), middleName);
+  sheet.cell('C7').value(lastName);
+  sheet.cell('G7').value(firstName);
+  sheet.cell('M7').value(middleName);
   
   // Row 8: LRN, Birthdate, Sex
-  setCellValue(worksheet.getCell('C8'), student.lrn || '');
-  setCellValue(worksheet.getCell('G8'), student.birthdate || '');
-  setCellValue(worksheet.getCell('M8'), student.sex || '');
+  sheet.cell('C8').value(student.lrn || '');
+  sheet.cell('G8').value(student.birthdate || '');
+  sheet.cell('M8').value(student.sex || '');
 }
 
 /**
  * Fill school/scholastic information
- * Based on screenshot: Row 14-17 contain school information
  */
-function fillSchoolInfo(worksheet, schoolInfo) {
+function fillSchoolInfo(sheet, schoolInfo) {
   const {
     schoolName, schoolId, district, division, region,
     schoolYear, gradeLevel, section, adviser,
   } = schoolInfo;
 
   // Row 14: School, School ID, District
-  setCellValue(worksheet.getCell('C14'), schoolName);
-  setCellValue(worksheet.getCell('G14'), schoolId);
-  setCellValue(worksheet.getCell('K14'), district);
+  sheet.cell('C14').value(schoolName);
+  sheet.cell('G14').value(schoolId);
+  sheet.cell('K14').value(district);
   
   // Row 15: Division, Region
-  setCellValue(worksheet.getCell('C15'), division);
-  setCellValue(worksheet.getCell('G15'), region);
+  sheet.cell('C15').value(division);
+  sheet.cell('G15').value(region);
   
   // Row 16: Grade, Section, School Year
-  setCellValue(worksheet.getCell('D16'), gradeLevel);
-  setCellValue(worksheet.getCell('G16'), section);
-  setCellValue(worksheet.getCell('K16'), schoolYear);
+  sheet.cell('D16').value(gradeLevel);
+  sheet.cell('G16').value(section);
+  sheet.cell('K16').value(schoolYear);
   
   // Row 17: Adviser
-  setCellValue(worksheet.getCell('E17'), adviser);
+  sheet.cell('E17').value(adviser);
 }
 
 /**
  * Fill grades for a specific grade level block
- * Based on screenshot: Row 19 is header "LEARNING AREAS", row 21 starts with Filipino
- * Columns appear to be: A=Learning Area, B=Q1, C=Q2, D=Q3, E=Q4, F=Final, G=Remarks
  */
-function fillGradesBlock(worksheet, startRow, areaGrades) {
+function fillGradesBlock(sheet, startRow, areaGrades) {
   JHS_AREAS.forEach((area, index) => {
     const row = startRow + index;
     const aq = areaGrades[area] || {};
@@ -176,27 +125,24 @@ function fillGradesBlock(worksheet, startRow, areaGrades) {
     const q3 = aq.q3 !== undefined && aq.q3 !== '' ? depedRound(aq.q3) : null;
     const q4 = aq.q4 !== undefined && aq.q4 !== '' ? depedRound(aq.q4) : null;
     
-    // Set values while preserving cell styles
     // Columns: B=Q1, C=Q2, D=Q3, E=Q4, F=Final, G=Remarks
-    setCellValue(worksheet.getCell(row, 2), q1);  // Column B (Q1)
-    setCellValue(worksheet.getCell(row, 3), q2);  // Column C (Q2)
-    setCellValue(worksheet.getCell(row, 4), q3);  // Column D (Q3)
-    setCellValue(worksheet.getCell(row, 5), q4);  // Column E (Q4)
+    if (q1 !== null) sheet.row(row).cell(2).value(q1);
+    if (q2 !== null) sheet.row(row).cell(3).value(q2);
+    if (q3 !== null) sheet.row(row).cell(4).value(q3);
+    if (q4 !== null) sheet.row(row).cell(5).value(q4);
     
-    // Column F - Final Rating (check for formula first)
-    const finalCell = worksheet.getCell(row, 6);
-    if (!finalCell.formula && !finalCell.formulaType) {
-      const finalGrade = calcFinalGrade(aq);
-      setCellValue(finalCell, finalGrade);
-    }
+    // Final Rating and Remarks (only if no formula)
+    const finalCell = sheet.row(row).cell(6);
+    const remarksCell = sheet.row(row).cell(7);
     
-    // Column G - Remarks (Passed/Failed)
-    const remarksCell = worksheet.getCell(row, 7);
-    if (!remarksCell.formula && !remarksCell.formulaType) {
+    // Check if cell has a formula
+    const hasFormula = finalCell.formula();
+    
+    if (!hasFormula) {
       const finalGrade = calcFinalGrade(aq);
-      if (finalGrade !== null && finalGrade !== '') {
-        const remarkText = finalGrade >= 75 ? 'Passed' : 'Failed';
-        setCellValue(remarksCell, remarkText);
+      if (finalGrade !== null) {
+        finalCell.value(finalGrade);
+        remarksCell.value(finalGrade >= 75 ? 'Passed' : 'Failed');
       }
     }
   });
@@ -206,16 +152,13 @@ function fillGradesBlock(worksheet, startRow, areaGrades) {
  * Fill a single student's SF10 from template
  */
 async function fillStudentSF10(templatePath, student, schoolInfo, gradeLevel) {
-  // Load template with full fidelity
-  const workbook = new ExcelJS.Workbook();
-  
   try {
+    // Fetch the template file
     const response = await fetch(templatePath);
     
     if (!response.ok) {
       throw new Error(
         `Template file not found at ${templatePath}. ` +
-        `Please place SF10_Template.xlsx in frontend/public/templates/ directory. ` +
         `Status: ${response.status}`
       );
     }
@@ -223,63 +166,32 @@ async function fillStudentSF10(templatePath, student, schoolInfo, gradeLevel) {
     const arrayBuffer = await response.arrayBuffer();
     
     if (arrayBuffer.byteLength === 0) {
-      throw new Error('Template file is empty. Please check the file.');
+      throw new Error('Template file is empty.');
     }
     
-    // Load with options to preserve everything
-    await workbook.xlsx.load(arrayBuffer, {
-      ignoreNodes: [],
-      cellStyles: true,
-      cellDates: true
-    });
-  } catch (error) {
-    if (error.message.includes('central directory')) {
-      throw new Error(
-        'Template file is not a valid Excel file. ' +
-        'Please ensure SF10_Template.xlsx is a proper .xlsx file (not .xls or corrupted). ' +
-        'Original error: ' + error.message
-      );
+    // Load workbook from array buffer - xlsx-populate preserves ALL formatting
+    const workbook = await XlsxPopulate.fromDataAsync(arrayBuffer);
+    
+    // Get the first sheet
+    const sheet = workbook.sheet(0);
+    
+    if (!sheet) {
+      throw new Error('Template is missing worksheet');
     }
+    
+    // Fill student and school information
+    fillStudentInfo(sheet, student);
+    fillSchoolInfo(sheet, schoolInfo);
+    
+    // Fill grades - Row 21 is Filipino (first subject)
+    const areaGrades = student.areaGrades || {};
+    fillGradesBlock(sheet, 21, areaGrades);
+    
+    return workbook;
+  } catch (error) {
+    console.error('Error loading template:', error);
     throw error;
   }
-
-  // Get worksheets - handle both multi-sheet and single-sheet templates
-  const frontSheet = workbook.getWorksheet('FRONT') || 
-                     workbook.getWorksheet('Grade 9 - Emerald') ||
-                     workbook.getWorksheet(1);
-  const backSheet = workbook.getWorksheet('BACK') || workbook.getWorksheet(2);
-
-  if (!frontSheet) {
-    throw new Error('Template is missing required worksheet');
-  }
-
-  // Fill student info (appears on FRONT sheet or first sheet)
-  fillStudentInfo(frontSheet, student);
-  fillSchoolInfo(frontSheet, schoolInfo);
-
-  // Fill grades based on grade level
-  const areaGrades = student.areaGrades || {};
-  
-  // Determine which block to fill based on current grade level
-  const currentGrade = parseInt(gradeLevel) || 9;
-  
-  // Based on the screenshot: Row 19 = header "LEARNING AREAS"
-  // Row 20 = sub-header with quarter numbers
-  // Row 21 = Filipino (first subject row)
-  const gradesStartRow = 21;
-  
-  // For single-sheet templates, use row 21
-  if (currentGrade === 7) {
-    fillGradesBlock(frontSheet, gradesStartRow, areaGrades);
-  } else if (currentGrade === 8) {
-    fillGradesBlock(frontSheet, backSheet ? 46 : gradesStartRow, areaGrades);
-  } else if (currentGrade === 9) {
-    fillGradesBlock(backSheet || frontSheet, backSheet ? 1 : gradesStartRow, areaGrades);
-  } else if (currentGrade === 10) {
-    fillGradesBlock(backSheet || frontSheet, backSheet ? 25 : gradesStartRow, areaGrades);
-  }
-
-  return workbook;
 }
 
 // ═══ PUBLIC API ══════════════════════════════════════════════════════════════
@@ -330,25 +242,18 @@ export async function exportSF10(classroom, enrollments, allGrades, info = {}) {
       };
     });
 
-    // For now, export first student as example
+    // Export first student
     if (studentData.length === 0) {
       throw new Error('No students to export');
     }
 
     const student = studentData[0];
-    const templatePath = TEMPLATE_PATH;
-    
-    const workbook = await fillStudentSF10(templatePath, student, schoolInfo, schoolInfo.gradeLevel);
+    const workbook = await fillStudentSF10(TEMPLATE_PATH, student, schoolInfo, schoolInfo.gradeLevel);
 
-    // Generate and download the file with full style preservation
-    const buffer = await workbook.xlsx.writeBuffer({
-      useStyles: true,
-      useSharedStrings: true
-    });
-    const blob = new Blob([buffer], {
-      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    });
+    // Generate blob - xlsx-populate preserves ALL formatting
+    const blob = await workbook.outputAsync();
 
+    // Download
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -356,7 +261,7 @@ export async function exportSF10(classroom, enrollments, allGrades, info = {}) {
     a.click();
     URL.revokeObjectURL(url);
     
-    console.log('SF10 exported successfully');
+    console.log('SF10 exported successfully with full formatting');
   } catch (error) {
     console.error('SF10 export error:', error);
     throw error;
