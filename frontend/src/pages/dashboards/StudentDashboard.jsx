@@ -286,54 +286,7 @@ const today = new Date().toLocaleDateString('en-US', { weekday: 'long', month: '
     </div>
   );
 
-  const validAtt = Array.isArray(attendance) ? attendance.filter((r) => !isWeekend(r.date)) : [];
-  const presentCount = validAtt.filter((r) => r.status === 'present').length;
-  const lateCount = validAtt.filter((r) => r.status === 'late').length;
-  const absentCount = validAtt.filter((r) => r.status === 'absent').length;
-  const totalPresentForRate = validAtt.filter((r) => ['present', 'late'].includes(r.status)).length;
-  // Fix 4: require ≥5 weekday records before showing a percentage to avoid
-  // misleading 100% when only 1–2 records exist at the start of the school year.
-  const attRate = validAtt.length >= 5
-    ? Math.round((totalPresentForRate / validAtt.length) * 100)
-    : null;
-  const attRateDisplay = attRate !== null ? `${attRate}%` : '—';
-  const attRateSub = validAtt.length < 5
-    ? `${validAtt.length} day${validAtt.length !== 1 ? 's' : ''} recorded`
-    : `${validAtt.length} days total`;
-  const { streak, hasData: hasAttData } = computeStreak(attendance);
-
-  const todayStr = getLocalDateStr();
-  const todayRecord = Array.isArray(attendance) ? attendance.find((r) => r.date === todayStr) : null;
-  const todayIsWeekend = isWeekend(todayStr);
-  const todayAttLabel = todayIsWeekend
-    ? 'Weekend — no class today'
-    : !todayRecord
-    ? 'Today not marked yet'
-    : `Today: ${todayRecord.status.charAt(0).toUpperCase()}${todayRecord.status.slice(1)}`;
-
-  // Calculate grade stats
-  const finalGrades = Array.isArray(grades)
-    ? grades.filter((g) => g.grade_type === 'final_grade' && g.raw_score != null)
-    : [];
-  const sortedGrades = [...finalGrades].sort((a, b) => gradeScore(b) - gradeScore(a));
-  const overallAvg =
-    finalGrades.length > 0
-      ? (finalGrades.reduce((s, g) => s + gradeScore(g), 0) / finalGrades.length).toFixed(1)
-      : null;
-  const topSubject = sortedGrades[0]
-    ? { name: sortedGrades[0].subject_name, score: gradeScore(sortedGrades[0]) }
-    : null;
-
-  // Get upcoming assignments
-  const now = new Date();
-  const upcomingAssignments = assignments
-    .filter((a) => a.due_date && new Date(a.due_date) >= now)
-    .sort((a, b) => new Date(a.due_date) - new Date(b.due_date))
-    .slice(0, 6);
-
-  const recentAnnouncements = announcements.slice(0, 5);
-
-  // Schedule helpers
+// Schedule helpers
   const toMinutes = (timeStr) => {
     if (!timeStr) return 0;
     const match = timeStr.match(/(\d+):(\d+)\s*(AM|PM)/i);
