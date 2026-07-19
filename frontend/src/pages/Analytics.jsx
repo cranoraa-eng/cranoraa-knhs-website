@@ -1,4 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
+import html2canvas from 'html2canvas';
+import { jsPDF } from 'jspdf';
 import api from '../utils/api';
 import { useActiveAcademicYear } from '../hooks/useActiveAcademicYear';
 import { useSystemSettings } from '../hooks/useSystemSettings';
@@ -14,11 +16,6 @@ const COLORS = ['#2563eb', '#10b981', '#3b82f6', '#f59e0b', '#ef4444'];
 
 const exportToPDF = async (ref, filename, title, subtitle, meta = {}) => {
   if (!ref.current) return;
-  const [{ default: html2canvas }, jspdfModule] = await Promise.all([
-    import('html2canvas'),
-    import('jspdf'),
-  ]);
-  const { jsPDF } = jspdfModule;
   try {
     // ── Fix transparency and prepare for capture ─────────────────────
     const el = ref.current;

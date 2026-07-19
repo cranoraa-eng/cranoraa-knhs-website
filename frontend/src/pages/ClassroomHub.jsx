@@ -48,6 +48,7 @@ const ClassroomHub = () => {
   const [editAnnouncementTitle, setEditAnnouncementTitle] = useState('');
   const [editAnnouncementContent, setEditAnnouncementContent] = useState('');
   const [peopleSearch, setPeopleSearch] = useState('');
+  const [selectedStudent, setSelectedStudent] = useState(null);
 
   // Upload modal state
   const [showUploadModal, setShowUploadModal] = useState(false);
@@ -550,6 +551,7 @@ const ClassroomHub = () => {
               loading={loading}
               peopleSearch={peopleSearch}
               setPeopleSearch={setPeopleSearch}
+              onStudentClick={setSelectedStudent}
             />
           )}
 
@@ -625,7 +627,320 @@ const ClassroomHub = () => {
           </ModalBtnPrimary>
         </ModalFooter>
       </Modal>
+      {/* Student Detail Drawer */}
+      {selectedStudent && (
+        <StudentDetailDrawer
+          student={selectedStudent}
+          classroom={selectedClass}
+          onClose={() => setSelectedStudent(null)}
+        />
+      )}
     </motion.div>
+  );
+};
+
+// ── Student Detail Drawer ─────────────────────────────────────────────────
+const StudentDetailDrawer = ({ student, classroom, onClose }) => {
+  const [tab, setTab] = useState('personal');
+  const [profileData, setProfileData] = useState(null);
+  const [appData, setAppData] = useState(null);
+  const [grades, setGrades] = useState([]);
+  const [attend, setAttend] = useState([]);
+  const [records, setRecords] = useState([]);
+  const [loadingData, setLoadingData] = useState(true);
+
+  useEffect(() => {
+    if (!student?.student) return;
+    setLoadingData(true);
+    Promise.allSettled([
+      api.get(`/student/profile/?student_id=${student.student}`),
+      api.get(`/enrollment-applications/?enrolled_student=${student.student}`),
+      api.get(`/grades/?student=${student.student}`),
+      api.get(`/attendance/?student=${student.student}`),
+      api.get(`/record-requests/?student=${student.student}`),
+    ]).then(([profRes, appRes, gradeRes, attRes, recRes]) => {
+      if (profRes.status === 'fulfilled') setProfileData(profRes.value.data);
+      if (appRes.status === 'fulfilled') {
+        const apps = appRes.value.data?.results || appRes.value.data || [];
+        setAppData(Array.isArray(apps) ? apps[0] || null : null);
+      }
+      if (gradeRes.status === 'fulfilled') setGrades(Array.isArray(gradeRes.value.data) ? gradeRes.value.data : gradeRes.value.data?.results || []);
+      if (attRes.status === 'fulfilled') setAttend(Array.isArray(attRes.value.data) ? attRes.value.data : attRes.value.data?.results || []);
+      if (recRes.status === 'fulfilled') setRecords(Array.isArray(recRes.value.data) ? recRes.value.data : recRes.value.data?.results || []);
+    }).finally(() => setLoadingData(false));
+  }, [student?.student]);
+
+  const fullName = student.student_name || '—';
+  const lrn = student.student_lrn || profileData?.profile?.registration_number || '—';
+  const email = student.student_email || profileData?.email || '—';
+  const initials = fullName.trim().split(/\s+/).slice(0, 2).map(n => n.charAt(0).toUpperCase()).join('');
+
+  const presentCount = attend.filter(a => a.status === 'present').length;
+  const lateCount = attend.filter(a => a.status === 'late').length;
+  const absentCount = attend.filter(a => a.status === 'absent').length;
+  const attRate = attend.length > 0
+    ? Math.round(((presentCount + lateCount) / attend.length) * 100) : null;
+
+  const finalGrades = grades.filter(g => g.grade_type === 'final_grade' && g.raw_score != null);
+  const overallAvg = finalGrades.length
+    ? (finalGrades.reduce((s, g) => s + parseFloat(g.raw_score), 0) / finalGrades.length).toFixed(1) : null;
+
+  const TABS = [
+    { id: 'personal', label: 'Personal' },
+    { id: 'academic', label: 'Academic' },
+    { id: 'family', label: 'Family' },
+    { id: 'documents', label: 'Documents' },
+    { id: 'records', label: 'Records' },
+  ];
+
+  const Field = ({ label, value, mono = false }) => (
+    <div className="py-2 border-b border-slate-100 last:border-0">
+      <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">{label}</p>
+      <p className={`text-sm font-semibold text-slate-800 ${mono ? 'font-mono' : ''}`}>{value || '—'}</p>
+    </div>
+  );
+
+  const docTypeLabel = {
+    birth_certificate: 'PSA Birth Certificate',
+    report_card: 'Report Card',
+    form_138: 'Form 138',
+    certificate_of_completion: 'Certificate of Completion',
+    good_moral: 'Good Moral Certificate',
+    id_picture: 'ID Picture',
+    last_school_attended: 'Last School Attended Cert.',
+    other: 'Other Document',
+  };
+
+  return (
+    <div className="fixed inset-0 z-[9999] flex">
+      <div className="flex-1 bg-black/40" onClick={onClose} />
+      <div className="w-full max-w-xl bg-white shadow-2xl flex flex-col h-full overflow-hidden">
+        <div className="bg-[#5e2a84] px-5 py-4 flex items-start gap-4 flex-shrink-0">
+          {student.student_profile_picture ? (
+            <img src={student.student_profile_picture} alt="" className="w-12 h-12 rounded-full object-cover border-2 border-white/30 flex-shrink-0" />
+          ) : (
+            <div className="w-12 h-12 rounded-full bg-white/20 border-2 border-white/30 flex items-center justify-center flex-shrink-0">
+              <span className="text-lg font-black text-white">{initials}</span>
+            </div>
+          )}
+          <div className="flex-1 min-w-0">
+            <h2 className="text-base font-black text-white uppercase tracking-wide leading-tight truncate">{fullName}</h2>
+            <p className="text-violet-200 text-xs mt-0.5 font-mono">LRN: {lrn}</p>
+            <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+              <span className="text-violet-300 text-xs">{classroom?.name || ''}</span>
+            </div>
+          </div>
+          <button onClick={onClose} className="w-7 h-7 flex items-center justify-center rounded text-white/60 hover:bg-white/20 hover:text-white transition-all flex-shrink-0 mt-0.5">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        <div className="bg-white border-b border-slate-200 px-4 flex gap-0 flex-shrink-0 overflow-x-auto">
+          {TABS.map(t => (
+            <button key={t.id} onClick={() => setTab(t.id)}
+              className={`px-4 py-3 text-xs font-bold whitespace-nowrap border-b-2 transition-colors ${
+                tab === t.id ? 'border-violet-600 text-violet-700' : 'border-transparent text-slate-500 hover:text-slate-800'
+              }`}>
+              {t.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="flex-1 overflow-y-auto bg-slate-50">
+          {loadingData && tab !== 'personal' ? (
+            <div className="flex items-center justify-center h-32">
+              <LoadingSpinner />
+            </div>
+          ) : (
+            <div className="p-5 space-y-1">
+              {tab === 'personal' && (
+                <div className="bg-white rounded-xl border border-slate-200 divide-y divide-slate-100 overflow-hidden">
+                  <div className="px-4 py-3 bg-slate-50">
+                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Personal Information</p>
+                  </div>
+                  <div className="px-4">
+                    <Field label="Full Name" value={fullName} />
+                    <Field label="Student ID / LRN" value={lrn} mono />
+                    <Field label="Date of Birth" value={profileData?.profile?.date_of_birth} />
+                    <Field label="Sex" value={student.student_sex || profileData?.profile?.sex} />
+                    <Field label="Nationality" value={profileData?.profile?.nationality} />
+                    <Field label="Address" value={profileData?.profile?.address} />
+                    <Field label="Phone Number" value={profileData?.profile?.phone_number} />
+                    <Field label="Email" value={email} />
+                  </div>
+                </div>
+              )}
+
+              {tab === 'academic' && (
+                <div className="space-y-4">
+                  <div className="bg-white rounded-xl border border-slate-200 divide-y divide-slate-100 overflow-hidden">
+                    <div className="px-4 py-3 bg-slate-50">
+                      <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Enrollment Info</p>
+                    </div>
+                    <div className="px-4">
+                      <Field label="Grade Level" value={profileData?.profile?.grade_level} />
+                      <Field label="Section / Classroom" value={classroom?.name || '—'} />
+                      <Field label="School Year" value={appData?.school_year} />
+                      <Field label="Enrollment Type" value={appData?.enrollment_type?.replace(/_/g, ' ')} />
+                      <Field label="Strand" value={appData?.strand} />
+                    </div>
+                  </div>
+
+                  <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+                    <div className="px-4 py-3 bg-slate-50 border-b border-slate-100">
+                      <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Attendance Summary</p>
+                    </div>
+                    <div className="p-4 grid grid-cols-4 gap-3">
+                      {[
+                        { label: 'Present', val: presentCount, color: 'text-emerald-700 bg-emerald-50 border-emerald-200' },
+                        { label: 'Late', val: lateCount, color: 'text-amber-700 bg-amber-50 border-amber-200' },
+                        { label: 'Absent', val: absentCount, color: 'text-rose-700 bg-rose-50 border-rose-200' },
+                        { label: 'Rate', val: attRate !== null ? `${attRate}%` : '—', color: 'text-violet-700 bg-violet-50 border-violet-200' },
+                      ].map(s => (
+                        <div key={s.label} className={`border rounded-lg p-3 text-center ${s.color}`}>
+                          <p className="text-xl font-black">{s.val}</p>
+                          <p className="text-[9px] font-bold uppercase tracking-wider mt-0.5">{s.label}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {finalGrades.length > 0 && (
+                    <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+                      <div className="px-4 py-3 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
+                        <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Subject Grades</p>
+                        {overallAvg && <span className="text-sm font-black text-violet-700">Avg: {overallAvg}</span>}
+                      </div>
+                      <div className="divide-y divide-slate-100">
+                        {finalGrades.map(g => (
+                          <div key={g.id} className="flex items-center justify-between px-4 py-2.5">
+                            <div>
+                              <p className="text-sm font-bold text-slate-900">{g.subject_name}</p>
+                              <p className="text-[10px] text-slate-400">Q{g.quarter} · {g.academic_year}</p>
+                            </div>
+                            <span className={`text-sm font-black px-3 py-1 rounded-lg border ${
+                              parseFloat(g.raw_score) >= 90 ? 'text-emerald-700 bg-emerald-50 border-emerald-200' :
+                              parseFloat(g.raw_score) >= 75 ? 'text-blue-700 bg-blue-50 border-blue-200' :
+                              'text-rose-700 bg-rose-50 border-rose-200'
+                            }`}>{g.raw_score}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {tab === 'family' && (
+                <div className="space-y-4">
+                  {[
+                    { title: 'Father', color: 'bg-blue-50 border-blue-200', textColor: 'text-blue-700',
+                      fields: [['Name', appData?.father_name], ['Contact', appData?.father_contact], ['Email', appData?.father_email], ['Occupation', appData?.father_occupation]] },
+                    { title: 'Mother', color: 'bg-rose-50 border-rose-200', textColor: 'text-rose-700',
+                      fields: [['Name', appData?.mother_name], ['Contact', appData?.mother_contact], ['Email', appData?.mother_email], ['Occupation', appData?.mother_occupation]] },
+                    ...(appData?.guardian_name ? [{ title: 'Guardian', color: 'bg-amber-50 border-amber-200', textColor: 'text-amber-700',
+                      fields: [['Name', appData?.guardian_name], ['Relationship', appData?.guardian_relationship], ['Contact', appData?.guardian_contact]] }] : []),
+                  ].map(({ title, color, textColor, fields }) => (
+                    <div key={title} className={`rounded-xl border ${color} overflow-hidden`}>
+                      <div className={`px-4 py-3 ${color}`}>
+                        <p className={`text-[10px] font-black uppercase tracking-widest ${textColor}`}>{title}</p>
+                      </div>
+                      <div className="px-4 bg-white divide-y divide-slate-100">
+                        {fields.map(([label, val]) => val ? <Field key={label} label={label} value={val} /> : null)}
+                        {fields.every(([, v]) => !v) && <p className="py-3 text-xs text-slate-400 italic">No information provided</p>}
+                      </div>
+                    </div>
+                  ))}
+                  {!appData && !loadingData && (
+                    <div className="bg-white rounded-xl border border-slate-200 p-8 text-center">
+                      <p className="text-sm text-slate-400">No enrollment application found for this student.</p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {tab === 'documents' && (
+                <div className="space-y-3">
+                  <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-start gap-3">
+                    <svg className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    <p className="text-xs text-amber-800">Documents were submitted during enrollment. Click the view icon to open each file.</p>
+                  </div>
+
+                  {appData?.documents && appData.documents.length > 0 ? (
+                    <div className="bg-white rounded-xl border border-slate-200 divide-y divide-slate-100 overflow-hidden">
+                      {appData.documents.map(doc => (
+                        <div key={doc.id} className="flex items-center justify-between px-4 py-3">
+                          <div className="flex items-center gap-3 min-w-0">
+                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                              doc.verification_status === 'verified' ? 'bg-emerald-50' :
+                              doc.verification_status === 'rejected' ? 'bg-rose-50' : 'bg-slate-100'
+                            }`}>
+                              <FileText className={`w-4 h-4 ${
+                                doc.verification_status === 'verified' ? 'text-emerald-600' :
+                                doc.verification_status === 'rejected' ? 'text-rose-600' : 'text-slate-400'
+                              }`} />
+                            </div>
+                            <div className="min-w-0">
+                              <p className="text-sm font-bold text-slate-900 truncate">{docTypeLabel[doc.document_type] || doc.document_type_display || doc.document_type}</p>
+                              <span className={`text-[9px] font-bold uppercase px-1.5 py-0.5 rounded ${
+                                doc.verification_status === 'verified' ? 'bg-emerald-100 text-emerald-700' :
+                                doc.verification_status === 'rejected' ? 'bg-rose-100 text-rose-700' :
+                                'bg-slate-100 text-slate-600'
+                              }`}>{doc.verification_status_display || doc.verification_status}</span>
+                            </div>
+                          </div>
+                          {doc.file_url && (
+                            <a href={doc.file_url} target="_blank" rel="noreferrer"
+                              className="p-2 text-slate-400 hover:text-violet-600 hover:bg-violet-50 rounded-lg transition-colors flex-shrink-0">
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+                            </a>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="bg-white rounded-xl border border-slate-200 p-10 text-center">
+                      <FileText className="w-10 h-10 text-slate-200 mx-auto mb-3" />
+                      <p className="text-sm font-semibold text-slate-400">No documents on file</p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {tab === 'records' && (
+                <div className="space-y-4">
+                  {records.length > 0 ? (
+                    <div className="bg-white rounded-xl border border-slate-200 divide-y divide-slate-100 overflow-hidden">
+                      <div className="px-4 py-3 bg-slate-50 border-b border-slate-100">
+                        <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Document Requests</p>
+                      </div>
+                      {records.map(r => (
+                        <div key={r.id} className="flex items-center justify-between px-4 py-3">
+                          <div>
+                            <p className="text-sm font-bold text-slate-900">{r.record_type_display || r.record_type}</p>
+                            <p className="text-[10px] text-slate-400">{r.purpose || ''} · {new Date(r.created_at).toLocaleDateString()}</p>
+                          </div>
+                          <span className={`text-[9px] font-bold px-2 py-0.5 rounded border uppercase ${
+                            r.status === 'approved' || r.status === 'released' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+                            r.status === 'pending' ? 'bg-amber-50 text-amber-700 border-amber-200' :
+                            'bg-slate-100 text-slate-600 border-slate-200'
+                          }`}>{r.status}</span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="bg-white rounded-xl border border-slate-200 p-10 text-center">
+                      <FileText className="w-10 h-10 text-slate-200 mx-auto mb-3" />
+                      <p className="text-sm font-semibold text-slate-400">No record requests</p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
   );
 };
 
@@ -876,7 +1191,7 @@ const MaterialsTab = ({ classroom, materials, isTeacher, searchQuery, setSearchQ
 );
 
 // People Tab Component
-const PeopleTab = ({ classroom, students, isTeacher, loading, peopleSearch, setPeopleSearch }) => {
+const PeopleTab = ({ classroom, students, isTeacher, loading, peopleSearch, setPeopleSearch, onStudentClick }) => {
   const sortedStudents = useMemo(() => {
     const list = Array.isArray(students) ? [...students] : [];
     const filtered = peopleSearch
@@ -901,7 +1216,7 @@ const PeopleTab = ({ classroom, students, isTeacher, loading, peopleSearch, setP
   const otherStudents = sortedStudents.filter(s => !['male', 'female'].includes((s.student_sex || '').toLowerCase()));
 
   const renderStudent = (student) => (
-    <div key={student.id} className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-50 transition-colors">
+    <div key={student.id} onClick={() => onStudentClick?.(student)} className="flex items-center gap-3 p-3 rounded-lg hover:bg-violet-50 transition-colors cursor-pointer border border-transparent hover:border-violet-200">
       {student.student_profile_picture ? (
         <img src={student.student_profile_picture} alt="" className="w-10 h-10 rounded-full object-cover ring-2 ring-white shadow-sm" />
       ) : (
@@ -922,6 +1237,7 @@ const PeopleTab = ({ classroom, students, isTeacher, loading, peopleSearch, setP
           <p className="text-xs text-slate-400">LRN: {student.student_lrn}</p>
         )}
       </div>
+      <ChevronRight className="w-4 h-4 text-slate-300 flex-shrink-0" />
     </div>
   );
 

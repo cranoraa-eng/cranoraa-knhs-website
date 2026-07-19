@@ -1,4 +1,5 @@
 import * as XLSX from 'xlsx';
+import { jsPDF } from 'jspdf';
 import toast from 'react-hot-toast';
 
 export default function ExportMenu({
@@ -106,8 +107,7 @@ export default function ExportMenu({
     toast.success('Excel exported successfully');
   };
 
-  const handleExportPDF = async () => {
-    const { jsPDF } = await import('jspdf');
+  const handleExportPDF = () => {
     const doc = new jsPDF();
     const headers = getHeaders();
     const rows = data.map(getRowData);

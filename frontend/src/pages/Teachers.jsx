@@ -5,6 +5,7 @@ import { useCurrentUser } from '../hooks/useCurrentUser';
 import { useParallelFetch } from '../hooks/useFetch';
 import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
+import { jsPDF } from 'jspdf';
 import * as XLSX from 'xlsx';
 import { useScrollLock } from '../hooks/useScrollLock';
 import { LoadingSpinner, EmptyState, Button } from '../components/ui';
@@ -337,8 +338,7 @@ const Teachers = () => {
     toast.success('Excel exported successfully');
   };
 
-  const handleExportPDF = async () => {
-    const { jsPDF } = await import('jspdf');
+  const handleExportPDF = () => {
     const doc = new jsPDF();
     doc.setFontSize(18);
     doc.text('Faculty Directory', 14, 20);
