@@ -1,21 +1,28 @@
 /**
- * SF10 Export Utility
+ * SF10-JHS Export Utility
  *
- * Generates an Excel workbook that follows the structure of the official
- * DepEd SF10-JHS "Learner's Permanent Academic Record for Junior High School"
- * (formerly Form 137).
+ * Generates an Excel workbook that exactly replicates the official DepEd
+ * SF10-JHS (Form 137) layout — one full form per student, stacked vertically
+ * on a single worksheet, matching the paper form's structure.
  *
- * One sheet = one classroom/section.  The layout mirrors the paper form:
- *   - Header block   : school info, learner info (one row per student)
- *   - Grade table    : Q1–Q4 + Final Rating per learning area + General Average
- *   - Remarks legend : Grading scale & non-numerical rating
- *   - Certification  : Principal signature block
+ * Layout per student (mirroring SF10 FRONT):
+ *   Row 1-2  : Republic / DepEd / form title
+ *   Row 3    : LEARNER'S INFORMATION (name, LRN, birthdate, sex)
+ *   Row 4    : SCHOLASTIC RECORD header (school, grade, section, SY, adviser)
+ *   Row 5    : Column headers (LEARNING AREAS | Q1 | Q2 | Q3 | Q4 | FINAL | REMARKS)
+ *   Row 6-16 : One row per JHS learning area with grades
+ *   Row 17   : General Average row
+ *   Row 18   : Remedial Classes header
+ *   Row 19-22: Remedial rows (blank)
+ *   Row 23   : Blank separator between students
  */
 
 import * as XLSX from 'xlsx';
 
-/** DepEd JHS learning areas in display order */
-export const JHS_LEARNING_AREAS = [
+// ─── Constants ───────────────────────────────────────────────────────────────
+
+/** Official JHS learning areas per SF10 */
+const JHS_LEARNING_AREAS = [
   'Filipino',
   'English',
   'Mathematics',
@@ -29,316 +36,406 @@ export const JHS_LEARNING_AREAS = [
   'Homeroom Guidance',
 ];
 
-/** Grading scale rows (bottom legend) */
+/** Grading scale for legend block */
 const GRADE_SCALE = [
-  ['Outstanding',           '90-100', 'Passed'],
-  ['Very Satisfactory',     '85-89',  'Passed'],
-  ['Satisfactory',          '80-84',  'Passed'],
-  ['Fairly Satisfactory',   '75-79',  'Passed'],
+  ['Outstanding',               '90-100',   'Passed'],
+  ['Very Satisfactory',         '85-89',    'Passed'],
+  ['Satisfactory',              '80-84',    'Passed'],
+  ['Fairly Satisfactory',       '75-79',    'Passed'],
   ['Did Not Meet Expectations', 'Below 75', 'Failed'],
 ];
 
-/**
- * Map a subject_name (from the API) to one of the JHS_LEARNING_AREAS display
- * names.  Falls back to the raw name when no match is found.
- */
-function mapSubjectToLearningArea(subjectName) {
-  if (!subjectName) return subjectName;
+// Column indices (0-based) — A=0, B=1, C=2, D=3, E=4, F=5, G=6
+// Layout: A=Learning Areas, B=Q1, C=Q2, D=Q3, E=Q4, F=Final Rating, G=Remarks
+const COL = { AREA: 0, Q1: 1, Q2: 2, Q3: 3, Q4: 4, FINAL: 5, REMARKS: 6 };
+const TOTAL_COLS = 7;
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+/** Map API subject_name to official SF10 learning area label */
+function mapToLearningArea(subjectName) {
+  if (!subjectName) return null;
   const s = subjectName.trim().toLowerCase();
-
-  if (s.includes('filipino')) return 'Filipino';
-  if (s.includes('english')) return 'English';
-  if (s.includes('math')) return 'Mathematics';
-  if (s.includes('science')) return 'Science';
-  if (s.includes('araling') || s === 'ap') return 'Araling Panlipunan (AP)';
-  if (s.includes('pagpapakatao') || s === 'esp' || s.includes('edukasyon sa pagp'))
-    return 'Edukasyon sa Pagpapakatao (EsP)';
-  if (s.includes('tle') || s.includes('livelihood') || s.includes('technology'))
-    return 'Technology and Livelihood Education (TLE)';
-  if (s === 'mapeh' || s.includes('mapeh')) return 'MAPEH';
-  if (s.includes('music') || s.includes('arts'))   return 'Music and Arts';
-  if (s.includes('physical education') || s === 'pe' || s.includes('health'))
-    return 'Physical Education and Health';
-  if (s.includes('homeroom') || s.includes('guidance')) return 'Homeroom Guidance';
-
-  return subjectName; // fallback
+  if (s.includes('filipino'))                                      return 'Filipino';
+  if (s.includes('english'))                                       return 'English';
+  if (s.includes('math'))                                          return 'Mathematics';
+  if (s.includes('science'))                                       return 'Science';
+  if (s.includes('araling') || s === 'ap')                        return 'Araling Panlipunan (AP)';
+  if (s.includes('pagpapakatao') || s === 'esp')                  return 'Edukasyon sa Pagpapakatao (EsP)';
+  if (s.includes('tle') || s.includes('livelihood') || s.includes('technology')) return 'Technology and Livelihood Education (TLE)';
+  if (s === 'mapeh')                                               return 'MAPEH';
+  if (s.includes('music') || s.includes('arts'))                  return 'Music and Arts';
+  if (s.includes('physical') || s === 'pe' || s.includes('health')) return 'Physical Education and Health';
+  if (s.includes('homeroom') || s.includes('guidance'))           return 'Homeroom Guidance';
+  return null; // unrecognised — will be skipped in learning-area lookup
 }
 
-/**
- * Compute average of non-null quarterly values.
- * Returns the numeric value (not yet rounded) or null.
- */
-function calcFinal(quarters) {
-  const vals = [quarters.q1, quarters.q2, quarters.q3, quarters.q4]
-    .filter(v => v !== null && v !== undefined && !isNaN(Number(v)));
-  if (!vals.length) return null;
-  return vals.reduce((a, b) => a + Number(b), 0) / vals.length;
-}
-
-/** Round to nearest whole number (DepEd rounding) */
+/** DepEd rounding: round half-up to nearest whole number */
 function depedRound(v) {
-  if (v === null || v === undefined || isNaN(v)) return '';
-  return Math.round(v);
+  if (v === null || v === undefined || v === '' || isNaN(Number(v))) return '';
+  return Math.round(Number(v));
 }
 
-/** Remarks based on final grade */
-function getRemarks(finalGrade) {
-  if (finalGrade === null || finalGrade === undefined || finalGrade === '') return '';
+/** Compute quarterly average */
+function calcFinalGrade(quarters) {
+  const vals = ['q1','q2','q3','q4']
+    .map(k => quarters[k])
+    .filter(v => v !== null && v !== undefined && v !== '' && !isNaN(Number(v)))
+    .map(Number);
+  if (!vals.length) return '';
+  return depedRound(vals.reduce((a, b) => a + b, 0) / vals.length);
+}
+
+/** Passed / Failed based on final grade */
+function remarks(finalGrade) {
+  if (finalGrade === '' || finalGrade === null) return '';
   return Number(finalGrade) >= 75 ? 'Passed' : 'Failed';
 }
 
 /**
- * Build a full SF10-JHS workbook for one classroom/section.
- *
- * @param {Object} params
- * @param {Object}   params.classroom   - { id, name, subjects: [{id,name,code}] }
- * @param {string}   params.schoolName  - e.g. "Kiwalan National High School"
- * @param {string}   params.schoolId    - e.g. "304147"
- * @param {string}   params.district    - e.g. "Cagayan de Oro City"
- * @param {string}   params.division    - e.g. "Misamis Oriental"
- * @param {string}   params.region      - e.g. "X"
- * @param {string}   params.schoolYear  - e.g. "2023-2024"
- * @param {string}   params.gradeLevel  - e.g. "7"
- * @param {string}   params.section     - e.g. "Sampaguita"
- * @param {string}   params.adviser     - teacher full name
- * @param {Array}    params.students    - enrollment records from /enrollments/?classroom=
- *                                         Each: { student, student_name, student_lrn, ... }
- * @param {Object}   params.gradesMap   - Map of subjectId -> array of grade objects
- *                                         Grade object: { student, quarter, raw_score }
- *
- * @returns {Blob}  .xlsx Blob ready for download
+ * Write a value into the sheet's cell map.
+ * r = 0-based row, c = 0-based col
  */
-export function generateSF10(params) {
+function setCell(ws, r, c, value, opts = {}) {
+  const addr = XLSX.utils.encode_cell({ r, c });
+  const cellType = typeof value === 'number' ? 'n' : 's';
+  ws[addr] = { v: value, t: cellType, ...opts };
+}
+
+/** Update the sheet range to include this row */
+function extendRange(ws, maxRow, maxCol) {
+  ws['!ref'] = XLSX.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: maxRow, c: maxCol } });
+}
+
+// ─── Per-student SF10 block builder ─────────────────────────────────────────
+
+/**
+ * Append one full SF10 form for a single student into the worksheet,
+ * starting at `startRow` (0-based).  Returns the next available row.
+ */
+function appendStudentSF10(ws, startRow, student, schoolInfo) {
+  let r = startRow;
   const {
-    classroom,
-    schoolName  = 'Kiwalan National High School',
-    schoolId    = '304147',
-    district    = '',
-    division    = '',
-    region      = 'X',
-    schoolYear  = '',
-    gradeLevel  = '',
-    section     = '',
-    adviser     = '',
-    students    = [],
-    gradesMap   = {},  // subjectId (string) -> [{ student, quarter, raw_score }]
-  } = params;
+    schoolName, schoolId, district, division, region,
+    schoolYear, gradeLevel, section, adviser,
+  } = schoolInfo;
 
+  // ── Title block ──────────────────────────────────────────────────────────
+  setCell(ws, r, 0, 'SF 10 -JHS');
+  r++;
+  setCell(ws, r, 0, 'Republic of the Philippines');
+  r++;
+  setCell(ws, r, 0, 'Department of Education');
+  r++;
+  setCell(ws, r, 0, "Learner's Permanent Academic Record for Junior High School (SF10-JHS)");
+  r++;
+  setCell(ws, r, 0, '(Formerly Form 137)');
+  r++;
+
+  // ── Learner's Information ────────────────────────────────────────────────
+  setCell(ws, r, 0, "LEARNER'S INFORMATION");
+  r++;
+
+  // Parse name parts
+  const fullName = student.name || '';
+  const nameParts = fullName.split(',').map(p => p.trim());
+  const lastName  = nameParts[0] || fullName;
+  const restParts = (nameParts[1] || '').split(' ').filter(Boolean);
+  const firstName  = restParts[0] || '';
+  const middleName = restParts.slice(1).join(' ') || '';
+
+  setCell(ws, r, 0, 'LAST NAME:');
+  setCell(ws, r, 1, lastName);
+  setCell(ws, r, 2, 'FIRST NAME:');
+  setCell(ws, r, 3, firstName);
+  setCell(ws, r, 4, 'MIDDLE NAME:');
+  setCell(ws, r, 5, middleName);
+  r++;
+  setCell(ws, r, 0, 'Learner Reference Number (LRN):');
+  setCell(ws, r, 1, student.lrn || '');
+  setCell(ws, r, 2, 'Birthdate (mm/dd/yyyy):');
+  setCell(ws, r, 3, student.birthdate || '');
+  setCell(ws, r, 4, 'Sex:');
+  setCell(ws, r, 5, student.sex || '');
+  r++;
+  r++; // blank
+
+  // ── Eligibility block ─────────────────────────────────────────────────────
+  setCell(ws, r, 0, 'ELIGIBILITY FOR JHS ENROLMENT');
+  r++;
+  setCell(ws, r, 0, 'Elementary School Completer:');
+  setCell(ws, r, 2, 'General Average:');
+  setCell(ws, r, 4, 'Citation (if any):');
+  r++;
+  setCell(ws, r, 0, 'Name of Elementary School:');
+  setCell(ws, r, 3, 'School ID:');
+  setCell(ws, r, 4, 'Address of School:');
+  r++;
+  r++; // blank
+
+  // ── Scholastic Record header ──────────────────────────────────────────────
+  setCell(ws, r, 0, 'SCHOLASTIC RECORD');
+  r++;
+  setCell(ws, r, 0, 'School:');
+  setCell(ws, r, 1, schoolName);
+  setCell(ws, r, 2, 'School ID:');
+  setCell(ws, r, 3, schoolId);
+  setCell(ws, r, 4, 'District:');
+  setCell(ws, r, 5, district);
+  r++;
+  setCell(ws, r, 0, 'Division:');
+  setCell(ws, r, 1, division);
+  setCell(ws, r, 3, 'Region:');
+  setCell(ws, r, 4, region);
+  r++;
+  setCell(ws, r, 0, `Classified as Grade: ${gradeLevel}`);
+  setCell(ws, r, 2, `Section: ${section}`);
+  setCell(ws, r, 4, `School Year: ${schoolYear}`);
+  r++;
+  setCell(ws, r, 0, `Name of Adviser/Teacher: ${adviser}`);
+  setCell(ws, r, 4, 'Signature: _____________');
+  r++;
+
+  // ── Grade table column headers ────────────────────────────────────────────
+  setCell(ws, r, COL.AREA,    'LEARNING AREAS');
+  setCell(ws, r, COL.Q1,      'Quarterly Rating');
+  setCell(ws, r, COL.Q2,      '');
+  setCell(ws, r, COL.Q3,      '');
+  setCell(ws, r, COL.Q4,      '');
+  setCell(ws, r, COL.FINAL,   'FINAL');
+  setCell(ws, r, COL.REMARKS, 'REMARKS');
+  r++;
+  setCell(ws, r, COL.AREA,    '');
+  setCell(ws, r, COL.Q1,      '1');
+  setCell(ws, r, COL.Q2,      '2');
+  setCell(ws, r, COL.Q3,      '3');
+  setCell(ws, r, COL.Q4,      '4');
+  setCell(ws, r, COL.FINAL,   'RATING');
+  setCell(ws, r, COL.REMARKS, '');
+  r++;
+
+  // ── Learning area grade rows ──────────────────────────────────────────────
+  const areaGrades = student.areaGrades || {};
+  let finalsForAvg = [];
+
+  JHS_LEARNING_AREAS.forEach(area => {
+    const aq = areaGrades[area] || {};
+    const finalGrade = calcFinalGrade(aq);
+    if (finalGrade !== '') finalsForAvg.push(Number(finalGrade));
+
+    setCell(ws, r, COL.AREA,    area);
+    setCell(ws, r, COL.Q1,      aq.q1 !== undefined && aq.q1 !== '' ? depedRound(aq.q1) : '');
+    setCell(ws, r, COL.Q2,      aq.q2 !== undefined && aq.q2 !== '' ? depedRound(aq.q2) : '');
+    setCell(ws, r, COL.Q3,      aq.q3 !== undefined && aq.q3 !== '' ? depedRound(aq.q3) : '');
+    setCell(ws, r, COL.Q4,      aq.q4 !== undefined && aq.q4 !== '' ? depedRound(aq.q4) : '');
+    setCell(ws, r, COL.FINAL,   finalGrade);
+    setCell(ws, r, COL.REMARKS, remarks(finalGrade));
+    r++;
+  });
+
+  // ── General Average row ───────────────────────────────────────────────────
+  const genAvg = finalsForAvg.length
+    ? depedRound(finalsForAvg.reduce((a, b) => a + b, 0) / finalsForAvg.length)
+    : '';
+  setCell(ws, r, COL.AREA,    'General Average');
+  setCell(ws, r, COL.FINAL,   genAvg);
+  setCell(ws, r, COL.REMARKS, remarks(genAvg));
+  r++;
+  r++; // blank
+
+  // ── Remedial Classes block ────────────────────────────────────────────────
+  setCell(ws, r, 0, 'Remedial Classes  Conducted from (mm/dd/yyyy) _________________ to (mm/dd/yyyy) _________________');
+  r++;
+  setCell(ws, r, 0, 'Learning Areas');
+  setCell(ws, r, 1, 'Final Rating');
+  setCell(ws, r, 2, 'Remedial Class Mark');
+  setCell(ws, r, 4, 'Recomputed Final Grade');
+  setCell(ws, r, 6, 'Remarks');
+  r++;
+  // 3 blank remedial rows
+  for (let i = 0; i < 3; i++) {
+    setCell(ws, r, 0, ''); r++;
+  }
+  r++; // blank separator between students
+
+  return r;
+}
+
+// ─── Grading scale + certification ───────────────────────────────────────────
+
+function appendLegendAndCertification(ws, startRow, schoolName, schoolId) {
+  let r = startRow;
+
+  setCell(ws, r, 0, 'GRADING SCALE / LEGEND');
+  r++;
+  setCell(ws, r, 0, 'Description');
+  setCell(ws, r, 1, 'Grading Scale');
+  setCell(ws, r, 2, 'Remarks');
+  setCell(ws, r, 4, 'Marking');
+  setCell(ws, r, 5, 'Non-numerical Rating');
+  r++;
+
+  const markings = [
+    ['AO', 'Always Observed'],
+    ['SO', 'Sometimes Observed'],
+    ['RO', 'Rarely Observed'],
+    ['NO', 'Not Observed'],
+    ['',   ''],
+  ];
+
+  GRADE_SCALE.forEach(([desc, scale, rem], i) => {
+    setCell(ws, r, 0, desc);
+    setCell(ws, r, 1, scale);
+    setCell(ws, r, 2, rem);
+    if (markings[i]) {
+      setCell(ws, r, 4, markings[i][0]);
+      setCell(ws, r, 5, markings[i][1]);
+    }
+    r++;
+  });
+
+  r++;
+  setCell(ws, r, 0, 'CERTIFICATION');
+  r++;
+  setCell(ws, r, 0,
+    'I CERTIFY that this is a true record of the learner named above with the LRN indicated ' +
+    'and that he/she is eligible for admission to the next grade level.'
+  );
+  r++;
+  setCell(ws, r, 0, `Name of School: ${schoolName}`);
+  setCell(ws, r, 3, `School ID: ${schoolId}`);
+  r++;
+  setCell(ws, r, 0, 'Last School Year Attended: ______________');
+  r++;
+  r++;
+  setCell(ws, r, 0, '________________________');
+  setCell(ws, r, 3, '________________________');
+  r++;
+  setCell(ws, r, 0, 'Date');
+  setCell(ws, r, 3, 'Name of Principal/School Head over Printed Name');
+  r++;
+  setCell(ws, r, 5, '(Affix School Seal here)');
+  r++;
+  setCell(ws, r, 0, 'Forwarded:');
+  r++;
+
+  return r;
+}
+
+// ─── Main workbook builder ────────────────────────────────────────────────────
+
+/**
+ * Build a workbook where every student occupies their own stacked SF10 block.
+ * @param {Object[]} studentData  - processed student objects with areaGrades
+ * @param {Object}   schoolInfo   - school metadata
+ * @param {string}   sheetLabel   - worksheet tab name (max 31 chars)
+ * @returns {Blob}
+ */
+function buildWorkbook(studentData, schoolInfo, sheetLabel) {
   const wb = XLSX.utils.book_new();
+  const ws = { '!cols': buildColWidths() };
 
-  // ── Build per-student SF10 data ──────────────────────────────────────────
-  // For each student build a map: learning area -> { q1, q2, q3, q4 }
-  const studentRows = students.map(enrollment => {
-    const studentId = enrollment.student;
-    const name = enrollment.student_name || enrollment.student_email || `Student ${studentId}`;
-    const lrn  = enrollment.student_lrn  || '';
+  let currentRow = 0;
 
-    // Collect grades per subject
-    const areaGrades = {}; // learningArea -> { q1, q2, q3, q4 }
-
-    Object.entries(gradesMap).forEach(([, gradeList]) => {
-      gradeList.forEach(g => {
-        if (String(g.student) !== String(studentId)) return;
-        const area = g._learningArea || 'Unknown';
-        if (!areaGrades[area]) areaGrades[area] = {};
-        areaGrades[area][`q${g.quarter}`] = g.raw_score;
-      });
-    });
-
-    // Final grades per area & general average
-    const areaFinals = {};
-    JHS_LEARNING_AREAS.forEach(area => {
-      if (!areaGrades[area]) { areaGrades[area] = {}; }
-      const f = calcFinal(areaGrades[area]);
-      areaFinals[area] = f !== null ? depedRound(f) : '';
-    });
-
-    const finalsWithValues = JHS_LEARNING_AREAS
-      .map(a => areaFinals[a])
-      .filter(v => v !== '' && !isNaN(Number(v)))
-      .map(Number);
-
-    const generalAverage = finalsWithValues.length
-      ? depedRound(finalsWithValues.reduce((a, b) => a + b, 0) / finalsWithValues.length)
-      : '';
-
-    return { studentId, name, lrn, areaGrades, areaFinals, generalAverage };
+  studentData.forEach(student => {
+    currentRow = appendStudentSF10(ws, currentRow, student, schoolInfo);
+    // Append individual certification+legend after each student form
+    currentRow = appendLegendAndCertification(
+      ws, currentRow,
+      schoolInfo.schoolName,
+      schoolInfo.schoolId
+    );
+    // Visual page break between students
+    currentRow += 2;
   });
 
-  // ── Sheet: SF10 (one worksheet per classroom) ────────────────────────────
-  _buildSF10Sheet(wb, {
-    classroom, schoolName, schoolId, district, division, region,
-    schoolYear, gradeLevel, section, adviser, studentRows,
-  });
+  extendRange(ws, currentRow, TOTAL_COLS - 1);
 
-  // Write workbook to binary
+  const safeName = sheetLabel.replace(/[:\\/?\[\]*]/g, '-').substring(0, 31);
+  XLSX.utils.book_append_sheet(wb, ws, safeName || 'SF10');
+
   const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
   return new Blob([wbout], {
     type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
   });
 }
 
-/* ─── internal helpers ─────────────────────────────────────────────────────── */
-
-/**
- * Build the SF10 worksheet and append to workbook.
- */
-function _buildSF10Sheet(wb, opts) {
-  const {
-    classroom, schoolName, schoolId, district, division, region,
-    schoolYear, gradeLevel, section, adviser, studentRows,
-  } = opts;
-
-  // We'll collect rows as arrays then convert
-  const aoa = []; // array of arrays
-
-  // ── Row 0: Republic header ───────────────────────────────────────────────
-  aoa.push(['Republic of the Philippines']);
-  aoa.push(['Department of Education']);
-  aoa.push(["Learner's Permanent Academic Record for Junior High School (SF10-JHS)"]);
-  aoa.push(['(Formerly Form 137)']);
-  aoa.push([]);
-
-  // ── Section info row ─────────────────────────────────────────────────────
-  aoa.push([
-    'School:', schoolName,
-    'School ID:', schoolId,
-    'District:', district,
-    'Division:', division,
-    'Region:', region,
-  ]);
-  aoa.push([
-    `Classified as Grade: ${gradeLevel}`,
-    `Section: ${section}`,
-    '',
-    `School Year: ${schoolYear}`,
-    '',
-    `Name of Adviser: ${adviser}`,
-  ]);
-  aoa.push([]);
-
-  // ── Column headers ───────────────────────────────────────────────────────
-  const headerRow = [
-    '#', 'LRN', "Learner's Name",
-    ...JHS_LEARNING_AREAS.flatMap(a => [a, '', '', '', '']),  // Q1-Q4, Final per area
-    'General Average', 'Remarks',
+function buildColWidths() {
+  return [
+    { wch: 46 }, // A – Learning Area (wide)
+    { wch: 8  }, // B – Q1
+    { wch: 8  }, // C – Q2
+    { wch: 8  }, // D – Q3
+    { wch: 8  }, // E – Q4
+    { wch: 12 }, // F – Final Rating
+    { wch: 10 }, // G – Remarks
   ];
-
-  // Sub-header
-  const subHeader = [
-    '', '', '',
-    ...JHS_LEARNING_AREAS.flatMap(() => ['Q1', 'Q2', 'Q3', 'Q4', 'Final']),
-    '', '',
-  ];
-
-  aoa.push(headerRow);
-  aoa.push(subHeader);
-
-  // ── Data rows ────────────────────────────────────────────────────────────
-  studentRows.forEach((sr, idx) => {
-    const row = [
-      idx + 1,
-      sr.lrn,
-      sr.name,
-      ...JHS_LEARNING_AREAS.flatMap(area => {
-        const aq = sr.areaGrades[area] || {};
-        const final = sr.areaFinals[area];
-        return [
-          aq.q1 !== undefined ? depedRound(aq.q1) : '',
-          aq.q2 !== undefined ? depedRound(aq.q2) : '',
-          aq.q3 !== undefined ? depedRound(aq.q3) : '',
-          aq.q4 !== undefined ? depedRound(aq.q4) : '',
-          final,
-        ];
-      }),
-      sr.generalAverage,
-      sr.generalAverage !== '' ? getRemarks(sr.generalAverage) : '',
-    ];
-    aoa.push(row);
-  });
-
-  aoa.push([]);
-
-  // ── Grading scale legend ─────────────────────────────────────────────────
-  aoa.push(['GRADING SCALE']);
-  aoa.push(['Description', 'Scale', 'Remarks']);
-  GRADE_SCALE.forEach(r => aoa.push(r));
-  aoa.push([]);
-
-  // ── Certification block ──────────────────────────────────────────────────
-  aoa.push(['CERTIFICATION']);
-  aoa.push([
-    `I CERTIFY that this is a true record of the learners listed above ` +
-    `and that they are eligible for promotion to the next grade level.`,
-  ]);
-  aoa.push([]);
-  aoa.push([`Name of School: ${schoolName}`, '', `School ID: ${schoolId}`]);
-  aoa.push([]);
-  aoa.push(['________________________', '', '________________________']);
-  aoa.push(['Date', '', 'Name of Principal/School Head']);
-  aoa.push(['', '', '(Affix School Seal here)']);
-
-  const ws = XLSX.utils.aoa_to_sheet(aoa);
-
-  // ── Column widths ─────────────────────────────────────────────────────────
-  const colWidths = [
-    { wch: 4  }, // #
-    { wch: 16 }, // LRN
-    { wch: 30 }, // Name
-    ...JHS_LEARNING_AREAS.flatMap(() => [
-      { wch: 5 }, { wch: 5 }, { wch: 5 }, { wch: 5 }, { wch: 7 }, // Q1-Q4 + Final
-    ]),
-    { wch: 10 }, // General Average
-    { wch: 8  }, // Remarks
-  ];
-  ws['!cols'] = colWidths;
-
-  const sheetName = (classroom.name || 'SF10').replace(/[:\\/?\[\]*]/g, '-').substring(0, 31);
-  XLSX.utils.book_append_sheet(wb, ws, sheetName);
 }
 
+// ─── Public API ───────────────────────────────────────────────────────────────
+
 /**
- * High-level helper called from the component.
+ * Main entry point called from the component.
  *
- * @param {Object} classroom  - { id, name, subjects }
- * @param {Array}  students   - enrollment list from /enrollments/?classroom=
- * @param {Array}  allGrades  - flat list of all grade records for this classroom
- *                             Each record: { student, subject, subject_name, quarter, raw_score, ... }
- * @param {Object} info       - { schoolName, schoolId, district, division, region,
- *                               schoolYear, gradeLevel, section, adviser }
+ * @param {Object}   classroom   - { id, name }
+ * @param {Array}    enrollments - from /enrollments/?classroom=
+ *   Each: { student, student_name, student_lrn, student_first_name,
+ *            student_last_name, student_birthdate, student_sex }
+ * @param {Array}    allGrades   - flat grade records from /grades/?classroom=
+ *   Each: { student, subject, subject_name, quarter (1-4), raw_score }
+ * @param {Object}   info        - schoolName, schoolId, district, division,
+ *                                 region, schoolYear, gradeLevel, section, adviser
  */
-export function exportSF10(classroom, students, allGrades, info = {}) {
-  // Build gradesMap: subjectId -> grades[], with _learningArea injected
-  const gradesMap = {};
+export function exportSF10(classroom, enrollments, allGrades, info = {}) {
+  const schoolInfo = {
+    schoolName: info.schoolName  || 'Kiwalan National High School',
+    schoolId:   info.schoolId    || '304147',
+    district:   info.district    || '',
+    division:   info.division    || '',
+    region:     info.region      || 'X',
+    schoolYear: info.schoolYear  || '',
+    gradeLevel: info.gradeLevel  || '',
+    section:    info.section     || classroom.name || '',
+    adviser:    info.adviser     || '',
+  };
+
+  // ── Build per-student areaGrades map ────────────────────────────────────
+  // grade index: studentId -> learningArea -> { q1, q2, q3, q4 }
+  const gradeIndex = {};
   allGrades.forEach(g => {
-    const subjectId = String(g.subject);
-    if (!gradesMap[subjectId]) gradesMap[subjectId] = [];
-
-    gradesMap[subjectId].push({
-      ...g,
-      _learningArea: mapSubjectToLearningArea(g.subject_name),
-    });
+    const sid = String(g.student);
+    const area = mapToLearningArea(g.subject_name);
+    if (!area) return;                   // skip unrecognised subjects
+    if (!gradeIndex[sid]) gradeIndex[sid] = {};
+    if (!gradeIndex[sid][area]) gradeIndex[sid][area] = {};
+    gradeIndex[sid][area][`q${g.quarter}`] = g.raw_score;
   });
 
-  const blob = generateSF10({
-    classroom,
-    gradesMap,
-    students,
-    schoolName:  info.schoolName  || 'Kiwalan National High School',
-    schoolId:    info.schoolId    || '304147',
-    district:    info.district    || '',
-    division:    info.division    || '',
-    region:      info.region      || 'X',
-    schoolYear:  info.schoolYear  || '',
-    gradeLevel:  info.gradeLevel  || '',
-    section:     info.section     || classroom.name || '',
-    adviser:     info.adviser     || '',
+  // ── Build student data list ──────────────────────────────────────────────
+  const studentData = enrollments.map(e => {
+    const sid = String(e.student);
+    // Prefer separate name fields; fall back to combined student_name
+    const lastName  = e.student_last_name  || '';
+    const firstName = e.student_first_name || '';
+    const fullName  = lastName && firstName
+      ? `${lastName}, ${firstName}`
+      : (e.student_name || `Student ${sid}`);
+
+    return {
+      name:      fullName,
+      lrn:       e.student_lrn || '',
+      birthdate: e.student_birthdate || '',
+      sex:       e.student_sex || e.sex || '',
+      areaGrades: gradeIndex[sid] || {},
+    };
   });
+
+  const blob = buildWorkbook(studentData, schoolInfo, classroom.name || 'SF10');
 
   const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `SF10_${(classroom.name || 'Class').replace(/\s+/g, '_')}_${info.schoolYear || 'SY'}.xlsx`;
+  const a   = document.createElement('a');
+  a.href     = url;
+  a.download = `SF10_${(classroom.name || 'Class').replace(/\s+/g, '_')}_${schoolInfo.schoolYear || 'SY'}.xlsx`;
   a.click();
   URL.revokeObjectURL(url);
 }
