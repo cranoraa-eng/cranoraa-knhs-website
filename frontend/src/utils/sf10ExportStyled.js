@@ -73,18 +73,44 @@ function calcFinalGrade(quarters) {
  * Set cell value without losing style
  */
 function setCellValue(cell, value) {
-  // Store the existing style
-  const existingStyle = { ...cell.style };
+  if (!cell) return;
+  
+  // Get the current cell data including style
+  const currentStyle = cell.style;
+  const currentFont = cell.font;
+  const currentBorder = cell.border;
+  const currentFill = cell.fill;
+  const currentAlignment = cell.alignment;
+  const currentNumFmt = cell.numFmt;
   
   // Set the value
   cell.value = value;
   
-  // Restore the style
-  cell.style = existingStyle;
+  // Explicitly restore all style properties
+  if (currentStyle) {
+    cell.style = currentStyle;
+  }
+  if (currentFont) {
+    cell.font = currentFont;
+  }
+  if (currentBorder) {
+    cell.border = currentBorder;
+  }
+  if (currentFill) {
+    cell.fill = currentFill;
+  }
+  if (currentAlignment) {
+    cell.alignment = currentAlignment;
+  }
+  if (currentNumFmt) {
+    cell.numFmt = currentNumFmt;
+  }
 }
 
 /**
- * Fill student information section (FRONT sheet)
+ * Fill student information section
+ * Based on screenshot: Row 7 has LAST NAME, FIRST NAME, MIDDLE NAME
+ * Row 8 has LRN, Birthdate, Sex
  */
 function fillStudentInfo(worksheet, student) {
   // Parse name
@@ -95,18 +121,21 @@ function fillStudentInfo(worksheet, student) {
   const firstName  = restParts[0] || '';
   const middleName = restParts.slice(1).join(' ') || '';
 
-  // LEARNER'S INFORMATION (Row 7-8) - preserve existing cell styles
-  setCellValue(worksheet.getCell('B7'), lastName);
-  setCellValue(worksheet.getCell('F7'), firstName);
+  // Row 7: LAST NAME, FIRST NAME, MIDDLE NAME
+  // Looking at screenshot: B7=label, C7=value, F7=label, G7=value, etc.
+  setCellValue(worksheet.getCell('C7'), lastName);
+  setCellValue(worksheet.getCell('G7'), firstName);
   setCellValue(worksheet.getCell('M7'), middleName);
   
-  setCellValue(worksheet.getCell('B8'), student.lrn || '');
-  setCellValue(worksheet.getCell('H8'), student.birthdate || '');
+  // Row 8: LRN, Birthdate, Sex
+  setCellValue(worksheet.getCell('C8'), student.lrn || '');
+  setCellValue(worksheet.getCell('G8'), student.birthdate || '');
   setCellValue(worksheet.getCell('M8'), student.sex || '');
 }
 
 /**
- * Fill school/scholastic information (FRONT sheet)
+ * Fill school/scholastic information
+ * Based on screenshot: Row 14-17 contain school information
  */
 function fillSchoolInfo(worksheet, schoolInfo) {
   const {
@@ -114,25 +143,28 @@ function fillSchoolInfo(worksheet, schoolInfo) {
     schoolYear, gradeLevel, section, adviser,
   } = schoolInfo;
 
-  // SCHOLASTIC RECORD (Row 20-21) - preserve existing cell styles
-  setCellValue(worksheet.getCell('B20'), schoolName);
-  setCellValue(worksheet.getCell('G20'), schoolId);
-  setCellValue(worksheet.getCell('I20'), district);
-  setCellValue(worksheet.getCell('N20'), division);
-  setCellValue(worksheet.getCell('Q20'), region);
+  // Row 14: School, School ID, District
+  setCellValue(worksheet.getCell('C14'), schoolName);
+  setCellValue(worksheet.getCell('G14'), schoolId);
+  setCellValue(worksheet.getCell('K14'), district);
   
-  setCellValue(worksheet.getCell('B21'), gradeLevel);
-  setCellValue(worksheet.getCell('D21'), section);
-  setCellValue(worksheet.getCell('G21'), schoolYear);
-  setCellValue(worksheet.getCell('J21'), adviser);
+  // Row 15: Division, Region
+  setCellValue(worksheet.getCell('C15'), division);
+  setCellValue(worksheet.getCell('G15'), region);
+  
+  // Row 16: Grade, Section, School Year
+  setCellValue(worksheet.getCell('D16'), gradeLevel);
+  setCellValue(worksheet.getCell('G16'), section);
+  setCellValue(worksheet.getCell('K16'), schoolYear);
+  
+  // Row 17: Adviser
+  setCellValue(worksheet.getCell('E17'), adviser);
 }
 
 /**
  * Fill grades for a specific grade level block
- * 
- * @param {Object} worksheet - ExcelJS worksheet
- * @param {number} startRow - Starting row for grade table data (first Filipino row)
- * @param {Object} areaGrades - { 'Filipino': { q1: 85, q2: 87, ... }, ... }
+ * Based on screenshot: Row 19 is header "LEARNING AREAS", row 21 starts with Filipino
+ * Columns appear to be: A=Learning Area, B=Q1, C=Q2, D=Q3, E=Q4, F=Final, G=Remarks
  */
 function fillGradesBlock(worksheet, startRow, areaGrades) {
   JHS_AREAS.forEach((area, index) => {
@@ -145,16 +177,27 @@ function fillGradesBlock(worksheet, startRow, areaGrades) {
     const q4 = aq.q4 !== undefined && aq.q4 !== '' ? depedRound(aq.q4) : null;
     
     // Set values while preserving cell styles
+    // Columns: B=Q1, C=Q2, D=Q3, E=Q4, F=Final, G=Remarks
     setCellValue(worksheet.getCell(row, 2), q1);  // Column B (Q1)
     setCellValue(worksheet.getCell(row, 3), q2);  // Column C (Q2)
     setCellValue(worksheet.getCell(row, 4), q3);  // Column D (Q3)
     setCellValue(worksheet.getCell(row, 5), q4);  // Column E (Q4)
     
-    // Only set Final Rating if there's no formula
-    const finalCell = worksheet.getCell(row, 6); // Column F
+    // Column F - Final Rating (check for formula first)
+    const finalCell = worksheet.getCell(row, 6);
     if (!finalCell.formula && !finalCell.formulaType) {
       const finalGrade = calcFinalGrade(aq);
       setCellValue(finalCell, finalGrade);
+    }
+    
+    // Column G - Remarks (Passed/Failed)
+    const remarksCell = worksheet.getCell(row, 7);
+    if (!remarksCell.formula && !remarksCell.formulaType) {
+      const finalGrade = calcFinalGrade(aq);
+      if (finalGrade !== null && finalGrade !== '') {
+        const remarkText = finalGrade >= 75 ? 'Passed' : 'Failed';
+        setCellValue(remarksCell, remarkText);
+      }
     }
   });
 }
@@ -163,7 +206,7 @@ function fillGradesBlock(worksheet, startRow, areaGrades) {
  * Fill a single student's SF10 from template
  */
 async function fillStudentSF10(templatePath, student, schoolInfo, gradeLevel) {
-  // Load template
+  // Load template with full fidelity
   const workbook = new ExcelJS.Workbook();
   
   try {
@@ -183,7 +226,12 @@ async function fillStudentSF10(templatePath, student, schoolInfo, gradeLevel) {
       throw new Error('Template file is empty. Please check the file.');
     }
     
-    await workbook.xlsx.load(arrayBuffer);
+    // Load with options to preserve everything
+    await workbook.xlsx.load(arrayBuffer, {
+      ignoreNodes: [],
+      cellStyles: true,
+      cellDates: true
+    });
   } catch (error) {
     if (error.message.includes('central directory')) {
       throw new Error(
@@ -215,13 +263,12 @@ async function fillStudentSF10(templatePath, student, schoolInfo, gradeLevel) {
   // Determine which block to fill based on current grade level
   const currentGrade = parseInt(gradeLevel) || 9;
   
-  // The grades table starts after the "LEARNING AREAS" header row
-  // Based on the template document structure, grades start around row 19-20
-  // Let's use row 19 as the starting point for grade data
-  const gradesStartRow = 19;
+  // Based on the screenshot: Row 19 = header "LEARNING AREAS"
+  // Row 20 = sub-header with quarter numbers
+  // Row 21 = Filipino (first subject row)
+  const gradesStartRow = 21;
   
-  // For single-sheet templates, use the same row range
-  // For multi-sheet templates, each grade level might be on a different sheet
+  // For single-sheet templates, use row 21
   if (currentGrade === 7) {
     fillGradesBlock(frontSheet, gradesStartRow, areaGrades);
   } else if (currentGrade === 8) {
@@ -293,8 +340,11 @@ export async function exportSF10(classroom, enrollments, allGrades, info = {}) {
     
     const workbook = await fillStudentSF10(templatePath, student, schoolInfo, schoolInfo.gradeLevel);
 
-    // Generate and download the file
-    const buffer = await workbook.xlsx.writeBuffer();
+    // Generate and download the file with full style preservation
+    const buffer = await workbook.xlsx.writeBuffer({
+      useStyles: true,
+      useSharedStrings: true
+    });
     const blob = new Blob([buffer], {
       type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     });
