@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { loginRequest, clearSession } from '../utils/auth';
+import { loginRequest } from '../utils/auth';
+import { clearSession } from '../utils/session';
 import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
 
