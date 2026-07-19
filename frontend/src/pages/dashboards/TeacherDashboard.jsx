@@ -446,7 +446,7 @@ const TeacherDashboard = () => {
                         <p className="text-xs font-bold text-slate-900 truncate">{msg.sender}</p>
                         <span className="text-[10px] font-semibold text-slate-400 shrink-0">{formatMessageTime(msg.timestamp)}</span>
                       </div>
-                      <p className="text-xs text-slate-500 truncate mt-0.5">{msg.content}</p>
+                      <p className="text-xs text-slate-500 truncate mt-0.5">{typeof msg.content === 'string' ? msg.content : ''}</p>
                     </div>
                     {!msg.is_read && (
                       <span className="w-2 h-2 rounded-full bg-violet-500 shrink-0" />

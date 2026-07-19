@@ -250,7 +250,7 @@ const ChatMessage = memo(function ChatMessage({ msg, i, chatMessages, userId, sh
         {showAvatar && !isOwn && <span className="text-[11px] font-semibold text-slate-500 mb-0.5 ml-1">{msg.sender_name}</span>}
         {msg.parent_message_details && (
           <div className={`text-[11px] px-2.5 py-1 mb-0.5 rounded-t-lg border-l-2 min-w-0 max-w-full overflow-hidden ${isOwn ? 'bg-violet-50 border-violet-400 text-violet-700' : 'bg-slate-50 border-slate-300 text-slate-600'}`}>
-            <span className="font-semibold">{msg.parent_message_details.sender_name}</span>: <span className="break-all">{msg.parent_message_details.content?.slice(0, 60)}</span>
+            <span className="font-semibold">{msg.parent_message_details.sender_name}</span>: <span className="break-all">{typeof msg.parent_message_details.content === 'string' ? msg.parent_message_details.content.slice(0, 60) : ''}</span>
           </div>
         )}
         <div className="relative group">
@@ -270,7 +270,7 @@ const ChatMessage = memo(function ChatMessage({ msg, i, chatMessages, userId, sh
             </a>
           ) : (
             <div className={`px-3 py-2 rounded-2xl min-w-0 max-w-full overflow-hidden ${isOwn ? 'bg-violet-600 text-white rounded-br-md' : 'bg-white text-slate-800 border border-slate-200 shadow-sm rounded-bl-md'}`}>
-              <p className="text-sm whitespace-pre-wrap break-all">{msg.content}</p>
+              <p className="text-sm whitespace-pre-wrap break-all">{typeof msg.content === 'string' ? msg.content : ''}</p>
             </div>
           )}
           <div className={`absolute ${isOwn ? 'right-0' : 'left-0'} -top-8 opacity-0 group-hover:opacity-100 transition-opacity z-10 flex items-center gap-0.5 bg-white border border-slate-200 rounded-lg shadow-lg px-1 py-0.5 whitespace-nowrap`}>
@@ -756,7 +756,7 @@ export default function CommunicationCenter() {
                 <div className="flex items-center gap-2 px-4 py-2 bg-violet-50 border-t border-violet-200">
                   <div className="flex-1 min-w-0">
                     <p className="text-[11px] font-semibold text-violet-600">Replying to {replyTo.sender_name}</p>
-                    <p className="text-xs text-slate-600 truncate">{replyTo.content}</p>
+                    <p className="text-xs text-slate-600 truncate">{typeof replyTo.content === 'string' ? replyTo.content : ''}</p>
                   </div>
                   <button onClick={() => setReplyTo(null)} className="text-violet-400 hover:text-violet-600"><XIcon size={14} /></button>
                 </div>
