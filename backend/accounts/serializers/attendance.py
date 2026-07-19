@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from django.db import transaction
 
 from ..models import Attendance, AbsenceExcuse, Subject, TimeSlot, Schedule
 from ._base import full_name
@@ -48,6 +49,43 @@ class AttendanceSerializer(serializers.ModelSerializer):
 
     def get_student_name(self, obj): return full_name(obj.student)
     def get_marked_by_name(self, obj): return full_name(obj.marked_by) if obj.marked_by else ''
+
+    def create(self, validated_data):
+        """Handle unique constraint by updating existing record if one exists."""
+        student = validated_data['student']
+        classroom = validated_data['classroom']
+        date = validated_data['date']
+        schedule = validated_data.get('schedule')
+
+        with transaction.atomic():
+            if schedule:
+                attendance, created = Attendance.objects.update_or_create(
+                    student=student,
+                    schedule=schedule,
+                    date=date,
+                    defaults={
+                        'classroom': classroom,
+                        'subject': schedule.subject,
+                        'time_slot': schedule.time_slot,
+                        'status': validated_data.get('status', 'present'),
+                        'remarks': validated_data.get('remarks', ''),
+                        'marked_by': validated_data.get('marked_by'),
+                    }
+                )
+            else:
+                attendance, created = Attendance.objects.update_or_create(
+                    student=student,
+                    classroom=classroom,
+                    date=date,
+                    schedule__isnull=True,
+                    defaults={
+                        'schedule': None,
+                        'status': validated_data.get('status', 'present'),
+                        'remarks': validated_data.get('remarks', ''),
+                        'marked_by': validated_data.get('marked_by'),
+                    }
+                )
+        return attendance
 
 
 class AbsenceExcuseSerializer(serializers.ModelSerializer):
