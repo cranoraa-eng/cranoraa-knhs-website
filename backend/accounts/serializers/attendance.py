@@ -1,6 +1,5 @@
 from rest_framework import serializers
 from django.db import transaction
-from rest_framework.validators import UniqueTogetherValidator
 
 from ..models import Attendance, AbsenceExcuse, Subject, TimeSlot, Schedule
 from ._base import full_name
@@ -47,18 +46,6 @@ class AttendanceSerializer(serializers.ModelSerializer):
                   'has_excuse', 'excuse_verified',
                   'created_at', 'updated_at']
         read_only_fields = ['marked_by', 'subject', 'time_slot', 'minutes_late']
-        validators = [
-            UniqueTogetherValidator(
-                queryset=Attendance.objects.all(),
-                fields=['student', 'schedule', 'date'],
-                message='Attendance already exists for this student, schedule, and date.'
-            ),
-            UniqueTogetherValidator(
-                queryset=Attendance.objects.all(),
-                fields=['student', 'classroom', 'date'],
-                message='Attendance already exists for this student, classroom, and date.'
-            ),
-        ]
 
     def get_student_name(self, obj): return full_name(obj.student)
     def get_marked_by_name(self, obj): return full_name(obj.marked_by) if obj.marked_by else ''
@@ -96,6 +83,43 @@ class AttendanceSerializer(serializers.ModelSerializer):
                         'status': validated_data.get('status', 'present'),
                         'remarks': validated_data.get('remarks', ''),
                         'marked_by': validated_data.get('marked_by'),
+                    }
+                )
+        return attendance
+
+    def update(self, instance, validated_data):
+        """Handle unique constraint by updating the existing record."""
+        student = validated_data.get('student', instance.student)
+        classroom = validated_data.get('classroom', instance.classroom)
+        date = validated_data.get('date', instance.date)
+        schedule = validated_data.get('schedule', instance.schedule)
+
+        with transaction.atomic():
+            if schedule:
+                attendance, created = Attendance.objects.update_or_create(
+                    student=student,
+                    schedule=schedule,
+                    date=date,
+                    defaults={
+                        'classroom': classroom,
+                        'subject': schedule.subject if schedule else None,
+                        'time_slot': schedule.time_slot if schedule else None,
+                        'status': validated_data.get('status', instance.status),
+                        'remarks': validated_data.get('remarks', instance.remarks),
+                        'marked_by': validated_data.get('marked_by', instance.marked_by),
+                    }
+                )
+            else:
+                attendance, created = Attendance.objects.update_or_create(
+                    student=student,
+                    classroom=classroom,
+                    date=date,
+                    schedule__isnull=True,
+                    defaults={
+                        'schedule': None,
+                        'status': validated_data.get('status', instance.status),
+                        'remarks': validated_data.get('remarks', instance.remarks),
+                        'marked_by': validated_data.get('marked_by', instance.marked_by),
                     }
                 )
         return attendance
