@@ -1,6 +1,5 @@
 import axios from 'axios';
-import { getAccessToken, updateTokens } from './auth';
-import { clearSession } from './session';
+import { getAccessToken, updateTokens, clearSession } from './session';
 
 const RAW_API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 
