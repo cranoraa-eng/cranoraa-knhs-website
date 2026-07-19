@@ -58,6 +58,7 @@ const ClassroomHub = () => {
   const fileInputRef = useRef(null);
 
   // Sync activeTab with ?view= URL param
+  const isTeacher = user?.role === 'staff' || user?.role === 'admin';
   const viewParam = searchParams.get('view');
   const validTabs = ['stream', 'materials', 'people', 'grades'];
   const teacherTabs = ['stream', 'materials', 'people', 'grades', 'attendance'];
@@ -74,8 +75,6 @@ const ClassroomHub = () => {
     newParams.set('view', key);
     setSearchParams(newParams);
   };
-
-  const isTeacher = user?.role === 'staff' || user?.role === 'admin';
 
   useEffect(() => {
     fetchClasses();
