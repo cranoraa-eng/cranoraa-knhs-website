@@ -109,5 +109,5 @@ export const protectedRoutes = [
   // Standalone routes
   { path: 'portal-calendar', element: Calendar, props: { mode: 'portal' }, roles: Role.ALL },
   { path: 'password-reset', element: PasswordReset, roles: [Role.PARENT] },
-  { path: 'attendance', element: Attendance, roles: [Role.ADMIN, Role.STAFF] },
+  { path: 'attendance', element: Attendance, roles: [Role.ADMIN, Role.STAFF, Role.STUDENT] },
 ];
