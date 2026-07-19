@@ -245,7 +245,7 @@ const ClassroomHub = () => {
       if (uploadForm.quarter) fd.append('quarter', uploadForm.quarter);
       if (uploadForm.week) fd.append('week', uploadForm.week);
 
-      const res = await api.post('/materials/', fd);
+      const res = await api.post('/materials/', fd, { headers: { 'Content-Type': undefined } });
       setMaterials([res.data, ...materials]);
       setShowUploadModal(false);
       setUploadForm({ title: '', description: '', material_type: 'dlp', file: null, quarter: '', week: '' });
