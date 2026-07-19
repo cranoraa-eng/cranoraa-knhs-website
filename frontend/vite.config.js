@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import { Buffer } from 'buffer';
 
 export default defineConfig(() => {
   return {
@@ -11,6 +12,22 @@ export default defineConfig(() => {
         },
       }),
     ],
+    define: {
+      // Polyfill Buffer for browser
+      global: 'globalThis',
+    },
+    resolve: {
+      alias: {
+        buffer: 'buffer',
+      },
+    },
+    optimizeDeps: {
+      esbuildOptions: {
+        define: {
+          global: 'globalThis',
+        },
+      },
+    },
     server: {
       port: 5173,
       proxy: {
@@ -48,10 +65,11 @@ export default defineConfig(() => {
             if (id.includes('node_modules/recharts/')) {
               return 'vendor-charts';
             }
-            // Export libraries (jspdf, xlsx, html2canvas ~200KB+)
+            // Export libraries (jspdf, xlsx, xlsx-populate, html2canvas ~200KB+)
             if (
               id.includes('node_modules/jspdf/') ||
               id.includes('node_modules/xlsx/') ||
+              id.includes('node_modules/xlsx-populate/') ||
               id.includes('node_modules/html2canvas/')
             ) {
               return 'vendor-export';

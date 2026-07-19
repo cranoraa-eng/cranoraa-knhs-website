@@ -29,6 +29,7 @@
   "dependencies": {
     "@tanstack/react-query": "^5.100.10",
     "axios": "^1.6.2",
+    "buffer": "^6.0.3",
     "exceljs": "^4.4.0",
     "framer-motion": "^12.40.0",
     "html2canvas": "1.4.1",

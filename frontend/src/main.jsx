@@ -7,6 +7,10 @@ import { Toaster } from 'react-hot-toast'
 import Swal from 'sweetalert2'
 import OfflineBanner from './components/OfflineBanner.jsx'
 import { getModalZ } from './components/ui/Modal.jsx'
+import { Buffer } from 'buffer'
+
+// Polyfill Buffer for xlsx-populate in browser
+window.Buffer = Buffer;
 
 const baseSwalOptions = {
   customClass: {
