@@ -159,7 +159,7 @@ export const TodayScheduleWidget = memo(({ navigate }) => {
         <div className="flex items-center justify-between">
           <CardTitle subtitle="Your teaching schedule">Today's Classes</CardTitle>
           <button
-            onClick={() => navigate('/schedule')}
+            onClick={() => navigate('/my-schedule')}
             className="text-xs font-bold text-violet-600 hover:text-violet-700 uppercase tracking-wide"
           >
             Full Schedule

@@ -281,10 +281,10 @@ const StudentDashboard = () => {
               </div>
             </div>
             <div className="flex flex-wrap gap-2">
-              <Button variant="secondary" size="sm" onClick={() => navigate('/student-grades')}>
+              <Button variant="secondary" size="sm" onClick={() => navigate('/grading-suite')}>
                 My Grades
               </Button>
-              <Button variant="secondary" size="sm" onClick={() => navigate('/schedule')}>
+              <Button variant="secondary" size="sm" onClick={() => navigate('/my-schedule')}>
                 Schedule
               </Button>
             </div>
@@ -354,7 +354,7 @@ const StudentDashboard = () => {
                     {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
                   </p>
                 </div>
-                <Button variant="ghost" size="sm" onClick={() => navigate('/schedule')}>
+                <Button variant="ghost" size="sm" onClick={() => navigate('/my-schedule')}>
                   View All
                 </Button>
               </div>
@@ -537,7 +537,7 @@ const StudentDashboard = () => {
                   <CardTitle>Subject Performance</CardTitle>
                   <p className="text-xs font-semibold text-slate-600 mt-0.5">Current Grades by Subject</p>
                 </div>
-                <Button variant="ghost" size="sm" onClick={() => navigate('/student-grades')}>
+                <Button variant="ghost" size="sm" onClick={() => navigate('/grading-suite')}>
                   View All
                 </Button>
               </div>
@@ -555,7 +555,7 @@ const StudentDashboard = () => {
                       <div
                         key={g.id}
                         className="px-3 py-2.5 border border-slate-200 rounded-md bg-white hover:bg-slate-50 hover:border-violet-300 cursor-pointer transition-all"
-                        onClick={() => navigate('/student-grades')}
+                        onClick={() => navigate('/grading-suite')}
                       >
                         <div className="flex items-center justify-between gap-2 mb-2">
                           <p className="text-sm font-bold text-slate-900 truncate">{g.subject_name}</p>
@@ -570,7 +570,7 @@ const StudentDashboard = () => {
                   {/* Fix 3: overflow indicator */}
                   {finalGrades.length > 8 && (
                     <button
-                      onClick={() => navigate('/student-grades')}
+                      onClick={() => navigate('/grading-suite')}
                       className="w-full py-2 text-xs font-bold text-violet-600 hover:text-violet-700 text-center border border-dashed border-violet-200 rounded-md hover:bg-violet-50 transition-colors"
                     >
                       + {finalGrades.length - 8} more subject{finalGrades.length - 8 !== 1 ? 's' : ''} — View All

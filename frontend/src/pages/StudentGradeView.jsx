@@ -154,11 +154,16 @@ const StudentGradeView = () => {
     doc.setFontSize(9);
     doc.setFont('helvetica', 'bold');
     doc.text('Subject', 20, yPos);
-    const headerX = [120, 140, 160, 180];
+    // Dynamically distribute period columns between x=115 and x=190
+    const periodCount = periodShortLabels.length; // 4 for JHS quarters, 3 for SHS terms
+    const colStart = 115;
+    const colEnd = 190;
+    const colStep = periodCount > 1 ? (colEnd - colStart) / (periodCount - 1) : 0;
+    const headerX = periodShortLabels.map((_, idx) =>
+      periodCount === 1 ? (colStart + colEnd) / 2 : colStart + idx * colStep
+    );
     periodShortLabels.forEach((label, idx) => {
-      if (idx < headerX.length) {
-        doc.text(label, headerX[idx], yPos, { align: 'center' });
-      }
+      doc.text(label, headerX[idx], yPos, { align: 'center' });
     });
     doc.text('Final', 200, yPos, { align: 'right' });
     
@@ -182,9 +187,7 @@ const StudentGradeView = () => {
       
       doc.text(entry.subject_name, 20, yPos);
       periodScores.forEach((score, idx) => {
-        if (idx < headerX.length) {
-          doc.text(String(score), headerX[idx], yPos, { align: 'center' });
-        }
+        doc.text(String(score), headerX[idx], yPos, { align: 'center' });
       });
       doc.text(String(avg), 200, yPos, { align: 'right' });
       
