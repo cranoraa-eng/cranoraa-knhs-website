@@ -505,19 +505,46 @@ export const GradeManagementView = ({ classroom, onBack }) => {
   );
 };
 
-// Attendance View - Custom inline implementation
-export const AttendanceView = ({ classroom, onBack }) => {
-  const [students, setStudents] = useState([]);
-  const [attendance, setAttendance] = useState({});
-  const [attendanceIds, setAttendanceIds] = useState({}); // track existing record IDs for upsert
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
-  const [loading, setLoading] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
+// Attendance View — full-featured system matching /attendance page
+const ATTENDANCE_STATUS_CONFIG = {
+  present: { label: 'Present', short: 'P', color: 'emerald', buttonClass: 'bg-emerald-600 text-white hover:bg-emerald-700 border-emerald-700' },
+  absent:  { label: 'Absent',  short: 'A', color: 'red',     buttonClass: 'bg-red-600 text-white hover:bg-red-700 border-red-700' },
+  late:    { label: 'Late',    short: 'L', color: 'amber',   buttonClass: 'bg-amber-600 text-white hover:bg-amber-700 border-amber-700' },
+  excused: { label: 'Excused', short: 'E', color: 'violet',  buttonClass: 'bg-violet-600 text-white hover:bg-violet-700 border-violet-700' },
+};
 
-  // Load students
+const getTodayStr = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+};
+
+export const AttendanceView = ({ classroom, onBack }) => {
+  const todayStr = useMemo(() => getTodayStr(), []);
+
+  // Mark state
+  const [view, setView] = useState('mark'); // mark, history, analytics
+  const [selectedDate, setSelectedDate] = useState(todayStr);
+  const [students, setStudents] = useState([]);
+  const [draftAttendance, setDraftAttendance] = useState({});
+  const [draftRemarks, setDraftRemarks] = useState({});
+  const [savedAttendance, setSavedAttendance] = useState({});
+  const [savedRemarks, setSavedRemarks] = useState({});
+  const [submitting, setSubmitting] = useState(false);
+  const [loadingStudents, setLoadingStudents] = useState(false);
+
+  // History state
+  const [history, setHistory] = useState([]);
+  const [historyDate, setHistoryDate] = useState(todayStr);
+  const [loadingHistory, setLoadingHistory] = useState(false);
+
+  // Analytics state
+  const [analytics, setAnalytics] = useState(null);
+  const [loadingAnalytics, setLoadingAnalytics] = useState(false);
+
+  // Load students for this classroom
   useEffect(() => {
     const fetchStudents = async () => {
-      setLoading(true);
+      setLoadingStudents(true);
       try {
         const res = await api.get(`/enrollments/?classroom=${classroom.id}`);
         const sorted = res.data.sort((a, b) => {
@@ -526,97 +553,149 @@ export const AttendanceView = ({ classroom, onBack }) => {
           return nameA.localeCompare(nameB);
         });
         setStudents(sorted);
-        // Initialize attendance
-        const initAttendance = {};
-        sorted.forEach(s => { initAttendance[s.student] = 'present'; });
-        setAttendance(initAttendance);
-        setAttendanceIds({}); // reset — will be repopulated by fetchAttendance effect
       } catch {
         toast.error('Failed to load students');
       } finally {
-        setLoading(false);
+        setLoadingStudents(false);
       }
     };
     fetchStudents();
   }, [classroom.id]);
 
-  // Load existing attendance for selected date
+  // Load existing attendance when date changes
   useEffect(() => {
     const fetchAttendance = async () => {
       try {
         const res = await api.get(`/attendance/?classroom=${classroom.id}&date=${selectedDate}`);
-        const attendanceMap = {};
-        const idMap = {};
-        res.data.forEach(a => {
-          attendanceMap[a.student] = a.status;
-          idMap[a.student] = a.id;
+        const map = {}, remarks = {};
+        res.data.forEach(r => {
+          map[r.student] = { id: r.id, status: r.status };
+          remarks[r.student] = r.remarks || '';
         });
-        setAttendanceIds(idMap);
-        // Reset ALL students to 'present', then apply whatever came back from the API.
-        // This ensures stale statuses from a previous date don't persist.
-        setAttendance(prev => {
-          const reset = {};
-          Object.keys(prev).forEach(studentId => {
-            reset[studentId] = attendanceMap[studentId] || 'present';
-          });
-          return reset;
-        });
+        setSavedAttendance(map);
+        setSavedRemarks(remarks);
+        setDraftAttendance(map);
+        setDraftRemarks(remarks);
       } catch {
         console.error('Failed to load attendance');
       }
     };
-    if (selectedDate) {
-      fetchAttendance();
-    }
+    if (selectedDate) fetchAttendance();
   }, [selectedDate, classroom.id]);
 
-  const handleStatusChange = (studentId, status) => {
-    setAttendance(prev => ({ ...prev, [studentId]: status }));
+  // Load history
+  useEffect(() => {
+    const fetchHistory = async () => {
+      setLoadingHistory(true);
+      try {
+        const params = new URLSearchParams({ classroom: classroom.id });
+        if (historyDate) params.append('date', historyDate);
+        const res = await api.get(`/attendance/?${params}`);
+        setHistory(res.data);
+      } catch { toast.error('Failed to load history'); }
+      finally { setLoadingHistory(false); }
+    };
+    if (view === 'history') fetchHistory();
+  }, [view, historyDate, classroom.id]);
+
+  // Load analytics
+  useEffect(() => {
+    const fetchAnalytics = async () => {
+      setLoadingAnalytics(true);
+      try {
+        const res = await api.get('/attendance/summary/', { params: { classroom: classroom.id } });
+        setAnalytics(res.data);
+      } catch { toast.error('Failed to load analytics'); }
+      finally { setLoadingAnalytics(false); }
+    };
+    if (view === 'analytics') fetchAnalytics();
+  }, [view, classroom.id]);
+
+  const markDraft = (studentId, status) => {
+    setDraftAttendance(prev => ({ ...prev, [studentId]: { ...prev[studentId], status } }));
   };
 
-  const handleSubmit = async () => {
+  const markAllDraft = (status) => {
+    const updated = {};
+    students.forEach(s => { updated[s.student] = { ...draftAttendance[s.student], status }; });
+    setDraftAttendance(prev => ({ ...prev, ...updated }));
+    toast(`All marked as ${ATTENDANCE_STATUS_CONFIG[status].label}. Click Save to confirm.`, { icon: 'ℹ️' });
+  };
+
+  const saveAttendance = async () => {
+    const toSave = students.filter(s => draftAttendance[s.student]?.status);
+    if (!toSave.length) return toast.error('Mark at least one student before saving');
     setSubmitting(true);
-    let successCount = 0;
-    let errorCount = 0;
-
-    for (const student of students) {
+    let ok = 0, fail = 0;
+    const newSaved = { ...savedAttendance };
+    await Promise.all(toSave.map(async s => {
+      const draft = draftAttendance[s.student];
+      const saved = savedAttendance[s.student];
+      const remarks = draftRemarks[s.student] || '';
       try {
-        const existingId = attendanceIds[student.student];
-        const payload = {
-          student: student.student,
-          classroom: classroom.id,
-          date: selectedDate,
-          status: attendance[student.student] || 'present',
-          recorded_by: null
-        };
-        if (existingId) {
-          await api.put(`/attendance/${existingId}/`, payload);
+        if (saved?.id) {
+          await api.patch(`/attendance/${saved.id}/`, { status: draft.status, remarks });
+          newSaved[s.student] = { id: saved.id, status: draft.status };
         } else {
-          await api.post('/attendance/', payload);
+          const res = await api.post('/attendance/', {
+            student: s.student, classroom: classroom.id,
+            date: selectedDate, status: draft.status, remarks,
+          });
+          newSaved[s.student] = { id: res.data.id, status: draft.status };
         }
-        successCount++;
-      } catch (err) {
-        errorCount++;
-        console.error(`Failed to submit attendance for ${student.student_name}`, err);
-      }
-    }
-
+        ok++;
+      } catch { fail++; }
+    }));
+    setSavedAttendance(newSaved);
+    setSavedRemarks(draftRemarks);
+    setDraftAttendance(newSaved);
+    setDraftRemarks(draftRemarks);
     setSubmitting(false);
+    if (ok > 0) toast.success(`Attendance saved for ${ok} student${ok !== 1 ? 's' : ''}`);
+    if (fail > 0) toast.error(`${fail} record${fail !== 1 ? 's' : ''} failed to save`);
+  };
 
-    if (successCount > 0) {
-      toast.success(`Attendance recorded for ${successCount} student(s)`);
-    }
-    if (errorCount > 0) {
-      toast.error(`Failed to record ${errorCount} attendance(s)`);
-    }
+  const deleteAttendance = async (record) => {
+    if (!window.confirm(`Delete attendance for ${record.student_name}?`)) return;
+    try {
+      await api.delete(`/attendance/${record.id}/`);
+      toast.success('Record deleted');
+      setHistory(prev => prev.filter(r => r.id !== record.id));
+    } catch { toast.error('Failed to delete record'); }
   };
 
   const stats = useMemo(() => {
-    const present = Object.values(attendance).filter(s => s === 'present').length;
-    const absent = Object.values(attendance).filter(s => s === 'absent').length;
-    const late = Object.values(attendance).filter(s => s === 'late').length;
-    return { present, absent, late, total: students.length };
-  }, [attendance, students.length]);
+    return students.reduce((acc, s) => {
+      const status = draftAttendance[s.student]?.status;
+      if (status) acc[status] = (acc[status] || 0) + 1;
+      else acc.unmarked = (acc.unmarked || 0) + 1;
+      return acc;
+    }, { present: 0, absent: 0, late: 0, excused: 0, unmarked: 0 });
+  }, [students, draftAttendance]);
+
+  const attendanceRate = useMemo(() => {
+    return students.length > 0
+      ? Math.round(((stats.present + stats.late) / students.length) * 100)
+      : null;
+  }, [students.length, stats.present, stats.late]);
+
+  const hasChanges = useMemo(() => {
+    return students.some(s =>
+      draftAttendance[s.student]?.status !== savedAttendance[s.student]?.status ||
+      (draftRemarks[s.student] || '') !== (savedRemarks[s.student] || '')
+    );
+  }, [students, draftAttendance, savedAttendance, draftRemarks, savedRemarks]);
+
+  const isWeekend = (dateStr) => {
+    if (!dateStr) return false;
+    const day = new Date(dateStr + 'T00:00:00').getDay();
+    return day === 0 || day === 6;
+  };
+
+  const getDayName = (dateStr) => {
+    if (!dateStr) return '';
+    return new Date(dateStr + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long' });
+  };
 
   return (
     <div className="space-y-4">
@@ -625,114 +704,294 @@ export const AttendanceView = ({ classroom, onBack }) => {
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Overview
         </Button>
-        <Button
-          variant="primary"
-          onClick={handleSubmit}
-          loading={submitting}
-        >
-          Submit Attendance
-        </Button>
+        <div className="flex rounded-lg border border-slate-300 overflow-hidden shadow-sm">
+          {[{ key: 'mark', label: 'Mark', icon: '✏️' }, { key: 'history', label: 'History', icon: '📋' }, { key: 'analytics', label: 'Analytics', icon: '📊' }].map(v => (
+            <button key={v.key} onClick={() => setView(v.key)}
+              className={`px-3 py-1.5 text-xs font-extrabold uppercase tracking-wide transition-all ${view === v.key ? 'bg-violet-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-50'}`}>
+              <span className="mr-1">{v.icon}</span>{v.label}
+            </button>
+          ))}
+        </div>
       </div>
 
-      <Card>
-        <CardHeader divider>
-          <CardTitle>Attendance - {classroom.name}</CardTitle>
-        </CardHeader>
-        <CardBody className="p-6">
-          {/* Date Selector */}
-          <div className="mb-6">
-            <label className="block text-sm font-semibold text-slate-700 mb-2">
-              Date
-            </label>
-            <input
-              type="date"
-              value={selectedDate}
-              onChange={e => setSelectedDate(e.target.value)}
-              className="px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500"
-            />
-          </div>
+      {/* ═══ MARK VIEW ═══ */}
+      {view === 'mark' && (
+        <>
+          <Card>
+            <CardBody className="p-4">
+              {isWeekend(selectedDate) && (
+                <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-md flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center text-amber-600 shrink-0">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-xs font-extrabold text-amber-800 uppercase tracking-wide">Weekend Detected ({getDayName(selectedDate)})</p>
+                    <p className="text-xs font-semibold text-amber-700 mt-0.5">Marking on weekends is typically not required.</p>
+                  </div>
+                </div>
+              )}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-2">Date</label>
+                  <input type="date" value={selectedDate} onChange={e => setSelectedDate(e.target.value)}
+                    className="w-full px-3 py-2.5 border border-slate-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-violet-100 focus:border-violet-500 text-sm font-semibold shadow-sm transition-all" />
+                </div>
+                {students.length > 0 && (
+                  <div>
+                    <label className="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-2">Quick Mark All</label>
+                    <div className="flex gap-2">
+                      <Button variant="secondary" size="sm" onClick={() => markAllDraft('present')}
+                        className="flex-1 bg-emerald-50 text-emerald-700 border-emerald-300 hover:bg-emerald-100">Present</Button>
+                      <Button variant="secondary" size="sm" onClick={() => markAllDraft('absent')}
+                        className="flex-1 bg-red-50 text-red-700 border-red-300 hover:bg-red-100">Absent</Button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </CardBody>
+          </Card>
 
-          {/* Stats */}
-          <div className="grid grid-cols-4 gap-4 mb-6">
-            <div className="bg-slate-50 rounded-lg p-4 text-center">
-              <div className="text-2xl font-bold text-slate-700">{stats.total}</div>
-              <div className="text-xs text-slate-600 uppercase font-semibold">Total</div>
-            </div>
-            <div className="bg-green-50 rounded-lg p-4 text-center">
-              <div className="text-2xl font-bold text-green-600">{stats.present}</div>
-              <div className="text-xs text-green-700 uppercase font-semibold">Present</div>
-            </div>
-            <div className="bg-red-50 rounded-lg p-4 text-center">
-              <div className="text-2xl font-bold text-red-600">{stats.absent}</div>
-              <div className="text-xs text-red-700 uppercase font-semibold">Absent</div>
-            </div>
-            <div className="bg-amber-50 rounded-lg p-4 text-center">
-              <div className="text-2xl font-bold text-amber-600">{stats.late}</div>
-              <div className="text-xs text-amber-700 uppercase font-semibold">Late</div>
-            </div>
-          </div>
-
-          {/* Attendance List */}
-          {loading ? (
-            <div className="flex items-center justify-center h-64">
-              <LoadingSpinner />
-            </div>
-          ) : students.length === 0 ? (
-            <EmptyState
-              title="No Students"
-              description="No students enrolled in this class"
-              icon={<Users className="w-8 h-8" />}
-            />
-          ) : (
-            <div className="space-y-2">
-              {students.map((student) => (
-                <div key={student.id} className="flex items-center gap-3 p-3 bg-white border border-slate-200 rounded-lg hover:border-violet-300 transition-colors">
-                  <div className="w-8 h-8 rounded-full bg-violet-100 flex items-center justify-center text-violet-600 font-bold text-xs shrink-0">
-                    {student.student_first_name?.charAt(0)}{student.student_last_name?.charAt(0)}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-slate-900">
-                      {student.student_last_name}, {student.student_first_name}
-                    </p>
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => handleStatusChange(student.student, 'present')}
-                      className={`px-4 py-2 rounded-md text-sm font-semibold transition-colors ${
-                        attendance[student.student] === 'present'
-                          ? 'bg-green-600 text-white'
-                          : 'bg-green-50 text-green-700 hover:bg-green-100'
-                      }`}
-                    >
-                      Present
-                    </button>
-                    <button
-                      onClick={() => handleStatusChange(student.student, 'absent')}
-                      className={`px-4 py-2 rounded-md text-sm font-semibold transition-colors ${
-                        attendance[student.student] === 'absent'
-                          ? 'bg-red-600 text-white'
-                          : 'bg-red-50 text-red-700 hover:bg-red-100'
-                      }`}
-                    >
-                      Absent
-                    </button>
-                    <button
-                      onClick={() => handleStatusChange(student.student, 'late')}
-                      className={`px-4 py-2 rounded-md text-sm font-semibold transition-colors ${
-                        attendance[student.student] === 'late'
-                          ? 'bg-amber-600 text-white'
-                          : 'bg-amber-50 text-amber-700 hover:bg-amber-100'
-                      }`}
-                    >
-                      Late
-                    </button>
-                  </div>
+          {!loadingStudents && students.length > 0 && (
+            <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
+              {[{ key: 'present', label: 'Present', color: 'emerald' }, { key: 'absent', label: 'Absent', color: 'red' },
+                { key: 'late', label: 'Late', color: 'amber' }, { key: 'excused', label: 'Excused', color: 'violet' },
+                { key: 'unmarked', label: 'Unmarked', color: 'slate' }].map(s => (
+                <div key={s.key} className={`rounded-lg border-l-4 border-l-${s.color}-500 bg-white p-3 text-center shadow-sm`}>
+                  <div className={`text-2xl font-extrabold text-${s.color}-600`}>{stats[s.key] || 0}</div>
+                  <div className="text-xs font-bold text-slate-600 uppercase tracking-wide mt-1">{s.label}</div>
                 </div>
               ))}
             </div>
           )}
-        </CardBody>
-      </Card>
+
+          {attendanceRate !== null && (
+            <Card>
+              <CardBody className="p-3">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-bold text-slate-700 uppercase tracking-wide">Attendance Rate</span>
+                  <span className={`text-lg font-extrabold ${attendanceRate >= 75 ? 'text-emerald-600' : 'text-red-600'}`}>{attendanceRate}%</span>
+                </div>
+                <div className="w-full bg-slate-100 rounded-full h-3">
+                  <div className={`h-3 rounded-full transition-all ${attendanceRate >= 75 ? 'bg-emerald-500' : 'bg-red-500'}`} style={{ width: `${attendanceRate}%` }} />
+                </div>
+              </CardBody>
+            </Card>
+          )}
+
+          {loadingStudents ? (
+            <div className="flex items-center justify-center h-48"><LoadingSpinner /></div>
+          ) : students.length === 0 ? (
+            <Card><CardBody className="p-12">
+              <EmptyState title="No Students" description="No students enrolled in this class" icon={<Users className="w-8 h-8" />} />
+            </CardBody></Card>
+          ) : (
+            <>
+              <Card>
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-slate-50 border-b border-slate-200">
+                      <tr>
+                        <th className="px-4 py-3 text-left text-xs font-extrabold text-slate-700 uppercase tracking-wider w-12">#</th>
+                        <th className="px-4 py-3 text-left text-xs font-extrabold text-slate-700 uppercase tracking-wider">Student Name</th>
+                        <th className="px-4 py-3 text-center text-xs font-extrabold text-slate-700 uppercase tracking-wider">Status</th>
+                        <th className="px-4 py-3 text-left text-xs font-extrabold text-slate-700 uppercase tracking-wider hidden md:table-cell">Remarks</th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-slate-100">
+                      {students.map((s, i) => {
+                        const status = draftAttendance[s.student]?.status;
+                        const savedStatus = savedAttendance[s.student]?.status;
+                        const changed = status !== savedStatus;
+                        const name = `${s.student_last_name || ''}, ${s.student_first_name || ''}`.trim() || s.student_name || 'Unknown';
+                        return (
+                          <tr key={s.student}
+                            className={`hover:bg-slate-50 transition-colors ${status === 'absent' ? 'bg-red-50/30' : status === 'late' ? 'bg-amber-50/30' : status === 'present' ? 'bg-emerald-50/20' : ''}`}>
+                            <td className="px-4 py-3 text-xs font-bold text-slate-500">{i + 1}</td>
+                            <td className="px-4 py-3">
+                              <div className="flex items-center gap-3">
+                                <div className="w-9 h-9 rounded-md bg-gradient-to-br from-violet-500 to-violet-600 flex items-center justify-center text-white font-extrabold text-xs shadow-sm border border-violet-700 shrink-0">
+                                  {(s.student_first_name?.charAt(0) || '').toUpperCase()}{(s.student_last_name?.charAt(0) || '').toUpperCase()}
+                                </div>
+                                <div>
+                                  <p className="text-sm font-bold text-slate-900">{name}</p>
+                                  {changed && <Badge variant="blue" size="sm" className="mt-0.5">Unsaved</Badge>}
+                                </div>
+                              </div>
+                            </td>
+                            <td className="px-4 py-3">
+                              <div className="flex items-center justify-center gap-1">
+                                {Object.keys(ATTENDANCE_STATUS_CONFIG).map(key => {
+                                  const cfg = ATTENDANCE_STATUS_CONFIG[key];
+                                  return (
+                                    <button key={key} onClick={() => markDraft(s.student, key)}
+                                      className={`px-2 py-2 sm:px-3 sm:py-2 text-[10px] sm:text-xs font-extrabold uppercase tracking-wide rounded border transition-all ${status === key ? cfg.buttonClass + ' shadow-sm' : 'bg-white text-slate-600 border-slate-300 hover:border-slate-400'}`}
+                                      aria-label={`Mark ${name} as ${cfg.label}`}
+                                      aria-pressed={status === key}
+                                      title={cfg.label}>
+                                      {cfg.short}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            </td>
+                            <td className="px-4 py-3 hidden md:table-cell">
+                              <input type="text" value={draftRemarks[s.student] || ''}
+                                onChange={e => setDraftRemarks(prev => ({ ...prev, [s.student]: e.target.value }))}
+                                placeholder="Add note..."
+                                className="w-full px-2 py-1 text-xs border border-slate-200 rounded focus:outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500" />
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </Card>
+
+              {hasChanges && (
+                <>
+                  <div className="flex justify-end">
+                    <Button variant="primary" onClick={saveAttendance} disabled={submitting}>
+                      {submitting ? 'Saving...' : 'Save Attendance'}
+                    </Button>
+                  </div>
+                  <div className="md:hidden">
+                    <Button variant="primary" onClick={saveAttendance} disabled={submitting} className="w-full">
+                      {submitting ? 'Saving...' : 'Save Attendance'}
+                    </Button>
+                  </div>
+                </>
+              )}
+            </>
+          )}
+        </>
+      )}
+
+      {/* ═══ HISTORY VIEW ═══ */}
+      {view === 'history' && (
+        <>
+          <Card>
+            <CardBody className="p-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-2">Date</label>
+                  <div className="flex gap-2">
+                    <input type="date" value={historyDate} onChange={e => setHistoryDate(e.target.value)}
+                      className="flex-1 px-3 py-2.5 border border-slate-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-violet-100 focus:border-violet-500 text-sm font-semibold shadow-sm transition-all" />
+                    {historyDate && <Button variant="secondary" size="sm" onClick={() => setHistoryDate('')}>All</Button>}
+                  </div>
+                </div>
+              </div>
+            </CardBody>
+          </Card>
+
+          {loadingHistory ? (
+            <div className="flex items-center justify-center h-48"><LoadingSpinner /></div>
+          ) : (
+            <Card>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-slate-50 border-b border-slate-200">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-xs font-extrabold text-slate-700 uppercase tracking-wider">Date</th>
+                      <th className="px-4 py-3 text-left text-xs font-extrabold text-slate-700 uppercase tracking-wider">Student</th>
+                      <th className="px-4 py-3 text-center text-xs font-extrabold text-slate-700 uppercase tracking-wider">Status</th>
+                      <th className="px-4 py-3 text-left text-xs font-extrabold text-slate-700 uppercase tracking-wider hidden md:table-cell">Remarks</th>
+                      <th className="px-4 py-3 text-center text-xs font-extrabold text-slate-700 uppercase tracking-wider">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-slate-100">
+                    {history.length === 0 ? (
+                      <tr><td colSpan={5} className="px-4 py-12 text-center text-sm text-slate-500">No records found</td></tr>
+                    ) : history.map((record) => {
+                      const cfg = ATTENDANCE_STATUS_CONFIG[record.status];
+                      const date = new Date(record.date + 'T00:00:00');
+                      return (
+                        <tr key={record.id} className="hover:bg-slate-50 transition-colors">
+                          <td className="px-4 py-3 text-sm font-bold text-slate-900">
+                            {date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                          </td>
+                          <td className="px-4 py-3 text-sm font-bold text-slate-900">{record.student_name}</td>
+                          <td className="px-4 py-3 text-center">
+                            <Badge variant={cfg?.color || 'slate'}>{cfg?.label || record.status}</Badge>
+                          </td>
+                          <td className="px-4 py-3 text-sm text-slate-600 hidden md:table-cell">{record.remarks || '—'}</td>
+                          <td className="px-4 py-3 text-center">
+                            <button onClick={() => deleteAttendance(record)} className="p-2 rounded-md text-red-600 hover:bg-red-50 transition-all" title="Delete Record">
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </Card>
+          )}
+        </>
+      )}
+
+      {/* ═══ ANALYTICS VIEW ═══ */}
+      {view === 'analytics' && (
+        <>
+          {loadingAnalytics ? (
+            <div className="flex items-center justify-center h-48"><LoadingSpinner /></div>
+          ) : !analytics ? (
+            <Card><CardBody className="p-12">
+              <EmptyState title="No Analytics Available" description="No attendance data to analyze" icon={<BarChart2 className="w-8 h-8" />} />
+            </CardBody></Card>
+          ) : (
+            <>
+              {analytics.pie_data && (
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {analytics.pie_data.map(item => (
+                    <div key={item.name} className={`rounded-lg border-l-4 border-l-${item.name === 'Present' ? 'emerald' : item.name === 'Late' ? 'amber' : item.name === 'Absent' ? 'red' : 'violet'}-500 bg-white p-4 text-center shadow-sm`}>
+                      <div className={`text-3xl font-extrabold text-${item.name === 'Present' ? 'emerald' : item.name === 'Late' ? 'amber' : item.name === 'Absent' ? 'red' : 'violet'}-600 mb-1`}>{item.value}</div>
+                      <div className="text-xs font-bold text-slate-600 uppercase tracking-wide">{item.name}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {analytics.daily_trends && analytics.daily_trends.length > 0 && (
+                <Card>
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead className="bg-slate-50 border-b border-slate-200">
+                        <tr>
+                          <th className="px-4 py-3 text-left text-xs font-extrabold text-slate-700 uppercase tracking-wider">Date</th>
+                          <th className="px-4 py-3 text-center text-xs font-extrabold text-slate-700 uppercase tracking-wider">Present</th>
+                          <th className="px-4 py-3 text-center text-xs font-extrabold text-slate-700 uppercase tracking-wider hidden sm:table-cell">Late</th>
+                          <th className="px-4 py-3 text-center text-xs font-extrabold text-slate-700 uppercase tracking-wider hidden md:table-cell">Excused</th>
+                          <th className="px-4 py-3 text-center text-xs font-extrabold text-slate-700 uppercase tracking-wider">Rate</th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-slate-100">
+                        {analytics.daily_trends.slice(-14).reverse().map(d => (
+                          <tr key={d.date} className="hover:bg-slate-50">
+                            <td className="px-4 py-3 text-sm font-bold text-slate-900">
+                              {new Date(d.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                            </td>
+                            <td className="px-4 py-3 text-center text-sm font-bold text-emerald-600">{d.present}</td>
+                            <td className="px-4 py-3 text-center text-sm font-bold text-amber-600 hidden sm:table-cell">{d.late}</td>
+                            <td className="px-4 py-3 text-center text-sm font-bold text-violet-600 hidden md:table-cell">{d.excused}</td>
+                            <td className="px-4 py-3 text-center">
+                              <Badge variant={d.rate >= 75 ? 'green' : 'red'}>{d.rate}%</Badge>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </Card>
+              )}
+            </>
+          )}
+        </>
+      )}
     </div>
   );
 };

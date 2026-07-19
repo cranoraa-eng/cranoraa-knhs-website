@@ -30,6 +30,7 @@ from ..storage import upload_file
 class LearningMaterialViewSet(viewsets.ModelViewSet):
     serializer_class = LearningMaterialSerializer
     permission_classes = [IsAuthenticated]
+    parser_classes = [parsers.JSONParser, parsers.MultiPartParser, parsers.FormParser]
     filter_backends = [filters.SearchFilter]
     search_fields = ['title', 'description']
     
