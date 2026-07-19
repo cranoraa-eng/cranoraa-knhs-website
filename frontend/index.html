@@ -11,6 +11,31 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 
     <title>KNHS Portal</title>
+    
+    <!-- Buffer polyfill must load BEFORE any other scripts -->
+    <script>
+      // Minimal Buffer polyfill for xlsx-populate
+      window.Buffer = window.Buffer || {
+        from: function(data, encoding) {
+          if (typeof data === 'string') {
+            return new TextEncoder().encode(data);
+          }
+          return new Uint8Array(data);
+        },
+        isBuffer: function(obj) {
+          return obj instanceof Uint8Array;
+        },
+        alloc: function(size) {
+          return new Uint8Array(size);
+        },
+        allocUnsafe: function(size) {
+          return new Uint8Array(size);
+        }
+      };
+      
+      // Set global for Node.js compatibility
+      window.global = window.globalThis = window;
+    </script>
   </head>
   <body>
     <div id="root"></div>

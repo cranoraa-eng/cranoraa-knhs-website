@@ -1,6 +1,5 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-import { Buffer } from 'buffer';
 
 export default defineConfig(() => {
   return {
@@ -13,15 +12,17 @@ export default defineConfig(() => {
       }),
     ],
     define: {
-      // Polyfill Buffer for browser
-      global: 'globalThis',
+      // Ensure global is defined
+      'global': 'globalThis',
+      'process.env': {},
     },
     resolve: {
       alias: {
-        buffer: 'buffer',
+        buffer: 'buffer/',
       },
     },
     optimizeDeps: {
+      include: ['buffer'],
       esbuildOptions: {
         define: {
           global: 'globalThis',
