@@ -33,6 +33,16 @@
         }
       };
       
+      // Process polyfill for Node.js compatibility
+      window.process = window.process || {
+        env: {},
+        version: '',
+        versions: {},
+        platform: 'browser',
+        browser: true,
+        nextTick: function(fn) { setTimeout(fn, 0); }
+      };
+      
       // Set global for Node.js compatibility
       window.global = window.globalThis = window;
     </script>
