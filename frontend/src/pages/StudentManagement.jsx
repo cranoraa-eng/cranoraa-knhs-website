@@ -6,7 +6,6 @@ import { useCurrentUser } from '../hooks/useCurrentUser';
 import { useParallelFetch } from '../hooks/useFetch';
 import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
-import { jsPDF } from 'jspdf';
 import * as XLSX from 'xlsx';
 import { useScrollLock } from '../hooks/useScrollLock';
 import { LoadingSpinner } from '../components/ui';
@@ -712,7 +711,8 @@ setSelectedIds([]);
     toast.success('Excel exported successfully');
   };
 
-  const handleExportPDF = () => {
+  const handleExportPDF = async () => {
+    const { jsPDF } = await import('jspdf');
     const doc = new jsPDF();
     const timestamp = new Date().toLocaleString();
     const dateStr = new Date().toISOString().split('T')[0];
