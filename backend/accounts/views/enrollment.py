@@ -441,7 +441,9 @@ class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
             capacity = classroom.capacity or 40
             if current_count >= capacity:
                 return Response({'error': f'{classroom.name} is at full capacity ({current_count}/{capacity})'}, status=400)
-            application.assigned_classroom = classroom; application.save()
+            application.assigned_classroom = classroom
+            application.grade_level = classroom.grade_level
+            application.save()
             return Response({'status': f'Section set to {classroom.name}'})
         except Classroom.DoesNotExist:
             return Response({'error': 'Classroom not found'}, status=404)

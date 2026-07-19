@@ -8,8 +8,7 @@ import {
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, 
   PieChart, Pie, Cell, BarChart, Bar
 } from 'recharts';
-import { Spinner } from '../components/Spinner';
-import { LoadingSpinner, Button } from '../components/ui';
+import { LoadingSpinner } from '../components/ui';
 
 const COLORS = ['#2563eb', '#10b981', '#3b82f6', '#f59e0b', '#ef4444'];
 

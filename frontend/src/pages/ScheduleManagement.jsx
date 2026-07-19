@@ -504,41 +504,76 @@ export default function ScheduleManagement() {
 
   return (
     <div className="page-bottom-safe bg-slate-50/50">
-      <div className="mb-4 md:mb-6">
-        <h1 className="text-xl md:text-2xl font-extrabold text-slate-900 tracking-tight">Academic Scheduling</h1>
-        <p className="text-xs text-slate-500 mt-1">Bell Schedules & Room Assignments</p>
-      </div>
-      <div className="flex items-center gap-2 mb-4 md:mb-6">
-        <button type="button" onClick={() => setShowSlotPanel(true)}
-          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white border border-slate-200 text-slate-700 text-xs font-bold hover:bg-slate-50 transition-all shadow-sm">
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-          Time Slots
-        </button>
-        <button type="button" onClick={() => setShowRoomPanel(true)}
-          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-violet-600 text-white text-xs font-bold hover:bg-violet-700 transition-all shadow-md">
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
-          Manage Rooms
-        </button>
+
+      {/* ── Portal-style header ── */}
+      <div className="bg-white border-b border-slate-200 px-4 md:px-6 py-3 md:py-4 mb-4 md:mb-6">
+        <div className="max-w-[1600px] mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="h-9 w-9 rounded-xl bg-violet-600 flex items-center justify-center shrink-0">
+              <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <div>
+              <h1 className="text-lg font-black text-slate-900 tracking-tight leading-none">Academic Scheduling</h1>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
+                Bell Schedules · Rooms · Timetables
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Academic year selector */}
+            <select value={activeAY} onChange={e => setActiveAY(e.target.value)}
+              className="hidden sm:block px-3 py-2 rounded-lg border border-slate-200 text-xs font-bold bg-white focus:outline-none focus:ring-2 focus:ring-violet-500/30 text-slate-700">
+              <option value="">All Years</option>
+              {academicYears.map(a => (
+                <option key={a.id} value={String(a.id)}>
+                  {a.name}{a.is_active ? ' ✓' : ''}
+                </option>
+              ))}
+            </select>
+
+            {/* Conflict check */}
+            <button type="button" onClick={checkConflicts}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-slate-200 bg-white text-slate-700 text-xs font-bold hover:bg-slate-50 transition-all">
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              <span className="hidden sm:inline">Check Conflicts</span>
+              <span className="sm:hidden">Conflicts</span>
+            </button>
+
+            {/* Time Slots */}
+            <button type="button" onClick={() => setShowSlotPanel(true)}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-slate-200 bg-white text-slate-700 text-xs font-bold hover:bg-slate-50 transition-all">
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span className="hidden sm:inline">Time Slots</span>
+              <span className="sm:hidden">Slots</span>
+            </button>
+
+            {/* Rooms */}
+            <button type="button" onClick={() => setShowRoomPanel(true)}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-violet-600 text-white text-xs font-bold hover:bg-violet-700 transition-all shadow-sm">
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+              </svg>
+              <span className="hidden sm:inline">Rooms</span>
+            </button>
+          </div>
+        </div>
       </div>
 
       <div className="max-w-[1600px] mx-auto px-2 md:px-6 space-y-4 md:space-y-5 pb-6">
-      {/* Mobile Action Buttons */}
-      <div className="lg:hidden flex gap-2">
+      {/* Mobile year selector */}
+      <div className="sm:hidden">
         <select value={activeAY} onChange={e => setActiveAY(e.target.value)}
-          className="flex-1 px-3 py-2 rounded-lg border border-slate-200 text-sm font-medium bg-white focus:outline-none focus:ring-2 focus:ring-violet-500/40">
+          className="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm font-medium bg-white focus:outline-none focus:ring-2 focus:ring-violet-500/40">
           <option value="">All Years</option>
           {academicYears.map(a => <option key={a.id} value={String(a.id)}>{a.name}{a.is_active ? ' (Active)' : ''}</option>)}
         </select>
-        <button type="button" onClick={() => setShowSlotPanel(true)}
-          className="flex items-center gap-2 px-3 py-2 rounded-lg border border-slate-200 bg-white text-slate-700 text-xs font-semibold hover:bg-slate-50 transition-colors">
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-          Slots
-        </button>
-        <button type="button" onClick={() => setShowRoomPanel(true)}
-          className="flex items-center gap-2 px-3 py-2 rounded-lg bg-violet-600 text-white text-xs font-bold hover:bg-violet-700 transition-all">
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
-          Rooms
-        </button>
       </div>
 
       {/* ── Setup Wizard (only when incomplete) ── */}

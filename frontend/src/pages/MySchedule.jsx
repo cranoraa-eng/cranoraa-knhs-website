@@ -55,10 +55,21 @@ export default function MySchedule() {
 
   return (
     <div className="page-bottom-safe bg-slate-50/50">
-       <div className="mb-3 sm:mb-4 md:mb-6">
-         <h1 className="text-lg sm:text-xl md:text-2xl font-extrabold text-slate-900 tracking-tight">My Schedule</h1>
-         <p className="text-[10px] sm:text-xs text-slate-500 mt-1">{isTeacher ? 'Teaching Schedule' : 'Student Class Schedule'}</p>
-       </div>
+      <div className="mb-3 sm:mb-4 md:mb-6 flex items-center justify-between gap-3">
+        <div>
+          <h1 className="text-lg sm:text-xl md:text-2xl font-extrabold text-slate-900 tracking-tight">My Schedule</h1>
+          <p className="text-[10px] sm:text-xs text-slate-500 mt-1">{isTeacher ? 'Teaching Schedule' : 'Student Class Schedule'}</p>
+        </div>
+        <button
+          onClick={() => window.print()}
+          className="flex items-center gap-1.5 px-3 py-2 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors"
+        >
+          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+          </svg>
+          <span className="hidden sm:inline">Print</span>
+        </button>
+      </div>
 
       <div className="max-w-[1600px] mx-auto px-2 sm:px-4 md:px-6 space-y-3 sm:space-y-4 md:space-y-6 pb-6">
       {/* Today's Classes */}
