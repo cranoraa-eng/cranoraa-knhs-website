@@ -9,7 +9,7 @@ import Modal, { ModalBody, ModalFooter, ModalBtnPrimary, ModalBtnSecondary } fro
 import {
   ArrowLeft, Users, Award, Search, BarChart2, Trash2, Edit2, Download, X, Check
 } from 'lucide-react';
-import { exportSF10 } from '../../utils/sf10Export';
+import { exportSF10 } from '../../utils/sf10ExportStyled';
 
 // Grade Management View - Custom inline implementation with edit, delete, export
 export const GradeManagementView = ({ classroom, onBack }) => {
