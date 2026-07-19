@@ -1,44 +1,49 @@
-/**
- * Retry configuration for lazy imports
- */
 export interface RetryConfig {
   maxRetries?: number;
   delay?: number;
 }
 
-/**
- * Retry a dynamic import with exponential backoff
- * 
- * @template T - The type of the module being imported
- * @param importFn - Function that returns a dynamic import promise
- * @param maxRetries - Maximum number of retry attempts (default: 3)
- * @param delay - Initial delay in milliseconds before retrying (default: 1000ms)
- * @returns Promise that resolves to the imported module
- * 
- * @example
- * ```tsx
- * const Dashboard = lazy(() => 
- *   retryImport(() => import('../pages/Dashboard'))
- * );
- * ```
- */
+function isStaleChunkError(error: unknown): boolean {
+  if (!(error instanceof Error)) return false;
+  const msg = error.message.toLowerCase();
+  return (
+    msg.includes('failed to fetch dynamically imported module') ||
+    msg.includes('mime type') ||
+    msg.includes('text/html') ||
+    msg.includes('unexpected token') ||
+    msg.includes('error loading dynamically imported module')
+  );
+}
+
+function reloadOnceForStaleChunk(): void {
+  const RELOAD_KEY = 'knhs_stale_chunk_reloaded';
+  const alreadyReloaded = sessionStorage.getItem(RELOAD_KEY);
+  if (!alreadyReloaded) {
+    console.warn('[lazyImport] Stale deployment detected — reloading…');
+    sessionStorage.setItem(RELOAD_KEY, '1');
+    window.location.reload();
+  } else {
+    sessionStorage.removeItem(RELOAD_KEY);
+    console.error('[lazyImport] Still failing after reload — possible CDN issue.');
+  }
+}
+
 export function retryImport<T>(
   importFn: () => Promise<{ default: T }>,
   maxRetries: number = 3,
   delay: number = 1000
 ): Promise<{ default: T }> {
   return importFn().catch((error) => {
-    // If we've exhausted all retries, throw the error
+    if (isStaleChunkError(error)) {
+      reloadOnceForStaleChunk();
+      return new Promise<{ default: T }>(() => {});
+    }
     if (maxRetries === 0) {
       console.error('Failed to load module after all retries:', error);
       throw error;
     }
-    
-    // Log retry attempt
-    console.warn(`Import failed, retrying... (${maxRetries} attempts remaining)`);
-    
-    // Wait for the delay period, then retry with exponential backoff
-    return new Promise((resolve) => {
+    console.warn(`Import failed, retrying… (${maxRetries} attempts remaining)`);
+    return new Promise<{ default: T }>((resolve) => {
       setTimeout(() => {
         resolve(retryImport(importFn, maxRetries - 1, delay * 2));
       }, delay);
@@ -46,24 +51,6 @@ export function retryImport<T>(
   });
 }
 
-/**
- * Create a lazy import with custom retry configuration
- * 
- * @template T - The type of the component being imported
- * @param importFn - Function that returns a dynamic import promise
- * @param config - Retry configuration options
- * @returns Promise that resolves to the imported module
- * 
- * @example
- * ```tsx
- * const HeavyComponent = lazy(() => 
- *   retryImportWithConfig(
- *     () => import('../components/HeavyComponent'),
- *     { maxRetries: 5, delay: 500 }
- *   )
- * );
- * ```
- */
 export function retryImportWithConfig<T>(
   importFn: () => Promise<{ default: T }>,
   config: RetryConfig = {}

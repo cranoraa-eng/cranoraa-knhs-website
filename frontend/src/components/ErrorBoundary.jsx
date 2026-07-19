@@ -1,21 +1,61 @@
 import { Component } from 'react';
 
+function isStaleChunkError(error) {
+  if (!error) return false;
+  const msg = (error.message || '').toLowerCase();
+  return (
+    msg.includes('failed to fetch dynamically imported module') ||
+    msg.includes('mime type') ||
+    msg.includes('text/html') ||
+    msg.includes('unexpected token') ||
+    msg.includes('error loading dynamically imported module')
+  );
+}
+
 class ErrorBoundary extends Component {
   constructor(props) {
     super(props);
-    this.state = { hasError: false, error: null };
+    this.state = { hasError: false, error: null, isStaleChunk: false };
   }
 
   static getDerivedStateFromError(error) {
-    return { hasError: true, error };
+    return { hasError: true, error, isStaleChunk: isStaleChunkError(error) };
   }
 
   componentDidCatch(error, errorInfo) {
     console.error('ErrorBoundary caught:', error, errorInfo);
+    if (isStaleChunkError(error)) {
+      const RELOAD_KEY = 'knhs_eb_stale_reloaded';
+      if (!sessionStorage.getItem(RELOAD_KEY)) {
+        sessionStorage.setItem(RELOAD_KEY, '1');
+        window.location.reload();
+      } else {
+        sessionStorage.removeItem(RELOAD_KEY);
+      }
+    }
   }
 
   render() {
     if (this.state.hasError) {
+      if (this.state.isStaleChunk) {
+        return (
+          <div className="flex flex-col items-center justify-center min-h-[400px] p-8 text-center">
+            <div className="w-16 h-16 rounded-full bg-violet-100 flex items-center justify-center mb-4">
+              <svg className="w-8 h-8 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+            </div>
+            <h2 className="text-lg font-bold text-slate-800 mb-2">New version available</h2>
+            <p className="text-sm text-slate-500 mb-4 max-w-md">
+              The portal has been updated. Please refresh to load the latest version.
+            </p>
+            <button onClick={() => window.location.reload()}
+              className="px-5 py-2.5 bg-violet-600 text-white text-sm font-bold rounded-xl hover:bg-violet-700 transition-colors shadow-sm">
+              Refresh Now
+            </button>
+          </div>
+        );
+      }
       return (
         <div className="flex flex-col items-center justify-center min-h-[400px] p-8 text-center">
           <div className="w-16 h-16 rounded-full bg-rose-100 flex items-center justify-center mb-4">
@@ -24,19 +64,14 @@ class ErrorBoundary extends Component {
             </svg>
           </div>
           <h2 className="text-lg font-bold text-slate-800 mb-2">Something went wrong</h2>
-          <p className="text-sm text-slate-500 mb-4 max-w-md">
-            An unexpected error occurred. Please try refreshing the page or contact support if the issue persists.
-          </p>
-          <button
-            onClick={() => window.location.reload()}
-            className="px-4 py-2 bg-violet-600 text-white text-sm font-bold rounded-lg hover:bg-violet-700 transition-colors"
-          >
+          <p className="text-sm text-slate-500 mb-4 max-w-md">An unexpected error occurred. Please try refreshing the page.</p>
+          <button onClick={() => window.location.reload()}
+            className="px-5 py-2.5 bg-violet-600 text-white text-sm font-bold rounded-xl hover:bg-violet-700 transition-colors shadow-sm">
             Refresh Page
           </button>
         </div>
       );
     }
-
     return this.props.children;
   }
 }

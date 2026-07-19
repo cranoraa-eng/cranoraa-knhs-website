@@ -38,7 +38,7 @@ export const QUICK_ACCESS_CONFIGS = {
     { label: 'Calendar',      path: '/portal-calendar',      icon: 'Calendar',      color: 'rose' }
   ],
   admin: [
-    { label: 'Analytics',        path: '/analytics',                    icon: 'TrendingUp',  color: 'violet' },
+    { label: 'Analytics',        path: '/analytics',                    icon: 'TrendingUp',   color: 'violet' },
     { label: 'People',           path: '/people',                       icon: 'Users',        color: 'blue' },
     { label: 'Enrollment',       path: '/enrollment?tab=applications',  icon: 'GraduationCap',color: 'green' },
     { label: 'Classes',          path: '/classes',                      icon: 'Grid',         color: 'amber' },
