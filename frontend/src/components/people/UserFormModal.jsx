@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import Swal from 'sweetalert2';
-import { Button } from '../../components/ui';
+import Button from '../ui/Button';
 
 const STAFF_TITLES = [
   { value: 'teacher', label: 'Teacher' },
