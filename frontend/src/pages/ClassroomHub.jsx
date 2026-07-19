@@ -157,16 +157,12 @@ const ClassroomHub = () => {
       // Fetch classroom details
       const [materialsRes, studentsRes, announcementsRes] = await Promise.all([
         api.get(`/materials/?classroom=${classroom.id}`),
-        isTeacher 
-          ? api.get(`/enrollments/?classroom=${classroom.id}`)
-          : Promise.resolve({ data: [] }),
+        api.get(`/enrollments/?classroom=${classroom.id}`),
         api.get(`/announcements/?classroom=${classroom.id}`)
       ]);
       
       setMaterials(materialsRes.data);
-      if (isTeacher) {
-        setStudents(studentsRes.data);
-      }
+      setStudents(studentsRes.data);
       setAnnouncements(announcementsRes.data.sort((a, b) => 
         new Date(b.created_at) - new Date(a.created_at)
       ));
@@ -758,59 +754,106 @@ const MaterialsTab = ({ classroom, materials, isTeacher, searchQuery, setSearchQ
 );
 
 // People Tab Component
-const PeopleTab = ({ classroom, students, isTeacher, loading }) => (
-  <motion.div
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-    exit={{ opacity: 0, y: -20 }}
-    className="space-y-6"
-  >
-    <Card>
-      <CardHeader divider>
-        <div className="flex items-center justify-between">
-          <CardTitle>Students</CardTitle>
-          <Badge variant="slate">{students.length} enrolled</Badge>
-        </div>
-      </CardHeader>
-      <CardBody>
-        {loading ? (
-          <div className="flex items-center justify-center h-32">
-            <LoadingSpinner />
-          </div>
-        ) : students.length === 0 ? (
-          <EmptyState
-            title="No Students"
-            description="No students are enrolled in this class"
-            icon={<Users className="w-6 h-6" />}
-          />
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {students.map((student) => (
-              <div key={student.id} className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-50 transition-colors">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm">
-                  {student.student_name
-                    ? student.student_name.trim().split(/\s+/).slice(0, 2).map(n => n.charAt(0).toUpperCase()).join('')
-                    : '?'}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium text-slate-900 truncate">
-                    {student.student_name || student.student_email || 'Unknown Student'}
-                  </p>
-                  {student.student_email && (
-                    <p className="text-xs text-slate-500 truncate">{student.student_email}</p>
-                  )}
-                  {student.student_lrn && (
-                    <p className="text-xs text-slate-400">LRN: {student.student_lrn}</p>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
+const PeopleTab = ({ classroom, students, isTeacher, loading }) => {
+  const sortedStudents = useMemo(() => {
+    const list = Array.isArray(students) ? [...students] : [];
+    list.sort((a, b) => {
+      const sexA = (a.student_sex || '').toLowerCase();
+      const sexB = (b.student_sex || '').toLowerCase();
+      if (sexA !== sexB) {
+        if (sexA === 'male') return -1;
+        if (sexB === 'male') return 1;
+      }
+      const nameA = (a.student_name || '').toLowerCase();
+      const nameB = (b.student_name || '').toLowerCase();
+      return nameA.localeCompare(nameB);
+    });
+    return list;
+  }, [students]);
+
+  const maleStudents = sortedStudents.filter(s => (s.student_sex || '').toLowerCase() === 'male');
+  const femaleStudents = sortedStudents.filter(s => (s.student_sex || '').toLowerCase() === 'female');
+  const otherStudents = sortedStudents.filter(s => !['male', 'female'].includes((s.student_sex || '').toLowerCase()));
+
+  const renderStudent = (student) => (
+    <div key={student.id} className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-50 transition-colors">
+      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm">
+        {student.student_name
+          ? student.student_name.trim().split(/\s+/).slice(0, 2).map(n => n.charAt(0).toUpperCase()).join('')
+          : '?'}
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="font-medium text-slate-900 truncate">
+          {student.student_name || student.student_email || 'Unknown Student'}
+        </p>
+        {student.student_email && (
+          <p className="text-xs text-slate-500 truncate">{student.student_email}</p>
         )}
-      </CardBody>
-    </Card>
-  </motion.div>
-);
+        {student.student_lrn && (
+          <p className="text-xs text-slate-400">LRN: {student.student_lrn}</p>
+        )}
+      </div>
+    </div>
+  );
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      className="space-y-6"
+    >
+      <Card>
+        <CardHeader divider>
+          <div className="flex items-center justify-between">
+            <CardTitle>Students</CardTitle>
+            <Badge variant="slate">{sortedStudents.length} enrolled</Badge>
+          </div>
+        </CardHeader>
+        <CardBody>
+          {loading ? (
+            <div className="flex items-center justify-center h-32">
+              <LoadingSpinner />
+            </div>
+          ) : sortedStudents.length === 0 ? (
+            <EmptyState
+              title="No Students"
+              description="No students are enrolled in this class"
+              icon={<Users className="w-6 h-6" />}
+            />
+          ) : (
+            <div className="space-y-4">
+              {maleStudents.length > 0 && (
+                <div>
+                  <h4 className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mb-2 px-1">Male ({maleStudents.length})</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-1">
+                    {maleStudents.map(renderStudent)}
+                  </div>
+                </div>
+              )}
+              {femaleStudents.length > 0 && (
+                <div>
+                  <h4 className="text-[10px] font-bold text-pink-600 uppercase tracking-widest mb-2 px-1">Female ({femaleStudents.length})</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-1">
+                    {femaleStudents.map(renderStudent)}
+                  </div>
+                </div>
+              )}
+              {otherStudents.length > 0 && (
+                <div>
+                  <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 px-1">Other ({otherStudents.length})</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-1">
+                    {otherStudents.map(renderStudent)}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </CardBody>
+      </Card>
+    </motion.div>
+  );
+};
 
 // Grades Tab Component - Enhanced with inline functionality
 const GradesTab = ({ classroom, isTeacher, navigate }) => {

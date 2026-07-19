@@ -1105,7 +1105,7 @@ const Analytics = () => {
   ];
 
   const hasAttendanceData = attendanceAnalytics && (
-    (attendanceAnalytics['daily_trends']?.length > 0) ||
+    (attendanceAnalytics.daily_trends?.length > 0) ||
     (attendanceAnalytics.section_rankings?.length > 0) ||
     (attendanceAnalytics.pie_data?.some(d => d.value > 0)) ||
     (attendanceAnalytics.grade_trends?.length > 0)
@@ -1166,7 +1166,7 @@ const Analytics = () => {
 
       {activeTab === 'system' && (
         <div className="space-y-4 animate-fade-in" ref={systemRef} data-pdf-content="system">
-          {!data && loading ? <Spinner /> : (
+          {!data && loading ? <LoadingSpinner /> : (
             <>
               <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 bg-slate-900 p-4 sm:p-6 md:p-8 rounded-2xl border border-slate-800 shadow-2xl">
                 <div>
@@ -1198,7 +1198,7 @@ const Analytics = () => {
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-6 lg:grid-cols-12 gap-3 sm:gap-4">
                   <div className="md:col-span-6 lg:col-span-12">
-                    <AttendanceTrendsSection data={data?.attendance?.['daily_trends']} />
+                    <AttendanceTrendsSection data={data?.attendance?.daily_trends} />
                   </div>
                   <div className="md:col-span-6 lg:col-span-7">
                     <SubjectPerformanceSection data={data?.grades?.['subject_stats']} />
@@ -1218,7 +1218,7 @@ const Analytics = () => {
 
       {activeTab === 'grades' && (
         <div className="space-y-4 animate-fade-in" ref={gradesRef} data-pdf-content="grades">
-          {gradeLoading && !gradeData ? <Spinner /> : (
+          {gradeLoading && !gradeData ? <LoadingSpinner /> : (
             <>
                <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4 bg-slate-900 p-4 sm:p-6 md:p-8 rounded-2xl border border-slate-800 shadow-2xl">
                 <div className="flex-1">
@@ -1309,7 +1309,7 @@ const Analytics = () => {
 
       {activeTab === 'attendance' && (
         <div className="space-y-4 animate-fade-in" ref={attendanceRef} data-pdf-content="attendance">
-          {attendanceLoading && !attendanceAnalytics ? <Spinner /> : (
+          {attendanceLoading && !attendanceAnalytics ? <LoadingSpinner /> : (
             <>
                <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 bg-slate-900 p-4 sm:p-6 md:p-8 rounded-2xl border border-slate-800 shadow-2xl">
                 <div>
@@ -1342,7 +1342,7 @@ const Analytics = () => {
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-6 lg:grid-cols-12 gap-3 sm:gap-4">
                   <div className="md:col-span-6 lg:col-span-8">
-                    <AttendanceTrendsSection data={attendanceAnalytics['daily_trends']} />
+                    <AttendanceTrendsSection data={attendanceAnalytics.daily_trends} />
                   </div>
                   <div className="md:col-span-6 lg:col-span-4">
                     <AttendanceStatusPieSection data={attendanceAnalytics.pie_data} />
