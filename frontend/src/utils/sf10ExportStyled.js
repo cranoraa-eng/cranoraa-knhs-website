@@ -70,6 +70,20 @@ function calcFinalGrade(quarters) {
 }
 
 /**
+ * Set cell value without losing style
+ */
+function setCellValue(cell, value) {
+  // Store the existing style
+  const existingStyle = { ...cell.style };
+  
+  // Set the value
+  cell.value = value;
+  
+  // Restore the style
+  cell.style = existingStyle;
+}
+
+/**
  * Fill student information section (FRONT sheet)
  */
 function fillStudentInfo(worksheet, student) {
@@ -81,14 +95,14 @@ function fillStudentInfo(worksheet, student) {
   const firstName  = restParts[0] || '';
   const middleName = restParts.slice(1).join(' ') || '';
 
-  // LEARNER'S INFORMATION (Row 7-8)
-  worksheet.getCell('B7').value = lastName;
-  worksheet.getCell('F7').value = firstName;
-  worksheet.getCell('M7').value = middleName;
+  // LEARNER'S INFORMATION (Row 7-8) - preserve existing cell styles
+  setCellValue(worksheet.getCell('B7'), lastName);
+  setCellValue(worksheet.getCell('F7'), firstName);
+  setCellValue(worksheet.getCell('M7'), middleName);
   
-  worksheet.getCell('B8').value = student.lrn || '';
-  worksheet.getCell('H8').value = student.birthdate || '';
-  worksheet.getCell('M8').value = student.sex || '';
+  setCellValue(worksheet.getCell('B8'), student.lrn || '');
+  setCellValue(worksheet.getCell('H8'), student.birthdate || '');
+  setCellValue(worksheet.getCell('M8'), student.sex || '');
 }
 
 /**
@@ -100,17 +114,17 @@ function fillSchoolInfo(worksheet, schoolInfo) {
     schoolYear, gradeLevel, section, adviser,
   } = schoolInfo;
 
-  // SCHOLASTIC RECORD (Row 20-21)
-  worksheet.getCell('B20').value = schoolName;
-  worksheet.getCell('G20').value = schoolId;
-  worksheet.getCell('I20').value = district;
-  worksheet.getCell('N20').value = division;
-  worksheet.getCell('Q20').value = region;
+  // SCHOLASTIC RECORD (Row 20-21) - preserve existing cell styles
+  setCellValue(worksheet.getCell('B20'), schoolName);
+  setCellValue(worksheet.getCell('G20'), schoolId);
+  setCellValue(worksheet.getCell('I20'), district);
+  setCellValue(worksheet.getCell('N20'), division);
+  setCellValue(worksheet.getCell('Q20'), region);
   
-  worksheet.getCell('B21').value = gradeLevel;
-  worksheet.getCell('D21').value = section;
-  worksheet.getCell('G21').value = schoolYear;
-  worksheet.getCell('J21').value = adviser;
+  setCellValue(worksheet.getCell('B21'), gradeLevel);
+  setCellValue(worksheet.getCell('D21'), section);
+  setCellValue(worksheet.getCell('G21'), schoolYear);
+  setCellValue(worksheet.getCell('J21'), adviser);
 }
 
 /**
@@ -125,29 +139,22 @@ function fillGradesBlock(worksheet, startRow, areaGrades) {
     const row = startRow + index;
     const aq = areaGrades[area] || {};
     
-    // Based on the template structure, quarters are in columns after the learning area name
-    // We'll try to detect the correct columns dynamically or use standard positions
-    // Standard layout: A=Area, B=Q1, C=Q2, D=Q3, E=Q4, F=Final
-    // But template might vary, so we'll set based on what we see
-    
     const q1 = aq.q1 !== undefined && aq.q1 !== '' ? depedRound(aq.q1) : null;
     const q2 = aq.q2 !== undefined && aq.q2 !== '' ? depedRound(aq.q2) : null;
     const q3 = aq.q3 !== undefined && aq.q3 !== '' ? depedRound(aq.q3) : null;
     const q4 = aq.q4 !== undefined && aq.q4 !== '' ? depedRound(aq.q4) : null;
     
-    // Try to find the correct columns by looking at the row structure
-    // If we can't find them, use default column numbers
-    // Columns typically: B=Q1, C=Q2, D=Q3, E=Q4, F=Final
-    worksheet.getCell(row, 2).value = q1;  // Column B (Q1)
-    worksheet.getCell(row, 3).value = q2;  // Column C (Q2)
-    worksheet.getCell(row, 4).value = q3;  // Column D (Q3)
-    worksheet.getCell(row, 5).value = q4;  // Column E (Q4)
+    // Set values while preserving cell styles
+    setCellValue(worksheet.getCell(row, 2), q1);  // Column B (Q1)
+    setCellValue(worksheet.getCell(row, 3), q2);  // Column C (Q2)
+    setCellValue(worksheet.getCell(row, 4), q3);  // Column D (Q3)
+    setCellValue(worksheet.getCell(row, 5), q4);  // Column E (Q4)
     
     // Only set Final Rating if there's no formula
     const finalCell = worksheet.getCell(row, 6); // Column F
     if (!finalCell.formula && !finalCell.formulaType) {
       const finalGrade = calcFinalGrade(aq);
-      finalCell.value = finalGrade;
+      setCellValue(finalCell, finalGrade);
     }
   });
 }
