@@ -318,7 +318,7 @@ export const GradeManagementView = ({ classroom, onBack }) => {
       const subjectMeta = subjects[0] || {};
       const adviser = subjectMeta.teacher_name || '';
 
-      exportSF10(classroom, enrolledStudents, allGrades, {
+      await exportSF10(classroom, enrolledStudents, allGrades, {
         schoolYear,
         gradeLevel,
         section: classroom.name,
@@ -328,7 +328,21 @@ export const GradeManagementView = ({ classroom, onBack }) => {
       toast.success('SF10 Excel exported successfully');
     } catch (err) {
       console.error('SF10 export error:', err);
-      toast.error('Failed to export SF10');
+      
+      // Provide specific error messages
+      if (err.message.includes('Template file not found')) {
+        toast.error(
+          'SF10 template file missing. Please place SF10_Template.xlsx in frontend/public/templates/',
+          { duration: 5000 }
+        );
+      } else if (err.message.includes('not a valid Excel file')) {
+        toast.error(
+          'SF10 template file is corrupted or invalid. Please use a proper .xlsx file.',
+          { duration: 5000 }
+        );
+      } else {
+        toast.error('Failed to export SF10: ' + (err.message || 'Unknown error'));
+      }
     } finally {
       setExportingSF10(false);
     }

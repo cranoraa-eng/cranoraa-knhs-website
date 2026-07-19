@@ -152,9 +152,35 @@ function fillGradesBlock(worksheet, startRow, areaGrades) {
 async function fillStudentSF10(templatePath, student, schoolInfo, gradeLevel) {
   // Load template
   const workbook = new ExcelJS.Workbook();
-  const response = await fetch(templatePath);
-  const arrayBuffer = await response.arrayBuffer();
-  await workbook.xlsx.load(arrayBuffer);
+  
+  try {
+    const response = await fetch(templatePath);
+    
+    if (!response.ok) {
+      throw new Error(
+        `Template file not found at ${templatePath}. ` +
+        `Please place SF10_Template.xlsx in frontend/public/templates/ directory. ` +
+        `Status: ${response.status}`
+      );
+    }
+    
+    const arrayBuffer = await response.arrayBuffer();
+    
+    if (arrayBuffer.byteLength === 0) {
+      throw new Error('Template file is empty. Please check the file.');
+    }
+    
+    await workbook.xlsx.load(arrayBuffer);
+  } catch (error) {
+    if (error.message.includes('central directory')) {
+      throw new Error(
+        'Template file is not a valid Excel file. ' +
+        'Please ensure SF10_Template.xlsx is a proper .xlsx file (not .xls or corrupted). ' +
+        'Original error: ' + error.message
+      );
+    }
+    throw error;
+  }
 
   // Get worksheets
   const frontSheet = workbook.getWorksheet('FRONT') || workbook.getWorksheet(1);
