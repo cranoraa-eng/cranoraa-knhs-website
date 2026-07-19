@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import api from '../../utils/api';
+import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
 import {
   Card, CardHeader, CardBody, CardTitle, Button, Badge,
@@ -523,11 +523,14 @@ const getTodayStr = () => {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 };
 
-export const AttendanceView = ({ classroom, onBack }) => {
+export const AttendanceView = ({ classroom, onBack, isStudent = false }) => {
+  const { user } = useAuth();
   const todayStr = useMemo(() => getTodayStr(), []);
 
-  // Mark state
-  const [view, setView] = useState('mark'); // mark, history, analytics
+  // For students, default to history view and hide mark view
+  const availableViews = isStudent ? ['history', 'analytics'] : ['mark', 'history', 'analytics'];
+  const [view, setView] = useState(() => isStudent ? 'history' : 'mark');
+  
   const [selectedDate, setSelectedDate] = useState(todayStr);
   const [students, setStudents] = useState([]);
   const [draftAttendance, setDraftAttendance] = useState({});
@@ -546,161 +549,10 @@ export const AttendanceView = ({ classroom, onBack }) => {
   const [analytics, setAnalytics] = useState(null);
   const [loadingAnalytics, setLoadingAnalytics] = useState(false);
 
-  // Load students for this classroom
-  useEffect(() => {
-    const fetchStudents = async () => {
-      setLoadingStudents(true);
-      try {
-        const res = await api.get(`/enrollments/?classroom=${classroom.id}`);
-        const sorted = res.data.sort((a, b) => {
-          const nameA = (a.student_name || '').toLowerCase();
-          const nameB = (b.student_name || '').toLowerCase();
-          return nameA.localeCompare(nameB);
-        });
-        setStudents(sorted);
-      } catch {
-        toast.error('Failed to load students');
-      } finally {
-        setLoadingStudents(false);
-      }
-    };
-    fetchStudents();
-  }, [classroom.id]);
-
-  // Load existing attendance when date changes
-  useEffect(() => {
-    const fetchAttendance = async () => {
-      try {
-        const res = await api.get(`/attendance/?classroom=${classroom.id}&date=${selectedDate}`);
-        const map = {}, remarks = {};
-        res.data.forEach(r => {
-          map[r.student] = { id: r.id, status: r.status };
-          remarks[r.student] = r.remarks || '';
-        });
-        setSavedAttendance(map);
-        setSavedRemarks(remarks);
-        setDraftAttendance(map);
-        setDraftRemarks(remarks);
-      } catch {
-        console.error('Failed to load attendance');
-      }
-    };
-    if (selectedDate) fetchAttendance();
-  }, [selectedDate, classroom.id]);
-
-  // Load history
-  useEffect(() => {
-    const fetchHistory = async () => {
-      setLoadingHistory(true);
-      try {
-        const params = new URLSearchParams({ classroom: classroom.id });
-        if (historyDate) params.append('date', historyDate);
-        const res = await api.get(`/attendance/?${params}`);
-        setHistory(res.data);
-      } catch { toast.error('Failed to load history'); }
-      finally { setLoadingHistory(false); }
-    };
-    if (view === 'history') fetchHistory();
-  }, [view, historyDate, classroom.id]);
-
-  // Load analytics
-  useEffect(() => {
-    const fetchAnalytics = async () => {
-      setLoadingAnalytics(true);
-      try {
-        const res = await api.get('/attendance/summary/', { params: { classroom: classroom.id } });
-        setAnalytics(res.data);
-      } catch { toast.error('Failed to load analytics'); }
-      finally { setLoadingAnalytics(false); }
-    };
-    if (view === 'analytics') fetchAnalytics();
-  }, [view, classroom.id]);
-
-  const markDraft = (studentId, status) => {
-    setDraftAttendance(prev => ({ ...prev, [studentId]: { ...prev[studentId], status } }));
-  };
-
-  const markAllDraft = (status) => {
-    const updated = {};
-    students.forEach(s => { updated[s.student] = { ...draftAttendance[s.student], status }; });
-    setDraftAttendance(prev => ({ ...prev, ...updated }));
-    toast(`All marked as ${ATTENDANCE_STATUS_CONFIG[status].label}. Click Save to confirm.`, { icon: 'ℹ️' });
-  };
-
-  const saveAttendance = async () => {
-    const toSave = students.filter(s => draftAttendance[s.student]?.status);
-    if (!toSave.length) return toast.error('Mark at least one student before saving');
-    setSubmitting(true);
-    let ok = 0, fail = 0;
-    const newSaved = { ...savedAttendance };
-    await Promise.all(toSave.map(async s => {
-      const draft = draftAttendance[s.student];
-      const saved = savedAttendance[s.student];
-      const remarks = draftRemarks[s.student] || '';
-      try {
-        if (saved?.id) {
-          await api.patch(`/attendance/${saved.id}/`, { status: draft.status, remarks });
-          newSaved[s.student] = { id: saved.id, status: draft.status };
-        } else {
-          const res = await api.post('/attendance/', {
-            student: s.student, classroom: classroom.id,
-            date: selectedDate, status: draft.status, remarks,
-          });
-          newSaved[s.student] = { id: res.data.id, status: draft.status };
-        }
-        ok++;
-      } catch { fail++; }
-    }));
-    setSavedAttendance(newSaved);
-    setSavedRemarks(draftRemarks);
-    setDraftAttendance(newSaved);
-    setDraftRemarks(draftRemarks);
-    setSubmitting(false);
-    if (ok > 0) toast.success(`Attendance saved for ${ok} student${ok !== 1 ? 's' : ''}`);
-    if (fail > 0) toast.error(`${fail} record${fail !== 1 ? 's' : ''} failed to save`);
-  };
-
-  const deleteAttendance = async (record) => {
-    if (!window.confirm(`Delete attendance for ${record.student_name}?`)) return;
-    try {
-      await api.delete(`/attendance/${record.id}/`);
-      toast.success('Record deleted');
-      setHistory(prev => prev.filter(r => r.id !== record.id));
-    } catch { toast.error('Failed to delete record'); }
-  };
-
-  const stats = useMemo(() => {
-    return students.reduce((acc, s) => {
-      const status = draftAttendance[s.student]?.status;
-      if (status) acc[status] = (acc[status] || 0) + 1;
-      else acc.unmarked = (acc.unmarked || 0) + 1;
-      return acc;
-    }, { present: 0, absent: 0, late: 0, excused: 0, unmarked: 0 });
-  }, [students, draftAttendance]);
-
-  const attendanceRate = useMemo(() => {
-    return students.length > 0
-      ? Math.round(((stats.present + stats.late) / students.length) * 100)
-      : null;
-  }, [students.length, stats.present, stats.late]);
-
-  const hasChanges = useMemo(() => {
-    return students.some(s =>
-      draftAttendance[s.student]?.status !== savedAttendance[s.student]?.status ||
-      (draftRemarks[s.student] || '') !== (savedRemarks[s.student] || '')
-    );
-  }, [students, draftAttendance, savedAttendance, draftRemarks, savedRemarks]);
-
-  const isWeekend = (dateStr) => {
-    if (!dateStr) return false;
-    const day = new Date(dateStr + 'T00:00:00').getDay();
-    return day === 0 || day === 6;
-  };
-
-  const getDayName = (dateStr) => {
-    if (!dateStr) return '';
-    return new Date(dateStr + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long' });
-  };
+  // For students, filter students to only show themselves
+  const visibleStudents = isStudent 
+    ? students.filter(s => s.student === user?.id)
+    : students;
 
   return (
     <div className="space-y-4">
@@ -710,17 +562,21 @@ export const AttendanceView = ({ classroom, onBack }) => {
           Back to Overview
         </Button>
         <div className="flex rounded-lg border border-slate-300 overflow-hidden shadow-sm">
-          {[{ key: 'mark', label: 'Mark', icon: '✏️' }, { key: 'history', label: 'History', icon: '📋' }, { key: 'analytics', label: 'Analytics', icon: '📊' }].map(v => (
-            <button key={v.key} onClick={() => setView(v.key)}
-              className={`px-3 py-1.5 text-xs font-extrabold uppercase tracking-wide transition-all ${view === v.key ? 'bg-violet-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-50'}`}>
-              <span className="mr-1">{v.icon}</span>{v.label}
-            </button>
-          ))}
+          {availableViews.map(v => {
+            const labels = { mark: 'Mark', history: 'History', analytics: 'Analytics' };
+            const icons = { mark: '✏️', history: '📋', analytics: '📊' };
+            return (
+              <button key={v.key} onClick={() => setView(v)}
+                className={`px-3 py-1.5 text-xs font-extrabold uppercase tracking-wide transition-all ${view === v ? 'bg-violet-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-50'}`}>
+                <span className="mr-1">{icons[v]}</span>{labels[v]}
+              </button>
+            );
+          })}
         </div>
       </div>
 
-      {/* ═══ MARK VIEW ═══ */}
-      {view === 'mark' && (
+      {/* ═══ MARK VIEW - Teachers only ═══ */}
+      {!isStudent && view === 'mark' && (
         <>
           <Card>
             <CardBody className="p-4">
@@ -805,7 +661,7 @@ export const AttendanceView = ({ classroom, onBack }) => {
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-slate-100">
-                      {students.map((s, i) => {
+                      {visibleStudents.map((s, i) => {
                         const status = draftAttendance[s.student]?.status;
                         const savedStatus = savedAttendance[s.student]?.status;
                         const changed = status !== savedStatus;

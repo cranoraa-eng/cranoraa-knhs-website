@@ -59,13 +59,14 @@ const ClassroomHub = () => {
 
   // Sync activeTab with ?view= URL param
   const viewParam = searchParams.get('view');
-  const validTabs = ['stream', 'materials', 'people', 'grades', 'attendance'];
+  const validTabs = ['stream', 'materials', 'people', 'grades'];
+  const teacherTabs = ['stream', 'materials', 'people', 'grades', 'attendance'];
 
   useEffect(() => {
-    if (viewParam && validTabs.includes(viewParam)) {
+    if (viewParam && (isTeacher ? teacherTabs : validTabs).includes(viewParam)) {
       setActiveTab(viewParam);
     }
-  }, [viewParam]);
+  }, [viewParam, isTeacher]);
 
   const handleTabChange = (key) => {
     setActiveTab(key);
@@ -483,7 +484,7 @@ const ClassroomHub = () => {
               { key: 'stream', label: 'Stream', icon: MessageSquare },
               { key: 'materials', label: 'Materials', icon: Folder },
               { key: 'people', label: 'People', icon: Users },
-              { key: 'attendance', label: 'Attendance', icon: CheckSquare },
+              ...(isTeacher ? [{ key: 'attendance', label: 'Attendance', icon: CheckSquare }] : []),
               { key: 'grades', label: 'Grades', icon: Award }
             ].map(tab => {
               const Icon = tab.icon;
@@ -564,7 +565,7 @@ const ClassroomHub = () => {
           {activeTab === 'attendance' && (
             <AttendanceView
               classroom={selectedClass}
-              isTeacher={isTeacher}
+              isStudent={user?.role === 'student'}
               onBack={() => {}}
             />
           )}

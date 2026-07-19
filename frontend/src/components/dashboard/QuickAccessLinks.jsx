@@ -20,22 +20,23 @@ export const QUICK_ACCESS_CONFIGS = {
     { label: 'Announcements', path: '/announcements', icon: 'Bell', color: 'amber' },
     { label: 'Schedule', path: '/my-schedule', icon: 'Calendar', color: 'green' },
     { label: 'Communication', path: '/communication-center', icon: 'MessageSquare', color: 'rose' },
-    { label: 'Attendance', path: '/attendance', icon: 'UserCheck', color: 'green' }
+    { label: 'Grades', path: '/my-classes?view=grades', icon: 'Award', color: 'violet' },
+    { label: 'Settings', path: '/settings', icon: 'Settings', color: 'indigo' }
   ],
   teacher: [
     { label: 'My Classes',    path: '/my-classes',          icon: 'BookOpen',      color: 'violet' },
     { label: 'Schedule',      path: '/my-schedule',          icon: 'Clock',         color: 'green' },
-    { label: 'Attendance',    path: '/attendance',           icon: 'UserCheck',     color: 'blue' },
     { label: 'Announcements', path: '/announcements',        icon: 'Bell',          color: 'amber' },
     { label: 'People',        path: '/people',               icon: 'Users',         color: 'indigo' },
-    { label: 'Communication', path: '/communication-center', icon: 'MessageSquare', color: 'rose' }
+    { label: 'Communication', path: '/communication-center', icon: 'MessageSquare', color: 'rose' },
+    { label: 'Grades',        path: '/my-classes?view=grades', icon: 'Award',       color: 'violet' }
   ],
   parent: [
     { label: 'Dashboard',     path: '/parent-dashboard',     icon: 'Award',         color: 'violet' },
-    { label: 'Attendance',    path: '/attendance',           icon: 'UserCheck',     color: 'green' },
     { label: 'Announcements', path: '/announcements',        icon: 'Bell',          color: 'amber' },
     { label: 'Messages',      path: '/communication-center', icon: 'MessageSquare', color: 'blue' },
-    { label: 'Calendar',      path: '/portal-calendar',      icon: 'Calendar',      color: 'rose' }
+    { label: 'Calendar',      path: '/portal-calendar',      icon: 'Calendar',      color: 'rose' },
+    { label: 'Settings',      path: '/settings',             icon: 'Settings',      color: 'indigo' }
   ],
   admin: [
     { label: 'Analytics',        path: '/analytics',                    icon: 'TrendingUp',   color: 'violet' },
