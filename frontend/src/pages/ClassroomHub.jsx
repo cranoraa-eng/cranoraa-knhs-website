@@ -820,43 +820,54 @@ const MaterialsTab = ({ classroom, materials, isTeacher, searchQuery, setSearchQ
         {materials.map(material => {
           const Icon = getMaterialIcon(material.material_type);
           return (
-            <Card key={material.id} className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => material.file && window.open(material.file, '_blank')}>
-              <CardBody className="p-4">
-                <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-violet-100 flex items-center justify-center shrink-0">
-                    <Icon className="w-5 h-5 text-violet-600" />
+            <a
+              key={material.id}
+              href={material.file || undefined}
+              target={material.file ? '_blank' : undefined}
+              rel={material.file ? 'noopener noreferrer' : undefined}
+              className="block"
+              onClick={(e) => { if (!material.file) e.preventDefault(); }}
+            >
+              <Card className={`hover:shadow-lg transition-shadow ${material.file ? 'cursor-pointer' : ''}`}>
+                <CardBody className="p-4">
+                  <div className="flex items-start gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-violet-100 flex items-center justify-center shrink-0">
+                      <Icon className="w-5 h-5 text-violet-600" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-slate-900 truncate">{material.title}</h3>
+                      <p className="text-xs text-slate-600 mt-1 line-clamp-2">{material.description}</p>
+                      <div className="flex items-center gap-2 mt-3">
+                        <Badge variant="slate" size="sm">{material.material_type?.toUpperCase()}</Badge>
+                        {material.quarter && (
+                          <Badge variant="blue" size="sm">Q{material.quarter}</Badge>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-slate-900 truncate">{material.title}</h3>
-                    <p className="text-xs text-slate-600 mt-1 line-clamp-2">{material.description}</p>
-                    <div className="flex items-center gap-2 mt-3">
-                      <Badge variant="slate" size="sm">{material.material_type?.toUpperCase()}</Badge>
-                      {material.quarter && (
-                        <Badge variant="blue" size="sm">Q{material.quarter}</Badge>
+                  <div className="flex items-center justify-between mt-4 pt-4 border-t border-slate-100">
+                    <span className="text-xs text-slate-500">
+                      <Clock className="w-3 h-3 inline mr-1" />
+                      {new Date(material.created_at).toLocaleDateString()}
+                    </span>
+                    <div className="flex items-center gap-1">
+                      {material.file ? (
+                        <span className="text-xs text-violet-600 font-medium flex items-center gap-1">
+                          <Download className="w-3 h-3" /> Open
+                        </span>
+                      ) : (
+                        <span className="text-xs text-slate-400">No file</span>
+                      )}
+                      {isTeacher && (
+                        <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); e.preventDefault(); onDeleteMaterial(material.id); }} className="text-red-500 hover:text-red-700 hover:bg-red-50">
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
                       )}
                     </div>
                   </div>
-                </div>
-                <div className="flex items-center justify-between mt-4 pt-4 border-t border-slate-100">
-                  <span className="text-xs text-slate-500">
-                    <Clock className="w-3 h-3 inline mr-1" />
-                    {new Date(material.uploaded_at).toLocaleDateString()}
-                  </span>
-                  <div className="flex items-center gap-1">
-                    {material.file && (
-                      <Button variant="ghost" size="sm" onClick={() => window.open(material.file, '_blank')}>
-                        <Download className="w-4 h-4" />
-                      </Button>
-                    )}
-                    {isTeacher && (
-                      <Button variant="ghost" size="sm" onClick={() => onDeleteMaterial(material.id)} className="text-red-500 hover:text-red-700 hover:bg-red-50">
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              </CardBody>
-            </Card>
+                </CardBody>
+              </Card>
+            </a>
           );
         })}
       </div>
