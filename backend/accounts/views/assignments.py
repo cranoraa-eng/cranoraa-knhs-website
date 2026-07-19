@@ -40,35 +40,30 @@ class LearningMaterialViewSet(viewsets.ModelViewSet):
         material_type = self.request.query_params.get('material_type')
         quarter = self.request.query_params.get('quarter')
         
-        # RBAC: Students can see materials for their enrolled classrooms + general materials
-        if user.role == 'student':
-            from django.db.models import Q
-            enrolled_classroom_ids = StudentClassEnrollment.objects.filter(
-                student=user
-            ).values_list('classroom_id', flat=True)
-            # Also check if student is linked via profile (advisory class)
-            profile = getattr(user, 'profile', None)
-            profile_classroom_id = None
-            if profile and hasattr(profile, 'classroom') and profile.classroom:
-                profile_classroom_id = profile.classroom.id
-            q = Q(classroom_id__in=enrolled_classroom_ids) | Q(classroom__isnull=True)
-            if profile_classroom_id:
-                q |= Q(classroom_id=profile_classroom_id)
-            queryset = queryset.filter(q)
-        # Teachers see materials for their classrooms + general materials
-        elif user.role == 'staff':
-            from django.db.models import Q
-            teacher_classroom_ids = Classroom.objects.filter(teacher=user).values_list('id', flat=True)
-            # Also see materials from classrooms where they teach subjects
-            subject_classroom_ids = ClassroomSubject.objects.filter(
-                teacher=user
-            ).values_list('classroom_id', flat=True)
-            all_teacher_ids = set(teacher_classroom_ids) | set(subject_classroom_ids)
-            queryset = queryset.filter(Q(classroom_id__in=all_teacher_ids) | Q(classroom__isnull=True))
-        # Admins see everything
-        
+        # When a specific classroom is requested, allow any authenticated user to see its materials.
+        # The classroom list itself is already filtered by enrollment/role.
         if classroom_id:
             queryset = queryset.filter(classroom_id=classroom_id)
+        else:
+            # RBAC for unfiltered listing (no classroom specified)
+            if user.role == 'student':
+                from django.db.models import Q
+                enrolled_ids = list(StudentClassEnrollment.objects.filter(
+                    student=user
+                ).values_list('classroom_id', flat=True))
+                profile = getattr(user, 'profile', None)
+                if profile and hasattr(profile, 'classroom') and profile.classroom:
+                    enrolled_ids.append(profile.classroom.id)
+                queryset = queryset.filter(Q(classroom_id__in=enrolled_ids) | Q(classroom__isnull=True))
+            elif user.role == 'staff':
+                from django.db.models import Q
+                teacher_ids = list(Classroom.objects.filter(teacher=user).values_list('id', flat=True))
+                subject_ids = list(ClassroomSubject.objects.filter(
+                    teacher=user
+                ).values_list('classroom_id', flat=True))
+                all_ids = set(teacher_ids + subject_ids)
+                queryset = queryset.filter(Q(classroom_id__in=all_ids) | Q(classroom__isnull=True))
+        
         if material_type:
             queryset = queryset.filter(material_type=material_type)
         if quarter:

@@ -1954,26 +1954,25 @@ class LearningMaterialViewSet(viewsets.ModelViewSet):
         material_type = self.request.query_params.get('material_type')
         quarter = self.request.query_params.get('quarter')
 
-        if user.role == 'student':
-            enrolled_classroom_ids = StudentClassEnrollment.objects.filter(
-                student=user
-            ).values_list('classroom_id', flat=True)
-            profile = getattr(user, 'profile', None)
-            profile_classroom_id = getattr(getattr(profile, 'classroom', None), 'id', None)
-            q = Q(classroom_id__in=enrolled_classroom_ids) | Q(classroom__isnull=True)
-            if profile_classroom_id:
-                q |= Q(classroom_id=profile_classroom_id)
-            queryset = queryset.filter(q)
-        elif user.role == 'staff':
-            teacher_classroom_ids = Classroom.objects.filter(teacher=user).values_list('id', flat=True)
-            subject_classroom_ids = ClassroomSubject.objects.filter(
-                teacher=user
-            ).values_list('classroom_id', flat=True)
-            all_ids = set(teacher_classroom_ids) | set(subject_classroom_ids)
-            queryset = queryset.filter(Q(classroom_id__in=all_ids) | Q(classroom__isnull=True))
-
         if classroom_id:
             queryset = queryset.filter(classroom_id=classroom_id)
+        else:
+            if user.role == 'student':
+                enrolled_ids = list(StudentClassEnrollment.objects.filter(
+                    student=user
+                ).values_list('classroom_id', flat=True))
+                profile = getattr(user, 'profile', None)
+                if profile and hasattr(profile, 'classroom') and profile.classroom:
+                    enrolled_ids.append(profile.classroom.id)
+                queryset = queryset.filter(Q(classroom_id__in=enrolled_ids) | Q(classroom__isnull=True))
+            elif user.role == 'staff':
+                teacher_ids = list(Classroom.objects.filter(teacher=user).values_list('id', flat=True))
+                subject_ids = list(ClassroomSubject.objects.filter(
+                    teacher=user
+                ).values_list('classroom_id', flat=True))
+                all_ids = set(teacher_ids + subject_ids)
+                queryset = queryset.filter(Q(classroom_id__in=all_ids) | Q(classroom__isnull=True))
+
         if material_type:
             queryset = queryset.filter(material_type=material_type)
         if quarter:
