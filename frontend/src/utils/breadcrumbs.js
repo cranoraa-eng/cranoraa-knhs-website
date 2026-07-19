@@ -20,7 +20,7 @@ const PATH_LABEL_MAP = {
   'academics-hub': 'Academics Hub',
   'enrollment': 'Enrollment',
   'classes': 'Classes',
-  'grading-suite': 'Grading Suite',
+  'grade-input': 'Grade Input',
   'people': 'People',
   'system-admin': 'System Admin',
   'communication-center': 'Communication Center',

@@ -1113,55 +1113,48 @@ const Analytics = () => {
 
   return (
     <div className="page-bottom-safe max-w-[1800px] mx-auto min-h-0 bg-slate-50 px-3 py-3 sm:px-4 sm:py-4 md:px-6 md:py-6 lg:px-8 space-y-4 sm:space-y-5 md:space-y-6 animate-fade-in">
-      {/* ══════════════════════════════════════════════════════════════ */}
-      {/* OFFICIAL HEADER */}
-      {/* ══════════════════════════════════════════════════════════════ */}
-      
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4">
-        <div>
-          <div className="flex items-center gap-1.5 sm:gap-2 text-[9px] sm:text-xs font-bold text-violet-700 uppercase tracking-wide mb-1.5 sm:mb-2">
-            <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h-2a2 2 0 01-2-2z" />
-            </svg>
-            <span className="hidden sm:inline">Data Intelligence & Reporting</span>
-            <span className="sm:hidden">Analytics</span>
-          </div>
-          <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight">
-            Analytics Dashboard
-          </h1>
-          <p className="text-[9px] sm:text-xs text-slate-600 mt-1 font-semibold max-w-[90%] sm:max-w-none">
-            Comprehensive academic performance and system metrics for SY {academicYear}
-          </p>
-        </div>
-      </div>
-
-      {/* Tab Navigation + Export */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div className="flex flex-wrap gap-1.5 bg-white p-1 rounded-md border border-slate-200 shadow-sm w-full sm:w-auto">
-          {tabs.map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-1.5 px-3 py-2 sm:px-4 sm:py-2.5 rounded-md text-[9px] sm:text-[10px] font-black uppercase tracking-widest transition-all ${
-                activeTab === tab.id
-                  ? 'bg-violet-600 text-white shadow-sm'
-                  : 'text-slate-600 hover:bg-slate-50'
-              }`}
-            >
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d={tab.icon} />
+      {/* ── Portal-style sticky header ── */}
+      <div className="bg-white border-b border-slate-200 -mx-3 sm:-mx-4 md:-mx-6 lg:-mx-8 -mt-3 sm:-mt-4 md:-mt-6 px-3 sm:px-4 md:px-6 lg:px-8 py-3 md:py-4 mb-2 sticky top-0 z-20">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="h-9 w-9 rounded-xl bg-violet-600 flex items-center justify-center shrink-0">
+              <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
               </svg>
-              {tab.label}
-            </button>
-          ))}
+            </div>
+            <div>
+              <h1 className="text-lg font-black text-slate-900 tracking-tight leading-none">Analytics</h1>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
+                Data Intelligence · SY {academicYear}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 flex-wrap">
+            {/* Tab switcher in header */}
+            <div className="flex gap-1 bg-slate-100 p-1 rounded-lg">
+              {tabs.map(tab => (
+                <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[10px] font-bold uppercase tracking-wider transition-all ${
+                    activeTab === tab.id ? 'bg-white text-violet-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+                  }`}>
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d={tab.icon} />
+                  </svg>
+                  <span className="hidden sm:inline">{tab.label}</span>
+                  <span className="sm:hidden">{tab.shortLabel}</span>
+                </button>
+              ))}
+            </div>
+
+            <ExportButton loading={exporting}
+              onClick={() => {
+                const refMap = { system: systemRef, grades: gradesRef, attendance: attendanceRef };
+                void handleExport(refMap[activeTab], activeTab);
+              }}
+            />
+          </div>
         </div>
-        <ExportButton
-          loading={exporting}
-          onClick={() => {
-            const refMap = { system: systemRef, grades: gradesRef, attendance: attendanceRef };
-            void handleExport(refMap[activeTab], activeTab);
-          }}
-        />
       </div>
 
       {activeTab === 'system' && (
@@ -1201,7 +1194,7 @@ const Analytics = () => {
                     <AttendanceTrendsSection data={data?.attendance?.daily_trends} />
                   </div>
                   <div className="md:col-span-6 lg:col-span-7">
-                    <SubjectPerformanceSection data={data?.grades?.['subject_stats']} />
+                    <SubjectPerformanceSection data={data?.grades?.subject_stats} />
                   </div>
                   <div className="md:col-span-6 lg:col-span-5">
                     <TrafficIntelligenceSection data={data?.dashboard?.charts?.active_users_trends} />

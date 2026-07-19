@@ -16,11 +16,11 @@ const iconMap = {
 // Role-based quick access link configurations
 export const QUICK_ACCESS_CONFIGS = {
   student: [
-    { label: 'My Grades', path: '/grading-suite', icon: 'Award', color: 'violet' },
     { label: 'My Classes', path: '/my-classes', icon: 'BookOpen', color: 'blue' },
     { label: 'Announcements', path: '/announcements', icon: 'Bell', color: 'amber' },
     { label: 'Schedule', path: '/my-schedule', icon: 'Calendar', color: 'green' },
-    { label: 'Communication', path: '/communication-center', icon: 'MessageSquare', color: 'rose' }
+    { label: 'Communication', path: '/communication-center', icon: 'MessageSquare', color: 'rose' },
+    { label: 'Attendance', path: '/attendance', icon: 'UserCheck', color: 'green' }
   ],
   teacher: [
     { label: 'My Classes', path: '/my-classes', icon: 'BookOpen', color: 'violet' },

@@ -825,7 +825,7 @@ const SubjectGradeTable = ({
                           </svg>
                         </button>
                         <button
-                          onClick={() => navigate(`/grading-suite`)}
+                          onClick={() => navigate(`/grade-input`)}
                           className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-md transition-all"
                           title="View Full Grades"
                         >

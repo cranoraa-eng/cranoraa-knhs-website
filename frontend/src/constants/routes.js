@@ -37,7 +37,6 @@ const Profile = lazy(() => retryImport(() => import('../pages/Profile')));
 const PasswordReset = lazy(() => retryImport(() => import('../pages/PasswordReset')));
 const Settings = lazy(() => retryImport(() => import('../pages/Settings')));
 const Notifications = lazy(() => retryImport(() => import('../pages/Notifications')));
-const GradingSuite = lazy(() => retryImport(() => import('../pages/GradingSuite')));
 const SystemAdminHub = lazy(() => retryImport(() => import('../pages/SystemAdminHub')));
 const CommunicationCenter = lazy(() => retryImport(() => import('../pages/CommunicationCenter')));
 const Announcements = lazy(() => retryImport(() => import('../pages/Announcements')));
@@ -87,7 +86,6 @@ export const publicRoutes = [
 export const protectedRoutes = [
   // Hub routes (primary navigation)
   { path: 'dashboard', element: Dashboard, roles: Role.ALL },
-  { path: 'grading-suite', element: GradingSuite, roles: [Role.ADMIN, Role.STAFF, Role.STUDENT] },
   { path: 'system-admin', element: SystemAdminHub, roles: [Role.ADMIN] },
   { path: 'communication-center', element: CommunicationCenter, roles: Role.ALL },
   { path: 'announcements', element: Announcements, roles: Role.ALL },
@@ -98,7 +96,7 @@ export const protectedRoutes = [
 
   // New Hub routes
   { path: 'people', element: PeopleHub, roles: [Role.ADMIN, Role.STAFF] },
-  { path: 'classes', element: ClassesHub, roles: [Role.ADMIN, Role.STAFF] },
+  { path: 'classes', element: ClassesHub, roles: [Role.ADMIN] },
   { path: 'enrollment', element: EnrollmentHub, roles: [Role.ADMIN, Role.STAFF] },
   { path: 'subjects', element: SubjectsHub, roles: [Role.ADMIN] },
   { path: 'schedules', element: ScheduleManagement, roles: [Role.ADMIN] },

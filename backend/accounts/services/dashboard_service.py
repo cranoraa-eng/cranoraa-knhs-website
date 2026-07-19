@@ -339,7 +339,7 @@ def build_admin_dashboard_stats(user, academic_year_name=None):
     total_teachers = _safe_value(
         'teacher count',
         0,
-        lambda: User.objects.filter(role='staff', staff_title='teacher', is_approved=True).count(),
+        lambda: User.objects.filter(role='staff', is_approved=True).count(),
     )
     total_classes = _safe_value('classroom count', 0, classes_qs.count)
     total_subjects = _safe_value('subject count', 0, Subject.objects.count)
