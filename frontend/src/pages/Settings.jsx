@@ -1234,6 +1234,13 @@ const ProfileTab = () => {
           </div>
         </>
       )}
+
+      <ImageCropModal
+        isOpen={cropOpen}
+        onClose={() => { setCropOpen(false); setCropImageSrc(null); setPendingFile(null); }}
+        onCrop={handleCropUpload}
+        imageSrc={cropImageSrc}
+      />
     </div>
   );
 };
