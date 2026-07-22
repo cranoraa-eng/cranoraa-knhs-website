@@ -780,58 +780,93 @@ export const AttendanceView = ({ classroom, onBack }) => {
               icon={<Users className="w-8 h-8" />}
             />
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-slate-50 border-b-2 border-slate-200">
-                  <tr>
-                    <th className="px-2 md:px-4 py-2 md:py-3 text-left text-[10px] md:text-xs font-bold text-slate-700 uppercase w-8">#</th>
-                    <th className="px-2 md:px-4 py-2 md:py-3 text-left text-[10px] md:text-xs font-bold text-slate-700 uppercase">Student</th>
-                    <th className="px-1 md:px-4 py-2 md:py-3 text-center text-[10px] md:text-xs font-bold text-slate-700 uppercase whitespace-nowrap">Status</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-slate-100">
-                  {filteredStudents.map((student, idx) => (
-                    <tr key={student.id} className="hover:bg-slate-50 transition-colors">
-                      <td className="px-2 md:px-4 py-2 md:py-3 text-xs text-slate-500 font-semibold">{idx + 1}</td>
-                      <td className="px-2 md:px-4 py-2 md:py-3">
-                        <div className="flex items-center gap-1.5 md:gap-3 min-w-0">
-                          <div className="w-6 h-6 md:w-8 md:h-8 rounded-full bg-violet-100 flex items-center justify-center text-violet-600 font-bold text-[9px] md:text-xs shrink-0">
-                            {student.student_first_name?.charAt(0)}{student.student_last_name?.charAt(0)}
-                          </div>
-                          <div className="min-w-0">
-                            <p className="text-[11px] md:text-sm font-semibold text-slate-900 truncate">
-                              {student.student_last_name}, {student.student_first_name}
-                            </p>
-                            {student.student_lrn && (
-                              <p className="text-[9px] md:text-xs text-slate-400 truncate">LRN: {student.student_lrn}</p>
-                            )}
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-1 md:px-4 py-2 md:py-3">
-                        <div className="flex items-center justify-center gap-0.5 md:gap-1.5">
-                          {Object.entries(statusConfig).map(([key, cfg]) => {
-                            const Icon = cfg.icon;
-                            const isActive = attendance[student.student] === key;
-                            return (
-                              <button
-                                key={key}
-                                onClick={() => handleStatusChange(student.student, key)}
-                                title={key.charAt(0).toUpperCase() + key.slice(1)}
-                                className={`flex items-center justify-center w-6 h-6 md:w-auto md:h-auto md:px-2.5 md:py-1.5 rounded text-[10px] md:text-xs font-semibold transition-all ${isActive ? cfg.active : cfg.idle}`}
-                              >
-                                <Icon className="w-3.5 h-3.5 md:w-3.5 md:h-3.5" />
-                                <span className="hidden md:inline ml-0.5">{key.charAt(0).toUpperCase() + key.slice(1)}</span>
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </td>
+            <>
+              {/* Mobile: card layout */}
+              <div className="md:hidden space-y-2">
+                {filteredStudents.map((student, idx) => (
+                  <div key={student.id} className="flex items-center gap-3 p-3 bg-white border border-slate-200 rounded-lg">
+                    <div className="w-8 h-8 rounded-full bg-violet-100 flex items-center justify-center text-violet-600 font-bold text-xs shrink-0">
+                      {student.student_first_name?.charAt(0)}{student.student_last_name?.charAt(0)}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-semibold text-slate-900 truncate">
+                        {student.student_last_name}, {student.student_first_name}
+                      </p>
+                      <div className="flex gap-1 mt-1.5">
+                        {Object.entries(statusConfig).map(([key, cfg]) => {
+                          const Icon = cfg.icon;
+                          const isActive = attendance[student.student] === key;
+                          return (
+                            <button
+                              key={key}
+                              onClick={() => handleStatusChange(student.student, key)}
+                              title={key.charAt(0).toUpperCase() + key.slice(1)}
+                              className={`flex items-center justify-center w-7 h-7 rounded-md transition-all ${isActive ? cfg.active : cfg.idle}`}
+                            >
+                              <Icon className="w-3.5 h-3.5" />
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Desktop: table layout */}
+              <div className="hidden md:block overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-slate-50 border-b-2 border-slate-200">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase w-10">#</th>
+                      <th className="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase">Student</th>
+                      <th className="px-4 py-3 text-center text-xs font-bold text-slate-700 uppercase">Status</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-slate-100">
+                    {filteredStudents.map((student, idx) => (
+                      <tr key={student.id} className="hover:bg-slate-50 transition-colors">
+                        <td className="px-4 py-3 text-sm text-slate-500 font-semibold">{idx + 1}</td>
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full bg-violet-100 flex items-center justify-center text-violet-600 font-bold text-xs shrink-0">
+                              {student.student_first_name?.charAt(0)}{student.student_last_name?.charAt(0)}
+                            </div>
+                            <div className="min-w-0">
+                              <p className="text-sm font-semibold text-slate-900 truncate">
+                                {student.student_last_name}, {student.student_first_name}
+                              </p>
+                              {student.student_lrn && (
+                                <p className="text-xs text-slate-400 truncate">LRN: {student.student_lrn}</p>
+                              )}
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="flex items-center justify-center gap-1.5">
+                            {Object.entries(statusConfig).map(([key, cfg]) => {
+                              const Icon = cfg.icon;
+                              const isActive = attendance[student.student] === key;
+                              return (
+                                <button
+                                  key={key}
+                                  onClick={() => handleStatusChange(student.student, key)}
+                                  title={key.charAt(0).toUpperCase() + key.slice(1)}
+                                  className={`flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-semibold transition-all ${isActive ? cfg.active : cfg.idle}`}
+                                >
+                                  <Icon className="w-3.5 h-3.5" />
+                                  <span>{key.charAt(0).toUpperCase() + key.slice(1)}</span>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
           )}
         </CardBody>
       </Card>
