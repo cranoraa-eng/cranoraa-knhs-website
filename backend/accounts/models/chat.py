@@ -30,7 +30,7 @@ class ChatMessage(models.Model):
     ]
 
     room = models.ForeignKey(ChatRoom, on_delete=models.CASCADE, related_name='messages')
-    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_messages')
+    sender = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='sent_messages')
     content = models.TextField(blank=True)
     message_type = models.CharField(max_length=10, choices=MESSAGE_TYPES, default='text')
     attachment_url = models.URLField(max_length=1000, null=True, blank=True, help_text='Supabase Storage URL')
@@ -54,7 +54,7 @@ class ChatMessage(models.Model):
 
 class MessageReaction(models.Model):
     message = models.ForeignKey(ChatMessage, on_delete=models.CASCADE, related_name='reactions')
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='message_reactions')
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='message_reactions')
     emoji = models.CharField(max_length=20)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -72,10 +72,10 @@ class ReportedMessage(models.Model):
         ('dismissed', 'Dismissed'),
     ]
     message = models.ForeignKey(ChatMessage, on_delete=models.SET_NULL, null=True, related_name='reports')
-    reported_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_reports', null=True)
+    reported_user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='received_reports')
     message_content_snapshot = models.TextField(blank=True, null=True)
 
-    reporter = models.ForeignKey(User, on_delete=models.CASCADE, related_name='filed_reports')
+    reporter = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='filed_reports')
     reason = models.TextField()
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     moderator_note = models.TextField(blank=True, null=True)
@@ -98,8 +98,8 @@ class ReportedMessage(models.Model):
 
 
 class UserBlock(models.Model):
-    blocker = models.ForeignKey(User, on_delete=models.CASCADE, related_name='blocking')
-    blocked = models.ForeignKey(User, on_delete=models.CASCADE, related_name='blocked_by')
+    blocker = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='blocking')
+    blocked = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='blocked_by')
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

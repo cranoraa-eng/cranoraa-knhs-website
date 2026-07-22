@@ -28,7 +28,7 @@ class StaffPerformance(models.Model):
         (5, 'Outstanding'),
     ]
 
-    staff = models.ForeignKey(User, on_delete=models.CASCADE, related_name='performance_records')
+    staff = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='performance_records')
     academic_year = models.CharField(max_length=20)
     evaluated_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='evaluations_given')
 

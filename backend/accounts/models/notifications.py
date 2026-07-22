@@ -21,7 +21,7 @@ class Notification(models.Model):
         ('system', 'System'),
     ]
 
-    recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
+    recipient = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='notifications')
     notification_type = models.CharField(max_length=20, choices=NOTIFICATION_TYPES, default='system')
     title = models.CharField(max_length=200)
     message = models.TextField()

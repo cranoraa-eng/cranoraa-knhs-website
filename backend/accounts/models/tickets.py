@@ -33,7 +33,7 @@ class Ticket(models.Model):
     category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default='other', db_index=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='open', db_index=True)
     priority = models.CharField(max_length=10, choices=PRIORITY_CHOICES, default='normal', db_index=True)
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='tickets_created')
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='tickets_created')
     assigned_to = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='tickets_assigned')
     department = models.CharField(max_length=50, blank=True, default='')
     is_archived = models.BooleanField(default=False)
@@ -72,7 +72,7 @@ class TicketParticipant(models.Model):
         ('collaborator', 'Collaborator'),
     ]
     ticket = models.ForeignKey(Ticket, on_delete=models.CASCADE, related_name='participants')
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='ticket_participations')
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='ticket_participations')
     role = models.CharField(max_length=15, choices=ROLE_CHOICES, default='viewer')
     added_at = models.DateTimeField(auto_now_add=True)
 
@@ -85,7 +85,7 @@ class TicketParticipant(models.Model):
 
 class TicketMessage(models.Model):
     ticket = models.ForeignKey(Ticket, on_delete=models.CASCADE, related_name='messages')
-    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='ticket_messages')
+    sender = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='ticket_messages')
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     is_read = models.BooleanField(default=False)
@@ -115,7 +115,7 @@ class TicketAttachment(models.Model):
     file_url = models.URLField(max_length=500)
     file_size_bytes = models.PositiveIntegerField(default=0)
     content_type = models.CharField(max_length=100, blank=True, default='')
-    uploaded_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    uploaded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

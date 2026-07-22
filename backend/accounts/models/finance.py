@@ -5,7 +5,7 @@ from .user import User
 
 class ScratchCard(models.Model):
     serial_number = models.CharField(max_length=12, unique=True)
-    student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='scratch_cards')
+    student = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='scratch_cards')
     is_used = models.BooleanField(default=False)
     used_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -41,7 +41,7 @@ class Fee(models.Model):
         ('paid', 'Paid'),
     ]
 
-    student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='fees')
+    student = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='fees')
     fee_type = models.CharField(max_length=20, choices=FEE_TYPE_CHOICES)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     amount_paid = models.DecimalField(max_digits=10, decimal_places=2, default=0)

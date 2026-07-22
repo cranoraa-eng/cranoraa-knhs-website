@@ -41,7 +41,7 @@ class Announcement(models.Model):
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='draft')
     target_audience = models.CharField(max_length=20, choices=TARGET_AUDIENCE_CHOICES, default='all')
     target_classrooms = models.ManyToManyField(Classroom, blank=True, related_name='announcements')
-    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='account_announcements')
+    author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='account_announcements')
     is_pinned = models.BooleanField(default=False)
     is_public = models.BooleanField(default=False)
     event_date = models.DateTimeField(null=True, blank=True)
@@ -95,7 +95,7 @@ class AnnouncementComment(models.Model):
         Announcement, on_delete=models.CASCADE, related_name='comments'
     )
     author = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name='announcement_comments'
+        User, on_delete=models.SET_NULL, null=True, blank=True, related_name='announcement_comments'
     )
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)

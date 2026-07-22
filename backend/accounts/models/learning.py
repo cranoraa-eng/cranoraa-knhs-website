@@ -18,7 +18,7 @@ class LearningMaterial(models.Model):
     description = models.TextField(blank=True, null=True)
     material_type = models.CharField(max_length=20, choices=MATERIAL_TYPE_CHOICES, default='dlp')
     classroom = models.ForeignKey(Classroom, on_delete=models.CASCADE, related_name='materials', null=True, blank=True)
-    uploaded_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='uploaded_materials')
+    uploaded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='uploaded_materials')
     file = models.URLField(max_length=1000, null=True, blank=True, help_text="Supabase Storage URL")
     file_size_bytes = models.PositiveIntegerField(null=True, blank=True)
     original_filename = models.CharField(max_length=255, blank=True)

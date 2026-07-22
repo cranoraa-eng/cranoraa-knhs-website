@@ -9,7 +9,7 @@ from .assignments import Grade
 
 
 class GradeReport(models.Model):
-    student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='student_grade_reports')
+    student = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='student_grade_reports')
     classroom = models.ForeignKey(Classroom, on_delete=models.CASCADE, related_name='classroom_grade_reports')
     quarter = models.IntegerField(choices=[(1, 'Term 1'), (2, 'Term 2'), (3, 'Term 3'), (4, 'Term 4 (Legacy)')])
     school_year = models.CharField(max_length=20, default='2025-2026')

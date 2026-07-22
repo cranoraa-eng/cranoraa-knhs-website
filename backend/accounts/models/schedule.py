@@ -66,7 +66,7 @@ class Schedule(models.Model):
         Subject, on_delete=models.CASCADE, related_name='schedules'
     )
     teacher = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name='teaching_schedules',
+        User, on_delete=models.SET_NULL, null=True, blank=True, related_name='teaching_schedules',
         limit_choices_to={'role': 'staff'}
     )
     room = models.ForeignKey(

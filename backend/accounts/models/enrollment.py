@@ -227,7 +227,7 @@ class EnrollmentStatusHistory(models.Model):
 
 class EnrollmentWaitlist(models.Model):
     classroom = models.ForeignKey('Classroom', on_delete=models.CASCADE, related_name='waitlist')
-    student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='enrollment_waitlists')
+    student = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='enrollment_waitlists')
     application = models.ForeignKey(EnrollmentApplication, on_delete=models.CASCADE, related_name='waitlist_entries', null=True, blank=True)
     position = models.PositiveIntegerField(default=0)
     status = models.CharField(max_length=20, choices=[
@@ -252,8 +252,8 @@ class EnrollmentWaitlist(models.Model):
 
 
 class ParentLink(models.Model):
-    parent = models.ForeignKey(User, on_delete=models.CASCADE, related_name='parent_links')
-    student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='student_parent_links')
+    parent = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='parent_links')
+    student = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='student_parent_links')
     application = models.ForeignKey(EnrollmentApplication, on_delete=models.CASCADE, related_name='parent_links')
     relationship = models.CharField(max_length=50, default='parent', help_text="Relationship to student (parent, guardian, etc.)")
     is_primary = models.BooleanField(default=False, help_text="Primary contact parent")

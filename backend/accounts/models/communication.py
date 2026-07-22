@@ -18,9 +18,9 @@ class ParentTeacherMeeting(models.Model):
         ('progress', 'Progress Review'),
     ]
 
-    teacher = models.ForeignKey(User, on_delete=models.CASCADE, related_name='ptm_as_teacher')
-    parent = models.ForeignKey(User, on_delete=models.CASCADE, related_name='ptm_as_parent')
-    student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='ptm_meetings')
+    teacher = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='ptm_as_teacher')
+    parent = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='ptm_as_parent')
+    student = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='ptm_meetings')
     classroom = models.ForeignKey('Classroom', on_delete=models.SET_NULL, null=True, blank=True, related_name='ptm_meetings')
 
     scheduled_date = models.DateField()
@@ -73,9 +73,9 @@ class BehavioralRecord(models.Model):
         ('other', 'Other'),
     ]
 
-    student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='behavioral_records')
+    student = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='behavioral_records')
     classroom = models.ForeignKey('Classroom', on_delete=models.SET_NULL, null=True, blank=True, related_name='behavioral_records')
-    recorded_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='behavioral_records_created')
+    recorded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='behavioral_records_created')
 
     incident_type = models.CharField(max_length=20, choices=INCIDENT_CHOICES)
     severity = models.CharField(max_length=20, choices=SEVERITY_CHOICES, default='minor')

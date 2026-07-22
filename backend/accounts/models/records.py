@@ -14,7 +14,7 @@ class Transcript(models.Model):
         ('archived', 'Archived'),
     ]
 
-    student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='transcripts')
+    student = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='transcripts')
     school_year = models.CharField(max_length=20)
     general_average = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
     total_subjects = models.IntegerField(default=0)
@@ -110,7 +110,7 @@ class TransferCertificate(models.Model):
         ('cancelled', 'Cancelled'),
     ]
 
-    student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='transfer_certificates')
+    student = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='transfer_certificates')
     reference_number = models.CharField(max_length=30, unique=True)
     school_year_from = models.CharField(max_length=20, help_text="School year student is transferring from")
     school_year_to = models.CharField(max_length=20, blank=True, help_text="School year student is transferring to")
@@ -168,7 +168,7 @@ class CharacterCertificate(models.Model):
         ('cancelled', 'Cancelled'),
     ]
 
-    student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='character_certificates')
+    student = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='character_certificates')
     reference_number = models.CharField(max_length=30, unique=True)
     purpose = models.CharField(max_length=200, blank=True, help_text="Purpose of the certificate")
     school_year = models.CharField(max_length=20, blank=True)
@@ -208,7 +208,7 @@ class AchievementRecord(models.Model):
         ('other', 'Other'),
     ]
 
-    student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='achievement_records')
+    student = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='achievement_records')
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True)
     category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default='academic')
@@ -246,9 +246,9 @@ class RecordRequest(models.Model):
         ('cancelled', 'Cancelled'),
     ]
 
-    requestor = models.ForeignKey(User, on_delete=models.CASCADE, related_name='record_requests')
+    requestor = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='record_requests')
     record_type = models.CharField(max_length=30, choices=RECORD_TYPE_CHOICES)
-    student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='requests_for_student', null=True, blank=True, help_text="Student the record is for (if requestor is parent)")
+    student = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='requests_for_student')
     purpose = models.CharField(max_length=300, blank=True)
     status = models.CharField(max_length=15, choices=STATUS_CHOICES, default='pending')
     notes = models.TextField(blank=True, help_text="Requestor notes")

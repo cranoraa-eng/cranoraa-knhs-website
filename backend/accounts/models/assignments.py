@@ -21,7 +21,7 @@ class Assignment(models.Model):
     description = models.TextField(blank=True, null=True)
     classroom = models.ForeignKey(Classroom, on_delete=models.CASCADE, related_name='assignments')
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name='assignments')
-    teacher = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_assignments')
+    teacher = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='created_assignments')
 
     assignment_type = models.CharField(max_length=20, choices=ASSIGNMENT_TYPE_CHOICES, default='homework')
     points = models.IntegerField(default=100)
@@ -66,7 +66,7 @@ class Assignment(models.Model):
 
 class Submission(models.Model):
     assignment = models.ForeignKey(Assignment, on_delete=models.CASCADE, related_name='submissions')
-    student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='submissions')
+    student = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='submissions')
     file = models.URLField(max_length=1000, help_text="Supabase Storage URL")
     original_filename = models.CharField(max_length=255, blank=True)
     file_size_bytes = models.PositiveIntegerField(null=True, blank=True)
@@ -106,10 +106,10 @@ class Grade(models.Model):
         (4, 'Term 4 (Legacy)'),
     ]
 
-    student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='subject_grades')
+    student = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='subject_grades')
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name='subject_grades')
     classroom = models.ForeignKey(Classroom, on_delete=models.CASCADE, related_name='subject_grades', null=True, blank=True)
-    teacher = models.ForeignKey(User, on_delete=models.CASCADE, related_name='assigned_subject_grades')
+    teacher = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='assigned_subject_grades')
 
     grade_type = models.CharField(max_length=30, choices=GRADE_TYPE_CHOICES, default='written_work')
     quarter = models.IntegerField(choices=TERM_CHOICES)

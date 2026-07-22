@@ -60,7 +60,7 @@ class Subject(models.Model):
 class ClassroomSubject(models.Model):
     classroom = models.ForeignKey(Classroom, on_delete=models.CASCADE, related_name='classroom_subjects')
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name='classroom_subjects')
-    teacher = models.ForeignKey(User, on_delete=models.CASCADE, related_name='assigned_classroom_subjects', limit_choices_to={'role': 'staff'})
+    teacher = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='assigned_classroom_subjects', limit_choices_to={'role': 'staff'})
     assigned_at = models.DateTimeField(auto_now_add=True)
 
     ww_weight = models.DecimalField(max_digits=5, decimal_places=2, default=30.00,
@@ -124,7 +124,7 @@ class SystemSetting(models.Model):
 
 
 class StudentClassEnrollment(models.Model):
-    student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='enrollments')
+    student = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='enrollments')
     classroom = models.ForeignKey(Classroom, on_delete=models.CASCADE, related_name='enrollments')
     q1 = models.IntegerField(null=True, blank=True)
     q2 = models.IntegerField(null=True, blank=True)

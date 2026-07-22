@@ -12,12 +12,12 @@ class Attendance(models.Model):
         ('excused', 'Excused'),
     ]
 
-    student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='attendances')
+    student = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='attendances')
     classroom = models.ForeignKey(Classroom, on_delete=models.CASCADE, related_name='attendances')
     date = models.DateField()
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='present')
     remarks = models.TextField(blank=True, null=True)
-    marked_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='marked_attendances')
+    marked_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='marked_attendances')
     schedule = models.ForeignKey('Schedule', on_delete=models.SET_NULL, null=True, blank=True, related_name='attendances',
         help_text="Links attendance to a specific schedule period. Null = class-level (adviser) attendance.")
     subject = models.ForeignKey(Subject, on_delete=models.SET_NULL, null=True, blank=True, related_name='attendances',
@@ -71,7 +71,7 @@ class AbsenceExcuse(models.Model):
         ('rejected', 'Rejected'),
     ]
 
-    student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='absence_excuses')
+    student = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='absence_excuses')
     attendance = models.ForeignKey(Attendance, on_delete=models.CASCADE, related_name='excuses')
     reason = models.TextField()
     document_url = models.URLField(max_length=1000, null=True, blank=True, help_text="Supabase Storage URL for supporting document")
