@@ -6,6 +6,7 @@ import { useActiveAcademicYear } from '../../hooks/useActiveAcademicYear';
 import { Card, CardHeader, CardBody, CardTitle, Button, Skeleton } from '../../components/ui';
 import { StatCard, RecentAnnouncementsWidget } from './shared';
 import QuickAccessLinks from '../../components/dashboard/QuickAccessLinks';
+import GradeRadarChart from '../../components/dashboard/GradeRadarChart';
 
 // ── Small delta badge shown under a stat card value ───────────────────────────
 const DeltaBadge = ({ value, label }) => {
@@ -116,6 +117,7 @@ const AdminDashboard = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
   const [lastFetched, setLastFetched] = useState(null);
+  const [subjectGrades, setSubjectGrades] = useState([]);
 
   const fetchData = useCallback(async ({ showInitialLoading = false } = {}) => {
     if (showInitialLoading) setLoading(true);
@@ -127,6 +129,29 @@ const AdminDashboard = () => {
       });
       setData(r.data);
       setLastFetched(new Date());
+
+      // Fetch per-subject average grades for radar chart
+      try {
+        const gradeRes = await api.get('/grades/', {
+          params: { grade_type: 'final_grade', ...(academicYear ? { academic_year: academicYear } : {}) },
+        });
+        const gradeList = Array.isArray(gradeRes.data) ? gradeRes.data : gradeRes.data?.results || [];
+        const bySubject = {};
+        gradeList.forEach(g => {
+          if (g.raw_score == null) return;
+          const name = g.subject_name || g.subject;
+          if (!bySubject[name]) bySubject[name] = { total: 0, count: 0 };
+          bySubject[name].total += parseFloat(g.raw_score);
+          bySubject[name].count += 1;
+        });
+        const avgBySubject = Object.entries(bySubject)
+          .map(([subject, v]) => ({ subject, score: Math.round(v.total / v.count * 10) / 10 }))
+          .sort((a, b) => b.score - a.score)
+          .slice(0, 12);
+        setSubjectGrades(avgBySubject);
+      } catch {
+        // optional — radar chart just won't render
+      }
     } catch (err) {
       console.error('Failed to load admin stats:', err);
       setError(err.response?.data?.error || 'Failed to load admin statistics.');
@@ -472,6 +497,16 @@ const AdminDashboard = () => {
                   </div>
                 )}
               </div>
+
+              {subjectGrades.length >= 3 && (
+                <div className="mt-5 pt-5 border-t border-slate-200">
+                  <GradeRadarChart
+                    data={subjectGrades}
+                    title="Subject Performance Overview"
+                    height={240}
+                  />
+                </div>
+              )}
             </CardBody>
           </Card>
 

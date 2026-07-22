@@ -8,6 +8,7 @@ import {
   Skeleton, EmptyState,
 } from '../../components/ui';
 import QuickAccessLinks from '../../components/dashboard/QuickAccessLinks';
+import GradeRadarChart from '../../components/dashboard/GradeRadarChart';
 import { SchoolHeaderBanner, StatCard, TodayScheduleWidget } from './shared';
 
 /**
@@ -571,6 +572,14 @@ const today = new Date().toLocaleDateString('en-US', { weekday: 'long', month: '
                 <EmptyState title="No Subjects Graded Yet" />
               ) : (
                 <>
+                  {finalGrades.length >= 3 && (
+                    <div className="px-2 py-1">
+                      <GradeRadarChart
+                        data={finalGrades.map(g => ({ subject: g.subject_name, score: gradeScore(g) }))}
+                        height={180}
+                      />
+                    </div>
+                  )}
                   {finalGrades.slice(0, 8).map((g) => {
                     const score = gradeScore(g);
                     const barColor = score >= 90 ? 'bg-emerald-500' : score >= 75 ? 'bg-violet-500' : 'bg-red-500';
