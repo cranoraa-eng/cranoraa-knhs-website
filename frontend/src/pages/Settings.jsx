@@ -773,39 +773,53 @@ const PortalSettingsTab = () => {
 
 const ProfileTab = () => {
   const { user, refreshUser } = useAuth();
-  const [form, setForm] = useState({
-    first_name: user?.first_name || '',
-    last_name: user?.last_name || '',
-    email: user?.email || '',
-    phone_number: '',
-    address: '',
-    date_of_birth: '',
-  });
+  const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [editing, setEditing] = useState(false);
   const [uploadingPic, setUploadingPic] = useState(false);
   const picRef = useRef();
+  const [form, setForm] = useState({
+    title: '', first_name: '', middle_name: '', last_name: '', email: '',
+    sex: '', date_of_birth: '', nationality: '', state: '',
+    father_name: '', mother_name: '', contact_information: '',
+    phone_number: '', address: '', registration_number: '', grade_level: '',
+  });
 
   useEffect(() => {
     api.get('/student/profile/').then(r => {
+      setProfile(r.data);
       setForm({
-        first_name: r.data.first_name || '',
-        last_name: r.data.last_name || '',
-        email: r.data.email || '',
-        phone_number: r.data.profile?.phone_number || '',
-        address: r.data.profile?.address || '',
-        date_of_birth: r.data.profile?.date_of_birth || '',
+        title:               r.data.profile?.title || '',
+        first_name:          r.data.first_name || '',
+        middle_name:         r.data.profile?.middle_name || '',
+        last_name:           r.data.last_name || '',
+        email:               r.data.email || '',
+        sex:                 r.data.profile?.sex || '',
+        date_of_birth:       r.data.profile?.date_of_birth || '',
+        nationality:         r.data.profile?.nationality || '',
+        state:               r.data.profile?.state || '',
+        father_name:         r.data.profile?.father_name || '',
+        mother_name:         r.data.profile?.mother_name || '',
+        contact_information: r.data.profile?.contact_information || '',
+        phone_number:        r.data.profile?.phone_number || '',
+        address:             r.data.profile?.address || '',
+        registration_number: r.data.profile?.registration_number || '',
+        grade_level:         r.data.profile?.grade_level || '',
       });
-    }).catch(() => {}).finally(() => setLoading(false));
+    }).catch(() => toast.error('Failed to load profile')).finally(() => setLoading(false));
   }, []);
 
   const save = async (e) => {
     e.preventDefault();
+    if (!form.first_name.trim() || !form.last_name.trim())
+      return toast.error('First name and last name are required');
     setSaving(true);
     try {
       await api.put('/student/profile/', form);
       await refreshUser();
       toast.success('Profile updated');
+      setEditing(false);
     } catch (err) {
       toast.error(err.response?.data?.error || 'Failed to update profile');
     } finally { setSaving(false); }
@@ -814,76 +828,238 @@ const ProfileTab = () => {
   const handlePicUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    if (file.size > 5 * 1024 * 1024) return toast.error('Image must be under 5MB');
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) return toast.error('Only JPEG, PNG, GIF, and WebP images are allowed');
+    if (file.size > 5 * 1024 * 1024) return toast.error('Image must be less than 5MB');
     setUploadingPic(true);
     try {
       const fd = new FormData();
       fd.append('profile_picture', file);
-      await api.post('/student/profile/', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+      const r = await api.post('/student/profile/', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+      setProfile(p => ({ ...p, profile: { ...p?.profile, profile_picture: r.data.profile_picture } }));
       await refreshUser();
       toast.success('Profile picture updated');
     } catch { toast.error('Failed to upload picture'); }
     finally { setUploadingPic(false); }
   };
 
+  const set = (field) => (val) => setForm(f => ({ ...f, [field]: val }));
+
   if (loading) return <div className="flex justify-center py-16"><LoadingSpinner /></div>;
 
+  const fullName = [profile?.first_name, profile?.profile?.middle_name, profile?.last_name].filter(Boolean).join(' ') || 'No name set';
+  const initials = [profile?.first_name, profile?.last_name].filter(Boolean).map(n => n[0].toUpperCase()).join('') || '?';
+  const profilePic = profile?.profile?.profile_picture;
+
   return (
-    <form onSubmit={save} className="space-y-6">
-      <SectionCard title="Profile Information" subtitle="Your personal details visible to the school" icon="user">
+    <div className="space-y-6">
+      {/* Profile Header */}
+      <SectionCard title="My Profile" subtitle="View and update your personal information" icon="user">
         <div className="flex items-center gap-5 mb-6">
-          <div className="relative">
-            <div className="w-20 h-20 rounded-lg bg-gradient-to-br from-violet-500 to-violet-600 flex items-center justify-center text-white text-2xl font-black overflow-hidden shadow-lg">
-              {user?.profile_picture
-                ? <img src={user.profile_picture} alt="Profile" className="w-full h-full object-cover" loading="lazy" />
-                : <span aria-hidden="true">{user?.first_name?.[0]}{user?.last_name?.[0]}</span>
+          <div className="relative group/avatar">
+            <div className="w-20 h-20 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-white text-2xl font-black overflow-hidden shadow-lg">
+              {profilePic
+                ? <img src={profilePic} alt="Profile" className="w-full h-full object-cover" loading="lazy" />
+                : <span>{initials}</span>
               }
             </div>
-            <button type="button" onClick={() => picRef.current?.click()} disabled={uploadingPic}
-              className="absolute -bottom-1 -right-1 w-7 h-7 bg-violet-600 text-white rounded-full flex items-center justify-center shadow-md hover:bg-violet-700 transition-all disabled:opacity-50" aria-label="Upload profile picture">
-              {uploadingPic
-                ? <Spinner className="w-3 h-3" />
-                : <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-              }
-            </button>
-            <input ref={picRef} type="file" accept="image/*" className="hidden" onChange={handlePicUpload} aria-label="Select profile picture file" />
+            <label className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover/avatar:opacity-100 transition-opacity cursor-pointer rounded-xl">
+              <input ref={picRef} type="file" className="hidden" accept="image/*" onChange={handlePicUpload} />
+              {uploadingPic ? (
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+              )}
+            </label>
           </div>
           <div>
-            <p className="text-base font-black text-slate-900">{user?.first_name} {user?.last_name}</p>
-            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{user?.role} · {user?.username}</p>
+            <p className="text-base font-black text-slate-900">{fullName}</p>
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{user?.role} · {profile?.email}</p>
           </div>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Field label="First Name">
-            <Input value={form.first_name} onChange={e => setForm(p => ({...p, first_name: e.target.value}))} />
-          </Field>
-          <Field label="Last Name">
-            <Input value={form.last_name} onChange={e => setForm(p => ({...p, last_name: e.target.value}))} />
-          </Field>
-          <Field label="Email Address" hint="Used for notifications and password reset">
-            <Input type="email" value={form.email} onChange={e => setForm(p => ({...p, email: e.target.value}))} placeholder="your@email.com" />
-          </Field>
-          <Field label="Phone Number">
-            <Input value={form.phone_number} onChange={e => setForm(p => ({...p, phone_number: e.target.value}))} placeholder="+63 912 345 6789" />
-          </Field>
-          <Field label="Date of Birth">
-            <Input type="date" value={form.date_of_birth} onChange={e => setForm(p => ({...p, date_of_birth: e.target.value}))} />
-          </Field>
-        </div>
-        <div className="mt-4">
-          <Field label="Address">
-            <textarea value={form.address} onChange={e => setForm(p => ({...p, address: e.target.value}))}
-              rows={2} placeholder="Your home address"
-              className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-100 focus:border-violet-500 focus:bg-white transition-all resize-none" />
-          </Field>
-        </div>
       </SectionCard>
-      <div className="flex justify-end">
-        <Button type="submit" disabled={saving} loading={saving} variant="primary">
-          Save Profile
-        </Button>
-      </div>
-    </form>
+
+      {editing ? (
+        <form onSubmit={save} className="space-y-6">
+          {/* Name */}
+          <SectionCard title="Name Details" subtitle="Your full legal name" icon="user">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {user?.role === 'staff' && (
+                <div>
+                  <label className="block text-xs font-bold text-slate-600 mb-1.5">Title</label>
+                  <select value={form.title} onChange={e => set('title')(e.target.value)}
+                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-100 focus:border-violet-500 focus:bg-white transition-all">
+                    <option value="">Select</option>
+                    <option value="Mr.">Mr.</option>
+                    <option value="Ms.">Ms.</option>
+                    <option value="Mrs.">Mrs.</option>
+                    <option value="Dr.">Dr.</option>
+                    <option value="Prof.">Prof.</option>
+                  </select>
+                </div>
+              )}
+              <Field label="First Name" hint="Required">
+                <Input value={form.first_name} onChange={e => set('first_name')(e.target.value)} required />
+              </Field>
+              <Field label="Middle Name">
+                <Input value={form.middle_name} onChange={e => set('middle_name')(e.target.value)} />
+              </Field>
+              <Field label="Last Name" hint="Required">
+                <Input value={form.last_name} onChange={e => set('last_name')(e.target.value)} required />
+              </Field>
+            </div>
+          </SectionCard>
+
+          {/* Personal */}
+          <SectionCard title="Personal Information" subtitle="Demographics and personal details" icon="info">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-600 mb-1.5">Sex</label>
+                <select value={form.sex} onChange={e => set('sex')(e.target.value)}
+                  className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-100 focus:border-violet-500 focus:bg-white transition-all">
+                  <option value="">Select</option>
+                  <option value="male">Male</option>
+                  <option value="female">Female</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+              <Field label="Date of Birth">
+                <Input type="date" value={form.date_of_birth} onChange={e => set('date_of_birth')(e.target.value)} />
+              </Field>
+              <Field label="Nationality">
+                <Input value={form.nationality} onChange={e => set('nationality')(e.target.value)} />
+              </Field>
+              <Field label="Province / State">
+                <Input value={form.state} onChange={e => set('state')(e.target.value)} />
+              </Field>
+            </div>
+          </SectionCard>
+
+          {/* Family */}
+          <SectionCard title="Family Details" subtitle="Parent or guardian information" icon="users">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Field label="Father's Name">
+                <Input value={form.father_name} onChange={e => set('father_name')(e.target.value)} />
+              </Field>
+              <Field label="Mother's Name">
+                <Input value={form.mother_name} onChange={e => set('mother_name')(e.target.value)} />
+              </Field>
+            </div>
+          </SectionCard>
+
+          {/* Academic */}
+          <SectionCard title="Academic Record" subtitle="School enrollment information" icon="book">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Field label="LRN (Learner Reference Number)">
+                <Input value={form.registration_number} onChange={e => set('registration_number')(e.target.value)} />
+              </Field>
+              <Field label="Grade Level">
+                <Input value={form.grade_level} onChange={e => set('grade_level')(e.target.value)} />
+              </Field>
+            </div>
+          </SectionCard>
+
+          {/* Contact */}
+          <SectionCard title="Contact Information" subtitle="How to reach you" icon="mail">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Field label="Email Address" hint="Used for notifications and password reset">
+                <Input type="email" value={form.email} onChange={e => set('email')(e.target.value)} placeholder="your@email.com" />
+              </Field>
+              <Field label="Phone Number">
+                <Input value={form.phone_number} onChange={e => set('phone_number')(e.target.value)} placeholder="+63 912 345 6789" />
+              </Field>
+              <div className="md:col-span-2">
+                <Field label="Address">
+                  <textarea value={form.address} onChange={e => set('address')(e.target.value)}
+                    rows={2} placeholder="Your home address"
+                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-100 focus:border-violet-500 focus:bg-white transition-all resize-none" />
+                </Field>
+              </div>
+              <div className="md:col-span-2">
+                <Field label="Emergency Contact" hint="Name, relationship, phone number">
+                  <textarea value={form.contact_information} onChange={e => set('contact_information')(e.target.value)}
+                    rows={2} placeholder="Name, relationship, phone number…"
+                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-100 focus:border-violet-500 focus:bg-white transition-all resize-none" />
+                </Field>
+              </div>
+            </div>
+          </SectionCard>
+
+          <div className="flex gap-3 pt-2">
+            <Button type="submit" disabled={saving} loading={saving} variant="primary" className="flex-1">
+              {saving ? 'Saving…' : 'Save Changes'}
+            </Button>
+            <Button type="button" variant="secondary" onClick={() => setEditing(false)} className="flex-1">
+              Cancel
+            </Button>
+          </div>
+        </form>
+      ) : (
+        <>
+          {/* View mode */}
+          <SectionCard title="Name Details" subtitle="Your full legal name" icon="user">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {user?.role === 'staff' && <Field label="Title">{profile?.profile?.title || '—'}</Field>}
+              <Field label="First Name">{profile?.first_name || '—'}</Field>
+              <Field label="Middle Name">{profile?.profile?.middle_name || '—'}</Field>
+              <Field label="Last Name">{profile?.last_name || '—'}</Field>
+            </div>
+          </SectionCard>
+
+          <SectionCard title="Personal Information" subtitle="Demographics and personal details" icon="info">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Field label="Sex">{profile?.profile?.sex ? profile.profile.sex.charAt(0).toUpperCase() + profile.profile.sex.slice(1) : '—'}</Field>
+              <Field label="Date of Birth">{profile?.profile?.date_of_birth
+                ? new Date(profile.profile.date_of_birth + 'T00:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+                : '—'}</Field>
+              <Field label="Nationality">{profile?.profile?.nationality || '—'}</Field>
+              <Field label="Province / State">{profile?.profile?.state || '—'}</Field>
+            </div>
+          </SectionCard>
+
+          <SectionCard title="Family Details" subtitle="Parent or guardian information" icon="users">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Field label="Father's Name">{profile?.profile?.father_name || '—'}</Field>
+              <Field label="Mother's Name">{profile?.profile?.mother_name || '—'}</Field>
+            </div>
+          </SectionCard>
+
+          <SectionCard title="Contact Information" subtitle="How to reach you" icon="mail">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Field label="Email Address">{profile?.email || '—'}</Field>
+              <Field label="Phone Number">{profile?.profile?.phone_number || '—'}</Field>
+              <div className="md:col-span-2">
+                <Field label="Address">{profile?.profile?.address || '—'}</Field>
+              </div>
+              <div className="md:col-span-2">
+                <Field label="Emergency Contact">{profile?.profile?.contact_information || '—'}</Field>
+              </div>
+            </div>
+          </SectionCard>
+
+          {(profile?.profile?.registration_number || profile?.profile?.grade_level) && (
+            <SectionCard title="Academic Record" subtitle="School enrollment information" icon="book">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Field label="LRN">{profile?.profile?.registration_number || '—'}</Field>
+                <Field label="Grade Level">{profile?.profile?.grade_level || '—'}</Field>
+              </div>
+            </SectionCard>
+          )}
+
+          <div className="flex justify-end pt-2">
+            <Button type="button" variant="primary" onClick={() => setEditing(true)}>
+              <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
+              Edit Profile
+            </Button>
+          </div>
+        </>
+      )}
+    </div>
   );
 };
 

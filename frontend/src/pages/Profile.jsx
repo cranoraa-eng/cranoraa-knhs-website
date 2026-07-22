@@ -19,6 +19,9 @@ const Profile = () => {
   const { refreshUser } = useAuth();
   const [searchParams] = useSearchParams();
   const studentId = searchParams.get('student_id');
+
+  // Redirect to settings if not viewing another student
+  if (!studentId) return <Navigate to="/settings" replace />;
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);

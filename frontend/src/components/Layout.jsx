@@ -235,7 +235,7 @@ const Layout = () => {
     if (path === '/backups') return 'Backups';
     if (path === '/website-content') return 'Website Editor';
     if (path === '/settings') return 'Settings';
-    if (path === '/profile') return 'My Profile';
+    if (path === '/settings') return 'My Profile';
     if (path === '/password-reset') return 'Change Password';
     if (path === '/schedule-management') return 'Schedules';
     if (path === '/parent-dashboard') return 'Parent Dashboard';
@@ -280,7 +280,7 @@ const Layout = () => {
       { label: 'Notifications', path: '/notifications', category: 'Communication', description: 'View all notifications' },
       { label: 'Calendar', path: '/portal-calendar', category: 'Communication', description: 'School calendar and events' },
       { label: 'Announcements', path: '/announcements', category: 'Communication', description: 'School announcements' },
-      { label: 'My Profile', path: '/profile', category: 'Account', description: 'View and edit your profile' },
+      { label: 'My Profile', path: '/settings', category: 'Account', description: 'View and edit your profile' },
       { label: 'Settings', path: '/settings', category: 'Account', description: 'Account settings' },
     ];
 
@@ -410,7 +410,7 @@ const Layout = () => {
       {
         header: 'Account',
         items: [
-          { to: '/profile', label: 'My Profile', icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' },
+          { to: '/settings', label: 'My Profile', icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' },
           { to: '/settings', label: 'Settings', icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z' },
         ]
       }
@@ -429,7 +429,7 @@ const Layout = () => {
       {
         header: 'Account',
         items: [
-          { to: '/profile', label: 'My Profile', icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' },
+          { to: '/settings', label: 'My Profile', icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' },
           { to: '/password-reset', label: 'Change Password', icon: 'M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z' },
         ]
       }
@@ -486,7 +486,7 @@ const Layout = () => {
 
           {/* Profile Summary */}
           <div className="flex-shrink-0 px-4 py-3 border-b border-slate-100">
-            <div data-tour="sidebar-profile" onClick={() => navigate('/profile')}
+            <div data-tour="sidebar-profile" onClick={() => navigate('/settings')}
               className="flex items-center gap-3 p-3 rounded-md bg-slate-50 border border-slate-200 hover:bg-slate-100 hover:border-slate-300 transition-colors cursor-pointer group">
               <div className="h-10 w-10 rounded-md bg-gradient-to-br from-violet-500 to-violet-600 flex items-center justify-center text-white font-bold shadow-sm group-hover:scale-105 transition-transform uppercase overflow-hidden border border-violet-700 shrink-0">
                 {user?.profile_picture ? (
@@ -755,7 +755,7 @@ const Layout = () => {
                       {/* Menu Items */}
                       <div className="py-1">
                         <button
-                          onClick={() => { setShowUserMenu(false); navigate('/profile'); }}
+                          onClick={() => { setShowUserMenu(false); navigate('/settings'); }}
                           className="flex items-center gap-3 w-full px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
                         >
                           <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -920,7 +920,7 @@ const Layout = () => {
                 </div>
                 <div className="py-1">
                   <button
-                    onClick={() => { setShowMobileUserMenu(false); navigate('/profile'); }}
+                    onClick={() => { setShowMobileUserMenu(false); navigate('/settings'); }}
                     className="flex items-center gap-3 w-full px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
                   >
                     <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
