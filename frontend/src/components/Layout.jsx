@@ -80,8 +80,10 @@ const Layout = () => {
   const { notifications, setNotifications, unreadCount, setUnreadCount, realtimeConnected, isPolling } = useNotifications();
   const [showNotifications, setShowNotifications] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
   const [sysSettings, setSysSettings] = useState(null);
   const notifDropdownRef = useRef(null);
+  const userMenuRef = useRef(null);
 
   // Fetch system settings for academic year
   useEffect(() => {
@@ -115,6 +117,18 @@ const Layout = () => {
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, [showNotifications]);
+
+  // Close user menu on outside click
+  useEffect(() => {
+    if (!showUserMenu) return;
+    const handler = (e) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target)) {
+        setShowUserMenu(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [showUserMenu]);
 
   const normalizePath = (path) => path.split('?')[0];
   const isActive = (path) => location.pathname === normalizePath(path);
@@ -494,28 +508,6 @@ const Layout = () => {
               </div>
             ))}
           </nav>
-
-          {/* Bottom actions */}
-          <div className="flex-shrink-0 border-t border-slate-200 p-4 space-y-2 bg-slate-50">
-            <button
-              onClick={() => { window.location.href = '/'; }}
-              className="flex w-full items-center justify-center rounded-md bg-white border border-slate-300 px-3 py-2.5 text-xs font-bold uppercase tracking-wide text-slate-700 hover:bg-slate-50 hover:border-slate-400 transition-all active:scale-95 shadow-sm"
-            >
-              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-              </svg>
-              Visit Website
-            </button>
-            <button
-              onClick={handleLogout}
-              className="flex w-full items-center justify-center rounded-md bg-white border border-red-300 px-3 py-2.5 text-xs font-bold uppercase tracking-wide text-red-700 hover:bg-red-50 hover:border-red-400 transition-all active:scale-95 shadow-sm"
-            >
-              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-              </svg>
-              Logout
-            </button>
-          </div>
         </aside>
 
         {/* ── Main Content ── */}
@@ -716,22 +708,72 @@ const Layout = () => {
               <MuteButton />
 
               {/* User Profile Summary (Desktop) */}
-              <div className="hidden md:flex items-center gap-3 pl-1">
+              <div className="hidden md:flex items-center gap-3 pl-1" ref={userMenuRef}>
                 <div className="flex flex-col items-end">
                   <span className="text-sm font-bold text-slate-900 leading-none">{user?.first_name}</span>
                   <span className="text-[10px] font-bold text-violet-600 uppercase tracking-widest mt-1">{user?.role}</span>
                 </div>
-                <div data-tour="user-profile" className="relative group cursor-pointer" onClick={() => navigate('/profile')}>
-                  <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-white shadow-lg group-hover:rotate-3 transition-all overflow-hidden border border-slate-200">
+                <div className="relative">
+                  <button
+                    data-tour="user-profile"
+                    onClick={() => { playSound('click'); setShowUserMenu(!showUserMenu); }}
+                    className={`h-10 w-10 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-white shadow-lg transition-all overflow-hidden border-2 ${showUserMenu ? 'border-violet-400 scale-95' : 'border-slate-200 hover:rotate-3 hover:scale-105'}`}
+                  >
                     {user?.profile_picture ? (
-                  <img src={user.profile_picture} alt="Avatar" className="w-full h-full object-cover" loading="lazy" />
+                      <img src={user.profile_picture} alt="Avatar" className="w-full h-full object-cover" loading="lazy" />
                     ) : (
                       <span className="text-sm font-black uppercase tracking-tighter">
                         {user?.first_name?.charAt(0)}{user?.last_name?.charAt(0)}
                       </span>
                     )}
-                  </div>
+                  </button>
                   <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-green-500 border-2 border-white rounded-full shadow-sm"></div>
+
+                  {/* Dropdown Menu */}
+                  {showUserMenu && (
+                    <div className="absolute right-0 z-50 mt-3 w-56 rounded-xl border border-slate-200 bg-white shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-150">
+                      {/* User Info */}
+                      <div className="px-4 py-3 bg-gradient-to-r from-[#1A0B2E] to-[#2D1452]">
+                        <p className="text-sm font-bold text-white truncate">{user?.first_name} {user?.last_name}</p>
+                        <p className="text-[10px] font-bold text-violet-300 uppercase tracking-widest mt-0.5">{user?.email}</p>
+                      </div>
+
+                      {/* Menu Items */}
+                      <div className="py-1">
+                        <button
+                          onClick={() => { setShowUserMenu(false); navigate('/profile'); }}
+                          className="flex items-center gap-3 w-full px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
+                        >
+                          <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                          </svg>
+                          Profile
+                        </button>
+                        <button
+                          onClick={() => { setShowUserMenu(false); window.location.href = '/'; }}
+                          className="flex items-center gap-3 w-full px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
+                        >
+                          <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                          </svg>
+                          Visit Website
+                        </button>
+                      </div>
+
+                      {/* Logout */}
+                      <div className="border-t border-slate-100 py-1">
+                        <button
+                          onClick={() => { setShowUserMenu(false); handleLogout(); }}
+                          className="flex items-center gap-3 w-full px-4 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-50 transition-colors"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                          </svg>
+                          Logout
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
