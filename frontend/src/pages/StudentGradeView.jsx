@@ -5,7 +5,6 @@ import api from '../utils/api';
 import { useActiveAcademicYear } from '../hooks/useActiveAcademicYear';
 import { useAuth } from '../context/AuthContext';
 import { useSystemSettings } from '../hooks/useSystemSettings';
-import { jsPDF } from 'jspdf';
 import toast from 'react-hot-toast';
 import {
   Card, CardHeader, CardBody, CardTitle, Button, Badge,
@@ -123,8 +122,9 @@ const StudentGradeView = () => {
     : user?.username;
 
   // PDF Export Handler
-  const handlePDFDownload = () => {
+  const handlePDFDownload = async () => {
     if (!displayName) return toast.error('Student information not available');
+    const { jsPDF } = await import('jspdf');
 
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.getWidth();

@@ -1,6 +1,4 @@
 import { useState, useEffect, useRef } from 'react';
-import html2canvas from 'html2canvas';
-import { jsPDF } from 'jspdf';
 import api from '../utils/api';
 import { useActiveAcademicYear } from '../hooks/useActiveAcademicYear';
 import { useSystemSettings } from '../hooks/useSystemSettings';
@@ -16,6 +14,12 @@ const COLORS = ['#2563eb', '#10b981', '#3b82f6', '#f59e0b', '#ef4444'];
 
 const exportToPDF = async (ref, filename, title, subtitle, meta = {}) => {
   if (!ref.current) return;
+  // Dynamic imports — only load the heavy vendor-export chunk when the user
+  // actually clicks Export, not on page load. Prevents stale-chunk MIME errors.
+  const [{ default: html2canvas }, { jsPDF }] = await Promise.all([
+    import('html2canvas'),
+    import('jspdf'),
+  ]);
   try {
     // ── Fix transparency and prepare for capture ─────────────────────
     const el = ref.current;
