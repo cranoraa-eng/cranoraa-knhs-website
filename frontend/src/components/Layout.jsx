@@ -461,13 +461,13 @@ const Layout = () => {
         {/* Mobile Sidebar Overlay */}
         {sidebarOpen && (
           <div 
-            className="fixed inset-0 bg-slate-900/60 z-[60] lg:hidden backdrop-blur-sm transition-opacity duration-300" 
+            className="fixed inset-0 bg-slate-900/60 z-[110] lg:hidden backdrop-blur-sm transition-opacity duration-300" 
             onClick={() => setSidebarOpen(false)} 
           />
         )}
 
         {/* ── Sidebar ── */}
-        <aside aria-label="Portal sidebar" data-tour="portal-sidebar" className={`fixed inset-y-0 left-0 z-[70] flex h-screen w-64 transform flex-col overflow-hidden border-r border-purple-800/30 bg-gradient-to-b from-[#1a0a2e] via-[#1e1145] to-[#150d2e] shadow-2xl transition-all duration-300 ease-in-out lg:static lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        <aside aria-label="Portal sidebar" data-tour="portal-sidebar" className={`fixed inset-y-0 left-0 z-[120] flex h-screen w-64 transform flex-col overflow-hidden border-r border-purple-800/30 bg-gradient-to-b from-[#1a0a2e] via-[#1e1145] to-[#150d2e] shadow-2xl transition-all duration-300 ease-in-out lg:static lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
 
           {/* School Header */}
           <div className="flex items-center gap-3 px-4 py-4 border-b border-white/5 bg-black/20">
