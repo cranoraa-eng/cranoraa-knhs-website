@@ -1,5 +1,5 @@
 import datetime
-from django.db import transaction
+from django.db import transaction, IntegrityError
 from django.db.models import Q, Count, Case, When, IntegerField
 from django.utils import timezone
 from rest_framework import viewsets, status, filters
@@ -332,6 +332,24 @@ class AttendanceViewSet(viewsets.ModelViewSet):
             'updated': updated_count,
             'errors': errors,
         })
+
+    def create(self, request, *args, **kwargs):
+        try:
+            return super().create(request, *args, **kwargs)
+        except IntegrityError:
+            return Response(
+                {'error': 'Attendance record already exists for this student on this date.'},
+                status=status.HTTP_409_CONFLICT,
+            )
+
+    def update(self, request, *args, **kwargs):
+        try:
+            return super().update(request, *args, **kwargs)
+        except IntegrityError:
+            return Response(
+                {'error': 'Attendance record already exists for this student on this date.'},
+                status=status.HTTP_409_CONFLICT,
+            )
 
     def perform_create(self, serializer):
         if self.request.user.role not in ['staff', 'admin']:
