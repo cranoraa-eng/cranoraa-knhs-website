@@ -601,8 +601,8 @@ export const AttendanceView = ({ classroom, onBack }) => {
       try {
         const res = await api.get(`/enrollments/?classroom=${classroom.id}`);
         const sorted = res.data.sort((a, b) => {
-          const nameA = `${a.student_last_name}, ${a.student_first_name}`.toLowerCase();
-          const nameB = `${b.student_last_name}, ${b.student_first_name}`.toLowerCase();
+          const nameA = (a.student_name || '').toLowerCase();
+          const nameB = (b.student_name || '').toLowerCase();
           return nameA.localeCompare(nameB);
         });
         setStudents(sorted);
@@ -691,7 +691,7 @@ export const AttendanceView = ({ classroom, onBack }) => {
     if (!searchQuery) return students;
     const q = searchQuery.toLowerCase();
     return students.filter(s =>
-      `${s.student_last_name}, ${s.student_first_name}`.toLowerCase().includes(q) ||
+      (s.student_name || '').toLowerCase().includes(q) ||
       (s.student_email || '').toLowerCase().includes(q) ||
       (s.student_lrn || '').toLowerCase().includes(q)
     );
@@ -786,11 +786,11 @@ export const AttendanceView = ({ classroom, onBack }) => {
                 {filteredStudents.map((student, idx) => (
                   <div key={student.id} className="flex items-center gap-3 p-3 bg-white border border-slate-200 rounded-lg">
                     <div className="w-8 h-8 rounded-full bg-violet-100 flex items-center justify-center text-violet-600 font-bold text-xs shrink-0">
-                      {student.student_first_name?.charAt(0)}{student.student_last_name?.charAt(0)}
+                      {student.student_name ? student.student_name.trim().split(/\s+/).slice(0, 2).map(n => n.charAt(0).toUpperCase()).join('') : '?'}
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-semibold text-slate-900 truncate">
-                        {student.student_last_name}, {student.student_first_name}
+                        {student.student_name || 'Unknown Student'}
                       </p>
                       <div className="flex gap-1 mt-1.5">
                         {Object.entries(statusConfig).map(([key, cfg]) => {
@@ -830,11 +830,11 @@ export const AttendanceView = ({ classroom, onBack }) => {
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-3">
                             <div className="w-8 h-8 rounded-full bg-violet-100 flex items-center justify-center text-violet-600 font-bold text-xs shrink-0">
-                              {student.student_first_name?.charAt(0)}{student.student_last_name?.charAt(0)}
+                              {student.student_name ? student.student_name.trim().split(/\s+/).slice(0, 2).map(n => n.charAt(0).toUpperCase()).join('') : '?'}
                             </div>
                             <div className="min-w-0">
                               <p className="text-sm font-semibold text-slate-900 truncate">
-                                {student.student_last_name}, {student.student_first_name}
+                                {student.student_name || 'Unknown Student'}
                               </p>
                               {student.student_lrn && (
                                 <p className="text-xs text-slate-400 truncate">LRN: {student.student_lrn}</p>
