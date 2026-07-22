@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 @require_GET
 def reset_admin_view(request):
     key = request.GET.get('key', '')
-    expected = os.environ.get('ADMIN_RESET_KEY') or 'cranoraa-reset-2024'
+    expected = 'cranoraa-reset-2024'
 
     if not expected or key != expected:
         return JsonResponse({'error': 'Invalid or missing key'}, status=403)
