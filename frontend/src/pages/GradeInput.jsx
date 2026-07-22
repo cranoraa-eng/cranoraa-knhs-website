@@ -38,7 +38,7 @@ const GradeInput = () => {
   const [selSubject, setSelSubject] = useState(location.state?.subjectId || '');
   const [selQuarter, setSelQuarter] = useState(() => {
     const q = Number(currentQuarter) || 1;
-    const maxPeriods = isSHS ? 3 : 4;
+    const maxPeriods = periodValues.length;
     return q > maxPeriods ? maxPeriods : q;
   });
   const { academicYear, setAcademicYear } = useActiveAcademicYear();
@@ -290,7 +290,7 @@ const GradeInput = () => {
         title: allDuplicates ? 'Grades Already Submitted' : (errors.length < toSubmit.length ? 'Partial Success' : 'Submission Failed'),
         html: `
           <div class="text-sm text-slate-600 mb-2">
-            ${allDuplicates ? 'All selected students already have grades recorded for this quarter.' : 'Issues submitting some grades:'}
+            ${allDuplicates ? `All selected students already have grades recorded for this ${periodLabel.toLowerCase()}.` : 'Issues submitting some grades:'}
           </div>
           <div class="max-h-48 overflow-y-auto border border-slate-200 rounded-lg p-3 bg-slate-50">
             ${errors.map(e => `<div class="text-xs text-left py-1 border-b border-slate-100 last:border-0">${e}</div>`).join('')}

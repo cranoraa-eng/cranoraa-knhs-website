@@ -419,7 +419,7 @@ def generate_transcript_pdf(transcript):
 
 <table class="grades">
     <thead>
-        <tr><th>Code</th><th>Subject</th><th>Q1</th><th>Q2</th><th>Q3</th><th>Q4</th><th>Average</th><th>Remarks</th></tr>
+        <tr><th>Code</th><th>Subject</th><th>T1</th><th>T2</th><th>T3</th><th>T4</th><th>Average</th><th>Remarks</th></tr>
     </thead>
     <tbody>
         {rows_html if rows_html else '<tr><td colspan="8" style="text-align:center;color:#999;">No grade records found</td></tr>'}
@@ -581,7 +581,7 @@ def generate_report_card_pdf(student, report, grades):
 <div class="info">
     <p><strong>Student:</strong> {student_name}</p>
     <p><strong>Classroom:</strong> {classroom_name}</p>
-    <p><strong>Quarter:</strong> Q{report.quarter}</p>
+    <p><strong>Term:</strong> Term {report.quarter}</p>
     <p><strong>School Year:</strong> {report.school_year}</p>
 </div>
 <table>

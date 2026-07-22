@@ -616,14 +616,13 @@ const ClassroomHub = () => {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">Quarter</label>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Term</label>
                 <select value={uploadForm.quarter} onChange={e => setUploadForm({ ...uploadForm, quarter: e.target.value })}
                   className={modalInputCls}>
                   <option value="">None</option>
-                  <option value="1">1st Quarter</option>
-                  <option value="2">2nd Quarter</option>
-                  <option value="3">3rd Quarter</option>
-                  <option value="4">4th Quarter</option>
+                  <option value="1">1st Term</option>
+                  <option value="2">2nd Term</option>
+                  <option value="3">3rd Term</option>
                 </select>
               </div>
               <div>
@@ -830,7 +829,7 @@ const StudentDetailDrawer = ({ student, classroom, onClose }) => {
                           <div key={g.id} className="flex items-center justify-between px-4 py-2.5">
                             <div>
                               <p className="text-sm font-bold text-slate-900">{g.subject_name}</p>
-                              <p className="text-[10px] text-slate-400">Q{g.quarter} · {g.academic_year}</p>
+                              <p className="text-[10px] text-slate-400">T{g.quarter} · {g.academic_year}</p>
                             </div>
                             <span className={`text-sm font-black px-3 py-1 rounded-lg border ${
                               parseFloat(g.raw_score) >= 90 ? 'text-emerald-700 bg-emerald-50 border-emerald-200' :
@@ -1191,7 +1190,7 @@ const MaterialsTab = ({ classroom, materials, isTeacher, searchQuery, setSearchQ
                       <div className="flex items-center gap-2 mt-3">
                         <Badge variant="slate" size="sm">{material.material_type?.toUpperCase()}</Badge>
                         {material.quarter && (
-                          <Badge variant="blue" size="sm">Q{material.quarter}</Badge>
+                          <Badge variant="blue" size="sm">T{material.quarter}</Badge>
                         )}
                       </div>
                     </div>
@@ -1466,10 +1465,9 @@ const OverviewView = ({ classroom, grades, loading, isTeacher, onNavigate, navig
                 <thead>
                   <tr className="border-b border-slate-200">
                     <th className="text-left py-3 px-4 font-semibold text-slate-700">Subject</th>
-                    <th className="text-center py-3 px-2 font-semibold text-slate-700">Q1</th>
-                    <th className="text-center py-3 px-2 font-semibold text-slate-700">Q2</th>
-                    <th className="text-center py-3 px-2 font-semibold text-slate-700">Q3</th>
-                    <th className="text-center py-3 px-2 font-semibold text-slate-700">Q4</th>
+                    <th className="text-center py-3 px-2 font-semibold text-slate-700">T1</th>
+                    <th className="text-center py-3 px-2 font-semibold text-slate-700">T2</th>
+                    <th className="text-center py-3 px-2 font-semibold text-slate-700">T3</th>
                     <th className="text-center py-3 px-4 font-semibold text-slate-700">Final</th>
                   </tr>
                 </thead>
@@ -1480,7 +1478,7 @@ const OverviewView = ({ classroom, grades, loading, isTeacher, onNavigate, navig
                     return (
                       <tr key={i} className="border-b border-slate-100 hover:bg-slate-50">
                         <td className="py-3 px-4 font-medium text-slate-900">{s.subject}</td>
-                        {[1, 2, 3, 4].map(q => (
+                        {[1, 2, 3].map(q => (
                           <td key={q} className="text-center py-3 px-2">
                             {s.quarters[q] != null ? (
                               <span className={`font-bold ${s.quarters[q] >= 75 ? 'text-emerald-600' : 'text-red-600'}`}>
@@ -1916,10 +1914,10 @@ const GradeInputView = ({ classroom, onBack }) => {
 
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-2">
-                Quarter
+                Term
               </label>
               <div className="flex flex-wrap gap-2">
-                {[1, 2, 3, 4].map(q => (
+                {[1, 2, 3].map(q => (
                   <button
                     key={q}
                     onClick={() => setSelectedQuarter(q)}
@@ -1929,7 +1927,7 @@ const GradeInputView = ({ classroom, onBack }) => {
                         : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-300'
                     }`}
                   >
-                    Q{q}
+                    T{q}
                   </button>
                 ))}
               </div>

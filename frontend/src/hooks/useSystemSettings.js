@@ -21,32 +21,23 @@ export function useSystemSettings() {
   const isJHS = settings?.academic_level === 'jhs';
   const isSHS = settings?.academic_level === 'shs';
 
-  // Number of grading periods: JHS=4 quarters, SHS=3 semesters
-  const gradingPeriods = isSHS ? 3 : 4;
+  // Number of grading periods: both JHS and SHS use 3 terms
+  const gradingPeriods = 3;
 
-  // Labels: JHS uses "Quarter", SHS uses "Semester"
-  const periodLabel = isSHS ? 'Semester' : 'Quarter';
+  // Label: both use "Term"
+  const periodLabel = 'Term';
 
-  // Generate period options array: [{value: '1', label: '1st Quarter'}, ...]
-  const periodOptions = isSHS
-    ? [
-        { value: '1', label: '1st Semester' },
-        { value: '2', label: '2nd Semester' },
-        { value: '3', label: '3rd Semester' },
-      ]
-    : [
-        { value: '1', label: '1st Quarter' },
-        { value: '2', label: '2nd Quarter' },
-        { value: '3', label: '3rd Quarter' },
-        { value: '4', label: '4th Quarter' },
-      ];
+  // Generate period options array: [{value: '1', label: '1st Term'}, ...]
+  const periodOptions = [
+    { value: '1', label: '1st Term' },
+    { value: '2', label: '2nd Term' },
+    { value: '3', label: '3rd Term' },
+  ];
 
-  // Short labels for table headers: ["S1","S2","S3"] or ["Q1","Q2","Q3","Q4"]
-  const periodShortLabels = isSHS
-    ? ['S1', 'S2', 'S3']
-    : ['Q1', 'Q2', 'Q3', 'Q4'];
+  // Short labels for table headers: ["T1","T2","T3"]
+  const periodShortLabels = ['T1', 'T2', 'T3'];
 
-  // Numeric values: [1,2,3] or [1,2,3,4]
+  // Numeric values: [1,2,3]
   const periodValues = Array.from({ length: gradingPeriods }, (_, i) => i + 1);
 
   return {

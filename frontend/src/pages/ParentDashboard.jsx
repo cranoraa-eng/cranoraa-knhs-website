@@ -317,7 +317,7 @@ export default function ParentDashboard() {
                           <div key={i} className="flex items-center justify-between py-1.5 border-b border-slate-50 last:border-0">
                             <div>
                               <p className="text-xs font-bold text-slate-800">{g.subject_name}</p>
-                              <p className="text-xs text-slate-400">Q{g.quarter} · {g.subject_code}</p>
+                               <p className="text-xs text-slate-400">T{g.quarter} · {g.subject_code}</p>
                             </div>
                             <div className="text-right">
                               <GradeBadge score={g.score} />
@@ -389,7 +389,7 @@ export default function ParentDashboard() {
                             <tr key={i} className="hover:bg-slate-50 transition-colors">
                               <td className="px-4 py-3 text-xs font-bold text-slate-800">{g.subject_name}</td>
                               <td className="px-4 py-3 text-xs text-slate-500 hidden sm:table-cell">{g.subject_code}</td>
-                              <td className="px-4 py-3 text-xs text-slate-600">Q{g.quarter}</td>
+                               <td className="px-4 py-3 text-xs text-slate-600">T{g.quarter}</td>
                               <td className="px-4 py-3"><GradeBadge score={g.score} /></td>
                               <td className="px-4 py-3 text-xs text-slate-500 hidden sm:table-cell">{g.remarks}</td>
                             </tr>

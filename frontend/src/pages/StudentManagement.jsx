@@ -229,7 +229,7 @@ function StudentProfileDrawer({ student, classrooms, onClose, onResetPassword, o
                           <div key={g.id} className="flex items-center justify-between px-4 py-2.5">
                             <div>
                               <p className="text-sm font-bold text-slate-900">{g.subject_name}</p>
-                              <p className="text-[10px] text-slate-400">Q{g.quarter} · {g.academic_year}</p>
+                              <p className="text-[10px] text-slate-400">T{g.quarter} · {g.academic_year}</p>
                             </div>
                             <span className={`text-sm font-black px-3 py-1 rounded-lg border ${
                               parseFloat(g.raw_score) >= 90 ? 'text-emerald-700 bg-emerald-50 border-emerald-200' :

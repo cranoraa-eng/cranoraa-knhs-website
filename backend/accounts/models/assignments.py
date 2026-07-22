@@ -99,12 +99,11 @@ class Grade(models.Model):
         ('final_grade', 'Final Grade'),
     ]
 
-    QUARTER_CHOICES = [
-        (1, 'First Quarter'),
-        (2, 'Second Quarter'),
-        (3, 'Third Quarter'),
-        (4, 'Fourth Quarter'),
-    ]
+    TERM_CHOICES = [
+        (1, 'Term 1'),
+        (2, 'Term 2'),
+        (3, 'Term 3'),
+        (4, 'Term 4 (Legacy)'),
 
     student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='subject_grades')
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name='subject_grades')
@@ -112,7 +111,7 @@ class Grade(models.Model):
     teacher = models.ForeignKey(User, on_delete=models.CASCADE, related_name='assigned_subject_grades')
 
     grade_type = models.CharField(max_length=30, choices=GRADE_TYPE_CHOICES, default='written_work')
-    quarter = models.IntegerField(choices=QUARTER_CHOICES)
+    quarter = models.IntegerField(choices=TERM_CHOICES)
 
     raw_score = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
     total_score = models.DecimalField(max_digits=5, decimal_places=2, default=100)

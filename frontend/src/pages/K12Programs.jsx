@@ -119,12 +119,11 @@ const K12Programs = () => {
             <h2 className="text-3xl font-black text-slate-900 mb-3 uppercase">Assessment System</h2>
             <p className="text-gray-600">K-12 grading and evaluation framework</p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
-              { quarter: 'Quarter 1', weight: '25%', period: 'Jun - Aug' },
-              { quarter: 'Quarter 2', weight: '25%', period: 'Sep - Nov' },
-              { quarter: 'Quarter 3', weight: '25%', period: 'Dec - Feb' },
-              { quarter: 'Quarter 4', weight: '25%', period: 'Mar - May' }
+              { quarter: 'Term 1', weight: '33.3%', period: 'Jun - Oct' },
+              { quarter: 'Term 2', weight: '33.3%', period: 'Nov - Mar' },
+              { quarter: 'Term 3', weight: '33.3%', period: 'Apr - May' }
             ].map((q, i) => (
               <div key={i} className="bg-slate-50 rounded-2xl border-2 border-violet-200 p-6 text-center">
                 <div className="text-4xl font-black text-violet-800 mb-2">{q.weight}</div>

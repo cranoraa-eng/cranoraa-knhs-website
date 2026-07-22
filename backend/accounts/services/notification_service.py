@@ -26,7 +26,7 @@ def notify_grade_posted(student, teacher_name, subject_name, quarter, score, lin
         recipient=student,
         notification_type='grade',
         title='Grade Posted',
-        message=f'{teacher_name} posted your {subject_name} grade for Q{quarter}: {score}.',
+        message=f'{teacher_name} posted your {subject_name} grade for Term {quarter}: {score}.',
         link=link,
     )
 

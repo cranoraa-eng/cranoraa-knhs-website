@@ -86,13 +86,13 @@ def get_descriptive_equivalent(average, passing_grade=75.0):
     return "Did Not Meet Expectations"
 
 
-def calculate_general_average(q1, q2, q3, q4):
+def calculate_general_average(q1, q2, q3, q4=None):
     """
-    Calculate general average from quarterly grades.
+    Calculate general average from term grades.
     Returns rounded integer average or None.
+    Supports both 3-term (new) and 4-quarter (legacy) systems.
     """
-    quarters = [q1, q2, q3, q4]
-    valid = [q for q in quarters if q is not None]
-    if valid:
-        return round(sum(valid) / len(valid))
+    grades = [q for q in [q1, q2, q3, q4] if q is not None]
+    if grades:
+        return round(sum(grades) / len(grades))
     return None

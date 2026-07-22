@@ -22,7 +22,7 @@ class LearningMaterial(models.Model):
     file = models.URLField(max_length=1000, null=True, blank=True, help_text="Supabase Storage URL")
     file_size_bytes = models.PositiveIntegerField(null=True, blank=True)
     original_filename = models.CharField(max_length=255, blank=True)
-    quarter = models.IntegerField(null=True, blank=True, help_text="Quarter (1-4)")
+    quarter = models.IntegerField(null=True, blank=True, help_text="Term (1-3)")
     week = models.IntegerField(null=True, blank=True, help_text="Week number")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

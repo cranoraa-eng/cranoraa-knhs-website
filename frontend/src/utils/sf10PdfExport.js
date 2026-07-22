@@ -54,10 +54,10 @@ function depedRound(v) {
   return Math.round(Number(v)).toString();
 }
 
-/** Compute quarterly average */
-function calcFinalGrade(quarters) {
-  const vals = ['q1', 'q2', 'q3', 'q4']
-    .map(k => quarters[k])
+/** Compute term average */
+function calcFinalGrade(terms) {
+  const vals = ['q1', 'q2', 'q3']
+    .map(k => terms[k])
     .filter(v => v !== null && v !== undefined && v !== '' && !isNaN(Number(v)))
     .map(Number);
   if (!vals.length) return '';
@@ -216,14 +216,13 @@ function generateSF10PDF(student, schoolInfo) {
     q1: MARGIN + 85,
     q2: MARGIN + 100,
     q3: MARGIN + 115,
-    q4: MARGIN + 130,
-    final: MARGIN + 145,
-    remarks: MARGIN + 170
+    final: MARGIN + 130,
+    remarks: MARGIN + 155
   };
 
   // Draw header
   doc.text('LEARNING AREAS', colX.area, y);
-  doc.text('Quarterly Rating', colX.q1 + 20, y);
+  doc.text('Term Rating', colX.q1 + 20, y);
   doc.text('FINAL', colX.final, y);
   doc.text('REMARKS', colX.remarks, y);
   y += 4;
@@ -231,7 +230,6 @@ function generateSF10PDF(student, schoolInfo) {
   doc.text('1', colX.q1, y);
   doc.text('2', colX.q2, y);
   doc.text('3', colX.q3, y);
-  doc.text('4', colX.q4, y);
   doc.text('RATING', colX.final, y);
   y += 1;
 
@@ -252,7 +250,6 @@ function generateSF10PDF(student, schoolInfo) {
     doc.text(depedRound(aq.q1) || '', colX.q1, y);
     doc.text(depedRound(aq.q2) || '', colX.q2, y);
     doc.text(depedRound(aq.q3) || '', colX.q3, y);
-    doc.text(depedRound(aq.q4) || '', colX.q4, y);
     doc.text(finalGrade || '', colX.final, y);
     doc.text(remarkText, colX.remarks, y);
     y += 4.5;

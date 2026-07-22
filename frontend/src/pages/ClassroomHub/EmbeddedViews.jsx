@@ -206,7 +206,7 @@ export const GradeManagementView = ({ classroom, onBack }) => {
 
     setModalState({
       open: true,
-      title: 'Delete All Quarter Grades?',
+      title: 'Delete All Term Grades?',
       message: `Delete ALL ${selectedQuarter.toUpperCase()} grades for this class? This cannot be undone.`,
       onConfirm: async () => {
         let successCount = 0;
@@ -250,7 +250,7 @@ export const GradeManagementView = ({ classroom, onBack }) => {
 
     // Create CSV content (single subject)
     const subjectName = subjects.find(s => s.subject.toString() === selectedSubject)?.subject_name || 'grades';
-    const headers = ['#', 'Student Name', 'LRN', 'Q1', 'Q2', 'Q3', 'Q4', 'Final Grade', 'Remarks'];
+    const headers = ['#', 'Student Name', 'LRN', 'T1', 'T2', 'T3', 'Final Grade', 'Remarks'];
     const rows = filteredGrades.map((student, idx) => {
       const finalGrade = calculateFinalGrade(student.quarters);
       const finalNum = finalGrade ? Math.round(parseFloat(finalGrade)) : '';
@@ -261,7 +261,6 @@ export const GradeManagementView = ({ classroom, onBack }) => {
         student.quarters.q1 !== undefined ? Math.round(student.quarters.q1) : '',
         student.quarters.q2 !== undefined ? Math.round(student.quarters.q2) : '',
         student.quarters.q3 !== undefined ? Math.round(student.quarters.q3) : '',
-        student.quarters.q4 !== undefined ? Math.round(student.quarters.q4) : '',
         finalNum,
         finalNum !== '' ? (finalNum >= 75 ? 'Passed' : 'Failed') : '',
       ];
@@ -403,18 +402,17 @@ export const GradeManagementView = ({ classroom, onBack }) => {
 
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-2">
-                Quarter Filter
+                Term Filter
               </label>
               <select
                 value={selectedQuarter}
                 onChange={e => setSelectedQuarter(e.target.value)}
                 className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500"
               >
-                <option value="all">All Quarters</option>
-                <option value="q1">Quarter 1</option>
-                <option value="q2">Quarter 2</option>
-                <option value="q3">Quarter 3</option>
-                <option value="q4">Quarter 4</option>
+                <option value="all">All Terms</option>
+                <option value="q1">Term 1</option>
+                <option value="q2">Term 2</option>
+                <option value="q3">Term 3</option>
               </select>
             </div>
 
@@ -473,10 +471,9 @@ export const GradeManagementView = ({ classroom, onBack }) => {
                   <tr>
                     <th className="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase">#</th>
                     <th className="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase">Student</th>
-                    <th className="px-4 py-3 text-center text-xs font-bold text-slate-700 uppercase">Q1</th>
-                    <th className="px-4 py-3 text-center text-xs font-bold text-slate-700 uppercase">Q2</th>
-                    <th className="px-4 py-3 text-center text-xs font-bold text-slate-700 uppercase">Q3</th>
-                    <th className="px-4 py-3 text-center text-xs font-bold text-slate-700 uppercase">Q4</th>
+                    <th className="px-4 py-3 text-center text-xs font-bold text-slate-700 uppercase">T1</th>
+                    <th className="px-4 py-3 text-center text-xs font-bold text-slate-700 uppercase">T2</th>
+                    <th className="px-4 py-3 text-center text-xs font-bold text-slate-700 uppercase">T3</th>
                     <th className="px-4 py-3 text-center text-xs font-bold text-slate-700 uppercase">Final</th>
                   </tr>
                 </thead>
@@ -494,7 +491,7 @@ export const GradeManagementView = ({ classroom, onBack }) => {
                             <span className="text-sm font-semibold text-slate-900">{student.name}</span>
                           </div>
                         </td>
-                        {['q1', 'q2', 'q3', 'q4'].map(quarter => (
+                        {['q1', 'q2', 'q3'].map(quarter => (
                           <td key={quarter} className="px-4 py-3 text-center">
                             {editingGrade?.studentId === student.id && editingGrade?.quarter === quarter ? (
                               <div className="flex items-center justify-center gap-1">

@@ -79,13 +79,7 @@ const AcademicSetup = () => {
   const activeTeachers = useMemo(() => teachers.filter(t => t.is_active !== false), [teachers]);
 
   const getDefaultPeriods = useCallback(() => {
-    if (educationLevel === 'jhs') return [
-      { name: '1st Quarter', semester_type: '1st Quarter' },
-      { name: '2nd Quarter', semester_type: '2nd Quarter' },
-      { name: '3rd Quarter', semester_type: '3rd Quarter' },
-      { name: '4th Quarter', semester_type: '4th Quarter' },
-    ];
-    if (educationLevel === 'shs') return [
+    return [
       { name: '1st Term', semester_type: '1st Term' },
       { name: '2nd Term', semester_type: '2nd Term' },
       { name: '3rd Term', semester_type: '3rd Term' },
@@ -211,7 +205,7 @@ const AcademicSetup = () => {
       });
       toast.success('Period created');
       setShowModal(false);
-      setSemesterForm({ name: '', semester_type: educationLevel === 'jhs' ? '1st Quarter' : '1st Term' });
+      setSemesterForm({ name: '', semester_type: '1st Term' });
       fetchData();
     } catch (err) { toast.error(parseBackendErrors(err), { duration: 6000 }); }
     finally { setSaving(false); }
@@ -420,7 +414,7 @@ const AcademicSetup = () => {
           />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-xl mx-auto">
             {[
-              { id: 'jhs', label: 'Junior High School', sub: 'Grade 7 – Grade 10', badge: '4 Quarters', color: 'blue', grades: JHS_GRADES },
+              { id: 'jhs', label: 'Junior High School', sub: 'Grade 7 – Grade 10', badge: '3 Terms', color: 'blue', grades: JHS_GRADES },
               { id: 'shs', label: 'Senior High School', sub: 'Grade 11 – Grade 12', badge: '3 Terms',    color: 'pink', grades: SHS_GRADES },
             ].map(opt => {
               const active = educationLevel === opt.id;
@@ -470,9 +464,9 @@ const AcademicSetup = () => {
             <StepHero
               icon="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
               color={periodColor}
-              title={`Configure ${isJhs ? '4 Quarters' : '3 Terms'}`}
-              desc={isJhs ? 'Set up the 4 quarterly grading periods for Junior High School.' : 'Set up the 3 term grading periods for Senior High School.'}
-              badge={isJhs ? 'JHS: 4 Quarters' : 'SHS: 3 Terms'}
+              title="Configure 3 Terms"
+              desc="Set up the 3 term grading periods."
+              badge="3 Terms"
             />
 
             {semesters.length > 0 ? (
@@ -497,7 +491,7 @@ const AcademicSetup = () => {
             ) : (
               <EmptyPlaceholder icon="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
                 text="No periods yet"
-                sub={isJhs ? 'Create 4 quarters or use Quick Setup' : 'Create 3 terms or use Quick Setup'}
+                sub="Create 3 terms or use Quick Setup"
               />
             )}
 
@@ -505,7 +499,7 @@ const AcademicSetup = () => {
               {semesters.length === 0 && (
                 <Button variant="primary" onClick={handleQuickCreatePeriods} disabled={saving}>
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-                  Quick Setup {isJhs ? '(4 Quarters)' : '(3 Terms)'}
+                  Quick Setup (3 Terms)
                 </Button>
               )}
               <Button variant="secondary" onClick={() => openModal('semester')}>
@@ -854,27 +848,20 @@ const AcademicSetup = () => {
         return (
           <Modal isOpen={showModal} onClose={() => setShowModal(false)} size="md">
             <ModalHeader onClose={() => setShowModal(false)}>
-              <ModalTitle title={`Add ${isJhs ? 'Quarter' : 'Term'}`} subtitle={`For SY ${activeAY?.name || '—'}`} />
+              <ModalTitle title="Add Term" subtitle={`For SY ${activeAY?.name || '—'}`} />
             </ModalHeader>
             <form onSubmit={handleCreateSemester}>
               <ModalBody>
                 <div className="space-y-4">
                   <ModalField label="Type" required>
                     <select value={semesterForm.semester_type} onChange={e => setSemesterForm({ ...semesterForm, semester_type: e.target.value, name: e.target.value })} className={modalSelectCls} required>
-                      {isJhs ? <>
-                        <option value="1st Quarter">1st Quarter</option>
-                        <option value="2nd Quarter">2nd Quarter</option>
-                        <option value="3rd Quarter">3rd Quarter</option>
-                        <option value="4th Quarter">4th Quarter</option>
-                      </> : <>
-                        <option value="1st Term">1st Term</option>
-                        <option value="2nd Term">2nd Term</option>
-                        <option value="3rd Term">3rd Term</option>
-                      </>}
+                      <option value="1st Term">1st Term</option>
+                      <option value="2nd Term">2nd Term</option>
+                      <option value="3rd Term">3rd Term</option>
                     </select>
                   </ModalField>
                   <ModalField label="Display Name" required hint="Auto-filled from type; override if needed">
-                    <input type="text" value={semesterForm.name} onChange={e => setSemesterForm({ ...semesterForm, name: e.target.value })} placeholder={isJhs ? '1st Quarter' : '1st Term'} className={modalInputCls} required />
+                    <input type="text" value={semesterForm.name} onChange={e => setSemesterForm({ ...semesterForm, name: e.target.value })} placeholder="1st Term" className={modalInputCls} required />
                   </ModalField>
                 </div>
               </ModalBody>

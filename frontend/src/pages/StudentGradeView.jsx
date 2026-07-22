@@ -427,7 +427,7 @@ const StudentGradeView = () => {
                 </div>
                 <p className="text-xs text-slate-600 mt-2 font-semibold">
                   Based on {allScores.length} grade{allScores.length === 1 ? '' : 's'} 
-                  {filterQuarter && ` (Quarter ${filterQuarter})`}
+                  {filterQuarter && ` (${periodLabel} ${filterQuarter})`}
                 </p>
               </div>
 

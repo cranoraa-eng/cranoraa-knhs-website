@@ -35,8 +35,8 @@ const GradingSettingsTab = () => {
               <p className="text-sm font-bold text-slate-800">{isJHS ? 'Junior High School (Grades 7-10)' : 'Senior High School (Grades 11-12)'}</p>
             </div>
             <div className="bg-slate-50 border border-slate-200 rounded-lg p-4">
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{isJHS ? 'Current Quarter' : 'Current Semester'}</p>
-              <p className="text-sm font-bold text-slate-800">{isJHS ? `${currentQuarterNum}${currentQuarterNum === 1 ? 'st' : currentQuarterNum === 2 ? 'nd' : currentQuarterNum === 3 ? 'rd' : 'th'} Quarter` : `${currentQuarterNum}${currentQuarterNum === 1 ? 'st' : currentQuarterNum === 2 ? 'nd' : 'rd'} Semester`}</p>
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{isJHS ? 'Current Term' : 'Current Semester'}</p>
+              <p className="text-sm font-bold text-slate-800">{isJHS ? `${currentQuarterNum}${currentQuarterNum === 1 ? 'st' : currentQuarterNum === 2 ? 'nd' : currentQuarterNum === 3 ? 'rd' : 'th'} Term` : `${currentQuarterNum}${currentQuarterNum === 1 ? 'st' : currentQuarterNum === 2 ? 'nd' : 'rd'} Semester`}</p>
             </div>
           </div>
 
@@ -44,7 +44,7 @@ const GradingSettingsTab = () => {
             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Grading Period Structure</p>
             <div className="flex flex-wrap gap-2">
               {(isJHS
-                ? ['1st Quarter', '2nd Quarter', '3rd Quarter', '4th Quarter']
+                ? ['1st Term', '2nd Term', '3rd Term']
                 : ['1st Semester', '2nd Semester', '3rd Semester (Summer)']
               ).map((label, i) => (
                 <div key={i} className={`flex items-center gap-2 px-3 py-2 rounded-lg border ${
@@ -63,7 +63,7 @@ const GradingSettingsTab = () => {
             </div>
             <p className="text-[11px] text-slate-500 font-medium mt-3">
               {isJHS
-                ? 'Junior High School uses a quarter-based grading system with 4 grading periods per academic year.'
+                ? 'Junior High School uses a term-based grading system with 3 grading periods per academic year.'
                 : 'Senior High School uses a semester-based grading system with 3 grading periods per academic year.'}
             </p>
           </div>
@@ -670,10 +670,9 @@ const PortalSettingsTab = () => {
                   </>
                 ) : (
                   <>
-                    <option value="1">1st Quarter</option>
-                    <option value="2">2nd Quarter</option>
-                    <option value="3">3rd Quarter</option>
-                    <option value="4">4th Quarter</option>
+                    <option value="1">1st Term</option>
+                    <option value="2">2nd Term</option>
+                    <option value="3">3rd Term</option>
                   </>
                 )}
               </select>
@@ -706,7 +705,7 @@ const PortalSettingsTab = () => {
                 </>
               ) : (
                 <>
-                  {['1st Quarter', '2nd Quarter', '3rd Quarter', '4th Quarter'].map((label, i) => (
+                  {['1st Term', '2nd Term', '3rd Term'].map((label, i) => (
                     <div key={i} className={`flex items-center gap-2 px-3 py-2 rounded-lg border ${
                       String(i + 1) === settings.current_quarter 
                         ? 'bg-violet-100 border-violet-300 text-violet-800' 
@@ -726,7 +725,7 @@ const PortalSettingsTab = () => {
             <p className="text-[11px] text-slate-500 font-medium mt-3">
               {settings.academic_level === 'shs' 
                 ? 'Senior High School uses a semester-based grading system with 3 grading periods per academic year.'
-                : 'Junior High School uses a quarter-based grading system with 4 grading periods per academic year.'}
+                : 'Junior High School uses a term-based grading system with 3 grading periods per academic year.'}
             </p>
           </div>
         </div>

@@ -45,10 +45,10 @@ const GRADE_SCALE = [
   ['Did Not Meet Expectations', 'Below 75', 'Failed'],
 ];
 
-// Column indices (0-based) — A=0, B=1, C=2, D=3, E=4, F=5, G=6
-// Layout: A=Learning Areas, B=Q1, C=Q2, D=Q3, E=Q4, F=Final Rating, G=Remarks
-const COL = { AREA: 0, Q1: 1, Q2: 2, Q3: 3, Q4: 4, FINAL: 5, REMARKS: 6 };
-const TOTAL_COLS = 7;
+// Column indices (0-based) — A=0, B=1, C=2, D=3, E=4, F=5
+// Layout: A=Learning Areas, B=T1, C=T2, D=T3, E=Final Rating, F=Remarks
+const COL = { AREA: 0, T1: 1, T2: 2, T3: 3, FINAL: 4, REMARKS: 5 };
+const TOTAL_COLS = 6;
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -76,10 +76,10 @@ function depedRound(v) {
   return Math.round(Number(v));
 }
 
-/** Compute quarterly average */
-function calcFinalGrade(quarters) {
-  const vals = ['q1','q2','q3','q4']
-    .map(k => quarters[k])
+/** Compute term average */
+function calcFinalGrade(terms) {
+  const vals = ['q1','q2','q3']
+    .map(k => terms[k])
     .filter(v => v !== null && v !== undefined && v !== '' && !isNaN(Number(v)))
     .map(Number);
   if (!vals.length) return '';
@@ -198,18 +198,16 @@ function appendStudentSF10(ws, startRow, student, schoolInfo) {
 
   // ── Grade table column headers ────────────────────────────────────────────
   setCell(ws, r, COL.AREA,    'LEARNING AREAS');
-  setCell(ws, r, COL.Q1,      'Quarterly Rating');
-  setCell(ws, r, COL.Q2,      '');
-  setCell(ws, r, COL.Q3,      '');
-  setCell(ws, r, COL.Q4,      '');
+  setCell(ws, r, COL.T1,      'Term Rating');
+  setCell(ws, r, COL.T2,      '');
+  setCell(ws, r, COL.T3,      '');
   setCell(ws, r, COL.FINAL,   'FINAL');
   setCell(ws, r, COL.REMARKS, 'REMARKS');
   r++;
   setCell(ws, r, COL.AREA,    '');
-  setCell(ws, r, COL.Q1,      '1');
-  setCell(ws, r, COL.Q2,      '2');
-  setCell(ws, r, COL.Q3,      '3');
-  setCell(ws, r, COL.Q4,      '4');
+  setCell(ws, r, COL.T1,      '1');
+  setCell(ws, r, COL.T2,      '2');
+  setCell(ws, r, COL.T3,      '3');
   setCell(ws, r, COL.FINAL,   'RATING');
   setCell(ws, r, COL.REMARKS, '');
   r++;
@@ -224,10 +222,9 @@ function appendStudentSF10(ws, startRow, student, schoolInfo) {
     if (finalGrade !== '') finalsForAvg.push(Number(finalGrade));
 
     setCell(ws, r, COL.AREA,    area);
-    setCell(ws, r, COL.Q1,      aq.q1 !== undefined && aq.q1 !== '' ? depedRound(aq.q1) : '');
-    setCell(ws, r, COL.Q2,      aq.q2 !== undefined && aq.q2 !== '' ? depedRound(aq.q2) : '');
-    setCell(ws, r, COL.Q3,      aq.q3 !== undefined && aq.q3 !== '' ? depedRound(aq.q3) : '');
-    setCell(ws, r, COL.Q4,      aq.q4 !== undefined && aq.q4 !== '' ? depedRound(aq.q4) : '');
+    setCell(ws, r, COL.T1,      aq.q1 !== undefined && aq.q1 !== '' ? depedRound(aq.q1) : '');
+    setCell(ws, r, COL.T2,      aq.q2 !== undefined && aq.q2 !== '' ? depedRound(aq.q2) : '');
+    setCell(ws, r, COL.T3,      aq.q3 !== undefined && aq.q3 !== '' ? depedRound(aq.q3) : '');
     setCell(ws, r, COL.FINAL,   finalGrade);
     setCell(ws, r, COL.REMARKS, remarks(finalGrade));
     r++;
@@ -363,12 +360,11 @@ function buildWorkbook(studentData, schoolInfo, sheetLabel) {
 function buildColWidths() {
   return [
     { wch: 46 }, // A – Learning Area (wide)
-    { wch: 8  }, // B – Q1
-    { wch: 8  }, // C – Q2
-    { wch: 8  }, // D – Q3
-    { wch: 8  }, // E – Q4
-    { wch: 12 }, // F – Final Rating
-    { wch: 10 }, // G – Remarks
+    { wch: 8  }, // B – T1
+    { wch: 8  }, // C – T2
+    { wch: 8  }, // D – T3
+    { wch: 12 }, // E – Final Rating
+    { wch: 10 }, // F – Remarks
   ];
 }
 
