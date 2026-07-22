@@ -81,9 +81,11 @@ const Layout = () => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showMobileUserMenu, setShowMobileUserMenu] = useState(false);
   const [sysSettings, setSysSettings] = useState(null);
   const notifDropdownRef = useRef(null);
   const userMenuRef = useRef(null);
+  const mobileUserMenuRef = useRef(null);
 
   // Fetch system settings for academic year
   useEffect(() => {
@@ -129,6 +131,18 @@ const Layout = () => {
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, [showUserMenu]);
+
+  // Close mobile user menu on outside click
+  useEffect(() => {
+    if (!showMobileUserMenu) return;
+    const handler = (e) => {
+      if (mobileUserMenuRef.current && !mobileUserMenuRef.current.contains(e.target)) {
+        setShowMobileUserMenu(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [showMobileUserMenu]);
 
   const normalizePath = (path) => path.split('?')[0];
   const isActive = (path) => location.pathname === normalizePath(path);
@@ -879,6 +893,65 @@ const Layout = () => {
             </svg>
             <span className="text-[9px] font-bold uppercase tracking-wide">Menu</span>
           </button>
+
+          {/* Profile (mobile) */}
+          <div className="relative" ref={mobileUserMenuRef}>
+            <button
+              onClick={() => { playSound('click'); setShowMobileUserMenu(!showMobileUserMenu); }}
+              className="flex flex-col items-center gap-0.5 px-3 py-2 rounded-xl transition-all active:scale-90 min-w-[56px]"
+              aria-label="User menu"
+            >
+              <div className="h-6 w-6 rounded-lg bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-white overflow-hidden">
+                {user?.profile_picture ? (
+                  <img src={user.profile_picture} alt="" className="w-full h-full object-cover" loading="lazy" />
+                ) : (
+                  <span className="text-[8px] font-black uppercase">{user?.first_name?.charAt(0)}{user?.last_name?.charAt(0)}</span>
+                )}
+              </div>
+              <span className="text-[9px] font-bold uppercase tracking-wide text-slate-400">You</span>
+            </button>
+
+            {/* Mobile User Menu Dropdown */}
+            {showMobileUserMenu && (
+              <div className="absolute bottom-full right-0 mb-2 w-52 rounded-xl border border-slate-200 bg-white shadow-2xl overflow-hidden z-50">
+                <div className="px-4 py-3 bg-gradient-to-r from-[#1A0B2E] to-[#2D1452]">
+                  <p className="text-sm font-bold text-white truncate">{user?.first_name} {user?.last_name}</p>
+                  <p className="text-[10px] font-bold text-violet-300 uppercase tracking-widest mt-0.5">{user?.role}</p>
+                </div>
+                <div className="py-1">
+                  <button
+                    onClick={() => { setShowMobileUserMenu(false); navigate('/profile'); }}
+                    className="flex items-center gap-3 w-full px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
+                  >
+                    <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                    Profile
+                  </button>
+                  <button
+                    onClick={() => { setShowMobileUserMenu(false); window.location.href = '/'; }}
+                    className="flex items-center gap-3 w-full px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
+                  >
+                    <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                    </svg>
+                    Visit Website
+                  </button>
+                </div>
+                <div className="border-t border-slate-100 py-1">
+                  <button
+                    onClick={() => { setShowMobileUserMenu(false); handleLogout(); }}
+                    className="flex items-center gap-3 w-full px-4 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-50 transition-colors"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    </svg>
+                    Logout
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </nav>
       </div>
