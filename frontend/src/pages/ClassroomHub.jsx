@@ -468,9 +468,9 @@ const ClassroomHub = () => {
 
       {/* Loading banner — shown while classroom data is being fetched */}
       {loading && (
-        <div className="bg-white border-b border-slate-200 px-4 md:px-8 py-3 flex items-center gap-3 text-sm text-slate-600">
-          <div className="w-4 h-4 border-2 border-violet-500 border-t-transparent rounded-full animate-spin shrink-0" />
-          <span>Loading classroom data…</span>
+        <div className="bg-white border-b border-slate-200 px-3 md:px-6 py-2 flex items-center gap-2 text-[10px] text-slate-600">
+          <div className="w-3 h-3 border-2 border-violet-500 border-t-transparent rounded-full animate-spin shrink-0" />
+          <span>Loading…</span>
         </div>
       )}
 
@@ -581,26 +581,26 @@ const ClassroomHub = () => {
       {/* Upload Material Modal */}
       <Modal isOpen={showUploadModal} onClose={() => setShowUploadModal(false)} size="md">
         <ModalBody>
-          <h3 className="text-lg font-bold text-slate-900 mb-1">Upload Material</h3>
-          <p className="text-sm text-slate-500 mb-4">Add a learning material to {selectedClass?.name}</p>
-          <div className="space-y-3">
+          <h3 className="text-sm font-bold text-slate-900 mb-0.5">Upload Material</h3>
+          <p className="text-[10px] text-slate-500 mb-3">Add a learning material to {selectedClass?.name}</p>
+          <div className="space-y-2">
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Title *</label>
+              <label className="block text-[9px] font-semibold text-slate-700 mb-0.5">Title *</label>
               <input type="text" value={uploadForm.title} onChange={e => setUploadForm({ ...uploadForm, title: e.target.value })}
-                className={modalInputCls} placeholder="Material title" required />
+                className={modalInputCls + ' text-xs py-1.5'} placeholder="Material title" required />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Description</label>
+              <label className="block text-[9px] font-semibold text-slate-700 mb-0.5">Description</label>
               <textarea value={uploadForm.description} onChange={e => setUploadForm({ ...uploadForm, description: e.target.value })}
-                className={modalInputCls} rows={2} placeholder="Brief description (optional)" />
+                className={modalInputCls + ' text-xs'} rows={2} placeholder="Brief description (optional)" />
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">Type *</label>
+                <label className="block text-[9px] font-semibold text-slate-700 mb-0.5">Type *</label>
                 <select value={uploadForm.material_type} onChange={e => setUploadForm({ ...uploadForm, material_type: e.target.value })}
-                  className={modalInputCls}>
-                  <option value="dlp">Daily Lesson Plan (DLP)</option>
-                  <option value="dll">Daily Lesson Log (DLL)</option>
+                  className={modalInputCls + ' text-xs py-1.5'}>
+                  <option value="dlp">Daily Lesson Plan</option>
+                  <option value="dll">Daily Lesson Log</option>
                   <option value="module">Learning Module</option>
                   <option value="activity">Activity Sheet</option>
                   <option value="assessment">Assessment</option>
@@ -608,16 +608,16 @@ const ClassroomHub = () => {
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">File *</label>
+                <label className="block text-[9px] font-semibold text-slate-700 mb-0.5">File *</label>
                 <input type="file" ref={fileInputRef} onChange={e => setUploadForm({ ...uploadForm, file: e.target.files?.[0] || null })}
-                  className="w-full text-sm text-slate-700 file:mr-2 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-violet-100 file:text-violet-700 hover:file:bg-violet-200" />
+                  className="w-full text-[10px] text-slate-700 file:mr-1 file:py-1 file:px-2 file:rounded file:border-0 file:text-[9px] file:font-semibold file:bg-violet-100 file:text-violet-700 hover:file:bg-violet-200" />
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">Term</label>
+                <label className="block text-[9px] font-semibold text-slate-700 mb-0.5">Term</label>
                 <select value={uploadForm.quarter} onChange={e => setUploadForm({ ...uploadForm, quarter: e.target.value })}
-                  className={modalInputCls}>
+                  className={modalInputCls + ' text-xs py-1.5'}>
                   <option value="">None</option>
                   <option value="1">1st Term</option>
                   <option value="2">2nd Term</option>
@@ -625,16 +625,16 @@ const ClassroomHub = () => {
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">Week</label>
+                <label className="block text-[9px] font-semibold text-slate-700 mb-0.5">Week</label>
                 <input type="number" min="1" value={uploadForm.week} onChange={e => setUploadForm({ ...uploadForm, week: e.target.value })}
-                  className={modalInputCls} placeholder="Week #" />
+                  className={modalInputCls + ' text-xs py-1.5'} placeholder="Week #" />
               </div>
             </div>
           </div>
         </ModalBody>
         <ModalFooter>
-          <ModalBtnSecondary onClick={() => setShowUploadModal(false)}>Cancel</ModalBtnSecondary>
-          <ModalBtnPrimary onClick={handleUploadMaterial} loading={uploading} disabled={!uploadForm.title.trim() || !uploadForm.file}>
+          <ModalBtnSecondary onClick={() => setShowUploadModal(false)} className="text-[10px] px-2 py-1">Cancel</ModalBtnSecondary>
+          <ModalBtnPrimary onClick={handleUploadMaterial} loading={uploading} disabled={!uploadForm.title.trim() || !uploadForm.file} className="text-[10px] px-2 py-1">
             Upload
           </ModalBtnPrimary>
         </ModalFooter>
@@ -706,9 +706,9 @@ const StudentDetailDrawer = ({ student, classroom, onClose }) => {
   ];
 
   const Field = ({ label, value, mono = false }) => (
-    <div className="py-2 border-b border-slate-100 last:border-0">
-      <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">{label}</p>
-      <p className={`text-sm font-semibold text-slate-800 ${mono ? 'font-mono' : ''}`}>{value || '—'}</p>
+    <div className="py-1.5 border-b border-slate-100 last:border-0">
+      <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">{label}</p>
+      <p className={`text-[10px] font-semibold text-slate-800 ${mono ? 'font-mono' : ''}`}>{value || '—'}</p>
     </div>
   );
 
@@ -727,30 +727,30 @@ const StudentDetailDrawer = ({ student, classroom, onClose }) => {
     <div className="fixed inset-0 z-[9999] flex">
       <div className="flex-1 bg-black/40" onClick={onClose} />
       <div className="w-full max-w-xl bg-white shadow-2xl flex flex-col h-full overflow-hidden">
-        <div className="bg-[#5e2a84] px-5 py-4 flex items-start gap-4 flex-shrink-0">
+        <div className="bg-[#5e2a84] px-4 py-3 flex items-start gap-3 flex-shrink-0">
           {student.student_profile_picture ? (
-            <img src={student.student_profile_picture} alt="" className="w-12 h-12 rounded-full object-cover border-2 border-white/30 flex-shrink-0" />
+            <img src={student.student_profile_picture} alt="" className="w-10 h-10 rounded-full object-cover border-2 border-white/30 flex-shrink-0" />
           ) : (
-            <div className="w-12 h-12 rounded-full bg-white/20 border-2 border-white/30 flex items-center justify-center flex-shrink-0">
-              <span className="text-lg font-black text-white">{initials}</span>
+            <div className="w-10 h-10 rounded-full bg-white/20 border-2 border-white/30 flex items-center justify-center flex-shrink-0">
+              <span className="text-sm font-black text-white">{initials}</span>
             </div>
           )}
           <div className="flex-1 min-w-0">
-            <h2 className="text-base font-black text-white uppercase tracking-wide leading-tight truncate">{fullName}</h2>
-            <p className="text-violet-200 text-xs mt-0.5 font-mono">LRN: {lrn}</p>
-            <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-              <span className="text-violet-300 text-xs">{classroom?.name || ''}</span>
+            <h2 className="text-xs font-black text-white uppercase tracking-wide leading-tight truncate">{fullName}</h2>
+            <p className="text-violet-200 text-[9px] mt-0.5 font-mono">LRN: {lrn}</p>
+            <div className="flex items-center gap-1.5 mt-1">
+              <span className="text-violet-300 text-[9px]">{classroom?.name || ''}</span>
             </div>
           </div>
-          <button onClick={onClose} className="w-7 h-7 flex items-center justify-center rounded text-white/60 hover:bg-white/20 hover:text-white transition-all flex-shrink-0 mt-0.5">
-            <X className="w-4 h-4" />
+          <button onClick={onClose} className="w-6 h-6 flex items-center justify-center rounded text-white/60 hover:bg-white/20 hover:text-white transition-all flex-shrink-0 mt-0.5">
+            <X className="w-3.5 h-3.5" />
           </button>
         </div>
 
-        <div className="bg-white border-b border-slate-200 px-4 flex gap-0 flex-shrink-0 overflow-x-auto">
+        <div className="bg-white border-b border-slate-200 px-3 flex gap-0 flex-shrink-0 overflow-x-auto">
           {TABS.map(t => (
             <button key={t.id} onClick={() => setTab(t.id)}
-              className={`px-4 py-3 text-xs font-bold whitespace-nowrap border-b-2 transition-colors ${
+              className={`px-3 py-2 text-[9px] font-bold whitespace-nowrap border-b-2 transition-colors ${
                 tab === t.id ? 'border-violet-600 text-violet-700' : 'border-transparent text-slate-500 hover:text-slate-800'
               }`}>
               {t.label}
@@ -760,17 +760,17 @@ const StudentDetailDrawer = ({ student, classroom, onClose }) => {
 
         <div className="flex-1 overflow-y-auto bg-slate-50">
           {loadingData && tab !== 'personal' ? (
-            <div className="flex items-center justify-center h-32">
+            <div className="flex items-center justify-center h-24">
               <LoadingSpinner />
             </div>
           ) : (
-            <div className="p-5 space-y-1">
+            <div className="p-3 space-y-1">
               {tab === 'personal' && (
                 <div className="bg-white rounded-xl border border-slate-200 divide-y divide-slate-100 overflow-hidden">
-                  <div className="px-4 py-3 bg-slate-50">
-                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Personal Information</p>
+                  <div className="px-3 py-2 bg-slate-50">
+                    <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Personal Information</p>
                   </div>
-                  <div className="px-4">
+                  <div className="px-3">
                     <Field label="Full Name" value={fullName} />
                     <Field label="Student ID / LRN" value={lrn} mono />
                     <Field label="Date of Birth" value={profileData?.profile?.date_of_birth} />
@@ -784,12 +784,12 @@ const StudentDetailDrawer = ({ student, classroom, onClose }) => {
               )}
 
               {tab === 'academic' && (
-                <div className="space-y-4">
+                <div className="space-y-3">
                   <div className="bg-white rounded-xl border border-slate-200 divide-y divide-slate-100 overflow-hidden">
-                    <div className="px-4 py-3 bg-slate-50">
-                      <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Enrollment Info</p>
+                    <div className="px-3 py-2 bg-slate-50">
+                      <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Enrollment Info</p>
                     </div>
-                    <div className="px-4">
+                    <div className="px-3">
                       <Field label="Grade Level" value={profileData?.profile?.grade_level} />
                       <Field label="Section / Classroom" value={classroom?.name || '—'} />
                       <Field label="School Year" value={appData?.school_year} />
@@ -799,19 +799,19 @@ const StudentDetailDrawer = ({ student, classroom, onClose }) => {
                   </div>
 
                   <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-                    <div className="px-4 py-3 bg-slate-50 border-b border-slate-100">
-                      <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Attendance Summary</p>
+                    <div className="px-3 py-2 bg-slate-50 border-b border-slate-100">
+                      <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Attendance Summary</p>
                     </div>
-                    <div className="p-4 grid grid-cols-4 gap-3">
+                    <div className="p-3 grid grid-cols-4 gap-2">
                       {[
                         { label: 'Present', val: presentCount, color: 'text-emerald-700 bg-emerald-50 border-emerald-200' },
                         { label: 'Late', val: lateCount, color: 'text-amber-700 bg-amber-50 border-amber-200' },
                         { label: 'Absent', val: absentCount, color: 'text-rose-700 bg-rose-50 border-rose-200' },
                         { label: 'Rate', val: attRate !== null ? `${attRate}%` : '—', color: 'text-violet-700 bg-violet-50 border-violet-200' },
                       ].map(s => (
-                        <div key={s.label} className={`border rounded-lg p-3 text-center ${s.color}`}>
-                          <p className="text-xl font-black">{s.val}</p>
-                          <p className="text-[9px] font-bold uppercase tracking-wider mt-0.5">{s.label}</p>
+                        <div key={s.label} className={`border rounded-lg p-2 text-center ${s.color}`}>
+                          <p className="text-sm font-black">{s.val}</p>
+                          <p className="text-[8px] font-bold uppercase tracking-wider mt-0.5">{s.label}</p>
                         </div>
                       ))}
                     </div>
@@ -819,18 +819,18 @@ const StudentDetailDrawer = ({ student, classroom, onClose }) => {
 
                   {finalGrades.length > 0 && (
                     <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-                      <div className="px-4 py-3 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
-                        <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Subject Grades</p>
-                        {overallAvg && <span className="text-sm font-black text-violet-700">Avg: {overallAvg}</span>}
+                      <div className="px-3 py-2 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
+                        <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Subject Grades</p>
+                        {overallAvg && <span className="text-[10px] font-black text-violet-700">Avg: {overallAvg}</span>}
                       </div>
                       <div className="divide-y divide-slate-100">
                         {finalGrades.map(g => (
-                          <div key={g.id} className="flex items-center justify-between px-4 py-2.5">
-                            <div>
-                              <p className="text-sm font-bold text-slate-900">{g.subject_name}</p>
-                              <p className="text-[10px] text-slate-400">T{g.quarter} · {g.academic_year}</p>
+                          <div key={g.id} className="flex items-center justify-between px-3 py-2">
+                            <div className="min-w-0">
+                              <p className="text-[11px] font-bold text-slate-900 truncate">{g.subject_name}</p>
+                              <p className="text-[8px] text-slate-400">T{g.quarter} · {g.academic_year}</p>
                             </div>
-                            <span className={`text-sm font-black px-3 py-1 rounded-lg border ${
+                            <span className={`text-[10px] font-black px-2 py-0.5 rounded border ${
                               parseFloat(g.raw_score) >= 90 ? 'text-emerald-700 bg-emerald-50 border-emerald-200' :
                               parseFloat(g.raw_score) >= 75 ? 'text-blue-700 bg-blue-50 border-blue-200' :
                               'text-rose-700 bg-rose-50 border-rose-200'
@@ -844,7 +844,7 @@ const StudentDetailDrawer = ({ student, classroom, onClose }) => {
               )}
 
               {tab === 'family' && (
-                <div className="space-y-4">
+                <div className="space-y-3">
                   {[
                     { title: 'Father', color: 'bg-blue-50 border-blue-200', textColor: 'text-blue-700',
                       fields: [['Name', appData?.father_name], ['Contact', appData?.father_contact], ['Email', appData?.father_email], ['Occupation', appData?.father_occupation]] },
@@ -854,47 +854,47 @@ const StudentDetailDrawer = ({ student, classroom, onClose }) => {
                       fields: [['Name', appData?.guardian_name], ['Relationship', appData?.guardian_relationship], ['Contact', appData?.guardian_contact]] }] : []),
                   ].map(({ title, color, textColor, fields }) => (
                     <div key={title} className={`rounded-xl border ${color} overflow-hidden`}>
-                      <div className={`px-4 py-3 ${color}`}>
-                        <p className={`text-[10px] font-black uppercase tracking-widest ${textColor}`}>{title}</p>
+                      <div className={`px-3 py-2 ${color}`}>
+                        <p className={`text-[9px] font-black uppercase tracking-widest ${textColor}`}>{title}</p>
                       </div>
-                      <div className="px-4 bg-white divide-y divide-slate-100">
+                      <div className="px-3 bg-white divide-y divide-slate-100">
                         {fields.map(([label, val]) => val ? <Field key={label} label={label} value={val} /> : null)}
-                        {fields.every(([, v]) => !v) && <p className="py-3 text-xs text-slate-400 italic">No information provided</p>}
+                        {fields.every(([, v]) => !v) && <p className="py-2 text-[10px] text-slate-400 italic">No information provided</p>}
                       </div>
                     </div>
                   ))}
                   {!appData && !loadingData && (
-                    <div className="bg-white rounded-xl border border-slate-200 p-8 text-center">
-                      <p className="text-sm text-slate-400">No enrollment application found for this student.</p>
+                    <div className="bg-white rounded-xl border border-slate-200 p-6 text-center">
+                      <p className="text-[10px] text-slate-400">No enrollment application found.</p>
                     </div>
                   )}
                 </div>
               )}
 
               {tab === 'documents' && (
-                <div className="space-y-3">
-                  <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-start gap-3">
-                    <svg className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                    <p className="text-xs text-amber-800">Documents were submitted during enrollment. Click the view icon to open each file.</p>
+                <div className="space-y-2">
+                  <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 flex items-start gap-2">
+                    <svg className="w-3.5 h-3.5 text-amber-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    <p className="text-[9px] text-amber-800">Documents submitted during enrollment.</p>
                   </div>
 
                   {appData?.documents && appData.documents.length > 0 ? (
                     <div className="bg-white rounded-xl border border-slate-200 divide-y divide-slate-100 overflow-hidden">
                       {appData.documents.map(doc => (
-                        <div key={doc.id} className="flex items-center justify-between px-4 py-3">
-                          <div className="flex items-center gap-3 min-w-0">
-                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                        <div key={doc.id} className="flex items-center justify-between px-3 py-2">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <div className={`w-6 h-6 rounded flex items-center justify-center flex-shrink-0 ${
                               doc.verification_status === 'verified' ? 'bg-emerald-50' :
                               doc.verification_status === 'rejected' ? 'bg-rose-50' : 'bg-slate-100'
                             }`}>
-                              <FileText className={`w-4 h-4 ${
+                              <FileText className={`w-3 h-3 ${
                                 doc.verification_status === 'verified' ? 'text-emerald-600' :
                                 doc.verification_status === 'rejected' ? 'text-rose-600' : 'text-slate-400'
                               }`} />
                             </div>
                             <div className="min-w-0">
-                              <p className="text-sm font-bold text-slate-900 truncate">{docTypeLabel[doc.document_type] || doc.document_type_display || doc.document_type}</p>
-                              <span className={`text-[9px] font-bold uppercase px-1.5 py-0.5 rounded ${
+                              <p className="text-[10px] font-bold text-slate-900 truncate">{docTypeLabel[doc.document_type] || doc.document_type_display || doc.document_type}</p>
+                              <span className={`text-[8px] font-bold uppercase px-1 py-0 rounded ${
                                 doc.verification_status === 'verified' ? 'bg-emerald-100 text-emerald-700' :
                                 doc.verification_status === 'rejected' ? 'bg-rose-100 text-rose-700' :
                                 'bg-slate-100 text-slate-600'
@@ -903,36 +903,36 @@ const StudentDetailDrawer = ({ student, classroom, onClose }) => {
                           </div>
                           {doc.file_url && (
                             <a href={doc.file_url} target="_blank" rel="noreferrer"
-                              className="p-2 text-slate-400 hover:text-violet-600 hover:bg-violet-50 rounded-lg transition-colors flex-shrink-0">
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+                              className="p-1.5 text-slate-400 hover:text-violet-600 hover:bg-violet-50 rounded-lg transition-colors flex-shrink-0">
+                              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
                             </a>
                           )}
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <div className="bg-white rounded-xl border border-slate-200 p-10 text-center">
-                      <FileText className="w-10 h-10 text-slate-200 mx-auto mb-3" />
-                      <p className="text-sm font-semibold text-slate-400">No documents on file</p>
+                    <div className="bg-white rounded-xl border border-slate-200 p-6 text-center">
+                      <FileText className="w-6 h-6 text-slate-200 mx-auto mb-2" />
+                      <p className="text-[10px] font-semibold text-slate-400">No documents on file</p>
                     </div>
                   )}
                 </div>
               )}
 
               {tab === 'records' && (
-                <div className="space-y-4">
+                <div className="space-y-3">
                   {records.length > 0 ? (
                     <div className="bg-white rounded-xl border border-slate-200 divide-y divide-slate-100 overflow-hidden">
-                      <div className="px-4 py-3 bg-slate-50 border-b border-slate-100">
-                        <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Document Requests</p>
+                      <div className="px-3 py-2 bg-slate-50 border-b border-slate-100">
+                        <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Document Requests</p>
                       </div>
                       {records.map(r => (
-                        <div key={r.id} className="flex items-center justify-between px-4 py-3">
-                          <div>
-                            <p className="text-sm font-bold text-slate-900">{r.record_type_display || r.record_type}</p>
-                            <p className="text-[10px] text-slate-400">{r.purpose || ''} · {new Date(r.created_at).toLocaleDateString()}</p>
+                        <div key={r.id} className="flex items-center justify-between px-3 py-2">
+                          <div className="min-w-0">
+                            <p className="text-[10px] font-bold text-slate-900 truncate">{r.record_type_display || r.record_type}</p>
+                            <p className="text-[8px] text-slate-400">{r.purpose || ''} · {new Date(r.created_at).toLocaleDateString()}</p>
                           </div>
-                          <span className={`text-[9px] font-bold px-2 py-0.5 rounded border uppercase ${
+                          <span className={`text-[8px] font-bold px-1.5 py-0 rounded border uppercase ${
                             r.status === 'approved' || r.status === 'released' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
                             r.status === 'pending' ? 'bg-amber-50 text-amber-700 border-amber-200' :
                             'bg-slate-100 text-slate-600 border-slate-200'
@@ -941,9 +941,9 @@ const StudentDetailDrawer = ({ student, classroom, onClose }) => {
                       ))}
                     </div>
                   ) : (
-                    <div className="bg-white rounded-xl border border-slate-200 p-10 text-center">
-                      <FileText className="w-10 h-10 text-slate-200 mx-auto mb-3" />
-                      <p className="text-sm font-semibold text-slate-400">No record requests</p>
+                    <div className="bg-white rounded-xl border border-slate-200 p-6 text-center">
+                      <FileText className="w-6 h-6 text-slate-200 mx-auto mb-2" />
+                      <p className="text-[10px] font-semibold text-slate-400">No record requests</p>
                     </div>
                   )}
                 </div>
@@ -977,25 +977,25 @@ const StreamTab = ({ classroom, isTeacher, announcements, classroomSubjects, ann
   >
     {isTeacher && (
       <Card>
-        <CardBody className="p-4">
-          <div className="flex flex-col gap-3">
+        <CardBody className="p-3">
+          <div className="flex flex-col gap-2">
             <input
               type="text"
-              className="px-4 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-violet-500 text-sm font-semibold"
+              className="px-3 py-1.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-violet-500 text-xs font-semibold"
               placeholder="Announcement title (optional)"
               value={announcementTitle}
               onChange={(e) => setAnnouncementTitle(e.target.value)}
             />
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-violet-100 flex items-center justify-center">
-                <MessageSquare className="w-5 h-5 text-violet-600" />
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-full bg-violet-100 flex items-center justify-center flex-shrink-0">
+                <MessageSquare className="w-3.5 h-3.5 text-violet-600" />
               </div>
               <textarea
-                className="flex-1 px-4 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-violet-500 resize-none"
-                placeholder="Share an announcement with your class..."
+                className="flex-1 px-3 py-1.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-violet-500 resize-none text-xs"
+                placeholder="Share an announcement..."
                 value={announcementText}
                 onChange={(e) => setAnnouncementText(e.target.value)}
-                rows={3}
+                rows={2}
               />
             </div>
             <div className="flex justify-end">
@@ -1005,8 +1005,9 @@ const StreamTab = ({ classroom, isTeacher, announcements, classroomSubjects, ann
                 size="sm"
                 disabled={!announcementText.trim() || loadingAnnouncements}
                 loading={loadingAnnouncements}
+                className="text-[10px] px-2 py-1"
               >
-                Post Announcement
+                Post
               </Button>
             </div>
           </div>
@@ -1017,17 +1018,17 @@ const StreamTab = ({ classroom, isTeacher, announcements, classroomSubjects, ann
     {/* Teachers & Subjects */}
     {classroomSubjects.length > 0 && (
       <Card>
-        <CardBody className="p-4">
-          <h3 className="text-xs font-black text-slate-500 uppercase tracking-widest mb-3">Teachers & Subjects</h3>
-          <div className="space-y-2">
+        <CardBody className="p-3">
+          <h3 className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2">Teachers & Subjects</h3>
+          <div className="space-y-1">
             {classroomSubjects.map(cs => (
-              <div key={cs.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 transition-colors">
-                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
+              <div key={cs.id} className="flex items-center gap-2 p-1.5 rounded-lg hover:bg-slate-50 transition-colors">
+                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white font-bold text-[8px] flex-shrink-0">
                   {cs.teacher_name ? cs.teacher_name.trim().split(/\s+/).slice(0, 2).map(n => n.charAt(0).toUpperCase()).join('') : '?'}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-slate-900 truncate">{cs.teacher_name}</p>
-                  <p className="text-xs text-slate-500 truncate">{cs.subject_name} ({cs.subject_code})</p>
+                  <p className="text-[11px] font-semibold text-slate-900 truncate">{cs.teacher_name}</p>
+                  <p className="text-[9px] text-slate-500 truncate">{cs.subject_name} ({cs.subject_code})</p>
                 </div>
               </div>
             ))}
@@ -1039,68 +1040,66 @@ const StreamTab = ({ classroom, isTeacher, announcements, classroomSubjects, ann
     {/* Search announcements */}
     {announcements.length > 0 && (
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
         <input
           type="text"
           value={announcementSearch}
           onChange={(e) => setAnnouncementSearch(e.target.value)}
           placeholder="Search announcements..."
-          className="w-full pl-9 pr-4 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-violet-500 text-sm"
+          className="w-full pl-8 pr-3 py-1.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-violet-500 text-xs"
         />
       </div>
     )}
 
     {filteredAnnouncements.length === 0 ? (
       <Card>
-        <CardBody className="p-8 text-center">
-          <Bell className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-          <p className="text-slate-600">{announcementSearch ? 'No matching announcements' : 'No announcements yet'}</p>
+        <CardBody className="p-6 text-center">
+          <Bell className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+          <p className="text-xs text-slate-600">{announcementSearch ? 'No matching announcements' : 'No announcements yet'}</p>
         </CardBody>
       </Card>
     ) : (
-      <div className="space-y-4">
+      <div className="space-y-2">
         {filteredAnnouncements.map(announcement => (
           <Card key={announcement.id}>
-            <CardBody className="p-4">
+            <CardBody className="p-3">
               {editingAnnouncement?.id === announcement.id ? (
-                <div className="space-y-3">
+                <div className="space-y-2">
                   <input
                     type="text"
                     value={editAnnouncementTitle}
                     onChange={(e) => setEditAnnouncementTitle(e.target.value)}
                     placeholder="Title (optional)"
-                    className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-violet-500 text-sm font-semibold"
+                    className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-violet-500 text-xs font-semibold"
                   />
                   <textarea
                     value={editAnnouncementContent}
                     onChange={(e) => setEditAnnouncementContent(e.target.value)}
-                    rows={3}
-                    className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-violet-500 text-sm resize-none"
+                    rows={2}
+                    className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-violet-500 text-xs resize-none"
                   />
-                  <div className="flex items-center gap-2 justify-end">
-                    <Button variant="ghost" size="sm" onClick={() => setEditingAnnouncement(null)}>Cancel</Button>
-                    <Button variant="primary" size="sm" onClick={handleEditAnnouncement}>Save</Button>
+                  <div className="flex items-center gap-1.5 justify-end">
+                    <Button variant="ghost" size="sm" onClick={() => setEditingAnnouncement(null)} className="text-[10px] px-2 py-1">Cancel</Button>
+                    <Button variant="primary" size="sm" onClick={handleEditAnnouncement} className="text-[10px] px-2 py-1">Save</Button>
                   </div>
                 </div>
               ) : (
-                <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-full bg-violet-100 flex items-center justify-center flex-shrink-0">
-                    <MessageSquare className="w-5 h-5 text-violet-600" />
+                <div className="flex items-start gap-2">
+                  <div className="w-7 h-7 rounded-full bg-violet-100 flex items-center justify-center flex-shrink-0">
+                    <MessageSquare className="w-3.5 h-3.5 text-violet-600" />
                   </div>
                   <div className="flex-1 min-w-0">
                     {announcement.title && (
-                      <h4 className="font-semibold text-slate-900 mb-1">{announcement.title}</h4>
+                      <h4 className="text-xs font-semibold text-slate-900 mb-0.5">{announcement.title}</h4>
                     )}
-                    <p className="text-sm text-slate-700 whitespace-pre-wrap">{announcement.content}</p>
-                    <div className="flex items-center gap-2 mt-2 text-xs text-slate-500">
+                    <p className="text-[11px] text-slate-700 whitespace-pre-wrap">{announcement.content}</p>
+                    <div className="flex items-center gap-1.5 mt-1.5 text-[9px] text-slate-500">
                       <span>{announcement.author_name || 'Teacher'}</span>
-                      <span>•</span>
+                      <span>·</span>
                       <span>{new Date(announcement.created_at).toLocaleDateString()}</span>
-                      <span>at</span>
-                      <span>{new Date(announcement.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                       {isTeacher && (
                         <>
-                          <span>•</span>
+                          <span>·</span>
                           <button onClick={() => {
                             setEditingAnnouncement(announcement);
                             setEditAnnouncementTitle(announcement.title || '');
@@ -1131,20 +1130,20 @@ const MaterialsTab = ({ classroom, materials, isTeacher, searchQuery, setSearchQ
     className="space-y-6"
   >
     {/* Search and Actions */}
-    <div className="flex items-center gap-4">
+    <div className="flex items-center gap-2">
       <div className="flex-1 relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
         <input
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Search materials..."
-          className="w-full pl-10 pr-4 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-violet-500"
+          className="w-full pl-8 pr-3 py-1.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-violet-500 text-xs"
         />
       </div>
       {isTeacher && (
-        <Button variant="primary" onClick={onUploadClick}>
-          <Upload className="w-4 h-4 mr-2" />
+        <Button variant="primary" onClick={onUploadClick} className="text-[10px] px-2 py-1">
+          <Upload className="w-3 h-3 mr-1" />
           Upload
         </Button>
       )}
@@ -1156,16 +1155,16 @@ const MaterialsTab = ({ classroom, materials, isTeacher, searchQuery, setSearchQ
       </div>
     ) : materials.length === 0 ? (
       <Card>
-        <CardBody className="p-12">
+        <CardBody className="p-8">
           <EmptyState
             title="No Materials Yet"
             description={isTeacher ? "Upload your first material to get started" : "Your teacher hasn't uploaded any materials yet"}
-            icon={<Folder className="w-8 h-8" />}
+            icon={<Folder className="w-6 h-6" />}
           />
         </CardBody>
       </Card>
     ) : (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
         {materials.map(material => {
           const Icon = getMaterialIcon(material.material_type);
           return (
@@ -1177,39 +1176,39 @@ const MaterialsTab = ({ classroom, materials, isTeacher, searchQuery, setSearchQ
               className="block"
               onClick={(e) => { if (!material.file) e.preventDefault(); }}
             >
-              <Card className={`hover:shadow-lg transition-shadow ${material.file ? 'cursor-pointer' : ''}`}>
-                <CardBody className="p-4">
-                  <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-violet-100 flex items-center justify-center shrink-0">
-                      <Icon className="w-5 h-5 text-violet-600" />
+              <Card className={`hover:shadow-md transition-shadow ${material.file ? 'cursor-pointer' : ''}`}>
+                <CardBody className="p-3">
+                  <div className="flex items-start gap-2">
+                    <div className="w-8 h-8 rounded-lg bg-violet-100 flex items-center justify-center shrink-0">
+                      <Icon className="w-4 h-4 text-violet-600" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-slate-900 truncate">{material.title}</h3>
-                      <p className="text-xs text-slate-600 mt-1 line-clamp-2">{material.description}</p>
-                      <div className="flex items-center gap-2 mt-3">
-                        <Badge variant="slate" size="sm">{material.material_type?.toUpperCase()}</Badge>
+                      <h3 className="text-xs font-semibold text-slate-900 truncate">{material.title}</h3>
+                      <p className="text-[10px] text-slate-600 mt-0.5 line-clamp-1">{material.description}</p>
+                      <div className="flex items-center gap-1 mt-2">
+                        <Badge variant="slate" size="sm" className="text-[8px] px-1 py-0">{material.material_type?.toUpperCase()}</Badge>
                         {material.quarter && (
-                          <Badge variant="blue" size="sm">T{material.quarter}</Badge>
+                          <Badge variant="blue" size="sm" className="text-[8px] px-1 py-0">T{material.quarter}</Badge>
                         )}
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center justify-between mt-4 pt-4 border-t border-slate-100">
-                    <span className="text-xs text-slate-500">
-                      <Clock className="w-3 h-3 inline mr-1" />
+                  <div className="flex items-center justify-between mt-2.5 pt-2.5 border-t border-slate-100">
+                    <span className="text-[9px] text-slate-500">
+                      <Clock className="w-2.5 h-2.5 inline mr-0.5" />
                       {new Date(material.created_at).toLocaleDateString()}
                     </span>
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-0.5">
                       {material.file ? (
-                        <span className="text-xs text-violet-600 font-medium flex items-center gap-1">
-                          <Download className="w-3 h-3" /> Open
+                        <span className="text-[9px] text-violet-600 font-medium flex items-center gap-0.5">
+                          <Download className="w-2.5 h-2.5" /> Open
                         </span>
                       ) : (
-                        <span className="text-xs text-slate-400">No file</span>
+                        <span className="text-[9px] text-slate-400">No file</span>
                       )}
                       {isTeacher && (
-                        <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); e.preventDefault(); onDeleteMaterial(material.id); }} className="text-red-500 hover:text-red-700 hover:bg-red-50">
-                          <Trash2 className="w-4 h-4" />
+                        <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); e.preventDefault(); onDeleteMaterial(material.id); }} className="text-red-500 hover:text-red-700 hover:bg-red-50 p-0.5">
+                          <Trash2 className="w-3 h-3" />
                         </Button>
                       )}
                     </div>
@@ -1250,28 +1249,28 @@ const PeopleTab = ({ classroom, students, isTeacher, loading, peopleSearch, setP
   const otherStudents = sortedStudents.filter(s => !['male', 'female'].includes((s.student_sex || '').toLowerCase()));
 
   const renderStudent = (student) => (
-    <div key={student.id} onClick={() => onStudentClick?.(student)} className="flex items-center gap-3 p-3 rounded-lg hover:bg-violet-50 transition-colors cursor-pointer border border-transparent hover:border-violet-200">
+    <div key={student.id} onClick={() => onStudentClick?.(student)} className="flex items-center gap-2 p-2 rounded-lg hover:bg-violet-50 transition-colors cursor-pointer border border-transparent hover:border-violet-200">
       {student.student_profile_picture ? (
-        <img src={student.student_profile_picture} alt="" className="w-10 h-10 rounded-full object-cover ring-2 ring-white shadow-sm" />
+        <img src={student.student_profile_picture} alt="" className="w-8 h-8 rounded-full object-cover ring-2 ring-white shadow-sm" />
       ) : (
-        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm">
+        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white font-bold text-[10px]">
           {student.student_name
             ? student.student_name.trim().split(/\s+/).slice(0, 2).map(n => n.charAt(0).toUpperCase()).join('')
             : '?'}
         </div>
       )}
       <div className="flex-1 min-w-0">
-        <p className="font-medium text-slate-900 truncate">
+        <p className="text-[11px] font-medium text-slate-900 truncate">
           {student.student_name || student.student_email || 'Unknown Student'}
         </p>
         {student.student_email && (
-          <p className="text-xs text-slate-500 truncate">{student.student_email}</p>
+          <p className="text-[9px] text-slate-500 truncate">{student.student_email}</p>
         )}
         {student.student_lrn && (
-          <p className="text-xs text-slate-400">LRN: {student.student_lrn}</p>
+          <p className="text-[9px] text-slate-400">LRN: {student.student_lrn}</p>
         )}
       </div>
-      <ChevronRight className="w-4 h-4 text-slate-300 flex-shrink-0" />
+      <ChevronRight className="w-3.5 h-3.5 text-slate-300 flex-shrink-0" />
     </div>
   );
 
@@ -1285,20 +1284,20 @@ const PeopleTab = ({ classroom, students, isTeacher, loading, peopleSearch, setP
       <Card>
       <CardHeader divider>
         <div className="flex items-center justify-between">
-          <CardTitle>Students</CardTitle>
-          <Badge variant="slate">{sortedStudents.length} enrolled</Badge>
+          <CardTitle className="text-xs">Students</CardTitle>
+          <Badge variant="slate" className="text-[9px]">{sortedStudents.length} enrolled</Badge>
         </div>
       </CardHeader>
-      <CardBody>
+      <CardBody className="p-3">
         {students.length > 3 && (
-          <div className="relative mb-4">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <div className="relative mb-3">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
             <input
               type="text"
               value={peopleSearch}
               onChange={(e) => setPeopleSearch(e.target.value)}
               placeholder="Search students..."
-              className="w-full pl-9 pr-4 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-violet-500 text-sm"
+              className="w-full pl-8 pr-3 py-1.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-violet-500 text-xs"
             />
           </div>
         )}
@@ -1313,27 +1312,27 @@ const PeopleTab = ({ classroom, students, isTeacher, loading, peopleSearch, setP
               icon={<Users className="w-6 h-6" />}
             />
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-3">
               {maleStudents.length > 0 && (
                 <div>
-                  <h4 className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mb-2 px-1">Male ({maleStudents.length})</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-1">
+                  <h4 className="text-[9px] font-bold text-blue-600 uppercase tracking-widest mb-1 px-1">Male ({maleStudents.length})</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-0.5">
                     {maleStudents.map(renderStudent)}
                   </div>
                 </div>
               )}
               {femaleStudents.length > 0 && (
                 <div>
-                  <h4 className="text-[10px] font-bold text-pink-600 uppercase tracking-widest mb-2 px-1">Female ({femaleStudents.length})</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-1">
+                  <h4 className="text-[9px] font-bold text-pink-600 uppercase tracking-widest mb-1 px-1">Female ({femaleStudents.length})</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-0.5">
                     {femaleStudents.map(renderStudent)}
                   </div>
                 </div>
               )}
               {otherStudents.length > 0 && (
                 <div>
-                  <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 px-1">Other ({otherStudents.length})</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-1">
+                  <h4 className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1 px-1">Other ({otherStudents.length})</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-0.5">
                     {otherStudents.map(renderStudent)}
                   </div>
                 </div>
@@ -1413,7 +1412,7 @@ const GradesTab = ({ classroom, isTeacher, navigate }) => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
-      className="space-y-6"
+      className="space-y-3"
     >
       {renderView()}
     </motion.div>
@@ -1451,34 +1450,34 @@ const OverviewView = ({ classroom, grades, loading, isTeacher, onNavigate, navig
     return (
       <Card>
         <CardHeader>
-          <CardTitle>My Grades — {classroom.name}</CardTitle>
+          <CardTitle className="text-xs">My Grades — {classroom.name}</CardTitle>
         </CardHeader>
-        <CardBody>
+        <CardBody className="p-3">
           {gradesLoading ? (
             <LoadingSpinner />
           ) : subjects.length === 0 ? (
-            <EmptyState title="No grades yet" description="Your teacher hasn't posted grades for this class yet." />
+            <EmptyState title="No grades yet" description="Your teacher hasn't posted grades yet." />
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full text-sm">
+              <table className="w-full text-[10px]">
                 <thead>
                   <tr className="border-b border-slate-200">
-                    <th className="text-left py-3 px-4 font-semibold text-slate-700">Subject</th>
-                    <th className="text-center py-3 px-2 font-semibold text-slate-700">T1</th>
-                    <th className="text-center py-3 px-2 font-semibold text-slate-700">T2</th>
-                    <th className="text-center py-3 px-2 font-semibold text-slate-700">T3</th>
-                    <th className="text-center py-3 px-4 font-semibold text-slate-700">Final</th>
+                    <th className="text-left py-2 px-2 font-semibold text-slate-700">Subject</th>
+                    <th className="text-center py-2 px-1 font-semibold text-slate-700">T1</th>
+                    <th className="text-center py-2 px-1 font-semibold text-slate-700">T2</th>
+                    <th className="text-center py-2 px-1 font-semibold text-slate-700">T3</th>
+                    <th className="text-center py-2 px-2 font-semibold text-slate-700">Avg</th>
                   </tr>
                 </thead>
                 <tbody>
                   {subjects.map((s, i) => {
                     const vals = Object.values(s.quarters).filter(v => v != null && !isNaN(v));
-                    const avg = vals.length > 0 ? (vals.reduce((a, b) => a + b, 0) / vals.length).toFixed(2) : null;
+                    const avg = vals.length > 0 ? (vals.reduce((a, b) => a + b, 0) / vals.length).toFixed(1) : null;
                     return (
                       <tr key={i} className="border-b border-slate-100 hover:bg-slate-50">
-                        <td className="py-3 px-4 font-medium text-slate-900">{s.subject}</td>
+                        <td className="py-1.5 px-2 font-medium text-slate-900 truncate max-w-[100px]">{s.subject}</td>
                         {[1, 2, 3].map(q => (
-                          <td key={q} className="text-center py-3 px-2">
+                          <td key={q} className="text-center py-1.5 px-1">
                             {s.quarters[q] != null ? (
                               <span className={`font-bold ${s.quarters[q] >= 75 ? 'text-emerald-600' : 'text-red-600'}`}>
                                 {parseFloat(s.quarters[q]).toFixed(1)}
@@ -1488,7 +1487,7 @@ const OverviewView = ({ classroom, grades, loading, isTeacher, onNavigate, navig
                             )}
                           </td>
                         ))}
-                        <td className="text-center py-3 px-4">
+                        <td className="text-center py-1.5 px-2">
                           {avg != null ? (
                             <span className={`font-extrabold ${parseFloat(avg) >= 75 ? 'text-emerald-700' : 'text-red-700'}`}>
                               {avg}
@@ -1512,43 +1511,43 @@ const OverviewView = ({ classroom, grades, loading, isTeacher, onNavigate, navig
   return (
     <>
       {/* Quick Actions for Teachers */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-3 gap-2">
         <Card 
-          className="hover:shadow-lg transition-shadow cursor-pointer group" 
+          className="hover:shadow-md transition-shadow cursor-pointer group" 
           onClick={() => onNavigate('input')}
         >
-          <CardBody className="p-6 text-center">
-            <div className="w-12 h-12 rounded-lg bg-violet-100 flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
-              <FileText className="w-6 h-6 text-violet-600" />
+          <CardBody className="p-3 text-center">
+            <div className="w-8 h-8 rounded-lg bg-violet-100 flex items-center justify-center mx-auto mb-1.5 group-hover:scale-110 transition-transform">
+              <FileText className="w-4 h-4 text-violet-600" />
             </div>
-            <h3 className="font-semibold text-slate-900 mb-2">Input Grades</h3>
-            <p className="text-sm text-slate-600">Enter student grades</p>
+            <h3 className="text-[10px] font-semibold text-slate-900 mb-0.5">Input Grades</h3>
+            <p className="text-[8px] text-slate-600">Enter grades</p>
           </CardBody>
         </Card>
 
         <Card 
-          className="hover:shadow-lg transition-shadow cursor-pointer group" 
+          className="hover:shadow-md transition-shadow cursor-pointer group" 
           onClick={() => onNavigate('manage')}
         >
-          <CardBody className="p-6 text-center">
-            <div className="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
-              <Award className="w-6 h-6 text-blue-600" />
+          <CardBody className="p-3 text-center">
+            <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center mx-auto mb-1.5 group-hover:scale-110 transition-transform">
+              <Award className="w-4 h-4 text-blue-600" />
             </div>
-            <h3 className="font-semibold text-slate-900 mb-2">Manage Grades</h3>
-            <p className="text-sm text-slate-600">Review and adjust</p>
+            <h3 className="text-[10px] font-semibold text-slate-900 mb-0.5">Manage Grades</h3>
+            <p className="text-[8px] text-slate-600">Review & adjust</p>
           </CardBody>
         </Card>
 
         <Card 
-          className="hover:shadow-lg transition-shadow cursor-pointer group" 
+          className="hover:shadow-md transition-shadow cursor-pointer group" 
           onClick={() => onNavigate('analytics')}
         >
-          <CardBody className="p-6 text-center">
-            <div className="w-12 h-12 rounded-lg bg-amber-100 flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
-              <BarChart2 className="w-6 h-6 text-amber-600" />
+          <CardBody className="p-3 text-center">
+            <div className="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center mx-auto mb-1.5 group-hover:scale-110 transition-transform">
+              <BarChart2 className="w-4 h-4 text-amber-600" />
             </div>
-            <h3 className="font-semibold text-slate-900 mb-2">Analytics</h3>
-            <p className="text-sm text-slate-600">View performance</p>
+            <h3 className="text-[10px] font-semibold text-slate-900 mb-0.5">Analytics</h3>
+            <p className="text-[8px] text-slate-600">Performance</p>
           </CardBody>
         </Card>
       </div>
@@ -1556,30 +1555,30 @@ const OverviewView = ({ classroom, grades, loading, isTeacher, onNavigate, navig
       {/* Grade Overview */}
       <Card>
         <CardHeader divider>
-          <CardTitle>Grade Overview</CardTitle>
+          <CardTitle className="text-xs">Grade Overview</CardTitle>
         </CardHeader>
-        <CardBody>
+        <CardBody className="p-3">
           {loading ? (
-            <div className="flex items-center justify-center h-32">
+            <div className="flex items-center justify-center h-24">
               <LoadingSpinner />
             </div>
           ) : grades.length === 0 ? (
             <EmptyState
               title="No Grades Yet"
-              description="Start by inputting grades for your students"
-              icon={<Award className="w-8 h-8" />}
+              description="Start by inputting grades"
+              icon={<Award className="w-6 h-6" />}
             />
           ) : (
-            <div className="text-center py-8">
-              <p className="text-slate-600">
-                {grades.length} grade records for this class
+            <div className="text-center py-4">
+              <p className="text-xs text-slate-600">
+                {grades.length} grade records
               </p>
               <Button
                 variant="primary"
-                className="mt-4"
+                className="mt-2 text-[10px] px-2 py-1"
                 onClick={() => onNavigate('manage')}
               >
-                View All Grades
+                View All
               </Button>
             </div>
           )}
