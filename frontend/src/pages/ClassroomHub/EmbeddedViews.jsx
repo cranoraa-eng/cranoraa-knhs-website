@@ -704,23 +704,24 @@ export const AttendanceView = ({ classroom, onBack }) => {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3 md:space-y-4">
       <div className="flex items-center justify-between">
         <Button variant="ghost" size="sm" onClick={onBack}>
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Overview
+          <ArrowLeft className="w-4 h-4 mr-1 md:mr-2" />
+          <span className="hidden sm:inline">Back to Overview</span>
         </Button>
-        <Button variant="primary" onClick={handleSubmit} loading={submitting}>
-          <Check className="w-4 h-4 mr-2" />
-          Submit Attendance
+        <Button variant="primary" size="sm" onClick={handleSubmit} loading={submitting}>
+          <Check className="w-4 h-4 mr-1.5" />
+          <span className="hidden sm:inline">Submit Attendance</span>
+          <span className="sm:hidden">Submit</span>
         </Button>
       </div>
 
       <Card>
         <CardHeader divider>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
             <CardTitle>Attendance - {classroom.name}</CardTitle>
-            <div className="relative w-56">
+            <div className="relative w-full sm:w-56">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <input
                 type="text"
@@ -732,38 +733,38 @@ export const AttendanceView = ({ classroom, onBack }) => {
             </div>
           </div>
         </CardHeader>
-        <CardBody className="p-6">
+        <CardBody className="p-4 md:p-6">
           {/* Date Selector */}
-          <div className="mb-6">
-            <label className="block text-sm font-semibold text-slate-700 mb-2">
-              <Calendar className="w-4 h-4 inline mr-1.5 -mt-0.5" />
+          <div className="mb-4 md:mb-6">
+            <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+              <Calendar className="w-3.5 h-3.5 inline mr-1 -mt-0.5" />
               Date
             </label>
             <input
               type="date"
               value={selectedDate}
               onChange={e => setSelectedDate(e.target.value)}
-              className="px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 text-sm"
+              className="px-3 py-1.5 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 text-sm"
             />
           </div>
 
           {/* Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-            <div className="bg-slate-50 rounded-lg p-4 text-center">
-              <div className="text-2xl font-bold text-slate-700">{stats.total}</div>
-              <div className="text-xs text-slate-600 uppercase font-semibold mt-1">Total</div>
+          <div className="grid grid-cols-4 gap-2 md:gap-4 mb-4 md:mb-6">
+            <div className="bg-slate-50 rounded-lg p-2 md:p-4 text-center">
+              <div className="text-lg md:text-2xl font-bold text-slate-700">{stats.total}</div>
+              <div className="text-[9px] md:text-xs text-slate-600 uppercase font-semibold mt-0.5">Total</div>
             </div>
-            <div className="bg-green-50 rounded-lg p-4 text-center">
-              <div className="text-2xl font-bold text-green-600">{stats.present}</div>
-              <div className="text-xs text-green-700 uppercase font-semibold mt-1">Present</div>
+            <div className="bg-green-50 rounded-lg p-2 md:p-4 text-center">
+              <div className="text-lg md:text-2xl font-bold text-green-600">{stats.present}</div>
+              <div className="text-[9px] md:text-xs text-green-700 uppercase font-semibold mt-0.5">Present</div>
             </div>
-            <div className="bg-red-50 rounded-lg p-4 text-center">
-              <div className="text-2xl font-bold text-red-600">{stats.absent}</div>
-              <div className="text-xs text-red-700 uppercase font-semibold mt-1">Absent</div>
+            <div className="bg-red-50 rounded-lg p-2 md:p-4 text-center">
+              <div className="text-lg md:text-2xl font-bold text-red-600">{stats.absent}</div>
+              <div className="text-[9px] md:text-xs text-red-700 uppercase font-semibold mt-0.5">Absent</div>
             </div>
-            <div className="bg-amber-50 rounded-lg p-4 text-center">
-              <div className="text-2xl font-bold text-amber-600">{stats.late}</div>
-              <div className="text-xs text-amber-700 uppercase font-semibold mt-1">Late</div>
+            <div className="bg-amber-50 rounded-lg p-2 md:p-4 text-center">
+              <div className="text-lg md:text-2xl font-bold text-amber-600">{stats.late}</div>
+              <div className="text-[9px] md:text-xs text-amber-700 uppercase font-semibold mt-0.5">Late</div>
             </div>
           </div>
 
@@ -780,35 +781,35 @@ export const AttendanceView = ({ classroom, onBack }) => {
             />
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="text-xs font-semibold text-slate-500 uppercase tracking-wider border-b border-slate-200">
-                    <th className="text-left pb-3 pl-3 w-10">#</th>
-                    <th className="text-left pb-3">Student</th>
-                    <th className="text-center pb-3 pr-3">Status</th>
+              <table className="w-full min-w-[480px]">
+                <thead className="bg-slate-50 border-b-2 border-slate-200">
+                  <tr>
+                    <th className="px-3 md:px-4 py-2.5 md:py-3 text-left text-xs font-bold text-slate-700 uppercase w-10">#</th>
+                    <th className="px-3 md:px-4 py-2.5 md:py-3 text-left text-xs font-bold text-slate-700 uppercase">Student</th>
+                    <th className="px-3 md:px-4 py-2.5 md:py-3 text-center text-xs font-bold text-slate-700 uppercase">Status</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="bg-white divide-y divide-slate-100">
                   {filteredStudents.map((student, idx) => (
                     <tr key={student.id} className="hover:bg-slate-50 transition-colors">
-                      <td className="py-3 pl-3 text-xs text-slate-400 font-medium">{idx + 1}</td>
-                      <td className="py-3">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-violet-100 flex items-center justify-center text-violet-600 font-bold text-xs shrink-0">
+                      <td className="px-3 md:px-4 py-2.5 md:py-3 text-sm text-slate-500 font-semibold">{idx + 1}</td>
+                      <td className="px-3 md:px-4 py-2.5 md:py-3">
+                        <div className="flex items-center gap-2 md:gap-3">
+                          <div className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-violet-100 flex items-center justify-center text-violet-600 font-bold text-[10px] md:text-xs shrink-0">
                             {student.student_first_name?.charAt(0)}{student.student_last_name?.charAt(0)}
                           </div>
-                          <div>
-                            <p className="text-sm font-semibold text-slate-900">
+                          <div className="min-w-0">
+                            <p className="text-xs md:text-sm font-semibold text-slate-900 truncate">
                               {student.student_last_name}, {student.student_first_name}
                             </p>
                             {student.student_lrn && (
-                              <p className="text-xs text-slate-400">LRN: {student.student_lrn}</p>
+                              <p className="text-[10px] md:text-xs text-slate-400 truncate">LRN: {student.student_lrn}</p>
                             )}
                           </div>
                         </div>
                       </td>
-                      <td className="py-3 pr-3">
-                        <div className="flex items-center justify-center gap-1.5">
+                      <td className="px-3 md:px-4 py-2.5 md:py-3">
+                        <div className="flex items-center justify-center gap-1 md:gap-1.5">
                           {Object.entries(statusConfig).map(([key, cfg]) => {
                             const Icon = cfg.icon;
                             const isActive = attendance[student.student] === key;
@@ -817,9 +818,9 @@ export const AttendanceView = ({ classroom, onBack }) => {
                                 key={key}
                                 onClick={() => handleStatusChange(student.student, key)}
                                 title={key.charAt(0).toUpperCase() + key.slice(1)}
-                                className={`flex items-center gap-1 px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${isActive ? cfg.active : cfg.idle}`}
+                                className={`flex items-center gap-0.5 md:gap-1 px-1.5 md:px-3 py-1 md:py-1.5 rounded text-[10px] md:text-xs font-semibold transition-all ${isActive ? cfg.active : cfg.idle}`}
                               >
-                                <Icon className="w-3.5 h-3.5" />
+                                <Icon className="w-3 h-3 md:w-3.5 md:h-3.5" />
                                 <span className="hidden sm:inline">{key.charAt(0).toUpperCase() + key.slice(1)}</span>
                               </button>
                             );
