@@ -733,18 +733,61 @@ function EnrollStudentsTab({ refetch }) {
   return (
     <div className="space-y-4">
 
-      {/* Classroom selector */}
-      <div className="bg-white border border-slate-200 rounded-xl p-5">
-        <label className="block text-xs font-black text-slate-700 uppercase tracking-widest mb-2">Select Section</label>
-        <select value={selectedClassroom}
-          onChange={e => { setSelectedClassroom(e.target.value); setEnrollSearch(''); }}
-          className="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-400 bg-slate-50">
-          <option value="">— Choose a section —</option>
+      {/* Classroom selector — card grid */}
+      <div className="space-y-2">
+        <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">Select Section</label>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-3">
           {sortedClassrooms.map(c => {
-            const cnt = c.student_count ?? 0; const cap = c.capacity || 40;
-            return <option key={c.id} value={c.id}>{c.name} — {cnt}/{cap} students{cnt >= cap ? ' (FULL)' : ''}</option>;
+            const cnt = c.student_count ?? 0;
+            const cap = c.capacity || 40;
+            const isFull = cnt >= cap;
+            const isSelected = String(c.id) === String(selectedClassroom);
+            const gradeMatch = c.name.match(/grade\s*(\d+)/i);
+            const gradeNum = gradeMatch ? parseInt(gradeMatch[1]) : 0;
+            const gradeColors = {
+              7: 'from-blue-500 to-blue-600',
+              8: 'from-emerald-500 to-emerald-600',
+              9: 'from-amber-500 to-amber-600',
+              10: 'from-rose-500 to-rose-600',
+              11: 'from-violet-500 to-violet-600',
+              12: 'from-indigo-500 to-indigo-600',
+            };
+            const gradient = gradeColors[gradeNum] || 'from-slate-500 to-slate-600';
+            return (
+              <button
+                key={c.id}
+                onClick={() => { setSelectedClassroom(isSelected ? '' : c.id); setEnrollSearch(''); }}
+                className={`relative text-left rounded-xl border-2 transition-all duration-200 p-3 md:p-4
+                  ${isSelected
+                    ? 'border-violet-500 bg-violet-50 shadow-md ring-2 ring-violet-200'
+                    : 'border-slate-200 bg-white hover:border-slate-300 hover:shadow-sm'
+                  }`}
+              >
+                {isSelected && (
+                  <div className="absolute top-2 right-2 w-5 h-5 bg-violet-500 rounded-full flex items-center justify-center">
+                    <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                )}
+                <div className={`w-7 h-7 md:w-8 md:h-8 rounded-lg bg-gradient-to-br ${gradient} flex items-center justify-center mb-2`}>
+                  <span className="text-white text-[10px] md:text-xs font-black">{gradeNum || '?'}</span>
+                </div>
+                <p className={`text-[10px] md:text-sm font-black uppercase tracking-tight truncate leading-tight ${isSelected ? 'text-violet-900' : 'text-slate-800'}`}>
+                  {c.name}
+                </p>
+                <div className="flex items-center gap-1.5 mt-1">
+                  <span className={`text-[8px] md:text-[11px] font-semibold ${isFull ? 'text-rose-600' : 'text-slate-400'}`}>
+                    {cnt}/{cap}
+                  </span>
+                  {isFull && (
+                    <span className="text-[7px] md:text-[9px] font-bold text-rose-600 bg-rose-50 border border-rose-200 px-1 py-px rounded uppercase">Full</span>
+                  )}
+                </div>
+              </button>
+            );
           })}
-        </select>
+        </div>
       </div>
 
       {selectedClassroom && (
