@@ -275,16 +275,17 @@ const ClassroomHub = () => {
   };
 
   const getClassroomColor = (name) => {
-    const colors = [
-      'bg-gradient-to-br from-violet-500 to-purple-600',
-      'bg-gradient-to-br from-blue-500 to-cyan-600',
-      'bg-gradient-to-br from-green-500 to-emerald-600',
-      'bg-gradient-to-br from-orange-500 to-amber-600',
-      'bg-gradient-to-br from-rose-500 to-pink-600',
-      'bg-gradient-to-br from-indigo-500 to-blue-600',
-    ];
-    const hash = name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    return colors[hash % colors.length];
+    const gradeMatch = name.match(/grade\s*(\d+)/i);
+    const gradeNum = gradeMatch ? parseInt(gradeMatch[1]) : 0;
+    const gradeColors = {
+      7: 'bg-gradient-to-br from-green-500 to-green-600',
+      8: 'bg-gradient-to-br from-yellow-500 to-yellow-600',
+      9: 'bg-gradient-to-br from-red-500 to-red-600',
+      10: 'bg-gradient-to-br from-blue-500 to-blue-600',
+      11: 'bg-gradient-to-br from-pink-500 to-pink-600',
+      12: 'bg-gradient-to-br from-gray-900 to-black',
+    };
+    return gradeColors[gradeNum] || 'bg-gradient-to-br from-slate-500 to-slate-600';
   };
 
   const getMaterialIcon = (type) => {
