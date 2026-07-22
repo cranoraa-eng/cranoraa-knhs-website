@@ -155,8 +155,9 @@ api.interceptors.response.use(
     if (!original) return Promise.reject(error);
 
     // Never retry the refresh endpoint itself — avoids infinite loops
-    if (original.url?.includes('/token/refresh/')) {
-      clearSession();
+    // Never retry /login/ — a 401 there means wrong credentials, not expired token
+    if (original.url?.includes('/token/refresh/') || original.url?.includes('/login/')) {
+      if (original.url?.includes('/token/refresh/')) clearSession();
       return Promise.reject(error);
     }
 

@@ -6,7 +6,7 @@ import { useAuth } from './AuthContext';
 const AcademicYearContext = createContext(null);
 
 export function AcademicYearProvider({ children }) {
-  const { ready } = useAuth();
+  const { user, ready } = useAuth();
   const [academicYear, setAcademicYear] = useState(
     () => localStorage.getItem('knhs_academic_year') || getCurrentAcademicYear()
   );
@@ -14,7 +14,10 @@ export function AcademicYearProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!ready) return;
+    if (!ready || !user) {
+      if (ready) setLoading(false);
+      return;
+    }
     let cancelled = false;
     const fetchActive = api.get('/admin/academic-years/active/').catch(() => null);
     const fetchAll = api.get('/admin/academic-years/').catch(() => ({ data: [] }));
