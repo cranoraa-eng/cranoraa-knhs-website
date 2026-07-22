@@ -210,7 +210,7 @@ const AdminDashboard = () => {
       </div>
       <div className="space-y-3">
         <Skeleton className="h-3.5 w-28 rounded" />
-        <div className="grid grid-cols-5 gap-1.5">
+        <div className="grid grid-cols-6 gap-1.5">
           {[1,2,3,4,5,6].map(i => <Skeleton.StatCard key={i} />)}
         </div>
       </div>
@@ -354,7 +354,7 @@ const AdminDashboard = () => {
           )}
         </div>
 
-        <div className="grid grid-cols-5 gap-1.5">
+        <div className="grid grid-cols-6 gap-1.5">
           <StatCard
             label="Students" value={data?.total_students} sub="Enrolled"
             delta={<DeltaBadge value={data?.active_users > 0 ? null : null} />}
