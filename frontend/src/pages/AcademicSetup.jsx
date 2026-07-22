@@ -64,7 +64,7 @@ const AcademicSetup = () => {
 
   // ── Forms ─────────────────────────────────────────────────────────────────
   const [ayForm,           setAyForm]           = useState({ name: '', start_date: '', end_date: '', is_active: true });
-  const [semesterForm,     setSemesterForm]     = useState({ name: '', semester_type: '1st Quarter' });
+  const [semesterForm,     setSemesterForm]     = useState({ name: '', semester_type: '1st Term' });
   const [sectionForm,      setSectionForm]      = useState({ name: '', grade_level: '', teacher: '' });
   const [subjectForm,      setSubjectForm]      = useState({ name: '', code: '', description: '', grade_level: '' });
   const [assignForm,       setAssignForm]       = useState({ classroom: '', subject: '', teacher: '' });

@@ -200,7 +200,7 @@ export const GradeManagementView = ({ classroom, onBack }) => {
 
   const handleDeleteAllQuarter = async () => {
     if (selectedQuarter === 'all') {
-      toast.error('Select a specific quarter to delete');
+      toast.error('Select a specific term to delete');
       return;
     }
 

@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import api from '../utils/api';
 import { useAuth } from '../context/AuthContext';
 import { useActiveAcademicYear } from '../hooks/useActiveAcademicYear';
@@ -6,6 +7,166 @@ import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
 import { Button, LoadingSpinner } from '../components/ui';
 import { ICONS, Icon, Toggle, Field, Input, SectionCard, Spinner, Skeleton, EmailServiceNotice } from './settings/shared';
+
+// ── Image Crop Modal ────────────────────────────────────────────────────────
+const ImageCropModal = ({ isOpen, onClose, onCrop, imageSrc }) => {
+  const canvasRef = useRef(null);
+  const imgRef = useRef(null);
+  const containerRef = useRef(null);
+  const [zoom, setZoom] = useState(1);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [imgNatural, setImgNatural] = useState({ w: 0, h: 0 });
+  const CROP_SIZE = 400;
+
+  useEffect(() => {
+    if (isOpen) {
+      setZoom(1);
+      setPosition({ x: 0, y: 0 });
+    }
+  }, [isOpen, imageSrc]);
+
+  const handleImgLoad = (e) => {
+    setImgNatural({ w: e.target.naturalWidth, h: e.target.naturalHeight });
+  };
+
+  const handleMouseDown = (e) => {
+    e.preventDefault();
+    setIsDragging(true);
+    setDragStart({ x: e.clientX - position.x, y: e.clientY - position.y });
+  };
+
+  const handleMouseMove = useCallback((e) => {
+    if (!isDragging) return;
+    setPosition({ x: e.clientX - dragStart.x, y: e.clientY - dragStart.y });
+  }, [isDragging, dragStart]);
+
+  const handleMouseUp = useCallback(() => {
+    setIsDragging(false);
+  }, []);
+
+  useEffect(() => {
+    if (isDragging) {
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mouseup', handleMouseUp);
+      return () => {
+        window.removeEventListener('mousemove', handleMouseMove);
+        window.removeEventListener('mouseup', handleMouseUp);
+      };
+    }
+  }, [isDragging, handleMouseMove, handleMouseUp]);
+
+  const handleTouchStart = (e) => {
+    const t = e.touches[0];
+    setIsDragging(true);
+    setDragStart({ x: t.clientX - position.x, y: t.clientY - position.y });
+  };
+
+  const handleTouchMove = (e) => {
+    if (!isDragging) return;
+    const t = e.touches[0];
+    setPosition({ x: t.clientX - dragStart.x, y: t.clientY - dragStart.y });
+  };
+
+  const handleCrop = () => {
+    const canvas = canvasRef.current;
+    const img = imgRef.current;
+    if (!canvas || !img) return;
+
+    const container = containerRef.current;
+    const containerRect = container.getBoundingClientRect();
+    const displaySize = Math.min(containerRect.width, containerRect.height);
+
+    canvas.width = CROP_SIZE;
+    canvas.height = CROP_SIZE;
+    const ctx = canvas.getContext('2d');
+
+    const imgDisplayW = img.clientWidth;
+    const imgDisplayH = img.clientHeight;
+
+    const srcX = ((displaySize / 2 - position.x - (imgDisplayW - displaySize) / 2 * zoom) / (imgDisplayW * zoom)) * imgNatural.w;
+    const srcY = ((displaySize / 2 - position.y - (imgDisplayH - displaySize) / 2 * zoom) / (imgDisplayH * zoom)) * imgNatural.h;
+    const srcSize = (displaySize / (imgDisplayW * zoom)) * imgNatural.w;
+
+    ctx.beginPath();
+    ctx.arc(CROP_SIZE / 2, CROP_SIZE / 2, CROP_SIZE / 2, 0, Math.PI * 2);
+    ctx.clip();
+    ctx.drawImage(img, srcX, srcY, srcSize, srcSize, 0, 0, CROP_SIZE, CROP_SIZE);
+
+    canvas.toBlob((blob) => {
+      if (blob) {
+        const file = new File([blob], 'profile.jpg', { type: 'image/jpeg', lastModified: Date.now() });
+        onCrop(file);
+        onClose();
+      }
+    }, 'image/jpeg', 0.92);
+  };
+
+  if (!isOpen) return null;
+
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center">
+      <div className="absolute inset-0 bg-black/60" onClick={onClose} />
+      <div className="relative bg-white rounded-2xl shadow-2xl w-[90vw] max-w-md overflow-hidden">
+        <div className="px-5 py-4 border-b border-slate-200">
+          <h3 className="text-base font-black text-slate-900">Edit Profile Picture</h3>
+          <p className="text-xs text-slate-500 mt-0.5">Drag to reposition, use slider to zoom</p>
+        </div>
+
+        <div className="p-6">
+          <div ref={containerRef} className="relative mx-auto w-48 h-48 rounded-full overflow-hidden bg-slate-100 border-4 border-white shadow-lg cursor-grab active:cursor-grabbing select-none"
+            onMouseDown={handleMouseDown}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleMouseUp}>
+            <img
+              ref={imgRef}
+              src={imageSrc}
+              alt="Crop"
+              onLoad={handleImgLoad}
+              className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+              style={{
+                transform: `translate(${position.x}px, ${position.y}px) scale(${zoom})`,
+                transformOrigin: 'center center',
+              }}
+              draggable={false}
+            />
+            <div className="absolute inset-0 rounded-full border-2 border-white/40 pointer-events-none" />
+          </div>
+
+          <div className="mt-5 space-y-2">
+            <div className="flex items-center justify-between text-xs font-bold text-slate-500">
+              <span>Zoom</span>
+              <span>{Math.round(zoom * 100)}%</span>
+            </div>
+            <input
+              type="range"
+              min="1"
+              max="3"
+              step="0.05"
+              value={zoom}
+              onChange={(e) => setZoom(parseFloat(e.target.value))}
+              className="w-full h-2 bg-slate-200 rounded-full appearance-none cursor-pointer accent-violet-600"
+            />
+          </div>
+        </div>
+
+        <div className="flex gap-3 px-5 py-4 border-t border-slate-200 bg-slate-50">
+          <button onClick={onClose} className="flex-1 px-4 py-2.5 rounded-xl border border-slate-300 text-sm font-bold text-slate-700 hover:bg-white transition-colors">
+            Cancel
+          </button>
+          <button onClick={handleCrop} className="flex-1 px-4 py-2.5 rounded-xl bg-violet-600 text-white text-sm font-bold hover:bg-violet-700 transition-colors shadow-sm">
+            Crop & Upload
+          </button>
+        </div>
+
+        <canvas ref={canvasRef} className="hidden" />
+      </div>
+    </div>,
+    document.body
+  );
+};
 
 // ── Grading Settings Tab ─────────────────────────────────────────────────
 
@@ -779,6 +940,9 @@ const ProfileTab = () => {
   const [editing, setEditing] = useState(false);
   const [uploadingPic, setUploadingPic] = useState(false);
   const picRef = useRef();
+  const [cropOpen, setCropOpen] = useState(false);
+  const [cropImageSrc, setCropImageSrc] = useState(null);
+  const [pendingFile, setPendingFile] = useState(null);
   const [form, setForm] = useState({
     title: '', first_name: '', middle_name: '', last_name: '', email: '',
     sex: '', date_of_birth: '', nationality: '', state: '',
@@ -831,10 +995,21 @@ const ProfileTab = () => {
     const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
     if (!allowedTypes.includes(file.type)) return toast.error('Only JPEG, PNG, GIF, and WebP images are allowed');
     if (file.size > 5 * 1024 * 1024) return toast.error('Image must be less than 5MB');
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      setCropImageSrc(ev.target.result);
+      setPendingFile(file);
+      setCropOpen(true);
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  };
+
+  const handleCropUpload = async (croppedFile) => {
     setUploadingPic(true);
     try {
       const fd = new FormData();
-      fd.append('profile_picture', file);
+      fd.append('profile_picture', croppedFile);
       const r = await api.post('/student/profile/', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
       setProfile(p => ({ ...p, profile: { ...p?.profile, profile_picture: r.data.profile_picture } }));
       await refreshUser();

@@ -370,7 +370,7 @@ const interpretSystemData = (data) => {
   return items;
 };
 
-const interpretGradeData = (gradeData, filterLevel, filterSubject, filterQuarter, periodLabel = 'Quarter') => {
+const interpretGradeData = (gradeData, filterLevel, filterSubject, filterQuarter, periodLabel = 'Term') => {
   if (!gradeData || gradeData.total_students === 0) return [];
   const items = [];
   const avg = gradeData.overall_average || 0;
