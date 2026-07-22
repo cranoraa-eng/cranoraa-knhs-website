@@ -37,28 +37,32 @@ def login_view(request):
         user = authenticate(request=request, username=login_id, password=password)
 
         if user is None:
+            logger.warning(f"Login failed for identifier='{login_id}' — authenticate() returned None")
             return Response(
                 {'error': GENERIC_ERROR},
                 status=status.HTTP_401_UNAUTHORIZED
             )
+
+        logger.info(f"Login success for user='{user.username}' role='{user.role}' status='{user.account_status}' approved={user.is_approved} active={user.is_active}")
 
         if required_role and user.role != 'admin':
             if user.role != required_role:
                 return Response(
-                    {'error': GENERIC_ERROR},
-                    status=status.HTTP_401_UNAUTHORIZED
+                    {'error': f'This account is registered as a {user.get_role_display()}. Please use the correct portal.', 'code': 'wrong_portal'},
+                    status=status.HTTP_403_FORBIDDEN
                 )
 
-        if user.account_status == 'inactive' or user.account_status == 'suspended' or not user.is_active:
+        if not user.is_active or user.account_status in ('inactive', 'suspended'):
+            status_code = 'inactive' if not user.is_active or user.account_status == 'inactive' else 'suspended'
             return Response(
-                {'error': GENERIC_ERROR},
-                status=status.HTTP_401_UNAUTHORIZED
+                {'error': 'Your account has been deactivated or suspended. Please contact the administrator.', 'code': status_code},
+                status=status.HTTP_403_FORBIDDEN
             )
 
         if not user.is_approved:
             return Response(
-                {'error': GENERIC_ERROR},
-                status=status.HTTP_401_UNAUTHORIZED
+                {'error': 'Your account is pending admin approval. Please wait for an administrator to approve your account.', 'code': 'not_approved'},
+                status=status.HTTP_403_FORBIDDEN
             )
 
         if user.must_change_password:

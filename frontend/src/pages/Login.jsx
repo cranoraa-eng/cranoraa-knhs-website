@@ -194,10 +194,16 @@ const Login = () => {
       const status = err.response?.status;
       const code = err.response?.data?.code;
       const message = err.response?.data?.error;
-      if (status === 403 && code === 'not_approved') {
-        Swal.fire({ icon: 'info', title: 'Pending Approval', text: 'Your account is pending admin approval.', confirmButtonColor: '#581c87' });
-      } else if (status === 403) {
-        Swal.fire({ icon: 'error', title: 'Account Suspended', text: message || 'Contact the administrator.', confirmButtonColor: '#dc2626' });
+      if (status === 403) {
+        if (code === 'not_approved') {
+          Swal.fire({ icon: 'info', title: 'Pending Approval', text: message || 'Your account is pending admin approval.', confirmButtonColor: '#581c87' });
+        } else if (code === 'wrong_portal') {
+          Swal.fire({ icon: 'warning', title: 'Wrong Portal', text: message || 'Please use the correct login portal for your account.', confirmButtonColor: '#581c87' });
+        } else if (code === 'suspended' || code === 'inactive') {
+          Swal.fire({ icon: 'error', title: 'Account Unavailable', text: message || 'Your account has been deactivated or suspended.', confirmButtonColor: '#dc2626' });
+        } else {
+          Swal.fire({ icon: 'error', title: 'Account Issue', text: message || 'Contact the administrator.', confirmButtonColor: '#dc2626' });
+        }
       } else if (status === 401) {
         const newAttempts = failedAttempts + 1;
         setFailedAttempts(newAttempts);
