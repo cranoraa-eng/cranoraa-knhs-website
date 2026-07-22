@@ -7,7 +7,8 @@ import {
 } from '../../components/ui';
 import Modal, { ModalBody, ModalFooter, ModalBtnPrimary, ModalBtnSecondary } from '../../components/ui/Modal';
 import {
-  ArrowLeft, Users, Award, Search, BarChart2, Trash2, Edit2, Download, X, Check
+  ArrowLeft, Users, Award, Search, BarChart2, Trash2, Edit2, Download, X, Check,
+  Calendar, CheckCircle, XCircle, Clock as ClockIcon
 } from 'lucide-react';
 import { exportSF10PDF } from '../../utils/sf10PdfExport';
 
@@ -588,12 +589,12 @@ export const GradeManagementView = ({ classroom, onBack }) => {
 export const AttendanceView = ({ classroom, onBack }) => {
   const [students, setStudents] = useState([]);
   const [attendance, setAttendance] = useState({});
-  const [attendanceIds, setAttendanceIds] = useState({}); // track existing record IDs for upsert
+  const [attendanceIds, setAttendanceIds] = useState({});
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
-  // Load students
   useEffect(() => {
     const fetchStudents = async () => {
       setLoading(true);
@@ -605,11 +606,10 @@ export const AttendanceView = ({ classroom, onBack }) => {
           return nameA.localeCompare(nameB);
         });
         setStudents(sorted);
-        // Initialize attendance
         const initAttendance = {};
         sorted.forEach(s => { initAttendance[s.student] = 'present'; });
         setAttendance(initAttendance);
-        setAttendanceIds({}); // reset — will be repopulated by fetchAttendance effect
+        setAttendanceIds({});
       } catch {
         toast.error('Failed to load students');
       } finally {
@@ -619,7 +619,6 @@ export const AttendanceView = ({ classroom, onBack }) => {
     fetchStudents();
   }, [classroom.id]);
 
-  // Load existing attendance for selected date
   useEffect(() => {
     const fetchAttendance = async () => {
       try {
@@ -631,8 +630,6 @@ export const AttendanceView = ({ classroom, onBack }) => {
           idMap[a.student] = a.id;
         });
         setAttendanceIds(idMap);
-        // Reset ALL students to 'present', then apply whatever came back from the API.
-        // This ensures stale statuses from a previous date don't persist.
         setAttendance(prev => {
           const reset = {};
           Object.keys(prev).forEach(studentId => {
@@ -644,9 +641,7 @@ export const AttendanceView = ({ classroom, onBack }) => {
         console.error('Failed to load attendance');
       }
     };
-    if (selectedDate) {
-      fetchAttendance();
-    }
+    if (selectedDate) fetchAttendance();
   }, [selectedDate, classroom.id]);
 
   const handleStatusChange = (studentId, status) => {
@@ -681,13 +676,8 @@ export const AttendanceView = ({ classroom, onBack }) => {
     }
 
     setSubmitting(false);
-
-    if (successCount > 0) {
-      toast.success(`Attendance recorded for ${successCount} student(s)`);
-    }
-    if (errorCount > 0) {
-      toast.error(`Failed to record ${errorCount} attendance(s)`);
-    }
+    if (successCount > 0) toast.success(`Attendance recorded for ${successCount} student(s)`);
+    if (errorCount > 0) toast.error(`Failed to record ${errorCount} attendance(s)`);
   };
 
   const stats = useMemo(() => {
@@ -697,6 +687,22 @@ export const AttendanceView = ({ classroom, onBack }) => {
     return { present, absent, late, total: students.length };
   }, [attendance, students.length]);
 
+  const filteredStudents = useMemo(() => {
+    if (!searchQuery) return students;
+    const q = searchQuery.toLowerCase();
+    return students.filter(s =>
+      `${s.student_last_name}, ${s.student_first_name}`.toLowerCase().includes(q) ||
+      (s.student_email || '').toLowerCase().includes(q) ||
+      (s.student_lrn || '').toLowerCase().includes(q)
+    );
+  }, [students, searchQuery]);
+
+  const statusConfig = {
+    present: { active: 'bg-green-600 text-white', idle: 'bg-green-50 text-green-700 hover:bg-green-100', icon: CheckCircle },
+    absent:  { active: 'bg-red-600 text-white',   idle: 'bg-red-50 text-red-700 hover:bg-red-100',   icon: XCircle },
+    late:    { active: 'bg-amber-600 text-white',  idle: 'bg-amber-50 text-amber-700 hover:bg-amber-100', icon: ClockIcon },
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -704,50 +710,60 @@ export const AttendanceView = ({ classroom, onBack }) => {
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Overview
         </Button>
-        <Button
-          variant="primary"
-          onClick={handleSubmit}
-          loading={submitting}
-        >
+        <Button variant="primary" onClick={handleSubmit} loading={submitting}>
+          <Check className="w-4 h-4 mr-2" />
           Submit Attendance
         </Button>
       </div>
 
       <Card>
         <CardHeader divider>
-          <CardTitle>Attendance - {classroom.name}</CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle>Attendance - {classroom.name}</CardTitle>
+            <div className="relative w-56">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                placeholder="Search students..."
+                className="w-full pl-9 pr-3 py-1.5 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
+              />
+            </div>
+          </div>
         </CardHeader>
         <CardBody className="p-6">
           {/* Date Selector */}
           <div className="mb-6">
             <label className="block text-sm font-semibold text-slate-700 mb-2">
+              <Calendar className="w-4 h-4 inline mr-1.5 -mt-0.5" />
               Date
             </label>
             <input
               type="date"
               value={selectedDate}
               onChange={e => setSelectedDate(e.target.value)}
-              className="px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500"
+              className="px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 text-sm"
             />
           </div>
 
           {/* Stats */}
-          <div className="grid grid-cols-4 gap-4 mb-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
             <div className="bg-slate-50 rounded-lg p-4 text-center">
               <div className="text-2xl font-bold text-slate-700">{stats.total}</div>
-              <div className="text-xs text-slate-600 uppercase font-semibold">Total</div>
+              <div className="text-xs text-slate-600 uppercase font-semibold mt-1">Total</div>
             </div>
             <div className="bg-green-50 rounded-lg p-4 text-center">
               <div className="text-2xl font-bold text-green-600">{stats.present}</div>
-              <div className="text-xs text-green-700 uppercase font-semibold">Present</div>
+              <div className="text-xs text-green-700 uppercase font-semibold mt-1">Present</div>
             </div>
             <div className="bg-red-50 rounded-lg p-4 text-center">
               <div className="text-2xl font-bold text-red-600">{stats.absent}</div>
-              <div className="text-xs text-red-700 uppercase font-semibold">Absent</div>
+              <div className="text-xs text-red-700 uppercase font-semibold mt-1">Absent</div>
             </div>
             <div className="bg-amber-50 rounded-lg p-4 text-center">
               <div className="text-2xl font-bold text-amber-600">{stats.late}</div>
-              <div className="text-xs text-amber-700 uppercase font-semibold">Late</div>
+              <div className="text-xs text-amber-700 uppercase font-semibold mt-1">Late</div>
             </div>
           </div>
 
@@ -756,58 +772,64 @@ export const AttendanceView = ({ classroom, onBack }) => {
             <div className="flex items-center justify-center h-64">
               <LoadingSpinner />
             </div>
-          ) : students.length === 0 ? (
+          ) : filteredStudents.length === 0 ? (
             <EmptyState
               title="No Students"
-              description="No students enrolled in this class"
+              description={searchQuery ? "No students match your search" : "No students enrolled in this class"}
               icon={<Users className="w-8 h-8" />}
             />
           ) : (
-            <div className="space-y-2">
-              {students.map((student) => (
-                <div key={student.id} className="flex items-center gap-3 p-3 bg-white border border-slate-200 rounded-lg hover:border-violet-300 transition-colors">
-                  <div className="w-8 h-8 rounded-full bg-violet-100 flex items-center justify-center text-violet-600 font-bold text-xs shrink-0">
-                    {student.student_first_name?.charAt(0)}{student.student_last_name?.charAt(0)}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-slate-900">
-                      {student.student_last_name}, {student.student_first_name}
-                    </p>
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => handleStatusChange(student.student, 'present')}
-                      className={`px-4 py-2 rounded-md text-sm font-semibold transition-colors ${
-                        attendance[student.student] === 'present'
-                          ? 'bg-green-600 text-white'
-                          : 'bg-green-50 text-green-700 hover:bg-green-100'
-                      }`}
-                    >
-                      Present
-                    </button>
-                    <button
-                      onClick={() => handleStatusChange(student.student, 'absent')}
-                      className={`px-4 py-2 rounded-md text-sm font-semibold transition-colors ${
-                        attendance[student.student] === 'absent'
-                          ? 'bg-red-600 text-white'
-                          : 'bg-red-50 text-red-700 hover:bg-red-100'
-                      }`}
-                    >
-                      Absent
-                    </button>
-                    <button
-                      onClick={() => handleStatusChange(student.student, 'late')}
-                      className={`px-4 py-2 rounded-md text-sm font-semibold transition-colors ${
-                        attendance[student.student] === 'late'
-                          ? 'bg-amber-600 text-white'
-                          : 'bg-amber-50 text-amber-700 hover:bg-amber-100'
-                      }`}
-                    >
-                      Late
-                    </button>
-                  </div>
-                </div>
-              ))}
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="text-xs font-semibold text-slate-500 uppercase tracking-wider border-b border-slate-200">
+                    <th className="text-left pb-3 pl-3 w-10">#</th>
+                    <th className="text-left pb-3">Student</th>
+                    <th className="text-center pb-3 pr-3">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {filteredStudents.map((student, idx) => (
+                    <tr key={student.id} className="hover:bg-slate-50 transition-colors">
+                      <td className="py-3 pl-3 text-xs text-slate-400 font-medium">{idx + 1}</td>
+                      <td className="py-3">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-violet-100 flex items-center justify-center text-violet-600 font-bold text-xs shrink-0">
+                            {student.student_first_name?.charAt(0)}{student.student_last_name?.charAt(0)}
+                          </div>
+                          <div>
+                            <p className="text-sm font-semibold text-slate-900">
+                              {student.student_last_name}, {student.student_first_name}
+                            </p>
+                            {student.student_lrn && (
+                              <p className="text-xs text-slate-400">LRN: {student.student_lrn}</p>
+                            )}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="py-3 pr-3">
+                        <div className="flex items-center justify-center gap-1.5">
+                          {Object.entries(statusConfig).map(([key, cfg]) => {
+                            const Icon = cfg.icon;
+                            const isActive = attendance[student.student] === key;
+                            return (
+                              <button
+                                key={key}
+                                onClick={() => handleStatusChange(student.student, key)}
+                                title={key.charAt(0).toUpperCase() + key.slice(1)}
+                                className={`flex items-center gap-1 px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${isActive ? cfg.active : cfg.idle}`}
+                              >
+                                <Icon className="w-3.5 h-3.5" />
+                                <span className="hidden sm:inline">{key.charAt(0).toUpperCase() + key.slice(1)}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
         </CardBody>
