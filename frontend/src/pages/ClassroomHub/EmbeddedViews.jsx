@@ -661,7 +661,6 @@ export const AttendanceView = ({ classroom, onBack }) => {
           classroom: classroom.id,
           date: selectedDate,
           status: attendance[student.student] || 'present',
-          recorded_by: null
         };
         if (existingId) {
           await api.put(`/attendance/${existingId}/`, payload);
