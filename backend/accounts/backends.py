@@ -1,14 +1,19 @@
+import logging
 from django.contrib.auth import get_user_model
 from django.contrib.auth.backends import ModelBackend
 from django.db.models import Q
 
 User = get_user_model()
+logger = logging.getLogger(__name__)
+
 
 class SchoolAuthBackend(ModelBackend):
     """
     Custom authentication backend to allow login via:
     1. Username (which can be the Student ID)
     2. Email (if provided)
+    3. LRN
+    4. Registration number
     """
     def authenticate(self, request, username=None, password=None, **kwargs):
         if username is None:
@@ -20,7 +25,6 @@ class SchoolAuthBackend(ModelBackend):
             return None
 
         try:
-            # Use filter().first() to avoid MultipleObjectsReturned on case-insensitive collision
             user = User.objects.filter(
                 Q(username__iexact=username)
                 | Q(email__iexact=username)
@@ -34,7 +38,13 @@ class SchoolAuthBackend(ModelBackend):
             if user.check_password(password):
                 return user
             return None
-        except Exception:
+        except Exception as e:
+            logger.error(
+                "SchoolAuthBackend lookup failed for '%s': %s",
+                username,
+                e,
+                exc_info=True,
+            )
             return None
 
     def get_user(self, user_id):

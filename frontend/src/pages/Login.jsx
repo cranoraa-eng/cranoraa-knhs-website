@@ -201,6 +201,9 @@ const Login = () => {
           Swal.fire({ icon: 'warning', title: 'Wrong Portal', text: message || 'Please use the correct login portal for your account.', confirmButtonColor: '#581c87' });
         } else if (code === 'suspended' || code === 'inactive') {
           Swal.fire({ icon: 'error', title: 'Account Unavailable', text: message || 'Your account has been deactivated or suspended.', confirmButtonColor: '#dc2626' });
+        } else if (code === 'locked_out') {
+          setFailedAttempts(0);
+          Swal.fire({ icon: 'warning', title: 'Account Temporarily Locked', text: message || 'Too many failed attempts. Please wait 15 minutes and try again.', confirmButtonColor: '#581c87' });
         } else {
           Swal.fire({ icon: 'error', title: 'Account Issue', text: message || 'Contact the administrator.', confirmButtonColor: '#dc2626' });
         }
