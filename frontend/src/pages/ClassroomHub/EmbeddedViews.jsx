@@ -749,7 +749,7 @@ export const AttendanceView = ({ classroom, onBack }) => {
           </div>
 
           {/* Stats */}
-          <div className="grid grid-cols-4 gap-2 md:gap-4 mb-4 md:mb-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4 mb-4 md:mb-6">
             <div className="bg-slate-50 rounded-lg p-2 md:p-4 text-center">
               <div className="text-lg md:text-2xl font-bold text-slate-700">{stats.total}</div>
               <div className="text-[9px] md:text-xs text-slate-600 uppercase font-semibold mt-0.5">Total</div>
