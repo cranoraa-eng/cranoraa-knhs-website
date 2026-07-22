@@ -463,10 +463,10 @@ const Layout = () => {
         )}
 
         {/* ── Sidebar ── */}
-        <aside aria-label="Portal sidebar" data-tour="portal-sidebar" className={`fixed inset-y-0 left-0 z-50 flex h-screen w-64 transform flex-col overflow-hidden border-r border-slate-200 bg-white shadow-xl transition-all duration-300 ease-in-out lg:static lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        <aside aria-label="Portal sidebar" data-tour="portal-sidebar" className={`fixed inset-y-0 left-0 z-50 flex h-screen w-64 transform flex-col overflow-hidden border-r border-slate-200 bg-purple-50 shadow-xl transition-all duration-300 ease-in-out lg:static lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
 
           {/* School Header */}
-          <div className="flex items-center gap-3 px-4 py-4 border-b-4 border-violet-600 bg-white">
+          <div className="flex items-center gap-3 px-4 py-4 border-b-4 border-violet-600 bg-purple-50">
             <div className="h-12 w-12 rounded-md bg-white p-1.5 flex items-center justify-center border-2 border-slate-200 shadow-sm shrink-0">
               <img src="/icons/school-logo-source.png" alt="KNHS Logo" className="h-full w-full object-contain" loading="lazy" />
             </div>
