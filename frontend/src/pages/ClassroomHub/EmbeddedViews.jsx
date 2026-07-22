@@ -652,6 +652,7 @@ export const AttendanceView = ({ classroom, onBack }) => {
     setSubmitting(true);
     let successCount = 0;
     let errorCount = 0;
+    let firstError = null;
 
     for (const student of students) {
       try {
@@ -661,6 +662,7 @@ export const AttendanceView = ({ classroom, onBack }) => {
           classroom: classroom.id,
           date: selectedDate,
           status: attendance[student.student] || 'present',
+          remarks: '',
         };
         if (existingId) {
           await api.put(`/attendance/${existingId}/`, payload);
@@ -670,13 +672,17 @@ export const AttendanceView = ({ classroom, onBack }) => {
         successCount++;
       } catch (err) {
         errorCount++;
-        console.error(`Failed to submit attendance for ${student.student_name}`, err);
+        const detail = err.response?.data;
+        const msg = typeof detail === 'string' ? detail
+          : detail?.error || detail?.detail || JSON.stringify(detail);
+        if (!firstError) firstError = msg;
+        console.error('Attendance submit error:', detail || err.message);
       }
     }
 
     setSubmitting(false);
     if (successCount > 0) toast.success(`Attendance recorded for ${successCount} student(s)`);
-    if (errorCount > 0) toast.error(`Failed to record ${errorCount} attendance(s)`);
+    if (errorCount > 0) toast.error(firstError || `Failed to record ${errorCount} attendance(s)`);
   };
 
   const stats = useMemo(() => {
