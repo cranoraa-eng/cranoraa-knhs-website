@@ -121,11 +121,8 @@ const StudentDashboard = () => {
       {/* Role manual */}
       <Skeleton className="h-12 w-full rounded-lg" />
       {/* Quick access tiles */}
-      <div className="space-y-3">
-        <Skeleton className="h-3.5 w-24 rounded" />
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[1,2,3,4,5,6].map(i => <Skeleton.QuickTile key={i} />)}
-        </div>
+      <div className="grid grid-cols-3 gap-2">
+        {[1,2,3,4,5,6].map(i => <Skeleton.QuickTile key={i} />)}
       </div>
       {/* Row 1: schedule (6) | attendance (3) | grades (3) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-5">
@@ -232,11 +229,8 @@ const today = new Date().toLocaleDateString('en-US', { weekday: 'long', month: '
       {/* Role manual */}
       <Skeleton className="h-12 w-full rounded-lg" />
       {/* Quick access tiles */}
-      <div className="space-y-3">
-        <Skeleton className="h-3.5 w-24 rounded" />
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[1,2,3,4,5,6].map(i => <Skeleton.QuickTile key={i} />)}
-        </div>
+      <div className="grid grid-cols-3 gap-2">
+        {[1,2,3,4,5,6].map(i => <Skeleton.QuickTile key={i} />)}
       </div>
       {/* Row 1: schedule (6) | attendance (3) | grades (3) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-5">
