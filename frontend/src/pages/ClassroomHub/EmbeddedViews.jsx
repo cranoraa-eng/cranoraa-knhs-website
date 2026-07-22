@@ -749,22 +749,22 @@ export const AttendanceView = ({ classroom, onBack }) => {
           </div>
 
           {/* Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4 mb-4 md:mb-6">
-            <div className="bg-slate-50 rounded-lg p-2 md:p-4 text-center">
-              <div className="text-lg md:text-2xl font-bold text-slate-700">{stats.total}</div>
-              <div className="text-[9px] md:text-xs text-slate-600 uppercase font-semibold mt-0.5">Total</div>
+          <div className="grid grid-cols-4 gap-1.5 sm:gap-2 md:gap-4 mb-4 md:mb-6">
+            <div className="bg-slate-50 rounded-lg p-1.5 sm:p-2 md:p-4 text-center">
+              <div className="text-base sm:text-lg md:text-2xl font-bold text-slate-700">{stats.total}</div>
+              <div className="text-[8px] sm:text-[9px] md:text-xs text-slate-600 uppercase font-semibold mt-0.5">Total</div>
             </div>
-            <div className="bg-green-50 rounded-lg p-2 md:p-4 text-center">
-              <div className="text-lg md:text-2xl font-bold text-green-600">{stats.present}</div>
-              <div className="text-[9px] md:text-xs text-green-700 uppercase font-semibold mt-0.5">Present</div>
+            <div className="bg-green-50 rounded-lg p-1.5 sm:p-2 md:p-4 text-center">
+              <div className="text-base sm:text-lg md:text-2xl font-bold text-green-600">{stats.present}</div>
+              <div className="text-[8px] sm:text-[9px] md:text-xs text-green-700 uppercase font-semibold mt-0.5">Present</div>
             </div>
-            <div className="bg-red-50 rounded-lg p-2 md:p-4 text-center">
-              <div className="text-lg md:text-2xl font-bold text-red-600">{stats.absent}</div>
-              <div className="text-[9px] md:text-xs text-red-700 uppercase font-semibold mt-0.5">Absent</div>
+            <div className="bg-red-50 rounded-lg p-1.5 sm:p-2 md:p-4 text-center">
+              <div className="text-base sm:text-lg md:text-2xl font-bold text-red-600">{stats.absent}</div>
+              <div className="text-[8px] sm:text-[9px] md:text-xs text-red-700 uppercase font-semibold mt-0.5">Absent</div>
             </div>
-            <div className="bg-amber-50 rounded-lg p-2 md:p-4 text-center">
-              <div className="text-lg md:text-2xl font-bold text-amber-600">{stats.late}</div>
-              <div className="text-[9px] md:text-xs text-amber-700 uppercase font-semibold mt-0.5">Late</div>
+            <div className="bg-amber-50 rounded-lg p-1.5 sm:p-2 md:p-4 text-center">
+              <div className="text-base sm:text-lg md:text-2xl font-bold text-amber-600">{stats.late}</div>
+              <div className="text-[8px] sm:text-[9px] md:text-xs text-amber-700 uppercase font-semibold mt-0.5">Late</div>
             </div>
           </div>
 
@@ -781,35 +781,35 @@ export const AttendanceView = ({ classroom, onBack }) => {
             />
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[480px]">
+              <table className="w-full">
                 <thead className="bg-slate-50 border-b-2 border-slate-200">
                   <tr>
-                    <th className="px-3 md:px-4 py-2.5 md:py-3 text-left text-xs font-bold text-slate-700 uppercase w-10">#</th>
-                    <th className="px-3 md:px-4 py-2.5 md:py-3 text-left text-xs font-bold text-slate-700 uppercase">Student</th>
-                    <th className="px-3 md:px-4 py-2.5 md:py-3 text-center text-xs font-bold text-slate-700 uppercase">Status</th>
+                    <th className="px-2 md:px-4 py-2 md:py-3 text-left text-[10px] md:text-xs font-bold text-slate-700 uppercase w-8">#</th>
+                    <th className="px-2 md:px-4 py-2 md:py-3 text-left text-[10px] md:text-xs font-bold text-slate-700 uppercase">Student</th>
+                    <th className="px-1 md:px-4 py-2 md:py-3 text-center text-[10px] md:text-xs font-bold text-slate-700 uppercase whitespace-nowrap">Status</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-slate-100">
                   {filteredStudents.map((student, idx) => (
                     <tr key={student.id} className="hover:bg-slate-50 transition-colors">
-                      <td className="px-3 md:px-4 py-2.5 md:py-3 text-sm text-slate-500 font-semibold">{idx + 1}</td>
-                      <td className="px-3 md:px-4 py-2.5 md:py-3">
-                        <div className="flex items-center gap-2 md:gap-3">
-                          <div className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-violet-100 flex items-center justify-center text-violet-600 font-bold text-[10px] md:text-xs shrink-0">
+                      <td className="px-2 md:px-4 py-2 md:py-3 text-xs text-slate-500 font-semibold">{idx + 1}</td>
+                      <td className="px-2 md:px-4 py-2 md:py-3">
+                        <div className="flex items-center gap-1.5 md:gap-3 min-w-0">
+                          <div className="w-6 h-6 md:w-8 md:h-8 rounded-full bg-violet-100 flex items-center justify-center text-violet-600 font-bold text-[9px] md:text-xs shrink-0">
                             {student.student_first_name?.charAt(0)}{student.student_last_name?.charAt(0)}
                           </div>
                           <div className="min-w-0">
-                            <p className="text-xs md:text-sm font-semibold text-slate-900 truncate">
+                            <p className="text-[11px] md:text-sm font-semibold text-slate-900 truncate">
                               {student.student_last_name}, {student.student_first_name}
                             </p>
                             {student.student_lrn && (
-                              <p className="text-[10px] md:text-xs text-slate-400 truncate">LRN: {student.student_lrn}</p>
+                              <p className="text-[9px] md:text-xs text-slate-400 truncate">LRN: {student.student_lrn}</p>
                             )}
                           </div>
                         </div>
                       </td>
-                      <td className="px-3 md:px-4 py-2.5 md:py-3">
-                        <div className="flex items-center justify-center gap-1 md:gap-1.5">
+                      <td className="px-1 md:px-4 py-2 md:py-3">
+                        <div className="flex items-center justify-center gap-0.5 md:gap-1.5">
                           {Object.entries(statusConfig).map(([key, cfg]) => {
                             const Icon = cfg.icon;
                             const isActive = attendance[student.student] === key;
@@ -818,10 +818,10 @@ export const AttendanceView = ({ classroom, onBack }) => {
                                 key={key}
                                 onClick={() => handleStatusChange(student.student, key)}
                                 title={key.charAt(0).toUpperCase() + key.slice(1)}
-                                className={`flex items-center gap-0.5 md:gap-1 px-1.5 md:px-3 py-1 md:py-1.5 rounded text-[10px] md:text-xs font-semibold transition-all ${isActive ? cfg.active : cfg.idle}`}
+                                className={`flex items-center justify-center w-6 h-6 md:w-auto md:h-auto md:px-2.5 md:py-1.5 rounded text-[10px] md:text-xs font-semibold transition-all ${isActive ? cfg.active : cfg.idle}`}
                               >
-                                <Icon className="w-3 h-3 md:w-3.5 md:h-3.5" />
-                                <span className="hidden sm:inline">{key.charAt(0).toUpperCase() + key.slice(1)}</span>
+                                <Icon className="w-3.5 h-3.5 md:w-3.5 md:h-3.5" />
+                                <span className="hidden md:inline ml-0.5">{key.charAt(0).toUpperCase() + key.slice(1)}</span>
                               </button>
                             );
                           })}
