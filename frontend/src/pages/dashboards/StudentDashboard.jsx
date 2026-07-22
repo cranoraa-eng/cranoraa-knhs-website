@@ -329,7 +329,7 @@ const today = new Date().toLocaleDateString('en-US', { weekday: 'long', month: '
       {classrooms.length > 0 && (
         <div>
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-black text-slate-700 uppercase tracking-wide">My Enrolled Class{classrooms.length > 1 ? 'es' : ''}</h2>
+            <h2 className="text-xs font-extrabold text-slate-700 uppercase tracking-wider">My Enrolled Class{classrooms.length > 1 ? 'es' : ''}</h2>
             <button onClick={() => navigate('/my-classes')} className="text-xs font-bold text-violet-600 hover:underline">
               Open Classes →
             </button>
@@ -341,11 +341,11 @@ const today = new Date().toLocaleDateString('en-US', { weekday: 'long', month: '
                 onClick={() => navigate(`/my-classes?classroom=${cls.id}`)}
                 className="flex items-center gap-3 bg-white border border-slate-200 rounded-xl px-4 py-3 hover:border-violet-300 hover:shadow-md transition-all text-left group"
               >
-                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-violet-500 to-violet-700 flex items-center justify-center text-white font-black text-sm flex-shrink-0">
+                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-violet-500 to-violet-700 flex items-center justify-center text-white font-extrabold text-sm flex-shrink-0">
                   {cls.name?.charAt(0)?.toUpperCase() || '?'}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-black text-slate-900 truncate">{cls.name}</p>
+                  <p className="text-sm font-extrabold text-slate-900 truncate">{cls.name}</p>
                   <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wide">
                     {cls.grade_level || 'Classroom'}{cls.teacher_name ? ` · ${cls.teacher_name}` : ''}
                   </p>

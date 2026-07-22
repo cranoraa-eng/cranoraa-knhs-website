@@ -105,7 +105,7 @@ export const StatCard = memo(({ label, value, sub, icon, color = 'blue', onClick
           )}
         </div>
         <div className="mt-1.5">
-          <p className="text-[9px] md:text-[10px] font-bold text-slate-600 mb-0.5 uppercase tracking-wide truncate">
+          <p className="text-[9px] md:text-[10px] font-semibold text-slate-600 mb-0.5 uppercase tracking-wide truncate">
             {label}
           </p>
           <h3 className="text-base md:text-lg font-extrabold text-slate-900 tracking-tight leading-none truncate">

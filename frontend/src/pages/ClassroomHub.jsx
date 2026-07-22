@@ -316,14 +316,14 @@ const ClassroomHub = () => {
         className="page-bottom-safe max-w-[1800px] mx-auto bg-slate-50 px-4 py-6 md:px-8 md:py-8"
       >
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
-              <BookOpen className="w-6 h-6 text-white" />
+        <div className="mb-4">
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-md bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
+              <BookOpen className="w-4 h-4 text-white" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-slate-900">My Classes</h1>
-              <p className="text-sm text-slate-600">
+              <h1 className="text-xl font-bold text-slate-900">My Classes</h1>
+              <p className="text-[10px] text-slate-500">
                 {isTeacher ? 'Classes you teach' : 'Your enrolled classes'}
               </p>
             </div>
@@ -336,37 +336,37 @@ const ClassroomHub = () => {
           </div>
         ) : classes.length === 0 ? (
           <Card>
-            <CardBody className="p-12">
+            <CardBody className="p-8">
               <EmptyState
                 title="No Classes Found"
                 description={isTeacher
                   ? "You haven't been assigned to any classes yet."
                   : "You're not enrolled in any classes yet."}
-                icon={<BookOpen className="w-8 h-8" />}
+                icon={<BookOpen className="w-6 h-6" />}
               />
             </CardBody>
           </Card>
         ) : (
-          <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5`}>
+          <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3`}>
             {classes.map(classroom => (
               <motion.div
                 key={classroom.id}
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                whileHover={{ y: -4 }}
+                whileHover={{ y: -3 }}
                 className="group cursor-pointer"
                 onClick={() => selectClassroom(classroom)}
               >
-                <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 border-0">
+                <Card className="overflow-hidden hover:shadow-lg transition-all duration-300 border-0">
                   {/* Header with gradient */}
-                  <div className={`${classroom.color} h-32 relative`}>
+                  <div className={`${classroom.color} h-20 relative`}>
                     <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/20" />
-                    <div className="absolute bottom-4 left-4 right-4">
-                      <h3 className="text-xl font-bold text-white truncate">
+                    <div className="absolute bottom-2 left-3 right-3">
+                      <h3 className="text-sm font-bold text-white truncate">
                         {classroom.name}
                       </h3>
                       {isTeacher && classroom.subjects && (
-                        <p className="text-sm text-white/90 mt-1">
+                        <p className="text-[10px] text-white/90 mt-0.5">
                           {classroom.subjects.length} {classroom.subjects.length === 1 ? 'Subject' : 'Subjects'}
                         </p>
                       )}
@@ -374,31 +374,31 @@ const ClassroomHub = () => {
                   </div>
 
                   {/* Content */}
-                  <CardBody className="p-4">
+                  <CardBody className="p-2.5">
                     {classroom.teacher_name && classroom.teacher_name !== 'No Adviser' && (
-                      <div className="flex items-center gap-2 mb-3 pb-3 border-b border-slate-100">
+                      <div className="flex items-center gap-1.5 mb-2 pb-2 border-b border-slate-100">
                         {classroom.teacher_profile_picture ? (
-                          <img src={classroom.teacher_profile_picture} alt="" className="w-7 h-7 rounded-full object-cover" loading="lazy" />
+                          <img src={classroom.teacher_profile_picture} alt="" className="w-5 h-5 rounded-full object-cover" loading="lazy" />
                         ) : (
-                          <div className="w-7 h-7 rounded-full bg-violet-100 flex items-center justify-center text-violet-700 text-[10px] font-bold shrink-0">
+                          <div className="w-5 h-5 rounded-full bg-violet-100 flex items-center justify-center text-violet-700 text-[8px] font-bold shrink-0">
                             {classroom.teacher_name.split(' ').map(n => n[0]).join('').slice(0, 2)}
                           </div>
                         )}
-                        <span className="text-xs font-medium text-slate-600 truncate">{classroom.teacher_name}</span>
+                        <span className="text-[10px] font-medium text-slate-600 truncate">{classroom.teacher_name}</span>
                       </div>
                     )}
-                    <div className="flex items-center justify-between text-sm text-slate-600">
-                      <div className="flex items-center gap-2">
-                        <Users className="w-4 h-4" />
+                    <div className="flex items-center justify-between text-[10px] text-slate-600">
+                      <div className="flex items-center gap-1">
+                        <Users className="w-3 h-3" />
                         <span>
                           {classroom.studentCount !== null && classroom.studentCount !== undefined
-                            ? `${classroom.studentCount} student${classroom.studentCount === 1 ? '' : 's'}`
-                            : (classroom.students?.length || 0) + ' students'
+                            ? `${classroom.studentCount}`
+                            : (classroom.students?.length || 0)
                           }
                         </span>
                       </div>
                       {isTeacher && (
-                        <ChevronRight className="w-5 h-5 text-slate-400 group-hover:text-violet-600 group-hover:translate-x-1 transition-all" />
+                        <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-violet-600 group-hover:translate-x-0.5 transition-all" />
                       )}
                     </div>
                   </CardBody>
@@ -421,42 +421,41 @@ const ClassroomHub = () => {
       {/* Header Banner */}
       <div className={`${selectedClass.color} relative`}>
         <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/30" />
-        <div className="relative max-w-[1800px] mx-auto px-4 py-8 md:px-8 md:py-12">
+        <div className="relative max-w-[1800px] mx-auto px-3 py-4 md:px-6 md:py-6">
           <button
             onClick={() => {
               setSelectedClass(null);
-              // Remove classroom param but keep tab param
               const newParams = new URLSearchParams(searchParams);
               newParams.delete('classroom');
               setSearchParams(newParams);
             }}
-            className="flex items-center gap-2 text-white/90 hover:text-white mb-6 transition-colors"
+            className="flex items-center gap-1.5 text-white/90 hover:text-white mb-3 transition-colors"
           >
-            <ArrowLeft className="w-5 h-5" />
-            <span className="text-sm font-medium">Back to Classes</span>
+            <ArrowLeft className="w-4 h-4" />
+            <span className="text-[10px] font-medium">Back</span>
           </button>
 
           <div className="flex items-start justify-between">
             <div>
-              <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
+              <h1 className="text-xl md:text-2xl font-bold text-white mb-1">
                 {selectedClass.name}
               </h1>
               {selectedClass.teacher_name && selectedClass.teacher_name !== 'No Adviser' && (
-                <div className="flex items-center gap-2 mb-3">
+                <div className="flex items-center gap-1.5 mb-2">
                   {selectedClass.teacher_profile_picture ? (
-                    <img src={selectedClass.teacher_profile_picture} alt="" className="w-8 h-8 rounded-full object-cover border-2 border-white/40" loading="lazy" />
+                    <img src={selectedClass.teacher_profile_picture} alt="" className="w-6 h-6 rounded-full object-cover border border-white/40" loading="lazy" />
                   ) : (
-                    <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white text-xs font-bold border-2 border-white/40 shrink-0">
+                    <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-white text-[8px] font-bold border border-white/40 shrink-0">
                       {selectedClass.teacher_name.split(' ').map(n => n[0]).join('').slice(0, 2)}
                     </div>
                   )}
-                  <span className="text-sm font-medium text-white/90">{selectedClass.teacher_name}</span>
+                  <span className="text-[10px] font-medium text-white/90">{selectedClass.teacher_name}</span>
                 </div>
               )}
               {isTeacher && selectedClass.subjects && (
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-1">
                   {selectedClass.subjects.map(subject => (
-                    <Badge key={subject.id} variant="white" className="bg-white/20 text-white border-white/30">
+                    <Badge key={subject.id} variant="white" className="bg-white/20 text-white border-white/30 text-[9px] px-1.5 py-0.5">
                       {subject.code}
                     </Badge>
                   ))}
@@ -477,8 +476,8 @@ const ClassroomHub = () => {
 
       {/* Navigation Tabs */}
       <div className="bg-white border-b border-slate-200 sticky top-0 z-30">
-        <div className="max-w-[1800px] mx-auto px-4 md:px-8">
-          <div className="flex items-center gap-1 overflow-x-auto">
+        <div className="max-w-[1800px] mx-auto px-3 md:px-6">
+          <div className="flex items-center gap-0.5 overflow-x-auto">
             {[
               { key: 'stream', label: 'Stream', icon: MessageSquare },
               { key: 'materials', label: 'Materials', icon: Folder },
@@ -492,13 +491,13 @@ const ClassroomHub = () => {
                 <button
                   key={tab.key}
                   onClick={() => handleTabChange(tab.key)}
-                  className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+                  className={`flex items-center gap-1 px-2.5 py-2 text-[10px] font-semibold border-b-2 transition-colors whitespace-nowrap ${
                     isActive
                       ? 'border-violet-600 text-violet-600'
-                      : 'border-transparent text-slate-600 hover:text-slate-900 hover:border-slate-300'
+                      : 'border-transparent text-slate-500 hover:text-slate-800 hover:border-slate-300'
                   }`}
                 >
-                  <Icon className="w-4 h-4" />
+                  <Icon className="w-3.5 h-3.5" />
                   {tab.label}
                 </button>
               );
@@ -508,7 +507,7 @@ const ClassroomHub = () => {
       </div>
 
       {/* Content Area */}
-      <div className="max-w-[1800px] mx-auto px-4 py-6 md:px-8 md:py-8">
+      <div className="max-w-[1800px] mx-auto px-3 py-4 md:px-6 md:py-6">
         <AnimatePresence mode="wait">
           {activeTab === 'stream' && (
             <StreamTab

@@ -133,7 +133,7 @@ const TeacherDashboard = () => {
 
   // ── Skeleton ────────────────────────────────────────────────────────────
   if (loading) return (
-    <div className="page-bottom-safe max-w-[1600px] mx-auto bg-slate-50 px-4 py-4 md:px-6 md:py-6 space-y-5 md:space-y-6"
+    <div className="page-bottom-safe max-w-[1800px] mx-auto bg-slate-50 px-4 py-4 md:px-6 md:py-6 space-y-5 md:space-y-6"
       aria-busy="true" aria-label="Loading dashboard…">
       <div className="rounded-lg border border-slate-200 bg-white p-4 md:p-6">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
@@ -188,7 +188,7 @@ const TeacherDashboard = () => {
 
   // ── Error state ─────────────────────────────────────────────────────────
   if (error && !data) return (
-    <div className="page-bottom-safe max-w-[1600px] mx-auto bg-slate-50 px-4 py-6 md:px-6 flex items-center justify-center min-h-[60vh]">
+    <div className="page-bottom-safe max-w-[1800px] mx-auto bg-slate-50 px-4 py-6 md:px-6 flex items-center justify-center min-h-[60vh]">
       <Card className="max-w-md w-full border-l-4 border-l-red-500">
         <CardHeader divider className="bg-red-50">
           <CardTitle subtitle="Could not load your dashboard data">Dashboard Unavailable</CardTitle>
@@ -214,7 +214,7 @@ const TeacherDashboard = () => {
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: 'easeOut' }}
-      className="page-bottom-safe max-w-[1600px] mx-auto min-h-0 bg-slate-50 px-4 py-4 md:px-6 md:py-6 space-y-5 md:space-y-6"
+      className="page-bottom-safe max-w-[1800px] mx-auto min-h-0 bg-slate-50 px-4 py-4 md:px-6 md:py-6 space-y-5 md:space-y-6"
     >
       <SchoolHeaderBanner user={user} today={today} />
 

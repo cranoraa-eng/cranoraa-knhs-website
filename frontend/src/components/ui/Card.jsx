@@ -66,7 +66,7 @@ export const CardFooter = ({ children, className = '', divider = true, ...props 
 export const CardTitle = ({ children, className = '', subtitle = null, ...props }) => {
   return (
     <div className={cn('', className)} {...props}>
-      <h3 className="text-lg font-semibold text-slate-900">{children}</h3>
+      <h3 className="text-lg font-bold text-slate-900">{children}</h3>
       {subtitle && (
         <p className="text-xs text-slate-500 mt-0.5 font-medium">{subtitle}</p>
       )}
