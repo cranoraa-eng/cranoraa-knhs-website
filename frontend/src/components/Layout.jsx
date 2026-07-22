@@ -20,12 +20,12 @@ const NavItem = ({ to, label, isActive, icon, onClick }) => (
     aria-current={isActive(to) ? 'page' : undefined}
     className={`flex items-center px-3 py-2.5 rounded-lg transition-all duration-150 mb-0.5 text-xs group ${
       isActive(to)
-        ? 'bg-gradient-to-r from-violet-600 to-purple-600 text-white font-bold shadow-md shadow-purple-300/40'
-        : 'text-slate-600 hover:bg-purple-100/70 hover:text-purple-800 font-semibold'
+        ? 'bg-gradient-to-r from-violet-500/90 to-purple-500/90 text-white font-bold shadow-lg shadow-purple-900/30 ring-1 ring-white/10'
+        : 'text-purple-200/80 hover:bg-white/5 hover:text-white font-semibold'
     }`}
   >
     <svg
-      className={`w-4 h-4 mr-2.5 flex-shrink-0 transition-transform duration-150 ${isActive(to) ? 'text-white' : 'text-purple-400'}`}
+      className={`w-4 h-4 mr-2.5 flex-shrink-0 transition-transform duration-150 ${isActive(to) ? 'text-white' : 'text-purple-400/70'}`}
       fill="none"
       stroke="currentColor"
       viewBox="0 0 24 24"
@@ -38,7 +38,7 @@ const NavItem = ({ to, label, isActive, icon, onClick }) => (
 
 const SectionLabel = ({ label }) => (
   <div className="mt-5 mb-2 px-3 first:mt-0">
-    <p className="text-[10px] font-extrabold text-purple-400 uppercase tracking-wider">{label}</p>
+    <p className="text-[10px] font-extrabold text-purple-400/60 uppercase tracking-widest">{label}</p>
   </div>
 );
 
@@ -463,32 +463,32 @@ const Layout = () => {
         )}
 
         {/* ── Sidebar ── */}
-        <aside aria-label="Portal sidebar" data-tour="portal-sidebar" className={`fixed inset-y-0 left-0 z-50 flex h-screen w-64 transform flex-col overflow-hidden border-r border-purple-200/60 bg-gradient-to-b from-purple-50 via-violet-50 to-purple-100 shadow-xl transition-all duration-300 ease-in-out lg:static lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        <aside aria-label="Portal sidebar" data-tour="portal-sidebar" className={`fixed inset-y-0 left-0 z-50 flex h-screen w-64 transform flex-col overflow-hidden border-r border-purple-800/30 bg-gradient-to-b from-[#1a0a2e] via-[#1e1145] to-[#150d2e] shadow-2xl transition-all duration-300 ease-in-out lg:static lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
 
           {/* School Header */}
-          <div className="flex items-center gap-3 px-4 py-4 border-b-4 border-violet-600 bg-gradient-to-r from-purple-100 via-violet-100 to-purple-50">
-            <div className="h-12 w-12 rounded-xl bg-white p-1.5 flex items-center justify-center border-2 border-purple-200 shadow-sm shrink-0">
+          <div className="flex items-center gap-3 px-4 py-4 border-b border-white/5 bg-black/20">
+            <div className="h-12 w-12 rounded-xl bg-white p-1.5 flex items-center justify-center border border-purple-400/20 shadow-lg shadow-purple-900/50 shrink-0">
               <img src="/icons/school-logo-source.png" alt="KNHS Logo" className="h-full w-full object-contain" loading="lazy" />
             </div>
             <div className="flex flex-col min-w-0">
-              <span className="text-sm font-extrabold tracking-tight leading-none text-purple-900 uppercase">Kiwalan NHS</span>
-              <span className="text-[10px] font-bold text-purple-600 uppercase tracking-wide mt-0.5">Digital Campus</span>
+              <span className="text-sm font-extrabold tracking-tight leading-none text-white uppercase">Kiwalan NHS</span>
+              <span className="text-[10px] font-bold text-purple-300/70 uppercase tracking-wider mt-0.5">Digital Campus</span>
             </div>
           </div>
 
           {/* Academic Year Info */}
-          <div className="flex-shrink-0 px-4 py-3 bg-purple-100/60 border-b border-purple-200/50">
-            <div className="flex items-center justify-between text-[10px] font-bold text-purple-700 uppercase tracking-wide">
+          <div className="flex-shrink-0 px-4 py-3 bg-black/20 border-b border-white/5">
+            <div className="flex items-center justify-between text-[10px] font-bold text-purple-300/80 uppercase tracking-wider">
               <span>{sysSettings?.academic_year || 'SY 2025-2026'}</span>
-              <span className="text-purple-600">{sysSettings?.current_quarter || 'Current Semester'}</span>
+              <span className="text-purple-200/60">{sysSettings?.current_quarter || 'Current Semester'}</span>
             </div>
           </div>
 
           {/* Profile Summary */}
-          <div className="flex-shrink-0 px-4 py-3 border-b border-purple-200/40">
+          <div className="flex-shrink-0 px-4 py-3 border-b border-white/5">
             <div data-tour="sidebar-profile" onClick={() => navigate('/settings')}
-              className="flex items-center gap-3 p-3 rounded-xl bg-white/60 border border-purple-200/50 hover:bg-purple-100/50 hover:border-purple-300/60 transition-all cursor-pointer group shadow-sm">
-              <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-purple-500 via-violet-500 to-purple-600 flex items-center justify-center text-white font-bold shadow-md shadow-purple-300/40 group-hover:scale-105 transition-transform uppercase overflow-hidden border-2 border-purple-300/50 shrink-0">
+              className="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 hover:border-purple-400/20 transition-all cursor-pointer group">
+              <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-violet-400 to-purple-500 flex items-center justify-center text-white font-bold shadow-lg shadow-purple-900/40 group-hover:scale-105 transition-transform uppercase overflow-hidden border-2 border-purple-400/30 shrink-0">
                 {user?.profile_picture ? (
                   <img src={user.profile_picture} alt="Avatar" className="w-full h-full object-cover" loading="lazy" />
                 ) : (
@@ -496,14 +496,14 @@ const Layout = () => {
                 )}
               </div>
               <div className="flex flex-col min-w-0">
-                <span className="text-xs font-bold truncate text-slate-900">{user?.first_name} {user?.last_name}</span>
-                <span className="text-[10px] font-bold text-violet-700 uppercase tracking-wide">{user?.role}</span>
+                <span className="text-xs font-bold truncate text-white">{user?.first_name} {user?.last_name}</span>
+                <span className="text-[10px] font-bold text-purple-300/70 uppercase tracking-wider">{user?.role}</span>
               </div>
             </div>
           </div>
 
           {/* Nav Container */}
-          <nav className="flex-1 overflow-y-auto px-4 py-4 scrollbar-thin scrollbar-thumb-purple-300 scrollbar-track-transparent">
+          <nav className="flex-1 overflow-y-auto px-4 py-4 scrollbar-thin scrollbar-thumb-purple-800/50 scrollbar-track-transparent">
             {currentNav.map((section, idx) => (
               <div key={idx} className="mb-4 last:mb-0">
                 <SectionLabel label={section.header} />
