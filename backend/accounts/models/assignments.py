@@ -104,6 +104,7 @@ class Grade(models.Model):
         (2, 'Term 2'),
         (3, 'Term 3'),
         (4, 'Term 4 (Legacy)'),
+    ]
 
     student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='subject_grades')
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name='subject_grades')
