@@ -1031,24 +1031,25 @@ const ProfileTab = () => {
       {/* Profile Header */}
       <SectionCard title="My Profile" subtitle="View and update your personal information" icon="user">
         <div className="flex items-center gap-5 mb-6">
-          <div className="relative group/avatar">
+          <div className="relative">
             <div className="w-20 h-20 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-white text-2xl font-black overflow-hidden shadow-lg">
               {profilePic
                 ? <img src={profilePic} alt="Profile" className="w-full h-full object-cover" loading="lazy" />
                 : <span>{initials}</span>
               }
             </div>
-            <label className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover/avatar:opacity-100 transition-opacity cursor-pointer rounded-xl">
-              <input ref={picRef} type="file" className="hidden" accept="image/*" onChange={handlePicUpload} />
-              {uploadingPic ? (
-                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              ) : (
-                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-              )}
-            </label>
+            <button type="button" onClick={() => picRef.current?.click()} disabled={uploadingPic}
+              className="absolute -bottom-1.5 -right-1.5 w-7 h-7 bg-violet-600 text-white rounded-full flex items-center justify-center shadow-md hover:bg-violet-700 transition-all disabled:opacity-50 border-2 border-white"
+              title="Change profile picture">
+              {uploadingPic
+                ? <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                : <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+              }
+            </button>
+            <input ref={picRef} type="file" className="hidden" accept="image/*" onChange={handlePicUpload} />
           </div>
           <div>
             <p className="text-base font-black text-slate-900">{fullName}</p>
