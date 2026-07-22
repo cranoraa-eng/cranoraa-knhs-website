@@ -174,12 +174,12 @@ const StudentEnrollment = () => {
               const gradeMatch = c.name.match(/grade\s*(\d+)/i);
               const gradeNum = gradeMatch ? parseInt(gradeMatch[1]) : 0;
               const gradeColors = {
-                7: 'from-blue-500 to-blue-600',
-                8: 'from-emerald-500 to-emerald-600',
-                9: 'from-amber-500 to-amber-600',
-                10: 'from-rose-500 to-rose-600',
-                11: 'from-violet-500 to-violet-600',
-                12: 'from-indigo-500 to-indigo-600',
+                7: 'from-green-500 to-green-600',
+                8: 'from-yellow-500 to-yellow-600',
+                9: 'from-red-500 to-red-600',
+                10: 'from-blue-500 to-blue-600',
+                11: 'from-pink-500 to-pink-600',
+                12: 'from-gray-900 to-black',
               };
               const gradient = gradeColors[gradeNum] || 'from-slate-500 to-slate-600';
               return (

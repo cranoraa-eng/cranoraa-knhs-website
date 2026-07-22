@@ -594,6 +594,11 @@ export const AttendanceView = ({ classroom, onBack }) => {
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [historyTab, setHistoryTab] = useState('calendar'); // 'calendar' | 'students'
+  const [historyData, setHistoryData] = useState([]); // recent attendance records
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [studentHistory, setStudentHistory] = useState({}); // student_id -> [{date, status}]
+  const [historyRange, setHistoryRange] = useState(14); // days to show
 
   useEffect(() => {
     const fetchStudents = async () => {
@@ -622,7 +627,7 @@ export const AttendanceView = ({ classroom, onBack }) => {
   useEffect(() => {
     const fetchAttendance = async () => {
       try {
-        const res = await api.get(`/attendance/?classroom=${classroom.id}&date=${selectedDate}`);
+        const res = await api.get(`/attendance/?classroom_id=${classroom.id}&date=${selectedDate}`);
         const attendanceMap = {};
         const idMap = {};
         res.data.forEach(a => {
@@ -643,6 +648,33 @@ export const AttendanceView = ({ classroom, onBack }) => {
     };
     if (selectedDate) fetchAttendance();
   }, [selectedDate, classroom.id]);
+
+  // Fetch attendance history for the summary panel
+  useEffect(() => {
+    const fetchHistory = async () => {
+      setHistoryLoading(true);
+      try {
+        const dateTo = selectedDate;
+        const dateFrom = new Date(new Date(selectedDate).getTime() - (historyRange - 1) * 86400000).toISOString().split('T')[0];
+        const res = await api.get(`/attendance/?classroom_id=${classroom.id}&date_from=${dateFrom}&date_to=${dateTo}&page_size=500`);
+        const records = res.data.results || res.data || [];
+        setHistoryData(records);
+
+        // Build per-student history map
+        const map = {};
+        records.forEach(r => {
+          if (!map[r.student]) map[r.student] = [];
+          map[r.student].push({ date: r.date, status: r.status });
+        });
+        setStudentHistory(map);
+      } catch {
+        console.error('Failed to load attendance history');
+      } finally {
+        setHistoryLoading(false);
+      }
+    };
+    fetchHistory();
+  }, [classroom.id, selectedDate, historyRange]);
 
   const handleStatusChange = (studentId, status) => {
     setAttendance(prev => ({ ...prev, [studentId]: status }));
@@ -702,6 +734,35 @@ export const AttendanceView = ({ classroom, onBack }) => {
       (s.student_lrn || '').toLowerCase().includes(q)
     );
   }, [students, searchQuery]);
+
+  // History: unique dates sorted descending
+  const historyDates = useMemo(() => {
+    const dates = [...new Set(historyData.map(r => r.date))].sort().reverse();
+    return dates;
+  }, [historyData]);
+
+  // History: per-date stats
+  const dateStats = useMemo(() => {
+    const map = {};
+    historyData.forEach(r => {
+      if (!map[r.date]) map[r.date] = { present: 0, absent: 0, late: 0, total: 0 };
+      map[r.date][r.status] = (map[r.date][r.status] || 0) + 1;
+      map[r.date].total++;
+    });
+    return map;
+  }, [historyData]);
+
+  // History: per-student attendance rate
+  const studentRates = useMemo(() => {
+    return students.map(s => {
+      const records = studentHistory[s.student] || [];
+      const total = records.length;
+      const present = records.filter(r => r.status === 'present').length;
+      const late = records.filter(r => r.status === 'late').length;
+      const rate = total > 0 ? Math.round(((present + late) / total) * 100) : null;
+      return { ...s, rate, totalRecords: total, present, late, absent: records.filter(r => r.status === 'absent').length };
+    }).sort((a, b) => (a.rate ?? -1) - (b.rate ?? -1));
+  }, [students, studentHistory]);
 
   const statusConfig = {
     present: { active: 'bg-green-600 text-white', idle: 'bg-green-50 text-green-700 hover:bg-green-100', icon: CheckCircle },
@@ -873,6 +934,173 @@ export const AttendanceView = ({ classroom, onBack }) => {
                 </table>
               </div>
             </>
+          )}
+        </CardBody>
+      </Card>
+
+      {/* Attendance History Panel */}
+      <Card>
+        <CardHeader divider>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <CardTitle>Attendance History</CardTitle>
+              <div className="flex bg-slate-100 rounded-lg p-0.5">
+                <button
+                  onClick={() => setHistoryTab('calendar')}
+                  className={`px-2.5 py-1 rounded-md text-[10px] md:text-xs font-semibold transition-all ${historyTab === 'calendar' ? 'bg-white text-violet-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                >
+                  <Calendar className="w-3 h-3 inline mr-1 -mt-0.5" />
+                  By Date
+                </button>
+                <button
+                  onClick={() => setHistoryTab('students')}
+                  className={`px-2.5 py-1 rounded-md text-[10px] md:text-xs font-semibold transition-all ${historyTab === 'students' ? 'bg-white text-violet-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                >
+                  <Users className="w-3 h-3 inline mr-1 -mt-0.5" />
+                  By Student
+                </button>
+              </div>
+            </div>
+            <div className="flex items-center gap-1.5">
+              {[7, 14, 30].map(d => (
+                <button
+                  key={d}
+                  onClick={() => setHistoryRange(d)}
+                  className={`px-2 py-0.5 rounded text-[10px] md:text-xs font-semibold transition-all ${historyRange === d ? 'bg-violet-100 text-violet-700' : 'text-slate-400 hover:text-slate-600'}`}
+                >
+                  {d}d
+                </button>
+              ))}
+            </div>
+          </div>
+        </CardHeader>
+        <CardBody className="p-4 md:p-6">
+          {historyLoading ? (
+            <div className="flex items-center justify-center h-32"><LoadingSpinner /></div>
+          ) : historyDates.length === 0 ? (
+            <EmptyState
+              title="No History"
+              description="No attendance records found for this period"
+              icon={<Calendar className="w-8 h-8" />}
+            />
+          ) : historyTab === 'calendar' ? (
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[400px]">
+                <thead className="bg-slate-50 border-b-2 border-slate-200">
+                  <tr>
+                    <th className="px-3 md:px-4 py-2.5 text-left text-[10px] md:text-xs font-bold text-slate-700 uppercase">Date</th>
+                    <th className="px-3 md:px-4 py-2.5 text-center text-[10px] md:text-xs font-bold text-slate-700 uppercase">
+                      <span className="inline-block w-1.5 h-1.5 rounded-full bg-green-500 mr-1" />Present
+                    </th>
+                    <th className="px-3 md:px-4 py-2.5 text-center text-[10px] md:text-xs font-bold text-slate-700 uppercase">
+                      <span className="inline-block w-1.5 h-1.5 rounded-full bg-red-500 mr-1" />Absent
+                    </th>
+                    <th className="px-3 md:px-4 py-2.5 text-center text-[10px] md:text-xs font-bold text-slate-700 uppercase">
+                      <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-500 mr-1" />Late
+                    </th>
+                    <th className="px-3 md:px-4 py-2.5 text-center text-[10px] md:text-xs font-bold text-slate-700 uppercase">Rate</th>
+                    <th className="px-3 md:px-4 py-2.5 text-center text-[10px] md:text-xs font-bold text-slate-700 uppercase"></th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-slate-100">
+                  {historyDates.map(date => {
+                    const s = dateStats[date] || {};
+                    const rate = s.total > 0 ? Math.round(((s.present + (s.late || 0)) / s.total) * 100) : 0;
+                    const isSelected = date === selectedDate;
+                    const d = new Date(date + 'T00:00:00');
+                    const dayName = d.toLocaleDateString('en-US', { weekday: 'short' });
+                    return (
+                      <tr key={date} className={`transition-colors ${isSelected ? 'bg-violet-50' : 'hover:bg-slate-50'}`}>
+                        <td className="px-3 md:px-4 py-2.5">
+                          <p className="text-xs md:text-sm font-semibold text-slate-900">{dayName}, {d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</p>
+                          <p className="text-[10px] md:text-xs text-slate-400">{d.getFullYear()}</p>
+                        </td>
+                        <td className="px-3 md:px-4 py-2.5 text-center">
+                          <span className="text-xs md:text-sm font-bold text-green-600">{s.present || 0}</span>
+                        </td>
+                        <td className="px-3 md:px-4 py-2.5 text-center">
+                          <span className="text-xs md:text-sm font-bold text-red-600">{s.absent || 0}</span>
+                        </td>
+                        <td className="px-3 md:px-4 py-2.5 text-center">
+                          <span className="text-xs md:text-sm font-bold text-amber-600">{s.late || 0}</span>
+                        </td>
+                        <td className="px-3 md:px-4 py-2.5 text-center">
+                          <span className={`inline-block px-2 py-0.5 rounded-full text-[10px] md:text-xs font-bold ${rate >= 90 ? 'bg-green-100 text-green-700' : rate >= 75 ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'}`}>
+                            {rate}%
+                          </span>
+                        </td>
+                        <td className="px-3 md:px-4 py-2.5 text-center">
+                          <button
+                            onClick={() => setSelectedDate(date)}
+                            className={`text-[10px] md:text-xs font-semibold px-2 py-1 rounded transition-all ${isSelected ? 'bg-violet-600 text-white' : 'text-violet-600 hover:bg-violet-50'}`}
+                          >
+                            {isSelected ? 'Current' : 'Load'}
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[500px]">
+                <thead className="bg-slate-50 border-b-2 border-slate-200">
+                  <tr>
+                    <th className="px-3 md:px-4 py-2.5 text-left text-[10px] md:text-xs font-bold text-slate-700 uppercase">Student</th>
+                    {historyDates.slice(0, 10).map(date => {
+                      const d = new Date(date + 'T00:00:00');
+                      return (
+                        <th key={date} className="px-1 py-2.5 text-center text-[8px] md:text-[10px] font-bold text-slate-500 uppercase" title={date}>
+                          {d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                        </th>
+                      );
+                    })}
+                    <th className="px-3 md:px-4 py-2.5 text-center text-[10px] md:text-xs font-bold text-slate-700 uppercase">Rate</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-slate-100">
+                  {studentRates.map(s => {
+                    const rateColor = s.rate === null ? 'text-slate-400' : s.rate >= 90 ? 'text-green-600' : s.rate >= 75 ? 'text-amber-600' : 'text-red-600';
+                    return (
+                      <tr key={s.id} className="hover:bg-slate-50 transition-colors">
+                        <td className="px-3 md:px-4 py-2.5">
+                          <div className="flex items-center gap-2">
+                            <div className="w-6 h-6 rounded-full bg-violet-100 flex items-center justify-center text-violet-600 font-bold text-[9px] shrink-0">
+                              {s.student_name ? s.student_name.trim().split(/\s+/).slice(0, 2).map(n => n.charAt(0).toUpperCase()).join('') : '?'}
+                            </div>
+                            <span className="text-[11px] md:text-xs font-semibold text-slate-900 truncate max-w-[120px] md:max-w-none">{s.student_name || '?'}</span>
+                          </div>
+                        </td>
+                        {historyDates.slice(0, 10).map(date => {
+                          const rec = (studentHistory[s.student] || []).find(r => r.date === date);
+                          const dot = rec ? (
+                            <span className={`inline-block w-4 h-4 md:w-5 md:h-5 rounded-full text-[8px] md:text-[9px] font-bold flex items-center justify-center ${
+                              rec.status === 'present' ? 'bg-green-100 text-green-600' :
+                              rec.status === 'absent' ? 'bg-red-100 text-red-600' :
+                              'bg-amber-100 text-amber-600'
+                            }`} title={`${date}: ${rec.status}`}>
+                              {rec.status === 'present' ? 'P' : rec.status === 'absent' ? 'A' : 'L'}
+                            </span>
+                          ) : (
+                            <span className="inline-block w-4 h-4 md:w-5 md:h-5 rounded-full bg-slate-50 text-slate-300 text-[8px] md:text-[9px] font-bold flex items-center justify-center" title={`${date}: No record`}>—</span>
+                          );
+                          return <td key={date} className="px-1 py-2.5 text-center">{dot}</td>;
+                        })}
+                        <td className="px-3 md:px-4 py-2.5 text-center">
+                          {s.rate !== null ? (
+                            <span className={`text-[10px] md:text-xs font-bold ${rateColor}`}>{s.rate}%</span>
+                          ) : (
+                            <span className="text-[10px] md:text-xs text-slate-400">—</span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           )}
         </CardBody>
       </Card>

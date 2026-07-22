@@ -344,7 +344,7 @@ const Enrollment = () => {
       if (idPicture) formData.append('id_picture', idPicture);
       if (lastSchoolAttendedCert) formData.append('last_school_attended_cert', lastSchoolAttendedCert);
 
-      const res = await api.post('/enrollment-applications/', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+      const res = await api.post('/enrollment-applications/', formData);
       setSubmitted(res.data);
     } catch (error) {
       const msg = error.response?.data?.error || error.response?.data?.details?.[0] || 'Submission failed. Please try again.';
