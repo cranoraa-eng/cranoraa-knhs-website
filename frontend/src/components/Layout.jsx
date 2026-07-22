@@ -83,8 +83,12 @@ const Layout = () => {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showMobileUserMenu, setShowMobileUserMenu] = useState(false);
   const [sysSettings, setSysSettings] = useState(null);
+  const [notifDropdownPos, setNotifDropdownPos] = useState({ top: 0, right: 0 });
+  const [userMenuPos, setUserMenuPos] = useState({ top: 0, right: 0 });
   const notifDropdownRef = useRef(null);
+  const notifBtnRef = useRef(null);
   const userMenuRef = useRef(null);
+  const userBtnRef = useRef(null);
   const mobileUserMenuRef = useRef(null);
 
   // Fetch system settings for academic year
@@ -457,13 +461,13 @@ const Layout = () => {
         {/* Mobile Sidebar Overlay */}
         {sidebarOpen && (
           <div 
-            className="fixed inset-0 bg-slate-900/60 z-40 lg:hidden backdrop-blur-sm transition-opacity duration-300" 
+            className="fixed inset-0 bg-slate-900/60 z-[60] lg:hidden backdrop-blur-sm transition-opacity duration-300" 
             onClick={() => setSidebarOpen(false)} 
           />
         )}
 
         {/* ── Sidebar ── */}
-        <aside aria-label="Portal sidebar" data-tour="portal-sidebar" className={`fixed inset-y-0 left-0 z-50 flex h-screen w-64 transform flex-col overflow-hidden border-r border-purple-800/30 bg-gradient-to-b from-[#1a0a2e] via-[#1e1145] to-[#150d2e] shadow-2xl transition-all duration-300 ease-in-out lg:static lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        <aside aria-label="Portal sidebar" data-tour="portal-sidebar" className={`fixed inset-y-0 left-0 z-[70] flex h-screen w-64 transform flex-col overflow-hidden border-r border-purple-800/30 bg-gradient-to-b from-[#1a0a2e] via-[#1e1145] to-[#150d2e] shadow-2xl transition-all duration-300 ease-in-out lg:static lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
 
           {/* School Header */}
           <div className="flex items-center gap-3 px-4 py-4 border-b border-white/5 bg-black/20">
@@ -533,7 +537,7 @@ const Layout = () => {
           className="flex-1 flex flex-col min-h-0 overflow-y-auto bg-[#F8FAFC]"
         >
           {/* Top bar */}
-          <header data-tour="portal-header" className="sticky top-0 z-30 flex items-center justify-between border-b-2 border-slate-200 bg-white px-4 py-2 shadow-sm lg:px-6">
+          <header data-tour="portal-header" className="sticky top-0 z-[80] flex items-center justify-between border-b-2 border-slate-200 bg-white px-4 py-2 shadow-sm lg:px-6">
             <div className="flex items-center gap-4 lg:gap-6">
               <button 
                 onClick={() => { playSound('click'); setSidebarOpen(!sidebarOpen); }} 
@@ -618,7 +622,15 @@ const Layout = () => {
               {/* Notification bell */}
               <div className="relative" data-notif-dropdown ref={notifDropdownRef}>
                 <button 
-                  onClick={() => { playSound('click'); setShowNotifications(!showNotifications); }} 
+                  ref={notifBtnRef}
+                  onClick={() => {
+                    playSound('click');
+                    if (!showNotifications && notifBtnRef.current) {
+                      const rect = notifBtnRef.current.getBoundingClientRect();
+                      setNotifDropdownPos({ top: rect.bottom + 12, right: window.innerWidth - rect.right });
+                    }
+                    setShowNotifications(!showNotifications);
+                  }} 
                   data-tour="notifications"
                   className={`relative rounded-xl p-2.5 transition-all duration-200 ${showNotifications ? 'bg-violet-100 text-violet-700 shadow-inner scale-95' : 'text-slate-400 hover:bg-slate-100 hover:text-slate-600'}`}
                 >
@@ -634,7 +646,10 @@ const Layout = () => {
                 </button>
 
                 {showNotifications && (
-                  <div className="absolute right-0 z-50 mt-3 w-96 max-w-[calc(100vw-2rem)] rounded-2xl border border-slate-200 bg-white shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                  <div
+                    className="fixed w-96 max-w-[calc(100vw-2rem)] rounded-2xl border border-slate-200 bg-white shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200"
+                    style={{ top: notifDropdownPos.top, right: notifDropdownPos.right }}
+                  >
                     {/* Header */}
                     <div className="flex items-center justify-between px-5 py-4 bg-gradient-to-r from-[#1A0B2E] to-[#2D1452] text-white">
                       <div className="flex items-center gap-2">
@@ -729,8 +744,16 @@ const Layout = () => {
                 </div>
                 <div className="relative">
                   <button
+                    ref={userBtnRef}
                     data-tour="user-profile"
-                    onClick={() => { playSound('click'); setShowUserMenu(!showUserMenu); }}
+                    onClick={() => {
+                      playSound('click');
+                      if (!showUserMenu && userBtnRef.current) {
+                        const rect = userBtnRef.current.getBoundingClientRect();
+                        setUserMenuPos({ top: rect.bottom + 12, right: window.innerWidth - rect.right });
+                      }
+                      setShowUserMenu(!showUserMenu);
+                    }}
                     className={`h-10 w-10 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-white shadow-lg transition-all overflow-hidden border-2 ${showUserMenu ? 'border-violet-400 scale-95' : 'border-slate-200 hover:rotate-3 hover:scale-105'}`}
                   >
                     {user?.profile_picture ? (
@@ -745,7 +768,10 @@ const Layout = () => {
 
                   {/* Dropdown Menu */}
                   {showUserMenu && (
-                    <div className="absolute right-0 z-50 mt-3 w-56 rounded-xl border border-slate-200 bg-white shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-150">
+                    <div
+                      className="fixed w-56 rounded-xl border border-slate-200 bg-white shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-150"
+                      style={{ top: userMenuPos.top, right: userMenuPos.right }}
+                    >
                       {/* User Info */}
                       <div className="px-4 py-3 bg-gradient-to-r from-[#1A0B2E] to-[#2D1452]">
                         <p className="text-sm font-bold text-white truncate">{user?.first_name} {user?.last_name}</p>
@@ -805,7 +831,7 @@ const Layout = () => {
       {/* Only shown on small screens as a quick-access nav */}
       <nav
         aria-label="Mobile navigation"
-        className="fixed bottom-0 inset-x-0 z-40 lg:hidden bg-white/95 backdrop-blur-xl border-t border-slate-200 shadow-2xl shadow-slate-900/10"
+        className="fixed bottom-0 inset-x-0 z-[90] lg:hidden bg-white/95 backdrop-blur-xl border-t border-slate-200 shadow-2xl shadow-slate-900/10"
         style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
       >
         <div className="flex items-center justify-around px-2 py-1">
@@ -913,7 +939,7 @@ const Layout = () => {
 
             {/* Mobile User Menu Dropdown */}
             {showMobileUserMenu && (
-              <div className="absolute bottom-full right-0 mb-2 w-52 rounded-xl border border-slate-200 bg-white shadow-2xl overflow-hidden z-50">
+              <div className="absolute bottom-full right-0 mb-2 w-52 rounded-xl border border-slate-200 bg-white shadow-2xl overflow-hidden z-[100]">
                 <div className="px-4 py-3 bg-gradient-to-r from-[#1A0B2E] to-[#2D1452]">
                   <p className="text-sm font-bold text-white truncate">{user?.first_name} {user?.last_name}</p>
                   <p className="text-[10px] font-bold text-violet-300 uppercase tracking-widest mt-0.5">{user?.role}</p>

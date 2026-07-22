@@ -30,10 +30,22 @@ export const SearchBar = ({
   const [isOpen, setIsOpen] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const [filteredSuggestions, setFilteredSuggestions] = useState([]);
+  const [dropdownPos, setDropdownPos] = useState({ top: 0, left: 0, width: 0 });
   
   const inputRef = useRef(null);
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
+
+  const updateDropdownPos = () => {
+    if (inputRef.current) {
+      const rect = inputRef.current.getBoundingClientRect();
+      setDropdownPos({
+        top: rect.bottom + 8,
+        left: rect.left,
+        width: rect.width,
+      });
+    }
+  };
 
   // Debounce the search query
   useEffect(() => {
@@ -139,6 +151,7 @@ export const SearchBar = ({
 
   // Handle input focus
   const handleInputFocus = () => {
+    updateDropdownPos();
     if (filteredSuggestions.length > 0) {
       setIsOpen(true);
     }
@@ -216,7 +229,8 @@ export const SearchBar = ({
           ref={dropdownRef}
           id="search-suggestions"
           role="listbox"
-          className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-xl shadow-lg max-h-96 overflow-y-auto z-50"
+          className="fixed bg-white border border-slate-200 rounded-xl shadow-2xl max-h-96 overflow-y-auto z-[110]"
+          style={{ top: dropdownPos.top, left: dropdownPos.left, width: dropdownPos.width }}
         >
           {categories.map((category, categoryIndex) => (
             <div key={category}>
@@ -308,7 +322,8 @@ export const SearchBar = ({
       {isOpen && query.trim() !== '' && filteredSuggestions.length === 0 && (
         <div
           ref={dropdownRef}
-          className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-xl shadow-lg p-4 z-50"
+          className="fixed bg-white border border-slate-200 rounded-xl shadow-2xl p-4 z-[110]"
+          style={{ top: dropdownPos.top, left: dropdownPos.left, width: dropdownPos.width }}
         >
           <div className="text-center text-slate-500 text-sm">
             No results found for "{query}"

@@ -131,7 +131,7 @@ const SubMenu = ({ label, items = [], icon: Icon, className = '' }) => {
       {/* Dropdown Menu */}
       {isOpen && (
         <div
-          className="absolute left-0 mt-2 w-56 z-50 animate-in fade-in slide-in-from-top-2 duration-200"
+          className="absolute left-0 mt-2 w-56 z-[110] animate-in fade-in slide-in-from-top-2 duration-200"
           role="menu"
           aria-orientation="vertical"
           aria-labelledby={`${label}-menu-button`}
