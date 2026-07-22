@@ -156,22 +156,62 @@ const StudentEnrollment = () => {
       </div>
 
       {/* Classroom picker */}
-      <div className={`bg-white border border-slate-200 rounded-xl shadow-sm p-3 md:p-5 transition-all duration-300 ${selectedClassroom ? 'mb-2 md:mb-5' : 'mb-5'}`}>
-        <label className="block text-[10px] md:text-sm font-black text-slate-700 mb-1 md:mb-2 uppercase tracking-widest">Select Classroom</label>
+      <div className="space-y-2 md:space-y-3">
+        <label className="block text-[10px] md:text-sm font-bold text-slate-700 uppercase tracking-wider">Select Classroom</label>
         {loading ? (
-          <div className="h-8 md:h-10 bg-slate-100 rounded-lg animate-pulse" />
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-3">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="h-20 md:h-24 bg-slate-100 rounded-xl animate-pulse" />
+            ))}
+          </div>
+        ) : sortedClassrooms.length === 0 ? (
+          <div className="text-center py-8 text-slate-400 text-xs md:text-sm font-medium">No classrooms available</div>
         ) : (
-          <select
-            value={selectedClassroom}
-            onChange={e => setSelectedClassroom(e.target.value)}
-            className="w-full px-3 py-1.5 md:px-4 md:py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-1 focus:ring-violet-500 text-[10px] md:text-sm font-bold shadow-inner uppercase tracking-wider"
-          >
-            <option value="">— Choose a classroom —</option>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-3">
             {sortedClassrooms.map(c => {
               const cap = c.capacity || 40;
-              return <option key={c.id} value={c.id}>{c.name} ({cap} max)</option>;
+              const isSelected = String(c.id) === String(selectedClassroom);
+              const gradeMatch = c.name.match(/grade\s*(\d+)/i);
+              const gradeNum = gradeMatch ? parseInt(gradeMatch[1]) : 0;
+              const gradeColors = {
+                7: 'from-blue-500 to-blue-600',
+                8: 'from-emerald-500 to-emerald-600',
+                9: 'from-amber-500 to-amber-600',
+                10: 'from-rose-500 to-rose-600',
+                11: 'from-violet-500 to-violet-600',
+                12: 'from-indigo-500 to-indigo-600',
+              };
+              const gradient = gradeColors[gradeNum] || 'from-slate-500 to-slate-600';
+              return (
+                <button
+                  key={c.id}
+                  onClick={() => setSelectedClassroom(isSelected ? '' : c.id)}
+                  className={`relative text-left rounded-xl border-2 transition-all duration-200 p-3 md:p-4 group
+                    ${isSelected
+                      ? 'border-violet-500 bg-violet-50 shadow-md ring-2 ring-violet-200'
+                      : 'border-slate-200 bg-white hover:border-slate-300 hover:shadow-sm'
+                    }`}
+                >
+                  {isSelected && (
+                    <div className="absolute top-2 right-2 w-5 h-5 bg-violet-500 rounded-full flex items-center justify-center">
+                      <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                  )}
+                  <div className={`w-7 h-7 md:w-8 md:h-8 rounded-lg bg-gradient-to-br ${gradient} flex items-center justify-center mb-2`}>
+                    <span className="text-white text-[10px] md:text-xs font-black">{gradeNum || '?'}</span>
+                  </div>
+                  <p className={`text-[10px] md:text-sm font-black uppercase tracking-tight truncate leading-tight ${isSelected ? 'text-violet-900' : 'text-slate-800'}`}>
+                    {c.name}
+                  </p>
+                  <p className={`text-[8px] md:text-[11px] font-semibold mt-0.5 ${isSelected ? 'text-violet-600' : 'text-slate-400'}`}>
+                    Max {cap} students
+                  </p>
+                </button>
+              );
             })}
-          </select>
+          </div>
         )}
       </div>
 
