@@ -67,18 +67,15 @@ const QuickAccessLinks = ({ role, variant = 'grid', className = '' }) => {
   }
 
   const gridClass = variant === 'compact' 
-    ? 'grid grid-cols-2 sm:grid-cols-3 gap-3'
-    : 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4';
+    ? 'grid grid-cols-3 sm:grid-cols-3 gap-2'
+    : 'grid grid-cols-3 sm:grid-cols-3 lg:grid-cols-6 gap-2';
 
   return (
     <div className={`quick-access-links ${className}`}>
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+      <div className="flex items-center justify-between mb-2">
+        <h2 className="text-sm font-semibold text-gray-900 dark:text-white">
           Quick Access
         </h2>
-        <span className="text-sm text-gray-500 dark:text-gray-400">
-          Frequently used
-        </span>
       </div>
 
       <div className={gridClass}>
@@ -123,15 +120,15 @@ const QuickAccessLinks = ({ role, variant = 'grid', className = '' }) => {
               key={index}
               to={link.path}
               className={`
-                flex items-center gap-3 p-4 rounded-xl transition-all duration-200 shadow-sm
+                flex items-center gap-1.5 p-2 rounded-lg transition-all duration-200 shadow-sm
                 ${theme.card}
-                focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2
-                hover:shadow-lg hover:-translate-y-0.5
+                focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-1
+                hover:shadow-md hover:-translate-y-0.5
               `}
               aria-label={`Navigate to ${link.label}`}
             >
-              {Icon && <Icon className={`w-5 h-5 flex-shrink-0 ${theme.icon}`} aria-hidden="true" />}
-              <span className={`text-sm ${theme.label}`}>
+              {Icon && <Icon className={`w-4 h-4 flex-shrink-0 ${theme.icon}`} aria-hidden="true" />}
+              <span className={`text-[11px] leading-tight ${theme.label} truncate`}>
                 {link.label}
               </span>
             </Link>

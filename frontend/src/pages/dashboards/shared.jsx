@@ -90,29 +90,29 @@ export const StatCard = memo(({ label, value, sub, icon, color = 'blue', onClick
         onClick && "cursor-pointer"
       )}
     >
-      <CardBody className="p-4 md:p-5 flex flex-col justify-between min-h-[110px] md:min-h-[130px]">
+      <CardBody className="p-2 flex flex-col justify-between min-h-[70px] md:min-h-[85px]">
         <div className="flex items-start justify-between">
           <div className={cn(
-            "w-10 h-10 md:w-11 md:h-11 rounded-md flex items-center justify-center border shadow-sm",
+            "w-6 h-6 md:w-7 md:h-7 rounded flex items-center justify-center border shadow-sm",
             iconThemes[color]
           )}>
             {icon}
           </div>
           {badge > 0 && (
-            <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-bold bg-red-50 text-red-700 border border-red-200">
+            <span className="inline-flex items-center px-1 py-0.5 rounded text-[9px] font-bold bg-red-50 text-red-700 border border-red-200">
               {badge}
             </span>
           )}
         </div>
-        <div className="mt-4">
-          <p className="text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wide truncate">
+        <div className="mt-1.5">
+          <p className="text-[9px] md:text-[10px] font-bold text-slate-600 mb-0.5 uppercase tracking-wide truncate">
             {label}
           </p>
-          <h3 className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight leading-none truncate">
+          <h3 className="text-base md:text-lg font-extrabold text-slate-900 tracking-tight leading-none truncate">
             {value ?? '—'}
           </h3>
           {sub && (
-            <p className="text-xs font-semibold text-slate-500 mt-1.5 truncate">{sub}</p>
+            <p className="text-[9px] md:text-[10px] font-semibold text-slate-500 mt-0.5 truncate">{sub}</p>
           )}
         </div>
       </CardBody>
