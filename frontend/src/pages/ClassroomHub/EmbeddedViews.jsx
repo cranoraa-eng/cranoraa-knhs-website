@@ -662,6 +662,7 @@ export const AttendanceView = ({ classroom, onBack }) => {
           classroom: classroom.id,
           date: selectedDate,
           status: attendance[student.student] || 'present',
+          schedule_id: null,
           remarks: '',
         };
         if (existingId) {
