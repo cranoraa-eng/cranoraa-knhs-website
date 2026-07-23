@@ -1,7 +1,19 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../utils/api';
 import Swal from 'sweetalert2';
+
+const DRAFT_KEY = 'enrollment-draft';
+
+const loadDraft = () => {
+  try { return JSON.parse(localStorage.getItem(DRAFT_KEY)) || {}; } catch { return {}; }
+};
+const saveDraft = (data) => {
+  try { localStorage.setItem(DRAFT_KEY, JSON.stringify(data)); } catch {}
+};
+const clearDraft = () => {
+  try { localStorage.removeItem(DRAFT_KEY); } catch {}
+};
 
 const SHS_TRACKS = [
   { value: 'Academic', label: 'Academic Track' },
@@ -121,53 +133,55 @@ const Enrollment = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(null);
-  const [step, setStep] = useState(0);
+  const draft = useRef(loadDraft());
+  const d = (key, fallback) => draft.current[key] || fallback;
 
-  const [enrollmentType, setEnrollmentType] = useState('');
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [middleName, setMiddleName] = useState('');
-  const [sex, setSex] = useState('');
-  const [dateOfBirth, setDateOfBirth] = useState('');
-  const [placeOfBirth, setPlaceOfBirth] = useState('');
-  const [nationality, setNationality] = useState('Filipino');
-  const [religion, setReligion] = useState('');
+  const [step, setStep] = useState(d('step', 0));
+  const [enrollmentType, setEnrollmentType] = useState(d('enrollmentType', ''));
+  const [firstName, setFirstName] = useState(d('firstName', ''));
+  const [lastName, setLastName] = useState(d('lastName', ''));
+  const [middleName, setMiddleName] = useState(d('middleName', ''));
+  const [sex, setSex] = useState(d('sex', ''));
+  const [dateOfBirth, setDateOfBirth] = useState(d('dateOfBirth', ''));
+  const [placeOfBirth, setPlaceOfBirth] = useState(d('placeOfBirth', ''));
+  const [nationality, setNationality] = useState(d('nationality', 'Filipino'));
+  const [religion, setReligion] = useState(d('religion', ''));
 
-  const [streetAddress, setStreetAddress] = useState('');
-  const [barangay, setBarangay] = useState('');
-  const [cityMunicipality, setCityMunicipality] = useState('');
-  const [province, setProvince] = useState('');
-  const [zipCode, setZipCode] = useState('');
+  const [streetAddress, setStreetAddress] = useState(d('streetAddress', ''));
+  const [barangay, setBarangay] = useState(d('barangay', ''));
+  const [cityMunicipality, setCityMunicipality] = useState(d('cityMunicipality', ''));
+  const [province, setProvince] = useState(d('province', ''));
+  const [zipCode, setZipCode] = useState(d('zipCode', ''));
 
-  const [fatherName, setFatherName] = useState('');
-  const [fatherOccupation, setFatherOccupation] = useState('');
-  const [fatherContact, setFatherContact] = useState('');
-  const [fatherEmail, setFatherEmail] = useState('');
-  const [motherName, setMotherName] = useState('');
-  const [motherOccupation, setMotherOccupation] = useState('');
-  const [motherContact, setMotherContact] = useState('');
-  const [motherEmail, setMotherEmail] = useState('');
-  const [guardianName, setGuardianName] = useState('');
-  const [guardianRelationship, setGuardianRelationship] = useState('');
-  const [guardianContact, setGuardianContact] = useState('');
-  const [guardianEmail, setGuardianEmail] = useState('');
+  const [fatherName, setFatherName] = useState(d('fatherName', ''));
+  const [fatherOccupation, setFatherOccupation] = useState(d('fatherOccupation', ''));
+  const [fatherContact, setFatherContact] = useState(d('fatherContact', ''));
+  const [fatherEmail, setFatherEmail] = useState(d('fatherEmail', ''));
+  const [motherName, setMotherName] = useState(d('motherName', ''));
+  const [motherOccupation, setMotherOccupation] = useState(d('motherOccupation', ''));
+  const [motherContact, setMotherContact] = useState(d('motherContact', ''));
+  const [motherEmail, setMotherEmail] = useState(d('motherEmail', ''));
+  const [guardianName, setGuardianName] = useState(d('guardianName', ''));
+  const [guardianRelationship, setGuardianRelationship] = useState(d('guardianRelationship', ''));
+  const [guardianContact, setGuardianContact] = useState(d('guardianContact', ''));
+  const [guardianEmail, setGuardianEmail] = useState(d('guardianEmail', ''));
 
-  const [gradeLevel, setGradeLevel] = useState('');
-  const [strand, setStrand] = useState('');
-  const [schoolYear, setSchoolYear] = useState('2026-2027');
-  const [previousSchool, setPreviousSchool] = useState('');
-  const [previousSchoolAddress, setPreviousSchoolAddress] = useState('');
-  const [lrn, setLrn] = useState('');
-  const [noLrn, setNoLrn] = useState(false);
-  const [lrnRequestReason, setLrnRequestReason] = useState('');
-  const [isAls, setIsAls] = useState(false);
+  const [gradeLevel, setGradeLevel] = useState(d('gradeLevel', ''));
+  const [strand, setStrand] = useState(d('strand', ''));
+  const [schoolYear, setSchoolYear] = useState(d('schoolYear', '2026-2027'));
+  const [previousSchool, setPreviousSchool] = useState(d('previousSchool', ''));
+  const [previousSchoolAddress, setPreviousSchoolAddress] = useState(d('previousSchoolAddress', ''));
+  const [lrn, setLrn] = useState(d('lrn', ''));
+  const [noLrn, setNoLrn] = useState(d('noLrn', false));
+  const [lrnRequestReason, setLrnRequestReason] = useState(d('lrnRequestReason', ''));
+  const [isAls, setIsAls] = useState(d('isAls', false));
 
-  const [email, setEmail] = useState('');
-  const [phoneNumber, setPhoneNumber] = useState('');
+  const [email, setEmail] = useState(d('email', ''));
+  const [phoneNumber, setPhoneNumber] = useState(d('phoneNumber', ''));
 
-  const [emergencyContactName, setEmergencyContactName] = useState('');
-  const [emergencyContactRelationship, setEmergencyContactRelationship] = useState('');
-  const [emergencyContactPhone, setEmergencyContactPhone] = useState('');
+  const [emergencyContactName, setEmergencyContactName] = useState(d('emergencyContactName', ''));
+  const [emergencyContactRelationship, setEmergencyContactRelationship] = useState(d('emergencyContactRelationship', ''));
+  const [emergencyContactPhone, setEmergencyContactPhone] = useState(d('emergencyContactPhone', ''));
 
   const [birthCertificate, setBirthCertificate] = useState(null);
   const [reportCard, setReportCard] = useState(null);
@@ -176,6 +190,16 @@ const Enrollment = () => {
   const [goodMoralCertificate, setGoodMoralCertificate] = useState(null);
   const [idPicture, setIdPicture] = useState(null);
   const [lastSchoolAttendedCert, setLastSchoolAttendedCert] = useState(null);
+
+  useEffect(() => {
+    saveDraft({ step, enrollmentType, firstName, lastName, middleName, sex, dateOfBirth,
+      placeOfBirth, nationality, religion, streetAddress, barangay, cityMunicipality, province,
+      zipCode, fatherName, fatherOccupation, fatherContact, fatherEmail, motherName,
+      motherOccupation, motherContact, motherEmail, guardianName, guardianRelationship,
+      guardianContact, guardianEmail, gradeLevel, strand, schoolYear, previousSchool,
+      previousSchoolAddress, lrn, noLrn, lrnRequestReason, isAls, email, phoneNumber,
+      emergencyContactName, emergencyContactRelationship, emergencyContactPhone });
+  });
 
   const isTransferee = enrollmentType === 'transferee';
   const isReturning = enrollmentType === 'returning';
@@ -345,6 +369,7 @@ const Enrollment = () => {
       if (lastSchoolAttendedCert) formData.append('last_school_attended_cert', lastSchoolAttendedCert);
 
       const res = await api.post('/enrollment-applications/', formData);
+      clearDraft();
       setSubmitted(res.data);
     } catch (error) {
       const details = error.response?.data?.details;
