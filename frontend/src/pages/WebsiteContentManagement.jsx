@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import api from '../utils/api';
+import Swal from 'sweetalert2';
 import { LoadingSpinner, Button } from '../components/ui';
 const WebsiteContentManagement = () => {
   const [content, setContent] = useState([]);

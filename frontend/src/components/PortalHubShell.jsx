@@ -55,7 +55,7 @@ const PortalHubShell = ({ title, description, tabs, showHeader = true }) => {
           </div>
 
           <div className="border-b border-slate-200 bg-slate-50/80 px-3 py-2 md:px-4">
-            <div className="flex gap-2 overflow-x-auto pb-1">
+            <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none">
               {visibleTabs.map((tab) => {
                 const isActive = tab.id === activeTab.id;
                 return (
@@ -67,12 +67,17 @@ const PortalHubShell = ({ title, description, tabs, showHeader = true }) => {
                       nextParams.set('tab', tab.id);
                       setSearchParams(nextParams);
                     }}
-                    className={`shrink-0 rounded-md border px-3 py-2 text-xs font-extrabold uppercase tracking-wider transition-all ${
+                    className={`shrink-0 inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-extrabold uppercase tracking-wider transition-all ${
                       isActive
-                        ? 'border-violet-700 bg-violet-700 text-white'
+                        ? 'border-violet-700 bg-violet-700 text-white shadow-md shadow-purple-900/20'
                         : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:text-slate-900'
                     }`}
                   >
+                    {tab.icon && (
+                      <svg className={`w-3.5 h-3.5 ${isActive ? 'text-white' : 'text-slate-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={tab.icon} />
+                      </svg>
+                    )}
                     {tab.label}
                   </button>
                 );

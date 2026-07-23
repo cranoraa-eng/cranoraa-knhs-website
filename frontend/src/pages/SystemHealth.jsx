@@ -1,4 +1,5 @@
-import { useState, useRef } from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import api from '../utils/api';
 import { useParallelFetch } from '../hooks/useFetch';

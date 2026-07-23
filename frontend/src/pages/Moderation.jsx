@@ -37,7 +37,7 @@ const Moderation = () => {
         setProcessing(true);
         await api.delete(`/chat/reports/${reportId}/`);
         toast.success('Report deleted');
-        fetchReports();
+        refetch();
       } catch {
         toast.error('Failed to delete report');
       } finally {
@@ -65,7 +65,7 @@ const Moderation = () => {
         setProcessing(true);
         await api.post(`/chat/reports/${reportId}/${actionType}/`, { note });
         toast.success('Action applied successfully');
-        fetchReports();
+        refetch();
       } catch (error) {
         toast.error('Failed to apply action');
       } finally {
@@ -91,7 +91,7 @@ const Moderation = () => {
         await api.post('/chat/reports/bulk-delete/', { ids: selectedIds });
         toast.success(`${selectedIds.length} reports deleted`);
         setSelectedIds([]);
-        fetchReports();
+        refetch();
       } catch {
         toast.error('Failed to delete reports');
       } finally {
@@ -138,7 +138,7 @@ const Moderation = () => {
       try {
         await api.post(`/chat/reports/${reportId}/mute-user/`, formValues);
         toast.success('User muted successfully');
-        fetchReports();
+        refetch();
       } catch (error) {
         toast.error('Failed to mute user');
       }
@@ -159,7 +159,7 @@ const Moderation = () => {
     try {
       await api.post(`/chat/reports/${reportId}/unmute-user/`);
       toast.success('User unmuted');
-      fetchReports();
+        refetch();
     } catch {
       toast.error('Failed to unmute user');
     }
@@ -180,7 +180,7 @@ const Moderation = () => {
       try {
         await api.post(`/chat/reports/${reportId}/suspend-user/`, { note });
         toast.success('User suspended');
-        fetchReports();
+        refetch();
       } catch {
         toast.error('Failed to suspend user');
       }
@@ -201,7 +201,7 @@ const Moderation = () => {
     try {
       await api.post(`/chat/reports/${reportId}/unsuspend-user/`);
       toast.success('User unsuspended');
-      fetchReports();
+        refetch();
     } catch {
       toast.error('Failed to unsuspend user');
     }
