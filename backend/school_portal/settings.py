@@ -138,6 +138,8 @@ if DATABASE_URL:
             ssl_require=not DEBUG,
         )
     }
+    DATABASES['default'].setdefault('OPTIONS', {})
+    DATABASES['default']['OPTIONS'].setdefault('options', '-c search_path=public')
 else:
     DATABASES = {
         'default': {
