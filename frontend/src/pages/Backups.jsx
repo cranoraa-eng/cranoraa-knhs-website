@@ -1,21 +1,49 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import api from '../utils/api';
 import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
+import { motion } from 'framer-motion';
+import {
+  HardDrive, Download, Upload, Trash2, RefreshCw, Clock,
+  Database, CheckCircle2, AlertTriangle, Plus, Archive,
+  Shield, ArrowUpDown, ChevronDown, FileDown, Printer
+} from 'lucide-react';
 import { useFetch } from '../hooks/useFetch';
-import { LoadingSpinner, Button } from '../components/ui';
+import { LoadingSpinner, Badge } from '../components/ui';
 
 const Backups = () => {
   const { data: backups, loading, refetch: fetchBackups, setData: setBackups } = useFetch('/admin/backups/');
   const [creating, setCreating] = useState(false);
+  const [sortDir, setSortDir] = useState('desc');
+
+  const sortedBackups = useMemo(() => {
+    if (!Array.isArray(backups)) return [];
+    return [...backups].sort((a, b) => {
+      const da = new Date(a.created_at);
+      const db = new Date(b.created_at);
+      return sortDir === 'desc' ? db - da : da - db;
+    });
+  }, [backups, sortDir]);
+
+  const totalSize = useMemo(() => {
+    if (!Array.isArray(backups)) return '0 MB';
+    const bytes = backups.reduce((acc, b) => {
+      const match = b.size?.match(/([\d.]+)\s*(MB|KB|GB)/i);
+      if (!match) return acc;
+      const val = parseFloat(match[1]);
+      const unit = match[2].toUpperCase();
+      return acc + (unit === 'GB' ? val * 1024 : unit === 'KB' ? val / 1024 : val);
+    }, 0);
+    return `${bytes.toFixed(1)} MB`;
+  }, [backups]);
 
   const handleCreateBackup = async () => {
     const result = await Swal.fire({
       title: 'Create new backup?',
-      text: 'This may take a few minutes.',
+      text: 'This will create a snapshot of the entire database.',
       icon: 'question',
       showCancelButton: true,
-      confirmButtonText: 'Yes, create it',
+      confirmButtonText: 'Create backup',
       confirmButtonColor: '#7c3aed',
       customClass: { popup: 'rounded-2xl' },
     });
@@ -36,14 +64,14 @@ const Backups = () => {
       text: 'This will overwrite all current data. This cannot be undone.',
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonText: 'Yes, restore',
+      confirmButtonText: 'Restore',
       confirmButtonColor: '#ef4444',
       customClass: { popup: 'rounded-2xl' },
     });
     if (!result.isConfirmed) return;
     try {
       await api.post(`/admin/backups/${id}/restore/`);
-      toast.success('Backup restored. Reloading…');
+      toast.success('Backup restored. Reloading...');
       setTimeout(() => window.location.reload(), 1500);
     } catch (err) {
       toast.error(err.response?.data?.error || 'Failed to restore backup');
@@ -53,6 +81,7 @@ const Backups = () => {
   const handleDelete = async (id) => {
     const result = await Swal.fire({
       title: 'Delete this backup?',
+      text: 'This action cannot be undone.',
       icon: 'warning',
       showCancelButton: true,
       confirmButtonText: 'Delete',
@@ -83,40 +112,87 @@ const Backups = () => {
     }
   };
 
+  const handlePrint = () => {
+    window.print();
+  };
+
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center h-64 gap-4">
+      <div className="flex flex-col items-center justify-center h-[60vh] gap-4">
         <LoadingSpinner />
-        <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">Loading backups…</p>
+        <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">Loading backups...</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-5 animate-fade-in page-bottom-safe">
+    <div className="page-bottom-safe max-w-[1800px] mx-auto min-h-0 bg-slate-50 px-4 py-4 md:px-6 md:py-6 space-y-5 md:space-y-6 animate-fade-in">
+
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-black text-slate-900 tracking-tight">Database Backups</h1>
-          <p className="text-sm text-slate-500 mt-0.5">Manage and restore database snapshots.</p>
+          <div className="flex items-center gap-2 text-[10px] font-black text-violet-600 uppercase tracking-[0.2em] mb-1.5">
+            <HardDrive className="w-3.5 h-3.5" />
+            <span>Data Protection</span>
+          </div>
+          <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight">Database Backups</h1>
+          <p className="text-xs text-slate-500 mt-1 font-semibold">
+            {Array.isArray(backups) ? backups.length : 0} backups &middot; {totalSize} total
+          </p>
         </div>
-        <Button
-          onClick={handleCreateBackup}
-          loading={creating}
-          variant="primary"
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
-          </svg>
-          Create Backup
-        </Button>
+        <div className="flex items-center gap-2 flex-wrap">
+          <button
+            onClick={handlePrint}
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-white border border-slate-200 text-sm font-bold text-slate-600 hover:bg-slate-50 transition-all"
+          >
+            <Printer className="w-4 h-4" />
+            Print
+          </button>
+          <button
+            onClick={() => fetchBackups()}
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-white border border-slate-200 text-sm font-bold text-slate-600 hover:bg-slate-50 transition-all"
+          >
+            <RefreshCw className="w-4 h-4" />
+            Refresh
+          </button>
+          <button
+            onClick={handleCreateBackup}
+            disabled={creating}
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-violet-600 text-white text-sm font-bold hover:bg-violet-700 transition-all disabled:opacity-50 shadow-sm"
+          >
+            {creating ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+            Create Backup
+          </button>
+        </div>
       </div>
 
-      {/* Info banner */}
-      <div className="flex items-start gap-3 p-4 bg-amber-50 border border-amber-200 rounded-2xl">
-        <svg className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-        </svg>
+      {/* Stats */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        {[
+          { icon: Archive, label: 'Total Backups', value: Array.isArray(backups) ? backups.length : 0, color: 'bg-violet-50 text-violet-600 ring-violet-100' },
+          { icon: Database, label: 'Total Size', value: totalSize, color: 'bg-blue-50 text-blue-600 ring-blue-100' },
+          { icon: Clock, label: 'Latest', value: sortedBackups[0] ? new Date(sortedBackups[0].created_at).toLocaleDateString() : '—', color: 'bg-emerald-50 text-emerald-600 ring-emerald-100' },
+          { icon: Shield, label: 'Status', value: 'Protected', color: 'bg-emerald-50 text-emerald-600 ring-emerald-100' },
+        ].map((stat, i) => (
+          <motion.div
+            key={stat.label}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.05 }}
+            className="bg-white rounded-xl border border-slate-200 p-4 hover:shadow-md transition-all"
+          >
+            <div className={`w-9 h-9 rounded-lg ${stat.color} flex items-center justify-center ring-1 mb-3`}>
+              <stat.icon className="w-4.5 h-4.5" />
+            </div>
+            <p className="text-lg font-extrabold text-slate-900 tracking-tight">{stat.value}</p>
+            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mt-0.5">{stat.label}</p>
+          </motion.div>
+        ))}
+      </div>
+
+      {/* Warning Banner */}
+      <div className="flex items-start gap-3 p-4 bg-amber-50 border border-amber-200 rounded-xl">
+        <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
         <div>
           <p className="text-sm font-bold text-amber-800">Important</p>
           <p className="text-xs text-amber-700 mt-0.5">
@@ -127,87 +203,122 @@ const Backups = () => {
       </div>
 
       {/* Table */}
-      <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
-        {backups.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
-            <div className="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center mb-4">
-              <svg className="w-7 h-7 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-              </svg>
+      <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+        {sortedBackups.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20 px-6 text-center">
+            <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-violet-100 to-violet-50 flex items-center justify-center mb-6 ring-1 ring-violet-200">
+              <HardDrive className="w-10 h-10 text-violet-500" />
             </div>
-            <h3 className="text-base font-bold text-slate-700 mb-1">No backups yet</h3>
-            <p className="text-sm text-slate-400">Create your first backup to get started.</p>
+            <h3 className="text-lg font-extrabold text-slate-900 mb-2">No backups yet</h3>
+            <p className="text-sm text-slate-500 max-w-md mb-6">
+              Create your first backup to protect your school data. Backups capture the entire database state.
+            </p>
+            <button
+              onClick={handleCreateBackup}
+              disabled={creating}
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-violet-600 text-white text-sm font-bold hover:bg-violet-700 transition-all shadow-sm"
+            >
+              <Plus className="w-4 h-4" />
+              Create First Backup
+            </button>
           </div>
         ) : (
           <>
-            {/* Mobile card list */}
-            <div className="md:hidden divide-y divide-slate-100">
-              {backups.map((backup) => (
-                <div key={backup.id} className="px-4 py-3.5 space-y-2.5">
-                  <div className="flex items-start gap-3">
-                    <div className="w-9 h-9 rounded-lg bg-violet-100 flex items-center justify-center flex-shrink-0">
-                      <svg className="w-4.5 h-4.5 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-                      </svg>
+            {/* Mobile cards */}
+            <div className="md:hidden">
+              <div className="px-4 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+                <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{sortedBackups.length} backups</span>
+                <button
+                  onClick={() => setSortDir(d => d === 'desc' ? 'asc' : 'desc')}
+                  className="inline-flex items-center gap-1 text-[10px] font-bold text-slate-500 hover:text-violet-600 transition-colors"
+                >
+                  <ArrowUpDown className="w-3 h-3" />
+                  {sortDir === 'desc' ? 'Newest' : 'Oldest'}
+                </button>
+              </div>
+              <div className="divide-y divide-slate-100">
+                {sortedBackups.map((backup, i) => (
+                  <motion.div
+                    key={backup.id}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.03 }}
+                    className="px-4 py-3.5 space-y-2.5"
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className="w-9 h-9 rounded-lg bg-violet-100 flex items-center justify-center flex-shrink-0">
+                        <Archive className="w-4.5 h-4.5 text-violet-600" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-bold text-slate-800 font-mono truncate">{backup.filename}</p>
+                        <p className="text-[10px] text-slate-400 font-semibold mt-0.5">
+                          {new Date(backup.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                          {' · '}
+                          {new Date(backup.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </p>
+                      </div>
+                      <Badge variant="slate" size="sm">{backup.size}</Badge>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-bold text-slate-800 font-mono truncate">{backup.filename}</p>
-                      <p className="text-[10px] text-slate-400 font-semibold mt-0.5">
-                        {new Date(backup.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                        {' · '}
-                        {new Date(backup.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </p>
+                    <div className="flex items-center gap-1.5 pl-12">
+                      <button
+                        onClick={() => handleDownload(backup.id, backup.filename)}
+                        className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-violet-50 text-violet-600 text-[10px] font-bold hover:bg-violet-100 transition-all"
+                      >
+                        <Download className="w-3 h-3" />
+                        Download
+                      </button>
+                      <button
+                        onClick={() => handleRestore(backup.id)}
+                        className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-emerald-50 text-emerald-600 text-[10px] font-bold hover:bg-emerald-100 transition-all"
+                      >
+                        <Upload className="w-3 h-3" />
+                        Restore
+                      </button>
+                      <button
+                        onClick={() => handleDelete(backup.id)}
+                        className="p-1.5 rounded-lg text-slate-300 hover:text-red-500 hover:bg-red-50 transition-all ml-auto"
+                        title="Delete"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
                     </div>
-                    <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200 flex-shrink-0">
-                      {backup.size}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-1.5 pl-12">
-                    <button onClick={() => handleDownload(backup.id, backup.filename)}
-                      className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-violet-50 text-violet-600 text-[10px] font-bold hover:bg-violet-100 transition-all">
-                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                      </svg>
-                      Download
-                    </button>
-                    <button onClick={() => handleRestore(backup.id)}
-                      className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-emerald-50 text-emerald-600 text-[10px] font-bold hover:bg-emerald-100 transition-all">
-                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                      </svg>
-                      Restore
-                    </button>
-                    <button onClick={() => handleDelete(backup.id)}
-                      className="p-1.5 rounded-lg text-slate-300 hover:text-red-500 hover:bg-red-50 transition-all ml-auto" title="Delete">
-                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-              ))}
+                  </motion.div>
+                ))}
+              </div>
             </div>
 
             {/* Desktop table */}
             <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-left">
-                <thead className="bg-slate-50 border-b border-slate-200">
+                <thead className="bg-slate-50 border-b border-slate-200 sticky top-0 z-10">
                   <tr>
                     <th className="px-5 py-3.5 text-[10px] font-black text-slate-500 uppercase tracking-[0.15em]">Filename</th>
-                    <th className="px-5 py-3.5 text-[10px] font-black text-slate-500 uppercase tracking-[0.15em] whitespace-nowrap">Created At</th>
+                    <th
+                      className="px-5 py-3.5 text-[10px] font-black text-slate-500 uppercase tracking-[0.15em] whitespace-nowrap cursor-pointer hover:text-violet-600 transition-colors select-none"
+                      onClick={() => setSortDir(d => d === 'desc' ? 'asc' : 'desc')}
+                    >
+                      <span className="inline-flex items-center gap-1">
+                        Created At
+                        <ArrowUpDown className="w-3 h-3" />
+                      </span>
+                    </th>
                     <th className="px-5 py-3.5 text-[10px] font-black text-slate-500 uppercase tracking-[0.15em]">Size</th>
                     <th className="px-5 py-3.5 text-[10px] font-black text-slate-500 uppercase tracking-[0.15em] text-center">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  {backups.map((backup) => (
-                    <tr key={backup.id} className="hover:bg-slate-50 transition-colors group">
+                  {sortedBackups.map((backup, i) => (
+                    <motion.tr
+                      key={backup.id}
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: i * 0.02 }}
+                      className="hover:bg-slate-50 transition-colors group"
+                    >
                       <td className="px-5 py-3.5">
                         <div className="flex items-center gap-2.5">
                           <div className="w-8 h-8 rounded-lg bg-violet-50 flex items-center justify-center flex-shrink-0">
-                            <svg className="w-4 h-4 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-                            </svg>
+                            <Archive className="w-4 h-4 text-violet-500" />
                           </div>
                           <span className="text-sm font-bold text-slate-800 font-mono">{backup.filename}</span>
                         </div>
@@ -216,44 +327,36 @@ const Backups = () => {
                         {new Date(backup.created_at).toLocaleString()}
                       </td>
                       <td className="px-5 py-3.5">
-                        <span className="text-xs font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
-                          {backup.size}
-                        </span>
+                        <Badge variant="slate" size="sm">{backup.size}</Badge>
                       </td>
                       <td className="px-5 py-3.5">
                         <div className="flex items-center justify-center gap-1">
                           <button
                             onClick={() => handleDownload(backup.id, backup.filename)}
                             title="Download"
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-violet-50 text-violet-600 text-xs font-bold hover:bg-violet-100 transition-all no-min"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-violet-50 text-violet-600 text-xs font-bold hover:bg-violet-100 transition-all opacity-0 group-hover:opacity-100 no-min"
                           >
-                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                            </svg>
+                            <Download className="w-3.5 h-3.5" />
                             Download
                           </button>
                           <button
                             onClick={() => handleRestore(backup.id)}
                             title="Restore"
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-600 text-xs font-bold hover:bg-emerald-100 transition-all no-min"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-600 text-xs font-bold hover:bg-emerald-100 transition-all opacity-0 group-hover:opacity-100 no-min"
                           >
-                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                            </svg>
+                            <Upload className="w-3.5 h-3.5" />
                             Restore
                           </button>
                           <button
                             onClick={() => handleDelete(backup.id)}
                             title="Delete"
-                            className="p-1.5 rounded-lg text-slate-400 hover:bg-red-50 hover:text-red-500 transition-all opacity-0 group-hover:opacity-100 no-min"
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all opacity-0 group-hover:opacity-100 no-min"
                           >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                            </svg>
+                            <Trash2 className="w-4 h-4" />
                           </button>
                         </div>
                       </td>
-                    </tr>
+                    </motion.tr>
                   ))}
                 </tbody>
               </table>

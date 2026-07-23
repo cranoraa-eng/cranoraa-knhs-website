@@ -1,10 +1,12 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 
 const PortalHubShell = ({ title, description, tabs, showHeader = true }) => {
   const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
+  const tabBarRef = useRef(null);
 
   const visibleTabs = useMemo(() => {
     return tabs.filter((tab) => {
@@ -28,9 +30,14 @@ const PortalHubShell = ({ title, description, tabs, showHeader = true }) => {
 
   if (!visibleTabs.length) {
     return (
-      <div className="rounded-lg border border-slate-200 bg-white p-6">
-        <h2 className="text-sm font-extrabold uppercase tracking-widest text-slate-900">{title}</h2>
-        <p className="mt-2 text-sm text-slate-500">No tools are available in this workspace for your account.</p>
+      <div className="rounded-xl border border-slate-200 bg-white p-8 text-center">
+        <div className="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center mx-auto mb-4">
+          <svg className="w-7 h-7 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+        </div>
+        <h2 className="text-base font-extrabold text-slate-900 mb-1">{title}</h2>
+        <p className="text-sm text-slate-500">No tools are available in this workspace for your account.</p>
       </div>
     );
   }
@@ -38,58 +45,73 @@ const PortalHubShell = ({ title, description, tabs, showHeader = true }) => {
   const ActiveComponent = activeTab.component;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-0">
       {showHeader && (
-        <section className="rounded-lg border border-slate-200 bg-white shadow-sm">
-          <div className="border-b border-slate-200 px-4 py-4 md:px-5">
+        <section className="bg-white border border-slate-200 border-b-0 rounded-t-xl overflow-hidden">
+          <div className="px-5 py-5 md:px-6 md:py-6">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
               <div className="min-w-0">
-                <p className="text-[10px] font-black uppercase tracking-[0.24em] text-violet-700">Portal Workspace</p>
-                <h2 className="mt-1 text-xl font-black tracking-tight text-slate-900">{title}</h2>
-                {description ? <p className="mt-1 max-w-3xl text-sm text-slate-500">{description}</p> : null}
+                <p className="text-[10px] font-black uppercase tracking-[0.24em] text-violet-600 mb-1">Portal Workspace</p>
+                <h2 className="text-xl font-extrabold tracking-tight text-slate-900">{title}</h2>
+                {description ? <p className="mt-1 max-w-3xl text-sm text-slate-500 font-medium">{description}</p> : null}
               </div>
-              <div className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+              <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">
                 {visibleTabs.length} tool{visibleTabs.length === 1 ? '' : 's'}
               </div>
-            </div>
-          </div>
-
-          <div className="border-b border-slate-200 bg-slate-50/80 px-3 py-2 md:px-4">
-            <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none">
-              {visibleTabs.map((tab) => {
-                const isActive = tab.id === activeTab.id;
-                return (
-                  <button
-                    key={tab.id}
-                    type="button"
-                    onClick={() => {
-                      const nextParams = new URLSearchParams(searchParams);
-                      nextParams.set('tab', tab.id);
-                      setSearchParams(nextParams);
-                    }}
-                    className={`shrink-0 inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-extrabold uppercase tracking-wider transition-all ${
-                      isActive
-                        ? 'border-violet-700 bg-violet-700 text-white shadow-md shadow-purple-900/20'
-                        : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:text-slate-900'
-                    }`}
-                  >
-                    {tab.icon && (
-                      <svg className={`w-3.5 h-3.5 ${isActive ? 'text-white' : 'text-slate-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={tab.icon} />
-                      </svg>
-                    )}
-                    {tab.label}
-                  </button>
-                );
-              })}
             </div>
           </div>
         </section>
       )}
 
-      <section key={activeTab.id} className="min-w-0">
+      {/* Tab Navigation */}
+      <div className="bg-white border border-slate-200 border-t-0 px-3 py-2 md:px-4 md:py-2.5 sticky top-0 z-20">
+        <div ref={tabBarRef} className="flex gap-1 overflow-x-auto scrollbar-none">
+          {visibleTabs.map((tab) => {
+            const isActive = tab.id === activeTab.id;
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => {
+                  const nextParams = new URLSearchParams(searchParams);
+                  nextParams.set('tab', tab.id);
+                  setSearchParams(nextParams);
+                }}
+                className={`shrink-0 relative inline-flex items-center gap-1.5 px-4 py-2.5 rounded-lg text-xs font-bold transition-all ${
+                  isActive
+                    ? 'text-violet-700 bg-violet-50 border border-violet-200'
+                    : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50 border border-transparent'
+                }`}
+              >
+                {tab.icon && (
+                  <svg className={`w-3.5 h-3.5 ${isActive ? 'text-violet-600' : 'text-slate-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={tab.icon} />
+                  </svg>
+                )}
+                {tab.label}
+                {isActive && (
+                  <motion.div
+                    layoutId="activeTabIndicator"
+                    className="absolute bottom-0 left-2 right-2 h-0.5 bg-violet-600 rounded-full"
+                    transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+                  />
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Active Tab Content */}
+      <motion.section
+        key={activeTab.id}
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.2 }}
+        className="min-w-0"
+      >
         <ActiveComponent />
-      </section>
+      </motion.section>
     </div>
   );
 };
