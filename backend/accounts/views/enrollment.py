@@ -170,6 +170,9 @@ class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
 
             data = request.data.copy()
             for field_name, url in uploaded_urls.items():
+                if url and not url.startswith(('http://', 'https://')):
+                    url = 'https://' + url
+                logger.info(f"Enrollment upload {field_name}: {url}")
                 data[field_name] = url
 
             serializer = self.get_serializer(data=data)
