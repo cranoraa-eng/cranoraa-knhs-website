@@ -684,7 +684,7 @@ const Enrollment = () => {
                         </Field>
                         {lrnRequestReason === 'other' && (
                           <Field label="Please specify">
-                            <Input value={lrn} onChange={e => setLrn(e.target.value)} placeholder="Describe your situation" />
+                            <Input value={lrnRequestReason} onChange={e => setLrnRequestReason(e.target.value)} placeholder="Describe your situation" />
                           </Field>
                         )}
                       </div>

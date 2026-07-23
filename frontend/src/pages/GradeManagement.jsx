@@ -230,7 +230,7 @@ const GradeManagement = () => {
             Refresh
           </Button>
           {(user?.role === 'admin' || user?.role === 'staff') && (
-            <Button variant="primary" onClick={() => navigate('/grade-input')}>
+            <Button variant="primary" onClick={() => navigate('/attendance')}>
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"

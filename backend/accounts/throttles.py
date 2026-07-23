@@ -89,3 +89,11 @@ class LogoutRateThrottle(UserRateThrottle):
     10/min per user for logout. Prevents token blacklist abuse.
     """
     scope = 'logout'
+
+
+class TrackRateThrottle(AnonRateThrottle):
+    """
+    Rate limit for the enrollment tracking endpoint.
+    30 requests per minute per IP to prevent enumeration attacks.
+    """
+    scope = 'track'
