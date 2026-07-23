@@ -91,7 +91,6 @@ function DashboardOverview() {
       {/* Welcome Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <p className="text-[10px] font-black text-violet-600 uppercase tracking-[0.2em] mb-1">Admin Dashboard</p>
           <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight">
             Welcome back, {user?.first_name || 'Admin'}
           </h1>
