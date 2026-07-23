@@ -559,55 +559,10 @@ const Layout = () => {
               {/* Mobile Title */}
               <h1 className="text-base font-extrabold text-slate-900 sm:hidden tracking-tight">{pageTitle}</h1>
 
-              {/* Hub Tabs in Header (Mobile) */}
-              {hubTabs && (
-                <div className="sm:hidden mt-1.5 flex gap-2 overflow-x-auto pb-1">
-                  {hubTabs.tabs.map((tab) => {
-                    const active = hubTabs.isActive(tab.id);
-                    return (
-                      <button
-                        key={tab.id}
-                        type="button"
-                        onClick={() => navigate(`${location.pathname}?tab=${tab.id}`)}
-                        className={`shrink-0 rounded-md border px-3 py-2 text-xs font-extrabold uppercase tracking-wider transition-all ${
-                          active
-                            ? 'border-violet-700 bg-violet-700 text-white'
-                            : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:text-slate-900'
-                        }`}
-                      >
-                        {tab.label}
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
+
             </div>
 
-            {/* Hub Tabs in Header (Desktop) */}
-            {hubTabs && (
-              <div className="hidden md:flex items-center gap-2 lg:gap-3 ml-6 border-l border-slate-200 pl-6">
-                <span className="text-[10px] font-black uppercase tracking-[0.24em] text-violet-700">Portal Workspace</span>
-                <div className="flex gap-1.5">
-                  {hubTabs.tabs.map((tab) => {
-                    const active = hubTabs.isActive(tab.id);
-                    return (
-                      <button
-                        key={tab.id}
-                        type="button"
-                        onClick={() => navigate(`${location.pathname}?tab=${tab.id}`)}
-                        className={`rounded-md border px-3 py-1.5 text-xs font-extrabold uppercase tracking-wider transition-all ${
-                          active
-                            ? 'border-violet-700 bg-violet-700 text-white'
-                            : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:text-slate-900'
-                        }`}
-                      >
-                        {tab.label}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
+
 
             <div className="flex items-center space-x-2 lg:space-x-3">
               {/* Search Bar */}
