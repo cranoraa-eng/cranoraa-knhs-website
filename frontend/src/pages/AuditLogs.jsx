@@ -304,18 +304,32 @@ const AuditLogs = () => {
       const params = { page, page_size: PAGE_SIZE };
       if (search) params.search = search;
       if (actionFilter) params.action = actionFilter;
+
+      // Apply quick filter date ranges
+      if (quickFilter === 'today') {
+        const today = new Date().toISOString().split('T')[0];
+        params.date_from = today;
+        params.date_to = today;
+      } else if (quickFilter === '7days') {
+        const d = new Date(); d.setDate(d.getDate() - 7);
+        params.date_from = d.toISOString().split('T')[0];
+      } else if (quickFilter === '30days') {
+        const d = new Date(); d.setDate(d.getDate() - 30);
+        params.date_from = d.toISOString().split('T')[0];
+      }
+
       const response = await api.get('/admin/audit-logs/', { params });
       const data = response.data;
       setLogs(Array.isArray(data.results) ? data.results : []);
       setTotalCount(data.count || 0);
       setTotalPages(Math.ceil((data.count || 0) / PAGE_SIZE) || 1);
-    } catch {
-      toast.error('Failed to load audit logs');
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed to load audit logs');
       setLogs([]);
     } finally {
       setLoading(false);
     }
-  }, [page, search, actionFilter]);
+  }, [page, search, actionFilter, quickFilter]);
 
   const fetchStats = useCallback(async () => {
     try {
@@ -324,16 +338,21 @@ const AuditLogs = () => {
     } catch { /* ignore */ }
   }, []);
 
-  useEffect(() => { fetchLogs(); }, [fetchLogs]);
-  useEffect(() => { fetchStats(); }, [fetchStats]);
+  // Fetch immediately on page change
+  useEffect(() => { fetchLogs(); }, [page, fetchLogs]);
 
+  // Debounce filter changes — reset to page 1 first
   useEffect(() => {
     const t = setTimeout(() => {
       if (page !== 1) setPage(1);
       else fetchLogs();
     }, 400);
     return () => clearTimeout(t);
-  }, [search, actionFilter, page, fetchLogs]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search, actionFilter, quickFilter]);
+
+  // Fetch stats on mount
+  useEffect(() => { fetchStats(); }, [fetchStats]);
 
   const handleSelectAll = (e) => {
     setSelectedIds(e.target.checked ? logs.map(l => l.id) : []);
@@ -361,7 +380,9 @@ const AuditLogs = () => {
       fetchLogs();
       setSelectedIds(prev => prev.filter(i => i !== id));
       fetchStats();
-    } catch { toast.error('Failed to delete'); }
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed to delete');
+    }
   };
 
   const handleBulkDelete = async () => {
@@ -383,7 +404,7 @@ const AuditLogs = () => {
       fetchLogs();
       setSelectedIds([]);
       fetchStats();
-    } catch { toast.error('Failed to delete entries'); }
+    } catch (err) { toast.error(err.response?.data?.error || 'Failed to delete entries'); }
     finally { setDeleting(false); }
   };
 
@@ -405,7 +426,7 @@ const AuditLogs = () => {
       fetchLogs();
       setSelectedIds([]);
       fetchStats();
-    } catch { toast.error('Failed to clear logs'); }
+    } catch (err) { toast.error(err.response?.data?.error || 'Failed to clear logs'); }
     finally { setDeleting(false); }
   };
 
@@ -530,7 +551,7 @@ const AuditLogs = () => {
         <StatCard icon={FileText} label="Total Logs" value={stats.count || totalCount} color="violet" />
         <StatCard icon={CheckCircle2} label="Successful" value={stats.count || totalCount} color="emerald" sub="All recorded actions" />
         <StatCard icon={XCircle} label="Failed Actions" value={stats.failed_count || 0} color="red" sub="Requires attention" />
-        <StatCard icon={Clock} label="Today" value={dailyActivity[dailyActivity.length - 1]?.count || 0} color="blue" sub="Activity today" />
+        <StatCard icon={Clock} label="Today" value={stats.today_count || 0} color="blue" sub="Activity today" />
         <StatCard icon={Database} label="Storage" value={`${stats.size_mb || 0}MB`} color="amber" sub={`${Math.round(storagePercent)}% of ${stats.max_mb}MB`} />
         <StatCard icon={AlertTriangle} label="Critical" value={stats.critical_count || 0} color="red" sub="Needs review" />
       </div>

@@ -261,16 +261,31 @@ class AuditLogViewSet(viewsets.ModelViewSet):
     def stats(self, request):
         if self.request.user.role != 'admin':
             return Response({'error': 'Unauthorized'}, status=403)
-        
+
         count = AuditLog.objects.count()
         # Estimate size: ~1KB per log entry on average
-        size_bytes = count * 1024 
+        size_bytes = count * 1024
         size_mb = round(size_bytes / (1024 * 1024), 2)
-        
+
+        # Count failed/critical actions (delete, reject, suspend, etc.)
+        critical_actions = ['delete', 'reject', 'suspend', 'mute', 'grade_delete', 'attendance_delete']
+        critical_count = AuditLog.objects.filter(action__in=critical_actions).count()
+        failed_count = AuditLog.objects.filter(
+            action__in=['reject', 'suspend', 'mute']
+        ).count()
+
+        # Count today's entries
+        from django.utils import timezone
+        today = timezone.now().date()
+        today_count = AuditLog.objects.filter(timestamp__date=today).count()
+
         return Response({
             'count': count,
             'size_mb': size_mb,
-            'max_mb': 50.0  # Recommended max size before cleanup
+            'max_mb': 50.0,
+            'failed_count': failed_count,
+            'critical_count': critical_count,
+            'today_count': today_count,
         })
 
 
