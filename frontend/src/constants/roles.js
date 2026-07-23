@@ -21,7 +21,7 @@ export const RoleLabel = Object.freeze({
 });
 
 export const ROLE_HOME = Object.freeze({
-  [Role.ADMIN]: '/dashboard',
+  [Role.ADMIN]: '/system-admin',
   [Role.STAFF]: '/dashboard',
   [Role.STUDENT]: '/dashboard',
   [Role.PARENT]: '/parent-dashboard',

@@ -187,7 +187,7 @@ const Login = () => {
       signIn(userData);
       await refreshUser();
       setLoading(false);
-      const dest = userData.role === 'parent' ? '/parent-dashboard' : '/dashboard';
+      const dest = userData.role === 'admin' ? '/system-admin' : userData.role === 'parent' ? '/parent-dashboard' : '/dashboard';
       navigate(dest, { replace: true });
     } catch (err) {
       setLoading(false);
