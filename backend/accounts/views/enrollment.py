@@ -97,7 +97,7 @@ class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
             return [IsAuthenticated()]
         return [IsAuthenticated()]
 
-def get_throttles(self):
+    def get_throttles(self):
         if self.action == 'create':
             return [EnrollmentRateThrottle()]
         if self.action == 'track':
