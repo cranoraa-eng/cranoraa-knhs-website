@@ -52,8 +52,13 @@ function ApplicationsTab({ refetch }) {
         ? await api.delete(`/enrollment-applications/${id}/delete_application/`)
         : await api.post(`/enrollment-applications/${id}/${action}/`, opts);
       Swal.fire({ icon: 'success', title: 'Done', text: res.data?.status || res.data?.message || 'Action completed.' });
-      refetch();
-      if (selected?.id === id && action !== 'enroll_student') setSelected(null);
+      localRefetch();
+      try {
+        const fresh = await api.get(`/enrollment-applications/${id}/`);
+        setSelected(fresh.data);
+      } catch {
+        if (selected?.id === id && action !== 'enroll_student') setSelected(null);
+      }
       return res.data;
     } catch (err) {
       const msg = err.response?.data?.error
@@ -604,7 +609,7 @@ function ApplicationsTab({ refetch }) {
                       </>
                     )}
                     {selected.status === 'approved' && (
-                      <Button onClick={() => { setEnrollApp(selected); setShowEnrollModal(true); setSelected(null); }} variant="primary" size="sm">Enroll Student</Button>
+                      <Button onClick={() => { setEnrollApp(selected); setShowEnrollModal(true); }} variant="primary" size="sm">Enroll Student</Button>
                     )}
                     {selected.status !== 'enrolled' && (
                       <Button onClick={() => promptDelete(selected.id, `${selected.first_name} ${selected.last_name}`)} variant="danger" size="sm">Delete</Button>
@@ -612,6 +617,67 @@ function ApplicationsTab({ refetch }) {
                     <Button onClick={() => setSelected(null)} variant="secondary" size="sm">Close</Button>
                   </div>
                 </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {showEnrollModal && enrollApp && (
+          <div className="fixed inset-0 z-[10010] bg-black/50 flex items-center justify-center p-4">
+            <div className="bg-white w-full max-w-md border border-gray-300 shadow-2xl rounded-sm flex flex-col max-h-[92vh]" onClick={e => e.stopPropagation()}>
+              <div className="bg-[#5e2a84] flex items-center justify-between px-5 py-3 flex-shrink-0 border-b-2 border-violet-900">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-7 h-7 rounded-full bg-white/20 border border-white/30 flex items-center justify-center flex-shrink-0">
+                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <h2 className="text-sm font-black text-white uppercase tracking-widest leading-none">Enroll Student</h2>
+                    <p className="text-violet-200 text-[10px] mt-0.5 font-medium uppercase tracking-wide">{enrollApp?.first_name} {enrollApp?.last_name}</p>
+                  </div>
+                </div>
+                <button type="button" onClick={() => { setShowEnrollModal(false); setEnrollApp(null); setEnrollClassroom(''); setEnrollParentEmail(''); }}
+                  className="ml-4 w-7 h-7 flex items-center justify-center rounded text-white/60 hover:bg-white/20 hover:text-white transition-all">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12"/>
+                  </svg>
+                </button>
+              </div>
+              <div className="px-6 py-5 overflow-y-auto flex-1 space-y-4">
+                <div>
+                  <label className="block text-xs font-black text-gray-700 uppercase tracking-wider mb-1.5">Assign Section</label>
+                  <select value={enrollClassroom} onChange={e => setEnrollClassroom(e.target.value)}
+                    className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500">
+                    <option value="">Auto-assign</option>
+                    {classrooms.filter(c => String(c.grade_level) === String(enrollApp.grade_level)).map(c => {
+                      const count = c.student_count || 0;
+                      const cap = c.capacity || 40;
+                      return <option key={c.id} value={c.id}>{c.name} ({count}/{cap})</option>;
+                    })}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-black text-gray-700 uppercase tracking-wider mb-1.5">Parent Email (optional)</label>
+                  <input type="email" value={enrollParentEmail} onChange={e => setEnrollParentEmail(e.target.value)}
+                    placeholder="parent@email.com"
+                    className="w-full px-3 py-2.5 border border-gray-300 rounded-sm bg-white text-sm focus:outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500 placeholder:text-gray-400" />
+                  <p className="text-[10px] text-gray-400 mt-1">If a parent account exists with this email, it will be linked.</p>
+                </div>
+                <div className="bg-amber-50 border border-amber-200 rounded p-3 text-xs text-amber-700">
+                  <strong>Note:</strong> A student account will be created automatically. Save the credentials shown after enrollment.
+                </div>
+              </div>
+              <div className="px-6 py-4 border-t border-gray-200 bg-gray-50 flex items-center justify-end gap-3 flex-shrink-0">
+                <button type="button"
+                  onClick={() => { setShowEnrollModal(false); setEnrollApp(null); setEnrollClassroom(''); setEnrollParentEmail(''); }}
+                  className="px-6 py-2.5 bg-white text-gray-700 text-xs font-black uppercase tracking-widest border border-gray-300 hover:bg-gray-100 rounded-sm">
+                  Cancel
+                </button>
+                <button type="button" onClick={enrollStudent} disabled={enrolling}
+                  className="px-6 py-2.5 bg-[#5e2a84] text-white text-xs font-black uppercase tracking-widest hover:bg-violet-700 rounded-sm">
+                  {enrolling ? 'Enrolling...' : 'Enroll Now'}
+                </button>
               </div>
             </div>
           </div>

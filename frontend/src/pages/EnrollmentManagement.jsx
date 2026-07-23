@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import api from '../utils/api';
 import Swal from 'sweetalert2';
 import { useParallelFetch } from '../hooks/useFetch';
