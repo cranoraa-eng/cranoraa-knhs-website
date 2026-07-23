@@ -566,6 +566,7 @@ const ClassroomHub = () => {
               peopleSearch={peopleSearch}
               setPeopleSearch={setPeopleSearch}
               onStudentClick={setSelectedStudent}
+              isStudent={user?.role === 'student'}
             />
           )}
 
@@ -1280,7 +1281,7 @@ const MaterialsTab = ({ classroom, materials, isTeacher, searchQuery, setSearchQ
 );
 
 // People Tab Component
-const PeopleTab = ({ classroom, students, isTeacher, loading, peopleSearch, setPeopleSearch, onStudentClick }) => {
+const PeopleTab = ({ classroom, students, isTeacher, loading, peopleSearch, setPeopleSearch, onStudentClick, isStudent }) => {
   const sortedStudents = useMemo(() => {
     const list = Array.isArray(students) ? [...students] : [];
     const filtered = peopleSearch
@@ -1305,7 +1306,7 @@ const PeopleTab = ({ classroom, students, isTeacher, loading, peopleSearch, setP
   const otherStudents = sortedStudents.filter(s => !['male', 'female'].includes((s.student_sex || '').toLowerCase()));
 
   const renderStudent = (student) => (
-    <div key={student.id} onClick={() => onStudentClick?.(student)} className="flex items-center gap-2 p-2 rounded-lg hover:bg-violet-50 transition-colors cursor-pointer border border-transparent hover:border-violet-200">
+    <div key={student.id} onClick={() => !isStudent && onStudentClick?.(student)} className={`flex items-center gap-2 p-2 rounded-lg hover:bg-violet-50 transition-colors ${isStudent ? 'cursor-default' : 'cursor-pointer'} border border-transparent hover:border-violet-200`}>
       {student.student_profile_picture ? (
         <img src={student.student_profile_picture} alt="" className="w-8 h-8 rounded-full object-cover ring-2 ring-white shadow-sm" />
       ) : (

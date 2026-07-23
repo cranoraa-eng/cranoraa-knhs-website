@@ -586,7 +586,7 @@ export const GradeManagementView = ({ classroom, onBack }) => {
 };
 
 // Attendance View - Custom inline implementation
-export const AttendanceView = ({ classroom, onBack }) => {
+export const AttendanceView = ({ classroom, onBack, isStudent }) => {
   const [students, setStudents] = useState([]);
   const [attendance, setAttendance] = useState({});
   const [attendanceIds, setAttendanceIds] = useState({});
@@ -777,10 +777,17 @@ export const AttendanceView = ({ classroom, onBack }) => {
           <ArrowLeft className="w-4 h-4 mr-1 md:mr-2" />
           <span className="hidden sm:inline">Back to Overview</span>
         </Button>
-        <Button variant="primary" size="sm" onClick={handleSubmit} loading={submitting}>
+        <Button 
+          variant="primary" 
+          size="sm" 
+          onClick={handleSubmit} 
+          loading={submitting}
+          disabled={isStudent}
+        >
           <Check className="w-4 h-4 mr-1.5" />
           <span className="hidden sm:inline">Submit Attendance</span>
           <span className="sm:hidden">Submit</span>
+          {isStudent && <span className="ml-1">(View only)</span>}
         </Button>
       </div>
 
@@ -868,7 +875,8 @@ export const AttendanceView = ({ classroom, onBack }) => {
                               key={key}
                               onClick={() => handleStatusChange(student.student, key)}
                               title={key.charAt(0).toUpperCase() + key.slice(1)}
-                              className={`flex items-center justify-center w-7 h-7 rounded-md transition-all ${isActive ? cfg.active : cfg.idle}`}
+                              disabled={isStudent}
+                              className={`flex items-center justify-center w-7 h-7 rounded-md transition-all ${isActive ? cfg.active : cfg.idle} ${isStudent ? 'opacity-50 cursor-not-allowed' : ''}`}
                             >
                               <Icon className="w-3.5 h-3.5" />
                             </button>
@@ -919,7 +927,8 @@ export const AttendanceView = ({ classroom, onBack }) => {
                                   key={key}
                                   onClick={() => handleStatusChange(student.student, key)}
                                   title={key.charAt(0).toUpperCase() + key.slice(1)}
-                                  className={`flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-semibold transition-all ${isActive ? cfg.active : cfg.idle}`}
+                                  disabled={isStudent}
+                                  className={`flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-semibold transition-all ${isActive ? cfg.active : cfg.idle} ${isStudent ? 'opacity-50 cursor-not-allowed' : ''}`}
                                 >
                                   <Icon className="w-3.5 h-3.5" />
                                   <span>{key.charAt(0).toUpperCase() + key.slice(1)}</span>
