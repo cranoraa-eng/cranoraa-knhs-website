@@ -213,7 +213,7 @@ function DashboardOverview() {
   };
 
   /* ── Skeleton Loading ── */
-  if (loading && !data) {
+  if (loading && !stats) {
     return (
       <div className="space-y-5" aria-busy="true" aria-label="Loading dashboard...">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">

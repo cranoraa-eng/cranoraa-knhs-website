@@ -64,13 +64,17 @@ export function useParallelFetch(endpoints, options = {}) {
     setError(null);
     try {
       const entries = Object.entries(endpoints);
-      const results = await Promise.all(
+      const results = await Promise.allSettled(
         entries.map(([, url]) => api.get(url))
       );
       if (cancelledRef.current) return;
       const merged = {};
-      results.forEach((res, i) => {
-        merged[entries[i][0]] = res.data;
+      results.forEach((result, i) => {
+        if (result.status === 'fulfilled') {
+          merged[entries[i][0]] = result.value.data;
+        } else {
+          merged[entries[i][0]] = null;
+        }
       });
       setData(merged);
     } catch (err) {
