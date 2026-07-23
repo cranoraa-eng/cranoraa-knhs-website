@@ -372,10 +372,28 @@ const Enrollment = () => {
       clearDraft();
       setSubmitted(res.data);
     } catch (error) {
-      const details = error.response?.data?.details;
-      const msg = error.response?.data?.error || 'Submission failed. Please try again.';
-      const fullMsg = details?.length ? `${msg}\n\n${details.map(d => '• ' + d).join('\n')}` : msg;
-      Swal.fire({ icon: 'error', title: 'Submission Failed', text: fullMsg });
+      const data = error.response?.data;
+      let msg = 'Submission failed. Please try again.';
+      if (data) {
+        if (typeof data.error === 'string') {
+          msg = data.error;
+        } else if (typeof data.error === 'object' && data.error !== null) {
+          const fieldErrors = Object.entries(data.error)
+            .map(([field, errs]) => `${field}: ${Array.isArray(errs) ? errs.join(', ') : errs}`)
+            .join('\n');
+          msg = fieldErrors || JSON.stringify(data.error);
+        } else if (typeof data === 'object') {
+          const fieldErrors = Object.entries(data)
+            .filter(([k]) => k !== 'details')
+            .map(([field, errs]) => `${field}: ${Array.isArray(errs) ? errs.join(', ') : errs}`)
+            .join('\n');
+          msg = fieldErrors || JSON.stringify(data);
+        }
+        if (data.details?.length) {
+          msg += '\n\n' + data.details.map(d => '• ' + d).join('\n');
+        }
+      }
+      Swal.fire({ icon: 'error', title: 'Submission Failed', text: msg });
     } finally {
       setLoading(false);
     }
