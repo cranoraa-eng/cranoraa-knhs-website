@@ -31,12 +31,14 @@ class NotificationConsumer(AsyncWebsocketConsumer):
     async def _join_groups(self):
         self.group_name = f'notifications_{self.user.id}'
         await self.channel_layer.group_add(self.group_name, self.channel_name)
+        await self.channel_layer.group_add('emergency_broadcast', self.channel_name)
         if self.user.role == 'admin':
             await self.channel_layer.group_add('moderation_alerts', self.channel_name)
 
     async def _leave_groups(self):
         if hasattr(self, 'group_name'):
             await self.channel_layer.group_discard(self.group_name, self.channel_name)
+        await self.channel_layer.group_discard('emergency_broadcast', self.channel_name)
         if self.user and self.user.is_authenticated and self.user.role == 'admin':
             await self.channel_layer.group_discard('moderation_alerts', self.channel_name)
 
@@ -108,6 +110,12 @@ class NotificationConsumer(AsyncWebsocketConsumer):
         await self.send(text_data=json.dumps({
             'type': 'moderation_alert',
             'data': event['data']
+        }))
+
+    async def emergency_alert(self, event):
+        await self.send(text_data=json.dumps({
+            'type': 'emergency_alert',
+            'data': event['emergency']
         }))
 
     async def notification_message(self, event):

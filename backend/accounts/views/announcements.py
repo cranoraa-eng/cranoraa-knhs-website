@@ -28,6 +28,11 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+def _invalidate_public_announcements_cache():
+    from django.core.cache import cache
+    cache.delete('public_announcements:v1')
+
+
 class AnnouncementViewSet(viewsets.ModelViewSet):
     serializer_class = AnnouncementSerializer
     permission_classes = [IsAuthenticated]
@@ -160,9 +165,15 @@ class AnnouncementViewSet(viewsets.ModelViewSet):
                 # For large audiences this is slightly slower but ensures live delivery.
                 for notif in notifications_to_create:
                     notif.save()
+            _invalidate_public_announcements_cache()
         except Exception as e:
             logger.error(f"Error in perform_create: {str(e)}")
             raise
+
+    def destroy(self, request, *args, **kwargs):
+        response = super().destroy(request, *args, **kwargs)
+        _invalidate_public_announcements_cache()
+        return response
 
     @action(detail=False, methods=['post', 'delete'])
     def bulk_delete(self, request):
@@ -189,6 +200,7 @@ class AnnouncementViewSet(viewsets.ModelViewSet):
             request=request
         )
         
+        _invalidate_public_announcements_cache()
         return Response({"message": f"Successfully deleted {count} announcements"}, status=200)
 
     @action(detail=False, methods=['post'])
@@ -212,6 +224,7 @@ class AnnouncementViewSet(viewsets.ModelViewSet):
             request=request
         )
         
+        _invalidate_public_announcements_cache()
         return Response({"message": f"Successfully deleted all {count} announcements"}, status=200)
 
     def perform_update(self, serializer):
@@ -253,23 +266,30 @@ class AnnouncementViewSet(viewsets.ModelViewSet):
         elif announcement.target_audience == 'teachers':
             users = users.filter(role='staff')
         
-        notifications_to_create = []
+        # Find users who already have an unread notification for this announcement
+        existing_recipients = set(
+            Notification.objects.filter(
+                notification_type='announcement',
+                link='/announcements',
+                is_read=False,
+                title__contains=announcement.title,
+            ).values_list('recipient_id', flat=True)
+        )
         
+        count = 0
         for user in users:
-            if user != self.request.user:  # Don't notify the author
-                notifications_to_create.append(
-                    Notification(
-                        recipient=user,
-                        notification_type='announcement',
-                        title=f'New Announcement: {announcement.title}',
-                        message=announcement.content[:200] + '...' if len(announcement.content) > 200 else announcement.content,
-                        link='/announcements'
-                    )
+            if user != self.request.user and user.id not in existing_recipients:
+                Notification.objects.create(
+                    recipient=user,
+                    notification_type='announcement',
+                    title=f'Updated Announcement: {announcement.title}',
+                    message=announcement.content[:200] + '...' if len(announcement.content) > 200 else announcement.content,
+                    link='/announcements'
                 )
+                count += 1
         
-        # Bulk create notifications
-        if notifications_to_create:
-            Notification.objects.bulk_create(notifications_to_create)
+        logger.info(f"Created {count} update notifications for announcement {announcement.id}")
+        _invalidate_public_announcements_cache()
     
     @action(detail=True, methods=['post'], url_path='mark-read')
     def mark_read(self, request, pk=None):
@@ -310,6 +330,7 @@ class AnnouncementViewSet(viewsets.ModelViewSet):
         announcement = self.get_object()
         announcement.status = 'live'
         announcement.save()
+        _invalidate_public_announcements_cache()
         return Response({'status': 'published'})
     
     @action(detail=True, methods=['post'])
@@ -324,6 +345,7 @@ class AnnouncementViewSet(viewsets.ModelViewSet):
             link='/announcements',
             title__icontains=announcement.title[:30]
         ).delete()
+        _invalidate_public_announcements_cache()
         return Response({'status': 'archived'})
 
     @action(detail=True, methods=['post'], url_path='delete-attachment')

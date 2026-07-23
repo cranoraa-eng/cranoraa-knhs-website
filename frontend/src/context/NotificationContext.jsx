@@ -129,6 +129,13 @@ export const NotificationProvider = ({ children }) => {
         } else if (data.type === 'moderation_alert') {
           playSound('error');
           toast.error(`NEW REPORT: ${data.data.reason}`, { icon: '⚠️', duration: 10000 });
+        } else if (data.type === 'emergency_alert') {
+          playSound('error');
+          const em = data.data || {};
+          toast.error(`EMERGENCY: ${em.title || 'Alert'}`, {
+            icon: '🚨',
+            duration: 15000,
+          });
         }
       } catch (err) {
         console.error('Error parsing notification WS message', err);
