@@ -489,6 +489,14 @@ class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
                 return Response({'error': f'Grade level mismatch: classroom is Grade {classroom.grade_level}, application is Grade {application.grade_level}'}, status=400)
             application.assigned_classroom = classroom
             application.save()
+
+            # If already enrolled, create/update the enrollment record
+            if application.enrolled_student:
+                StudentClassEnrollment.objects.get_or_create(
+                    student=application.enrolled_student,
+                    classroom=classroom
+                )
+
             return Response({'status': f'Section set to {classroom.name}'})
         except Classroom.DoesNotExist:
             return Response({'error': 'Classroom not found'}, status=404)
