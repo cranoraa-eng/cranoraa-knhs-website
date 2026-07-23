@@ -316,6 +316,63 @@ class UserViewSet(viewsets.ModelViewSet):
         return Response({'status': f'Successfully deleted {count} users'})
 
     @action(detail=True, methods=['post'])
+    def assign_section(self, request, pk=None):
+        """Assign a student to a classroom/section."""
+        user = request.user
+        if user.role not in ['admin', 'staff']:
+            return Response({'error': 'Unauthorized'}, status=403)
+
+        student = self.get_object()
+
+        # Only students can be assigned to sections
+        if student.role != 'student':
+            return Response({'error': 'Only students can be assigned to sections'}, status=400)
+
+        classroom_id = request.data.get('classroom_id')
+        if not classroom_id:
+            return Response({'error': 'classroom_id is required'}, status=400)
+
+        try:
+            classroom = Classroom.objects.get(id=classroom_id)
+        except Classroom.DoesNotExist:
+            return Response({'error': 'Classroom not found'}, status=404)
+
+        # Check capacity
+        current_count = StudentClassEnrollment.objects.filter(classroom=classroom).count()
+        capacity = classroom.capacity or 40
+        if current_count >= capacity:
+            return Response({'error': f'{classroom.name} is at full capacity ({current_count}/{capacity})'}, status=400)
+
+        # Check grade level match
+        student_grade = student.profile.grade_level if hasattr(student, 'profile') else None
+        if student_grade and str(classroom.grade_level) != str(student_grade):
+            return Response({
+                'error': f'Grade level mismatch: classroom is Grade {classroom.grade_level}, student is Grade {student_grade}'
+            }, status=400)
+
+        # Create or update enrollment
+        enrollment, created = StudentClassEnrollment.objects.get_or_create(
+            student=student,
+            classroom=classroom,
+            defaults={'enrolled_at': timezone.now()}
+        )
+
+        # Update student profile with grade level
+        profile, _ = Profile.objects.get_or_create(user=student)
+        profile.grade_level = str(classroom.grade_level)
+        profile.save(update_fields=['grade_level'])
+
+        return Response({
+            'status': f'Student assigned to {classroom.name}',
+            'classroom': {
+                'id': classroom.id,
+                'name': classroom.name,
+                'grade_level': classroom.grade_level
+            },
+            'enrollment_created': created
+        })
+
+    @action(detail=True, methods=['post'])
     def update_status(self, request, pk=None):
         user_role = request.user.role
         if user_role not in ['admin', 'staff']:
