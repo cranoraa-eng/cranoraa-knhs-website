@@ -342,23 +342,22 @@ class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
             lrn = (application.lrn or '').strip()
             if lrn and len(lrn) == 12 and lrn.isdigit():
                 username = lrn
-                existing_user = User.objects.filter(username=username, role='student').first()
-                if existing_user and not EnrollmentApplication.objects.filter(enrolled_student=existing_user).exists():
+                existing_user = User.objects.filter(username=username).first()
+                if existing_user:
+                    # Reuse existing user regardless of role - update to student
                     student_user = existing_user
                     student_user.first_name = application.first_name
                     student_user.last_name = application.last_name
                     student_user.email = application.email or student_user.email
-                    student_user.must_change_password = True
+                    student_user.role = 'student'
                     student_user.is_verified = True
                     student_user.is_approved = True
+                    student_user.must_change_password = True
                     student_user.account_status = 'active'
-                    student_user.save()
                     temp_password = secrets.token_urlsafe(12)
                     student_user.set_password(temp_password)
                     student_user.save()
                 else:
-                    if User.objects.filter(username=username).exists():
-                        return Response({'error': 'A student account with this LRN already exists'}, status=400)
                     temp_password = secrets.token_urlsafe(12)
                     student_user = User(username=username, email=application.email or None,
                         first_name=application.first_name, last_name=application.last_name,
