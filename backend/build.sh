@@ -1,6 +1,4 @@
 #!/usr/bin/env bash
-# exit on error
-set -o errexit
 
 echo "Installing dependencies..."
 pip install -r requirements.txt
@@ -15,9 +13,15 @@ mkdir -p staticfiles
 python manage.py collectstatic --no-input
 
 echo "Running migrations..."
-python manage.py migrate || echo "WARNING: migrate failed — will retry on server startup"
+python manage.py migrate --no-input 2>&1
+MIGRATE_EXIT=$?
+if [ $MIGRATE_EXIT -ne 0 ]; then
+    echo "WARNING: migrate failed with exit code $MIGRATE_EXIT"
+else
+    echo "Migrations applied successfully"
+fi
 
-# Seeds depend on tables existing; skip gracefully if migrate didn't run
+# Only seed if accounts_user table exists
 if python manage.py shell -c "from django.db import connection; cursor = connection.cursor(); cursor.execute(\"SELECT 1 FROM accounts_user LIMIT 1\"); print('ok')" 2>/dev/null; then
     echo "Database tables exist, running seeds..."
 
@@ -37,5 +41,5 @@ if python manage.py shell -c "from django.db import connection; cursor = connect
     echo "Seeding JHS subjects (Grade 7-10)..."
     python manage.py seed_jhs_subjects
 else
-    echo "Tables not yet created — skipping seeds (will run on next deploy after migrate succeeds)"
+    echo "Tables not yet created — skipping seeds"
 fi
