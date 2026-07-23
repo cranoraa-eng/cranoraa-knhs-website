@@ -177,6 +177,8 @@ def _get_supabase_client():
     key = (getattr(settings, 'SUPABASE_KEY', '') or '').strip()
     if not url or not key:
         raise RuntimeError("SUPABASE_URL and SUPABASE_KEY must be set in environment variables.")
+    if not url.startswith(('http://', 'https://')):
+        url = 'https://' + url
     return create_client(url, key), url
 
 
@@ -308,6 +310,8 @@ def upload_file(file, bucket_key: str, folder: str = '') -> tuple[Optional[str],
             return None, f"Storage error: {msg}"
 
         public_url = f"{base_url.rstrip('/')}/storage/v1/object/public/{bucket_name}/{path}"
+        if not public_url.startswith(('http://', 'https://')):
+            public_url = 'https://' + public_url
         logger.info(f"Uploaded to {bucket_key}/{path} ({len(content)} bytes)")
         return public_url, None
 
