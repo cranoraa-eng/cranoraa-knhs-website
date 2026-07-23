@@ -9,6 +9,7 @@ import Swal from 'sweetalert2';
 import * as XLSX from 'xlsx';
 import { useScrollLock } from '../hooks/useScrollLock';
 import { LoadingSpinner } from '../components/ui';
+import { AssignSectionModal } from '../components/modals/AssignSectionModal';
 
 // ── Student Profile Drawer ─────────────────────────────────────────────────
 function StudentProfileDrawer({ student, classrooms, onClose, onResetPassword, onAssignSection, onDelete, onStartChat, currentUser }) {
@@ -378,6 +379,8 @@ const StudentManagement = () => {
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
+  const [showAssignModal, setShowAssignModal] = useState(false);
+  const [assignStudent, setAssignStudent] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedIds, setSelectedIds] = useState([]);
@@ -392,7 +395,7 @@ const StudentManagement = () => {
     sex: ''
   });
 
-  useScrollLock(showProfileModal || showAddModal || showImportModal);
+  useScrollLock(showProfileModal || showAddModal || showImportModal || showAssignModal);
 
   const GRADE_ORDER = ['Grade 7', 'Grade 8', 'Grade 9', 'Grade 10', 'Grade 11', 'Grade 12'];
 
@@ -616,49 +619,28 @@ setSelectedIds([]);
     }
   };
 
-  const handleAssignSection = async (studentId, currentClassroomName, gradeLevel) => {
-    const hasSection = currentClassroomName && currentClassroomName !== 'No Section';
-    const normalizedGrade = gradeLevel ? (/^\d+$/.test(gradeLevel) ? `Grade ${gradeLevel}` : gradeLevel) : '';
-    const filtered = (hasSection && normalizedGrade)
-      ? classrooms.filter(c => String(c.grade_level) === String(normalizedGrade))
-      : classrooms;
+  const handleAssignSection = (studentId, currentClassroomName, gradeLevel) => {
+    const student = students.find(s => String(s.id) === String(studentId));
+    if (student) {
+      setAssignStudent(student);
+      setShowAssignModal(true);
+    }
+  };
 
-    const { value } = await Swal.fire({
-      title: 'Assign Section',
-      html: `
-        <div class="text-left">
-          <p class="text-xs text-slate-500 mb-3">Current: <strong>${currentClassroomName || 'No Section'}</strong>${gradeLevel ? ` | Grade: <strong>${gradeLevel}</strong>` : ''}</p>
-          <select id="swal-select" class="swal2-select" style="width:100%;padding:8px;border:1px solid #e2e8f0;border-radius:4px;font-size:14px;">
-            <option value="">-- Select Section --</option>
-            ${filtered.map(c => {
-              const count = c.student_count || 0;
-              const cap = c.capacity || 40;
-              const full = count >= cap;
-              return `<option value="${c.id}" ${full ? 'disabled' : ''}>${c.name} (${count}/${cap})${full ? ' - FULL' : ''}</option>`;
-            }).join('')}
-          </select>
-          ${filtered.length === 0 ? '<p class="text-xs text-amber-600 mt-2">No sections available for this grade level.</p>' : ''}
-        </div>
-      `,
-      showCancelButton: true,
-      confirmButtonText: 'Assign',
-      confirmButtonColor: '#5e2a84',
-      preConfirm: () => document.getElementById('swal-select')?.value || ''
-    });
-
-    if (value) {
-      try {
-        await api.post('/enrollments/assign-classroom/', {
-          student: parseInt(studentId),
-          classroom: parseInt(value),
-        });
-
-        const classroom = classrooms.find(c => String(c.id) === String(value));
-        toast.success(`Assigned to ${classroom?.name || 'section'}`);
-        refetch();
-      } catch (err) {
-        toast.error(err.response?.data?.error || err.response?.data?.detail?.[0] || 'Failed to assign section');
-      }
+  const handleConfirmAssign = async (classroomId) => {
+    if (!assignStudent) return;
+    try {
+      await api.post('/enrollments/assign-classroom/', {
+        student: parseInt(assignStudent.id),
+        classroom: parseInt(classroomId),
+      });
+      const classroom = classrooms.find(c => String(c.id) === String(classroomId));
+      toast.success(`Assigned to ${classroom?.name || 'section'}`);
+      setShowAssignModal(false);
+      setAssignStudent(null);
+      refetch();
+    } catch (err) {
+      toast.error(err.response?.data?.error || err.response?.data?.detail?.[0] || 'Failed to assign section');
     }
   };
 
@@ -1500,6 +1482,16 @@ setSelectedIds([]);
         </div>
       )}
       </div>
+
+      <AssignSectionModal
+        isOpen={showAssignModal}
+        onClose={() => { setShowAssignModal(false); setAssignStudent(null); }}
+        onConfirm={handleConfirmAssign}
+        student={assignStudent}
+        classrooms={classrooms}
+        title="Assign Section"
+        confirmText="Assign"
+      />
     </div>
   );
 };
