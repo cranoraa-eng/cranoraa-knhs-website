@@ -88,25 +88,56 @@ function DashboardOverview() {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      {/* Welcome Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight">
-            Welcome back, {user?.first_name || 'Admin'}
-          </h1>
-          <p className="text-sm text-slate-500 mt-1 font-semibold">
-            System overview and quick actions
-          </p>
+      {/* Hero Card */}
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-violet-50 via-white to-violet-50/30 border border-violet-100 shadow-sm"
+      >
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-5 px-6 py-6 md:px-8 md:py-7">
+          {/* Left */}
+          <div className="flex-1 min-w-0">
+            <h1 className="text-xl md:text-2xl font-extrabold text-slate-900 tracking-tight">
+              Welcome back, {user?.first_name || 'Admin'} 👋
+            </h1>
+            <p className="text-sm text-slate-500 mt-1.5 font-medium max-w-md">
+              Manage your school's digital campus from one central dashboard.
+            </p>
+
+            {/* Badges */}
+            <div className="flex items-center gap-2 mt-3 flex-wrap">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-violet-100 text-violet-700 text-[11px] font-bold border border-violet-200">
+                <BookOpen className="w-3 h-3" />
+                Academic Year: 2026–2027
+              </span>
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 text-slate-600 text-[11px] font-bold border border-slate-200">
+                <Shield className="w-3 h-3" />
+                System Administrator
+              </span>
+            </div>
+
+            {/* Actions */}
+            <div className="flex items-center gap-2.5 mt-4">
+              <button className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-violet-600 text-white text-xs font-bold hover:bg-violet-700 transition-all shadow-sm">
+                <Megaphone className="w-3.5 h-3.5" />
+                Create Announcement
+              </button>
+              <button className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white text-slate-700 text-xs font-bold border border-slate-200 hover:bg-slate-50 hover:border-slate-300 transition-all">
+                <Users className="w-3.5 h-3.5" />
+                Manage Users
+              </button>
+            </div>
+          </div>
+
+          {/* Right — Illustration */}
+          <div className="hidden md:flex items-center justify-center w-28 h-28 rounded-2xl bg-gradient-to-br from-violet-100 to-violet-50 ring-1 ring-violet-200/60 flex-shrink-0">
+            <Shield className="w-14 h-14 text-violet-400" strokeWidth={1.2} />
+          </div>
         </div>
-        <button
-          onClick={handleRefresh}
-          disabled={refreshing}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-white border border-slate-200 text-sm font-bold text-slate-600 hover:bg-slate-50 transition-all disabled:opacity-50"
-        >
-          <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
-          Refresh
-        </button>
-      </div>
+
+        {/* Subtle decorative gradient bar */}
+        <div className="h-1 bg-gradient-to-r from-violet-500 via-violet-400 to-violet-300" />
+      </motion.div>
 
       {/* Stats Grid */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
