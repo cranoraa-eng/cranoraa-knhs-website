@@ -265,7 +265,7 @@ const TeacherDashboard = () => {
       {/* ── STAT CARDS ─────────────────────────────────────────────────── */}
       <div>
         <h2 className="text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-3">Overview</h2>
-        <div className="grid grid-cols-5 gap-1.5">
+        <div className="grid grid-cols-3 md:grid-cols-5 gap-1.5">
 
           <StatCard
             label="My Classes" value={classrooms.length} sub="Active"
@@ -276,7 +276,7 @@ const TeacherDashboard = () => {
           <StatCard
             label="Students" value={data?.total_students || 0} sub="Enrolled"
             icon={<svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>}
-            color="emerald"
+            color="emerald" onClick={() => navigate('/my-classes')}
           />
 
           <StatCard
@@ -303,7 +303,7 @@ const TeacherDashboard = () => {
             sub="Total records"
             icon={<svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>}
             color="sky"
-            onClick={() => navigate('/grade-input')}
+            onClick={() => navigate('/my-classes')}
           />
         </div>
       </div>
@@ -521,7 +521,7 @@ const TeacherDashboard = () => {
                     <p className="text-xs text-slate-700 mt-1">
                       <span className="font-bold text-rose-700">{pendingGrades} student{pendingGrades !== 1 ? 's' : ''}</span> are still missing grades across your subjects.
                     </p>
-                    <Button variant="primary" size="sm" onClick={() => navigate('/grade-input')} className="mt-3">
+                    <Button variant="primary" size="sm" onClick={() => navigate('/my-classes')} className="mt-3">
                       Submit Grades
                     </Button>
                   </div>
