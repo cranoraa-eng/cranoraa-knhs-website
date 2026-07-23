@@ -159,7 +159,9 @@ class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
                                            folder=f"applications/{field_name}")
                     if err:
                         upload_errors.append(f"{field_name}: {err}")
-                    else:
+                    elif url:
+                        if not url.startswith(('http://', 'https://')):
+                            url = 'https://' + url
                         uploaded_urls[field_name] = url
 
             if upload_errors:
@@ -169,17 +171,17 @@ class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
                 )
 
             data = request.data.copy()
-            for field_name, url in uploaded_urls.items():
-                if url and not url.startswith(('http://', 'https://')):
-                    url = 'https://' + url
-                logger.info(f"Enrollment upload {field_name}: {url}")
-                data[field_name] = url
+            for field_name in doc_fields:
+                data.pop(field_name, None)
 
             serializer = self.get_serializer(data=data)
             serializer.is_valid(raise_exception=True)
             application = serializer.save()
 
             for field_name, url in uploaded_urls.items():
+                EnrollmentApplication.objects.filter(pk=application.pk).update(**{field_name: url})
+                setattr(application, field_name, url)
+
                 doc_type_map = {
                     'birth_certificate': 'birth_certificate',
                     'report_card': 'report_card',
