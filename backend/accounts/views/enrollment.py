@@ -226,45 +226,49 @@ class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['get'], permission_classes=[AllowAny])
     def track(self, request):
-        number = request.query_params.get('number', '')
-        email = request.query_params.get('email', '')
-        if not number and not email:
-            return Response({'error': 'Provide enrollment number or email'}, status=400)
-        qs = EnrollmentApplication.objects.all()
-        if number:
-            qs = qs.filter(enrollment_number__iexact=number)
-        elif email:
-            qs = qs.filter(email__iexact=email)
-        app = qs.select_related('assigned_classroom').prefetch_related('documents', 'status_history').first()
-        if not app:
-            return Response({'error': 'No application found'}, status=404)
+        try:
+            number = request.query_params.get('number', '').strip()
+            email = request.query_params.get('email', '').strip()
+            if not number and not email:
+                return Response({'error': 'Provide enrollment number or email'}, status=400)
+            qs = EnrollmentApplication.objects.all()
+            if number:
+                qs = qs.filter(enrollment_number__iexact=number)
+            elif email:
+                qs = qs.filter(email__iexact=email)
+            app = qs.select_related('assigned_classroom').prefetch_related('documents', 'status_history').first()
+            if not app:
+                return Response({'error': 'No application found'}, status=404)
 
-        is_authed = request.user and request.user.is_authenticated
+            is_authed = request.user and request.user.is_authenticated
 
-        data = {
-            'enrollment_number': app.enrollment_number,
-            'status': app.status,
-            'full_name': app.full_name,
-            'grade_level': app.grade_level,
-            'strand': app.strand,
-            'submitted_at': app.submitted_at,
-            'assigned_classroom_name': app.assigned_classroom.name if app.assigned_classroom else None,
-            'remarks': app.remarks,
-        }
-        if is_authed:
-            data.update({
-                'lrn': app.lrn or '',
-                'enrolled_student_email': app.enrolled_student.email if app.enrolled_student else None,
-                'temp_password_display': app.temp_password_display if app.status == 'enrolled' and app.enrolled_student and app.enrolled_student.must_change_password else None,
-                'documents': [{'id': d.id, 'document_type_display': d.get_document_type_display(),
-                               'verification_status': d.verification_status,
-                               'verification_status_display': d.get_verification_status_display()} for d in app.documents.all()],
-                'status_history': [{'id': h.id, 'from_status_display': h.get_from_status_display() if h.from_status else None,
-                                    'to_status_display': h.get_to_status_display(), 'notes': h.notes,
-                                    'created_at': h.created_at} for h in app.status_history.all()],
-            })
+            data = {
+                'enrollment_number': app.enrollment_number or '',
+                'status': app.status or '',
+                'full_name': app.full_name,
+                'grade_level': app.grade_level or '',
+                'strand': app.strand or '',
+                'submitted_at': app.submitted_at.isoformat() if app.submitted_at else None,
+                'assigned_classroom_name': app.assigned_classroom.name if app.assigned_classroom else None,
+                'remarks': app.remarks or '',
+            }
+            if is_authed:
+                data.update({
+                    'lrn': app.lrn or '',
+                    'enrolled_student_email': app.enrolled_student.email if app.enrolled_student else None,
+                    'temp_password_display': app.temp_password_display if app.status == 'enrolled' and app.enrolled_student and app.enrolled_student.must_change_password else None,
+                    'documents': [{'id': d.id, 'document_type_display': d.get_document_type_display(),
+                                   'verification_status': d.verification_status,
+                                   'verification_status_display': d.get_verification_status_display()} for d in app.documents.all()],
+                    'status_history': [{'id': h.id, 'from_status_display': h.get_from_status_display() if h.from_status else None,
+                                        'to_status_display': h.get_to_status_display(), 'notes': h.notes or '',
+                                        'created_at': h.created_at.isoformat() if h.created_at else None} for h in app.status_history.all()],
+                })
 
-        return Response(data)
+            return Response(data)
+        except Exception as e:
+            logger.error(f"Enrollment track error: {str(e)}", exc_info=True)
+            return Response({'error': 'Unable to retrieve application. Please try again later.'}, status=500)
 
     @action(detail=True, methods=['post'], url_path='start-review')
     def start_review(self, request, pk=None):
