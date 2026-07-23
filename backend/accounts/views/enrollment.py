@@ -28,6 +28,12 @@ from ..pdf_export import enrollment_form_response, enrollment_summary_response
 logger = logging.getLogger(__name__)
 
 
+def _grade_key(g):
+    import re
+    m = re.search(r'(\d+)', str(g or ''))
+    return m.group(1) if m else str(g or '')
+
+
 class EnrollmentWaitlistViewSet(viewsets.ModelViewSet):
     serializer_class = EnrollmentWaitlistSerializer
     permission_classes = [IsAuthenticated]
@@ -479,7 +485,7 @@ class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
             capacity = classroom.capacity or 40
             if current_count >= capacity:
                 return Response({'error': f'{classroom.name} is at full capacity ({current_count}/{capacity})'}, status=400)
-            if str(classroom.grade_level) != str(application.grade_level):
+            if _grade_key(classroom.grade_level) != _grade_key(application.grade_level):
                 return Response({'error': f'Grade level mismatch: classroom is Grade {classroom.grade_level}, application is Grade {application.grade_level}'}, status=400)
             application.assigned_classroom = classroom
             application.save()

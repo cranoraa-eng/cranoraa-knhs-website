@@ -7,6 +7,7 @@ from django.contrib.auth import authenticate
 from django.utils import timezone
 from django.db.models import Q
 import logging
+import re
 import csv
 import io
 import datetime
@@ -19,6 +20,11 @@ from ..throttles import CsvImportRateThrottle
 from ..utils import log_audit_action, generate_temp_password
 
 logger = logging.getLogger(__name__)
+
+
+def _grade_key(g):
+    m = re.search(r'(\d+)', str(g or ''))
+    return m.group(1) if m else str(g or '')
 
 
 @api_view(['GET'])
@@ -345,7 +351,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
         # Check grade level match
         student_grade = student.profile.grade_level if hasattr(student, 'profile') else None
-        if student_grade and str(classroom.grade_level) != str(student_grade):
+        if student_grade and _grade_key(classroom.grade_level) != _grade_key(student_grade):
             return Response({
                 'error': f'Grade level mismatch: classroom is Grade {classroom.grade_level}, student is Grade {student_grade}'
             }, status=400)
