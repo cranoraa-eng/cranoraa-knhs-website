@@ -342,20 +342,40 @@ def get_throttles(self):
             lrn = (application.lrn or '').strip()
             if lrn and len(lrn) == 12 and lrn.isdigit():
                 username = lrn
-                if User.objects.filter(username=username).exists():
-                    return Response({'error': 'A student account with this LRN already exists'}, status=400)
+                existing_user = User.objects.filter(username=username, role='student').first()
+                if existing_user and not EnrollmentApplication.objects.filter(enrolled_student=existing_user).exists():
+                    student_user = existing_user
+                    student_user.first_name = application.first_name
+                    student_user.last_name = application.last_name
+                    student_user.email = application.email or student_user.email
+                    student_user.must_change_password = True
+                    student_user.is_verified = True
+                    student_user.is_approved = True
+                    student_user.account_status = 'active'
+                    student_user.save()
+                    temp_password = secrets.token_urlsafe(12)
+                    student_user.set_password(temp_password)
+                    student_user.save()
+                else:
+                    if User.objects.filter(username=username).exists():
+                        return Response({'error': 'A student account with this LRN already exists'}, status=400)
+                    temp_password = secrets.token_urlsafe(12)
+                    student_user = User(username=username, email=application.email or None,
+                        first_name=application.first_name, last_name=application.last_name,
+                        role='student', is_verified=True, is_approved=True, must_change_password=True, account_status='active')
+                    student_user.set_password(temp_password)
+                    student_user.save()
             else:
                 # Keep a non-name fallback only for applications without a usable LRN.
                 username = f"student.{secrets.token_hex(4)}"
                 while User.objects.filter(username=username).exists():
                     username = f"student.{secrets.token_hex(4)}"
-
-            temp_password = secrets.token_urlsafe(12)
-            student_user = User(username=username, email=application.email or None,
-                first_name=application.first_name, last_name=application.last_name,
-                role='student', is_verified=True, is_approved=True, must_change_password=True, account_status='active')
-            student_user.set_password(temp_password)
-            student_user.save()
+                temp_password = secrets.token_urlsafe(12)
+                student_user = User(username=username, email=application.email or None,
+                    first_name=application.first_name, last_name=application.last_name,
+                    role='student', is_verified=True, is_approved=True, must_change_password=True, account_status='active')
+                student_user.set_password(temp_password)
+                student_user.save()
 
             profile, _ = Profile.objects.get_or_create(user=student_user)
             profile.lrn = lrn; profile.grade_level = application.grade_level
