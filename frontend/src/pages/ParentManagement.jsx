@@ -110,7 +110,10 @@ export default function ParentManagement() {
       await api.delete(`/users/${id}/`);
       toast.success('Parent account deleted');
       refetch();
-    } catch { toast.error('Failed to delete'); }
+    } catch (err) {
+      const msg = err.response?.data?.error || err.response?.data?.detail || 'Failed to delete';
+      toast.error(msg);
+    }
   };
 
   const handleResetPassword = async (parentId) => {
