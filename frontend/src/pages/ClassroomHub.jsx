@@ -38,6 +38,7 @@ const ClassroomHub = () => {
   const [announcements, setAnnouncements] = useState([]);
   const [announcementTitle, setAnnouncementTitle] = useState('');
   const [announcementText, setAnnouncementText] = useState('');
+  const [announcementFiles, setAnnouncementFiles] = useState([]);
   const [loadingAnnouncements, setLoadingAnnouncements] = useState(false);
   const [students, setStudents] = useState([]);
   const [classroomSubjects, setClassroomSubjects] = useState([]);
@@ -192,15 +193,20 @@ const ClassroomHub = () => {
     
     setLoadingAnnouncements(true);
     try {
-      const response = await api.post('/announcements/', {
-        classroom: selectedClass.id,
-        content: announcementText.trim(),
-        title: announcementTitle.trim() || ''
+      const formData = new FormData();
+      formData.append('classroom', selectedClass.id);
+      formData.append('content', announcementText.trim());
+      formData.append('title', announcementTitle.trim() || '');
+      announcementFiles.forEach(f => formData.append('attachments', f));
+
+      const response = await api.post('/announcements/', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
       });
       
       setAnnouncements([response.data, ...announcements]);
       setAnnouncementText('');
       setAnnouncementTitle('');
+      setAnnouncementFiles([]);
       toast.success('Announcement posted');
     } catch (error) {
       toast.error('Failed to post announcement');
@@ -520,6 +526,8 @@ const ClassroomHub = () => {
               setAnnouncementTitle={setAnnouncementTitle}
               announcementText={announcementText}
               setAnnouncementText={setAnnouncementText}
+              announcementFiles={announcementFiles}
+              setAnnouncementFiles={setAnnouncementFiles}
               handlePostAnnouncement={handlePostAnnouncement}
               handleEditAnnouncement={handleEditAnnouncement}
               handleDeleteAnnouncement={handleDeleteAnnouncement}
@@ -958,7 +966,7 @@ const StudentDetailDrawer = ({ student, classroom, onClose }) => {
 };
 
 // Stream Tab Component
-const StreamTab = ({ classroom, isTeacher, announcements, classroomSubjects, announcementTitle, setAnnouncementTitle, announcementText, setAnnouncementText, handlePostAnnouncement, handleEditAnnouncement, handleDeleteAnnouncement, editingAnnouncement, setEditingAnnouncement, editAnnouncementTitle, setEditAnnouncementTitle, editAnnouncementContent, setEditAnnouncementContent, loadingAnnouncements, announcementSearch, setAnnouncementSearch }) => {
+const StreamTab = ({ classroom, isTeacher, announcements, classroomSubjects, announcementTitle, setAnnouncementTitle, announcementText, setAnnouncementText, announcementFiles, setAnnouncementFiles, handlePostAnnouncement, handleEditAnnouncement, handleDeleteAnnouncement, editingAnnouncement, setEditingAnnouncement, editAnnouncementTitle, setEditAnnouncementTitle, editAnnouncementContent, setEditAnnouncementContent, loadingAnnouncements, announcementSearch, setAnnouncementSearch }) => {
   const filteredAnnouncements = useMemo(() => {
     if (!announcementSearch) return announcements;
     const q = announcementSearch.toLowerCase();
@@ -999,12 +1007,44 @@ const StreamTab = ({ classroom, isTeacher, announcements, classroomSubjects, ann
                 rows={2}
               />
             </div>
-            <div className="flex justify-end">
+            {announcementFiles.length > 0 && (
+              <div className="flex flex-wrap gap-1.5">
+                {announcementFiles.map((f, i) => (
+                  <div key={i} className="flex items-center gap-1 px-2 py-1 bg-slate-100 rounded-lg text-[10px] text-slate-700">
+                    {f.type?.startsWith('image/') ? (
+                      <img src={URL.createObjectURL(f)} alt="" className="w-6 h-6 rounded object-cover" />
+                    ) : (
+                      <FileText className="w-3.5 h-3.5 text-violet-500" />
+                    )}
+                    <span className="max-w-[100px] truncate">{f.name}</span>
+                    <button onClick={() => setAnnouncementFiles(prev => prev.filter((_, j) => j !== i))} className="text-slate-400 hover:text-red-500">
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+            <div className="flex items-center justify-between">
+              <label className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] text-slate-500 hover:bg-slate-100 cursor-pointer transition-colors">
+                <Upload className="w-3.5 h-3.5" />
+                <span>Attach files</span>
+                <input
+                  type="file"
+                  multiple
+                  className="hidden"
+                  onChange={(e) => {
+                    const files = Array.from(e.target.files || []);
+                    setAnnouncementFiles(prev => [...prev, ...files].slice(0, 5));
+                    e.target.value = '';
+                  }}
+                  accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.txt"
+                />
+              </label>
               <Button
                 onClick={handlePostAnnouncement}
                 variant="primary"
                 size="sm"
-                disabled={!announcementText.trim() || loadingAnnouncements}
+                disabled={(!announcementText.trim() && announcementFiles.length === 0) || loadingAnnouncements}
                 loading={loadingAnnouncements}
                 className="text-[10px] px-2 py-1"
               >
@@ -1094,6 +1134,21 @@ const StreamTab = ({ classroom, isTeacher, announcements, classroomSubjects, ann
                       <h4 className="text-xs font-semibold text-slate-900 mb-0.5">{announcement.title}</h4>
                     )}
                     <p className="text-[11px] text-slate-700 whitespace-pre-wrap">{announcement.content}</p>
+                    {announcement.attachments?.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5 mt-2">
+                        {announcement.attachments.map(att => (
+                          <a key={att.id} href={att.url} target="_blank" rel="noreferrer"
+                            className="flex items-center gap-1 px-2 py-1 bg-slate-50 border border-slate-200 rounded-lg text-[10px] text-violet-700 hover:bg-violet-50 transition-colors">
+                            {att.is_image ? (
+                              <img src={att.url} alt="" className="w-5 h-5 rounded object-cover" />
+                            ) : (
+                              <FileText className="w-3.5 h-3.5" />
+                            )}
+                            <span className="max-w-[120px] truncate">{att.filename || 'File'}</span>
+                          </a>
+                        ))}
+                      </div>
+                    )}
                     <div className="flex items-center gap-1.5 mt-1.5 text-[9px] text-slate-500">
                       <span>{announcement.author_name || 'Teacher'}</span>
                       <span>·</span>
