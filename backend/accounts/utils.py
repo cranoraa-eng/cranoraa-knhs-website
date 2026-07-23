@@ -30,7 +30,7 @@ def log_audit_action(user, action, model_name='', object_id=None, object_repr=''
     Log an audit action. Moved here from portal.views to avoid circular imports.
     Import this from accounts.utils instead of portal.views.
     """
-    from .models import AuditLog
+    from portal.models import AuditLog
 
     ip_address = None
     user_agent = ''
