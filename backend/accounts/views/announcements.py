@@ -92,6 +92,9 @@ class AnnouncementViewSet(viewsets.ModelViewSet):
         return queryset.annotate(comment_count_annotated=Count('comments')).order_by('-is_pinned', '-created_at')
     
     def perform_create(self, serializer):
+        if self.request.user.role not in ('admin', 'staff'):
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied('Only teachers and admins can create announcements.')
         try:
             announcement = serializer.save(author=self.request.user)
             logger.info(f"Announcement created: {announcement.title}")
