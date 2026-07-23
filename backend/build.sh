@@ -13,24 +13,29 @@ mkdir -p media
 mkdir -p staticfiles
 
 python manage.py collectstatic --no-input
-python manage.py migrate
 
-# Only seed if WebsiteContent table is empty (idempotent)
-if python manage.py shell -c "from accounts.models import WebsiteContent; exit(0 if WebsiteContent.objects.exists() else 1)" 2>/dev/null; then
-    echo "WebsiteContent already seeded, skipping."
+echo "Running migrations..."
+python manage.py migrate || echo "WARNING: migrate failed — will retry on server startup"
+
+# Seeds depend on tables existing; skip gracefully if migrate didn't run
+if python manage.py shell -c "from django.db import connection; cursor = connection.cursor(); cursor.execute(\"SELECT 1 FROM accounts_user LIMIT 1\"); print('ok')" 2>/dev/null; then
+    echo "Database tables exist, running seeds..."
+
+    if python manage.py shell -c "from accounts.models import WebsiteContent; exit(0 if WebsiteContent.objects.exists() else 1)" 2>/dev/null; then
+        echo "WebsiteContent already seeded, skipping."
+    else
+        echo "Seeding website content..."
+        python manage.py seed_website_content
+    fi
+
+    echo "Seeding faculty accounts..."
+    python manage.py seed_faculty_accounts
+
+    echo "Updating staff titles to DepEd ranks..."
+    python manage.py update_staff_titles
+
+    echo "Seeding JHS subjects (Grade 7-10)..."
+    python manage.py seed_jhs_subjects
 else
-    echo "Seeding website content..."
-    python manage.py seed_website_content
+    echo "Tables not yet created — skipping seeds (will run on next deploy after migrate succeeds)"
 fi
-
-# Seed faculty staff accounts (idempotent — skips existing usernames)
-echo "Seeding faculty accounts..."
-python manage.py seed_faculty_accounts
-
-# Update existing accounts to correct DepEd rank titles
-echo "Updating staff titles to DepEd ranks..."
-python manage.py update_staff_titles
-
-# Seed JHS subjects (Grade 7-10) based on SF10-JHS form (idempotent — skips existing)
-echo "Seeding JHS subjects (Grade 7-10)..."
-python manage.py seed_jhs_subjects
