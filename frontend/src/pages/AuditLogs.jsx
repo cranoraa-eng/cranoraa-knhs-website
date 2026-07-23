@@ -16,7 +16,7 @@ import {
 } from 'recharts';
 import { LoadingSpinner } from '../components/ui';
 
-const PAGE_SIZE = 50;
+const PAGE_SIZE = 25;
 
 const ACTION_TYPES = [
   { value: '', label: 'All Actions' },
@@ -769,11 +769,20 @@ const AuditLogs = () => {
                 </div>
 
                 {/* ── Desktop table ── */}
-                <div className="hidden md:block overflow-x-auto">
-                  <table className="w-full text-left">
+                <div className="hidden md:block overflow-x-hidden">
+                  <table className="w-full text-left table-fixed">
+                    <colgroup>
+                      <col className="w-10" />
+                      <col className="w-[90px]" />
+                      <col className="w-[160px]" />
+                      <col className="w-[80px]" />
+                      <col />
+                      <col className="w-[70px]" />
+                      <col className="w-[60px]" />
+                    </colgroup>
                     <thead className="bg-slate-50 border-b border-slate-200 sticky top-0 z-10">
                       <tr>
-                        <th className="px-5 py-3.5 w-10">
+                        <th className="px-2 py-2.5 w-10">
                           <input
                             type="checkbox"
                             checked={logs.length > 0 && selectedIds.length === logs.length}
@@ -782,35 +791,35 @@ const AuditLogs = () => {
                           />
                         </th>
                         <th
-                          className="px-5 py-3.5 text-[10px] font-black text-slate-500 uppercase tracking-[0.15em] whitespace-nowrap cursor-pointer hover:text-violet-600 transition-colors select-none"
+                          className="px-2 py-2.5 text-[9px] font-black text-slate-500 uppercase tracking-[0.15em] whitespace-nowrap cursor-pointer hover:text-violet-600 transition-colors select-none"
                           onClick={() => toggleSort('timestamp')}
                         >
-                          <span className="inline-flex items-center gap-1">
+                          <span className="inline-flex items-center gap-0.5">
                             Time
-                            <ArrowUpDown className="w-3 h-3" />
+                            <ArrowUpDown className="w-2.5 h-2.5" />
                           </span>
                         </th>
                         <th
-                          className="px-5 py-3.5 text-[10px] font-black text-slate-500 uppercase tracking-[0.15em] whitespace-nowrap cursor-pointer hover:text-violet-600 transition-colors select-none"
+                          className="px-2 py-2.5 text-[9px] font-black text-slate-500 uppercase tracking-[0.15em] whitespace-nowrap cursor-pointer hover:text-violet-600 transition-colors select-none"
                           onClick={() => toggleSort('user_name')}
                         >
-                          <span className="inline-flex items-center gap-1">
+                          <span className="inline-flex items-center gap-0.5">
                             User
-                            <ArrowUpDown className="w-3 h-3" />
+                            <ArrowUpDown className="w-2.5 h-2.5" />
                           </span>
                         </th>
                         <th
-                          className="px-5 py-3.5 text-[10px] font-black text-slate-500 uppercase tracking-[0.15em] whitespace-nowrap cursor-pointer hover:text-violet-600 transition-colors select-none"
+                          className="px-2 py-2.5 text-[9px] font-black text-slate-500 uppercase tracking-[0.15em] whitespace-nowrap cursor-pointer hover:text-violet-600 transition-colors select-none"
                           onClick={() => toggleSort('action')}
                         >
-                          <span className="inline-flex items-center gap-1">
+                          <span className="inline-flex items-center gap-0.5">
                             Action
-                            <ArrowUpDown className="w-3 h-3" />
+                            <ArrowUpDown className="w-2.5 h-2.5" />
                           </span>
                         </th>
-                        <th className="px-5 py-3.5 text-[10px] font-black text-slate-500 uppercase tracking-[0.15em]">Description</th>
-                        <th className="px-5 py-3.5 text-[10px] font-black text-slate-500 uppercase tracking-[0.15em] whitespace-nowrap">Model</th>
-                        <th className="px-5 py-3.5 w-20"></th>
+                        <th className="px-2 py-2.5 text-[9px] font-black text-slate-500 uppercase tracking-[0.15em]">Description</th>
+                        <th className="px-2 py-2.5 text-[9px] font-black text-slate-500 uppercase tracking-[0.15em] whitespace-nowrap">Model</th>
+                        <th className="px-2 py-2.5 w-15"></th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
@@ -820,7 +829,7 @@ const AuditLogs = () => {
                           className={`group hover:bg-violet-50/30 transition-colors cursor-pointer ${selectedIds.includes(log.id) ? 'bg-violet-50/20' : ''}`}
                           onClick={() => setDetailLog(detailLog?.id === log.id ? null : log)}
                         >
-                          <td className="px-5 py-3.5" onClick={e => e.stopPropagation()}>
+                          <td className="px-2 py-2" onClick={e => e.stopPropagation()}>
                             <input
                               type="checkbox"
                               checked={selectedIds.includes(log.id)}
@@ -828,49 +837,46 @@ const AuditLogs = () => {
                               className="w-4 h-4 rounded border-slate-300 text-violet-600 focus:ring-violet-500 cursor-pointer"
                             />
                           </td>
-                          <td className="px-5 py-3.5 whitespace-nowrap">
-                            <p className="text-xs font-bold text-slate-700">{new Date(log.timestamp).toLocaleDateString()}</p>
-                            <p className="text-[10px] font-bold text-slate-400">{new Date(log.timestamp).toLocaleTimeString()}</p>
+                          <td className="px-2 py-2 whitespace-nowrap">
+                            <p className="text-[10px] font-bold text-slate-700 leading-tight">{new Date(log.timestamp).toLocaleDateString()}</p>
+                            <p className="text-[9px] font-bold text-slate-400 leading-tight">{new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
                           </td>
-                          <td className="px-5 py-3.5">
-                            <div className="flex items-center gap-2.5">
-                              <div className="w-7 h-7 rounded-lg bg-violet-100 flex items-center justify-center text-violet-700 font-black text-[10px] flex-shrink-0">
+                          <td className="px-2 py-2">
+                            <div className="flex items-center gap-1.5 min-w-0">
+                              <div className="w-5 h-5 rounded bg-violet-100 flex items-center justify-center text-violet-700 font-black text-[8px] flex-shrink-0">
                                 {log.user_name?.charAt(0).toUpperCase() || 'S'}
                               </div>
-                              <div className="min-w-0">
-                                <p className="text-xs font-bold text-slate-800 truncate">{log.user_name}</p>
-                                <p className="text-[10px] text-slate-400 truncate">{log.user_email}</p>
-                              </div>
+                              <p className="text-[11px] font-bold text-slate-800 truncate min-w-0">{log.user_name || 'System'}</p>
                             </div>
                           </td>
-                          <td className="px-5 py-3.5">
-                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full border text-[10px] font-bold uppercase tracking-wider ${getActionColor(log.action_type || log.action)}`}>
+                          <td className="px-2 py-2">
+                            <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full border text-[9px] font-bold uppercase tracking-wider leading-none ${getActionColor(log.action_type || log.action)}`}>
                               {log.action}
                             </span>
                           </td>
-                          <td className="px-5 py-3.5 text-sm text-slate-600 max-w-xs truncate" title={log.description}>
+                          <td className="px-2 py-2 text-[11px] text-slate-600 truncate" title={log.description}>
                             {log.description}
                           </td>
-                          <td className="px-5 py-3.5">
-                            <span className="text-[10px] font-bold text-slate-400 bg-slate-50 px-2 py-0.5 rounded-full border border-slate-200 uppercase tracking-wider">
-                              {log.model_name || 'System'}
+                          <td className="px-2 py-2">
+                            <span className="text-[9px] font-bold text-slate-400 leading-none">
+                              {log.model_name || ''}
                             </span>
                           </td>
-                          <td className="px-5 py-3.5 text-center" onClick={e => e.stopPropagation()}>
-                            <div className="flex items-center justify-center gap-1">
+                          <td className="px-2 py-2 text-center" onClick={e => e.stopPropagation()}>
+                            <div className="flex items-center justify-center gap-0.5">
                               <button
                                 onClick={() => setDetailLog(detailLog?.id === log.id ? null : log)}
-                                className="p-1.5 rounded-lg text-slate-400 hover:text-violet-600 hover:bg-violet-50 transition-all opacity-0 group-hover:opacity-100 no-min"
+                                className="p-1 rounded text-slate-400 hover:text-violet-600 hover:bg-violet-50 transition-all no-min"
                                 title="View details"
                               >
-                                <Eye className="w-4 h-4" />
+                                <Eye className="w-3.5 h-3.5" />
                               </button>
                               <button
                                 onClick={() => handleDelete(log.id)}
-                                className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all opacity-0 group-hover:opacity-100 no-min"
+                                className="p-1 rounded text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all no-min"
                                 title="Delete"
                               >
-                                <Trash2 className="w-4 h-4" />
+                                <Trash2 className="w-3.5 h-3.5" />
                               </button>
                             </div>
                           </td>
