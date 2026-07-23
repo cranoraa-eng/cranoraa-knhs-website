@@ -244,7 +244,6 @@ const EnrollmentManagement = () => {
 
   const filtered = applications.filter(app => {
     if (filter !== 'all' && app.status !== filter) return false;
-    if (filter === 'all' && app.status === 'enrolled') return false;
     if (gradeFilter && app.grade_level !== gradeFilter) return false;
     if (typeFilter && app.enrollment_type !== typeFilter) return false;
     if (schoolYearFilter && app.school_year !== schoolYearFilter) return false;

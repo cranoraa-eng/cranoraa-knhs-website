@@ -21,7 +21,7 @@ from ..serializers import (
     full_name,
 )
 from ..permissions import IsAdmin
-from ..throttles import EnrollmentRateThrottle
+from ..throttles import EnrollmentRateThrottle, TrackRateThrottle
 from ..storage import upload_file
 from ..pdf_export import enrollment_form_response, enrollment_summary_response
 
@@ -97,11 +97,11 @@ class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
             return [IsAuthenticated()]
         return [IsAuthenticated()]
 
-    def get_throttles(self):
+def get_throttles(self):
         if self.action == 'create':
             return [EnrollmentRateThrottle()]
         if self.action == 'track':
-            return []
+            return [TrackRateThrottle()]
         return super().get_throttles()
 
     def get_queryset(self):
@@ -238,7 +238,10 @@ class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
         app = qs.select_related('assigned_classroom').prefetch_related('documents', 'status_history').first()
         if not app:
             return Response({'error': 'No application found'}, status=404)
-        return Response({
+
+        is_authed = request.user and request.user.is_authenticated
+
+        data = {
             'enrollment_number': app.enrollment_number,
             'status': app.status,
             'full_name': app.full_name,
@@ -247,16 +250,21 @@ class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
             'submitted_at': app.submitted_at,
             'assigned_classroom_name': app.assigned_classroom.name if app.assigned_classroom else None,
             'remarks': app.remarks,
-            'lrn': app.lrn or '',
-            'enrolled_student_email': app.enrolled_student.email if app.enrolled_student else None,
-            'temp_password_display': app.temp_password_display if app.status == 'enrolled' and app.enrolled_student and app.enrolled_student.must_change_password else None,
-            'documents': [{'id': d.id, 'document_type_display': d.get_document_type_display(),
-                           'verification_status': d.verification_status,
-                           'verification_status_display': d.get_verification_status_display()} for d in app.documents.all()],
-            'status_history': [{'id': h.id, 'from_status_display': h.get_from_status_display() if h.from_status else None,
-                                'to_status_display': h.get_to_status_display(), 'notes': h.notes,
-                                'created_at': h.created_at} for h in app.status_history.all()],
-        })
+        }
+        if is_authed:
+            data.update({
+                'lrn': app.lrn or '',
+                'enrolled_student_email': app.enrolled_student.email if app.enrolled_student else None,
+                'temp_password_display': app.temp_password_display if app.status == 'enrolled' and app.enrolled_student and app.enrolled_student.must_change_password else None,
+                'documents': [{'id': d.id, 'document_type_display': d.get_document_type_display(),
+                               'verification_status': d.verification_status,
+                               'verification_status_display': d.get_verification_status_display()} for d in app.documents.all()],
+                'status_history': [{'id': h.id, 'from_status_display': h.get_from_status_display() if h.from_status else None,
+                                    'to_status_display': h.get_to_status_display(), 'notes': h.notes,
+                                    'created_at': h.created_at} for h in app.status_history.all()],
+            })
+
+        return Response(data)
 
     @action(detail=True, methods=['post'], url_path='start-review')
     def start_review(self, request, pk=None):
@@ -287,6 +295,8 @@ class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
         application = self.get_object()
         user = request.user
         remarks = request.data.get('remarks', 'Provide reason for rejection.')
+        if application.status == 'enrolled':
+            return Response({'error': 'Cannot reject an already enrolled application'}, status=400)
         from_status = application.status
         application.status = 'rejected'
         application.remarks = remarks
@@ -446,8 +456,9 @@ class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
             capacity = classroom.capacity or 40
             if current_count >= capacity:
                 return Response({'error': f'{classroom.name} is at full capacity ({current_count}/{capacity})'}, status=400)
+            if str(classroom.grade_level) != str(application.grade_level):
+                return Response({'error': f'Grade level mismatch: classroom is Grade {classroom.grade_level}, application is Grade {application.grade_level}'}, status=400)
             application.assigned_classroom = classroom
-            application.grade_level = classroom.grade_level
             application.save()
             return Response({'status': f'Section set to {classroom.name}'})
         except Classroom.DoesNotExist:
@@ -484,6 +495,8 @@ class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
     def request_requirements(self, request, pk=None):
         application = self.get_object()
         user = request.user
+        if application.status not in ('under_review', 'pending', 'pending_requirements'):
+            return Response({'error': f'Cannot request requirements from {application.status} application'}, status=400)
         message = request.data.get('message', 'Please submit the missing requirements.')
         doc_types = request.data.get('document_types', [])
         from_status = application.status
