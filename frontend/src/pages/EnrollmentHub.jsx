@@ -802,166 +802,161 @@ function EnrollStudentsTab({ refetch }) {
 
   if (loading) return <div className="flex items-center justify-center h-64"><LoadingSpinner /></div>;
 
+  // View 1: Classroom grid (default)
+  if (!selectedClassroom) {
+    return (
+      <div className="space-y-4">
+        {/* Classroom selector — card grid */}
+        <div className="space-y-2">
+          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">Select Section</label>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-3">
+            {sortedClassrooms.map(c => {
+              const cnt = c.student_count ?? 0;
+              const cap = c.capacity || 40;
+              const isFull = cnt >= cap;
+              const gradeMatch = c.name.match(/grade\s*(\d+)/i);
+              const gradeNum = gradeMatch ? parseInt(gradeMatch[1]) : 0;
+              const gradeColors = {
+                7: 'from-green-500 to-green-600',
+                8: 'from-yellow-500 to-yellow-600',
+                9: 'from-red-500 to-red-600',
+                10: 'from-blue-500 to-blue-600',
+                11: 'from-pink-500 to-pink-600',
+                12: 'from-gray-900 to-black',
+              };
+              const gradient = gradeColors[gradeNum] || 'from-slate-500 to-slate-600';
+              return (
+                <button
+                  key={c.id}
+                  onClick={() => { setSelectedClassroom(c.id); setEnrollSearch(''); }}
+                  className={`relative text-left rounded-xl border-2 transition-all duration-200 p-3 md:p-4
+                    ${isFull
+                      ? 'border-slate-200 bg-slate-50 opacity-60 cursor-not-allowed'
+                      : 'border-slate-200 bg-white hover:border-slate-300 hover:shadow-sm cursor-pointer'
+                    }`}
+                  disabled={isFull}
+                >
+                  <div className={`w-7 h-7 md:w-8 md:h-8 rounded-lg bg-gradient-to-br ${gradient} flex items-center justify-center mb-2 ${isFull ? 'opacity-50' : ''}`}>
+                    <span className="text-white text-[10px] md:text-xs font-black">{gradeNum || '?'}</span>
+                  </div>
+                  <p className={`text-[10px] md:text-sm font-black uppercase tracking-tight truncate leading-tight ${isFull ? 'text-slate-400' : 'text-slate-800'}`}>
+                    {c.name}
+                  </p>
+                  <div className="flex items-center gap-1.5 mt-1">
+                    <span className={`text-[8px] md:text-[11px] font-semibold ${isFull ? 'text-rose-600' : 'text-slate-400'}`}>
+                      {cnt}/{cap}
+                    </span>
+                    {isFull && (
+                      <span className="text-[7px] md:text-[9px] font-bold text-rose-600 bg-rose-50 border border-rose-200 px-1 py-px rounded uppercase">Full</span>
+                    )}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // View 2: Student list for selected classroom
   return (
     <div className="space-y-4">
-
-      {/* Classroom selector — card grid */}
-      <div className="space-y-2">
-        <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">Select Section</label>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-3">
-          {sortedClassrooms.map(c => {
-            const cnt = c.student_count ?? 0;
-            const cap = c.capacity || 40;
-            const isFull = cnt >= cap;
-            const isSelected = String(c.id) === String(selectedClassroom);
-            const gradeMatch = c.name.match(/grade\s*(\d+)/i);
-            const gradeNum = gradeMatch ? parseInt(gradeMatch[1]) : 0;
-            const gradeColors = {
-              7: 'from-green-500 to-green-600',
-              8: 'from-yellow-500 to-yellow-600',
-              9: 'from-red-500 to-red-600',
-              10: 'from-blue-500 to-blue-600',
-              11: 'from-pink-500 to-pink-600',
-              12: 'from-gray-900 to-black',
-            };
-            const gradient = gradeColors[gradeNum] || 'from-slate-500 to-slate-600';
-            return (
-              <button
-                key={c.id}
-                onClick={() => { setSelectedClassroom(isSelected ? '' : c.id); setEnrollSearch(''); }}
-                className={`relative text-left rounded-xl border-2 transition-all duration-200 p-3 md:p-4
-                  ${isSelected
-                    ? 'border-violet-500 bg-violet-50 shadow-md ring-2 ring-violet-200'
-                    : 'border-slate-200 bg-white hover:border-slate-300 hover:shadow-sm'
-                  }`}
-              >
-                {isSelected && (
-                  <div className="absolute top-2 right-2 w-5 h-5 bg-violet-500 rounded-full flex items-center justify-center">
-                    <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                    </svg>
-                  </div>
-                )}
-                <div className={`w-7 h-7 md:w-8 md:h-8 rounded-lg bg-gradient-to-br ${gradient} flex items-center justify-center mb-2`}>
-                  <span className="text-white text-[10px] md:text-xs font-black">{gradeNum || '?'}</span>
-                </div>
-                <p className={`text-[10px] md:text-sm font-black uppercase tracking-tight truncate leading-tight ${isSelected ? 'text-violet-900' : 'text-slate-800'}`}>
-                  {c.name}
-                </p>
-                <div className="flex items-center gap-1.5 mt-1">
-                  <span className={`text-[8px] md:text-[11px] font-semibold ${isFull ? 'text-rose-600' : 'text-slate-400'}`}>
-                    {cnt}/{cap}
-                  </span>
-                  {isFull && (
-                    <span className="text-[7px] md:text-[9px] font-bold text-rose-600 bg-rose-50 border border-rose-200 px-1 py-px rounded uppercase">Full</span>
-                  )}
-                </div>
-              </button>
-            );
-          })}
+      {/* Back button + header */}
+      <div className="flex items-center gap-3 px-2">
+        <button onClick={() => { setSelectedClassroom(''); setEnrollSearch(''); }}
+          className="flex items-center gap-2 text-violet-600 hover:text-violet-800 font-bold text-sm transition-colors">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+          Back to Sections
+        </button>
+        <div className="ml-auto">
+          <p className="text-sm font-black text-slate-900">{currentClassroom?.name}</p>
+          <p className="text-xs text-slate-400">
+            {enrolledCount}/{capacity} enrolled {isFull ? ' · Full' : ''}
+          </p>
         </div>
       </div>
 
-      {selectedClassroom && (
-        <>
-          {/* Stats + action bar */}
-          <div className="bg-white border border-slate-200 rounded-xl px-5 py-4 flex flex-wrap items-center gap-4">
-            <div>
-              <p className="text-sm font-black text-slate-900">{currentClassroom?.name}</p>
-              {currentClassroom?.grade_level && (
-                <p className="text-xs text-slate-400 font-semibold mt-0.5">
-                  {currentClassroom.grade_level}{currentClassroom.teacher_name ? ` · Adviser: ${currentClassroom.teacher_name}` : ''}
-                </p>
-              )}
-            </div>
-            <div className="flex items-center gap-3 ml-auto flex-wrap">
-              <div className="flex items-center gap-2">
-                <div className="w-28 h-2 bg-slate-100 rounded-full overflow-hidden">
-                  <div className={`h-full rounded-full transition-all ${isFull ? 'bg-rose-400' : enrolledCount / capacity > 0.8 ? 'bg-amber-400' : 'bg-emerald-400'}`}
-                    style={{ width: `${Math.min((enrolledCount / capacity) * 100, 100)}%` }} />
-                </div>
-                <span className={`text-xs font-black ${isFull ? 'text-rose-600' : 'text-slate-600'}`}>{enrolledCount}/{capacity}</span>
-                {isFull && <span className="text-[9px] font-black text-rose-600 bg-rose-50 border border-rose-200 px-2 py-0.5 rounded uppercase">Full</span>}
-              </div>
-              {!isFull ? (
-                <button onClick={openModal}
-                  className="flex items-center gap-1.5 bg-violet-600 hover:bg-violet-700 text-white font-bold py-2 px-4 rounded-lg text-sm transition-colors">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
-                  Add Students
-                </button>
-              ) : <span className="text-xs text-rose-500 font-semibold">Section is at capacity</span>}
-            </div>
-          </div>
-
-          {/* Enrolled list */}
-          <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
-            <div className="px-4 py-3 border-b border-slate-100 flex items-center gap-3">
-              <p className="text-sm font-black text-slate-700 uppercase tracking-wide">Enrolled Students</p>
-              <div className="ml-auto relative w-56">
-                <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-                <input type="text" value={enrollSearch} onChange={e => setEnrollSearch(e.target.value)}
-                  placeholder="Search enrolled…"
-                  className="w-full pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-violet-400" />
-              </div>
-            </div>
-            {loadingEnrollments ? (
-              <div className="flex items-center justify-center h-32"><LoadingSpinner /></div>
-            ) : filteredEnrollments.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-16 text-center">
-                <svg className="w-10 h-10 text-slate-200 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-                <p className="text-sm font-semibold text-slate-400">{enrollSearch ? 'No students match your search' : 'No students enrolled yet'}</p>
-                {!enrollSearch && !isFull && <button onClick={openModal} className="mt-3 text-xs font-bold text-violet-600 hover:underline">Add students →</button>}
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left">
-                  <thead className="bg-slate-50 text-[10px] font-black text-slate-400 uppercase tracking-wider border-b border-slate-100">
-                    <tr>
-                      <th className="px-4 py-3">#</th>
-                      <th className="px-4 py-3">Student</th>
-                      <th className="px-4 py-3 hidden sm:table-cell">LRN</th>
-                      <th className="px-4 py-3 hidden md:table-cell">Email</th>
-                      <th className="px-4 py-3 text-center">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {filteredEnrollments.map((e, idx) => (
-                      <tr key={e.id} className="hover:bg-slate-50 transition-colors">
-                        <td className="px-4 py-3 text-xs font-semibold text-slate-400 w-10">{idx + 1}</td>
-                        <td className="px-4 py-3">
-                          <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-full bg-violet-100 flex items-center justify-center flex-shrink-0">
-                              <span className="text-xs font-black text-violet-600">
-                                {(e.student_name || '?').split(' ').slice(0,2).map(n=>n[0]).join('').toUpperCase()}
-                              </span>
-                            </div>
-                            <p className="text-sm font-bold text-slate-900">{e.student_name || '—'}</p>
-                          </div>
-                        </td>
-                        <td className="px-4 py-3 hidden sm:table-cell text-xs text-slate-500 font-mono">{e.student_lrn || '—'}</td>
-                        <td className="px-4 py-3 hidden md:table-cell text-xs text-slate-400">{e.student_email || '—'}</td>
-                        <td className="px-4 py-3 text-center">
-                          <button onClick={() => handleRemove(e)}
-                            className="inline-flex items-center gap-1 text-[10px] font-bold text-rose-600 hover:bg-rose-50 border border-rose-200 px-2.5 py-1 rounded-lg transition-colors">
-                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                            </svg>
-                            Remove
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-        </>
+      {/* Add Students Button */}
+      {!isFull && (
+        <div className="px-2 pb-2">
+          <button onClick={openModal}
+            className="flex items-center gap-2 w-full bg-violet-600 hover:bg-violet-700 text-white font-bold py-2 px-4 rounded-lg text-sm transition-colors">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+            Add Students
+          </button>
+        </div>
       )}
+
+      {/* Enrolled Students List */}
+      <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
+        <div className="px-4 py-3 border-b border-slate-100 flex items-center gap-3">
+          <p className="text-sm font-black text-slate-700 uppercase tracking-wide">Enrolled Students</p>
+          <div className="ml-auto relative w-56">
+            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <input type="text" value={enrollSearch} onChange={e => setEnrollSearch(e.target.value)}
+              placeholder="Search enrolled…"
+              className="w-full pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-violet-400" />
+          </div>
+        </div>
+        {loadingEnrollments ? (
+          <div className="flex items-center justify-center h-32"><LoadingSpinner /></div>
+        ) : filteredEnrollments.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-16 text-center">
+            <svg className="w-10 h-10 text-slate-200 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            <p className="text-sm font-semibold text-slate-400">{enrollSearch ? 'No students match your search' : 'No students enrolled yet'}</p>
+            {!enrollSearch && !isFull && <button onClick={openModal} className="mt-3 text-xs font-bold text-violet-600 hover:underline">Add students →</button>}
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead className="bg-slate-50 text-[10px] font-black text-slate-400 uppercase tracking-wider border-b border-slate-100">
+                <tr>
+                  <th className="px-4 py-3">#</th>
+                  <th className="px-4 py-3">Student</th>
+                  <th className="px-4 py-3 hidden sm:table-cell">LRN</th>
+                  <th className="px-4 py-3 hidden md:table-cell">Email</th>
+                  <th className="px-4 py-3 text-center">Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {filteredEnrollments.map((e, idx) => (
+                  <tr key={e.id} className="hover:bg-slate-50 transition-colors">
+                    <td className="px-4 py-3 text-xs font-semibold text-slate-400 w-10">{idx + 1}</td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-violet-100 flex items-center justify-center flex-shrink-0">
+                          <span className="text-xs font-black text-violet-600">
+                            {(e.student_name || '?').split(' ').slice(0,2).map(n=>n[0]).join('').toUpperCase()}
+                          </span>
+                        </div>
+                        <p className="text-sm font-bold text-slate-900">{e.student_name || '—'}</p>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 hidden sm:table-cell text-xs text-slate-500 font-mono">{e.student_lrn || '—'}</td>
+                    <td className="px-4 py-3 hidden md:table-cell text-xs text-slate-400">{e.student_email || '—'}</td>
+                    <td className="px-4 py-3 text-center">
+                      <button onClick={() => handleRemove(e)}
+                        className="inline-flex items-center gap-1 text-[10px] font-bold text-rose-600 hover:bg-rose-50 border border-rose-200 px-2.5 py-1 rounded-lg transition-colors">
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                        Remove
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
 
       {/* Add Students Modal */}
       {showModal && (
