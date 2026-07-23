@@ -22,6 +22,7 @@ from ..serializers import (
 )
 from ..permissions import IsAdmin
 from ..throttles import EnrollmentRateThrottle, TrackRateThrottle
+from ..utils import log_audit_action
 from ..storage import upload_file
 from ..pdf_export import enrollment_form_response, enrollment_summary_response
 
@@ -76,6 +77,18 @@ class EnrollmentWaitlistViewSet(viewsets.ModelViewSet):
             ).update(position=F('position') - 1)
         else:
             return Response({'error': 'action must be offer, accept, or decline'}, status=400)
+        try:
+            log_audit_action(
+                user=request.user,
+                action='update',
+                model_name='EnrollmentWaitlist',
+                object_id=entry.id,
+                object_repr=str(entry),
+                description=f'{action_val} waitlist entry for {entry.student.username} -> {entry.classroom.name}',
+                request=request
+            )
+        except Exception as audit_err:
+            logger.error(f"Audit log failed on waitlist process: {audit_err}")
         return Response(EnrollmentWaitlistSerializer(entry).data)
 
 
@@ -184,6 +197,19 @@ class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
             serializer.is_valid(raise_exception=True)
             application = serializer.save()
 
+            try:
+                log_audit_action(
+                    user=None,
+                    action='create',
+                    model_name='EnrollmentApplication',
+                    object_id=application.id,
+                    object_repr=application.enrollment_number or str(application),
+                    description=f'Enrollment application submitted: {application.full_name} (Grade {application.grade_level})',
+                    request=request
+                )
+            except Exception as audit_err:
+                logger.error(f"Audit log failed on enrollment submission: {audit_err}")
+
             for field_name, url in uploaded_urls.items():
                 EnrollmentApplication.objects.filter(pk=application.pk).update(**{field_name: url})
                 setattr(application, field_name, url)
@@ -229,6 +255,21 @@ class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
             if hasattr(e, 'detail'):
                 return Response({'error': e.detail}, status=status.HTTP_400_BAD_REQUEST)
             return Response({'error': f'Failed to submit: {str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
+
+    def perform_update(self, serializer):
+        application = serializer.save()
+        try:
+            log_audit_action(
+                user=self.request.user,
+                action='update',
+                model_name='EnrollmentApplication',
+                object_id=application.id,
+                object_repr=application.enrollment_number or str(application),
+                description=f'Updated application {application.enrollment_number} ({application.full_name})',
+                request=self.request
+            )
+        except Exception as audit_err:
+            logger.error(f"Audit log failed on application update: {audit_err}")
 
     @action(detail=False, methods=['get'], permission_classes=[AllowAny])
     def track(self, request):
@@ -296,6 +337,18 @@ class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
                 to_status='under_review', changed_by=user,
                 notes=remarks or 'Application opened for review'
             )
+            try:
+                log_audit_action(
+                    user=request.user,
+                    action='update',
+                    model_name='EnrollmentApplication',
+                    object_id=application.id,
+                    object_repr=application.enrollment_number or str(application),
+                    description=f'Started review for application {application.enrollment_number} ({application.full_name})',
+                    request=request
+                )
+            except Exception as audit_err:
+                logger.error(f"Audit log failed on start_review: {audit_err}")
             return Response({'status': 'Application is now under review'})
         # Already past pending — just return current status, no change
         return Response({'status': application.status})
@@ -317,6 +370,18 @@ class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
             to_status='rejected', changed_by=user, notes=remarks)
         self._safe_notify_user(application, 'Application Rejected',
             f'Your application has been rejected. Reason: {remarks}', '/track-enrollment')
+        try:
+            log_audit_action(
+                user=request.user,
+                action='reject',
+                model_name='EnrollmentApplication',
+                object_id=application.id,
+                object_repr=application.enrollment_number or str(application),
+                description=f'Rejected application {application.enrollment_number} ({application.full_name}). Reason: {remarks}',
+                request=request
+            )
+        except Exception as audit_err:
+            logger.error(f"Audit log failed on reject: {audit_err}")
         return Response({'status': 'Application rejected'})
 
     @action(detail=True, methods=['post'])
@@ -336,6 +401,18 @@ class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
             to_status='approved', changed_by=user, notes=remarks or 'Application approved')
         self._safe_notify_user(application, 'Application Approved',
             'Your application has been approved.', '/track-enrollment')
+        try:
+            log_audit_action(
+                user=request.user,
+                action='approve',
+                model_name='EnrollmentApplication',
+                object_id=application.id,
+                object_repr=application.enrollment_number or str(application),
+                description=f'Approved application {application.enrollment_number} ({application.full_name})',
+                request=request
+            )
+        except Exception as audit_err:
+            logger.error(f"Audit log failed on approve_application: {audit_err}")
         return Response({'status': 'Application approved'})
 
     @action(detail=True, methods=['post'])
@@ -458,6 +535,18 @@ class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
                 to_status='enrolled', changed_by=user, notes=f'Student account created. Username: {username}')
             self._safe_notify_user(student_user, 'Enrollment Complete',
                 f'Welcome! Enrollment complete. Username: {username}', '/dashboard')
+            try:
+                log_audit_action(
+                    user=request.user,
+                    action='enroll',
+                    model_name='EnrollmentApplication',
+                    object_id=application.id,
+                    object_repr=application.enrollment_number or str(application),
+                    description=f'Enrolled {application.full_name} as student {username} in {classroom_name}',
+                    request=request
+                )
+            except Exception as audit_err:
+                logger.error(f"Audit log failed on enroll_student: {audit_err}")
             return Response({'status': 'Enrollment completed', 'student_id': student_user.id,
                 'username': username, 'temp_password': temp_password,
                 'assigned_classroom': classroom_id, 'classroom_name': classroom_name})
@@ -511,6 +600,18 @@ class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
             doc.verification_status = 'verified'
             doc.admin_notes = request.data.get('notes', doc.admin_notes or '')
             doc.save()
+            try:
+                log_audit_action(
+                    user=request.user,
+                    action='update',
+                    model_name='EnrollmentDocument',
+                    object_id=doc.id,
+                    object_repr=doc.get_document_type_display(),
+                    description=f'Verified document {doc.get_document_type_display()} for application #{pk}',
+                    request=request
+                )
+            except Exception as audit_err:
+                logger.error(f"Audit log failed on verify_document: {audit_err}")
             return Response({'status': 'Document verified'})
         except EnrollmentDocument.DoesNotExist:
             return Response({'error': 'Document not found'}, status=404)
@@ -524,6 +625,18 @@ class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
         try:
             doc = EnrollmentDocument.objects.get(id=doc_id, application_id=pk)
             doc.verification_status = 'rejected'; doc.admin_notes = notes; doc.save()
+            try:
+                log_audit_action(
+                    user=request.user,
+                    action='update',
+                    model_name='EnrollmentDocument',
+                    object_id=doc.id,
+                    object_repr=doc.get_document_type_display(),
+                    description=f'Rejected document {doc.get_document_type_display()} for application #{pk}. Notes: {notes}',
+                    request=request
+                )
+            except Exception as audit_err:
+                logger.error(f"Audit log failed on reject_document: {audit_err}")
             return Response({'status': 'Document rejected', 'notes': notes})
         except EnrollmentDocument.DoesNotExist:
             return Response({'error': 'Document not found'}, status=404)
@@ -543,6 +656,18 @@ class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
         if doc_types:
             EnrollmentDocument.objects.filter(application=application, document_type__in=doc_types).update(verification_status='missing')
         self._safe_notify_user(application, 'Additional Requirements Needed', message, '/track-enrollment')
+        try:
+            log_audit_action(
+                user=request.user,
+                action='update',
+                model_name='EnrollmentApplication',
+                object_id=application.id,
+                object_repr=application.enrollment_number or str(application),
+                description=f'Requested additional requirements for {application.enrollment_number} ({application.full_name})',
+                request=request
+            )
+        except Exception as audit_err:
+            logger.error(f"Audit log failed on request_requirements: {audit_err}")
         return Response({'status': 'Requirements requested', 'message': message})
 
     @action(detail=True, methods=['post'])
@@ -559,7 +684,20 @@ class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
         if application.enrolled_student:
             return Response({'error': 'Cannot delete: student account exists'}, status=400)
         enrollment_number = application.enrollment_number
+        full_name_val = application.full_name
         application.delete()
+        try:
+            log_audit_action(
+                user=request.user,
+                action='delete',
+                model_name='EnrollmentApplication',
+                object_id=None,
+                object_repr=enrollment_number or 'unknown',
+                description=f'Deleted application {enrollment_number} ({full_name_val})',
+                request=request
+            )
+        except Exception as audit_err:
+            logger.error(f"Audit log failed on delete_application: {audit_err}")
         return Response({'status': f'{enrollment_number} deleted'})
 
     @action(detail=False, methods=['get'])
@@ -634,6 +772,18 @@ class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
             classroom = Classroom.objects.get(id=classroom_id)
             classroom.capacity = capacity; classroom.save(update_fields=['capacity'])
             current_count = StudentClassEnrollment.objects.filter(classroom=classroom).count()
+            try:
+                log_audit_action(
+                    user=request.user,
+                    action='update',
+                    model_name='Classroom',
+                    object_id=classroom.id,
+                    object_repr=classroom.name,
+                    description=f'Updated classroom capacity for {classroom.name} to {capacity} (current: {current_count})',
+                    request=request
+                )
+            except Exception as audit_err:
+                logger.error(f"Audit log failed on update_classroom_capacity: {audit_err}")
             return Response({'status': 'Updated', 'classroom': classroom.name, 'capacity': capacity, 'current_count': current_count})
         except Classroom.DoesNotExist: return Response({'error': 'Not found'}, status=404)
 

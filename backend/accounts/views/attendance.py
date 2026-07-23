@@ -327,6 +327,19 @@ class AttendanceViewSet(viewsets.ModelViewSet):
                 else:
                     updated_count += 1
 
+        try:
+            log_audit_action(
+                user=request.user,
+                action='create',
+                model_name='Attendance',
+                object_id=None,
+                object_repr=f'Bulk {sch.classroom.name} on {date_str}',
+                description=f'{request.user.username} bulk-saved {created_count} created, {updated_count} updated attendance records for {sch.classroom.name} on {date_str}',
+                request=request
+            )
+        except Exception as audit_err:
+            logger.warning(f"Audit log failed on bulk_save: {audit_err}")
+
         return Response({
             'created': created_count,
             'updated': updated_count,
@@ -461,4 +474,16 @@ class AbsenceExcuseViewSet(viewsets.ModelViewSet):
             attendance.has_excuse = True
             attendance.excuse_verified = True
             attendance.save()
+        try:
+            log_audit_action(
+                user=request.user,
+                action='update',
+                model_name='AbsenceExcuse',
+                object_id=excuse.id,
+                object_repr=str(excuse),
+                description=f'{request.user.role.capitalize()} {action_val}d absence excuse for {excuse.student.username} on {excuse.attendance.date}',
+                request=request
+            )
+        except Exception as audit_err:
+            logger.warning(f"Audit log failed on excuse review: {audit_err}")
         return Response(AbsenceExcuseSerializer(excuse).data)

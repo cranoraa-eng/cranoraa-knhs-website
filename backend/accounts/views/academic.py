@@ -2193,3 +2193,52 @@ class FeeViewSet(viewsets.ModelViewSet):
         if fee_type:
             queryset = queryset.filter(fee_type=fee_type)
         return queryset
+
+    def perform_create(self, serializer):
+        fee = serializer.save()
+        try:
+            log_audit_action(
+                user=self.request.user,
+                action='create',
+                model_name='Fee',
+                object_id=fee.id,
+                object_repr=str(fee),
+                description=f'Created {fee.get_fee_type_display()} fee of {fee.amount} for {fee.student.username}',
+                request=self.request
+            )
+        except Exception as audit_err:
+            logger.warning(f"Audit log failed on fee create: {audit_err}")
+
+    def perform_update(self, serializer):
+        fee = serializer.save()
+        try:
+            log_audit_action(
+                user=self.request.user,
+                action='update',
+                model_name='Fee',
+                object_id=fee.id,
+                object_repr=str(fee),
+                description=f'Updated fee for {fee.student.username}: {fee.get_fee_type_display()} ({fee.status}, {fee.amount_paid}/{fee.amount})',
+                request=self.request
+            )
+        except Exception as audit_err:
+            logger.warning(f"Audit log failed on fee update: {audit_err}")
+
+    def perform_destroy(self, instance):
+        fee_repr = str(instance)
+        student_username = instance.student.username if instance.student else 'unknown'
+        fee_type = instance.get_fee_type_display()
+        fee_id = instance.id
+        instance.delete()
+        try:
+            log_audit_action(
+                user=self.request.user,
+                action='delete',
+                model_name='Fee',
+                object_id=fee_id,
+                object_repr=fee_repr,
+                description=f'Deleted {fee_type} fee for {student_username}',
+                request=self.request
+            )
+        except Exception as audit_err:
+            logger.warning(f"Audit log failed on fee delete: {audit_err}")

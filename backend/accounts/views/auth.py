@@ -148,6 +148,19 @@ def force_password_change_view(request):
     user.must_change_password = False
     user.save()
 
+    try:
+        log_audit_action(
+            user=request.user,
+            action='password_change',
+            model_name='User',
+            object_id=user.id,
+            object_repr=str(user),
+            description=f'User {user.username} changed password (forced)',
+            request=request
+        )
+    except Exception:
+        pass
+
     refresh = RefreshToken.for_user(user)
 
     response = Response({
@@ -184,6 +197,19 @@ def change_password_view(request):
     user.set_password(new_password)
     user.save()
 
+    try:
+        log_audit_action(
+            user=request.user,
+            action='password_change',
+            model_name='User',
+            object_id=user.id,
+            object_repr=str(user),
+            description=f'User {user.username} changed password',
+            request=request
+        )
+    except Exception:
+        pass
+
     refresh = RefreshToken.for_user(user)
 
     response = Response({
@@ -205,6 +231,20 @@ def logout_view(request):
             token.blacklist()
         except Exception:
             pass
+
+    try:
+        if request.user.is_authenticated:
+            log_audit_action(
+                user=request.user,
+                action='logout',
+                model_name='User',
+                object_id=request.user.id,
+                object_repr=str(request.user),
+                description=f'User {request.user.username} logged out',
+                request=request
+            )
+    except Exception:
+        pass
 
     response = Response({'message': 'Logged out successfully.'})
     _clear_refresh_cookie(response)

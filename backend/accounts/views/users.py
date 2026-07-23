@@ -368,6 +368,19 @@ class UserViewSet(viewsets.ModelViewSet):
         profile.grade_level = str(classroom.grade_level)
         profile.save(update_fields=['grade_level'])
 
+        try:
+            log_audit_action(
+                user=request.user,
+                action='update',
+                model_name='StudentClassEnrollment',
+                object_id=enrollment.id,
+                object_repr=f'{student.username} -> {classroom.name}',
+                description=f'{user.role.capitalize()} assigned {student.username} to {classroom.name}',
+                request=request
+            )
+        except Exception as audit_exc:
+            logger.warning(f"Audit log failed for assign_section: {audit_exc}")
+
         return Response({
             'status': f'Student assigned to {classroom.name}',
             'classroom': {
@@ -404,6 +417,19 @@ class UserViewSet(viewsets.ModelViewSet):
         else:
             user.is_active = True
         user.save()
+
+        try:
+            log_audit_action(
+                user=request.user,
+                action='update',
+                model_name='User',
+                object_id=user.id,
+                object_repr=str(user),
+                description=f'{request.user.role.capitalize()} updated account status to {status_val} for {user.username}',
+                request=request
+            )
+        except Exception as audit_exc:
+            logger.warning(f"Audit log failed for update_status: {audit_exc}")
 
         return Response({'status': f'User account status updated to {status_val}', 'account_status': user.account_status, 'is_active': user.is_active})
 
@@ -463,6 +489,19 @@ class UserViewSet(viewsets.ModelViewSet):
         user.set_password(new_password)
         user.must_change_password = True
         user.save()
+
+        try:
+            log_audit_action(
+                user=request.user,
+                action='password_reset',
+                model_name='User',
+                object_id=user.id,
+                object_repr=str(user),
+                description=f'{request.user.role.capitalize()} reset password for {user.username}',
+                request=request
+            )
+        except Exception as audit_exc:
+            logger.warning(f"Audit log failed for password reset: {audit_exc}")
 
         try:
             EnrollmentApplication.objects.filter(
@@ -607,6 +646,19 @@ class UserViewSet(viewsets.ModelViewSet):
             except Exception as e:
                 errors.append(f"Error importing {row.get('Student ID')}: {str(e)}")
 
+        try:
+            log_audit_action(
+                user=request.user,
+                action='create',
+                model_name='User',
+                object_id=None,
+                object_repr=f'CSV import {created_count} students',
+                description=f'{request.user.role.capitalize()} imported {created_count} students via CSV with {len(errors)} errors',
+                request=request
+            )
+        except Exception as audit_exc:
+            logger.warning(f"Audit log failed for CSV import: {audit_exc}")
+
         return Response({
             'status': 'success',
             'created_count': created_count,
@@ -701,6 +753,19 @@ class UserViewSet(viewsets.ModelViewSet):
             except Exception as e:
                 errors.append(f"Error importing {row.get('Email')}: {str(e)}")
 
+        try:
+            log_audit_action(
+                user=request.user,
+                action='create',
+                model_name='User',
+                object_id=None,
+                object_repr=f'CSV import {created_count} teachers',
+                description=f'Admin imported {created_count} teachers via CSV with {len(errors)} errors',
+                request=request
+            )
+        except Exception as audit_exc:
+            logger.warning(f"Audit log failed for teacher CSV import: {audit_exc}")
+
         return Response({
             'status': 'success',
             'created_count': created_count,
@@ -720,6 +785,19 @@ class UserViewSet(viewsets.ModelViewSet):
         profile.mute_until = timezone.now() + datetime.timedelta(hours=hours)
         profile.save()
 
+        try:
+            log_audit_action(
+                user=request.user,
+                action='update',
+                model_name='User',
+                object_id=user.id,
+                object_repr=str(user),
+                description=f'Admin muted {user.username} for {hours} hours',
+                request=request
+            )
+        except Exception as audit_exc:
+            logger.warning(f"Audit log failed for mute action: {audit_exc}")
+
         return Response({'status': f'User muted for {hours} hours'})
 
     @action(detail=True, methods=['post'])
@@ -737,6 +815,19 @@ class UserViewSet(viewsets.ModelViewSet):
         user.save()
 
         status_str = 'suspended' if profile.is_suspended else 'unsuspended'
+        try:
+            log_audit_action(
+                user=request.user,
+                action='update',
+                model_name='User',
+                object_id=user.id,
+                object_repr=str(user),
+                description=f'Admin {status_str} user account: {user.email}',
+                request=request
+            )
+        except Exception as audit_exc:
+            logger.warning(f"Audit log failed for suspend action: {audit_exc}")
+
         return Response({'status': f'User {status_str} successfully'})
 
     @action(detail=True, methods=['post'])
@@ -983,6 +1074,20 @@ def student_profile(request):
                     profile.date_of_birth = None
 
             profile.save()
+
+            try:
+                log_audit_action(
+                    user=request.user,
+                    action='update',
+                    model_name='Profile',
+                    object_id=profile.id,
+                    object_repr=str(target_user),
+                    description=f'User {target_user.username} updated their profile',
+                    request=request
+                )
+            except Exception as audit_exc:
+                logger.warning(f"Audit log failed for profile update: {audit_exc}")
+
             return Response({'message': 'Profile updated successfully'})
 
         except Exception as e:
