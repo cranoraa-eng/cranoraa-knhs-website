@@ -46,25 +46,8 @@ const PortalHubShell = ({ title, description, tabs, showHeader = true }) => {
 
   return (
     <div className="space-y-0">
-      {showHeader && (
-        <section className="bg-white border border-slate-200 border-b-0 rounded-t-xl overflow-hidden">
-          <div className="px-5 py-5 md:px-6 md:py-6">
-            <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-              <div className="min-w-0">
-                <p className="text-[10px] font-black uppercase tracking-[0.24em] text-violet-600 mb-1">Portal Workspace</p>
-                <h2 className="text-xl font-extrabold tracking-tight text-slate-900">{title}</h2>
-                {description ? <p className="mt-1 max-w-3xl text-sm text-slate-500 font-medium">{description}</p> : null}
-              </div>
-              <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">
-                {visibleTabs.length} tool{visibleTabs.length === 1 ? '' : 's'}
-              </div>
-            </div>
-          </div>
-        </section>
-      )}
-
       {/* Tab Navigation */}
-      <div className="bg-white border border-slate-200 border-t-0 px-3 py-2 md:px-4 md:py-2.5 sticky top-0 z-20">
+      <div className="bg-white border border-slate-200 rounded-xl px-3 py-2 md:px-4 md:py-2 sticky top-0 z-20">
         <div ref={tabBarRef} className="flex gap-1 overflow-x-auto scrollbar-none">
           {visibleTabs.map((tab) => {
             const isActive = tab.id === activeTab.id;
