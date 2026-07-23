@@ -347,8 +347,10 @@ const Enrollment = () => {
       const res = await api.post('/enrollment-applications/', formData);
       setSubmitted(res.data);
     } catch (error) {
-      const msg = error.response?.data?.error || error.response?.data?.details?.[0] || 'Submission failed. Please try again.';
-      Swal.fire({ icon: 'error', title: 'Submission Failed', text: msg });
+      const details = error.response?.data?.details;
+      const msg = error.response?.data?.error || 'Submission failed. Please try again.';
+      const fullMsg = details?.length ? `${msg}\n\n${details.map(d => '• ' + d).join('\n')}` : msg;
+      Swal.fire({ icon: 'error', title: 'Submission Failed', text: fullMsg });
     } finally {
       setLoading(false);
     }

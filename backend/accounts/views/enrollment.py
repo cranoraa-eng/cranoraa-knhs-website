@@ -151,15 +151,22 @@ class EnrollmentApplicationViewSet(viewsets.ModelViewSet):
                 'id_picture', 'last_school_attended_cert',
             ]
             uploaded_urls = {}
+            upload_errors = []
             for field_name in doc_fields:
                 if field_name in request.FILES:
                     f = request.FILES[field_name]
                     url, err = upload_file(f, bucket_key='enrollment-docs',
                                            folder=f"applications/{field_name}")
-                    if url:
-                        uploaded_urls[field_name] = url
+                    if err:
+                        upload_errors.append(f"{field_name}: {err}")
                     else:
-                        logger.warning(f"Enrollment doc upload failed for {field_name}: {err}")
+                        uploaded_urls[field_name] = url
+
+            if upload_errors:
+                return Response(
+                    {'error': 'Document upload failed. Please check your files and try again.', 'details': upload_errors},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
 
             data = request.data.copy()
             for field_name, url in uploaded_urls.items():
