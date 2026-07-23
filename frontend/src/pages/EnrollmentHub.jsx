@@ -675,6 +675,20 @@ function ApplicationsTab({ refetch }) {
           </div>
         )}
       </div>
+
+      <AssignSectionModal
+        isOpen={showAssignModal}
+        onClose={() => { setShowAssignModal(false); setAssignApp(null); }}
+        onConfirm={handleConfirmAssign}
+        student={assignApp ? {
+          first_name: assignApp.first_name,
+          last_name: assignApp.last_name,
+          profile: { grade_level: assignApp.grade_level, classroom_name: assignApp.assigned_classroom_name }
+        } : null}
+        classrooms={classrooms}
+        title="Assign Section"
+        confirmText="Assign"
+      />
     </div>
   );
 }
@@ -1039,21 +1053,6 @@ function EnrollStudentsTab({ refetch }) {
           </div>
         </div>
       )}
-      </div>
-
-      <AssignSectionModal
-        isOpen={showAssignModal}
-        onClose={() => { setShowAssignModal(false); setAssignApp(null); }}
-        onConfirm={handleConfirmAssign}
-        student={assignApp ? {
-          first_name: assignApp.first_name,
-          last_name: assignApp.last_name,
-          profile: { grade_level: assignApp.grade_level, classroom_name: assignApp.assigned_classroom_name }
-        } : null}
-        classrooms={classrooms}
-        title="Assign Section"
-        confirmText="Assign"
-      />
     </div>
   );
 }
